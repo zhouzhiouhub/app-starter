@@ -1,4 +1,8 @@
-import { exampleLandingPage, pageSchema, type PageSchema } from "@app-starter/schema";
+import {
+  createFallbackPage,
+  pageSchema,
+  type PageSchema
+} from "@app-starter/schema";
 
 const apiBaseUrl =
   process.env.API_INTERNAL_URL ??
@@ -27,14 +31,10 @@ export async function getPublishedPage(input: {
     const result = (await response.json()) as { data?: unknown };
     return pageSchema.parse(result.data);
   } catch {
-    return pageSchema.parse({
-      ...exampleLandingPage,
-      meta: {
-        ...exampleLandingPage.meta,
-        slug: input.slug,
-        locale: input.locale || fallbackLocale,
-        market: defaultMarket
-      }
+    return createFallbackPage({
+      slug: input.slug,
+      locale: input.locale || fallbackLocale,
+      market: defaultMarket
     });
   }
 }

@@ -284,10 +284,10 @@ export const pageTemplatePresets = {
   policy: {
     id: "policy",
     label: "Policy",
-    description: "Policy page with the standard header and minimal footer.",
+    description: "Policy page with the standard header and footer.",
     chrome: pageChromeSchema.parse({
       header: { enabled: true, variant: "default" },
-      footer: { enabled: true, variant: "minimal" }
+      footer: { enabled: true, variant: "default" }
     })
   }
 } satisfies Record<
@@ -304,6 +304,81 @@ export function getPageTemplateChrome(
   templateId: PageTemplateId
 ): PageChromeSettings {
   return pageChromeSchema.parse(pageTemplatePresets[templateId].chrome);
+}
+
+export function getFallbackPageTemplateId(slug: string): PageTemplateId {
+  const normalizedSlug = slug.toLowerCase().replace(/^\/+|\/+$/g, "");
+  const parts = normalizedSlug.split("/");
+  const leafSlug = parts[parts.length - 1] ?? normalizedSlug;
+
+  if (leafSlug === "home" || leafSlug === "") {
+    return "landing-blank";
+  }
+
+  if (
+    leafSlug === "privacy" ||
+    leafSlug === "privacy-policy" ||
+    leafSlug === "terms" ||
+    leafSlug === "terms-of-service"
+  ) {
+    return "policy";
+  }
+
+  return "default";
+}
+
+export function createFallbackPage(input: {
+  slug: string;
+  locale?: string;
+  market?: string;
+  title?: string;
+}): PageSchema {
+  const templateId = getFallbackPageTemplateId(input.slug);
+  const title = input.title ?? getFallbackPageTitle(input.slug);
+
+  return pageSchema.parse({
+    ...exampleLandingPage,
+    meta: {
+      ...exampleLandingPage.meta,
+      slug: input.slug,
+      title,
+      market: input.market ?? exampleLandingPage.meta.market,
+      locale: input.locale ?? exampleLandingPage.meta.locale
+    },
+    template: {
+      id: templateId
+    },
+    chrome: getPageTemplateChrome(templateId),
+    seo: {
+      ...exampleLandingPage.seo,
+      title
+    }
+  });
+}
+
+function getFallbackPageTitle(slug: string): string {
+  const normalizedSlug = slug.toLowerCase().replace(/^\/+|\/+$/g, "");
+
+  if (normalizedSlug === "privacy" || normalizedSlug.endsWith("/privacy")) {
+    return "Privacy Policy";
+  }
+
+  if (normalizedSlug === "terms" || normalizedSlug.endsWith("/terms")) {
+    return "Terms of Service";
+  }
+
+  if (normalizedSlug === "home" || normalizedSlug === "") {
+    return "Home";
+  }
+
+  return slug
+    .split("/")
+    .filter(Boolean)
+    .pop()
+    ?.split("-")
+    .filter(Boolean)
+    .map((word) => `${word[0]?.toUpperCase() ?? ""}${word.slice(1)}`)
+    .join(" ") || "Page";
 }
 
 export const pageSchema = z.object({

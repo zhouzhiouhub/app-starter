@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  createFallbackPage,
+  getFallbackPageTemplateId,
   getPageTemplateChrome,
   pageSchema
 } from "../dist/index.js";
@@ -94,4 +96,16 @@ test("page schema rejects unsafe chrome navigation hrefs", () => {
       })
     )
   );
+});
+
+test("privacy and terms fallback pages keep global chrome visible", () => {
+  assert.equal(getFallbackPageTemplateId("privacy"), "policy");
+  assert.equal(getFallbackPageTemplateId("terms"), "policy");
+
+  const privacyPage = createFallbackPage({ slug: "privacy" });
+
+  assert.equal(privacyPage.template.id, "policy");
+  assert.equal(privacyPage.chrome.header.enabled, true);
+  assert.equal(privacyPage.chrome.footer.enabled, true);
+  assert.equal(privacyPage.chrome.footer.variant, "default");
 });

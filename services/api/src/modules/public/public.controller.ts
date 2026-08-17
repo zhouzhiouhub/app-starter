@@ -8,8 +8,8 @@ import {
   Post
 } from "@nestjs/common";
 import {
+  createFallbackPage,
   defaultRuntimeConfig,
-  exampleLandingPage,
   pageSchema
 } from "@app-starter/schema";
 import { PublishedPageStore } from "./published-page.store.js";
@@ -64,15 +64,7 @@ export class PublicController {
     const page = this.pages.get(slug);
 
     return {
-      data:
-        page ??
-        pageSchema.parse({
-          ...exampleLandingPage,
-          meta: {
-            ...exampleLandingPage.meta,
-            slug
-          }
-        }),
+      data: page ?? createFallbackPage({ slug }),
       meta: {
         requestId: "local-dev",
         market: "us",
