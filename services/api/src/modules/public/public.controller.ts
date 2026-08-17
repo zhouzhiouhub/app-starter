@@ -1,8 +1,23 @@
-import { Controller, Get, Param } from "@nestjs/common";
-import { defaultRuntimeConfig, exampleLandingPage } from "@app-starter/schema";
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Headers,
+  Param,
+  Post
+} from "@nestjs/common";
+import {
+  defaultRuntimeConfig,
+  exampleLandingPage,
+  pageSchema
+} from "@app-starter/schema";
+import { PublishedPageStore } from "./published-page.store.js";
 
 @Controller("public")
 export class PublicController {
+  constructor(private readonly pages: PublishedPageStore) {}
+
   @Get("config")
   getConfig() {
     return {
@@ -46,14 +61,18 @@ export class PublicController {
 
   @Get("pages/:slug")
   getPage(@Param("slug") slug: string) {
+    const page = this.pages.get(slug);
+
     return {
-      data: {
-        ...exampleLandingPage,
-        meta: {
-          ...exampleLandingPage.meta,
-          slug
-        }
-      },
+      data:
+        page ??
+        pageSchema.parse({
+          ...exampleLandingPage,
+          meta: {
+            ...exampleLandingPage.meta,
+            slug
+          }
+        }),
       meta: {
         requestId: "local-dev",
         market: "us",
@@ -61,4 +80,75 @@ export class PublicController {
       }
     };
   }
+}
+
+@Controller("admin/pages")
+export class AdminPagesController {
+  constructor(private readonly pages: PublishedPageStore) {}
+
+  @Post(":slug/publish")
+  publishPage(
+    @Body() body: unknown,
+    @Headers("idempotency-key") idempotencyKey: string | undefined,
+    @Param("slug") slug: string
+  ) {
+    if (!idempotencyKey) {
+      throw new BadRequestException({
+        code: "VALIDATION_ERROR",
+        message: "Idempotency-Key header is required for publish."
+      });
+    }
+
+    const candidate = unwrapBodyData(body);
+    const candidateMeta =
+      candidate.meta && typeof candidate.meta === "object" ? candidate.meta : {};
+    const parsed = pageSchema.safeParse({
+      ...candidate,
+      meta: {
+        ...candidateMeta,
+        slug
+      }
+    });
+
+    if (!parsed.success) {
+      throw new BadRequestException({
+        code: "VALIDATION_ERROR",
+        message: parsed.error.issues[0]?.message ?? "Invalid page schema.",
+        details: parsed.error.flatten()
+      });
+    }
+
+    const published = this.pages.publish(parsed.data);
+
+    return {
+      data: published,
+      meta: {
+        requestId: "local-dev",
+        idempotencyKey,
+        market: published.meta.market,
+        locale: published.meta.locale
+      }
+    };
+  }
+}
+
+function unwrapBodyData(body: unknown): Record<string, unknown> {
+  if (!body || typeof body !== "object") {
+    throw new BadRequestException({
+      code: "VALIDATION_ERROR",
+      message: "Request body must be an object."
+    });
+  }
+
+  const record = body as Record<string, unknown>;
+  const data = record.data ?? record;
+
+  if (!data || typeof data !== "object") {
+    throw new BadRequestException({
+      code: "VALIDATION_ERROR",
+      message: "Request body data must be an object."
+    });
+  }
+
+  return data as Record<string, unknown>;
 }

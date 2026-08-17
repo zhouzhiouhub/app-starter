@@ -54,10 +54,44 @@ const templateOptions = Object.values(pageTemplatePresets).map((template) => ({
   value: template.id
 }));
 
+const apiBaseUrl =
+  (
+    import.meta as unknown as {
+      env?: { VITE_API_URL?: string };
+    }
+  ).env?.VITE_API_URL ?? "http://localhost:4000/api/v1";
+
+function createIdempotencyKey(): string {
+  const cryptoApi = globalThis.crypto;
+
+  if (cryptoApi?.randomUUID) {
+    return cryptoApi.randomUUID();
+  }
+
+  const bytes = new Uint8Array(16);
+
+  if (cryptoApi?.getRandomValues) {
+    cryptoApi.getRandomValues(bytes);
+  } else {
+    for (let index = 0; index < bytes.length; index += 1) {
+      bytes[index] = Math.floor(Math.random() * 256);
+    }
+  }
+
+  bytes[6] = ((bytes[6] ?? 0) & 0x0f) | 0x40;
+  bytes[8] = ((bytes[8] ?? 0) & 0x3f) | 0x80;
+
+  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0"));
+  return `${hex.slice(0, 4).join("")}-${hex.slice(4, 6).join("")}-${hex
+    .slice(6, 8)
+    .join("")}-${hex.slice(8, 10).join("")}-${hex.slice(10).join("")}`;
+}
+
 export function App() {
   const [draftSchema, setDraftSchema] = useState<PageSchema>(exampleLandingPage);
   const [publishFeedback, setPublishFeedback] =
     useState<PublishFeedback | null>(null);
+  const [isPublishing, setIsPublishing] = useState(false);
   const [viewport, setViewport] = useState<Viewport>("desktop");
 
   const items = [
@@ -288,7 +322,7 @@ export function App() {
     });
   }
 
-  function publishDraft() {
+  async function publishDraft() {
     const parsed = pageSchema.safeParse(draftSchema);
 
     if (!parsed.success) {
@@ -301,12 +335,47 @@ export function App() {
       return;
     }
 
-    setDraftSchema(parsed.data);
-    setPublishFeedback({
-      type: "success",
-      message:
-        "Published locally. Connect this action to the PageVersion publish API when the backend endpoint is ready."
-    });
+    setIsPublishing(true);
+
+    try {
+      const response = await fetch(
+        `${apiBaseUrl}/admin/pages/${encodeURIComponent(
+          parsed.data.meta.slug
+        )}/publish`,
+        {
+          body: JSON.stringify({ data: parsed.data }),
+          headers: {
+            "Content-Type": "application/json",
+            "Idempotency-Key": createIdempotencyKey()
+          },
+          method: "POST"
+        }
+      );
+
+      const result = (await response.json()) as { data?: unknown; message?: string };
+
+      if (!response.ok) {
+        throw new Error(result.message ?? "Publish request failed.");
+      }
+
+      const published = pageSchema.parse(result.data);
+      setDraftSchema(published);
+      setPublishFeedback({
+        type: "success",
+        message:
+          "Published. Refresh the storefront page to load the latest published content."
+      });
+    } catch (error) {
+      setPublishFeedback({
+        type: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Publish request failed."
+      });
+    } finally {
+      setIsPublishing(false);
+    }
   }
 
   return (
@@ -341,6 +410,7 @@ export function App() {
               </div>
               <Button
                 icon={<UploadOutlined />}
+                loading={isPublishing}
                 onClick={publishDraft}
                 type="primary"
               >
