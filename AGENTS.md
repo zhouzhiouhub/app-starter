@@ -14,6 +14,7 @@
 - 部署：前台优先 Vercel，媒体 Cloudflare R2，API 为独立 Node.js 服务。
 - 首期市场：海外英语 / 美元，默认 Market=`us`、Locale=`en-US`、Currency=`USD`。
 - 电商：MVP 只做接口级预留，不开放完整交易闭环。
+- 多语言：MVP 只启用默认 `en-US`，但 Market / Locale / Translation 做接口级预留。
 
 ### 1.2 MVP 不做什么
 
@@ -88,6 +89,18 @@ docs                  # 补充文档
 - 前台 `cart`、`checkout` 在关闭状态必须返回 `COMMERCE_DISABLED`，不能静默创建订单。
 - Stripe Webhook 路由可部署占位，但不能在未启用电商时处理真实支付事件。
 
+### 2.7 多语言接口预留边界
+
+- `MULTI_LOCALE_ENABLED=false` 是 MVP 默认值。
+- 默认值必须为 Market=`us`、Locale=`en-US`、Currency=`USD`、Fallback Locale=`en-US`。
+- Market / Locale / Translation 的基础 API 需要先预留，并走后端鉴权和 Tenant 隔离。
+- `GET /api/v1/locales` 在 MVP 返回默认 `en-US`。
+- `GET /api/v1/translations` 在 MVP 只返回默认 Locale 的翻译条目。
+- 创建或发布非默认 Locale 时，如果 `MULTI_LOCALE_ENABLED=false`，必须返回 `MULTI_LOCALE_DISABLED`。
+- 前台请求非默认 Locale 时，MVP 必须回退到 `en-US`，并在响应元信息中标记 `isFallback=true`。
+- Page Schema 文案字段优先支持 `i18nKey` + 默认值，避免后续多语言迁移时重写页面。
+- 不接入自动翻译、机器翻译、人工翻译工作流或第三方 TMS，除非设计文档明确进入对应阶段。
+
 ## 3. 安全边界
 
 ### 3.1 租户与权限
@@ -143,6 +156,7 @@ docs                  # 补充文档
 - `.env`、`.env.local`、密钥 JSON、私钥文件不得提交。
 - 环境变量清单需要同步维护到设计文档附录。
 - 生产环境必须显式设置 `COMMERCE_ENABLED=false`，直到进入 Phase 2。
+- 生产环境必须显式设置 `MULTI_LOCALE_ENABLED=false`，直到确认启用多语言运营。
 
 ## 4. 需要明确批准的变更
 
@@ -156,6 +170,7 @@ docs                  # 补充文档
 - 对 Page Schema 做不兼容变更。
 - 将 Figma 自动导入提前到 MVP。
 - 将首期市场从 `us / en-US / USD` 改为其他市场或多市场首发。
+- 启用非默认 Locale 的前台发布、SEO Sitemap、hreflang 或自动语言识别。
 
 ## 5. 实现验收要求
 
@@ -166,6 +181,7 @@ docs                  # 补充文档
 - Page Builder 改动需要同时验证 Desktop 和 Mobile。
 - 前台页面需要验证生产构建和基础性能预算。
 - 涉及安全边界的改动需要覆盖未授权、跨租户、非法输入、关闭 Feature Flag 等场景。
+- 涉及多语言接口的改动需要覆盖默认 `en-US`、非默认 Locale 回退、`MULTI_LOCALE_ENABLED=false` 和跨租户 Translation Key 隔离。
 - 涉及部署的改动需要更新环境变量清单和 Smoke Test。
 
 ## 6. Agent 工作规则
