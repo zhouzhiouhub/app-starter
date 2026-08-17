@@ -225,6 +225,55 @@ export function App() {
     });
   }
 
+  function updateHeaderLocaleSwitcherEnabled(enabled: boolean) {
+    setDraftSchema((current) => {
+      const content = current.chrome.header.content;
+
+      return {
+        ...current,
+        chrome: {
+          ...current.chrome,
+          header: {
+            ...current.chrome.header,
+            content: {
+              ...content,
+              localeSwitcher: {
+                ...content.localeSwitcher,
+                enabled
+              }
+            }
+          }
+        }
+      };
+    });
+  }
+
+  function updateHeaderLocaleSwitcherLabel(value: string) {
+    setDraftSchema((current) => {
+      const content = current.chrome.header.content;
+
+      return {
+        ...current,
+        chrome: {
+          ...current.chrome,
+          header: {
+            ...current.chrome.header,
+            content: {
+              ...content,
+              localeSwitcher: {
+                ...content.localeSwitcher,
+                label: {
+                  ...content.localeSwitcher.label,
+                  defaultValue: value
+                }
+              }
+            }
+          }
+        }
+      };
+    });
+  }
+
   function updateFooterBrand(field: "label" | "href", value: string) {
     setDraftSchema((current) => {
       const content = current.chrome.footer.content;
@@ -644,6 +693,42 @@ export function App() {
                       Add menu item
                     </Button>
                   </Space>
+                  <Divider />
+                  <Title level={5}>Language switcher</Title>
+                  <div
+                    style={{
+                      alignItems: "center",
+                      display: "grid",
+                      gap: 12,
+                      gridTemplateColumns: "1fr auto"
+                    }}
+                  >
+                    <Input
+                      disabled={
+                        !draftSchema.chrome.header.content.localeSwitcher.enabled
+                      }
+                      onChange={(event) =>
+                        updateHeaderLocaleSwitcherLabel(event.target.value)
+                      }
+                      value={
+                        draftSchema.chrome.header.content.localeSwitcher.label
+                          .defaultValue
+                      }
+                    />
+                    <Switch
+                      checked={
+                        draftSchema.chrome.header.content.localeSwitcher.enabled
+                      }
+                      onChange={updateHeaderLocaleSwitcherEnabled}
+                    />
+                  </div>
+                  <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                    {draftSchema.chrome.header.content.localeSwitcher.locales.map(
+                      (locale) => (
+                        <Tag key={locale.code}>{locale.label.defaultValue}</Tag>
+                      )
+                    )}
+                  </div>
                   <Divider />
                   <Title level={5}>Footer content</Title>
                   <Form.Item label="Brand text">

@@ -1,5 +1,6 @@
 import type { ComponentType, ReactNode } from "react";
 import type {
+  HeaderChromeContent,
   PageChromeRegion,
   PageSchema,
   SectionNode,
@@ -55,6 +56,32 @@ function renderChromeSlot(
   return slot ?? fallback;
 }
 
+function resolveHeaderContent(schema: PageSchema): HeaderChromeContent {
+  const content = schema.chrome.header.content;
+  const localeSwitcher = content.localeSwitcher;
+
+  return {
+    ...content,
+    localeSwitcher: {
+      ...localeSwitcher,
+      locales: localeSwitcher.locales.map((locale) => ({
+        ...locale,
+        href: locale.href ?? getLocaleHref(locale.code, schema.meta.slug)
+      }))
+    }
+  };
+}
+
+function getLocaleHref(locale: string, slug: string): string {
+  const normalizedSlug = slug.replace(/^\/+|\/+$/g, "");
+
+  if (!normalizedSlug || normalizedSlug === "home") {
+    return `/${locale}`;
+  }
+
+  return `/${locale}/${normalizedSlug}`;
+}
+
 export function renderSection(
   node: SectionNode,
   options: RenderOptions = {}
@@ -91,7 +118,8 @@ export function PageRenderer(
     props.schema.chrome.header,
     props.chrome?.header,
     <StorefrontHeader
-      content={props.schema.chrome.header.content}
+      content={resolveHeaderContent(props.schema)}
+      currentLocale={props.schema.meta.locale}
       variant={props.schema.chrome.header.variant}
     />
   );

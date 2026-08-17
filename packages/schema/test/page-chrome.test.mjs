@@ -37,6 +37,8 @@ test("page schema keeps default chrome for legacy pages", () => {
   assert.equal(parsed.chrome.header.variant, "default");
   assert.equal(parsed.chrome.header.content.brand.label.defaultValue, "App Starter");
   assert.equal(parsed.chrome.header.content.navigation.length, 3);
+  assert.equal(parsed.chrome.header.content.localeSwitcher.enabled, true);
+  assert.equal(parsed.chrome.header.content.localeSwitcher.locales[0].code, "en-US");
   assert.equal(parsed.chrome.footer.enabled, true);
   assert.equal(parsed.chrome.footer.variant, "default");
   assert.equal(parsed.chrome.footer.content.navigation.length, 3);

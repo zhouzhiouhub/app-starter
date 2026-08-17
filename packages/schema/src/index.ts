@@ -86,6 +86,36 @@ export const chromeNavigationItemSchema = z.object({
 });
 export type ChromeNavigationItem = z.infer<typeof chromeNavigationItemSchema>;
 
+export const chromeLocaleOptionSchema = z.object({
+  code: localeCodeSchema,
+  label: i18nTextSchema,
+  href: safeHrefSchema.optional()
+});
+export type ChromeLocaleOption = z.infer<typeof chromeLocaleOptionSchema>;
+
+export const headerLocaleSwitcherSchema = z
+  .object({
+    enabled: z.boolean().default(true),
+    label: i18nTextSchema.default({ defaultValue: "Language" }),
+    locales: z.array(chromeLocaleOptionSchema).default([
+      {
+        code: "en-US",
+        label: { defaultValue: "English" }
+      }
+    ])
+  })
+  .default({
+    enabled: true,
+    label: { defaultValue: "Language" },
+    locales: [
+      {
+        code: "en-US",
+        label: { defaultValue: "English" }
+      }
+    ]
+  });
+export type HeaderLocaleSwitcher = z.infer<typeof headerLocaleSwitcherSchema>;
+
 export const headerChromeContentSchema = z
   .object({
     brand: z
@@ -113,7 +143,8 @@ export const headerChromeContentSchema = z
         label: { defaultValue: "Terms" },
         href: "/en-US/terms"
       }
-    ])
+    ]),
+    localeSwitcher: headerLocaleSwitcherSchema
   })
   .default({
     brand: {
@@ -136,7 +167,8 @@ export const headerChromeContentSchema = z
         label: { defaultValue: "Terms" },
         href: "/en-US/terms"
       }
-    ]
+    ],
+    localeSwitcher: headerLocaleSwitcherSchema.parse({})
   });
 export type HeaderChromeContent = z.infer<typeof headerChromeContentSchema>;
 
