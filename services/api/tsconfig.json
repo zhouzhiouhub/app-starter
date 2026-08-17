@@ -1,9 +1,14 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "baseUrl": ".",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "outDir": "dist",
+    "paths": {
+      "@app-starter/extension-sdk": ["../../packages/extension-sdk/dist/index.d.ts"],
+      "@app-starter/schema": ["../../packages/schema/dist/index.d.ts"]
+    },
     "rootDir": "src",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,

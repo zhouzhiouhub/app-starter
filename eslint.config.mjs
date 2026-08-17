@@ -7,6 +7,7 @@ export default [
     ignores: [
       "**/node_modules/**",
       "**/.next/**",
+      "**/next-env.d.ts",
       "**/dist/**",
       "**/build/**",
       "**/coverage/**"
@@ -14,6 +15,14 @@ export default [
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
+  {
+    files: ["**/*.{js,mjs,cjs}"],
+    languageOptions: {
+      globals: {
+        ...globals.node
+      }
+    }
+  },
   {
     files: ["**/*.{ts,tsx}"],
     languageOptions: {
