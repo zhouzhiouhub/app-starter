@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "@app-starter/analytics": ["packages/analytics/src/index.ts"],
+      "@app-starter/admin-theme": ["packages/admin-theme/src/index.ts"],
+      "@app-starter/custom-admin": ["packages/custom-admin/src/index.ts"],
+      "@app-starter/custom-components": ["packages/custom-components/src/index.tsx"],
+      "@app-starter/design-tokens": ["packages/design-tokens/src/index.ts"],
+      "@app-starter/extension-sdk": ["packages/extension-sdk/src/index.ts"],
+      "@app-starter/integration-adapters": ["packages/integration-adapters/src/index.ts"],
+      "@app-starter/renderer": ["packages/renderer/src/index.tsx"],
+      "@app-starter/schema": ["packages/schema/src/index.ts"],
+      "@app-starter/ui": ["packages/ui/src/index.tsx"]
+    }
+  }
+}
