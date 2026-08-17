@@ -16,6 +16,15 @@ export default defineConfig({
       "@app-starter/custom-admin": path.join(
         repoRoot,
         "packages/custom-admin/src/index.ts"
+      ),
+      "@app-starter/renderer": path.join(
+        repoRoot,
+        "packages/renderer/src/index.tsx"
+      ),
+      "@app-starter/schema": path.join(repoRoot, "packages/schema/src/index.ts"),
+      "@app-starter/ui": path.join(
+        repoRoot,
+        "packages/ui/src/index.tsx"
       )
     }
   },

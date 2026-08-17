@@ -17,6 +17,7 @@
     "dev": "tsc -p tsconfig.json --watch --preserveWatchOutput",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
+    "pretest": "pnpm run build",
     "test": "node --test"
   },
   "dependencies": {

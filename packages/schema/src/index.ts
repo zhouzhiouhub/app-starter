@@ -17,6 +17,15 @@ export const i18nTextSchema = z.object({
 });
 export type I18nText = z.infer<typeof i18nTextSchema>;
 
+export const safeHrefSchema = z
+  .string()
+  .min(1)
+  .regex(
+    /^(\/(?!\/)|#|https?:\/\/|mailto:|tel:)/,
+    "Href must be relative, http(s), mailto, tel, or hash"
+  );
+export type SafeHref = z.infer<typeof safeHrefSchema>;
+
 export const layoutBoxSchema = z.object({
   x: z.number().default(0),
   y: z.number().default(0),
@@ -59,6 +68,244 @@ export const analyticsConfigSchema = z.object({
 });
 export type AnalyticsConfig = z.infer<typeof analyticsConfigSchema>;
 
+export const pageTemplateIdSchema = z.enum([
+  "default",
+  "landing-blank",
+  "policy"
+]);
+export type PageTemplateId = z.infer<typeof pageTemplateIdSchema>;
+
+export const chromeVariantSchema = z.enum(["default", "minimal"]);
+export type ChromeVariant = z.infer<typeof chromeVariantSchema>;
+
+export const chromeNavigationItemSchema = z.object({
+  id: z.string().min(1),
+  label: i18nTextSchema,
+  href: safeHrefSchema,
+  openInNewTab: z.boolean().default(false)
+});
+export type ChromeNavigationItem = z.infer<typeof chromeNavigationItemSchema>;
+
+export const headerChromeContentSchema = z
+  .object({
+    brand: z
+      .object({
+        label: i18nTextSchema,
+        href: safeHrefSchema.default("/")
+      })
+      .default({
+        label: { defaultValue: "App Starter" },
+        href: "/"
+      }),
+    navigation: z.array(chromeNavigationItemSchema).default([
+      {
+        id: "home",
+        label: { defaultValue: "Home" },
+        href: "/"
+      },
+      {
+        id: "privacy",
+        label: { defaultValue: "Privacy" },
+        href: "/en-US/privacy"
+      },
+      {
+        id: "terms",
+        label: { defaultValue: "Terms" },
+        href: "/en-US/terms"
+      }
+    ])
+  })
+  .default({
+    brand: {
+      label: { defaultValue: "App Starter" },
+      href: "/"
+    },
+    navigation: [
+      {
+        id: "home",
+        label: { defaultValue: "Home" },
+        href: "/"
+      },
+      {
+        id: "privacy",
+        label: { defaultValue: "Privacy" },
+        href: "/en-US/privacy"
+      },
+      {
+        id: "terms",
+        label: { defaultValue: "Terms" },
+        href: "/en-US/terms"
+      }
+    ]
+  });
+export type HeaderChromeContent = z.infer<typeof headerChromeContentSchema>;
+
+export const footerChromeContentSchema = z
+  .object({
+    brand: z
+      .object({
+        label: i18nTextSchema,
+        href: safeHrefSchema.default("/")
+      })
+      .default({
+        label: { defaultValue: "App Starter" },
+        href: "/"
+      }),
+    copyright: i18nTextSchema.default({
+      defaultValue: "© 2026 App Starter. All rights reserved."
+    }),
+    navigation: z.array(chromeNavigationItemSchema).default([
+      {
+        id: "privacy",
+        label: { defaultValue: "Privacy" },
+        href: "/en-US/privacy"
+      },
+      {
+        id: "terms",
+        label: { defaultValue: "Terms" },
+        href: "/en-US/terms"
+      },
+      {
+        id: "contact",
+        label: { defaultValue: "Contact" },
+        href: "/en-US/contact"
+      }
+    ])
+  })
+  .default({
+    brand: {
+      label: { defaultValue: "App Starter" },
+      href: "/"
+    },
+    copyright: {
+      defaultValue: "© 2026 App Starter. All rights reserved."
+    },
+    navigation: [
+      {
+        id: "privacy",
+        label: { defaultValue: "Privacy" },
+        href: "/en-US/privacy"
+      },
+      {
+        id: "terms",
+        label: { defaultValue: "Terms" },
+        href: "/en-US/terms"
+      },
+      {
+        id: "contact",
+        label: { defaultValue: "Contact" },
+        href: "/en-US/contact"
+      }
+    ]
+  });
+export type FooterChromeContent = z.infer<typeof footerChromeContentSchema>;
+
+export const pageChromeRegionBaseObjectSchema = z.object({
+  enabled: z.boolean().default(true),
+  variant: chromeVariantSchema.default("default")
+});
+
+export const pageChromeRegionBaseSchema = pageChromeRegionBaseObjectSchema.default({
+  enabled: true,
+  variant: "default"
+});
+
+export const pageHeaderChromeSchema = pageChromeRegionBaseObjectSchema
+  .extend({
+    content: headerChromeContentSchema
+  })
+  .default({
+    enabled: true,
+    variant: "default",
+    content: headerChromeContentSchema.parse({})
+  });
+export type PageHeaderChromeSettings = z.infer<typeof pageHeaderChromeSchema>;
+
+export const pageFooterChromeSchema = pageChromeRegionBaseObjectSchema
+  .extend({
+    content: footerChromeContentSchema
+  })
+  .default({
+    enabled: true,
+    variant: "default",
+    content: footerChromeContentSchema.parse({})
+  });
+export type PageFooterChromeSettings = z.infer<typeof pageFooterChromeSchema>;
+
+export type PageChromeRegion =
+  | PageHeaderChromeSettings
+  | PageFooterChromeSettings;
+
+export const pageChromeSchema = z
+  .object({
+    header: pageHeaderChromeSchema,
+    footer: pageFooterChromeSchema
+  })
+  .default({
+    header: {
+      enabled: true,
+      variant: "default",
+      content: headerChromeContentSchema.parse({})
+    },
+    footer: {
+      enabled: true,
+      variant: "default",
+      content: footerChromeContentSchema.parse({})
+    }
+  });
+export type PageChromeSettings = z.infer<typeof pageChromeSchema>;
+
+export const pageTemplateSchema = z
+  .object({
+    id: pageTemplateIdSchema.default("default")
+  })
+  .default({ id: "default" });
+export type PageTemplateSettings = z.infer<typeof pageTemplateSchema>;
+
+export const pageTemplatePresets = {
+  default: {
+    id: "default",
+    label: "Default",
+    description: "Standard storefront page with header and footer.",
+    chrome: pageChromeSchema.parse({
+      header: { enabled: true, variant: "default" },
+      footer: { enabled: true, variant: "default" }
+    })
+  },
+  "landing-blank": {
+    id: "landing-blank",
+    label: "Landing blank",
+    description: "Campaign page without global header or footer.",
+    chrome: pageChromeSchema.parse({
+      header: { enabled: false, variant: "minimal" },
+      footer: { enabled: false, variant: "minimal" }
+    })
+  },
+  policy: {
+    id: "policy",
+    label: "Policy",
+    description: "Policy page with the standard header and minimal footer.",
+    chrome: pageChromeSchema.parse({
+      header: { enabled: true, variant: "default" },
+      footer: { enabled: true, variant: "minimal" }
+    })
+  }
+} satisfies Record<
+  PageTemplateId,
+  {
+    id: PageTemplateId;
+    label: string;
+    description: string;
+    chrome: PageChromeSettings;
+  }
+>;
+
+export function getPageTemplateChrome(
+  templateId: PageTemplateId
+): PageChromeSettings {
+  return pageChromeSchema.parse(pageTemplatePresets[templateId].chrome);
+}
+
 export const pageSchema = z.object({
   version: z.literal("1.0"),
   meta: z.object({
@@ -71,6 +318,8 @@ export const pageSchema = z.object({
     desktop: z.record(z.unknown()).default({}),
     mobile: z.record(z.unknown()).default({})
   }),
+  template: pageTemplateSchema,
+  chrome: pageChromeSchema,
   sections: z.array(sectionNodeSchema),
   seo: seoConfigSchema,
   analytics: analyticsConfigSchema.default({
@@ -139,6 +388,10 @@ export const exampleLandingPage: PageSchema = pageSchema.parse({
     desktop: {},
     mobile: {}
   },
+  template: {
+    id: "landing-blank"
+  },
+  chrome: getPageTemplateChrome("landing-blank"),
   sections: [
     {
       id: "hero",

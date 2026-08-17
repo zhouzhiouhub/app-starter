@@ -5,9 +5,108 @@ export interface I18nLikeText {
   i18nKey?: string;
 }
 
+export type StorefrontChromeVariant = "default" | "minimal";
+
+export interface StorefrontNavigationItem {
+  id?: string;
+  label: I18nLikeText | string;
+  href: string;
+  openInNewTab?: boolean;
+}
+
+export interface StorefrontHeaderContent {
+  brand?: {
+    label: I18nLikeText | string;
+    href?: string;
+  };
+  navigation?: StorefrontNavigationItem[];
+}
+
+export interface StorefrontFooterContent {
+  brand?: {
+    label: I18nLikeText | string;
+    href?: string;
+  };
+  copyright?: I18nLikeText | string;
+  navigation?: StorefrontNavigationItem[];
+}
+
 function text(value: I18nLikeText | string | undefined): string {
   if (!value) return "";
   return typeof value === "string" ? value : value.defaultValue;
+}
+
+export function StorefrontHeader(props: {
+  variant?: StorefrontChromeVariant;
+  content?: StorefrontHeaderContent;
+}): ReactNode {
+  const isMinimal = props.variant === "minimal";
+  const brand = props.content?.brand;
+  const navigation = props.content?.navigation ?? [];
+
+  return (
+    <header className="border-b border-gray-200 bg-white">
+      <div className="mx-auto flex min-h-16 max-w-6xl items-center justify-between gap-4 px-6 md:px-10">
+        <a className="text-base font-semibold text-gray-950" href={brand?.href ?? "/"}>
+          {text(brand?.label) || "App Starter"}
+        </a>
+        {isMinimal || navigation.length === 0 ? null : (
+          <nav aria-label="Main navigation" className="flex items-center gap-6">
+            {navigation.map((item) => (
+              <a
+                className="text-sm font-medium text-gray-600 hover:text-gray-950"
+                href={item.href}
+                key={item.id ?? `${item.href}-${text(item.label)}`}
+                rel={item.openInNewTab ? "noreferrer" : undefined}
+                target={item.openInNewTab ? "_blank" : undefined}
+              >
+                {text(item.label)}
+              </a>
+            ))}
+          </nav>
+        )}
+      </div>
+    </header>
+  );
+}
+
+export function StorefrontFooter(props: {
+  variant?: StorefrontChromeVariant;
+  content?: StorefrontFooterContent;
+}): ReactNode {
+  const isMinimal = props.variant === "minimal";
+  const brand = props.content?.brand;
+  const navigation = props.content?.navigation ?? [];
+
+  return (
+    <footer className="border-t border-gray-200 bg-gray-50">
+      <div className="mx-auto flex max-w-6xl flex-col gap-4 px-6 py-8 text-sm text-gray-600 md:flex-row md:items-center md:justify-between md:px-10">
+        <div>
+          <a className="font-medium text-gray-700 hover:text-gray-950" href={brand?.href ?? "/"}>
+            {text(brand?.label) || "App Starter"}
+          </a>
+          {props.content?.copyright ? (
+            <p className="mt-1 text-gray-500">{text(props.content.copyright)}</p>
+          ) : null}
+        </div>
+        {isMinimal || navigation.length === 0 ? null : (
+          <nav aria-label="Footer navigation" className="flex flex-wrap gap-5">
+            {navigation.map((item) => (
+              <a
+                className="hover:text-gray-950"
+                href={item.href}
+                key={item.id ?? `${item.href}-${text(item.label)}`}
+                rel={item.openInNewTab ? "noreferrer" : undefined}
+                target={item.openInNewTab ? "_blank" : undefined}
+              >
+                {text(item.label)}
+              </a>
+            ))}
+          </nav>
+        )}
+      </div>
+    </footer>
+  );
 }
 
 export function HeroBanner(props: {

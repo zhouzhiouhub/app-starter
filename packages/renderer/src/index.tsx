@@ -1,12 +1,19 @@
 import type { ComponentType, ReactNode } from "react";
-import type { PageSchema, SectionNode, Viewport } from "@app-starter/schema";
+import type {
+  PageChromeRegion,
+  PageSchema,
+  SectionNode,
+  Viewport
+} from "@app-starter/schema";
 import {
   CtaBar,
   Faq,
   HeroBanner,
   ImageGallery,
   RichText,
-  SpecTable
+  SpecTable,
+  StorefrontFooter,
+  StorefrontHeader
 } from "@app-starter/ui";
 
 export type RendererComponent = ComponentType<Record<string, unknown>>;
@@ -25,7 +32,27 @@ export const defaultComponentRegistry: ComponentRegistry = {
 export interface RenderOptions {
   viewport?: Viewport;
   registry?: ComponentRegistry;
+  chrome?: {
+    header?: ReactNode | ((region: PageChromeRegion) => ReactNode);
+    footer?: ReactNode | ((region: PageChromeRegion) => ReactNode);
+  };
   onMissingComponent?: (node: SectionNode) => ReactNode;
+}
+
+function renderChromeSlot(
+  region: PageChromeRegion,
+  slot: ReactNode | ((region: PageChromeRegion) => ReactNode) | undefined,
+  fallback: ReactNode
+): ReactNode {
+  if (!region.enabled) {
+    return null;
+  }
+
+  if (typeof slot === "function") {
+    return slot(region);
+  }
+
+  return slot ?? fallback;
 }
 
 export function renderSection(
@@ -60,11 +87,32 @@ export function renderSection(
 export function PageRenderer(
   props: { schema: PageSchema } & RenderOptions
 ): ReactNode {
+  const header = renderChromeSlot(
+    props.schema.chrome.header,
+    props.chrome?.header,
+    <StorefrontHeader
+      content={props.schema.chrome.header.content}
+      variant={props.schema.chrome.header.variant}
+    />
+  );
+  const footer = renderChromeSlot(
+    props.schema.chrome.footer,
+    props.chrome?.footer,
+    <StorefrontFooter
+      content={props.schema.chrome.footer.content}
+      variant={props.schema.chrome.footer.variant}
+    />
+  );
+
   return (
-    <main data-locale={props.schema.meta.locale} data-market={props.schema.meta.market}>
-      {props.schema.sections.map((section) => (
-        <div key={section.id}>{renderSection(section, props)}</div>
-      ))}
-    </main>
+    <>
+      {header}
+      <main data-locale={props.schema.meta.locale} data-market={props.schema.meta.market}>
+        {props.schema.sections.map((section) => (
+          <div key={section.id}>{renderSection(section, props)}</div>
+        ))}
+      </main>
+      {footer}
+    </>
   );
 }
