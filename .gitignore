@@ -28,3 +28,4 @@ Thumbs.db
 # generated
 *.tsbuildinfo
 apps/web/.vercel/
+services/api/.data/

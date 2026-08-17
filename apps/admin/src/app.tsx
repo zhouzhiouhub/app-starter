@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   AppstoreOutlined,
   DeleteOutlined,
@@ -54,12 +54,21 @@ const templateOptions = Object.values(pageTemplatePresets).map((template) => ({
   value: template.id
 }));
 
-const apiBaseUrl =
-  (
-    import.meta as unknown as {
-      env?: { VITE_API_URL?: string };
-    }
-  ).env?.VITE_API_URL ?? "http://localhost:4000/api/v1";
+const configuredApiBaseUrl = (
+  import.meta as unknown as {
+    env?: { VITE_API_URL?: string };
+  }
+).env?.VITE_API_URL;
+
+const apiBaseUrl = configuredApiBaseUrl ?? getDefaultApiBaseUrl();
+
+function getDefaultApiBaseUrl(): string {
+  const location = globalThis.location;
+  const protocol = location?.protocol ?? "http:";
+  const hostname = location?.hostname || "localhost";
+
+  return `${protocol}//${hostname}:4000/api/v1`;
+}
 
 function createIdempotencyKey(): string {
   const cryptoApi = globalThis.crypto;
@@ -87,6 +96,14 @@ function createIdempotencyKey(): string {
     .join("")}-${hex.slice(8, 10).join("")}-${hex.slice(10).join("")}`;
 }
 
+function formatRequestError(error: unknown): string {
+  if (error instanceof TypeError && error.message === "Failed to fetch") {
+    return `Cannot reach API at ${apiBaseUrl}. Start the API service and try again.`;
+  }
+
+  return error instanceof Error ? error.message : "Request failed.";
+}
+
 export function App() {
   const [draftSchema, setDraftSchema] = useState<PageSchema>(exampleLandingPage);
   const [publishFeedback, setPublishFeedback] =
@@ -103,6 +120,40 @@ export function App() {
   ];
 
   const activeTemplate = pageTemplatePresets[draftSchema.template.id];
+
+  useEffect(() => {
+    let isActive = true;
+
+    async function loadPublishedPage() {
+      try {
+        const response = await fetch(`${apiBaseUrl}/public/pages/home`);
+        const result = (await response.json()) as { data?: unknown };
+
+        if (!response.ok) {
+          throw new Error("Published page could not be loaded.");
+        }
+
+        const published = pageSchema.parse(result.data);
+
+        if (isActive) {
+          setDraftSchema(published);
+        }
+      } catch (error) {
+        if (isActive) {
+          setPublishFeedback({
+            type: "error",
+            message: formatRequestError(error)
+          });
+        }
+      }
+    }
+
+    void loadPublishedPage();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   function applyTemplate(templateId: PageTemplateId) {
     setDraftSchema((current) => ({
@@ -368,10 +419,7 @@ export function App() {
     } catch (error) {
       setPublishFeedback({
         type: "error",
-        message:
-          error instanceof Error
-            ? error.message
-            : "Publish request failed."
+        message: formatRequestError(error)
       });
     } finally {
       setIsPublishing(false);
