@@ -6,7 +6,8 @@ import {
   GlobalOutlined,
   PictureOutlined,
   PlusOutlined,
-  SettingOutlined
+  SettingOutlined,
+  UploadOutlined
 } from "@ant-design/icons";
 import {
   Alert,
@@ -30,6 +31,7 @@ import { PageRenderer } from "@app-starter/renderer";
 import {
   exampleLandingPage,
   getPageTemplateChrome,
+  pageSchema,
   pageTemplatePresets,
   type ChromeNavigationItem,
   type PageChromeSettings,
@@ -42,6 +44,10 @@ const { Header, Content, Sider } = Layout;
 const { Paragraph, Text, Title } = Typography;
 
 type ChromeRegionKey = keyof PageChromeSettings;
+type PublishFeedback = {
+  type: "success" | "error";
+  message: string;
+};
 
 const templateOptions = Object.values(pageTemplatePresets).map((template) => ({
   label: template.label,
@@ -50,6 +56,8 @@ const templateOptions = Object.values(pageTemplatePresets).map((template) => ({
 
 export function App() {
   const [draftSchema, setDraftSchema] = useState<PageSchema>(exampleLandingPage);
+  const [publishFeedback, setPublishFeedback] =
+    useState<PublishFeedback | null>(null);
   const [viewport, setViewport] = useState<Viewport>("desktop");
 
   const items = [
@@ -280,6 +288,27 @@ export function App() {
     });
   }
 
+  function publishDraft() {
+    const parsed = pageSchema.safeParse(draftSchema);
+
+    if (!parsed.success) {
+      setPublishFeedback({
+        type: "error",
+        message:
+          parsed.error.issues[0]?.message ??
+          "Page schema is invalid and cannot be published."
+      });
+      return;
+    }
+
+    setDraftSchema(parsed.data);
+    setPublishFeedback({
+      type: "success",
+      message:
+        "Published locally. Connect this action to the PageVersion publish API when the backend endpoint is ready."
+    });
+  }
+
   return (
     <ConfigProvider theme={adminTheme}>
       <Layout style={{ minHeight: "100vh" }}>
@@ -294,12 +323,40 @@ export function App() {
             <Typography.Text strong>Engineering Scaffold</Typography.Text>
           </Header>
           <Content style={{ padding: 24 }}>
-            <Title level={3}>Pages</Title>
-            <Paragraph>
-              Page Builder stores layout chrome in Page Schema. Published pages
-              render header and footer from that schema instead of route-level
-              code.
-            </Paragraph>
+            <div
+              style={{
+                alignItems: "flex-start",
+                display: "flex",
+                gap: 16,
+                justifyContent: "space-between"
+              }}
+            >
+              <div>
+                <Title level={3}>Pages</Title>
+                <Paragraph>
+                  Page Builder stores layout chrome in Page Schema. Published pages
+                  render header and footer from that schema instead of route-level
+                  code.
+                </Paragraph>
+              </div>
+              <Button
+                icon={<UploadOutlined />}
+                onClick={publishDraft}
+                type="primary"
+              >
+                Publish
+              </Button>
+            </div>
+            {publishFeedback ? (
+              <Alert
+                closable
+                message={publishFeedback.message}
+                onClose={() => setPublishFeedback(null)}
+                showIcon
+                style={{ marginBottom: 16 }}
+                type={publishFeedback.type}
+              />
+            ) : null}
             <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
               <Tag color="blue">DEFAULT_LOCALE=en-US</Tag>
               <Tag color="default">COMMERCE_ENABLED=false</Tag>
@@ -558,7 +615,7 @@ export function App() {
                   </Space>
                 </Form>
                 <Divider />
-                <Title level={5}>Published schema fragment</Title>
+                <Title level={5}>Draft schema fragment</Title>
                 <pre style={{ margin: 0, whiteSpace: "pre-wrap" }}>
                   {JSON.stringify(
                     {
