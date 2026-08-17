@@ -24,6 +24,14 @@
 - 不接入真实 Stripe 支付流程，除非明确进入 Phase 2 并更新设计文档。
 - 不做 Marketplace、多商户入驻、复杂 ERP / WMS 深度集成、原生 App。
 - 不首发多市场同步上线，只保留可扩展模型。
+- 不因为“长期达到 Shopify 级能力”而扩大 MVP；Shopify 级目标只能按设计文档 Phase 6+ 逐步实现。
+
+### 1.3 长期 Shopify 级目标边界
+
+- Shopify 级目标指能力成熟度对标，不代表兼容 Shopify API、Liquid Theme、Checkout Extension API 或 App Store。
+- 任何 Theme Package、Checkout 扩展、Markets 完整运营、App / Extension Platform 的实现都必须先进入对应 Phase，并更新设计文档。
+- 后续实现应优先做自有 Page Schema、Theme System、API Scope 和 Extension Slot，不引入 Shopify 运行时依赖。
+- 对标 Shopify 官方能力时，只提取主题、结账、多市场、多语言、Webhook、App 扩展等抽象能力，不复制其界面、协议或商业生态。
 
 ## 2. 技术边界
 
@@ -171,6 +179,8 @@ docs                  # 补充文档
 - 将 Figma 自动导入提前到 MVP。
 - 将首期市场从 `us / en-US / USD` 改为其他市场或多市场首发。
 - 启用非默认 Locale 的前台发布、SEO Sitemap、hreflang 或自动语言识别。
+- 启动 Phase 6+ 的 Theme Package、Checkout 扩展、App / Extension Platform 或平台治理专项。
+- 增加任何 Shopify API、Liquid Theme、App Store、Checkout Extension 的兼容层。
 
 ## 5. 实现验收要求
 
