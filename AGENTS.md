@@ -32,6 +32,7 @@
 - 任何 Theme Package、Checkout 扩展、Markets 完整运营、App / Extension Platform 的实现都必须先进入对应 Phase，并更新设计文档。
 - 后续实现应优先做自有 Page Schema、Theme System、API Scope 和 Extension Slot，不引入 Shopify 运行时依赖。
 - 对标 Shopify 官方能力时，只提取主题、结账、多市场、多语言、Webhook、App 扩展等抽象能力，不复制其界面、协议或商业生态。
+- 启动长期平台化能力前，必须阅读设计文档第 32-36 章：领域边界、Theme System、API Contract、数据迁移、测试发布治理。
 
 ## 2. 技术边界
 
@@ -176,6 +177,9 @@ docs                  # 补充文档
 - 改变认证方式、Token 策略或 RBAC 模型。
 - 引入新的数据库、ORM、消息队列或支付服务商。
 - 对 Page Schema 做不兼容变更。
+- 改变领域边界、数据所有权、跨领域调用方式或领域事件结构。
+- 改变 API 版本策略、权限 Scope、响应格式或错误码规范。
+- 执行不可逆数据库、Page Schema、Theme Schema 或 Translation Key 迁移。
 - 将 Figma 自动导入提前到 MVP。
 - 将首期市场从 `us / en-US / USD` 改为其他市场或多市场首发。
 - 启用非默认 Locale 的前台发布、SEO Sitemap、hreflang 或自动语言识别。
