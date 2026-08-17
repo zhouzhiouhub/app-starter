@@ -4,8 +4,10 @@
   "private": true,
   "packageManager": "pnpm@9.12.0",
   "scripts": {
+    "check:install": "node scripts/check-install.mjs",
     "build": "pnpm -r --if-present build",
     "dev": "pnpm --parallel --filter @app-starter/web --filter @app-starter/admin --filter @app-starter/api dev",
+    "predev": "node scripts/check-install.mjs",
     "lint": "pnpm -r --if-present lint",
     "test": "pnpm -r --if-present test",
     "typecheck": "pnpm -r --if-present typecheck",
