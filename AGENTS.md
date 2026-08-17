@@ -32,7 +32,7 @@
 - 任何 Theme Package、Checkout 扩展、Markets 完整运营、App / Extension Platform 的实现都必须先进入对应 Phase，并更新设计文档。
 - 后续实现应优先做自有 Page Schema、Theme System、API Scope 和 Extension Slot，不引入 Shopify 运行时依赖。
 - 对标 Shopify 官方能力时，只提取主题、结账、多市场、多语言、Webhook、App 扩展等抽象能力，不复制其界面、协议或商业生态。
-- 启动长期平台化能力前，必须阅读设计文档第 32-36 章：领域边界、Theme System、API Contract、数据迁移、测试发布治理。
+- 启动长期平台化能力前，必须阅读设计文档第 32-37 章：领域边界、Theme System、API Contract、二次开发兼容、数据迁移、测试发布治理。
 
 ## 2. 技术边界
 
@@ -110,6 +110,18 @@ docs                  # 补充文档
 - Page Schema 文案字段优先支持 `i18nKey` + 默认值，避免后续多语言迁移时重写页面。
 - 不接入自动翻译、机器翻译、人工翻译工作流或第三方 TMS，除非设计文档明确进入对应阶段。
 
+### 2.8 二次开发兼容边界
+
+- 客户二开优先级必须为：配置 -> Theme / Template -> 自定义组件 -> 集成 Adapter -> 自定义后端模块 -> 核心 Fork。
+- 新增前台能力优先放在 `packages/custom-components` 或 `apps/web/src/custom`。
+- 新增后台能力优先放在 `packages/custom-admin` 或 `apps/admin/src/custom`。
+- 新增后端能力优先放在 `services/api/src/custom`，并通过 Module Manifest 注册。
+- 新增外部系统集成优先放在 `packages/integration-adapters`，通过统一 Adapter 接口接入。
+- 自定义代码不得绕过 Identity、Publish、Payment、Order 等核心领域服务直接写核心表。
+- 自定义组件不得读取 Admin Token、Draft Schema、敏感环境变量或跨租户数据。
+- 二开必须提供 API Contract、权限 Scope、Feature Flag、Migration、测试和交付说明。
+- 核心 Fork 必须明确标记，不承诺无冲突升级。
+
 ## 3. 安全边界
 
 ### 3.1 租户与权限
@@ -180,6 +192,9 @@ docs                  # 补充文档
 - 改变领域边界、数据所有权、跨领域调用方式或领域事件结构。
 - 改变 API 版本策略、权限 Scope、响应格式或错误码规范。
 - 执行不可逆数据库、Page Schema、Theme Schema 或 Translation Key 迁移。
+- 将二开从扩展点升级为核心 Fork。
+- 修改 `packages/renderer`、Identity、Publish、Payment、Order 等核心模块以满足单一客户定制。
+- 删除或破坏公开 Extension Point、Adapter 接口、Module Manifest 或 Custom 目录结构。
 - 将 Figma 自动导入提前到 MVP。
 - 将首期市场从 `us / en-US / USD` 改为其他市场或多市场首发。
 - 启用非默认 Locale 的前台发布、SEO Sitemap、hreflang 或自动语言识别。
@@ -196,6 +211,7 @@ docs                  # 补充文档
 - 前台页面需要验证生产构建和基础性能预算。
 - 涉及安全边界的改动需要覆盖未授权、跨租户、非法输入、关闭 Feature Flag 等场景。
 - 涉及多语言接口的改动需要覆盖默认 `en-US`、非默认 Locale 回退、`MULTI_LOCALE_ENABLED=false` 和跨租户 Translation Key 隔离。
+- 涉及二次开发扩展点的改动需要提供示例扩展、兼容性说明、升级影响和契约测试。
 - 涉及部署的改动需要更新环境变量清单和 Smoke Test。
 
 ## 6. Agent 工作规则
