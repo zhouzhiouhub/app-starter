@@ -7,7 +7,10 @@ import { PublicModule } from "./public/public.module.js";
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      envFilePath: [".env", "../../.env"],
+      isGlobal: true
+    }),
     HealthModule,
     PublicModule,
     LocalizationModule,
