@@ -164,6 +164,37 @@ pnpm -v
 
 ## 6. 数据库配置
 
+### 本地开发与线上部署边界
+
+本地开发数据库：
+
+- 当前本地开发使用 PostgreSQL。
+- 可以使用本机 PostgreSQL 18，也可以使用 `infra/docker-compose.yml` 里的 Docker PostgreSQL。
+- 本地连接地址通常是 `localhost:5432`。
+- 本地数据库名使用 `app_starter`。
+- `C:\Program Files\PostgreSQL\18` 只是 PostgreSQL 安装目录，不是数据库连接地址。
+
+线上部署数据库：
+
+- 上线后不能继续使用本机 PostgreSQL、Docker 本地卷或 `localhost:5432`。
+- 上线后必须使用云端托管数据库，并把云端连接串配置到部署平台的环境变量里。
+- 生产主数据库应继续使用 PostgreSQL 类型，避免上线后更换数据库类型导致 Prisma Schema、迁移、事务和 JSON 字段行为不一致。
+- 可选云端 PostgreSQL 形态包括 Neon、Supabase、AWS RDS、Google Cloud SQL、Azure Database for PostgreSQL、Railway、Render 等。
+- 如果 API 部署为 Serverless 或边缘函数，需要优先使用数据库连接池地址，避免连接数被打满。
+- Redis 本地开发可以用 `localhost:6379`，上线后也应换成云端托管 Redis。
+- Vercel 文件系统不能作为数据库存储位置，生产数据必须放在云数据库里。
+
+当前项目约定：
+
+```text
+本地开发：PostgreSQL 18 或 Docker PostgreSQL
+线上部署：云端 PostgreSQL
+本地 Redis：localhost:6379
+线上 Redis：云端 Redis
+本地 Prisma 同步：prisma db push
+线上 Prisma 迁移：prisma migrate deploy
+```
+
 ### 方案 A：使用本地 PostgreSQL 18
 
 你当前使用的是：
@@ -172,7 +203,7 @@ pnpm -v
 C:\Program Files\PostgreSQL\18
 ```
 
-这是 PostgreSQL 安装目录，不是项目配置值。项目配置的是连接字符串 `DATABASE_URL`。
+这是 PostgreSQL 安装目录，只用于找到 `psql.exe` 等命令行工具。项目配置里不填写这个路径，项目只填写连接字符串 `DATABASE_URL`。
 
 确认 PostgreSQL 服务：
 
@@ -235,7 +266,7 @@ port: 5432
 Copy-Item .env.example .env
 ```
 
-本地 PostgreSQL 示例：
+本地开发 `.env` 示例：
 
 ```env
 DATABASE_URL=postgresql://postgres:你的PostgreSQL密码@localhost:5432/app_starter?schema=public
@@ -258,6 +289,31 @@ API_URL=http://localhost:4000
 ```env
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/app_starter?schema=public
 ```
+
+线上部署 `.env` 示例：
+
+```env
+DATABASE_URL=postgresql://USER:PASSWORD@CLOUD_POSTGRES_HOST:5432/app_starter?schema=public&sslmode=require
+REDIS_URL=rediss://USER:PASSWORD@CLOUD_REDIS_HOST:6379
+
+COMMERCE_ENABLED=false
+MULTI_LOCALE_ENABLED=false
+DEFAULT_MARKET=us
+DEFAULT_LOCALE=en-US
+DEFAULT_CURRENCY=USD
+FALLBACK_LOCALE=en-US
+
+WEB_URL=https://your-storefront.example.com
+ADMIN_URL=https://your-admin.example.com
+API_URL=https://your-api.example.com
+```
+
+线上注意事项：
+
+- 不要把线上 `DATABASE_URL` 写成 `localhost`。
+- 不要把本机 PostgreSQL 密码用于生产环境。
+- 不要把生产数据库连接串提交到 Git。
+- 如果数据库服务商提供 pooled connection string 和 direct connection string，API 运行时优先使用 pooled connection string，数据库迁移任务按服务商要求使用 direct connection string。
 
 当前 Prisma CLI 会在 `services/api` 包目录下运行，因此建议同时创建：
 
@@ -292,7 +348,7 @@ pnpm install
 pnpm --filter @app-starter/api exec prisma generate --schema prisma/schema.prisma
 ```
 
-同步数据库表：
+本地开发同步数据库表：
 
 ```powershell
 pnpm --filter @app-starter/api exec prisma db push --schema prisma/schema.prisma
@@ -322,6 +378,12 @@ Translation
 ```
 
 不要因为 Prisma CLI 提示有大版本更新就直接升级到 Prisma 7。当前项目锁定在 Prisma 5.x，后续升级需要单独评估。
+
+生产环境不要直接使用 `prisma db push` 更新数据库结构。上线后应引入 Prisma Migration，并使用：
+
+```powershell
+pnpm --filter @app-starter/api exec prisma migrate deploy --schema prisma/schema.prisma
+```
 
 ## 10. 启动开发环境
 
