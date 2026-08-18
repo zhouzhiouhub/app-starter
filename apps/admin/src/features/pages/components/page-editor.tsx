@@ -6,6 +6,7 @@ import { ChromeSettingsPanel } from "./chrome-settings-panel";
 import { PageContentFields } from "./page-content-fields";
 import { PageEditorToolbar } from "./page-editor-toolbar";
 import { PagePreviewPane } from "./page-preview-pane";
+import { PageSectionList } from "./page-section-list";
 
 export function PageEditor(props: {
   feedback: EditorFeedback | null;
@@ -76,6 +77,10 @@ export function PageEditor(props: {
         }}
       >
         <div>
+          <PageSectionList
+            onChange={props.onSchemaChange}
+            schema={props.schema}
+          />
           <PageContentFields
             onChange={props.onSchemaChange}
             schema={props.schema}
