@@ -4,6 +4,7 @@ import { CommerceModule } from "./commerce/commerce.module.js";
 import { HealthModule } from "./health/health.module.js";
 import { IdentityModule } from "./identity/identity.module.js";
 import { LocalizationModule } from "./localization/localization.module.js";
+import { MediaModule } from "./media/media.module.js";
 import { PagesModule } from "./pages/pages.module.js";
 import { PrismaModule } from "./prisma/prisma.module.js";
 import { PublicModule } from "./public/public.module.js";
@@ -18,10 +19,10 @@ import { PublicModule } from "./public/public.module.js";
     IdentityModule,
     HealthModule,
     PagesModule,
+    MediaModule,
     PublicModule,
     LocalizationModule,
     CommerceModule
   ]
 })
 export class AppModule {}
-

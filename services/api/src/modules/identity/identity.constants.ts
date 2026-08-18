@@ -11,6 +11,8 @@ export const TENANT_ADMIN_PERMISSIONS = [
   "page:read",
   "page:write",
   "page:publish",
+  "media:read",
+  "media:write",
   "market:read",
   "locale:read",
   "locale:write",

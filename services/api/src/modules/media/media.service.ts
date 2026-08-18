@@ -1,0 +1,165 @@
+import { Injectable } from "@nestjs/common";
+import { Prisma } from "@prisma/client";
+import { runTenantIdempotent } from "../../common/idempotency-record.js";
+import type { Actor } from "../identity/identity.types.js";
+import { PrismaService } from "../prisma/prisma.service.js";
+import {
+  DEFAULT_MEDIA_CDN_BASE_URL,
+  DEFAULT_MEDIA_UPLOAD_BASE_URL,
+  MEDIA_MAX_UPLOAD_BYTES,
+  MEDIA_UPLOAD_URL_TTL_SECONDS,
+} from "./media.constants.js";
+import {
+  createMediaR2Key,
+  inferMediaAssetType,
+  toMediaAssetResponse,
+} from "./media.mapper.js";
+import type { MediaUploadUrlResponse } from "./media.types.js";
+import {
+  assertTenantR2Key,
+  parseConfirmMediaInput,
+  parseCreateUploadUrlInput,
+  parseListMediaQuery,
+} from "./media.validation.js";
+
+@Injectable()
+export class MediaService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async list(
+    query: { page?: string | number; limit?: string | number; type?: string },
+    actor: Actor,
+  ) {
+    const { page, limit, type } = parseListMediaQuery(query);
+    const skip = (page - 1) * limit;
+    const where = {
+      tenantId: actor.tenantId,
+      ...(type ? { type } : {}),
+    };
+
+    const [total, assets] = await this.prisma.$transaction([
+      this.prisma.mediaAsset.count({ where }),
+      this.prisma.mediaAsset.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+      }),
+    ]);
+
+    return {
+      data: assets.map(toMediaAssetResponse),
+      meta: {
+        requestId: "local-dev",
+        tenantId: actor.tenantId,
+        total,
+        page,
+        limit,
+      },
+    };
+  }
+
+  createUploadUrl(body: unknown, actor: Actor) {
+    const input = parseCreateUploadUrlInput(body);
+    const r2Key = createMediaR2Key({
+      filename: input.filename,
+      tenantId: actor.tenantId,
+    });
+    const expiresAt = new Date(
+      Date.now() + MEDIA_UPLOAD_URL_TTL_SECONDS * 1000,
+    );
+
+    return {
+      data: {
+        uploadUrl: buildObjectUrl(readUploadBaseUrl(), r2Key),
+        method: "PUT",
+        r2Key,
+        type: inferMediaAssetType(input.mimeType),
+        headers: {
+          "Content-Type": input.mimeType,
+        },
+        maxSize: MEDIA_MAX_UPLOAD_BYTES,
+        expiresAt: expiresAt.toISOString(),
+        confirmPath: "/api/v1/media/confirm",
+      } satisfies MediaUploadUrlResponse,
+      meta: {
+        requestId: "local-dev",
+        tenantId: actor.tenantId,
+      },
+    };
+  }
+
+  async confirm(
+    body: unknown,
+    idempotencyKey: string | undefined,
+    actor: Actor,
+  ) {
+    const input = parseConfirmMediaInput(body);
+    assertTenantR2Key(input.r2Key, actor.tenantId);
+
+    return runTenantIdempotent(this.prisma, {
+      body: input,
+      key: idempotencyKey,
+      scope: `media:${input.r2Key}:confirm`,
+      tenantId: actor.tenantId,
+      operation: async () => {
+        const existing = await this.prisma.mediaAsset.findFirst({
+          where: {
+            r2Key: input.r2Key,
+            tenantId: actor.tenantId,
+          },
+        });
+
+        if (existing) {
+          return this.assetResponse(existing, actor.tenantId);
+        }
+
+        const asset = await this.prisma.mediaAsset.create({
+          data: {
+            tenantId: actor.tenantId,
+            type: inferMediaAssetType(input.mimeType),
+            filename: input.filename,
+            url: input.url ?? buildObjectUrl(readCdnBaseUrl(), input.r2Key),
+            r2Key: input.r2Key,
+            size: BigInt(input.size),
+            mimeType: input.mimeType,
+            metadata: input.metadata as Prisma.InputJsonValue,
+          },
+        });
+
+        return this.assetResponse(asset, actor.tenantId);
+      },
+    });
+  }
+
+  private assetResponse(
+    asset: Parameters<typeof toMediaAssetResponse>[0],
+    tenantId: string,
+  ) {
+    return {
+      data: toMediaAssetResponse(asset),
+      meta: {
+        requestId: "local-dev",
+        tenantId,
+      },
+    };
+  }
+}
+
+function readUploadBaseUrl(): string {
+  return process.env.MEDIA_UPLOAD_BASE_URL ?? DEFAULT_MEDIA_UPLOAD_BASE_URL;
+}
+
+function readCdnBaseUrl(): string {
+  return process.env.MEDIA_CDN_BASE_URL ?? DEFAULT_MEDIA_CDN_BASE_URL;
+}
+
+function buildObjectUrl(baseUrl: string, objectKey: string): string {
+  const base = baseUrl.replace(/\/+$/g, "");
+  const encodedKey = objectKey
+    .split("/")
+    .map((part) => encodeURIComponent(part))
+    .join("/");
+
+  return `${base}/${encodedKey}`;
+}

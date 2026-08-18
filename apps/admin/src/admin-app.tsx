@@ -19,6 +19,11 @@ const LoginPage = lazy(() =>
     default: module.LoginPage,
   })),
 );
+const MediaPage = lazy(() =>
+  import("./pages/media/media-page").then((module) => ({
+    default: module.MediaPage,
+  })),
+);
 const PageEditorPage = lazy(() =>
   import("./pages/pages/page-editor-page").then((module) => ({
     default: module.PageEditorPage,
@@ -68,12 +73,7 @@ export function AdminApp() {
               <Route element={<PagesListPage />} path="/pages" />
               <Route element={<PageEditorPage />} path="/pages/:pageId" />
               <Route
-                element={
-                  <PlaceholderPage
-                    description="Media library and R2 uploads are not in this slice."
-                    title="Media"
-                  />
-                }
+                element={<MediaPage />}
                 path="/media"
               />
               <Route
