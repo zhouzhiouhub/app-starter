@@ -1,4 +1,4 @@
-import type { ComponentType, ReactNode } from "react";
+import type { ComponentType, CSSProperties, ReactNode } from "react";
 import {
   getStorefrontHref,
   rewriteStorefrontHref,
@@ -7,7 +7,7 @@ import {
   type PageChromeRegion,
   type PageSchema,
   type SectionNode,
-  type Viewport
+  type Viewport,
 } from "@app-starter/schema";
 import {
   CtaBar,
@@ -17,7 +17,7 @@ import {
   RichText,
   SpecTable,
   StorefrontFooter,
-  StorefrontHeader
+  StorefrontHeader,
 } from "@app-starter/ui";
 
 export type RendererComponent = ComponentType<Record<string, unknown>>;
@@ -30,7 +30,7 @@ export const defaultComponentRegistry: ComponentRegistry = {
   "image-gallery": ImageGallery as RendererComponent,
   "cta-bar": CtaBar as RendererComponent,
   faq: Faq as RendererComponent,
-  "spec-table": SpecTable as RendererComponent
+  "spec-table": SpecTable as RendererComponent,
 };
 
 export interface RenderOptions {
@@ -46,7 +46,7 @@ export interface RenderOptions {
 function renderChromeSlot(
   region: PageChromeRegion,
   slot: ReactNode | ((region: PageChromeRegion) => ReactNode) | undefined,
-  fallback: ReactNode
+  fallback: ReactNode,
 ): ReactNode {
   if (!region.enabled) {
     return null;
@@ -67,21 +67,21 @@ function resolveHeaderContent(schema: PageSchema): HeaderChromeContent {
     ...content,
     brand: {
       ...content.brand,
-      href: rewriteStorefrontHref(content.brand.href)
+      href: rewriteStorefrontHref(content.brand.href),
     },
     navigation: content.navigation.map((item) => ({
       ...item,
-      href: rewriteStorefrontHref(item.href)
+      href: rewriteStorefrontHref(item.href),
     })),
     localeSwitcher: {
       ...localeSwitcher,
       locales: localeSwitcher.locales.map((locale) => ({
         ...locale,
         href: rewriteStorefrontHref(
-          locale.href ?? getStorefrontHref(locale.code, schema.meta.slug)
-        )
-      }))
-    }
+          locale.href ?? getStorefrontHref(locale.code, schema.meta.slug),
+        ),
+      })),
+    },
   };
 }
 
@@ -92,18 +92,40 @@ function resolveFooterContent(schema: PageSchema): FooterChromeContent {
     ...content,
     brand: {
       ...content.brand,
-      href: rewriteStorefrontHref(content.brand.href)
+      href: rewriteStorefrontHref(content.brand.href),
     },
     navigation: content.navigation.map((item) => ({
       ...item,
-      href: rewriteStorefrontHref(item.href)
-    }))
+      href: rewriteStorefrontHref(item.href),
+    })),
+  };
+}
+
+function createSectionLayoutStyle(
+  node: SectionNode,
+  viewport: Viewport,
+): CSSProperties | undefined {
+  const layout = node.layout[viewport];
+
+  if (!layout) {
+    return undefined;
+  }
+
+  return {
+    boxSizing: "border-box",
+    gap: layout.gap,
+    marginLeft: layout.x > 0 ? layout.x : "auto",
+    marginRight: "auto",
+    maxWidth: "100%",
+    minHeight: layout.height,
+    padding: layout.padding,
+    width: layout.width,
   };
 }
 
 export function renderSection(
   node: SectionNode,
-  options: RenderOptions = {}
+  options: RenderOptions = {},
 ): ReactNode {
   const registry = options.registry ?? defaultComponentRegistry;
   const Component = registry[node.component];
@@ -124,14 +146,18 @@ export function renderSection(
   }
 
   return (
-    <div data-component={node.component} data-section-id={node.id}>
+    <div
+      data-component={node.component}
+      data-section-id={node.id}
+      style={createSectionLayoutStyle(node, viewport)}
+    >
       <Component {...node.props} />
     </div>
   );
 }
 
 export function PageRenderer(
-  props: { schema: PageSchema } & RenderOptions
+  props: { schema: PageSchema } & RenderOptions,
 ): ReactNode {
   const header = renderChromeSlot(
     props.schema.chrome.header,
@@ -154,7 +180,10 @@ export function PageRenderer(
   return (
     <>
       {header}
-      <main data-locale={props.schema.meta.locale} data-market={props.schema.meta.market}>
+      <main
+        data-locale={props.schema.meta.locale}
+        data-market={props.schema.meta.market}
+      >
         {props.schema.sections.map((section) => (
           <div key={section.id}>{renderSection(section, props)}</div>
         ))}
