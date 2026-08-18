@@ -10,6 +10,8 @@ import { readSectionText } from "../section-content-updates";
 
 export function PageSectionList(props: {
   onChange: (schema: PageSchema) => void;
+  onSelect: (sectionId: string) => void;
+  selectedSectionId: string | null;
   schema: PageSchema;
 }) {
   return (
@@ -36,9 +38,10 @@ export function PageSectionList(props: {
                     aria-label={`Move ${sectionLabel(section)} up`}
                     disabled={index === 0}
                     icon={<ArrowUpOutlined />}
-                    onClick={() =>
+                    onClick={(event) => {
+                      event.stopPropagation();
                       props.onChange(moveSection(props.schema, section.id, "up"))
-                    }
+                    }}
                     size="small"
                   />
                 </Tooltip>,
@@ -47,15 +50,22 @@ export function PageSectionList(props: {
                     aria-label={`Move ${sectionLabel(section)} down`}
                     disabled={index === props.schema.sections.length - 1}
                     icon={<ArrowDownOutlined />}
-                    onClick={() =>
+                    onClick={(event) => {
+                      event.stopPropagation();
                       props.onChange(
                         moveSection(props.schema, section.id, "down"),
                       )
-                    }
+                    }}
                     size="small"
                   />
                 </Tooltip>,
               ]}
+              onClick={() => props.onSelect(section.id)}
+              style={{
+                background:
+                  props.selectedSectionId === section.id ? "#f0f5ff" : "#fff",
+                cursor: "pointer",
+              }}
             >
               <List.Item.Meta
                 avatar={<HolderOutlined style={{ color: "#8c8c8c" }} />}

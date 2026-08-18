@@ -1,5 +1,7 @@
 import type { PageSchema, SectionNode } from "@app-starter/schema";
 
+export type SectionTextValueKind = "i18n" | "plain";
+
 export function updatePageMetaTitle(
   current: PageSchema,
   title: string,
@@ -14,6 +16,31 @@ export function updatePageMetaTitle(
       ...current.seo,
       title,
     },
+  };
+}
+
+export function updateSectionTextField(
+  current: PageSchema,
+  sectionId: string,
+  field: string,
+  value: string,
+  valueKind: SectionTextValueKind,
+): PageSchema {
+  return {
+    ...current,
+    sections: current.sections.map((section) => {
+      if (section.id !== sectionId) {
+        return section;
+      }
+
+      return withProps(section, {
+        ...section.props,
+        [field]:
+          valueKind === "plain"
+            ? value
+            : writeText(section.props[field], value),
+      });
+    }),
   };
 }
 

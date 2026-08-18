@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from "react";
 import { Alert, Tag, Typography } from "antd";
 import type { PageSchema, Viewport } from "@app-starter/schema";
 import { getStorefrontPagePath } from "../storefront-url";
@@ -7,6 +8,7 @@ import { PageContentFields } from "./page-content-fields";
 import { PageEditorToolbar } from "./page-editor-toolbar";
 import { PagePreviewPane } from "./page-preview-pane";
 import { PageSectionList } from "./page-section-list";
+import { SectionPropertiesPanel } from "./section-properties-panel";
 
 export function PageEditor(props: {
   canRedo: boolean;
@@ -25,6 +27,25 @@ export function PageEditor(props: {
   schema: PageSchema;
   viewport: Viewport;
 }) {
+  const [selectedSectionId, setSelectedSectionId] = useState(
+    props.schema.sections[0]?.id ?? null,
+  );
+  const selectedSection = useMemo(
+    () =>
+      props.schema.sections.find(
+        (section) => section.id === selectedSectionId,
+      ) ?? null,
+    [props.schema.sections, selectedSectionId],
+  );
+
+  useEffect(() => {
+    const firstSectionId = props.schema.sections[0]?.id ?? null;
+
+    if (!selectedSection && selectedSectionId !== firstSectionId) {
+      setSelectedSectionId(firstSectionId);
+    }
+  }, [props.schema.sections, selectedSection, selectedSectionId]);
+
   return (
     <div>
       <div
@@ -87,7 +108,14 @@ export function PageEditor(props: {
         <div>
           <PageSectionList
             onChange={props.onSchemaChange}
+            onSelect={setSelectedSectionId}
+            selectedSectionId={selectedSectionId}
             schema={props.schema}
+          />
+          <SectionPropertiesPanel
+            onChange={props.onSchemaChange}
+            schema={props.schema}
+            section={selectedSection}
           />
           <PageContentFields
             onChange={props.onSchemaChange}
