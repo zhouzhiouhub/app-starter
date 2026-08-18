@@ -1,7 +1,7 @@
 import {
-  createFallbackPage,
   pageSchema,
-  type PageSchema
+  pageSlugSchema,
+  type PageSchema,
 } from "@app-starter/schema";
 
 const apiBaseUrl =
@@ -12,34 +12,37 @@ const apiBaseUrl =
 export async function getPublishedPage(input: {
   locale: string;
   slug: string;
-}): Promise<PageSchema> {
-  const fallbackLocale = process.env.FALLBACK_LOCALE ?? "en-US";
+}): Promise<PageSchema | null> {
   const defaultMarket = process.env.DEFAULT_MARKET ?? "us";
-  const locale = input.locale || fallbackLocale;
-  const published = await fetchPublishedSchema(input.slug);
+  const locale = input.locale || (process.env.FALLBACK_LOCALE ?? "en-US");
+  const slug = pageSlugSchema.safeParse(input.slug);
 
-  if (published) {
-    return published;
+  if (!slug.success) {
+    return null;
   }
 
-  const home =
-    input.slug === "home" ? null : await fetchPublishedSchema("home");
-
-  return createFallbackPage({
-    slug: input.slug,
+  return fetchPublishedSchema({
     locale,
     market: defaultMarket,
-    siteChrome: home?.chrome
+    slug: slug.data,
   });
 }
 
-async function fetchPublishedSchema(slug: string): Promise<PageSchema | null> {
+async function fetchPublishedSchema(input: {
+  locale: string;
+  market: string;
+  slug: string;
+}): Promise<PageSchema | null> {
   try {
+    const searchParams = new URLSearchParams({
+      locale: input.locale,
+      market: input.market,
+    });
     const response = await fetch(
-      `${apiBaseUrl}/public/pages/${encodeURIComponent(slug)}`,
+      `${apiBaseUrl}/public/pages/${encodeURIComponent(input.slug)}?${searchParams}`,
       {
-        cache: "no-store"
-      }
+        cache: "no-store",
+      },
     );
 
     if (!response.ok) {

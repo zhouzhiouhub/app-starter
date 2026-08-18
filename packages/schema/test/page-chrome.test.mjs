@@ -4,7 +4,7 @@ import {
   createFallbackPage,
   getFallbackPageTemplateId,
   getPageTemplateChrome,
-  pageSchema
+  pageSchema,
 } from "../dist/index.js";
 
 function minimalPage(input = {}) {
@@ -14,18 +14,18 @@ function minimalPage(input = {}) {
       slug: "test-page",
       title: "Test page",
       market: "us",
-      locale: "en-US"
+      locale: "en-US",
     },
     layout: {
       desktop: {},
-      mobile: {}
+      mobile: {},
     },
     sections: [],
     seo: {
       title: "Test page",
-      description: ""
+      description: "",
     },
-    ...input
+    ...input,
   };
 }
 
@@ -35,10 +35,16 @@ test("page schema keeps default chrome for legacy pages", () => {
   assert.equal(parsed.template.id, "default");
   assert.equal(parsed.chrome.header.enabled, true);
   assert.equal(parsed.chrome.header.variant, "default");
-  assert.equal(parsed.chrome.header.content.brand.label.defaultValue, "App Starter");
+  assert.equal(
+    parsed.chrome.header.content.brand.label.defaultValue,
+    "App Starter",
+  );
   assert.equal(parsed.chrome.header.content.navigation.length, 3);
   assert.equal(parsed.chrome.header.content.localeSwitcher.enabled, true);
-  assert.equal(parsed.chrome.header.content.localeSwitcher.locales[0].code, "en-US");
+  assert.equal(
+    parsed.chrome.header.content.localeSwitcher.locales[0].code,
+    "en-US",
+  );
   assert.equal(parsed.chrome.footer.enabled, true);
   assert.equal(parsed.chrome.footer.variant, "default");
   assert.equal(parsed.chrome.footer.content.navigation.length, 3);
@@ -54,7 +60,7 @@ test("landing blank template disables header and footer", () => {
   assert.equal(chrome.footer.variant, "minimal");
   assert.equal(
     chrome.footer.content.copyright.defaultValue,
-    "© 2026 App Starter. All rights reserved."
+    "(c) 2026 App Starter. All rights reserved.",
   );
 });
 
@@ -64,15 +70,18 @@ test("page schema accepts per-page chrome overrides", () => {
       template: { id: "policy" },
       chrome: {
         header: { enabled: false },
-        footer: { enabled: true, variant: "minimal" }
-      }
-    })
+        footer: { enabled: true, variant: "minimal" },
+      },
+    }),
   );
 
   assert.equal(parsed.template.id, "policy");
   assert.equal(parsed.chrome.header.enabled, false);
   assert.equal(parsed.chrome.header.variant, "default");
-  assert.equal(parsed.chrome.header.content.brand.label.defaultValue, "App Starter");
+  assert.equal(
+    parsed.chrome.header.content.brand.label.defaultValue,
+    "App Starter",
+  );
   assert.equal(parsed.chrome.footer.enabled, true);
   assert.equal(parsed.chrome.footer.variant, "minimal");
   assert.equal(parsed.chrome.footer.content.navigation.length, 3);
@@ -89,14 +98,14 @@ test("page schema rejects unsafe chrome navigation hrefs", () => {
                 {
                   id: "bad",
                   label: { defaultValue: "Bad link" },
-                  href: "javascript:alert(1)"
-                }
-              ]
-            }
-          }
-        }
-      })
-    )
+                  href: "javascript:alert(1)",
+                },
+              ],
+            },
+          },
+        },
+      }),
+    ),
   );
 });
 
@@ -126,47 +135,50 @@ test("fallback pages inherit site chrome content without turning chrome off", ()
               {
                 id: "home",
                 label: { defaultValue: "Home" },
-                href: "/"
+                href: "/",
               },
               {
                 id: "privacy",
                 label: { defaultValue: "Privacy" },
-                href: "/en-US/privacy"
-              }
-            ]
-          }
+                href: "/en-US/privacy",
+              },
+            ],
+          },
         },
         footer: {
           enabled: true,
           variant: "minimal",
           content: {
             brand: { label: { defaultValue: "Published Brand" }, href: "/" },
-            copyright: { defaultValue: "© Published" },
+            copyright: { defaultValue: "(c) Published" },
             navigation: [
               {
                 id: "privacy",
                 label: { defaultValue: "Privacy" },
-                href: "/en-US/privacy"
-              }
-            ]
-          }
-        }
-      }
-    })
+                href: "/en-US/privacy",
+              },
+            ],
+          },
+        },
+      },
+    }),
   ).chrome;
 
   const privacyPage = createFallbackPage({
     slug: "privacy",
-    siteChrome
+    siteChrome,
   });
 
   assert.equal(privacyPage.chrome.header.enabled, true);
   assert.equal(
     privacyPage.chrome.header.content.brand.label.defaultValue,
-    "Published Brand"
+    "Published Brand",
   );
   assert.equal(privacyPage.chrome.header.content.navigation.length, 2);
   assert.equal(privacyPage.chrome.footer.enabled, true);
   assert.equal(privacyPage.chrome.footer.variant, "minimal");
-  assert.equal(privacyPage.chrome.footer.content.copyright.defaultValue, "© Published");
+  assert.equal(
+    privacyPage.chrome.footer.content.copyright.defaultValue,
+    "(c) Published",
+  );
 });

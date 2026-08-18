@@ -36,6 +36,14 @@ pnpm --filter @app-starter/api run prisma:seed
 pnpm dev
 ```
 
+Page write APIs use an `IdempotencyRecord` table. After pulling schema changes,
+run `prisma db push` again in local development so repeated publish/create
+requests can be safely deduplicated.
+
+Admin page management APIs are intentionally unauthenticated only in
+`development` and `test`. With `NODE_ENV=production`, those endpoints fail closed
+until the planned JWT/RBAC identity module is implemented.
+
 Default local ports:
 
 - Web: http://localhost:3000

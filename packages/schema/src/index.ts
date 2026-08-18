@@ -11,9 +11,19 @@ export const marketCodeSchema = z
   .string()
   .regex(/^[a-z][a-z0-9-]{1,15}$/, "Market code must be lowercase");
 
+export const pageSlugSchema = z
+  .string()
+  .min(1)
+  .max(255)
+  .regex(
+    /^[a-z0-9]+(?:[-/][a-z0-9]+)*$/,
+    "Slug must be lowercase letters, numbers, hyphens, or slashes",
+  );
+export type PageSlug = z.infer<typeof pageSlugSchema>;
+
 export const i18nTextSchema = z.object({
   i18nKey: z.string().min(1).optional(),
-  defaultValue: z.string()
+  defaultValue: z.string(),
 });
 export type I18nText = z.infer<typeof i18nTextSchema>;
 
@@ -22,7 +32,7 @@ export const safeHrefSchema = z
   .min(1)
   .regex(
     /^(\/(?!\/)|#|https?:\/\/|mailto:|tel:)/,
-    "Href must be relative, http(s), mailto, tel, or hash"
+    "Href must be relative, http(s), mailto, tel, or hash",
   );
 export type SafeHref = z.infer<typeof safeHrefSchema>;
 
@@ -32,7 +42,7 @@ export const layoutBoxSchema = z.object({
   width: z.number().positive(),
   height: z.number().positive().optional(),
   padding: z.string().optional(),
-  gap: z.string().optional()
+  gap: z.string().optional(),
 });
 export type LayoutBox = z.infer<typeof layoutBoxSchema>;
 
@@ -42,15 +52,15 @@ export const sectionNodeSchema = z.object({
   props: z.record(z.unknown()).default({}),
   layout: z.object({
     desktop: layoutBoxSchema.optional(),
-    mobile: layoutBoxSchema.optional()
+    mobile: layoutBoxSchema.optional(),
   }),
   visibility: z
     .object({
       desktop: z.boolean().default(true),
-      mobile: z.boolean().default(true)
+      mobile: z.boolean().default(true),
     })
     .default({ desktop: true, mobile: true }),
-  analytics: z.record(z.unknown()).optional()
+  analytics: z.record(z.unknown()).optional(),
 });
 export type SectionNode = z.infer<typeof sectionNodeSchema>;
 
@@ -58,20 +68,20 @@ export const seoConfigSchema = z.object({
   title: z.string().min(1),
   description: z.string().default(""),
   ogImage: z.string().optional(),
-  canonical: z.string().optional()
+  canonical: z.string().optional(),
 });
 export type SeoConfig = z.infer<typeof seoConfigSchema>;
 
 export const analyticsConfigSchema = z.object({
   enabled: z.boolean().default(true),
-  dataLayerName: z.string().default("dataLayer")
+  dataLayerName: z.string().default("dataLayer"),
 });
 export type AnalyticsConfig = z.infer<typeof analyticsConfigSchema>;
 
 export const pageTemplateIdSchema = z.enum([
   "default",
   "landing-blank",
-  "policy"
+  "policy",
 ]);
 export type PageTemplateId = z.infer<typeof pageTemplateIdSchema>;
 
@@ -82,14 +92,14 @@ export const chromeNavigationItemSchema = z.object({
   id: z.string().min(1),
   label: i18nTextSchema,
   href: safeHrefSchema,
-  openInNewTab: z.boolean().default(false)
+  openInNewTab: z.boolean().default(false),
 });
 export type ChromeNavigationItem = z.infer<typeof chromeNavigationItemSchema>;
 
 export const chromeLocaleOptionSchema = z.object({
   code: localeCodeSchema,
   label: i18nTextSchema,
-  href: safeHrefSchema.optional()
+  href: safeHrefSchema.optional(),
 });
 export type ChromeLocaleOption = z.infer<typeof chromeLocaleOptionSchema>;
 
@@ -100,9 +110,9 @@ export const headerLocaleSwitcherSchema = z
     locales: z.array(chromeLocaleOptionSchema).default([
       {
         code: "en-US",
-        label: { defaultValue: "English" }
-      }
-    ])
+        label: { defaultValue: "English" },
+      },
+    ]),
   })
   .default({
     enabled: true,
@@ -110,9 +120,9 @@ export const headerLocaleSwitcherSchema = z
     locales: [
       {
         code: "en-US",
-        label: { defaultValue: "English" }
-      }
-    ]
+        label: { defaultValue: "English" },
+      },
+    ],
   });
 export type HeaderLocaleSwitcher = z.infer<typeof headerLocaleSwitcherSchema>;
 
@@ -121,54 +131,54 @@ export const headerChromeContentSchema = z
     brand: z
       .object({
         label: i18nTextSchema,
-        href: safeHrefSchema.default("/")
+        href: safeHrefSchema.default("/"),
       })
       .default({
         label: { defaultValue: "App Starter" },
-        href: "/"
+        href: "/",
       }),
     navigation: z.array(chromeNavigationItemSchema).default([
       {
         id: "home",
         label: { defaultValue: "Home" },
-        href: "/"
+        href: "/",
       },
       {
         id: "privacy",
         label: { defaultValue: "Privacy" },
-        href: "/en-US/privacy"
+        href: "/en-US/privacy",
       },
       {
         id: "terms",
         label: { defaultValue: "Terms" },
-        href: "/en-US/terms"
-      }
+        href: "/en-US/terms",
+      },
     ]),
-    localeSwitcher: headerLocaleSwitcherSchema
+    localeSwitcher: headerLocaleSwitcherSchema,
   })
   .default({
     brand: {
       label: { defaultValue: "App Starter" },
-      href: "/"
+      href: "/",
     },
     navigation: [
       {
         id: "home",
         label: { defaultValue: "Home" },
-        href: "/"
+        href: "/",
       },
       {
         id: "privacy",
         label: { defaultValue: "Privacy" },
-        href: "/en-US/privacy"
+        href: "/en-US/privacy",
       },
       {
         id: "terms",
         label: { defaultValue: "Terms" },
-        href: "/en-US/terms"
-      }
+        href: "/en-US/terms",
+      },
     ],
-    localeSwitcher: headerLocaleSwitcherSchema.parse({})
+    localeSwitcher: headerLocaleSwitcherSchema.parse({}),
   });
 export type HeaderChromeContent = z.infer<typeof headerChromeContentSchema>;
 
@@ -177,119 +187,119 @@ export const footerChromeContentSchema = z
     brand: z
       .object({
         label: i18nTextSchema,
-        href: safeHrefSchema.default("/")
+        href: safeHrefSchema.default("/"),
       })
       .default({
         label: { defaultValue: "App Starter" },
-        href: "/"
+        href: "/",
       }),
     copyright: i18nTextSchema.default({
-      defaultValue: "© 2026 App Starter. All rights reserved."
+      defaultValue: "(c) 2026 App Starter. All rights reserved.",
     }),
     navigation: z.array(chromeNavigationItemSchema).default([
       {
         id: "privacy",
         label: { defaultValue: "Privacy" },
-        href: "/en-US/privacy"
+        href: "/en-US/privacy",
       },
       {
         id: "terms",
         label: { defaultValue: "Terms" },
-        href: "/en-US/terms"
+        href: "/en-US/terms",
       },
       {
         id: "contact",
         label: { defaultValue: "Contact" },
-        href: "/en-US/contact"
-      }
-    ])
+        href: "/en-US/contact",
+      },
+    ]),
   })
   .default({
     brand: {
       label: { defaultValue: "App Starter" },
-      href: "/"
+      href: "/",
     },
     copyright: {
-      defaultValue: "© 2026 App Starter. All rights reserved."
+      defaultValue: "(c) 2026 App Starter. All rights reserved.",
     },
     navigation: [
       {
         id: "privacy",
         label: { defaultValue: "Privacy" },
-        href: "/en-US/privacy"
+        href: "/en-US/privacy",
       },
       {
         id: "terms",
         label: { defaultValue: "Terms" },
-        href: "/en-US/terms"
+        href: "/en-US/terms",
       },
       {
         id: "contact",
         label: { defaultValue: "Contact" },
-        href: "/en-US/contact"
-      }
-    ]
+        href: "/en-US/contact",
+      },
+    ],
   });
 export type FooterChromeContent = z.infer<typeof footerChromeContentSchema>;
 
 export const pageChromeRegionBaseObjectSchema = z.object({
   enabled: z.boolean().default(true),
-  variant: chromeVariantSchema.default("default")
+  variant: chromeVariantSchema.default("default"),
 });
 
-export const pageChromeRegionBaseSchema = pageChromeRegionBaseObjectSchema.default({
-  enabled: true,
-  variant: "default"
-});
+export const pageChromeRegionBaseSchema =
+  pageChromeRegionBaseObjectSchema.default({
+    enabled: true,
+    variant: "default",
+  });
 
 export const pageHeaderChromeSchema = pageChromeRegionBaseObjectSchema
   .extend({
-    content: headerChromeContentSchema
+    content: headerChromeContentSchema,
   })
   .default({
     enabled: true,
     variant: "default",
-    content: headerChromeContentSchema.parse({})
+    content: headerChromeContentSchema.parse({}),
   });
 export type PageHeaderChromeSettings = z.infer<typeof pageHeaderChromeSchema>;
 
 export const pageFooterChromeSchema = pageChromeRegionBaseObjectSchema
   .extend({
-    content: footerChromeContentSchema
+    content: footerChromeContentSchema,
   })
   .default({
     enabled: true,
     variant: "default",
-    content: footerChromeContentSchema.parse({})
+    content: footerChromeContentSchema.parse({}),
   });
 export type PageFooterChromeSettings = z.infer<typeof pageFooterChromeSchema>;
 
 export type PageChromeRegion =
-  | PageHeaderChromeSettings
-  | PageFooterChromeSettings;
+  PageHeaderChromeSettings | PageFooterChromeSettings;
 
 export const pageChromeSchema = z
   .object({
     header: pageHeaderChromeSchema,
-    footer: pageFooterChromeSchema
+    footer: pageFooterChromeSchema,
   })
   .default({
     header: {
       enabled: true,
       variant: "default",
-      content: headerChromeContentSchema.parse({})
+      content: headerChromeContentSchema.parse({}),
     },
     footer: {
       enabled: true,
       variant: "default",
-      content: footerChromeContentSchema.parse({})
-    }
+      content: footerChromeContentSchema.parse({}),
+    },
   });
 export type PageChromeSettings = z.infer<typeof pageChromeSchema>;
 
 export const pageTemplateSchema = z
   .object({
-    id: pageTemplateIdSchema.default("default")
+    id: pageTemplateIdSchema.default("default"),
   })
   .default({ id: "default" });
 export type PageTemplateSettings = z.infer<typeof pageTemplateSchema>;
@@ -301,8 +311,8 @@ export const pageTemplatePresets = {
     description: "Standard storefront page with header and footer.",
     chrome: pageChromeSchema.parse({
       header: { enabled: true, variant: "default" },
-      footer: { enabled: true, variant: "default" }
-    })
+      footer: { enabled: true, variant: "default" },
+    }),
   },
   "landing-blank": {
     id: "landing-blank",
@@ -310,8 +320,8 @@ export const pageTemplatePresets = {
     description: "Campaign page without global header or footer.",
     chrome: pageChromeSchema.parse({
       header: { enabled: false, variant: "minimal" },
-      footer: { enabled: false, variant: "minimal" }
-    })
+      footer: { enabled: false, variant: "minimal" },
+    }),
   },
   policy: {
     id: "policy",
@@ -319,9 +329,9 @@ export const pageTemplatePresets = {
     description: "Policy page with the standard header and footer.",
     chrome: pageChromeSchema.parse({
       header: { enabled: true, variant: "default" },
-      footer: { enabled: true, variant: "default" }
-    })
-  }
+      footer: { enabled: true, variant: "default" },
+    }),
+  },
 } satisfies Record<
   PageTemplateId,
   {
@@ -333,7 +343,7 @@ export const pageTemplatePresets = {
 >;
 
 export function getPageTemplateChrome(
-  templateId: PageTemplateId
+  templateId: PageTemplateId,
 ): PageChromeSettings {
   return pageChromeSchema.parse(pageTemplatePresets[templateId].chrome);
 }
@@ -377,29 +387,29 @@ export function createFallbackPage(input: {
       slug: input.slug,
       title,
       market: input.market ?? exampleLandingPage.meta.market,
-      locale: input.locale ?? exampleLandingPage.meta.locale
+      locale: input.locale ?? exampleLandingPage.meta.locale,
     },
     template: {
-      id: templateId
+      id: templateId,
     },
     chrome: input.siteChrome
       ? {
           header: {
             enabled: templateChrome.header.enabled,
             variant: input.siteChrome.header.variant,
-            content: input.siteChrome.header.content
+            content: input.siteChrome.header.content,
           },
           footer: {
             enabled: templateChrome.footer.enabled,
             variant: input.siteChrome.footer.variant,
-            content: input.siteChrome.footer.content
-          }
+            content: input.siteChrome.footer.content,
+          },
         }
       : templateChrome,
     seo: {
       ...exampleLandingPage.seo,
-      title
-    }
+      title,
+    },
   });
 }
 
@@ -418,27 +428,29 @@ function getFallbackPageTitle(slug: string): string {
     return "Home";
   }
 
-  return slug
-    .split("/")
-    .filter(Boolean)
-    .pop()
-    ?.split("-")
-    .filter(Boolean)
-    .map((word) => `${word[0]?.toUpperCase() ?? ""}${word.slice(1)}`)
-    .join(" ") || "Page";
+  return (
+    slug
+      .split("/")
+      .filter(Boolean)
+      .pop()
+      ?.split("-")
+      .filter(Boolean)
+      .map((word) => `${word[0]?.toUpperCase() ?? ""}${word.slice(1)}`)
+      .join(" ") || "Page"
+  );
 }
 
 export const pageSchema = z.object({
   version: z.literal("1.0"),
   meta: z.object({
-    slug: z.string().min(1),
+    slug: pageSlugSchema,
     title: z.string().min(1),
     market: marketCodeSchema.default("us"),
-    locale: localeCodeSchema.default("en-US")
+    locale: localeCodeSchema.default("en-US"),
   }),
   layout: z.object({
     desktop: z.record(z.unknown()).default({}),
-    mobile: z.record(z.unknown()).default({})
+    mobile: z.record(z.unknown()).default({}),
   }),
   template: pageTemplateSchema,
   chrome: pageChromeSchema,
@@ -446,8 +458,8 @@ export const pageSchema = z.object({
   seo: seoConfigSchema,
   analytics: analyticsConfigSchema.default({
     enabled: true,
-    dataLayerName: "dataLayer"
-  })
+    dataLayerName: "dataLayer",
+  }),
 });
 export type PageSchema = z.infer<typeof pageSchema>;
 
@@ -462,7 +474,7 @@ export const apiErrorCodes = {
   LOCALE_NOT_SUPPORTED: "LOCALE_NOT_SUPPORTED",
   TRANSLATION_KEY_CONFLICT: "TRANSLATION_KEY_CONFLICT",
   RATE_LIMITED: "RATE_LIMITED",
-  INTERNAL_ERROR: "INTERNAL_ERROR"
+  INTERNAL_ERROR: "INTERNAL_ERROR",
 } as const;
 
 export type ApiErrorCode = (typeof apiErrorCodes)[keyof typeof apiErrorCodes];
@@ -495,7 +507,7 @@ export const defaultRuntimeConfig = {
   defaultMarket: "us",
   defaultLocale: "en-US",
   defaultCurrency: "USD",
-  fallbackLocale: "en-US"
+  fallbackLocale: "en-US",
 } as const;
 
 export const exampleLandingPage: PageSchema = pageSchema.parse({
@@ -504,14 +516,14 @@ export const exampleLandingPage: PageSchema = pageSchema.parse({
     slug: "home",
     title: "Home",
     market: "us",
-    locale: "en-US"
+    locale: "en-US",
   },
   layout: {
     desktop: {},
-    mobile: {}
+    mobile: {},
   },
   template: {
-    id: "landing-blank"
+    id: "landing-blank",
   },
   chrome: getPageTemplateChrome("landing-blank"),
   sections: [
@@ -523,14 +535,14 @@ export const exampleLandingPage: PageSchema = pageSchema.parse({
         title: { defaultValue: "High-fidelity storefront builder" },
         body: {
           defaultValue:
-            "A schema-first foundation for pages, preview, publishing, localization, commerce reservations, and future theme extensibility."
+            "A schema-first foundation for pages, preview, publishing, localization, commerce reservations, and future theme extensibility.",
         },
-        ctaLabel: "Preview"
+        ctaLabel: "Preview",
       },
       layout: {
         desktop: { x: 0, y: 0, width: 1200, height: 560 },
-        mobile: { x: 0, y: 0, width: 390, height: 620 }
-      }
+        mobile: { x: 0, y: 0, width: 390, height: 620 },
+      },
     },
     {
       id: "copy",
@@ -539,17 +551,17 @@ export const exampleLandingPage: PageSchema = pageSchema.parse({
         title: { defaultValue: "Built for long-term ownership" },
         content: {
           defaultValue:
-            "The MVP starts with controlled high-fidelity sections and keeps stable seams for secondary development."
-        }
+            "The MVP starts with controlled high-fidelity sections and keeps stable seams for secondary development.",
+        },
       },
       layout: {
         desktop: { x: 0, y: 560, width: 1200 },
-        mobile: { x: 0, y: 620, width: 390 }
-      }
-    }
+        mobile: { x: 0, y: 620, width: 390 },
+      },
+    },
   ],
   seo: {
     title: "App Starter",
-    description: "Independent storefront platform scaffold"
-  }
+    description: "Independent storefront platform scaffold",
+  },
 });

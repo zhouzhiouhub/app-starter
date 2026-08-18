@@ -3,32 +3,26 @@ import {
   getFallbackPageTemplateId,
   getPageTemplateChrome,
   pageSchema,
+  pageSlugSchema,
   pageTemplateIdSchema,
   type PageSchema,
-  type PageTemplateId
+  type PageTemplateId,
 } from "@app-starter/schema";
 import { z } from "zod";
 
-export const pageSlugSchema = z
-  .string()
-  .min(1)
-  .max(255)
-  .regex(
-    /^[a-z0-9]+(?:[-/][a-z0-9]+)*$/,
-    "Slug must be lowercase letters, numbers, hyphens, or slashes"
-  );
+export { pageSlugSchema };
 
 export const createPageInputSchema = z.object({
   slug: pageSlugSchema,
   title: z.string().min(1).max(255).optional(),
   type: z.enum(["landing", "policy", "system"]).optional(),
-  templateId: pageTemplateIdSchema.optional()
+  templateId: pageTemplateIdSchema.optional(),
 });
 export type CreatePageInput = z.infer<typeof createPageInputSchema>;
 
 export const listPagesQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(20)
+  limit: z.coerce.number().int().min(1).max(100).default(20),
 });
 
 export function unwrapBodyData(body: unknown): Record<string, unknown> {
@@ -49,7 +43,9 @@ export function unwrapBodyData(body: unknown): Record<string, unknown> {
 export function parsePageSchema(input: unknown, slug: string): PageSchema {
   const payload = unwrapBodyData(input);
   const candidateMeta =
-    payload.meta && typeof payload.meta === "object" && !Array.isArray(payload.meta)
+    payload.meta &&
+    typeof payload.meta === "object" &&
+    !Array.isArray(payload.meta)
       ? (payload.meta as Record<string, unknown>)
       : {};
 
@@ -57,14 +53,14 @@ export function parsePageSchema(input: unknown, slug: string): PageSchema {
     ...payload,
     meta: {
       ...candidateMeta,
-      slug
-    }
+      slug,
+    },
   });
 }
 
 export function resolvePageType(
   slug: string,
-  templateId?: PageTemplateId
+  templateId?: PageTemplateId,
 ): "landing" | "policy" | "system" {
   if (templateId === "policy" || getFallbackPageTemplateId(slug) === "policy") {
     return "policy";
@@ -81,7 +77,7 @@ export function resolvePageType(
 export function createInitialPageSchema(input: CreatePageInput): PageSchema {
   const schema = createFallbackPage({
     slug: input.slug,
-    title: input.title
+    title: input.title,
   });
 
   if (!input.templateId) {
@@ -91,7 +87,7 @@ export function createInitialPageSchema(input: CreatePageInput): PageSchema {
   return pageSchema.parse({
     ...schema,
     template: { id: input.templateId },
-    chrome: getPageTemplateChrome(input.templateId)
+    chrome: getPageTemplateChrome(input.templateId),
   });
 }
 
@@ -119,6 +115,6 @@ export function toPageSummary(page: {
     status: page.status,
     publishedVersionId: page.publishedVersionId,
     createdAt: page.createdAt.toISOString(),
-    updatedAt: page.updatedAt.toISOString()
+    updatedAt: page.updatedAt.toISOString(),
   };
 }

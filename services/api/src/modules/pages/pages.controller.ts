@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
@@ -7,12 +6,15 @@ import {
   Param,
   Post,
   Put,
-  Query
+  Query,
+  UseGuards,
 } from "@nestjs/common";
-import { apiErrorCodes } from "@app-starter/schema";
+import { AdminApiGuard } from "../../common/admin-api.guard.js";
+import { requireIdempotencyKey } from "../../common/idempotency-key.js";
 import { PagesService } from "./pages.service.js";
 
 @Controller("pages")
+@UseGuards(AdminApiGuard)
 export class PagesController {
   constructor(private readonly pages: PagesService) {}
 
@@ -24,10 +26,9 @@ export class PagesController {
   @Post()
   create(
     @Body() body: unknown,
-    @Headers("idempotency-key") idempotencyKey: string | undefined
+    @Headers("idempotency-key") idempotencyKey: string | undefined,
   ) {
-    requireIdempotencyKey(idempotencyKey);
-    return this.pages.create(body);
+    return this.pages.create(body, requireIdempotencyKey(idempotencyKey));
   }
 
   @Get(":id")
@@ -39,32 +40,27 @@ export class PagesController {
   saveDraft(
     @Body() body: unknown,
     @Headers("idempotency-key") idempotencyKey: string | undefined,
-    @Param("id") id: string
+    @Param("id") id: string,
   ) {
-    requireIdempotencyKey(idempotencyKey);
-    return this.pages.saveDraft(id, body);
+    return this.pages.saveDraft(
+      id,
+      body,
+      requireIdempotencyKey(idempotencyKey),
+    );
   }
 
   @Post(":id/publish")
   publish(
     @Body() body: unknown,
     @Headers("idempotency-key") idempotencyKey: string | undefined,
-    @Param("id") id: string
+    @Param("id") id: string,
   ) {
-    requireIdempotencyKey(idempotencyKey);
-    return this.pages.publish(id, isEmptyBody(body) ? undefined : body);
+    return this.pages.publish(
+      id,
+      isEmptyBody(body) ? undefined : body,
+      requireIdempotencyKey(idempotencyKey),
+    );
   }
-}
-
-function requireIdempotencyKey(idempotencyKey: string | undefined) {
-  if (!idempotencyKey) {
-    throw new BadRequestException({
-      code: apiErrorCodes.VALIDATION_ERROR,
-      message: "Idempotency-Key header is required for write operations."
-    });
-  }
-
-  return idempotencyKey;
 }
 
 function isEmptyBody(body: unknown): boolean {

@@ -7,11 +7,13 @@ import {
   parsePageSchema,
   resolvePageType,
   toPageSummary,
-  unwrapBodyData
+  unwrapBodyData,
 } from "../dist/modules/pages/pages.mapper.js";
 
 test("unwrapBodyData reads wrapped or raw objects", () => {
-  assert.deepEqual(unwrapBodyData({ data: { slug: "home" } }), { slug: "home" });
+  assert.deepEqual(unwrapBodyData({ data: { slug: "home" } }), {
+    slug: "home",
+  });
   assert.deepEqual(unwrapBodyData({ slug: "home" }), { slug: "home" });
   assert.throws(() => unwrapBodyData(null), /Request body must be an object/);
 });
@@ -35,7 +37,7 @@ test("createInitialPageSchema applies the selected template", () => {
   const schema = createInitialPageSchema({
     slug: "campaign",
     title: "Campaign",
-    templateId: "landing-blank"
+    templateId: "landing-blank",
   });
 
   assert.equal(schema.meta.slug, "campaign");
@@ -51,13 +53,30 @@ test("parsePageSchema forces the stored slug", () => {
         meta: { slug: "other", title: "Home" },
         layout: { desktop: {}, mobile: {} },
         sections: [],
-        seo: { title: "Home" }
-      }
+        seo: { title: "Home" },
+      },
     },
-    "home"
+    "home",
   );
 
   assert.equal(schema.meta.slug, "home");
+});
+
+test("parsePageSchema rejects invalid stored slugs", () => {
+  assert.throws(() =>
+    parsePageSchema(
+      {
+        data: {
+          version: "1.0",
+          meta: { title: "Home" },
+          layout: { desktop: {}, mobile: {} },
+          sections: [],
+          seo: { title: "Home" },
+        },
+      },
+      "Home",
+    ),
+  );
 });
 
 test("nextVersionNumber increments from the latest version", () => {
@@ -76,7 +95,7 @@ test("toPageSummary serializes timestamps", () => {
     status: "published",
     publishedVersionId: "version-1",
     createdAt,
-    updatedAt: createdAt
+    updatedAt: createdAt,
   });
 
   assert.equal(summary.createdAt, "2026-08-18T00:00:00.000Z");

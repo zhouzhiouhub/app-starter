@@ -7,7 +7,7 @@ import {
   PictureOutlined,
   PlusOutlined,
   SettingOutlined,
-  UploadOutlined
+  UploadOutlined,
 } from "@ant-design/icons";
 import {
   Alert,
@@ -23,7 +23,7 @@ import {
   Space,
   Switch,
   Tag,
-  Typography
+  Typography,
 } from "antd";
 import { adminTheme } from "@app-starter/admin-theme";
 import { customAdminRoutes } from "@app-starter/custom-admin";
@@ -37,7 +37,7 @@ import {
   type PageChromeSettings,
   type PageSchema,
   type PageTemplateId,
-  type Viewport
+  type Viewport,
 } from "@app-starter/schema";
 
 const { Header, Content, Sider } = Layout;
@@ -51,7 +51,7 @@ type PublishFeedback = {
 
 const templateOptions = Object.values(pageTemplatePresets).map((template) => ({
   label: template.label,
-  value: template.id
+  value: template.id,
 }));
 
 const configuredApiBaseUrl = (
@@ -104,8 +104,30 @@ function formatRequestError(error: unknown): string {
   return error instanceof Error ? error.message : "Request failed.";
 }
 
+function readApiErrorMessage(result: unknown, fallback: string): string {
+  if (!result || typeof result !== "object") {
+    return fallback;
+  }
+
+  const record = result as {
+    error?: { message?: unknown };
+    message?: unknown;
+  };
+
+  if (typeof record.error?.message === "string") {
+    return record.error.message;
+  }
+
+  if (typeof record.message === "string") {
+    return record.message;
+  }
+
+  return fallback;
+}
+
 export function App() {
-  const [draftSchema, setDraftSchema] = useState<PageSchema>(exampleLandingPage);
+  const [draftSchema, setDraftSchema] =
+    useState<PageSchema>(exampleLandingPage);
   const [publishFeedback, setPublishFeedback] =
     useState<PublishFeedback | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -116,7 +138,7 @@ export function App() {
     { key: "pages", icon: <FileTextOutlined />, label: "Pages" },
     { key: "media", icon: <PictureOutlined />, label: "Media" },
     { key: "localization", icon: <GlobalOutlined />, label: "Localization" },
-    { key: "settings", icon: <SettingOutlined />, label: "Settings" }
+    { key: "settings", icon: <SettingOutlined />, label: "Settings" },
   ];
 
   const activeTemplate = pageTemplatePresets[draftSchema.template.id];
@@ -146,7 +168,7 @@ export function App() {
         if (isActive) {
           setPublishFeedback({
             type: "error",
-            message: formatRequestError(error)
+            message: formatRequestError(error),
           });
         }
       }
@@ -163,7 +185,7 @@ export function App() {
     setDraftSchema((current) => ({
       ...current,
       template: { id: templateId },
-      chrome: getPageTemplateChrome(templateId)
+      chrome: getPageTemplateChrome(templateId),
     }));
   }
 
@@ -174,15 +196,15 @@ export function App() {
         ...current.chrome,
         [region]: {
           ...current.chrome[region],
-          enabled
-        }
-      }
+          enabled,
+        },
+      },
     }));
   }
 
   function updateChromeVariant(
     region: ChromeRegionKey,
-    variant: PageChromeSettings[ChromeRegionKey]["variant"]
+    variant: PageChromeSettings[ChromeRegionKey]["variant"],
   ) {
     setDraftSchema((current) => ({
       ...current,
@@ -190,9 +212,9 @@ export function App() {
         ...current.chrome,
         [region]: {
           ...current.chrome[region],
-          variant
-        }
-      }
+          variant,
+        },
+      },
     }));
   }
 
@@ -205,12 +227,12 @@ export function App() {
               ...content.brand,
               label: {
                 ...content.brand.label,
-                defaultValue: value
-              }
+                defaultValue: value,
+              },
             }
           : {
               ...content.brand,
-              href: value
+              href: value,
             };
 
       return {
@@ -221,10 +243,10 @@ export function App() {
             ...current.chrome.header,
             content: {
               ...content,
-              brand
-            }
-          }
-        }
+              brand,
+            },
+          },
+        },
       };
     });
   }
@@ -243,11 +265,11 @@ export function App() {
               ...content,
               localeSwitcher: {
                 ...content.localeSwitcher,
-                enabled
-              }
-            }
-          }
-        }
+                enabled,
+              },
+            },
+          },
+        },
       };
     });
   }
@@ -268,12 +290,12 @@ export function App() {
                 ...content.localeSwitcher,
                 label: {
                   ...content.localeSwitcher.label,
-                  defaultValue: value
-                }
-              }
-            }
-          }
-        }
+                  defaultValue: value,
+                },
+              },
+            },
+          },
+        },
       };
     });
   }
@@ -287,12 +309,12 @@ export function App() {
               ...content.brand,
               label: {
                 ...content.brand.label,
-                defaultValue: value
-              }
+                defaultValue: value,
+              },
             }
           : {
               ...content.brand,
-              href: value
+              href: value,
             };
 
       return {
@@ -303,10 +325,10 @@ export function App() {
             ...current.chrome.footer,
             content: {
               ...content,
-              brand
-            }
-          }
-        }
+              brand,
+            },
+          },
+        },
       };
     });
   }
@@ -325,11 +347,11 @@ export function App() {
               ...content,
               copyright: {
                 ...content.copyright,
-                defaultValue: value
-              }
-            }
-          }
-        }
+                defaultValue: value,
+              },
+            },
+          },
+        },
       };
     });
   }
@@ -338,28 +360,30 @@ export function App() {
     region: ChromeRegionKey,
     index: number,
     field: "label" | "href",
-    value: string
+    value: string,
   ) {
     setDraftSchema((current) => {
       const chromeRegion = current.chrome[region];
-      const navigation = chromeRegion.content.navigation.map((item, itemIndex) => {
-        if (itemIndex !== index) {
-          return item;
-        }
+      const navigation = chromeRegion.content.navigation.map(
+        (item, itemIndex) => {
+          if (itemIndex !== index) {
+            return item;
+          }
 
-        return field === "label"
-          ? {
-              ...item,
-              label: {
-                ...item.label,
-                defaultValue: value
+          return field === "label"
+            ? {
+                ...item,
+                label: {
+                  ...item.label,
+                  defaultValue: value,
+                },
               }
-            }
-          : {
-              ...item,
-              href: value
-            };
-      });
+            : {
+                ...item,
+                href: value,
+              };
+        },
+      );
 
       return {
         ...current,
@@ -369,10 +393,10 @@ export function App() {
             ...chromeRegion,
             content: {
               ...chromeRegion.content,
-              navigation
-            }
-          }
-        }
+              navigation,
+            },
+          },
+        },
       };
     });
   }
@@ -385,7 +409,7 @@ export function App() {
         id: `${region}-link-${Date.now()}`,
         label: { defaultValue: `Link ${itemNumber}` },
         href: "/",
-        openInNewTab: false
+        openInNewTab: false,
       };
 
       return {
@@ -396,10 +420,10 @@ export function App() {
             ...chromeRegion,
             content: {
               ...chromeRegion.content,
-              navigation: [...chromeRegion.content.navigation, item]
-            }
-          }
-        }
+              navigation: [...chromeRegion.content.navigation, item],
+            },
+          },
+        },
       };
     });
   }
@@ -417,11 +441,11 @@ export function App() {
             content: {
               ...chromeRegion.content,
               navigation: chromeRegion.content.navigation.filter(
-                (_, itemIndex) => itemIndex !== index
-              )
-            }
-          }
-        }
+                (_, itemIndex) => itemIndex !== index,
+              ),
+            },
+          },
+        },
       };
     });
   }
@@ -434,7 +458,7 @@ export function App() {
         type: "error",
         message:
           parsed.error.issues[0]?.message ??
-          "Page schema is invalid and cannot be published."
+          "Page schema is invalid and cannot be published.",
       });
       return;
     }
@@ -444,22 +468,22 @@ export function App() {
     try {
       const response = await fetch(
         `${apiBaseUrl}/admin/pages/${encodeURIComponent(
-          parsed.data.meta.slug
+          parsed.data.meta.slug,
         )}/publish`,
         {
           body: JSON.stringify({ data: parsed.data }),
           headers: {
             "Content-Type": "application/json",
-            "Idempotency-Key": createIdempotencyKey()
+            "Idempotency-Key": createIdempotencyKey(),
           },
-          method: "POST"
-        }
+          method: "POST",
+        },
       );
 
-      const result = (await response.json()) as { data?: unknown; message?: string };
+      const result = (await response.json()) as { data?: unknown };
 
       if (!response.ok) {
-        throw new Error(result.message ?? "Publish request failed.");
+        throw new Error(readApiErrorMessage(result, "Publish request failed."));
       }
 
       const published = pageSchema.parse(result.data);
@@ -467,12 +491,12 @@ export function App() {
       setPublishFeedback({
         type: "success",
         message:
-          "Published. Refresh the storefront page to load the latest published content."
+          "Published. Refresh the storefront page to load the latest published content.",
       });
     } catch (error) {
       setPublishFeedback({
         type: "error",
-        message: formatRequestError(error)
+        message: formatRequestError(error),
       });
     } finally {
       setIsPublishing(false);
@@ -489,7 +513,9 @@ export function App() {
           <Menu items={items} mode="inline" theme="dark" />
         </Sider>
         <Layout>
-          <Header style={{ background: "#fff", borderBottom: "1px solid #eee" }}>
+          <Header
+            style={{ background: "#fff", borderBottom: "1px solid #eee" }}
+          >
             <Typography.Text strong>Engineering Scaffold</Typography.Text>
           </Header>
           <Content style={{ padding: 24 }}>
@@ -498,15 +524,15 @@ export function App() {
                 alignItems: "flex-start",
                 display: "flex",
                 gap: 16,
-                justifyContent: "space-between"
+                justifyContent: "space-between",
               }}
             >
               <div>
                 <Title level={3}>Pages</Title>
                 <Paragraph>
-                  Page Builder stores layout chrome in Page Schema. Published pages
-                  render header and footer from that schema instead of route-level
-                  code.
+                  Page Builder stores layout chrome in Page Schema. Published
+                  pages render header and footer from that schema instead of
+                  route-level code.
                 </Paragraph>
               </div>
               <Button
@@ -537,7 +563,7 @@ export function App() {
               style={{
                 display: "grid",
                 gap: 24,
-                gridTemplateColumns: "minmax(320px, 420px) minmax(0, 1fr)"
+                gridTemplateColumns: "minmax(320px, 420px) minmax(0, 1fr)",
               }}
             >
               <section
@@ -545,7 +571,7 @@ export function App() {
                   background: "#fff",
                   border: "1px solid #eee",
                   borderRadius: 8,
-                  padding: 20
+                  padding: 20,
                 }}
               >
                 <Title level={4}>Page settings</Title>
@@ -564,7 +590,11 @@ export function App() {
                     type="info"
                   />
                   <Divider />
-                  <Space direction="vertical" size={18} style={{ width: "100%" }}>
+                  <Space
+                    direction="vertical"
+                    size={18}
+                    style={{ width: "100%" }}
+                  >
                     <div>
                       <Text strong>Header</Text>
                       <div
@@ -572,7 +602,7 @@ export function App() {
                           alignItems: "center",
                           display: "grid",
                           gap: 12,
-                          gridTemplateColumns: "1fr auto"
+                          gridTemplateColumns: "1fr auto",
                         }}
                       >
                         <Select
@@ -582,13 +612,15 @@ export function App() {
                           }
                           options={[
                             { label: "Default", value: "default" },
-                            { label: "Minimal", value: "minimal" }
+                            { label: "Minimal", value: "minimal" },
                           ]}
                           value={draftSchema.chrome.header.variant}
                         />
                         <Switch
                           checked={draftSchema.chrome.header.enabled}
-                          onChange={(checked) => updateChrome("header", checked)}
+                          onChange={(checked) =>
+                            updateChrome("header", checked)
+                          }
                         />
                       </div>
                     </div>
@@ -599,7 +631,7 @@ export function App() {
                           alignItems: "center",
                           display: "grid",
                           gap: 12,
-                          gridTemplateColumns: "1fr auto"
+                          gridTemplateColumns: "1fr auto",
                         }}
                       >
                         <Select
@@ -609,13 +641,15 @@ export function App() {
                           }
                           options={[
                             { label: "Default", value: "default" },
-                            { label: "Minimal", value: "minimal" }
+                            { label: "Minimal", value: "minimal" },
                           ]}
                           value={draftSchema.chrome.footer.variant}
                         />
                         <Switch
                           checked={draftSchema.chrome.footer.enabled}
-                          onChange={(checked) => updateChrome("footer", checked)}
+                          onChange={(checked) =>
+                            updateChrome("footer", checked)
+                          }
                         />
                       </div>
                     </div>
@@ -628,7 +662,8 @@ export function App() {
                         updateHeaderBrand("label", event.target.value)
                       }
                       value={
-                        draftSchema.chrome.header.content.brand.label.defaultValue
+                        draftSchema.chrome.header.content.brand.label
+                          .defaultValue
                       }
                     />
                   </Form.Item>
@@ -654,7 +689,8 @@ export function App() {
                             alignItems: "center",
                             display: "grid",
                             gap: 8,
-                            gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr) auto"
+                            gridTemplateColumns:
+                              "minmax(0, 1fr) minmax(0, 1fr) auto",
                           }}
                         >
                           <Input
@@ -664,7 +700,7 @@ export function App() {
                                 "header",
                                 index,
                                 "label",
-                                event.target.value
+                                event.target.value,
                               )
                             }
                             value={item.label.defaultValue}
@@ -676,7 +712,7 @@ export function App() {
                                 "header",
                                 index,
                                 "href",
-                                event.target.value
+                                event.target.value,
                               )
                             }
                             value={item.href}
@@ -685,10 +721,12 @@ export function App() {
                             aria-label="Remove header menu item"
                             danger
                             icon={<DeleteOutlined />}
-                            onClick={() => removeNavigationItem("header", index)}
+                            onClick={() =>
+                              removeNavigationItem("header", index)
+                            }
                           />
                         </div>
-                      )
+                      ),
                     )}
                     <Button
                       icon={<PlusOutlined />}
@@ -704,12 +742,13 @@ export function App() {
                       alignItems: "center",
                       display: "grid",
                       gap: 12,
-                      gridTemplateColumns: "1fr auto"
+                      gridTemplateColumns: "1fr auto",
                     }}
                   >
                     <Input
                       disabled={
-                        !draftSchema.chrome.header.content.localeSwitcher.enabled
+                        !draftSchema.chrome.header.content.localeSwitcher
+                          .enabled
                       }
                       onChange={(event) =>
                         updateHeaderLocaleSwitcherLabel(event.target.value)
@@ -730,7 +769,7 @@ export function App() {
                     {draftSchema.chrome.header.content.localeSwitcher.locales.map(
                       (locale) => (
                         <Tag key={locale.code}>{locale.label.defaultValue}</Tag>
-                      )
+                      ),
                     )}
                   </div>
                   <Divider />
@@ -741,7 +780,8 @@ export function App() {
                         updateFooterBrand("label", event.target.value)
                       }
                       value={
-                        draftSchema.chrome.footer.content.brand.label.defaultValue
+                        draftSchema.chrome.footer.content.brand.label
+                          .defaultValue
                       }
                     />
                   </Form.Item>
@@ -777,7 +817,8 @@ export function App() {
                             alignItems: "center",
                             display: "grid",
                             gap: 8,
-                            gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr) auto"
+                            gridTemplateColumns:
+                              "minmax(0, 1fr) minmax(0, 1fr) auto",
                           }}
                         >
                           <Input
@@ -787,7 +828,7 @@ export function App() {
                                 "footer",
                                 index,
                                 "label",
-                                event.target.value
+                                event.target.value,
                               )
                             }
                             value={item.label.defaultValue}
@@ -799,7 +840,7 @@ export function App() {
                                 "footer",
                                 index,
                                 "href",
-                                event.target.value
+                                event.target.value,
                               )
                             }
                             value={item.href}
@@ -808,10 +849,12 @@ export function App() {
                             aria-label="Remove footer link"
                             danger
                             icon={<DeleteOutlined />}
-                            onClick={() => removeNavigationItem("footer", index)}
+                            onClick={() =>
+                              removeNavigationItem("footer", index)
+                            }
                           />
                         </div>
-                      )
+                      ),
                     )}
                     <Button
                       icon={<PlusOutlined />}
@@ -827,10 +870,10 @@ export function App() {
                   {JSON.stringify(
                     {
                       template: draftSchema.template,
-                      chrome: draftSchema.chrome
+                      chrome: draftSchema.chrome,
                     },
                     null,
-                    2
+                    2,
                   )}
                 </pre>
               </section>
@@ -840,7 +883,7 @@ export function App() {
                   border: "1px solid #eee",
                   borderRadius: 8,
                   minWidth: 0,
-                  padding: 20
+                  padding: 20,
                 }}
               >
                 <div
@@ -848,7 +891,7 @@ export function App() {
                     alignItems: "center",
                     display: "flex",
                     justifyContent: "space-between",
-                    marginBottom: 16
+                    marginBottom: 16,
                   }}
                 >
                   <Title level={4} style={{ margin: 0 }}>
@@ -858,7 +901,7 @@ export function App() {
                     onChange={(value) => setViewport(value as Viewport)}
                     options={[
                       { label: "Desktop", value: "desktop" },
-                      { label: "Mobile", value: "mobile" }
+                      { label: "Mobile", value: "mobile" },
                     ]}
                     value={viewport}
                   />
@@ -869,7 +912,7 @@ export function App() {
                     margin: "0 auto",
                     maxWidth: viewport === "mobile" ? 390 : "100%",
                     minHeight: 480,
-                    overflow: "hidden"
+                    overflow: "hidden",
                   }}
                 >
                   <PageRenderer schema={draftSchema} viewport={viewport} />

@@ -1,13 +1,14 @@
 import "reflect-metadata";
 import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
+import { ApiExceptionFilter } from "./common/api-exception.filter.js";
 import { AppModule } from "./modules/app.module.js";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configuredOrigins = [
     process.env.WEB_URL ?? "http://localhost:3000",
-    process.env.ADMIN_URL ?? "http://localhost:5173"
+    process.env.ADMIN_URL ?? "http://localhost:5173",
   ];
 
   app.setGlobalPrefix("api/v1");
@@ -15,15 +16,21 @@ async function bootstrap() {
     new ValidationPipe({
       forbidUnknownValues: true,
       transform: true,
-      whitelist: true
-    })
+      whitelist: true,
+    }),
   );
+  app.useGlobalFilters(new ApiExceptionFilter());
   app.enableCors({
-    allowedHeaders: ["Content-Type", "Idempotency-Key"],
+    allowedHeaders: [
+      "Authorization",
+      "Content-Type",
+      "Idempotency-Key",
+      "X-Request-Id",
+    ],
     methods: ["GET", "POST", "PUT", "PATCH", "OPTIONS"],
     origin: (
       origin: string | undefined,
-      callback: (error: Error | null, allowed?: boolean) => void
+      callback: (error: Error | null, allowed?: boolean) => void,
     ) => {
       if (
         !origin ||
@@ -35,7 +42,7 @@ async function bootstrap() {
       }
 
       callback(new Error(`CORS origin denied: ${origin}`));
-    }
+    },
   });
 
   await app.listen(process.env.PORT ? Number(process.env.PORT) : 4000);
