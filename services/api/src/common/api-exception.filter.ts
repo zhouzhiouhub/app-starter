@@ -4,8 +4,10 @@ import {
   ExceptionFilter,
   HttpException,
   HttpStatus,
+  Logger,
 } from "@nestjs/common";
 import { apiErrorCodes } from "@app-starter/schema";
+import { mapPrismaException } from "./prisma-error.js";
 
 interface HttpResponseLike {
   status: (statusCode: number) => {
@@ -25,17 +27,26 @@ interface NormalizedError {
 
 @Catch()
 export class ApiExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(ApiExceptionFilter.name);
+
   catch(exception: unknown, host: ArgumentsHost) {
+    const mapped = mapPrismaException(exception);
     const http = host.switchToHttp();
     const response = http.getResponse<HttpResponseLike>();
     const request = http.getRequest<HttpRequestLike>();
     const statusCode =
-      exception instanceof HttpException
-        ? exception.getStatus()
+      mapped instanceof HttpException
+        ? mapped.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
     const body =
-      exception instanceof HttpException ? exception.getResponse() : undefined;
+      mapped instanceof HttpException ? mapped.getResponse() : undefined;
     const normalized = normalizeError(body, statusCode);
+
+    if (statusCode >= HttpStatus.INTERNAL_SERVER_ERROR) {
+      this.logger.error(
+        mapped instanceof Error ? mapped.stack : String(mapped),
+      );
+    }
 
     response.status(statusCode).json({
       error: {
