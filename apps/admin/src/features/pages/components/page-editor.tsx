@@ -8,6 +8,7 @@ import { PageContentFields } from "./page-content-fields";
 import { PageEditorToolbar } from "./page-editor-toolbar";
 import { PagePreviewPane } from "./page-preview-pane";
 import { PageSectionList } from "./page-section-list";
+import { SectionLibraryPanel } from "./section-library-panel";
 import { SectionPropertiesPanel } from "./section-properties-panel";
 
 export function PageEditor(props: {
@@ -106,6 +107,11 @@ export function PageEditor(props: {
         }}
       >
         <div>
+          <SectionLibraryPanel
+            onChange={props.onSchemaChange}
+            onSelect={setSelectedSectionId}
+            schema={props.schema}
+          />
           <PageSectionList
             onChange={props.onSchemaChange}
             onSelect={setSelectedSectionId}

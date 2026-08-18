@@ -1,12 +1,19 @@
 import {
   ArrowDownOutlined,
   ArrowUpOutlined,
+  CopyOutlined,
+  DeleteOutlined,
   HolderOutlined,
 } from "@ant-design/icons";
-import { Button, Empty, List, Space, Tooltip, Typography } from "antd";
+import { Button, Empty, List, Modal, Space, Tooltip, Typography } from "antd";
 import type { PageSchema, SectionNode } from "@app-starter/schema";
 import { moveSection } from "../section-order-updates";
 import { readSectionText } from "../section-content-updates";
+import {
+  duplicateSection,
+  getNextSelectedSectionId,
+  removeSection,
+} from "../section-management-updates";
 
 export function PageSectionList(props: {
   onChange: (schema: PageSchema) => void;
@@ -14,6 +21,28 @@ export function PageSectionList(props: {
   selectedSectionId: string | null;
   schema: PageSchema;
 }) {
+  function handleDuplicate(section: SectionNode) {
+    const result = duplicateSection(props.schema, section.id);
+    props.onChange(result.schema);
+    props.onSelect(result.sectionId);
+  }
+
+  function handleRemove(section: SectionNode) {
+    const nextSelectedId = getNextSelectedSectionId(props.schema, section.id);
+
+    Modal.confirm({
+      cancelText: "Cancel",
+      content: section.id,
+      okText: "Delete",
+      okType: "danger",
+      onOk() {
+        props.onChange(removeSection(props.schema, section.id));
+        props.onSelect(nextSelectedId ?? "");
+      },
+      title: `Delete ${sectionLabel(section)}?`,
+    });
+  }
+
   return (
     <section
       style={{
@@ -40,7 +69,7 @@ export function PageSectionList(props: {
                     icon={<ArrowUpOutlined />}
                     onClick={(event) => {
                       event.stopPropagation();
-                      props.onChange(moveSection(props.schema, section.id, "up"))
+                      props.onChange(moveSection(props.schema, section.id, "up"));
                     }}
                     size="small"
                   />
@@ -54,7 +83,30 @@ export function PageSectionList(props: {
                       event.stopPropagation();
                       props.onChange(
                         moveSection(props.schema, section.id, "down"),
-                      )
+                      );
+                    }}
+                    size="small"
+                  />
+                </Tooltip>,
+                <Tooltip key="duplicate" title="Duplicate">
+                  <Button
+                    aria-label={`Duplicate ${sectionLabel(section)}`}
+                    icon={<CopyOutlined />}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleDuplicate(section);
+                    }}
+                    size="small"
+                  />
+                </Tooltip>,
+                <Tooltip key="delete" title="Delete">
+                  <Button
+                    aria-label={`Delete ${sectionLabel(section)}`}
+                    danger
+                    icon={<DeleteOutlined />}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleRemove(section);
                     }}
                     size="small"
                   />
