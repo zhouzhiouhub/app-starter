@@ -70,6 +70,7 @@ export function LoginPage() {
         <Form<LoginFormValues>
           initialValues={{ email: DEFAULT_ADMIN_EMAIL }}
           layout="vertical"
+          method="post"
           onFinish={(values) => void submit(values)}
         >
           <Form.Item
