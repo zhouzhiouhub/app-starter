@@ -17,8 +17,10 @@ import {
   marketCodeSchema,
 } from "@app-starter/schema";
 import { AdminApiGuard } from "../../common/admin-api.guard.js";
+import { CurrentUser } from "../../common/current-user.decorator.js";
 import { RequireScopes } from "../../common/require-scopes.decorator.js";
 import { requireIdempotencyKey } from "../../common/idempotency-key.js";
+import type { Actor } from "../identity/identity.types.js";
 import { PagesService } from "../pages/pages.service.js";
 
 @Controller("public")
@@ -104,6 +106,7 @@ export class AdminPagesController {
   @Post(":slug/publish")
   @RequireScopes("page:publish")
   publishPage(
+    @CurrentUser() actor: Actor,
     @Body() body: unknown,
     @Headers("idempotency-key") idempotencyKey: string | undefined,
     @Param("slug") slug: string,
@@ -112,6 +115,7 @@ export class AdminPagesController {
       slug,
       body,
       requireIdempotencyKey(idempotencyKey),
+      actor,
     );
   }
 }
