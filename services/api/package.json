@@ -7,11 +7,17 @@
     "build": "nest build",
     "dev": "nest start --watch",
     "lint": "eslint .",
-    "prebuild": "pnpm --filter @app-starter/schema --filter @app-starter/extension-sdk build",
-    "pretypecheck": "pnpm --filter @app-starter/schema --filter @app-starter/extension-sdk build",
+    "prebuild": "pnpm --filter @app-starter/schema --filter @app-starter/extension-sdk build && pnpm run prisma:generate",
+    "predev": "pnpm run prisma:generate",
+    "pretypecheck": "pnpm --filter @app-starter/schema --filter @app-starter/extension-sdk build && pnpm run prisma:generate",
+    "prisma:generate": "prisma generate --schema prisma/schema.prisma",
+    "prisma:push": "prisma db push --schema prisma/schema.prisma",
     "start": "node dist/main.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "node --test"
+  },
+  "prisma": {
+    "schema": "prisma/schema.prisma"
   },
   "dependencies": {
     "@app-starter/extension-sdk": "workspace:*",
