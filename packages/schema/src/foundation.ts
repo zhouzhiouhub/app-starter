@@ -81,6 +81,15 @@ export const safeHrefSchema = z
   );
 export type SafeHref = z.infer<typeof safeHrefSchema>;
 
+export const seoUrlSchema = z
+  .string()
+  .min(1)
+  .regex(
+    /^(\/(?!\/)|https?:\/\/)/,
+    "SEO URL must be relative or http(s)",
+  );
+export type SeoUrl = z.infer<typeof seoUrlSchema>;
+
 export const layoutBoxSchema = z.object({
   x: z.number().default(0),
   y: z.number().default(0),
@@ -112,8 +121,8 @@ export type SectionNode = z.infer<typeof sectionNodeSchema>;
 export const seoConfigSchema = z.object({
   title: z.string().min(1),
   description: z.string().default(""),
-  ogImage: z.string().optional(),
-  canonical: z.string().optional(),
+  ogImage: seoUrlSchema.optional(),
+  canonical: seoUrlSchema.optional(),
 });
 export type SeoConfig = z.infer<typeof seoConfigSchema>;
 

@@ -115,6 +115,37 @@ test("page schema rejects unsafe chrome navigation hrefs", () => {
   );
 });
 
+test("page schema accepts safe SEO URLs", () => {
+  const parsed = pageSchema.parse(
+    minimalPage({
+      seo: {
+        canonical: "https://example.com/en/test-page",
+        description: "Safe SEO fields",
+        ogImage: "/images/og.jpg",
+        title: "Safe SEO",
+      },
+    }),
+  );
+
+  assert.equal(parsed.seo.canonical, "https://example.com/en/test-page");
+  assert.equal(parsed.seo.ogImage, "/images/og.jpg");
+});
+
+test("page schema rejects unsafe SEO URLs", () => {
+  assert.throws(() =>
+    pageSchema.parse(
+      minimalPage({
+        seo: {
+          canonical: "javascript:alert(1)",
+          description: "",
+          ogImage: "data:text/html,bad",
+          title: "Bad SEO",
+        },
+      }),
+    ),
+  );
+});
+
 test("named landing fallback pages do not reuse the home hero", () => {
   const faq = createFallbackPage({ slug: "faq", title: "Faq" });
   const hero = faq.sections.find((section) => section.component === "hero-banner");
