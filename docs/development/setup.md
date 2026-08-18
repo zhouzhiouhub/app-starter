@@ -43,6 +43,10 @@ requests can be safely deduplicated.
 Admin page, localization, and commerce management APIs require a Bearer access
 token from `POST /api/v1/auth/login`. Public storefront routes stay unauthenticated.
 
+In local development the Admin app calls `/api/v1` on its own origin. Vite
+proxies those requests to the API on port 4000, so the browser does not POST
+login to the Vite server itself.
+
 Default local ports:
 
 - Web: http://localhost:3000

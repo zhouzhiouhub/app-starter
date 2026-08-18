@@ -424,6 +424,8 @@ pnpm run build:api-packages
 API Health: http://localhost:4000/api/v1/health
 ```
 
+后台登录请求走 Admin 同源 `/api/v1`，由 Vite 代理到 API，避免把 `POST /api/v1/auth/login` 打到 Vite 开发服务器。
+
 ## 11. 当前 API 接口
 
 ```text

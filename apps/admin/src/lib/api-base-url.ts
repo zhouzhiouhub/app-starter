@@ -1,17 +1,19 @@
 export function getApiBaseUrl(): string {
-  const configured = (
+  const configured = readViteApiUrl();
+
+  if (configured) {
+    return configured.replace(/\/$/, "");
+  }
+
+  return "/api/v1";
+}
+
+function readViteApiUrl(): string | undefined {
+  const value = (
     import.meta as unknown as {
       env?: { VITE_API_URL?: string };
     }
-  ).env?.VITE_API_URL;
+  ).env?.VITE_API_URL?.trim();
 
-  if (configured) {
-    return configured;
-  }
-
-  const location = globalThis.location;
-  const protocol = location?.protocol ?? "http:";
-  const hostname = location?.hostname || "localhost";
-
-  return `${protocol}//${hostname}:4000/api/v1`;
+  return value || undefined;
 }

@@ -4,8 +4,15 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
 const repoRoot = fileURLToPath(new URL("../..", import.meta.url));
+const apiProxy = {
+  "/api": {
+    changeOrigin: true,
+    target: process.env.API_URL ?? "http://127.0.0.1:4000",
+  },
+};
 
 export default defineConfig({
+  envDir: repoRoot,
   plugins: [react()],
   resolve: {
     alias: {
@@ -28,7 +35,13 @@ export default defineConfig({
       )
     }
   },
+  preview: {
+    port: 5173,
+    proxy: apiProxy,
+  },
   server: {
-    port: 5173
+    host: "0.0.0.0",
+    port: 5173,
+    proxy: apiProxy,
   }
 });

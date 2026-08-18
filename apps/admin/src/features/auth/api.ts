@@ -134,27 +134,69 @@ async function readSessionResponse(
   response: Response,
   fallback: string,
 ): Promise<AuthSession> {
-  const result = (await response.json()) as {
+  const result = await readJsonBody(response);
+  const payload = result as {
     data?: {
       accessToken?: string;
       refreshToken?: string;
       user?: AuthUser;
     };
-    error?: { message?: string };
   };
 
   if (
     !response.ok ||
-    !result.data?.accessToken ||
-    !result.data.refreshToken ||
-    !result.data.user
+    !payload.data?.accessToken ||
+    !payload.data.refreshToken ||
+    !payload.data.user
   ) {
-    throw new Error(result.error?.message ?? fallback);
+    throw new Error(readErrorMessage(result, fallback));
   }
 
   return {
-    accessToken: result.data.accessToken,
-    refreshToken: result.data.refreshToken,
-    user: result.data.user,
+    accessToken: payload.data.accessToken,
+    refreshToken: payload.data.refreshToken,
+    user: payload.data.user,
   };
+}
+
+async function readJsonBody(response: Response): Promise<unknown> {
+  const text = await response.text();
+
+  if (!text) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    throw new Error(text.trim().slice(0, 200) || `Request failed (${response.status}).`);
+  }
+}
+
+function readErrorMessage(result: unknown, fallback: string): string {
+  if (!result || typeof result !== "object") {
+    return fallback;
+  }
+
+  const record = result as {
+    error?: { message?: unknown } | string;
+    message?: unknown;
+  };
+
+  if (typeof record.error === "object" && typeof record.error.message === "string") {
+    return record.error.message;
+  }
+
+  if (typeof record.message === "string") {
+    return record.message;
+  }
+
+  if (
+    Array.isArray(record.message) &&
+    record.message.every((item) => typeof item === "string")
+  ) {
+    return record.message.join("; ");
+  }
+
+  return fallback;
 }
