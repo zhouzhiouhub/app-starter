@@ -1,4 +1,8 @@
 export function getApiBaseUrl(): string {
+  if (isViteDevServer()) {
+    return "/api/v1";
+  }
+
   const configured = readViteApiUrl();
 
   if (configured) {
@@ -6,6 +10,16 @@ export function getApiBaseUrl(): string {
   }
 
   return "/api/v1";
+}
+
+function isViteDevServer(): boolean {
+  return (
+    (
+      import.meta as unknown as {
+        env?: { DEV?: boolean };
+      }
+    ).env?.DEV === true
+  );
 }
 
 function readViteApiUrl(): string | undefined {

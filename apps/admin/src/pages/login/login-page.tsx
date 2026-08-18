@@ -61,9 +61,9 @@ export function LoginPage() {
         </Typography.Paragraph>
         {error ? (
           <Alert
-            message={error}
             showIcon
             style={{ marginBottom: 16 }}
+            title={error}
             type="error"
           />
         ) : null}
