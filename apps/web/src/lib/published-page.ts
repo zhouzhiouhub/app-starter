@@ -1,7 +1,8 @@
 import {
+  createFallbackPage,
   pageSchema,
   pageSlugSchema,
-  type PageSchema,
+  type PageSchema
 } from "@app-starter/schema";
 
 const apiBaseUrl =
@@ -21,10 +22,30 @@ export async function getPublishedPage(input: {
     return null;
   }
 
-  return fetchPublishedSchema({
+  const published = await fetchPublishedSchema({
     locale,
     market: defaultMarket,
+    slug: slug.data
+  });
+
+  if (published) {
+    return published;
+  }
+
+  const home =
+    slug.data === "home"
+      ? null
+      : await fetchPublishedSchema({
+          locale,
+          market: defaultMarket,
+          slug: "home"
+        });
+
+  return createFallbackPage({
     slug: slug.data,
+    locale,
+    market: defaultMarket,
+    siteChrome: home?.chrome
   });
 }
 
@@ -36,13 +57,13 @@ async function fetchPublishedSchema(input: {
   try {
     const searchParams = new URLSearchParams({
       locale: input.locale,
-      market: input.market,
+      market: input.market
     });
     const response = await fetch(
       `${apiBaseUrl}/public/pages/${encodeURIComponent(input.slug)}?${searchParams}`,
       {
-        cache: "no-store",
-      },
+        cache: "no-store"
+      }
     );
 
     if (!response.ok) {

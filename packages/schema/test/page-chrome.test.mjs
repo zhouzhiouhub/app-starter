@@ -119,6 +119,7 @@ test("privacy and terms fallback pages keep global chrome visible", () => {
   assert.equal(privacyPage.chrome.header.enabled, true);
   assert.equal(privacyPage.chrome.footer.enabled, true);
   assert.equal(privacyPage.chrome.footer.variant, "default");
+  assert.equal(privacyPage.sections[0]?.component, "rich-text");
 });
 
 test("fallback pages inherit site chrome content without turning chrome off", () => {

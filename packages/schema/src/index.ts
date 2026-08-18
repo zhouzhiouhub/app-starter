@@ -406,6 +406,26 @@ export function createFallbackPage(input: {
           },
         }
       : templateChrome,
+    sections:
+      templateId === "policy"
+        ? [
+            {
+              id: "policy-body",
+              component: "rich-text",
+              props: {
+                title: { defaultValue: title },
+                content: {
+                  defaultValue:
+                    "This page is a storefront placeholder. Publish a dedicated policy page to replace this content."
+                }
+              },
+              layout: {
+                desktop: { x: 0, y: 0, width: 1200 },
+                mobile: { x: 0, y: 0, width: 390 }
+              }
+            }
+          ]
+        : exampleLandingPage.sections,
     seo: {
       ...exampleLandingPage.seo,
       title,
