@@ -1,5 +1,5 @@
 import { Empty, Form, Input, Typography } from "antd";
-import type { PageSchema, SectionNode } from "@app-starter/schema";
+import type { PageSchema, SectionNode, Viewport } from "@app-starter/schema";
 import {
   readSectionText,
   updateSectionTextField,
@@ -7,6 +7,7 @@ import {
 } from "../section-content-updates";
 import { FaqItemsFields } from "./faq-items-fields";
 import { ImageGalleryFields } from "./image-gallery-fields";
+import { SectionLayoutFields } from "./section-layout-fields";
 import { SpecTableFields } from "./spec-table-fields";
 
 interface SectionPropertyField {
@@ -52,6 +53,7 @@ export function SectionPropertiesPanel(props: {
   onChange: (schema: PageSchema) => void;
   schema: PageSchema;
   section: SectionNode | null;
+  viewport: Viewport;
 }) {
   const section = props.section;
   const fields = section ? (sectionPropertyFields[section.component] ?? []) : [];
@@ -128,6 +130,12 @@ export function SectionPropertiesPanel(props: {
               section={section}
             />
           ) : null}
+          <SectionLayoutFields
+            onChange={props.onChange}
+            schema={props.schema}
+            section={section}
+            viewport={props.viewport}
+          />
         </Form>
       )}
     </section>

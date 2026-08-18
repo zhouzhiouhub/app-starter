@@ -122,6 +122,7 @@ export function PageEditor(props: {
             onChange={props.onSchemaChange}
             schema={props.schema}
             section={selectedSection}
+            viewport={props.viewport}
           />
           <PageContentFields
             onChange={props.onSchemaChange}
