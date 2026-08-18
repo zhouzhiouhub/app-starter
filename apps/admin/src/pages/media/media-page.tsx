@@ -1,10 +1,44 @@
-import { Alert, Space, Typography } from "antd";
+import { Alert, Modal, Segmented, Space, Typography } from "antd";
+import { useState } from "react";
+import { archiveMediaAsset } from "../../features/media/api";
 import { MediaListTable } from "../../features/media/components/media-list-table";
 import { RegisterMediaModal } from "../../features/media/components/register-media-modal";
 import { useMediaList } from "../../features/media/hooks/use-media-list";
+import type {
+  MediaAsset,
+  MediaAssetListStatus,
+} from "../../features/media/types";
+import { formatRequestError } from "../../lib/api-error";
 
 export function MediaPage() {
-  const { assets, error, isLoading, load, meta } = useMediaList();
+  const [status, setStatus] = useState<MediaAssetListStatus>("active");
+  const [archiveError, setArchiveError] = useState<string | null>(null);
+  const [archivingId, setArchivingId] = useState<string | null>(null);
+  const { assets, error, isLoading, load, meta } = useMediaList(status);
+
+  function confirmArchive(asset: MediaAsset) {
+    Modal.confirm({
+      cancelText: "Cancel",
+      okButtonProps: { danger: true },
+      okText: "Archive",
+      onOk: () => archiveAsset(asset.id),
+      title: `Archive ${asset.filename}?`,
+    });
+  }
+
+  async function archiveAsset(assetId: string) {
+    setArchivingId(assetId);
+    setArchiveError(null);
+
+    try {
+      await archiveMediaAsset(assetId);
+      await load(meta.page);
+    } catch (caught) {
+      setArchiveError(formatRequestError(caught));
+    } finally {
+      setArchivingId(null);
+    }
+  }
 
   return (
     <div>
@@ -26,9 +60,19 @@ export function MediaPage() {
         </div>
         <RegisterMediaModal onCreated={() => void load(meta.page)} />
       </div>
-      {error ? (
+      <Segmented
+        onChange={(value) => setStatus(value as MediaAssetListStatus)}
+        options={[
+          { label: "Active", value: "active" },
+          { label: "Archived", value: "archived" },
+          { label: "All", value: "all" },
+        ]}
+        style={{ marginBottom: 16 }}
+        value={status}
+      />
+      {error || archiveError ? (
         <Alert
-          message={error}
+          message={error ?? archiveError}
           showIcon
           style={{ marginBottom: 16 }}
           type="error"
@@ -36,8 +80,10 @@ export function MediaPage() {
       ) : null}
       <Space direction="vertical" size={16} style={{ width: "100%" }}>
         <MediaListTable
+          archivingId={archivingId}
           assets={assets}
           isLoading={isLoading}
+          onArchive={confirmArchive}
           onPageChange={(page) => void load(page)}
           page={meta.page}
           pageSize={meta.limit}

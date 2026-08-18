@@ -3,9 +3,13 @@ import { AuthRequiredError } from "../../auth/api";
 import { formatRequestError } from "../../../lib/api-error";
 import { DEFAULT_MEDIA_LIST_LIMIT } from "../constants";
 import { listMediaAssets } from "../api";
-import type { MediaAsset, MediaListMeta } from "../types";
+import type {
+  MediaAsset,
+  MediaAssetListStatus,
+  MediaListMeta,
+} from "../types";
 
-export function useMediaList() {
+export function useMediaList(status: MediaAssetListStatus = "active") {
   const [assets, setAssets] = useState<MediaAsset[]>([]);
   const [meta, setMeta] = useState<MediaListMeta>({
     limit: DEFAULT_MEDIA_LIST_LIMIT,
@@ -20,7 +24,11 @@ export function useMediaList() {
     setError(null);
 
     try {
-      const result = await listMediaAssets(page, DEFAULT_MEDIA_LIST_LIMIT);
+      const result = await listMediaAssets(
+        page,
+        DEFAULT_MEDIA_LIST_LIMIT,
+        status,
+      );
       setAssets(result.data);
       setMeta(result.meta);
     } catch (caught) {
@@ -33,7 +41,7 @@ export function useMediaList() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [status]);
 
   useEffect(() => {
     void load(1);

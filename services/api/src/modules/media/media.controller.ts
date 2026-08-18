@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Headers,
+  Param,
   Post,
   Query,
   UseGuards,
@@ -25,9 +26,10 @@ export class MediaController {
     @CurrentUser() actor: Actor,
     @Query("page") page?: string,
     @Query("limit") limit?: string,
+    @Query("status") status?: string,
     @Query("type") type?: string,
   ) {
-    return this.media.list({ page, limit, type }, actor);
+    return this.media.list({ page, limit, status, type }, actor);
   }
 
   @Post("upload-url")
@@ -48,5 +50,11 @@ export class MediaController {
       requireIdempotencyKey(idempotencyKey),
       actor,
     );
+  }
+
+  @Post(":id/archive")
+  @RequireScopes("media:write")
+  archive(@CurrentUser() actor: Actor, @Param("id") id: string) {
+    return this.media.archive(id, actor);
   }
 }

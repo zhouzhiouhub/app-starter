@@ -1,4 +1,6 @@
 export type MediaAssetType = "image" | "video" | "pdf" | "other";
+export type MediaAssetStatus = "active" | "archived";
+export type MediaAssetListStatus = MediaAssetStatus | "all";
 
 export interface MediaAsset {
   id: string;
@@ -6,6 +8,8 @@ export interface MediaAsset {
   filename: string;
   url: string;
   reference: string;
+  status: MediaAssetStatus;
+  archivedAt: string | null;
   r2Key: string;
   size: number;
   mimeType: string;

@@ -1,4 +1,5 @@
 export type MediaAssetType = "image" | "video" | "pdf" | "other";
+export type MediaAssetStatus = "active" | "archived";
 
 export type MediaMetadata = Record<string, unknown>;
 
@@ -8,6 +9,8 @@ export type MediaAssetResponse = {
   filename: string;
   url: string;
   reference: string;
+  status: MediaAssetStatus;
+  archivedAt: string | null;
   r2Key: string;
   size: number;
   mimeType: string;

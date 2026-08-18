@@ -36,6 +36,7 @@ const sizeSchema = z.coerce
   .max(MEDIA_MAX_UPLOAD_BYTES);
 
 const mediaTypeSchema = z.enum(["image", "video", "pdf", "other"]);
+const mediaStatusSchema = z.enum(["active", "archived", "all"]);
 
 const r2KeySchema = z
   .string()
@@ -61,6 +62,7 @@ export const listMediaQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
   type: mediaTypeSchema.optional(),
+  status: mediaStatusSchema.default("active"),
 });
 
 export const createUploadUrlInputSchema = z.object({
@@ -81,6 +83,7 @@ export type ConfirmMediaInput = z.infer<typeof confirmMediaInputSchema>;
 export function parseListMediaQuery(query: {
   page?: string | number;
   limit?: string | number;
+  status?: string;
   type?: string;
 }) {
   return parseOrThrow(() => listMediaQuerySchema.parse(query));

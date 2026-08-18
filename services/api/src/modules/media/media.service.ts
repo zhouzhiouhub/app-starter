@@ -1,6 +1,11 @@
-import { Injectable } from "@nestjs/common";
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { Prisma } from "@prisma/client";
 import {
+  apiErrorCodes,
   collectMediaReferences,
   pageSchema,
   readMediaAssetId,
@@ -16,11 +21,16 @@ import {
   inferMediaAssetType,
   toMediaAssetResponse,
 } from "./media.mapper.js";
+import {
+  readArchivedAt,
+  writeArchiveMetadata,
+} from "./media.metadata.js";
 import type { MediaUploadUrlResponse } from "./media.types.js";
 import {
   createMediaCdnUrl,
   createMediaUploadTarget,
 } from "./media.upload-target.js";
+import { findMediaUsage } from "./media.usage.js";
 import {
   assertTenantR2Key,
   parseConfirmMediaInput,
@@ -33,32 +43,35 @@ export class MediaService {
   constructor(private readonly prisma: PrismaService) {}
 
   async list(
-    query: { page?: string | number; limit?: string | number; type?: string },
+    query: {
+      page?: string | number;
+      limit?: string | number;
+      status?: string;
+      type?: string;
+    },
     actor: Actor,
   ) {
-    const { page, limit, type } = parseListMediaQuery(query);
+    const { page, limit, status, type } = parseListMediaQuery(query);
     const skip = (page - 1) * limit;
-    const where = {
+    const where: Prisma.MediaAssetWhereInput = {
       tenantId: actor.tenantId,
       ...(type ? { type } : {}),
     };
 
-    const [total, assets] = await this.prisma.$transaction([
-      this.prisma.mediaAsset.count({ where }),
-      this.prisma.mediaAsset.findMany({
-        where,
-        orderBy: { createdAt: "desc" },
-        skip,
-        take: limit,
-      }),
-    ]);
+    const assets = await this.prisma.mediaAsset.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+    });
+    const filtered = assets
+      .map(toMediaAssetResponse)
+      .filter((asset) => status === "all" || asset.status === status);
 
     return {
-      data: assets.map(toMediaAssetResponse),
+      data: filtered.slice(skip, skip + limit),
       meta: {
         requestId: "local-dev",
         tenantId: actor.tenantId,
-        total,
+        total: filtered.length,
         page,
         limit,
       },
@@ -170,6 +183,53 @@ export class MediaService {
         (reference) => urlsByReference.get(reference) ?? reference,
       ),
     );
+  }
+
+  async archive(id: string, actor: Actor) {
+    const asset = await this.prisma.mediaAsset.findFirst({
+      where: {
+        id,
+        tenantId: actor.tenantId,
+      },
+    });
+
+    if (!asset) {
+      throw new NotFoundException({
+        code: apiErrorCodes.NOT_FOUND,
+        message: "Media asset was not found.",
+      });
+    }
+
+    if (readArchivedAt(asset.metadata)) {
+      return this.assetResponse(asset, actor.tenantId);
+    }
+
+    const usage = await findMediaUsage(this.prisma, {
+      mediaAssetId: asset.id,
+      tenantId: actor.tenantId,
+    });
+
+    if (usage.length > 0) {
+      throw new ConflictException({
+        code: apiErrorCodes.CONFLICT,
+        message: "Media asset is still referenced by page versions.",
+        details: {
+          usage: usage.slice(0, 10),
+        },
+      });
+    }
+
+    const archived = await this.prisma.mediaAsset.update({
+      where: { id: asset.id },
+      data: {
+        metadata: writeArchiveMetadata({
+          actorId: actor.id,
+          metadata: asset.metadata,
+        }),
+      },
+    });
+
+    return this.assetResponse(archived, actor.tenantId);
   }
 
   private assetResponse(

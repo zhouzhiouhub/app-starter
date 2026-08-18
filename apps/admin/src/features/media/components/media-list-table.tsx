@@ -1,10 +1,16 @@
-import { CopyOutlined, LinkOutlined } from "@ant-design/icons";
+import {
+  CopyOutlined,
+  DeleteOutlined,
+  LinkOutlined,
+} from "@ant-design/icons";
 import { Button, Image, Space, Table, Tag, Tooltip, Typography } from "antd";
 import type { MediaAsset } from "../types";
 
 export function MediaListTable(props: {
+  archivingId: string | null;
   assets: MediaAsset[];
   isLoading: boolean;
+  onArchive: (asset: MediaAsset) => void;
   onPageChange: (page: number) => void;
   page: number;
   pageSize: number;
@@ -35,6 +41,17 @@ export function MediaListTable(props: {
           width: 120,
         },
         {
+          dataIndex: "status",
+          key: "status",
+          render: (status: string) => (
+            <Tag color={status === "active" ? "green" : "default"}>
+              {status}
+            </Tag>
+          ),
+          title: "Status",
+          width: 110,
+        },
+        {
           dataIndex: "reference",
           key: "reference",
           render: (reference: string) => (
@@ -43,6 +60,14 @@ export function MediaListTable(props: {
             </Typography.Text>
           ),
           title: "Reference",
+        },
+        {
+          dataIndex: "archivedAt",
+          key: "archivedAt",
+          render: (value: string | null) =>
+            value ? new Date(value).toLocaleString() : "",
+          title: "Archived",
+          width: 190,
         },
         {
           dataIndex: "createdAt",
@@ -70,10 +95,20 @@ export function MediaListTable(props: {
                   type="text"
                 />
               </Tooltip>
+              <Tooltip title="Archive asset">
+                <Button
+                  danger
+                  disabled={asset.status !== "active"}
+                  icon={<DeleteOutlined />}
+                  loading={props.archivingId === asset.id}
+                  onClick={() => props.onArchive(asset)}
+                  type="text"
+                />
+              </Tooltip>
             </Space>
           ),
           title: "",
-          width: 112,
+          width: 160,
         },
       ]}
       dataSource={props.assets}

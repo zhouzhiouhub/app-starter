@@ -3,6 +3,7 @@ import { readApiErrorMessage } from "../../lib/api-error";
 import { createIdempotencyKey } from "../../lib/idempotency-key";
 import type {
   MediaAsset,
+  MediaAssetListStatus,
   MediaListMeta,
   MediaUploadTarget,
   RegisterMediaInput,
@@ -12,10 +13,12 @@ import type {
 export async function listMediaAssets(
   page = 1,
   limit = 20,
+  status: MediaAssetListStatus = "active",
 ): Promise<{ data: MediaAsset[]; meta: MediaListMeta }> {
   const query = new URLSearchParams({
     limit: String(limit),
     page: String(page),
+    status,
   });
   const result = await readAdminJson<{
     data?: MediaAsset[];
@@ -30,6 +33,22 @@ export async function listMediaAssets(
       total: result.meta?.total ?? result.data?.length ?? 0,
     },
   };
+}
+
+export async function archiveMediaAsset(assetId: string): Promise<MediaAsset> {
+  const result = await readAdminJson<{ data?: MediaAsset }>(
+    `/media/${encodeURIComponent(assetId)}/archive`,
+    {
+      method: "POST",
+    },
+    "Media asset could not be archived.",
+  );
+
+  if (!result.data?.id) {
+    throw new Error("Media asset could not be archived.");
+  }
+
+  return result.data;
 }
 
 export async function registerMediaAsset(

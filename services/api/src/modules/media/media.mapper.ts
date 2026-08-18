@@ -3,8 +3,12 @@ import type { Prisma } from "@prisma/client";
 import type {
   MediaAssetResponse,
   MediaAssetType,
-  MediaMetadata,
 } from "./media.types.js";
+import {
+  readArchivedAt,
+  readMediaMetadata,
+  readMediaStatus,
+} from "./media.metadata.js";
 
 export function inferMediaAssetType(mimeType: string): MediaAssetType {
   if (mimeType.startsWith("image/")) {
@@ -51,10 +55,12 @@ export function toMediaAssetResponse(asset: {
     filename: asset.filename,
     url: asset.url,
     reference: `media://${asset.id}`,
+    status: readMediaStatus(asset.metadata),
+    archivedAt: readArchivedAt(asset.metadata),
     r2Key: asset.r2Key,
     size: Number(asset.size),
     mimeType: asset.mimeType,
-    metadata: readMetadata(asset.metadata),
+    metadata: readMediaMetadata(asset.metadata),
     createdAt: asset.createdAt.toISOString(),
   };
 }
@@ -65,14 +71,6 @@ function normalizeMediaType(type: string): MediaAssetType {
   }
 
   return "other";
-}
-
-function readMetadata(metadata: Prisma.JsonValue): MediaMetadata {
-  if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) {
-    return {};
-  }
-
-  return metadata as MediaMetadata;
 }
 
 function sanitizeFilename(filename: string): string {
