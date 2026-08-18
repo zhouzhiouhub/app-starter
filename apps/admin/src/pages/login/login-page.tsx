@@ -19,7 +19,7 @@ export function LoginPage() {
     (location.state as { from?: string } | null)?.from &&
     (location.state as { from?: string }).from !== "/login"
       ? (location.state as { from: string }).from
-      : "/";
+      : "/pages";
 
   async function submit(values: LoginFormValues) {
     setIsSubmitting(true);

@@ -52,6 +52,10 @@ In local development the Admin app calls `/api/v1` on its own origin. Vite
 proxies those requests to the API on port 4000, so the browser does not POST
 login to the Vite server itself.
 
+After sign-in, open `http://localhost:5173/pages` to list and create pages.
+The editor at `/pages/:id` loads the draft schema, can save a draft, and can
+publish to the storefront.
+
 Default local ports:
 
 - Web: http://localhost:3000

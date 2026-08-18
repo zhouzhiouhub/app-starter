@@ -1,0 +1,44 @@
+import type { PageSchema, PageTemplateId } from "@app-starter/schema";
+
+export interface PageSummary {
+  createdAt: string;
+  id: string;
+  publishedVersionId: string | null;
+  siteId: string;
+  slug: string;
+  status: string;
+  title: string;
+  type: string;
+  updatedAt: string;
+}
+
+export interface PageVersionSummary {
+  createdAt: string;
+  id: string;
+  publishedAt: string | null;
+  status: string;
+  version: number;
+}
+
+export interface PageDetail extends PageSummary {
+  draftSchema: PageSchema | null;
+  publishedSchema: PageSchema | null;
+  versions: PageVersionSummary[];
+}
+
+export interface PageListMeta {
+  limit: number;
+  page: number;
+  total: number;
+}
+
+export interface CreatePageInput {
+  slug: string;
+  templateId?: PageTemplateId;
+  title?: string;
+}
+
+export interface EditorFeedback {
+  message: string;
+  type: "success" | "error";
+}

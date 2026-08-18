@@ -5,7 +5,7 @@
 当前目标不是一次性复制 Shopify 全量能力，而是先完成一个可长期演进的建站平台工程基础：前台渲染、后台管理壳、API 服务、Page Schema、共享 Renderer、数据库模型、二次开发入口和后续电商/多语言能力预留。
 
 > 当前日期：2026-08-18
-> 当前阶段：后台登录与 JWT 租户鉴权已落地。下一步是页面列表、新建页面，以及把现有编辑器接到页面生命周期。
+> 当前阶段：后台页面列表、新建页面、草稿保存和按 ID 发布已落地。下一步是 Page Builder 区块排序、属性面板和 Undo / Redo。
 
 ## 1. 当前进度
 
@@ -44,17 +44,18 @@
 - Admin 登录：Email + Password + JWT（Access Token + Refresh Token 轮换）。
 - 后台管理接口校验 Bearer Token 与权限 Scope，并按登录租户隔离页面数据。
 - 种子数据会创建默认 Tenant Admin（`admin@example.com` / `ChangeMe123!`）。
+- 后台 Pages 列表、新建页面、按页面 ID 打开编辑器。
+- 编辑器可保存草稿（`PUT /api/v1/pages/:id/schema`）或发布（`POST /api/v1/pages/:id/publish`）。
 
 ### 当前还没有完成
 
 - 站点管理后台页。
-- 页面列表与新建页面 UI。
 - 可视化 Page Builder（区块排序、属性面板、Undo / Redo）。
 - 媒体库上传与 Cloudflare R2 对接。
 - 多语言运营后台。
 - 真实电商购物车、结账、支付、订单能力。
 
-当前后台已能登录、编辑并发布单个页面的 Chrome / Schema 到数据库，但还没有完整的页面管理后台。
+当前后台已能列出页面、创建页面，并按页面 ID 编辑 Chrome / Schema、保存草稿和发布。区块级 Page Builder 仍未完成。
 
 ## 2. 项目定位
 
@@ -425,6 +426,8 @@ API Health: http://localhost:4000/api/v1/health
 ```
 
 后台登录请打开 Admin 页面（例如 `http://localhost:5173/login`），不要在浏览器地址栏打开 `/api/v1/auth/login`。登录接口只接受 `POST`；开发环境后台请求走 Admin 同源 `/api/v1`，由 Vite 代理到 API。
+
+登录后打开 `http://localhost:5173/pages` 管理页面；`/pages/:id` 是 Page Builder。草稿保存和发布分别调用 `PUT /api/v1/pages/:id/schema` 与 `POST /api/v1/pages/:id/publish`。
 
 ## 11. 当前 API 接口
 
