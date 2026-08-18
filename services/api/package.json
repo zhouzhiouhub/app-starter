@@ -15,7 +15,8 @@
     "prisma:seed": "prisma db seed",
     "start": "node dist/main.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "node --test"
+    "pretest": "pnpm run build",
+    "test": "node --test test/pages.mapper.test.mjs"
   },
   "prisma": {
     "schema": "prisma/schema.prisma",

@@ -1,0 +1,84 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import {
+  createInitialPageSchema,
+  nextVersionNumber,
+  pageSlugSchema,
+  parsePageSchema,
+  resolvePageType,
+  toPageSummary,
+  unwrapBodyData
+} from "../dist/modules/pages/pages.mapper.js";
+
+test("unwrapBodyData reads wrapped or raw objects", () => {
+  assert.deepEqual(unwrapBodyData({ data: { slug: "home" } }), { slug: "home" });
+  assert.deepEqual(unwrapBodyData({ slug: "home" }), { slug: "home" });
+  assert.throws(() => unwrapBodyData(null), /Request body must be an object/);
+});
+
+test("pageSlugSchema accepts nested lowercase slugs", () => {
+  assert.equal(pageSlugSchema.parse("home"), "home");
+  assert.equal(pageSlugSchema.parse("privacy-policy"), "privacy-policy");
+  assert.equal(pageSlugSchema.parse("legal/terms"), "legal/terms");
+  assert.throws(() => pageSlugSchema.parse("Home"));
+  assert.throws(() => pageSlugSchema.parse("/leading-slash"));
+});
+
+test("resolvePageType maps templates and system slugs", () => {
+  assert.equal(resolvePageType("home"), "landing");
+  assert.equal(resolvePageType("privacy", "policy"), "policy");
+  assert.equal(resolvePageType("privacy-policy"), "policy");
+  assert.equal(resolvePageType("404"), "system");
+});
+
+test("createInitialPageSchema applies the selected template", () => {
+  const schema = createInitialPageSchema({
+    slug: "campaign",
+    title: "Campaign",
+    templateId: "landing-blank"
+  });
+
+  assert.equal(schema.meta.slug, "campaign");
+  assert.equal(schema.meta.title, "Campaign");
+  assert.equal(schema.template.id, "landing-blank");
+});
+
+test("parsePageSchema forces the stored slug", () => {
+  const schema = parsePageSchema(
+    {
+      data: {
+        version: "1.0",
+        meta: { slug: "other", title: "Home" },
+        layout: { desktop: {}, mobile: {} },
+        sections: [],
+        seo: { title: "Home" }
+      }
+    },
+    "home"
+  );
+
+  assert.equal(schema.meta.slug, "home");
+});
+
+test("nextVersionNumber increments from the latest version", () => {
+  assert.equal(nextVersionNumber(undefined), 1);
+  assert.equal(nextVersionNumber(3), 4);
+});
+
+test("toPageSummary serializes timestamps", () => {
+  const createdAt = new Date("2026-08-18T00:00:00.000Z");
+  const summary = toPageSummary({
+    id: "page-1",
+    siteId: "site-1",
+    slug: "home",
+    title: "Home",
+    type: "landing",
+    status: "published",
+    publishedVersionId: "version-1",
+    createdAt,
+    updatedAt: createdAt
+  });
+
+  assert.equal(summary.createdAt, "2026-08-18T00:00:00.000Z");
+  assert.equal(summary.publishedVersionId, "version-1");
+});

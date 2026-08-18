@@ -4,8 +4,8 @@
 
 当前目标不是一次性复制 Shopify 全量能力，而是先完成一个可长期演进的建站平台工程基础：前台渲染、后台管理壳、API 服务、Page Schema、共享 Renderer、数据库模型、二次开发入口和后续电商/多语言能力预留。
 
-> 当前日期：2026-08-17
-> 当前阶段：工程脚手架 + 本地数据库初始化完成，准备进入后台功能一期。
+> 当前日期：2026-08-18
+> 当前阶段：页面数据已接入 PostgreSQL，后台可保存草稿并发布，前台读取已发布版本。下一步是 Admin 登录与租户鉴权。
 
 ## 1. 当前进度
 
@@ -36,21 +36,23 @@
   - `PageVersion`
   - `Translation`
   - `MediaAsset`
+- NestJS 已接入 Prisma Service，页面读写走 PostgreSQL，不再使用本地 JSON 文件。
+- 种子数据会创建默认 Tenant / Site，以及已发布的 `home` 示例页。
+- 页面管理 API：列表、创建、保存草稿、按 ID 发布。
+- 前台 `GET /api/v1/public/pages/:slug` 读取已发布 `PageVersion`。
+- 现有后台 Publish 仍走 `POST /api/v1/admin/pages/:slug/publish`，底层已改为写入数据库。
 
 ### 当前还没有完成
 
 - 后台登录与权限系统。
-- 站点管理。
-- 页面列表与页面 CRUD。
-- 可视化 Page Builder。
-- 页面发布流程。
+- 站点管理后台页。
+- 页面列表与新建页面 UI。
+- 可视化 Page Builder（区块排序、属性面板、Undo / Redo）。
 - 媒体库上传与 Cloudflare R2 对接。
-- 数据库真实读写 API。
-- 前台读取已发布页面。
 - 多语言运营后台。
 - 真实电商购物车、结账、支付、订单能力。
 
-当前后台只是工程壳子，用来承载后续功能开发，不是完整后台系统。
+当前后台已能编辑并发布单个页面的 Chrome / Schema 到数据库，但还没有完整的页面管理后台。
 
 ## 2. 项目定位
 
@@ -360,6 +362,12 @@ pnpm --filter @app-starter/api exec prisma db push --schema prisma/schema.prisma
 Your database is now in sync with your Prisma schema.
 ```
 
+写入默认租户、站点和首页：
+
+```powershell
+pnpm --filter @app-starter/api run prisma:seed
+```
+
 确认表：
 
 ```powershell
@@ -414,13 +422,20 @@ pnpm run build:api-packages
 API Health: http://localhost:4000/api/v1/health
 ```
 
-## 11. 当前 API 占位接口
+## 11. 当前 API 接口
 
 ```text
 GET  /api/v1/health
 GET  /api/v1/public/config
 GET  /api/v1/public/pages/:slug
 GET  /api/v1/public/translations/:locale
+
+GET  /api/v1/pages
+POST /api/v1/pages
+GET  /api/v1/pages/:id
+PUT  /api/v1/pages/:id/schema
+POST /api/v1/pages/:id/publish
+POST /api/v1/admin/pages/:slug/publish
 
 GET  /api/v1/markets
 GET  /api/v1/locales
@@ -433,7 +448,11 @@ POST /api/v1/public/cart
 POST /api/v1/public/checkout
 ```
 
-当前 `cart` 和 `checkout` 会返回 `COMMERCE_DISABLED`，这是预期行为。
+说明：
+
+- `POST /api/v1/pages`、`PUT /api/v1/pages/:id/schema`、发布接口需要 `Idempotency-Key`。
+- `GET /api/v1/public/pages/:slug` 只返回已发布版本；未发布或不存在时返回 `NOT_FOUND`。
+- 当前 `cart` 和 `checkout` 会返回 `COMMERCE_DISABLED`，这是预期行为。
 
 ## 12. 常用验证命令
 
@@ -476,36 +495,36 @@ pnpm --filter @app-starter/renderer build
 - `pnpm test`
 - `git diff --check`
 
+本地数据库初始化后，还需执行一次种子数据，前台和后台才能读到默认 `home` 页。
+
 ## 13. 当前后台说明
 
-当前后台页面只是 Phase 1 Admin Shell。
+当前后台仍是早期 Page Builder 原型，不是完整运营后台。
 
 已经有：
 
 - Ant Design 布局。
-- 左侧菜单占位。
-- 后台主题入口。
+- 页面 Chrome 编辑、Desktop / Mobile 预览。
+- Publish 按钮，发布结果写入 PostgreSQL。
+- 启动时尝试加载已发布的 `home` 页面。
 - 自定义后台模块扩展入口。
-- 后续页面管理、媒体库、多语言、设置页的承载位置。
 
 还没有：
 
 - 登录。
 - 用户权限。
-- 数据库联动。
-- 页面列表。
-- 页面编辑器。
-- 发布按钮。
+- 页面列表与新建页面。
+- Section 级属性面板。
 - 媒体库。
 
-下一阶段应优先做后台最小闭环：
+下一阶段应优先做后台登录和页面生命周期 UI：
 
 ```text
-站点列表
+Admin 登录
+Tenant Context
 页面列表
 新建页面
-编辑 Page Schema
-预览页面
+编辑并保存草稿
 发布页面
 前台读取已发布页面
 ```
@@ -535,17 +554,11 @@ pnpm --filter @app-starter/renderer build
 
 ## 15. 下一阶段计划
 
-Phase 1 后台功能一期：
+Phase 1 后台功能一期剩余：
 
-1. API 接入 Prisma Service。
-2. Tenant / Site 初始化种子数据。
-3. 页面列表接口。
-4. 页面创建接口。
-5. PageVersion 保存接口。
-6. 发布接口。
-7. Admin 页面列表。
-8. Admin 简易 Page Schema 编辑。
-9. Admin 预览。
-10. Web 读取已发布页面。
-
-完成以上内容后，项目才算进入可用建站平台 MVP。
+1. Admin 登录：Email + Password + JWT。
+2. Access Token / Refresh Token 与 Tenant Context。
+3. Admin API 鉴权 Guard。
+4. Admin 页面列表。
+5. Admin 新建页面并进入现有编辑器。
+6. 保存草稿与发布按钮分离。

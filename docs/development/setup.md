@@ -31,6 +31,8 @@ MULTI_LOCALE_ENABLED=false
 ## Run
 
 ```bash
+pnpm --filter @app-starter/api exec prisma db push --schema prisma/schema.prisma
+pnpm --filter @app-starter/api run prisma:seed
 pnpm dev
 ```
 
