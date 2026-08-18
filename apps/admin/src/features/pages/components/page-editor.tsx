@@ -10,6 +10,7 @@ import { PagePreviewPane } from "./page-preview-pane";
 import { PageSectionList } from "./page-section-list";
 import { SectionLibraryPanel } from "./section-library-panel";
 import { SectionPropertiesPanel } from "./section-properties-panel";
+import { SeoSettingsPanel } from "./seo-settings-panel";
 
 export function PageEditor(props: {
   canRedo: boolean;
@@ -125,6 +126,10 @@ export function PageEditor(props: {
             viewport={props.viewport}
           />
           <PageContentFields
+            onChange={props.onSchemaChange}
+            schema={props.schema}
+          />
+          <SeoSettingsPanel
             onChange={props.onSchemaChange}
             schema={props.schema}
           />

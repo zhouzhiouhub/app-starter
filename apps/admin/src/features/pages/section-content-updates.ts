@@ -6,6 +6,8 @@ export function updatePageMetaTitle(
   current: PageSchema,
   title: string,
 ): PageSchema {
+  const shouldSyncSeoTitle = current.seo.title === current.meta.title;
+
   return {
     ...current,
     meta: {
@@ -14,7 +16,7 @@ export function updatePageMetaTitle(
     },
     seo: {
       ...current.seo,
-      title,
+      title: shouldSyncSeoTitle ? title : current.seo.title,
     },
   };
 }
