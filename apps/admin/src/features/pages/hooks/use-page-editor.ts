@@ -1,20 +1,29 @@
 import { useCallback, useEffect, useState } from "react";
-import { createFallbackPage, type PageSchema, type Viewport } from "@app-starter/schema";
+import { createFallbackPage, type Viewport } from "@app-starter/schema";
 import { AuthRequiredError } from "../../auth/api";
 import { formatRequestError } from "../../../lib/api-error";
 import { getPage, publishPage, savePageDraft } from "../api";
 import { getStorefrontPageUrl } from "../storefront-url";
 import type { EditorFeedback, PageSummary } from "../types";
+import { useSchemaHistory } from "./use-schema-history";
 
 export function usePageEditor(pageId: string | undefined) {
   const [page, setPage] = useState<PageSummary | null>(null);
-  const [draftSchema, setDraftSchema] = useState<PageSchema | null>(null);
   const [viewport, setViewport] = useState<Viewport>("desktop");
   const [feedback, setFeedback] = useState<EditorFeedback | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const {
+    canRedo,
+    canUndo,
+    commitSchema,
+    redo,
+    resetSchema,
+    schema: draftSchema,
+    undo,
+  } = useSchemaHistory();
 
   const load = useCallback(async () => {
     if (!pageId) {
@@ -29,7 +38,7 @@ export function usePageEditor(pageId: string | undefined) {
     try {
       const detail = await getPage(pageId);
       setPage(detail);
-      setDraftSchema(
+      resetSchema(
         detail.draftSchema ??
           createFallbackPage({
             slug: detail.slug,
@@ -46,7 +55,7 @@ export function usePageEditor(pageId: string | undefined) {
     } finally {
       setIsLoading(false);
     }
-  }, [pageId]);
+  }, [pageId, resetSchema]);
 
   useEffect(() => {
     void load();
@@ -92,7 +101,7 @@ export function usePageEditor(pageId: string | undefined) {
 
     try {
       const published = await publishPage(pageId, draftSchema);
-      setDraftSchema(published);
+      resetSchema(published);
       setPage((current) =>
         current
           ? {
@@ -119,9 +128,11 @@ export function usePageEditor(pageId: string | undefined) {
     } finally {
       setIsPublishing(false);
     }
-  }, [draftSchema, pageId]);
+  }, [draftSchema, pageId, resetSchema]);
 
   return {
+    canRedo,
+    canUndo,
     draftSchema,
     error,
     feedback,
@@ -130,10 +141,12 @@ export function usePageEditor(pageId: string | undefined) {
     isSaving,
     page,
     publish,
+    redo,
     saveDraft,
-    setDraftSchema,
+    setDraftSchema: commitSchema,
     setFeedback,
     setViewport,
+    undo,
     viewport,
   };
 }

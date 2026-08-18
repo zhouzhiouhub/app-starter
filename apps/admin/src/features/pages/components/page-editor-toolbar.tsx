@@ -1,13 +1,23 @@
-import { ExportOutlined, SaveOutlined, UploadOutlined } from "@ant-design/icons";
-import { Button, Space } from "antd";
+import {
+  ExportOutlined,
+  RedoOutlined,
+  SaveOutlined,
+  UndoOutlined,
+  UploadOutlined,
+} from "@ant-design/icons";
+import { Button, Space, Tooltip } from "antd";
 import { useNavigate } from "react-router-dom";
 import { getStorefrontPageUrl } from "../storefront-url";
 
 export function PageEditorToolbar(props: {
+  canRedo: boolean;
+  canUndo: boolean;
   isPublishing: boolean;
   isSaving: boolean;
   onPublish: () => void;
+  onRedo: () => void;
   onSaveDraft: () => void;
+  onUndo: () => void;
   published: boolean;
   slug: string;
 }) {
@@ -16,6 +26,22 @@ export function PageEditorToolbar(props: {
   return (
     <Space>
       <Button onClick={() => navigate("/pages")}>Back to list</Button>
+      <Tooltip title="Undo">
+        <Button
+          aria-label="Undo"
+          disabled={!props.canUndo}
+          icon={<UndoOutlined />}
+          onClick={props.onUndo}
+        />
+      </Tooltip>
+      <Tooltip title="Redo">
+        <Button
+          aria-label="Redo"
+          disabled={!props.canRedo}
+          icon={<RedoOutlined />}
+          onClick={props.onRedo}
+        />
+      </Tooltip>
       <Button
         icon={<SaveOutlined />}
         loading={props.isSaving}

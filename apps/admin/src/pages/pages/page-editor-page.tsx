@@ -32,13 +32,17 @@ export function PageEditorPage() {
 
   return (
     <PageEditor
+      canRedo={editor.canRedo}
+      canUndo={editor.canUndo}
       feedback={editor.feedback}
       isPublishing={editor.isPublishing}
       isSaving={editor.isSaving}
       onFeedbackClose={() => editor.setFeedback(null)}
       onPublish={() => void editor.publish()}
+      onRedo={editor.redo}
       onSaveDraft={() => void editor.saveDraft()}
       onSchemaChange={(schema) => editor.setDraftSchema(schema)}
+      onUndo={editor.undo}
       onViewportChange={editor.setViewport}
       page={editor.page}
       schema={editor.draftSchema}

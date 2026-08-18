@@ -9,13 +9,17 @@ import { PagePreviewPane } from "./page-preview-pane";
 import { PageSectionList } from "./page-section-list";
 
 export function PageEditor(props: {
+  canRedo: boolean;
+  canUndo: boolean;
   feedback: EditorFeedback | null;
   isPublishing: boolean;
   isSaving: boolean;
   onFeedbackClose: () => void;
   onPublish: () => void;
+  onRedo: () => void;
   onSaveDraft: () => void;
   onSchemaChange: (schema: PageSchema) => void;
+  onUndo: () => void;
   onViewportChange: (viewport: Viewport) => void;
   page: PageSummary;
   schema: PageSchema;
@@ -43,10 +47,14 @@ export function PageEditor(props: {
           </Typography.Paragraph>
         </div>
         <PageEditorToolbar
+          canRedo={props.canRedo}
+          canUndo={props.canUndo}
           isPublishing={props.isPublishing}
           isSaving={props.isSaving}
           onPublish={props.onPublish}
+          onRedo={props.onRedo}
           onSaveDraft={props.onSaveDraft}
+          onUndo={props.onUndo}
           published={props.page.status === "published"}
           slug={props.page.slug}
         />
