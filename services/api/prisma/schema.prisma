@@ -13,6 +13,8 @@ model Tenant {
   slug               String              @unique
   createdAt          DateTime            @default(now())
   sites              Site[]
+  users              User[]
+  roles              Role[]
   idempotencyRecords IdempotencyRecord[]
 }
 
@@ -79,6 +81,57 @@ model MediaAsset {
   mimeType  String
   metadata  Json     @default("{}")
   createdAt DateTime @default(now())
+}
+
+model User {
+  id            String         @id @default(uuid())
+  tenantId      String
+  email         String
+  passwordHash  String
+  name          String?
+  status        String         @default("active")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  tenant        Tenant         @relation(fields: [tenantId], references: [id])
+  roles         UserRole[]
+  refreshTokens RefreshToken[]
+
+  @@unique([tenantId, email])
+  @@index([tenantId, status])
+}
+
+model Role {
+  id          String     @id @default(uuid())
+  tenantId    String
+  name        String
+  permissions Json       @default("[]")
+  createdAt   DateTime   @default(now())
+  tenant      Tenant     @relation(fields: [tenantId], references: [id])
+  users       UserRole[]
+
+  @@unique([tenantId, name])
+}
+
+model UserRole {
+  userId String
+  roleId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+}
+
+model RefreshToken {
+  id           String    @id @default(uuid())
+  userId       String
+  tokenHash    String    @unique
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  replacedById String?
+  createdAt    DateTime  @default(now())
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
 }
 
 model IdempotencyRecord {
