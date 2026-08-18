@@ -1,9 +1,11 @@
 import type { ComponentType, CSSProperties, ReactNode } from "react";
 import {
   getStorefrontHref,
+  resolveMediaReferences,
   rewriteStorefrontHref,
   type FooterChromeContent,
   type HeaderChromeContent,
+  type MediaAssetReference,
   type PageChromeRegion,
   type PageSchema,
   type SectionNode,
@@ -41,6 +43,7 @@ export interface RenderOptions {
     footer?: ReactNode | ((region: PageChromeRegion) => ReactNode);
   };
   onMissingComponent?: (node: SectionNode) => ReactNode;
+  resolveMediaUrl?: (reference: MediaAssetReference) => string;
 }
 
 function renderChromeSlot(
@@ -145,13 +148,17 @@ export function renderSection(
     );
   }
 
+  const componentProps = options.resolveMediaUrl
+    ? resolveMediaReferences(node.props, options.resolveMediaUrl)
+    : node.props;
+
   return (
     <div
       data-component={node.component}
       data-section-id={node.id}
       style={createSectionLayoutStyle(node, viewport)}
     >
-      <Component {...node.props} />
+      <Component {...componentProps} />
     </div>
   );
 }

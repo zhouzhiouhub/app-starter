@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { mediaAssetReferenceSchema } from "./media-reference.js";
 
 export const viewportSchema = z.enum(["desktop", "mobile"]);
 export type Viewport = z.infer<typeof viewportSchema>;
@@ -90,6 +91,12 @@ export const seoUrlSchema = z
   );
 export type SeoUrl = z.infer<typeof seoUrlSchema>;
 
+export const seoImageUrlSchema = z.union([
+  seoUrlSchema,
+  mediaAssetReferenceSchema,
+]);
+export type SeoImageUrl = z.infer<typeof seoImageUrlSchema>;
+
 export const layoutBoxSchema = z.object({
   x: z.number().default(0),
   y: z.number().default(0),
@@ -121,7 +128,7 @@ export type SectionNode = z.infer<typeof sectionNodeSchema>;
 export const seoConfigSchema = z.object({
   title: z.string().min(1),
   description: z.string().default(""),
-  ogImage: seoUrlSchema.optional(),
+  ogImage: seoImageUrlSchema.optional(),
   canonical: seoUrlSchema.optional(),
 });
 export type SeoConfig = z.infer<typeof seoConfigSchema>;

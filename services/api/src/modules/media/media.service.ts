@@ -1,5 +1,12 @@
 import { Injectable } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
+import {
+  collectMediaReferences,
+  pageSchema,
+  readMediaAssetId,
+  resolveMediaReferences,
+  type PageSchema,
+} from "@app-starter/schema";
 import { runTenantIdempotent } from "../../common/idempotency-record.js";
 import type { Actor } from "../identity/identity.types.js";
 import { PrismaService } from "../prisma/prisma.service.js";
@@ -130,6 +137,41 @@ export class MediaService {
         return this.assetResponse(asset, actor.tenantId);
       },
     });
+  }
+
+  async resolveSchemaMediaReferences(
+    schema: PageSchema,
+    tenantId: string,
+  ): Promise<PageSchema> {
+    const references = collectMediaReferences(schema);
+
+    if (references.length === 0) {
+      return schema;
+    }
+
+    const ids = references
+      .map((reference) => readMediaAssetId(reference))
+      .filter((id): id is string => Boolean(id));
+    const assets = await this.prisma.mediaAsset.findMany({
+      where: {
+        id: { in: ids },
+        tenantId,
+      },
+      select: {
+        id: true,
+        url: true,
+      },
+    });
+    const urlsByReference = new Map(
+      assets.map((asset) => [`media://${asset.id}`, asset.url]),
+    );
+
+    return pageSchema.parse(
+      resolveMediaReferences(
+        schema,
+        (reference) => urlsByReference.get(reference) ?? reference,
+      ),
+    );
   }
 
   private assetResponse(

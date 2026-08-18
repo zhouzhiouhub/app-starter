@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import type { Actor } from "../identity/identity.types.js";
+import { MediaService } from "../media/media.service.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { createPage } from "./use-cases/create-page.js";
 import { getPageById } from "./use-cases/get-page-by-id.js";
@@ -11,7 +12,10 @@ import { savePageDraft } from "./use-cases/save-page-draft.js";
 
 @Injectable()
 export class PagesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly media: MediaService,
+  ) {}
 
   async list(
     query: { page?: string | number; limit?: string | number },
@@ -62,6 +66,8 @@ export class PagesService {
   }
 
   async getPublishedBySlug(slug: string) {
-    return getPublishedPageBySlug(this.prisma, slug);
+    return getPublishedPageBySlug(this.prisma, slug, (schema, tenantId) =>
+      this.media.resolveSchemaMediaReferences(schema, tenantId),
+    );
   }
 }

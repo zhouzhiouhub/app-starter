@@ -8,5 +8,6 @@ import { MediaService } from "./media.service.js";
   controllers: [MediaController],
   imports: [PrismaModule, IdentityModule],
   providers: [MediaService],
+  exports: [MediaService],
 })
 export class MediaModule {}

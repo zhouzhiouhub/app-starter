@@ -6,6 +6,10 @@ import { parseSlug, readSchema } from "../pages.validation.js";
 export async function getPublishedPageBySlug(
   prisma: PrismaService,
   slug: string,
+  resolveMediaReferences?: (
+    schema: PageSchema,
+    tenantId: string,
+  ) => Promise<PageSchema>,
 ): Promise<PageSchema | null> {
   const site = await getPublicDefaultSite(prisma);
   const normalizedSlug = parseSlug(slug);
@@ -33,5 +37,8 @@ export async function getPublishedPageBySlug(
     return null;
   }
 
-  return readSchema(published.schema, page.slug);
+  const schema = readSchema(published.schema, page.slug);
+  return resolveMediaReferences
+    ? resolveMediaReferences(schema, site.tenantId)
+    : schema;
 }

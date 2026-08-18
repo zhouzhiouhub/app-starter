@@ -5,7 +5,9 @@ import {
   getFallbackPageTemplateId,
   getPageTemplateChrome,
   getStorefrontHref,
+  collectMediaReferences,
   pageSchema,
+  resolveMediaReferences,
   resolveLocaleFromPath,
   rewriteStorefrontHref,
   toStorefrontPathPrefix,
@@ -121,14 +123,46 @@ test("page schema accepts safe SEO URLs", () => {
       seo: {
         canonical: "https://example.com/en/test-page",
         description: "Safe SEO fields",
-        ogImage: "/images/og.jpg",
+        ogImage: "media://asset-1",
         title: "Safe SEO",
       },
     }),
   );
 
   assert.equal(parsed.seo.canonical, "https://example.com/en/test-page");
-  assert.equal(parsed.seo.ogImage, "/images/og.jpg");
+  assert.equal(parsed.seo.ogImage, "media://asset-1");
+});
+
+test("page schema keeps canonical URLs stricter than SEO images", () => {
+  assert.throws(() =>
+    pageSchema.parse(
+      minimalPage({
+        seo: {
+          canonical: "media://asset-1",
+          description: "",
+          title: "Bad canonical",
+        },
+      }),
+    ),
+  );
+});
+
+test("media references can be collected and resolved", () => {
+  const input = {
+    hero: {
+      image: "media://asset-1",
+    },
+    gallery: ["media://asset-2", "https://cdn.example.com/static.jpg"],
+  };
+  const references = collectMediaReferences(input);
+  const resolved = resolveMediaReferences(input, (reference) =>
+    reference.replace("media://", "https://cdn.example.com/"),
+  );
+
+  assert.deepEqual(references, ["media://asset-1", "media://asset-2"]);
+  assert.equal(resolved.hero.image, "https://cdn.example.com/asset-1");
+  assert.equal(resolved.gallery[0], "https://cdn.example.com/asset-2");
+  assert.equal(resolved.gallery[1], "https://cdn.example.com/static.jpg");
 });
 
 test("page schema rejects unsafe SEO URLs", () => {

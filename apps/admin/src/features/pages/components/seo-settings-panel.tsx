@@ -1,5 +1,9 @@
 import { Form, Input, Typography } from "antd";
-import type { PageSchema } from "@app-starter/schema";
+import {
+  isMediaAssetReference,
+  type PageSchema,
+} from "@app-starter/schema";
+import { MediaAssetSelect } from "../../media/components/media-asset-select";
 import { updateSeoField, type SeoField } from "../seo-updates";
 
 const seoFields: Array<{
@@ -27,7 +31,7 @@ const seoFields: Array<{
   {
     field: "ogImage",
     label: "Open Graph image",
-    placeholder: "https://cdn.example.com/image.jpg",
+    placeholder: "media://asset-id or https://cdn.example.com/image.jpg",
   },
 ];
 
@@ -62,6 +66,29 @@ export function SeoSettingsPanel(props: {
                 rows={item.rows}
                 value={props.schema.seo[item.field] ?? ""}
               />
+            ) : item.field === "ogImage" ? (
+              <>
+                <Input
+                  onChange={(event) =>
+                    handleChange(item.field, event.target.value)
+                  }
+                  placeholder={item.placeholder}
+                  style={{ marginBottom: 8 }}
+                  value={props.schema.seo[item.field] ?? ""}
+                />
+                <MediaAssetSelect
+                  onSelect={(asset) =>
+                    handleChange(item.field, asset.reference)
+                  }
+                  value={
+                    isMediaAssetReference(
+                      props.schema.seo[item.field] ?? "",
+                    )
+                      ? props.schema.seo[item.field]
+                      : undefined
+                  }
+                />
+              </>
             ) : (
               <Input
                 onChange={(event) =>

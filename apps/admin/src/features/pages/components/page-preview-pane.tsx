@@ -1,12 +1,15 @@
 import { Segmented, Typography } from "antd";
 import { PageRenderer } from "@app-starter/renderer";
 import type { PageSchema, Viewport } from "@app-starter/schema";
+import { useMediaResolver } from "../../media/hooks/use-media-resolver";
 
 export function PagePreviewPane(props: {
   schema: PageSchema;
   onViewportChange: (viewport: Viewport) => void;
   viewport: Viewport;
 }) {
+  const resolveMediaUrl = useMediaResolver();
+
   return (
     <section
       style={{
@@ -46,7 +49,11 @@ export function PagePreviewPane(props: {
           overflow: "hidden",
         }}
       >
-        <PageRenderer schema={props.schema} viewport={props.viewport} />
+        <PageRenderer
+          resolveMediaUrl={resolveMediaUrl}
+          schema={props.schema}
+          viewport={props.viewport}
+        />
       </div>
     </section>
   );
