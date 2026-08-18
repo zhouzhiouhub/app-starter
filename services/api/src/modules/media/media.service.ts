@@ -10,18 +10,17 @@ import {
 import { runTenantIdempotent } from "../../common/idempotency-record.js";
 import type { Actor } from "../identity/identity.types.js";
 import { PrismaService } from "../prisma/prisma.service.js";
-import {
-  DEFAULT_MEDIA_CDN_BASE_URL,
-  DEFAULT_MEDIA_UPLOAD_BASE_URL,
-  MEDIA_MAX_UPLOAD_BYTES,
-  MEDIA_UPLOAD_URL_TTL_SECONDS,
-} from "./media.constants.js";
+import { MEDIA_MAX_UPLOAD_BYTES } from "./media.constants.js";
 import {
   createMediaR2Key,
   inferMediaAssetType,
   toMediaAssetResponse,
 } from "./media.mapper.js";
 import type { MediaUploadUrlResponse } from "./media.types.js";
+import {
+  createMediaCdnUrl,
+  createMediaUploadTarget,
+} from "./media.upload-target.js";
 import {
   assertTenantR2Key,
   parseConfirmMediaInput,
@@ -72,21 +71,20 @@ export class MediaService {
       filename: input.filename,
       tenantId: actor.tenantId,
     });
-    const expiresAt = new Date(
-      Date.now() + MEDIA_UPLOAD_URL_TTL_SECONDS * 1000,
-    );
+    const uploadTarget = createMediaUploadTarget({
+      mimeType: input.mimeType,
+      r2Key,
+    });
 
     return {
       data: {
-        uploadUrl: buildObjectUrl(readUploadBaseUrl(), r2Key),
+        uploadUrl: uploadTarget.uploadUrl,
         method: "PUT",
         r2Key,
         type: inferMediaAssetType(input.mimeType),
-        headers: {
-          "Content-Type": input.mimeType,
-        },
+        headers: uploadTarget.headers,
         maxSize: MEDIA_MAX_UPLOAD_BYTES,
-        expiresAt: expiresAt.toISOString(),
+        expiresAt: uploadTarget.expiresAt.toISOString(),
         confirmPath: "/api/v1/media/confirm",
       } satisfies MediaUploadUrlResponse,
       meta: {
@@ -126,7 +124,7 @@ export class MediaService {
             tenantId: actor.tenantId,
             type: inferMediaAssetType(input.mimeType),
             filename: input.filename,
-            url: input.url ?? buildObjectUrl(readCdnBaseUrl(), input.r2Key),
+            url: input.url ?? createMediaCdnUrl(input.r2Key),
             r2Key: input.r2Key,
             size: BigInt(input.size),
             mimeType: input.mimeType,
@@ -186,22 +184,4 @@ export class MediaService {
       },
     };
   }
-}
-
-function readUploadBaseUrl(): string {
-  return process.env.MEDIA_UPLOAD_BASE_URL ?? DEFAULT_MEDIA_UPLOAD_BASE_URL;
-}
-
-function readCdnBaseUrl(): string {
-  return process.env.MEDIA_CDN_BASE_URL ?? DEFAULT_MEDIA_CDN_BASE_URL;
-}
-
-function buildObjectUrl(baseUrl: string, objectKey: string): string {
-  const base = baseUrl.replace(/\/+$/g, "");
-  const encodedKey = objectKey
-    .split("/")
-    .map((part) => encodeURIComponent(part))
-    .join("/");
-
-  return `${base}/${encodedKey}`;
 }

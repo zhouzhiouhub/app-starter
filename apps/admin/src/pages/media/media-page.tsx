@@ -19,7 +19,7 @@ export function MediaPage() {
         <div>
           <Typography.Title level={3}>Media</Typography.Title>
           <Typography.Paragraph>
-            Manage confirmed MediaAsset records and use their{" "}
+            Upload assets, register external media, and use their{" "}
             <Typography.Text code>media://</Typography.Text> references in page
             content.
           </Typography.Paragraph>

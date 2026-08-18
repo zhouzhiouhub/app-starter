@@ -21,8 +21,24 @@ export interface MediaListMeta {
 
 export interface RegisterMediaInput {
   filename: string;
-  url: string;
   mimeType: string;
   size: number;
   altText?: string;
+  url: string;
+}
+
+export interface MediaUploadTarget {
+  uploadUrl: string;
+  method: "PUT";
+  r2Key: string;
+  type: MediaAssetType;
+  headers: Record<string, string>;
+  maxSize: number;
+  expiresAt: string;
+  confirmPath: string;
+}
+
+export interface UploadMediaFileInput {
+  altText?: string;
+  file: File;
 }

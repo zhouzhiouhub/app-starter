@@ -7,6 +7,7 @@ import {
   toMediaAssetResponse,
 } from "../dist/modules/media/media.mapper.js";
 import { MediaService } from "../dist/modules/media/media.service.js";
+import { createMediaUploadTarget } from "../dist/modules/media/media.upload-target.js";
 import { parseCreateUploadUrlInput } from "../dist/modules/media/media.validation.js";
 
 test("inferMediaAssetType maps allowed media types", () => {
@@ -65,6 +66,51 @@ test("parseCreateUploadUrlInput validates file metadata", () => {
       mimeType: "application/x-msdownload",
       size: 100,
     }),
+  );
+});
+
+test("createMediaUploadTarget returns R2 presigned PUT URLs when configured", () => {
+  const target = createMediaUploadTarget({
+    mimeType: "image/webp",
+    now: new Date("2026-08-18T00:00:00.000Z"),
+    r2Key: "tenant-1/2026/08/18/asset.webp",
+    ttlSeconds: 900,
+    env: {
+      R2_ACCOUNT_ID: "account-1",
+      R2_ACCESS_KEY_ID: "access-key",
+      R2_BUCKET: "media-bucket",
+      R2_SECRET_ACCESS_KEY: "secret-key",
+    },
+  });
+  const url = new URL(target.uploadUrl);
+
+  assert.equal(url.host, "account-1.r2.cloudflarestorage.com");
+  assert.equal(url.pathname, "/media-bucket/tenant-1/2026/08/18/asset.webp");
+  assert.equal(url.searchParams.get("X-Amz-Algorithm"), "AWS4-HMAC-SHA256");
+  assert.equal(url.searchParams.get("X-Amz-Expires"), "900");
+  assert.equal(
+    url.searchParams.get("X-Amz-Credential"),
+    "access-key/20260818/auto/s3/aws4_request",
+  );
+  assert.match(url.searchParams.get("X-Amz-Signature"), /^[a-f0-9]{64}$/);
+  assert.equal(target.uploadUrl.includes("secret-key"), false);
+  assert.deepEqual(target.headers, { "Content-Type": "image/webp" });
+  assert.equal(target.expiresAt.toISOString(), "2026-08-18T00:15:00.000Z");
+});
+
+test("createMediaUploadTarget falls back to configured upload base URLs", () => {
+  const target = createMediaUploadTarget({
+    mimeType: "image/png",
+    now: new Date("2026-08-18T00:00:00.000Z"),
+    r2Key: "tenant-1/folder/hero image.png",
+    env: {
+      MEDIA_UPLOAD_BASE_URL: "https://uploads.example.com/",
+    },
+  });
+
+  assert.equal(
+    target.uploadUrl,
+    "https://uploads.example.com/tenant-1/folder/hero%20image.png",
   );
 });
 
