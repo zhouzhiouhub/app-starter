@@ -111,3 +111,62 @@ test("privacy and terms fallback pages keep global chrome visible", () => {
   assert.equal(privacyPage.chrome.footer.enabled, true);
   assert.equal(privacyPage.chrome.footer.variant, "default");
 });
+
+test("fallback pages inherit site chrome content without turning chrome off", () => {
+  const siteChrome = pageSchema.parse(
+    minimalPage({
+      template: { id: "default" },
+      chrome: {
+        header: {
+          enabled: true,
+          variant: "default",
+          content: {
+            brand: { label: { defaultValue: "Published Brand" }, href: "/" },
+            navigation: [
+              {
+                id: "home",
+                label: { defaultValue: "Home" },
+                href: "/"
+              },
+              {
+                id: "privacy",
+                label: { defaultValue: "Privacy" },
+                href: "/en-US/privacy"
+              }
+            ]
+          }
+        },
+        footer: {
+          enabled: true,
+          variant: "minimal",
+          content: {
+            brand: { label: { defaultValue: "Published Brand" }, href: "/" },
+            copyright: { defaultValue: "© Published" },
+            navigation: [
+              {
+                id: "privacy",
+                label: { defaultValue: "Privacy" },
+                href: "/en-US/privacy"
+              }
+            ]
+          }
+        }
+      }
+    })
+  ).chrome;
+
+  const privacyPage = createFallbackPage({
+    slug: "privacy",
+    siteChrome
+  });
+
+  assert.equal(privacyPage.chrome.header.enabled, true);
+  assert.equal(
+    privacyPage.chrome.header.content.brand.label.defaultValue,
+    "Published Brand"
+  );
+  assert.equal(privacyPage.chrome.header.content.navigation.length, 2);
+  assert.equal(privacyPage.chrome.footer.enabled, true);
+  assert.equal(privacyPage.chrome.footer.variant, "minimal");
+  assert.equal(privacyPage.chrome.footer.content.copyright.defaultValue, "© Published");
+});

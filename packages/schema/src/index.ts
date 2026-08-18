@@ -364,9 +364,11 @@ export function createFallbackPage(input: {
   locale?: string;
   market?: string;
   title?: string;
+  siteChrome?: PageChromeSettings;
 }): PageSchema {
   const templateId = getFallbackPageTemplateId(input.slug);
   const title = input.title ?? getFallbackPageTitle(input.slug);
+  const templateChrome = getPageTemplateChrome(templateId);
 
   return pageSchema.parse({
     ...exampleLandingPage,
@@ -380,7 +382,20 @@ export function createFallbackPage(input: {
     template: {
       id: templateId
     },
-    chrome: getPageTemplateChrome(templateId),
+    chrome: input.siteChrome
+      ? {
+          header: {
+            enabled: templateChrome.header.enabled,
+            variant: input.siteChrome.header.variant,
+            content: input.siteChrome.header.content
+          },
+          footer: {
+            enabled: templateChrome.footer.enabled,
+            variant: input.siteChrome.footer.variant,
+            content: input.siteChrome.footer.content
+          }
+        }
+      : templateChrome,
     seo: {
       ...exampleLandingPage.seo,
       title

@@ -1,5 +1,4 @@
 import { PageRenderer } from "@app-starter/renderer";
-import { exampleLandingPage } from "@app-starter/schema";
 import { getPublishedPage } from "../lib/published-page";
 
 export default async function HomePage() {
@@ -8,5 +7,5 @@ export default async function HomePage() {
     slug: "home"
   });
 
-  return <PageRenderer schema={schema ?? exampleLandingPage} viewport="desktop" />;
+  return <PageRenderer schema={schema} viewport="desktop" />;
 }
