@@ -1,0 +1,76 @@
+import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import { Button, Empty, Form, Input, Space, Tooltip } from "antd";
+import type { PageSchema, SectionNode } from "@app-starter/schema";
+import {
+  addImage,
+  readImages,
+  removeImage,
+  updateImage,
+} from "../section-list-prop-updates";
+
+export function ImageGalleryFields(props: {
+  onChange: (schema: PageSchema) => void;
+  schema: PageSchema;
+  section: SectionNode;
+}) {
+  const images = readImages(props.section);
+
+  return (
+    <Form.Item label="Images">
+      <Space direction="vertical" style={{ width: "100%" }}>
+        {images.length === 0 ? <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} /> : null}
+        {images.map((image, index) => (
+          <Space.Compact block key={`${index}-${image.src}`}>
+            <Input
+              onChange={(event) =>
+                props.onChange(
+                  updateImage(
+                    props.schema,
+                    props.section.id,
+                    index,
+                    "src",
+                    event.target.value,
+                  ),
+                )
+              }
+              placeholder="Image URL"
+              value={image.src}
+            />
+            <Input
+              onChange={(event) =>
+                props.onChange(
+                  updateImage(
+                    props.schema,
+                    props.section.id,
+                    index,
+                    "alt",
+                    event.target.value,
+                  ),
+                )
+              }
+              placeholder="Alt text"
+              value={image.alt}
+            />
+            <Tooltip title="Remove">
+              <Button
+                danger
+                icon={<DeleteOutlined />}
+                onClick={() =>
+                  props.onChange(
+                    removeImage(props.schema, props.section.id, index),
+                  )
+                }
+              />
+            </Tooltip>
+          </Space.Compact>
+        ))}
+        <Button
+          icon={<PlusOutlined />}
+          onClick={() => props.onChange(addImage(props.schema, props.section.id))}
+        >
+          Add image
+        </Button>
+      </Space>
+    </Form.Item>
+  );
+}

@@ -5,6 +5,9 @@ import {
   updateSectionTextField,
   type SectionTextValueKind,
 } from "../section-content-updates";
+import { FaqItemsFields } from "./faq-items-fields";
+import { ImageGalleryFields } from "./image-gallery-fields";
+import { SpecTableFields } from "./spec-table-fields";
 
 interface SectionPropertyField {
   control: "input" | "textarea";
@@ -104,6 +107,27 @@ export function SectionPropertiesPanel(props: {
               )}
             </Form.Item>
           ))}
+          {section.component === "faq" ? (
+            <FaqItemsFields
+              onChange={props.onChange}
+              schema={props.schema}
+              section={section}
+            />
+          ) : null}
+          {section.component === "image-gallery" ? (
+            <ImageGalleryFields
+              onChange={props.onChange}
+              schema={props.schema}
+              section={section}
+            />
+          ) : null}
+          {section.component === "spec-table" ? (
+            <SpecTableFields
+              onChange={props.onChange}
+              schema={props.schema}
+              section={section}
+            />
+          ) : null}
         </Form>
       )}
     </section>
