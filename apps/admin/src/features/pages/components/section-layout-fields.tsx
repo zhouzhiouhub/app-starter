@@ -1,6 +1,8 @@
-import { Form, InputNumber, Space, Switch, Typography } from "antd";
+import { CopyOutlined } from "@ant-design/icons";
+import { Button, Form, InputNumber, Space, Switch, Typography } from "antd";
 import type { PageSchema, SectionNode, Viewport } from "@app-starter/schema";
 import {
+  copyDesktopLayoutToMobile,
   readSectionLayout,
   updateSectionLayoutField,
   updateSectionVisibility,
@@ -29,9 +31,30 @@ export function SectionLayoutFields(props: {
 
   return (
     <>
-      <Typography.Title level={5}>
-        {props.viewport === "desktop" ? "Desktop" : "Mobile"} layout
-      </Typography.Title>
+      <div
+        style={{
+          alignItems: "center",
+          display: "flex",
+          justifyContent: "space-between",
+        }}
+      >
+        <Typography.Title level={5}>
+          {props.viewport === "desktop" ? "Desktop" : "Mobile"} layout
+        </Typography.Title>
+        {props.viewport === "mobile" ? (
+          <Button
+            icon={<CopyOutlined />}
+            onClick={() =>
+              props.onChange(
+                copyDesktopLayoutToMobile(props.schema, props.section.id),
+              )
+            }
+            size="small"
+          >
+            Copy desktop
+          </Button>
+        ) : null}
+      </div>
       <Form.Item label="Visibility">
         <Switch
           checked={visible}

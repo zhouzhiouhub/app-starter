@@ -73,3 +73,30 @@ export function updateSectionVisibility(
     }),
   };
 }
+
+export function copyDesktopLayoutToMobile(
+  current: PageSchema,
+  sectionId: string,
+): PageSchema {
+  return {
+    ...current,
+    sections: current.sections.map((section) => {
+      if (section.id !== sectionId) {
+        return section;
+      }
+
+      const desktopLayout = readSectionLayout(section, "desktop");
+
+      return {
+        ...section,
+        layout: {
+          ...section.layout,
+          mobile: {
+            ...desktopLayout,
+            width: Math.min(desktopLayout.width, 390),
+          },
+        },
+      };
+    }),
+  };
+}
