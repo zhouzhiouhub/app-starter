@@ -115,6 +115,32 @@ test("page schema rejects unsafe chrome navigation hrefs", () => {
   );
 });
 
+test("named landing fallback pages do not reuse the home hero", () => {
+  const faq = createFallbackPage({ slug: "faq", title: "Faq" });
+  const hero = faq.sections.find((section) => section.component === "hero-banner");
+
+  assert.equal(
+    hero &&
+      typeof hero.props.title === "object" &&
+      hero.props.title &&
+      "defaultValue" in hero.props.title
+      ? hero.props.title.defaultValue
+      : null,
+    "Faq",
+  );
+
+  const home = createFallbackPage({ slug: "home" });
+  assert.equal(
+    home.sections[0] &&
+      typeof home.sections[0].props.title === "object" &&
+      home.sections[0].props.title &&
+      "defaultValue" in home.sections[0].props.title
+      ? home.sections[0].props.title.defaultValue
+      : null,
+    "High-fidelity storefront builder",
+  );
+});
+
 test("privacy and terms fallback pages keep global chrome visible", () => {
   assert.equal(getFallbackPageTemplateId("privacy"), "policy");
   assert.equal(getFallbackPageTemplateId("terms"), "policy");

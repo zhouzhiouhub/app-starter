@@ -1,12 +1,15 @@
+import { ExportOutlined, SaveOutlined, UploadOutlined } from "@ant-design/icons";
 import { Button, Space } from "antd";
-import { SaveOutlined, UploadOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
+import { getStorefrontPageUrl } from "../storefront-url";
 
 export function PageEditorToolbar(props: {
   isPublishing: boolean;
   isSaving: boolean;
   onPublish: () => void;
   onSaveDraft: () => void;
+  published: boolean;
+  slug: string;
 }) {
   const navigate = useNavigate();
 
@@ -27,6 +30,15 @@ export function PageEditorToolbar(props: {
         type="primary"
       >
         Publish
+      </Button>
+      <Button
+        disabled={!props.published}
+        href={getStorefrontPageUrl(props.slug)}
+        icon={<ExportOutlined />}
+        rel="noreferrer"
+        target="_blank"
+      >
+        View on site
       </Button>
     </Space>
   );

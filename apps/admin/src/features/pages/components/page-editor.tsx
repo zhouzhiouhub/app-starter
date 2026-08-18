@@ -1,7 +1,9 @@
 import { Alert, Tag, Typography } from "antd";
 import type { PageSchema, Viewport } from "@app-starter/schema";
+import { getStorefrontPagePath } from "../storefront-url";
 import type { EditorFeedback, PageSummary } from "../types";
 import { ChromeSettingsPanel } from "./chrome-settings-panel";
+import { PageContentFields } from "./page-content-fields";
 import { PageEditorToolbar } from "./page-editor-toolbar";
 import { PagePreviewPane } from "./page-preview-pane";
 
@@ -31,8 +33,12 @@ export function PageEditor(props: {
         <div>
           <Typography.Title level={3}>{props.page.title}</Typography.Title>
           <Typography.Paragraph>
-            Editing <Typography.Text code>{props.page.slug}</Typography.Text>.
-            Save a draft or publish to the storefront.
+            Storefront URL:{" "}
+            <Typography.Text code>
+              {getStorefrontPagePath(props.page.slug)}
+            </Typography.Text>
+            . Home stays at <Typography.Text code>/en</Typography.Text>. Edit
+            the page body below, then publish and open View on site.
           </Typography.Paragraph>
         </div>
         <PageEditorToolbar
@@ -40,6 +46,8 @@ export function PageEditor(props: {
           isSaving={props.isSaving}
           onPublish={props.onPublish}
           onSaveDraft={props.onSaveDraft}
+          published={props.page.status === "published"}
+          slug={props.page.slug}
         />
       </div>
       {props.feedback ? (
@@ -67,10 +75,16 @@ export function PageEditor(props: {
           gridTemplateColumns: "minmax(320px, 420px) minmax(0, 1fr)",
         }}
       >
-        <ChromeSettingsPanel
-          onChange={props.onSchemaChange}
-          schema={props.schema}
-        />
+        <div>
+          <PageContentFields
+            onChange={props.onSchemaChange}
+            schema={props.schema}
+          />
+          <ChromeSettingsPanel
+            onChange={props.onSchemaChange}
+            schema={props.schema}
+          />
+        </div>
         <PagePreviewPane
           onViewportChange={props.onViewportChange}
           schema={props.schema}

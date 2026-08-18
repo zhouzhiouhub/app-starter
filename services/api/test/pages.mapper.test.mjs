@@ -43,6 +43,16 @@ test("createInitialPageSchema applies the selected template", () => {
   assert.equal(schema.meta.slug, "campaign");
   assert.equal(schema.meta.title, "Campaign");
   assert.equal(schema.template.id, "landing-blank");
+  const hero = schema.sections.find((section) => section.component === "hero-banner");
+  assert.equal(
+    hero &&
+      typeof hero.props.title === "object" &&
+      hero.props.title &&
+      "defaultValue" in hero.props.title
+      ? hero.props.title.defaultValue
+      : null,
+    "Campaign",
+  );
 });
 
 test("parsePageSchema forces the stored slug", () => {

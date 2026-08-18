@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { createInitialPageSections } from "./create-initial-sections.js";
 
 export const viewportSchema = z.enum(["desktop", "mobile"]);
 export type Viewport = z.infer<typeof viewportSchema>;
@@ -416,9 +417,10 @@ export function createFallbackPage(input: {
   locale?: string;
   market?: string;
   title?: string;
+  templateId?: PageTemplateId;
   siteChrome?: PageChromeSettings;
 }): PageSchema {
-  const templateId = getFallbackPageTemplateId(input.slug);
+  const templateId = input.templateId ?? getFallbackPageTemplateId(input.slug);
   const title = input.title ?? getFallbackPageTitle(input.slug);
   const templateChrome = getPageTemplateChrome(templateId);
 
@@ -448,26 +450,12 @@ export function createFallbackPage(input: {
           },
         }
       : templateChrome,
-    sections:
-      templateId === "policy"
-        ? [
-            {
-              id: "policy-body",
-              component: "rich-text",
-              props: {
-                title: { defaultValue: title },
-                content: {
-                  defaultValue:
-                    "This page is a storefront placeholder. Publish a dedicated policy page to replace this content."
-                }
-              },
-              layout: {
-                desktop: { x: 0, y: 0, width: 1200 },
-                mobile: { x: 0, y: 0, width: 390 }
-              }
-            }
-          ]
-        : exampleLandingPage.sections,
+    sections: createInitialPageSections({
+      homeSections: exampleLandingPage.sections,
+      slug: input.slug,
+      templateId,
+      title,
+    }),
     seo: {
       ...exampleLandingPage.seo,
       title,

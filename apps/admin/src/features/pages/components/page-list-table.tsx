@@ -1,6 +1,8 @@
-import { Button, Table, Tag } from "antd";
+import { Button, Space, Table, Tag, Typography } from "antd";
 import { useNavigate } from "react-router-dom";
+import { getStorefrontPagePath } from "../storefront-url";
 import type { PageSummary } from "../types";
+import { ViewStorefrontLink } from "./view-storefront-link";
 
 export function PageListTable(props: {
   isLoading: boolean;
@@ -17,6 +19,15 @@ export function PageListTable(props: {
       columns={[
         { dataIndex: "title", key: "title", title: "Title" },
         { dataIndex: "slug", key: "slug", title: "Slug" },
+        {
+          key: "path",
+          render: (_, page) => (
+            <Typography.Text code>
+              {getStorefrontPagePath(page.slug)}
+            </Typography.Text>
+          ),
+          title: "Storefront",
+        },
         { dataIndex: "type", key: "type", title: "Type" },
         {
           dataIndex: "status",
@@ -37,12 +48,18 @@ export function PageListTable(props: {
         {
           key: "actions",
           render: (_, page) => (
-            <Button
-              onClick={() => navigate(`/pages/${page.id}`)}
-              type="link"
-            >
-              Edit
-            </Button>
+            <Space>
+              <Button
+                onClick={() => navigate(`/pages/${page.id}`)}
+                type="link"
+              >
+                Edit
+              </Button>
+              <ViewStorefrontLink
+                published={page.status === "published"}
+                slug={page.slug}
+              />
+            </Space>
           ),
           title: "",
         },

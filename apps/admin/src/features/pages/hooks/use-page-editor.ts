@@ -3,6 +3,7 @@ import { createFallbackPage, type PageSchema, type Viewport } from "@app-starter
 import { AuthRequiredError } from "../../auth/api";
 import { formatRequestError } from "../../../lib/api-error";
 import { getPage, publishPage, savePageDraft } from "../api";
+import { getStorefrontPageUrl } from "../storefront-url";
 import type { EditorFeedback, PageSummary } from "../types";
 
 export function usePageEditor(pageId: string | undefined) {
@@ -102,8 +103,7 @@ export function usePageEditor(pageId: string | undefined) {
           : current,
       );
       setFeedback({
-        message:
-          "Published. Refresh the storefront page to load the latest published content.",
+        message: `Published. Open ${getStorefrontPageUrl(published.meta.slug)} to see this page. Home stays at /en.`,
         type: "success",
       });
     } catch (caught) {

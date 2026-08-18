@@ -1,7 +1,6 @@
 import {
   createFallbackPage,
   getFallbackPageTemplateId,
-  getPageTemplateChrome,
   pageSchema,
   pageSlugSchema,
   pageTemplateIdSchema,
@@ -75,19 +74,10 @@ export function resolvePageType(
 }
 
 export function createInitialPageSchema(input: CreatePageInput): PageSchema {
-  const schema = createFallbackPage({
+  return createFallbackPage({
     slug: input.slug,
+    templateId: input.templateId,
     title: input.title,
-  });
-
-  if (!input.templateId) {
-    return schema;
-  }
-
-  return pageSchema.parse({
-    ...schema,
-    template: { id: input.templateId },
-    chrome: getPageTemplateChrome(input.templateId),
   });
 }
 

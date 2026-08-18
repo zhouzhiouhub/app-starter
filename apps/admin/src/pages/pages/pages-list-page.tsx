@@ -19,8 +19,10 @@ export function PagesListPage() {
         <div>
           <Typography.Title level={3}>Pages</Typography.Title>
           <Typography.Paragraph>
-            Create landing, policy, and system pages, then open Page Builder to
-            edit chrome and publish.
+            Create landing, policy, and system pages, then open Page Builder.
+            Home is <Typography.Text code>/en</Typography.Text>. A page with
+            slug <Typography.Text code>faq</Typography.Text> is{" "}
+            <Typography.Text code>/en/faq</Typography.Text>.
           </Typography.Paragraph>
         </div>
         <CreatePageModal />

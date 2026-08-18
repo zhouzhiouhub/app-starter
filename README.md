@@ -427,7 +427,7 @@ API Health: http://localhost:4000/api/v1/health
 
 后台登录请打开 Admin 页面（例如 `http://localhost:5173/login`），不要在浏览器地址栏打开 `/api/v1/auth/login`。登录接口只接受 `POST`；开发环境后台请求走 Admin 同源 `/api/v1`，由 Vite 代理到 API。
 
-登录后打开 `http://localhost:5173/pages` 管理页面；`/pages/:id` 是 Page Builder。草稿保存和发布分别调用 `PUT /api/v1/pages/:id/schema` 与 `POST /api/v1/pages/:id/publish`。
+登录后打开 `http://localhost:5173/pages` 管理页面；`/pages/:id` 是 Page Builder。草稿保存和发布分别调用 `PUT /api/v1/pages/:id/schema` 与 `POST /api/v1/pages/:id/publish`。前台首页是 `/en`，新建页按 slug 访问，例如 `faq` 对应 `http://localhost:3000/en/faq`。
 
 ## 11. 当前 API 接口
 
