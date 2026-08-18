@@ -10,6 +10,14 @@ interface LoginFormValues {
   password: string;
 }
 
+function loginErrorMessage(caught: unknown): string {
+  if (caught instanceof TypeError && caught.message === "Failed to fetch") {
+    return "Cannot reach the API. Wait until the API service has started, then try again.";
+  }
+
+  return caught instanceof Error ? caught.message : "Login failed.";
+}
+
 export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -32,9 +40,7 @@ export function LoginPage() {
       });
       navigate(from, { replace: true });
     } catch (caught) {
-      setError(
-        caught instanceof Error ? caught.message : "Login failed.",
-      );
+      setError(loginErrorMessage(caught));
     } finally {
       setIsSubmitting(false);
     }

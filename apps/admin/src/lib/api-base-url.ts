@@ -1,9 +1,17 @@
-export function getApiBaseUrl(): string {
-  if (isViteDevServer()) {
+type ViteEnv = {
+  DEV?: boolean;
+  VITE_API_URL?: string;
+};
+
+export function resolveApiBaseUrl(input: {
+  configured?: string;
+  isDev?: boolean;
+}): string {
+  if (input.isDev) {
     return "/api/v1";
   }
 
-  const configured = readViteApiUrl();
+  const configured = input.configured?.trim();
 
   if (configured) {
     return configured.replace(/\/$/, "");
@@ -12,22 +20,15 @@ export function getApiBaseUrl(): string {
   return "/api/v1";
 }
 
-function isViteDevServer(): boolean {
-  return (
-    (
-      import.meta as unknown as {
-        env?: { DEV?: boolean };
-      }
-    ).env?.DEV === true
-  );
-}
-
-function readViteApiUrl(): string | undefined {
-  const value = (
+export function getApiBaseUrl(): string {
+  const env = (
     import.meta as unknown as {
-      env?: { VITE_API_URL?: string };
+      env?: ViteEnv;
     }
-  ).env?.VITE_API_URL?.trim();
+  ).env;
 
-  return value || undefined;
+  return resolveApiBaseUrl({
+    configured: env?.VITE_API_URL,
+    isDev: env?.DEV,
+  });
 }

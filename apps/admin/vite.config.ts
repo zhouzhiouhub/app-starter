@@ -57,34 +57,31 @@ function isAuthLoginGet(req: IncomingMessage): boolean {
 export default defineConfig({
   envDir: repoRoot,
   plugins: [react(), redirectBrowserLoginGet()],
+  preview: {
+    port: 5173,
+    proxy: apiProxy,
+  },
   resolve: {
     alias: {
       "@app-starter/admin-theme": path.join(
         repoRoot,
-        "packages/admin-theme/src/index.ts"
+        "packages/admin-theme/src/index.ts",
       ),
       "@app-starter/custom-admin": path.join(
         repoRoot,
-        "packages/custom-admin/src/index.ts"
+        "packages/custom-admin/src/index.ts",
       ),
       "@app-starter/renderer": path.join(
         repoRoot,
-        "packages/renderer/src/index.tsx"
+        "packages/renderer/src/index.tsx",
       ),
       "@app-starter/schema": path.join(repoRoot, "packages/schema/src/index.ts"),
-      "@app-starter/ui": path.join(
-        repoRoot,
-        "packages/ui/src/index.tsx"
-      )
-    }
-  },
-  preview: {
-    port: 5173,
-    proxy: apiProxy,
+      "@app-starter/ui": path.join(repoRoot, "packages/ui/src/index.tsx"),
+    },
   },
   server: {
     host: "0.0.0.0",
     port: 5173,
     proxy: apiProxy,
-  }
+  },
 });

@@ -61,3 +61,8 @@ Default local ports:
 - Web: http://localhost:3000
 - Admin: http://localhost:5173
 - API: http://localhost:4000/api/v1/health
+
+Admin Vite is bound to `0.0.0.0`, so you can open it from a LAN IP such as
+`http://192.168.0.200:5173`. In development, Admin calls `/api/v1` on the same
+origin and Vite proxies those requests to `http://127.0.0.1:4000`. Wait until
+the API logs `Nest application successfully started` before signing in.
