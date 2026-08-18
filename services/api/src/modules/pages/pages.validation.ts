@@ -7,8 +7,10 @@ import {
   listPagesQuerySchema,
   pageSlugSchema,
   parsePageSchema,
+  rollbackPageInputSchema,
   unwrapBodyData,
   type CreatePageInput,
+  type RollbackPageInput,
 } from "./pages.mapper.js";
 
 export function parseListPagesQuery(query: {
@@ -21,6 +23,12 @@ export function parseListPagesQuery(query: {
 export function parseCreateInput(body: unknown): CreatePageInput {
   return parseOrThrow(() =>
     createPageInputSchema.parse(unwrapBodyData(body)),
+  );
+}
+
+export function parseRollbackInput(body: unknown): RollbackPageInput {
+  return parseOrThrow(() =>
+    rollbackPageInputSchema.parse(unwrapBodyData(body)),
   );
 }
 

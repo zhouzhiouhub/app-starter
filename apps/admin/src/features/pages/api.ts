@@ -104,6 +104,23 @@ export async function publishPage(
   return pageSchema.parse(result.data);
 }
 
+export async function rollbackPage(
+  pageId: string,
+  versionId: string,
+): Promise<PageSchema> {
+  const result = await readAdminJson<{ data?: unknown }>(
+    `/pages/${encodeURIComponent(pageId)}/rollback`,
+    {
+      body: JSON.stringify({ versionId }),
+      headers: jsonHeaders(),
+      method: "POST",
+    },
+    "Rollback request failed.",
+  );
+
+  return pageSchema.parse(result.data);
+}
+
 function requireValidSchema(schema: PageSchema): PageSchema {
   const parsed = pageSchema.safeParse(schema);
 

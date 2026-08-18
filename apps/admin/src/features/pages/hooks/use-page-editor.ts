@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { createFallbackPage, type Viewport } from "@app-starter/schema";
 import { AuthRequiredError } from "../../auth/api";
 import { formatRequestError } from "../../../lib/api-error";
-import { getPage, publishPage, savePageDraft } from "../api";
+import { getPage, publishPage, rollbackPage, savePageDraft } from "../api";
 import { getStorefrontPageUrl } from "../storefront-url";
 import type {
   EditorFeedback,
@@ -19,6 +19,9 @@ export function usePageEditor(pageId: string | undefined) {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [rollingBackVersionId, setRollingBackVersionId] = useState<
+    string | null
+  >(null);
   const [error, setError] = useState<string | null>(null);
   const {
     canRedo,
@@ -133,6 +136,42 @@ export function usePageEditor(pageId: string | undefined) {
     }
   }, [draftSchema, pageId, resetSchema]);
 
+  const rollbackToVersion = useCallback(
+    async (versionId: string) => {
+      if (!pageId) {
+        return;
+      }
+
+      setRollingBackVersionId(versionId);
+      setFeedback(null);
+
+      try {
+        const rolledBack = await rollbackPage(pageId, versionId);
+        resetSchema(rolledBack);
+        const detail = await getPage(pageId);
+        setPage(detail);
+        setVersions(detail.versions);
+        setFeedback({
+          message: `Rolled back. Open ${getStorefrontPageUrl(rolledBack.meta.slug)} to review the storefront.`,
+          type: "success",
+        });
+      } catch (caught) {
+        if (caught instanceof AuthRequiredError) {
+          globalThis.location.assign("/login");
+          return;
+        }
+
+        setFeedback({
+          message: formatRequestError(caught),
+          type: "error",
+        });
+      } finally {
+        setRollingBackVersionId(null);
+      }
+    },
+    [pageId, resetSchema],
+  );
+
   return {
     canRedo,
     canUndo,
@@ -145,6 +184,8 @@ export function usePageEditor(pageId: string | undefined) {
     page,
     publish,
     redo,
+    rollbackToVersion,
+    rollingBackVersionId,
     saveDraft,
     setDraftSchema: commitSchema,
     setFeedback,

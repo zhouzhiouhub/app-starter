@@ -8,6 +8,7 @@ import { getPublishedPageBySlug } from "./use-cases/get-published-page-by-slug.j
 import { listPages } from "./use-cases/list-pages.js";
 import { publishPage } from "./use-cases/publish-page.js";
 import { publishPageBySlug } from "./use-cases/publish-page-by-slug.js";
+import { rollbackPage } from "./use-cases/rollback-page.js";
 import { savePageDraft } from "./use-cases/save-page-draft.js";
 
 @Injectable()
@@ -48,6 +49,15 @@ export class PagesService {
     actor: Actor,
   ) {
     return publishPage(this.prisma, id, body, idempotencyKey, actor);
+  }
+
+  async rollback(
+    id: string,
+    body: unknown,
+    idempotencyKey: string | undefined,
+    actor: Actor,
+  ) {
+    return rollbackPage(this.prisma, id, body, idempotencyKey, actor);
   }
 
   async publishBySlug(

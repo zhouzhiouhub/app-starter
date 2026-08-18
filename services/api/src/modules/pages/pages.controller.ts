@@ -82,6 +82,22 @@ export class PagesController {
       actor,
     );
   }
+
+  @Post(":id/rollback")
+  @RequireScopes("page:publish")
+  rollback(
+    @CurrentUser() actor: Actor,
+    @Body() body: unknown,
+    @Headers("idempotency-key") idempotencyKey: string | undefined,
+    @Param("id") id: string,
+  ) {
+    return this.pages.rollback(
+      id,
+      body,
+      requireIdempotencyKey(idempotencyKey),
+      actor,
+    );
+  }
 }
 
 function isEmptyBody(body: unknown): boolean {

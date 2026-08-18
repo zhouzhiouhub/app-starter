@@ -9,7 +9,11 @@ import {
   toPageSummary,
   unwrapBodyData,
 } from "../dist/modules/pages/pages.mapper.js";
-import { toPageVersionSummary } from "../dist/modules/pages/pages.versions.js";
+import { rollbackPage } from "../dist/modules/pages/use-cases/rollback-page.js";
+import {
+  persistRollbackVersion,
+  toPageVersionSummary,
+} from "../dist/modules/pages/pages.versions.js";
 
 test("unwrapBodyData reads wrapped or raw objects", () => {
   assert.deepEqual(unwrapBodyData({ data: { slug: "home" } }), {
@@ -136,3 +140,167 @@ test("toPageVersionSummary includes publish actor details", () => {
   assert.equal(summary.authorName, "Tenant Admin");
   assert.equal(summary.publishedAt, "2026-08-18T00:00:00.000Z");
 });
+
+test("persistRollbackVersion creates a published snapshot from target content", async () => {
+  const schema = createInitialPageSchema({
+    slug: "home",
+    title: "Previous Home",
+  });
+  const created = await persistRollbackVersion(
+    {
+      pageVersion: {
+        create: async (input) => {
+          assert.equal(input.data.authorId, "user-1");
+          assert.equal(input.data.pageId, "page-1");
+          assert.equal(input.data.schema, schema);
+          assert.equal(input.data.status, "published");
+          assert.equal(input.data.version, 4);
+          assert.ok(input.data.publishedAt instanceof Date);
+
+          return {
+            id: "version-rollback",
+            createdAt: new Date("2026-08-18T00:00:00.000Z"),
+            publishedAt: input.data.publishedAt,
+            status: input.data.status,
+            version: input.data.version,
+          };
+        },
+      },
+    },
+    {
+      authorId: "user-1",
+      latest: { version: 3 },
+      pageId: "page-1",
+      target: { schema },
+    },
+  );
+
+  assert.equal(created.id, "version-rollback");
+  assert.equal(created.version, 4);
+});
+
+test("rollbackPage publishes a new version using the selected version schema", async () => {
+  const schema = createInitialPageSchema({
+    slug: "home",
+    title: "Previous Home",
+  });
+  const calls = {
+    createdVersion: null,
+    pageUpdate: null,
+  };
+  const prisma = createRollbackPrisma({
+    onCreateVersion: (input) => {
+      calls.createdVersion = input.data;
+      return {
+        id: "version-rollback",
+        createdAt: new Date("2026-08-18T00:00:00.000Z"),
+        publishedAt: input.data.publishedAt,
+        status: input.data.status,
+        version: input.data.version,
+      };
+    },
+    onUpdatePage: (input) => {
+      calls.pageUpdate = input.data;
+      return {};
+    },
+    target: {
+      id: "version-1",
+      pageId: "page-1",
+      schema,
+      status: "published",
+    },
+  });
+
+  const result = await rollbackPage(
+    prisma,
+    "page-1",
+    { versionId: "version-1" },
+    undefined,
+    createActor(),
+  );
+
+  assert.equal(result.data.meta.slug, "home");
+  assert.equal(result.data.meta.title, "Previous Home");
+  assert.equal(result.meta.tenantId, "tenant-1");
+  assert.equal(calls.createdVersion.authorId, "user-1");
+  assert.equal(calls.createdVersion.schema, schema);
+  assert.equal(calls.createdVersion.version, 4);
+  assert.equal(calls.pageUpdate.publishedVersionId, "version-rollback");
+  assert.equal(calls.pageUpdate.status, "published");
+  assert.equal(calls.pageUpdate.title, "Previous Home");
+});
+
+test("rollbackPage rejects draft target versions", async () => {
+  const schema = createInitialPageSchema({
+    slug: "home",
+    title: "Draft Home",
+  });
+  const prisma = createRollbackPrisma({
+    target: {
+      id: "version-draft",
+      pageId: "page-1",
+      schema,
+      status: "draft",
+    },
+  });
+
+  await assert.rejects(
+    () =>
+      rollbackPage(
+        prisma,
+        "page-1",
+        { versionId: "version-draft" },
+        undefined,
+        createActor(),
+      ),
+    (error) => {
+      assert.equal(error.getStatus(), 400);
+      assert.equal(
+        error.getResponse().message,
+        "Only published versions can be rolled back.",
+      );
+      return true;
+    },
+  );
+});
+
+function createActor() {
+  return {
+    email: "admin@example.com",
+    id: "user-1",
+    scopes: ["page:publish"],
+    tenantId: "tenant-1",
+  };
+}
+
+function createRollbackPrisma(options) {
+  const target = options.target;
+
+  return {
+    $transaction: async (fn) =>
+      fn({
+        page: {
+          findFirst: async () => ({
+            id: "page-1",
+            siteId: "site-1",
+            slug: "home",
+            versions: [{ id: "version-latest", status: "published", version: 3 }],
+          }),
+          update: async (input) => {
+            options.onUpdatePage?.(input);
+            return {};
+          },
+        },
+        pageVersion: {
+          create: async (input) => options.onCreateVersion(input),
+          findFirst: async () => target,
+        },
+      }),
+    site: {
+      findFirst: async () => ({
+        id: "site-1",
+        tenantId: "tenant-1",
+      }),
+    },
+  };
+}

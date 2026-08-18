@@ -19,6 +19,11 @@ export const createPageInputSchema = z.object({
 });
 export type CreatePageInput = z.infer<typeof createPageInputSchema>;
 
+export const rollbackPageInputSchema = z.object({
+  versionId: z.string().min(1),
+});
+export type RollbackPageInput = z.infer<typeof rollbackPageInputSchema>;
+
 export const listPagesQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),

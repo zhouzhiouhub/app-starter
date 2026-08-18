@@ -108,3 +108,25 @@ export async function persistPublishedVersion(
     select: pageVersionSelect,
   });
 }
+
+export async function persistRollbackVersion(
+  tx: Prisma.TransactionClient,
+  input: {
+    authorId: string;
+    latest: { version: number } | undefined;
+    pageId: string;
+    target: { schema: Prisma.JsonValue };
+  },
+) {
+  return tx.pageVersion.create({
+    data: {
+      authorId: input.authorId,
+      pageId: input.pageId,
+      publishedAt: new Date(),
+      schema: input.target.schema as Prisma.InputJsonValue,
+      status: "published",
+      version: nextVersionNumber(input.latest?.version),
+    },
+    select: pageVersionSelect,
+  });
+}

@@ -40,11 +40,13 @@ export function PageEditorPage() {
       onFeedbackClose={() => editor.setFeedback(null)}
       onPublish={() => void editor.publish()}
       onRedo={editor.redo}
+      onRollbackVersion={(versionId) => void editor.rollbackToVersion(versionId)}
       onSaveDraft={() => void editor.saveDraft()}
       onSchemaChange={(schema) => editor.setDraftSchema(schema)}
       onUndo={editor.undo}
       onViewportChange={editor.setViewport}
       page={editor.page}
+      rollingBackVersionId={editor.rollingBackVersionId}
       schema={editor.draftSchema}
       versions={editor.versions}
       viewport={editor.viewport}

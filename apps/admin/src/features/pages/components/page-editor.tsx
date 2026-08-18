@@ -2,7 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { Alert, Tag, Typography } from "antd";
 import type { PageSchema, Viewport } from "@app-starter/schema";
 import { getStorefrontPagePath } from "../storefront-url";
-import type { EditorFeedback, PageSummary } from "../types";
+import type {
+  EditorFeedback,
+  PageSummary,
+  PageVersionSummary,
+} from "../types";
 import { ChromeSettingsPanel } from "./chrome-settings-panel";
 import { PageContentFields } from "./page-content-fields";
 import { PageEditorToolbar } from "./page-editor-toolbar";
@@ -12,7 +16,6 @@ import { PublicationHistoryPanel } from "./publication-history-panel";
 import { SectionLibraryPanel } from "./section-library-panel";
 import { SectionPropertiesPanel } from "./section-properties-panel";
 import { SeoSettingsPanel } from "./seo-settings-panel";
-import type { PageVersionSummary } from "../types";
 
 export function PageEditor(props: {
   canRedo: boolean;
@@ -23,11 +26,13 @@ export function PageEditor(props: {
   onFeedbackClose: () => void;
   onPublish: () => void;
   onRedo: () => void;
+  onRollbackVersion: (versionId: string) => void | Promise<void>;
   onSaveDraft: () => void;
   onSchemaChange: (schema: PageSchema) => void;
   onUndo: () => void;
   onViewportChange: (viewport: Viewport) => void;
   page: PageSummary;
+  rollingBackVersionId: string | null;
   schema: PageSchema;
   versions: PageVersionSummary[];
   viewport: Viewport;
@@ -141,7 +146,9 @@ export function PageEditor(props: {
             schema={props.schema}
           />
           <PublicationHistoryPanel
+            onRollbackVersion={props.onRollbackVersion}
             publishedVersionId={props.page.publishedVersionId}
+            rollingBackVersionId={props.rollingBackVersionId}
             versions={props.versions}
           />
         </div>
