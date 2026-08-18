@@ -4,11 +4,16 @@ import { AuthRequiredError } from "../../auth/api";
 import { formatRequestError } from "../../../lib/api-error";
 import { getPage, publishPage, savePageDraft } from "../api";
 import { getStorefrontPageUrl } from "../storefront-url";
-import type { EditorFeedback, PageSummary } from "../types";
+import type {
+  EditorFeedback,
+  PageSummary,
+  PageVersionSummary,
+} from "../types";
 import { useSchemaHistory } from "./use-schema-history";
 
 export function usePageEditor(pageId: string | undefined) {
   const [page, setPage] = useState<PageSummary | null>(null);
+  const [versions, setVersions] = useState<PageVersionSummary[]>([]);
   const [viewport, setViewport] = useState<Viewport>("desktop");
   const [feedback, setFeedback] = useState<EditorFeedback | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,6 +43,7 @@ export function usePageEditor(pageId: string | undefined) {
     try {
       const detail = await getPage(pageId);
       setPage(detail);
+      setVersions(detail.versions);
       resetSchema(
         detail.draftSchema ??
           createFallbackPage({
@@ -72,6 +78,9 @@ export function usePageEditor(pageId: string | undefined) {
     try {
       const summary = await savePageDraft(pageId, draftSchema);
       setPage(summary);
+      const detail = await getPage(pageId);
+      setPage(detail);
+      setVersions(detail.versions);
       setFeedback({
         message: "Draft saved. Publish when you want the storefront to update.",
         type: "success",
@@ -102,15 +111,9 @@ export function usePageEditor(pageId: string | undefined) {
     try {
       const published = await publishPage(pageId, draftSchema);
       resetSchema(published);
-      setPage((current) =>
-        current
-          ? {
-              ...current,
-              status: "published",
-              title: published.meta.title,
-            }
-          : current,
-      );
+      const detail = await getPage(pageId);
+      setPage(detail);
+      setVersions(detail.versions);
       setFeedback({
         message: `Published. Open ${getStorefrontPageUrl(published.meta.slug)} to see this page. Home stays at /en.`,
         type: "success",
@@ -147,6 +150,7 @@ export function usePageEditor(pageId: string | undefined) {
     setFeedback,
     setViewport,
     undo,
+    versions,
     viewport,
   };
 }

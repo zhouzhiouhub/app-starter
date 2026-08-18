@@ -8,9 +8,11 @@ import { PageContentFields } from "./page-content-fields";
 import { PageEditorToolbar } from "./page-editor-toolbar";
 import { PagePreviewPane } from "./page-preview-pane";
 import { PageSectionList } from "./page-section-list";
+import { PublicationHistoryPanel } from "./publication-history-panel";
 import { SectionLibraryPanel } from "./section-library-panel";
 import { SectionPropertiesPanel } from "./section-properties-panel";
 import { SeoSettingsPanel } from "./seo-settings-panel";
+import type { PageVersionSummary } from "../types";
 
 export function PageEditor(props: {
   canRedo: boolean;
@@ -27,6 +29,7 @@ export function PageEditor(props: {
   onViewportChange: (viewport: Viewport) => void;
   page: PageSummary;
   schema: PageSchema;
+  versions: PageVersionSummary[];
   viewport: Viewport;
 }) {
   const [selectedSectionId, setSelectedSectionId] = useState(
@@ -136,6 +139,10 @@ export function PageEditor(props: {
           <ChromeSettingsPanel
             onChange={props.onSchemaChange}
             schema={props.schema}
+          />
+          <PublicationHistoryPanel
+            publishedVersionId={props.page.publishedVersionId}
+            versions={props.versions}
           />
         </div>
         <PagePreviewPane

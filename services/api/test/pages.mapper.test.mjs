@@ -9,6 +9,7 @@ import {
   toPageSummary,
   unwrapBodyData,
 } from "../dist/modules/pages/pages.mapper.js";
+import { toPageVersionSummary } from "../dist/modules/pages/pages.versions.js";
 
 test("unwrapBodyData reads wrapped or raw objects", () => {
   assert.deepEqual(unwrapBodyData({ data: { slug: "home" } }), {
@@ -110,4 +111,28 @@ test("toPageSummary serializes timestamps", () => {
 
   assert.equal(summary.createdAt, "2026-08-18T00:00:00.000Z");
   assert.equal(summary.publishedVersionId, "version-1");
+});
+
+test("toPageVersionSummary includes publish actor details", () => {
+  const createdAt = new Date("2026-08-18T00:00:00.000Z");
+  const summary = toPageVersionSummary(
+    {
+      id: "version-1",
+      version: 2,
+      status: "published",
+      authorId: "user-1",
+      publishedAt: createdAt,
+      createdAt,
+    },
+    {
+      id: "user-1",
+      email: "admin@example.com",
+      name: "Tenant Admin",
+    },
+  );
+
+  assert.equal(summary.authorId, "user-1");
+  assert.equal(summary.authorEmail, "admin@example.com");
+  assert.equal(summary.authorName, "Tenant Admin");
+  assert.equal(summary.publishedAt, "2026-08-18T00:00:00.000Z");
 });

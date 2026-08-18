@@ -3,6 +3,10 @@ import type { PrismaService } from "../../prisma/prisma.service.js";
 import { toPageSummary } from "../pages.mapper.js";
 import { getSiteForTenant } from "../pages.site.js";
 import { notFound, readSchema } from "../pages.validation.js";
+import {
+  loadPageVersionAuthors,
+  toPageVersionSummary,
+} from "../pages.versions.js";
 
 export async function getPageById(
   prisma: PrismaService,
@@ -23,6 +27,10 @@ export async function getPageById(
     throw notFound("Page not found.");
   }
 
+  const authorsById = await loadPageVersionAuthors(prisma, {
+    tenantId: site.tenantId,
+    versions: page.versions,
+  });
   const latest = page.versions[0] ?? null;
   const published = page.publishedVersionId
     ? (page.versions.find(
@@ -37,13 +45,9 @@ export async function getPageById(
       publishedSchema: published
         ? readSchema(published.schema, page.slug)
         : null,
-      versions: page.versions.map((version) => ({
-        id: version.id,
-        version: version.version,
-        status: version.status,
-        publishedAt: version.publishedAt?.toISOString() ?? null,
-        createdAt: version.createdAt.toISOString(),
-      })),
+      versions: page.versions.map((version) =>
+        toPageVersionSummary(version, authorsById.get(version.authorId)),
+      ),
     },
     meta: {
       requestId: "local-dev",

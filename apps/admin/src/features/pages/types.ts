@@ -13,6 +13,9 @@ export interface PageSummary {
 }
 
 export interface PageVersionSummary {
+  authorEmail: string | null;
+  authorId: string;
+  authorName: string | null;
   createdAt: string;
   id: string;
   publishedAt: string | null;

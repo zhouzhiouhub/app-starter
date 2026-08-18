@@ -46,6 +46,7 @@ export function PageEditorPage() {
       onViewportChange={editor.setViewport}
       page={editor.page}
       schema={editor.draftSchema}
+      versions={editor.versions}
       viewport={editor.viewport}
     />
   );
