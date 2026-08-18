@@ -25,6 +25,11 @@ const nextConfig = {
       "@app-starter/schema": path.join(repoRoot, "packages/schema/src/index.ts"),
       "@app-starter/ui": path.join(repoRoot, "packages/ui/src/index.tsx")
     };
+    config.resolve.extensionAlias = {
+      ...config.resolve.extensionAlias,
+      ".js": [".ts", ".tsx", ".js"],
+      ".jsx": [".tsx", ".jsx"]
+    };
 
     return config;
   }
