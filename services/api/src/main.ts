@@ -1,8 +1,9 @@
 import "reflect-metadata";
-import { ValidationPipe } from "@nestjs/common";
+import { Logger, ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { ApiExceptionFilter } from "./common/api-exception.filter.js";
 import { AppModule } from "./modules/app.module.js";
+import { AUTH_LOGIN_PATH } from "./modules/identity/identity.login-hint.js";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -27,7 +28,7 @@ async function bootstrap() {
       "Idempotency-Key",
       "X-Request-Id",
     ],
-    methods: ["GET", "POST", "PUT", "PATCH", "OPTIONS"],
+    methods: ["GET", "HEAD", "POST", "PUT", "PATCH", "OPTIONS"],
     origin: (
       origin: string | undefined,
       callback: (error: Error | null, allowed?: boolean) => void,
@@ -45,7 +46,11 @@ async function bootstrap() {
     },
   });
 
-  await app.listen(process.env.PORT ? Number(process.env.PORT) : 4000);
+  const port = process.env.PORT ? Number(process.env.PORT) : 4000;
+  await app.listen(port, "0.0.0.0");
+  const logger = new Logger("Bootstrap");
+  logger.log(`API listening on 0.0.0.0:${port}`);
+  logger.log(`Admin login API: POST ${AUTH_LOGIN_PATH}`);
 }
 
 function isAllowedDevOrigin(origin: string): boolean {

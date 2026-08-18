@@ -124,6 +124,10 @@ function codeForStatus(statusCode: number): string {
     return apiErrorCodes.NOT_FOUND;
   }
 
+  if (statusCode === HttpStatus.METHOD_NOT_ALLOWED) {
+    return apiErrorCodes.VALIDATION_ERROR;
+  }
+
   if (statusCode === HttpStatus.CONFLICT) {
     return apiErrorCodes.CONFLICT;
   }

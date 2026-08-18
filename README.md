@@ -424,6 +424,8 @@ pnpm run build:api-packages
 API Health: http://localhost:4000/api/v1/health
 ```
 
+后台登录请打开 Admin 页面（例如 `http://localhost:5173/login`），不要在浏览器地址栏打开 `/api/v1/auth/login`。登录接口只接受 `POST`；开发环境后台请求走 Admin 同源 `/api/v1`，由 Vite 代理到 API。
+
 ## 11. 当前 API 接口
 
 ```text
@@ -432,6 +434,7 @@ GET  /api/v1/public/config
 GET  /api/v1/public/pages/:slug
 GET  /api/v1/public/translations/:locale
 
+GET  /api/v1/auth/login          # 浏览器打开时返回用法说明，真正登录请 POST
 POST /api/v1/auth/login
 POST /api/v1/auth/refresh
 POST /api/v1/auth/logout

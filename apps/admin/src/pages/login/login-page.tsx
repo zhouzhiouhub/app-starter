@@ -63,7 +63,9 @@ export function LoginPage() {
         </Typography.Title>
         <Typography.Paragraph type="secondary">
           Use the seeded tenant admin to manage pages. Default local account is{" "}
-          {DEFAULT_ADMIN_EMAIL}.
+          {DEFAULT_ADMIN_EMAIL}. Sign in on this Admin page (port 5173). Do not
+          open <Typography.Text code>/api/v1/auth/login</Typography.Text> in the
+          browser — that path only accepts POST.
         </Typography.Paragraph>
         {error ? (
           <Alert
@@ -77,6 +79,9 @@ export function LoginPage() {
           initialValues={{ email: DEFAULT_ADMIN_EMAIL }}
           layout="vertical"
           onFinish={(values) => void submit(values)}
+          onSubmitCapture={(event) => {
+            event.preventDefault();
+          }}
         >
           <Form.Item
             label="Email"
