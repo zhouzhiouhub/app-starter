@@ -127,6 +127,10 @@ export function App() {
     async function loadPublishedPage() {
       try {
         const response = await fetch(`${apiBaseUrl}/public/pages/home`);
+        if (response.status === 404) {
+          return;
+        }
+
         const result = (await response.json()) as { data?: unknown };
 
         if (!response.ok) {

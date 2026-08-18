@@ -4,19 +4,16 @@ import {
   Controller,
   Get,
   Headers,
+  NotFoundException,
   Param,
   Post
 } from "@nestjs/common";
-import {
-  createFallbackPage,
-  defaultRuntimeConfig,
-  pageSchema
-} from "@app-starter/schema";
-import { PublishedPageStore } from "./published-page.store.js";
+import { apiErrorCodes, defaultRuntimeConfig } from "@app-starter/schema";
+import { PagesService } from "../pages/pages.service.js";
 
 @Controller("public")
 export class PublicController {
-  constructor(private readonly pages: PublishedPageStore) {}
+  constructor(private readonly pages: PagesService) {}
 
   @Get("config")
   getConfig() {
@@ -60,15 +57,22 @@ export class PublicController {
   }
 
   @Get("pages/:slug")
-  getPage(@Param("slug") slug: string) {
-    const page = this.pages.get(slug);
+  async getPage(@Param("slug") slug: string) {
+    const page = await this.pages.getPublishedBySlug(slug);
+
+    if (!page) {
+      throw new NotFoundException({
+        code: apiErrorCodes.NOT_FOUND,
+        message: "Published page not found."
+      });
+    }
 
     return {
-      data: page ?? createFallbackPage({ slug }),
+      data: page,
       meta: {
         requestId: "local-dev",
-        market: "us",
-        locale: "en-US"
+        market: page.meta.market,
+        locale: page.meta.locale
       }
     };
   }
@@ -76,7 +80,7 @@ export class PublicController {
 
 @Controller("admin/pages")
 export class AdminPagesController {
-  constructor(private readonly pages: PublishedPageStore) {}
+  constructor(private readonly pages: PagesService) {}
 
   @Post(":slug/publish")
   publishPage(
@@ -86,61 +90,11 @@ export class AdminPagesController {
   ) {
     if (!idempotencyKey) {
       throw new BadRequestException({
-        code: "VALIDATION_ERROR",
+        code: apiErrorCodes.VALIDATION_ERROR,
         message: "Idempotency-Key header is required for publish."
       });
     }
 
-    const candidate = unwrapBodyData(body);
-    const candidateMeta =
-      candidate.meta && typeof candidate.meta === "object" ? candidate.meta : {};
-    const parsed = pageSchema.safeParse({
-      ...candidate,
-      meta: {
-        ...candidateMeta,
-        slug
-      }
-    });
-
-    if (!parsed.success) {
-      throw new BadRequestException({
-        code: "VALIDATION_ERROR",
-        message: parsed.error.issues[0]?.message ?? "Invalid page schema.",
-        details: parsed.error.flatten()
-      });
-    }
-
-    const published = this.pages.publish(parsed.data);
-
-    return {
-      data: published,
-      meta: {
-        requestId: "local-dev",
-        idempotencyKey,
-        market: published.meta.market,
-        locale: published.meta.locale
-      }
-    };
+    return this.pages.publishBySlug(slug, body);
   }
-}
-
-function unwrapBodyData(body: unknown): Record<string, unknown> {
-  if (!body || typeof body !== "object") {
-    throw new BadRequestException({
-      code: "VALIDATION_ERROR",
-      message: "Request body must be an object."
-    });
-  }
-
-  const record = body as Record<string, unknown>;
-  const data = record.data ?? record;
-
-  if (!data || typeof data !== "object") {
-    throw new BadRequestException({
-      code: "VALIDATION_ERROR",
-      message: "Request body data must be an object."
-    });
-  }
-
-  return data as Record<string, unknown>;
 }

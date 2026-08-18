@@ -1,12 +1,12 @@
 import { Module } from "@nestjs/common";
+import { PagesModule } from "../pages/pages.module.js";
 import {
   AdminPagesController,
   PublicController
 } from "./public.controller.js";
-import { PublishedPageStore } from "./published-page.store.js";
 
 @Module({
-  controllers: [PublicController, AdminPagesController],
-  providers: [PublishedPageStore]
+  imports: [PagesModule],
+  controllers: [PublicController, AdminPagesController]
 })
 export class PublicModule {}
