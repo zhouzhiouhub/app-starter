@@ -13,6 +13,9 @@ export const TENANT_ADMIN_PERMISSIONS = [
   "page:publish",
   "market:read",
   "locale:read",
+  "locale:write",
   "translation:read",
+  "product:read",
+  "order:read",
 ] as const;
 export const ACTIVE_USER_STATUS = "active";

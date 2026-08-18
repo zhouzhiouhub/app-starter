@@ -1,5 +1,8 @@
-import { Body, Controller, Get, Headers, Post } from "@nestjs/common";
+import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common";
+import { AdminApiGuard } from "../../common/admin-api.guard.js";
+import { CurrentUser } from "../../common/current-user.decorator.js";
 import { IdentityService } from "./identity.service.js";
+import type { Actor } from "./identity.types.js";
 
 @Controller("auth")
 export class IdentityController {
@@ -21,7 +24,8 @@ export class IdentityController {
   }
 
   @Get("me")
-  getMe(@Headers("authorization") authorization: string | undefined) {
-    return this.identity.getMe(authorization);
+  @UseGuards(AdminApiGuard)
+  getMe(@CurrentUser() actor: Actor) {
+    return this.identity.getMe(actor);
   }
 }

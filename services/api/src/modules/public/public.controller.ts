@@ -17,6 +17,7 @@ import {
   marketCodeSchema,
 } from "@app-starter/schema";
 import { AdminApiGuard } from "../../common/admin-api.guard.js";
+import { RequireScopes } from "../../common/require-scopes.decorator.js";
 import { requireIdempotencyKey } from "../../common/idempotency-key.js";
 import { PagesService } from "../pages/pages.service.js";
 
@@ -101,6 +102,7 @@ export class AdminPagesController {
   constructor(private readonly pages: PagesService) {}
 
   @Post(":slug/publish")
+  @RequireScopes("page:publish")
   publishPage(
     @Body() body: unknown,
     @Headers("idempotency-key") idempotencyKey: string | undefined,

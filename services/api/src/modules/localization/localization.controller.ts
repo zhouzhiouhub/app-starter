@@ -1,9 +1,13 @@
-import { Body, Controller, Get, Post } from "@nestjs/common";
+import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common";
 import { apiErrorCodes } from "@app-starter/schema";
+import { AdminApiGuard } from "../../common/admin-api.guard.js";
+import { RequireScopes } from "../../common/require-scopes.decorator.js";
 
 @Controller()
+@UseGuards(AdminApiGuard)
 export class LocalizationController {
   @Get("markets")
+  @RequireScopes("market:read")
   getMarkets() {
     return {
       data: [
@@ -19,6 +23,7 @@ export class LocalizationController {
   }
 
   @Get("locales")
+  @RequireScopes("locale:read")
   getLocales() {
     return {
       data: [
@@ -33,6 +38,7 @@ export class LocalizationController {
   }
 
   @Get("translations")
+  @RequireScopes("translation:read")
   getTranslations() {
     return {
       data: [],
@@ -44,6 +50,7 @@ export class LocalizationController {
   }
 
   @Post("locales")
+  @RequireScopes("locale:write")
   createLocale(@Body() body: { code?: string }) {
     if (process.env.MULTI_LOCALE_ENABLED !== "true") {
       return {

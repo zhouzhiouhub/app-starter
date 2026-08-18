@@ -99,8 +99,7 @@ export class IdentityService {
     };
   }
 
-  async getMe(authorization: string | undefined) {
-    const actor = await this.readActorFromAuthorization(authorization);
+  async getMe(actor: Actor) {
     return toCurrentUserResponse(actor);
   }
 

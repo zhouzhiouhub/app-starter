@@ -40,9 +40,8 @@ Page write APIs use an `IdempotencyRecord` table. After pulling schema changes,
 run `prisma db push` again in local development so repeated publish/create
 requests can be safely deduplicated.
 
-Admin page management APIs are intentionally unauthenticated only in
-`development` and `test`. With `NODE_ENV=production`, those endpoints fail closed
-until the planned JWT/RBAC identity module is implemented.
+Admin page, localization, and commerce management APIs require a Bearer access
+token from `POST /api/v1/auth/login`. Public storefront routes stay unauthenticated.
 
 Default local ports:
 

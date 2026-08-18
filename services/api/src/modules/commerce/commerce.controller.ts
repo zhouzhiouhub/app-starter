@@ -1,9 +1,13 @@
-import { Controller, Get, Post } from "@nestjs/common";
+import { Controller, Get, Post, UseGuards } from "@nestjs/common";
 import { apiErrorCodes } from "@app-starter/schema";
+import { AdminApiGuard } from "../../common/admin-api.guard.js";
+import { RequireScopes } from "../../common/require-scopes.decorator.js";
 
 @Controller()
 export class CommerceController {
   @Get("products")
+  @UseGuards(AdminApiGuard)
+  @RequireScopes("product:read")
   getProducts() {
     return {
       data: [],
@@ -12,6 +16,8 @@ export class CommerceController {
   }
 
   @Get("orders")
+  @UseGuards(AdminApiGuard)
+  @RequireScopes("order:read")
   getOrders() {
     return {
       data: [],

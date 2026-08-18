@@ -1,43 +1,76 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { ForbiddenException, UnauthorizedException } from "@nestjs/common";
 import { AdminApiGuard } from "../dist/common/admin-api.guard.js";
 
-test("admin API guard allows local development and test runtimes", () => {
-  const originalNodeEnv = process.env.NODE_ENV;
+const actor = {
+  email: "admin@example.com",
+  id: "11111111-1111-4111-8111-111111111111",
+  name: "Admin",
+  roles: ["tenant-admin"],
+  scopes: ["page:read", "page:write"],
+  status: "active",
+  tenantId: "22222222-2222-4222-8222-222222222222",
+};
 
-  try {
-    const guard = new AdminApiGuard();
+test("admin API guard rejects missing access tokens", async () => {
+  const guard = createGuard(
+    {
+      readActorFromAuthorization: async () => {
+        throw new UnauthorizedException({
+          message: "Access token is required.",
+        });
+      },
+    },
+    [],
+  );
 
-    process.env.NODE_ENV = "development";
-    assert.equal(guard.canActivate({}), true);
-
-    process.env.NODE_ENV = "test";
-    assert.equal(guard.canActivate({}), true);
-  } finally {
-    restoreNodeEnv(originalNodeEnv);
-  }
+  await assert.rejects(() => guard.canActivate(createContext()), {
+    name: "UnauthorizedException",
+  });
 });
 
-test("admin API guard fails closed in production", () => {
-  const originalNodeEnv = process.env.NODE_ENV;
+test("admin API guard attaches the actor when scopes match", async () => {
+  const request = { headers: { authorization: "Bearer token" } };
+  const guard = createGuard(
+    {
+      readActorFromAuthorization: async () => actor,
+    },
+    ["page:write"],
+  );
 
-  try {
-    const guard = new AdminApiGuard();
-
-    process.env.NODE_ENV = "production";
-    assert.throws(() => guard.canActivate({}), {
-      name: "ForbiddenException",
-    });
-  } finally {
-    restoreNodeEnv(originalNodeEnv);
-  }
+  assert.equal(await guard.canActivate(createContext(request)), true);
+  assert.equal(request.user, actor);
 });
 
-function restoreNodeEnv(value) {
-  if (value === undefined) {
-    delete process.env.NODE_ENV;
-    return;
-  }
+test("admin API guard forbids actors missing a required scope", async () => {
+  const guard = createGuard(
+    {
+      readActorFromAuthorization: async () => actor,
+    },
+    ["page:publish"],
+  );
 
-  process.env.NODE_ENV = value;
+  await assert.rejects(
+    () => guard.canActivate(createContext()),
+    (error) => error instanceof ForbiddenException,
+  );
+});
+
+function createGuard(identity, requiredScopes) {
+  return new AdminApiGuard(identity, {
+    getAllAndOverride() {
+      return requiredScopes;
+    },
+  });
+}
+
+function createContext(request = { headers: {} }) {
+  return {
+    getClass: () => class TestController {},
+    getHandler: () => () => undefined,
+    switchToHttp: () => ({
+      getRequest: () => request,
+    }),
+  };
 }
