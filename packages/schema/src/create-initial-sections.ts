@@ -1,4 +1,5 @@
-import type { PageTemplateId, SectionNode } from "./index.js";
+import type { SectionNode } from "./foundation.js";
+import type { PageTemplateId } from "./page-template.js";
 
 export function createInitialPageSections(input: {
   homeSections: SectionNode[];
