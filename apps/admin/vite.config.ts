@@ -4,6 +4,12 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
 const repoRoot = fileURLToPath(new URL("../..", import.meta.url));
+const apiProxy = {
+  "/api": {
+    changeOrigin: true,
+    target: "http://127.0.0.1:4000"
+  }
+};
 
 export default defineConfig({
   plugins: [react()],
@@ -29,6 +35,10 @@ export default defineConfig({
     }
   },
   server: {
-    port: 5173
+    port: 5173,
+    proxy: apiProxy
+  },
+  preview: {
+    proxy: apiProxy
   }
 });

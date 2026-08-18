@@ -1,17 +1,40 @@
-export function getApiBaseUrl(): string {
-  const configured = (
-    import.meta as unknown as {
-      env?: { VITE_API_URL?: string };
-    }
-  ).env?.VITE_API_URL;
+type ViteEnv = {
+  DEV?: boolean;
+  VITE_API_URL?: string;
+};
 
-  if (configured) {
-    return configured;
+export function resolveApiBaseUrl(input: {
+  configured?: string;
+  hostname?: string;
+  isDev?: boolean;
+  protocol?: string;
+}): string {
+  if (input.configured) {
+    return input.configured;
   }
 
-  const location = globalThis.location;
-  const protocol = location?.protocol ?? "http:";
-  const hostname = location?.hostname || "localhost";
+  if (input.isDev) {
+    return "/api/v1";
+  }
+
+  const protocol = input.protocol ?? "http:";
+  const hostname = input.hostname || "localhost";
 
   return `${protocol}//${hostname}:4000/api/v1`;
+}
+
+export function getApiBaseUrl(): string {
+  const env = (
+    import.meta as unknown as {
+      env?: ViteEnv;
+    }
+  ).env;
+  const location = globalThis.location;
+
+  return resolveApiBaseUrl({
+    configured: env?.VITE_API_URL,
+    hostname: location?.hostname,
+    isDev: env?.DEV,
+    protocol: location?.protocol,
+  });
 }
