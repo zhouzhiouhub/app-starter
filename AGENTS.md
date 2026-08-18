@@ -122,6 +122,107 @@ docs                  # 补充文档
 - 二开必须提供 API Contract、权限 Scope、Feature Flag、Migration、测试和交付说明。
 - 核心 Fork 必须明确标记，不承诺无冲突升级。
 
+### 2.9 文件与功能模块化边界
+
+目标：随功能增加按职责拆文件，禁止把一个领域的校验、映射、业务、响应全部堆进单个文件。拆分按职责进行，不为凑文件数而切碎。
+
+#### 2.9.1 体积阈值
+
+| 对象 | 建议上限 | 必须拆分 |
+|------|----------|----------|
+| `.ts` / `.tsx` 实现文件 | 300 行 | 400 行 |
+| NestJS Controller / Service | 300 行 | 400 行 |
+| React 组件（含 JSX） | 250 行 | 350 行 |
+| 单个函数 / 方法 | 80 行 | 120 行 |
+| 测试文件 | 400 行 | 500 行 |
+
+例外：Prisma `schema.prisma`、生成代码、lockfile、纯 re-export 的 `index.ts`、与实现对齐的大型 snapshot。新增实现不得以“先写进一个文件以后再拆”为由突破必须拆分阈值。
+
+#### 2.9.2 拆分原则
+
+- 一个文件只承担一个主职责；文件名必须能看出该职责（如 `pages.mapper.ts`、`use-page-editor.ts`）。
+- 新增能力优先新建文件或子目录，禁止向已接近或超过阈值的文件继续追加逻辑。
+- 本次改动触及已超阈值文件时，必须先拆出相关职责再改需求，不得只在末尾追加。
+- 按用例、组件、校验、映射、常量、类型拆分，禁止按“上半段 / 下半段”机械切文件。
+- 禁止出现杂物袋文件：`utils.ts`、`helpers.ts`、`common.ts`、`misc.ts` 只能存放明确主题的共享逻辑，主题不同必须分文件。
+- `index.ts` / `index.tsx` 只做 re-export 或极薄注册，不写业务逻辑、不堆组件实现。
+- 不要过拆：紧密耦合且合计约 40 行以内的逻辑保持同文件，避免 5～10 行碎片文件满天飞。
+- 共享代码必须有稳定职责边界后再抽取；禁止为了复用 3 行而提升抽象，也禁止复制出近重复大文件。
+
+#### 2.9.3 后端模块结构（NestJS）
+
+领域代码落在 `services/api/src/modules/<domain>/`，按文件职责拆分：
+
+```text
+services/api/src/modules/<domain>/
+  <domain>.module.ts
+  <domain>.controller.ts       # 路由、守卫、入参绑定，不写业务
+  <domain>.service.ts          # 用例编排与事务边界，不堆校验/映射细节
+  <domain>.mapper.ts           # 持久化模型 <-> API 响应 / 领域对象
+  <domain>.validation.ts       # Zod / DTO
+  <domain>.responses.ts        # 响应装配（可选）
+  <domain>.constants.ts
+  <domain>.types.ts
+```
+
+当一个领域包含多个独立用例（如 list / create / publish / rollback），且 Service 接近阈值时，必须再按用例拆分：
+
+```text
+modules/pages/
+  pages.module.ts
+  pages.controller.ts
+  pages.service.ts             # 门面，委托到 use-cases，自身保持编排
+  use-cases/
+    list-pages.ts
+    create-page.ts
+    publish-page.ts
+    rollback-page.ts
+```
+
+- Controller 禁止直接访问 Prisma 或拼接复杂查询。
+- 跨领域调用只通过对方 Module 导出的公开 Service，禁止 import 对方 `use-cases/`、`mapper` 等内部文件。
+- 自定义后端模块仍落在 `services/api/src/custom`，同样遵守本节约文件职责，不得把二开逻辑写进核心领域大文件。
+
+#### 2.9.4 前台与后台结构
+
+后台 `apps/admin` 按功能目录拆分，不把列表、编辑器、设置塞进单个页面文件：
+
+```text
+apps/admin/src/
+  pages/<feature>/             # 路由页，只做组合
+  features/<feature>/
+    components/                # 每个区块 / 面板一个文件
+    hooks/
+    api.ts                     # 该功能的 API 调用
+    types.ts
+    constants.ts
+```
+
+- 一个文件只导出一个页面级或区块级组件。
+- Hook、类型、常量、纯函数分别落文件；Page Builder 的每个区块编辑器、属性面板分区必须独立文件。
+- 禁止所有区块实现挤在 `Editor.tsx` / `App.tsx`。
+- 后台基础 UI 仍只使用 Ant Design，不自建 Button、Modal、Table、Form。
+
+前台 `apps/web`：
+
+- 路由页（`page.tsx`）只做数据获取、Locale / Market 解析和 Renderer 调用，不在页面文件内堆区块 JSX。
+- 可复用渲染组件放 `packages/ui`，每个组件一个文件。
+- 页面结构与内容仍只来自 Page Schema，不在多个页面文件里复制同一套区块实现。
+
+#### 2.9.5 packages 结构
+
+- `packages/schema`：按实体 / 组件拆类型与校验，禁止全部写入单个 `index.ts`。
+- `packages/renderer`：每个区块一个渲染文件，另设注册表；Admin Preview 与 Website 继续共用，不得各写一份。
+- `packages/ui`：一个组件一个文件，禁止把 Hero、FAQ、CTA 等塞进同一个实现文件。
+- Schema 变更必须同步类型、校验、示例和 Renderer，且各自落在对应文件，不把四者写进同一文件凑合。
+
+#### 2.9.6 禁止事项
+
+- 禁止把校验、映射、业务编排、响应组装、常量长期堆在同一个 Service / 组件文件并持续追加。
+- 禁止用“先实现后重构”跳过必须拆分阈值。
+- 禁止跨层塞代码：前端组件文件不定义后端 DTO；后端 Service 不放展示文案拼装；Prisma 查询不写进 React 文件。
+- 禁止为通过阈值而把一个函数拆成无意义的 `part1` / `part2`，或把私有细节提升成宽泛公共 API。
+
 ## 3. 安全边界
 
 ### 3.1 租户与权限
@@ -213,12 +314,16 @@ docs                  # 补充文档
 - 涉及多语言接口的改动需要覆盖默认 `en-US`、非默认 Locale 回退、`MULTI_LOCALE_ENABLED=false` 和跨租户 Translation Key 隔离。
 - 涉及二次开发扩展点的改动需要提供示例扩展、兼容性说明、升级影响和契约测试。
 - 涉及部署的改动需要更新环境变量清单和 Smoke Test。
+- 新增或修改的实现文件必须符合 2.9 模块化阈值与目录职责；超过必须拆分阈值的文件不得视为完成。
+- 改动触及已超阈值的文件时，需要把相关职责拆到独立文件后再提交功能改动。
 
 ## 6. Agent 工作规则
 
 - 开始实现前先阅读本文件和设计文档相关章节。
 - 优先按现有设计文档补齐代码，不主动扩大产品范围。
 - 修改范围、阶段、架构、安全策略时，同时更新设计文档。
+- 新增功能落到对应模块目录和职责文件，禁止向已有大文件继续堆叠校验、映射、业务或 UI。
+- 实现前先判断目标文件行数与职责；已接近或超过 2.9 阈值时，先拆文件再写新逻辑。
 - 不覆盖用户已有改动，不执行破坏性 Git 操作。
 - 不把示例密钥、真实密钥、Token、账号信息写入代码或文档。
 - 遇到产品边界不清时，先提出选择题式问题，再落文档。
