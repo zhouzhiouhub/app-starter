@@ -33,6 +33,8 @@ import {
   getPageTemplateChrome,
   pageSchema,
   pageTemplatePresets,
+  toStorefrontPathPrefix,
+  type ChromeLocaleOption,
   type ChromeNavigationItem,
   type PageChromeSettings,
   type PageSchema,
@@ -296,6 +298,113 @@ export function App() {
             },
           },
         },
+      };
+    });
+  }
+
+  function updateHeaderLocaleOption(
+    index: number,
+    field: "code" | "label" | "href",
+    value: string
+  ) {
+    setDraftSchema((current) => {
+      const content = current.chrome.header.content;
+      const locales = content.localeSwitcher.locales.map((locale, localeIndex) => {
+        if (localeIndex !== index) {
+          return locale;
+        }
+
+        if (field === "code") {
+          return { ...locale, code: value };
+        }
+
+        if (field === "label") {
+          return {
+            ...locale,
+            label: {
+              ...locale.label,
+              defaultValue: value
+            }
+          };
+        }
+
+        if (!value.trim()) {
+          return {
+            code: locale.code,
+            label: locale.label
+          };
+        }
+
+        return { ...locale, href: value };
+      });
+
+      return {
+        ...current,
+        chrome: {
+          ...current.chrome,
+          header: {
+            ...current.chrome.header,
+            content: {
+              ...content,
+              localeSwitcher: {
+                ...content.localeSwitcher,
+                locales
+              }
+            }
+          }
+        }
+      };
+    });
+  }
+
+  function addHeaderLocaleOption() {
+    setDraftSchema((current) => {
+      const content = current.chrome.header.content;
+      const locale: ChromeLocaleOption = {
+        code: "",
+        label: { defaultValue: "" }
+      };
+
+      return {
+        ...current,
+        chrome: {
+          ...current.chrome,
+          header: {
+            ...current.chrome.header,
+            content: {
+              ...content,
+              localeSwitcher: {
+                ...content.localeSwitcher,
+                locales: [...content.localeSwitcher.locales, locale]
+              }
+            }
+          }
+        }
+      };
+    });
+  }
+
+  function removeHeaderLocaleOption(index: number) {
+    setDraftSchema((current) => {
+      const content = current.chrome.header.content;
+
+      return {
+        ...current,
+        chrome: {
+          ...current.chrome,
+          header: {
+            ...current.chrome.header,
+            content: {
+              ...content,
+              localeSwitcher: {
+                ...content.localeSwitcher,
+                locales: content.localeSwitcher.locales.filter(
+                  (_, localeIndex) => localeIndex !== index
+                )
+              }
+            }
+          }
+        }
       };
     });
   }
@@ -737,41 +846,136 @@ export function App() {
                   </Space>
                   <Divider />
                   <Title level={5}>Language switcher</Title>
-                  <div
-                    style={{
-                      alignItems: "center",
-                      display: "grid",
-                      gap: 12,
-                      gridTemplateColumns: "1fr auto",
-                    }}
+                  <Form.Item label="Switcher label">
+                    <div
+                      style={{
+                        alignItems: "center",
+                        display: "grid",
+                        gap: 12,
+                        gridTemplateColumns: "1fr auto"
+                      }}
+                    >
+                      <Input
+                        disabled={
+                          !draftSchema.chrome.header.content.localeSwitcher
+                            .enabled
+                        }
+                        onChange={(event) =>
+                          updateHeaderLocaleSwitcherLabel(event.target.value)
+                        }
+                        value={
+                          draftSchema.chrome.header.content.localeSwitcher.label
+                            .defaultValue
+                        }
+                      />
+                      <Switch
+                        checked={
+                          draftSchema.chrome.header.content.localeSwitcher
+                            .enabled
+                        }
+                        onChange={updateHeaderLocaleSwitcherEnabled}
+                      />
+                    </div>
+                  </Form.Item>
+                  <Text strong>Locales</Text>
+                  <Space
+                    direction="vertical"
+                    size={12}
+                    style={{ marginTop: 12, width: "100%" }}
                   >
-                    <Input
-                      disabled={
-                        !draftSchema.chrome.header.content.localeSwitcher
-                          .enabled
-                      }
-                      onChange={(event) =>
-                        updateHeaderLocaleSwitcherLabel(event.target.value)
-                      }
-                      value={
-                        draftSchema.chrome.header.content.localeSwitcher.label
-                          .defaultValue
-                      }
-                    />
-                    <Switch
-                      checked={
-                        draftSchema.chrome.header.content.localeSwitcher.enabled
-                      }
-                      onChange={updateHeaderLocaleSwitcherEnabled}
-                    />
-                  </div>
-                  <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
                     {draftSchema.chrome.header.content.localeSwitcher.locales.map(
-                      (locale) => (
-                        <Tag key={locale.code}>{locale.label.defaultValue}</Tag>
-                      ),
+                      (locale, index) => (
+                        <div
+                          key={`header-locale-${index}`}
+                          style={{
+                            alignItems: "center",
+                            display: "grid",
+                            gap: 8,
+                            gridTemplateColumns:
+                              "minmax(0, 0.8fr) minmax(0, 1fr) minmax(0, 1fr) auto"
+                          }}
+                        >
+                          <Input
+                            aria-label="Locale code"
+                            disabled={
+                              !draftSchema.chrome.header.content.localeSwitcher
+                                .enabled
+                            }
+                            onChange={(event) =>
+                              updateHeaderLocaleOption(
+                                index,
+                                "code",
+                                event.target.value
+                              )
+                            }
+                            placeholder="Code, e.g. en-US"
+                            value={locale.code}
+                          />
+                          <Input
+                            aria-label="Locale label"
+                            disabled={
+                              !draftSchema.chrome.header.content.localeSwitcher
+                                .enabled
+                            }
+                            onChange={(event) =>
+                              updateHeaderLocaleOption(
+                                index,
+                                "label",
+                                event.target.value
+                              )
+                            }
+                            placeholder="Display name"
+                            value={locale.label.defaultValue}
+                          />
+                          <Input
+                            aria-label="Locale link"
+                            disabled={
+                              !draftSchema.chrome.header.content.localeSwitcher
+                                .enabled
+                            }
+                            onChange={(event) =>
+                              updateHeaderLocaleOption(
+                                index,
+                                "href",
+                                event.target.value
+                              )
+                            }
+                            placeholder={
+                              locale.code
+                                ? `/${toStorefrontPathPrefix(locale.code)}`
+                                : "Link, e.g. /en"
+                            }
+                            value={locale.href ?? ""}
+                          />
+                          <Button
+                            aria-label="Remove locale"
+                            danger
+                            disabled={
+                              !draftSchema.chrome.header.content.localeSwitcher
+                                .enabled
+                            }
+                            icon={<DeleteOutlined />}
+                            onClick={() => removeHeaderLocaleOption(index)}
+                          />
+                        </div>
+                      )
                     )}
-                  </div>
+                    <Button
+                      disabled={
+                        !draftSchema.chrome.header.content.localeSwitcher.enabled
+                      }
+                      icon={<PlusOutlined />}
+                      onClick={addHeaderLocaleOption}
+                    >
+                      Add locale
+                    </Button>
+                  </Space>
+                  <Alert
+                    message="This edits the switcher chrome only. MVP still serves en-US content for unpublished locales."
+                    showIcon
+                    style={{ marginTop: 12 }}
+                    type="info"
+                  />
                   <Divider />
                   <Title level={5}>Footer content</Title>
                   <Form.Item label="Brand text">

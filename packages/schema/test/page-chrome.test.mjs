@@ -4,7 +4,11 @@ import {
   createFallbackPage,
   getFallbackPageTemplateId,
   getPageTemplateChrome,
+  getStorefrontHref,
   pageSchema,
+  resolveLocaleFromPath,
+  rewriteStorefrontHref,
+  toStorefrontPathPrefix,
 } from "../dist/index.js";
 
 function minimalPage(input = {}) {
@@ -40,6 +44,8 @@ test("page schema keeps default chrome for legacy pages", () => {
     "App Starter",
   );
   assert.equal(parsed.chrome.header.content.navigation.length, 3);
+  assert.equal(parsed.chrome.header.content.navigation[1]?.href, "/en/privacy");
+  assert.equal(parsed.chrome.footer.content.navigation[2]?.href, "/en/contact");
   assert.equal(parsed.chrome.header.content.localeSwitcher.enabled, true);
   assert.equal(
     parsed.chrome.header.content.localeSwitcher.locales[0].code,
@@ -182,4 +188,18 @@ test("fallback pages inherit site chrome content without turning chrome off", ()
     privacyPage.chrome.footer.content.copyright.defaultValue,
     "(c) Published",
   );
+});
+
+test("storefront hrefs use short language prefixes", () => {
+  assert.equal(toStorefrontPathPrefix("en-US"), "en");
+  assert.equal(toStorefrontPathPrefix("de-DE"), "de");
+  assert.equal(toStorefrontPathPrefix("en"), "en");
+  assert.equal(getStorefrontHref("en-US"), "/en");
+  assert.equal(getStorefrontHref("en-US", "contact"), "/en/contact");
+  assert.equal(rewriteStorefrontHref("/en-US/contact"), "/en/contact");
+  assert.equal(rewriteStorefrontHref("/en-US"), "/en");
+  assert.equal(rewriteStorefrontHref("/privacy"), "/privacy");
+  assert.equal(resolveLocaleFromPath("en"), "en-US");
+  assert.equal(resolveLocaleFromPath("en-US"), "en-US");
+  assert.equal(resolveLocaleFromPath("de"), "de");
 });

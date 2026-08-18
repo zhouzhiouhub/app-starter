@@ -7,6 +7,48 @@ export const localeCodeSchema = z
   .string()
   .regex(/^[a-z]{2}(?:-[A-Z]{2})?$/, "Locale must look like en-US");
 
+export function toStorefrontPathPrefix(locale: string): string {
+  const language = locale.split("-")[0];
+  return (language ?? locale).toLowerCase();
+}
+
+export function getStorefrontHref(locale: string, slug = "home"): string {
+  const prefix = toStorefrontPathPrefix(locale);
+  const normalizedSlug = slug.replace(/^\/+|\/+$/g, "");
+
+  if (!normalizedSlug || normalizedSlug === "home") {
+    return `/${prefix}`;
+  }
+
+  return `/${prefix}/${normalizedSlug}`;
+}
+
+export function rewriteStorefrontHref(href: string): string {
+  return href.replace(
+    /^\/([a-z]{2})-[A-Z]{2}(?=\/|$)/,
+    (_match, language: string) => `/${language}`
+  );
+}
+
+export function resolveLocaleFromPath(
+  pathLocale: string,
+  defaultLocale = "en-US"
+): string {
+  if (!pathLocale) {
+    return defaultLocale;
+  }
+
+  if (pathLocale === defaultLocale) {
+    return defaultLocale;
+  }
+
+  if (toStorefrontPathPrefix(defaultLocale) === toStorefrontPathPrefix(pathLocale)) {
+    return defaultLocale;
+  }
+
+  return pathLocale;
+}
+
 export const marketCodeSchema = z
   .string()
   .regex(/^[a-z][a-z0-9-]{1,15}$/, "Market code must be lowercase");
@@ -146,12 +188,12 @@ export const headerChromeContentSchema = z
       {
         id: "privacy",
         label: { defaultValue: "Privacy" },
-        href: "/en-US/privacy",
+        href: "/en/privacy",
       },
       {
         id: "terms",
         label: { defaultValue: "Terms" },
-        href: "/en-US/terms",
+        href: "/en/terms",
       },
     ]),
     localeSwitcher: headerLocaleSwitcherSchema,
@@ -170,12 +212,12 @@ export const headerChromeContentSchema = z
       {
         id: "privacy",
         label: { defaultValue: "Privacy" },
-        href: "/en-US/privacy",
+        href: "/en/privacy",
       },
       {
         id: "terms",
         label: { defaultValue: "Terms" },
-        href: "/en-US/terms",
+        href: "/en/terms",
       },
     ],
     localeSwitcher: headerLocaleSwitcherSchema.parse({}),
@@ -200,17 +242,17 @@ export const footerChromeContentSchema = z
       {
         id: "privacy",
         label: { defaultValue: "Privacy" },
-        href: "/en-US/privacy",
+        href: "/en/privacy",
       },
       {
         id: "terms",
         label: { defaultValue: "Terms" },
-        href: "/en-US/terms",
+        href: "/en/terms",
       },
       {
         id: "contact",
         label: { defaultValue: "Contact" },
-        href: "/en-US/contact",
+        href: "/en/contact",
       },
     ]),
   })
@@ -226,17 +268,17 @@ export const footerChromeContentSchema = z
       {
         id: "privacy",
         label: { defaultValue: "Privacy" },
-        href: "/en-US/privacy",
+        href: "/en/privacy",
       },
       {
         id: "terms",
         label: { defaultValue: "Terms" },
-        href: "/en-US/terms",
+        href: "/en/terms",
       },
       {
         id: "contact",
         label: { defaultValue: "Contact" },
-        href: "/en-US/contact",
+        href: "/en/contact",
       },
     ],
   });

@@ -1,10 +1,13 @@
 import type { ComponentType, ReactNode } from "react";
-import type {
-  HeaderChromeContent,
-  PageChromeRegion,
-  PageSchema,
-  SectionNode,
-  Viewport
+import {
+  getStorefrontHref,
+  rewriteStorefrontHref,
+  type FooterChromeContent,
+  type HeaderChromeContent,
+  type PageChromeRegion,
+  type PageSchema,
+  type SectionNode,
+  type Viewport
 } from "@app-starter/schema";
 import {
   CtaBar,
@@ -62,24 +65,40 @@ function resolveHeaderContent(schema: PageSchema): HeaderChromeContent {
 
   return {
     ...content,
+    brand: {
+      ...content.brand,
+      href: rewriteStorefrontHref(content.brand.href)
+    },
+    navigation: content.navigation.map((item) => ({
+      ...item,
+      href: rewriteStorefrontHref(item.href)
+    })),
     localeSwitcher: {
       ...localeSwitcher,
       locales: localeSwitcher.locales.map((locale) => ({
         ...locale,
-        href: locale.href ?? getLocaleHref(locale.code, schema.meta.slug)
+        href: rewriteStorefrontHref(
+          locale.href ?? getStorefrontHref(locale.code, schema.meta.slug)
+        )
       }))
     }
   };
 }
 
-function getLocaleHref(locale: string, slug: string): string {
-  const normalizedSlug = slug.replace(/^\/+|\/+$/g, "");
+function resolveFooterContent(schema: PageSchema): FooterChromeContent {
+  const content = schema.chrome.footer.content;
 
-  if (!normalizedSlug || normalizedSlug === "home") {
-    return `/${locale}`;
-  }
-
-  return `/${locale}/${normalizedSlug}`;
+  return {
+    ...content,
+    brand: {
+      ...content.brand,
+      href: rewriteStorefrontHref(content.brand.href)
+    },
+    navigation: content.navigation.map((item) => ({
+      ...item,
+      href: rewriteStorefrontHref(item.href)
+    }))
+  };
 }
 
 export function renderSection(
@@ -127,7 +146,7 @@ export function PageRenderer(
     props.schema.chrome.footer,
     props.chrome?.footer,
     <StorefrontFooter
-      content={props.schema.chrome.footer.content}
+      content={resolveFooterContent(props.schema)}
       variant={props.schema.chrome.footer.variant}
     />
   );
