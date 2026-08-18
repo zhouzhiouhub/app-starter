@@ -5,7 +5,7 @@
 当前目标不是一次性复制 Shopify 全量能力，而是先完成一个可长期演进的建站平台工程基础：前台渲染、后台管理壳、API 服务、Page Schema、共享 Renderer、数据库模型、二次开发入口和后续电商/多语言能力预留。
 
 > 当前日期：2026-08-18
-> 当前阶段：页面数据已接入 PostgreSQL，后台可保存草稿并发布，前台读取已发布版本。下一步是 Admin 登录与租户鉴权。
+> 当前阶段：后台登录与 JWT 租户鉴权已落地。下一步是页面列表、新建页面，以及把现有编辑器接到页面生命周期。
 
 ## 1. 当前进度
 
@@ -41,10 +41,12 @@
 - 页面管理 API：列表、创建、保存草稿、按 ID 发布。
 - 前台 `GET /api/v1/public/pages/:slug` 读取已发布 `PageVersion`。
 - 现有后台 Publish 仍走 `POST /api/v1/admin/pages/:slug/publish`，底层已改为写入数据库。
+- Admin 登录：Email + Password + JWT（Access Token + Refresh Token 轮换）。
+- 后台管理接口校验 Bearer Token 与权限 Scope，并按登录租户隔离页面数据。
+- 种子数据会创建默认 Tenant Admin（`admin@example.com` / `ChangeMe123!`）。
 
 ### 当前还没有完成
 
-- 后台登录与权限系统。
 - 站点管理后台页。
 - 页面列表与新建页面 UI。
 - 可视化 Page Builder（区块排序、属性面板、Undo / Redo）。
@@ -52,7 +54,7 @@
 - 多语言运营后台。
 - 真实电商购物车、结账、支付、订单能力。
 
-当前后台已能编辑并发布单个页面的 Chrome / Schema 到数据库，但还没有完整的页面管理后台。
+当前后台已能登录、编辑并发布单个页面的 Chrome / Schema 到数据库，但还没有完整的页面管理后台。
 
 ## 2. 项目定位
 
@@ -430,6 +432,11 @@ GET  /api/v1/public/config
 GET  /api/v1/public/pages/:slug
 GET  /api/v1/public/translations/:locale
 
+POST /api/v1/auth/login
+POST /api/v1/auth/refresh
+POST /api/v1/auth/logout
+GET  /api/v1/auth/me
+
 GET  /api/v1/pages
 POST /api/v1/pages
 GET  /api/v1/pages/:id
@@ -450,9 +457,11 @@ POST /api/v1/public/checkout
 
 说明：
 
+- 后台页面、Localization 和商品/订单列表接口需要 `Authorization: Bearer {accessToken}`。
 - `POST /api/v1/pages`、`PUT /api/v1/pages/:id/schema`、发布接口需要 `Idempotency-Key`。
 - `GET /api/v1/public/pages/:slug` 只返回已发布版本；未发布或不存在时返回 `NOT_FOUND`。
 - 当前 `cart` 和 `checkout` 会返回 `COMMERCE_DISABLED`，这是预期行为。
+- 本地默认管理员：`admin@example.com` / `ChangeMe123!`（可通过 `SEED_ADMIN_EMAIL`、`SEED_ADMIN_PASSWORD` 覆盖）。
 
 ## 12. 常用验证命令
 
@@ -504,6 +513,7 @@ pnpm --filter @app-starter/renderer build
 已经有：
 
 - Ant Design 布局。
+- Admin 登录页与 JWT 会话。
 - 页面 Chrome 编辑、Desktop / Mobile 预览。
 - Publish 按钮，发布结果写入 PostgreSQL。
 - 启动时尝试加载已发布的 `home` 页面。
@@ -511,17 +521,13 @@ pnpm --filter @app-starter/renderer build
 
 还没有：
 
-- 登录。
-- 用户权限。
 - 页面列表与新建页面。
 - Section 级属性面板。
 - 媒体库。
 
-下一阶段应优先做后台登录和页面生命周期 UI：
+下一阶段应优先做页面生命周期 UI：
 
 ```text
-Admin 登录
-Tenant Context
 页面列表
 新建页面
 编辑并保存草稿
@@ -556,9 +562,6 @@ Tenant Context
 
 Phase 1 后台功能一期剩余：
 
-1. Admin 登录：Email + Password + JWT。
-2. Access Token / Refresh Token 与 Tenant Context。
-3. Admin API 鉴权 Guard。
-4. Admin 页面列表。
-5. Admin 新建页面并进入现有编辑器。
-6. 保存草稿与发布按钮分离。
+1. Admin 页面列表。
+2. Admin 新建页面并进入现有编辑器。
+3. 保存草稿与发布按钮分离。

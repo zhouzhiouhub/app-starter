@@ -12,7 +12,6 @@ import {
 import {
   Alert,
   Button,
-  ConfigProvider,
   Divider,
   Form,
   Input,
@@ -25,7 +24,6 @@ import {
   Tag,
   Typography,
 } from "antd";
-import { adminTheme } from "@app-starter/admin-theme";
 import { customAdminRoutes } from "@app-starter/custom-admin";
 import { PageRenderer } from "@app-starter/renderer";
 import {
@@ -41,6 +39,9 @@ import {
   type PageTemplateId,
   type Viewport,
 } from "@app-starter/schema";
+import { adminRequest, AuthRequiredError } from "./features/auth/api";
+import { LogoutButton } from "./features/auth/components/logout-button";
+import { getApiBaseUrl } from "./lib/api-base-url";
 
 const { Header, Content, Sider } = Layout;
 const { Paragraph, Text, Title } = Typography;
@@ -56,21 +57,7 @@ const templateOptions = Object.values(pageTemplatePresets).map((template) => ({
   value: template.id,
 }));
 
-const configuredApiBaseUrl = (
-  import.meta as unknown as {
-    env?: { VITE_API_URL?: string };
-  }
-).env?.VITE_API_URL;
-
-const apiBaseUrl = configuredApiBaseUrl ?? getDefaultApiBaseUrl();
-
-function getDefaultApiBaseUrl(): string {
-  const location = globalThis.location;
-  const protocol = location?.protocol ?? "http:";
-  const hostname = location?.hostname || "localhost";
-
-  return `${protocol}//${hostname}:4000/api/v1`;
-}
+const apiBaseUrl = getApiBaseUrl();
 
 function createIdempotencyKey(): string {
   const cryptoApi = globalThis.crypto;
@@ -575,10 +562,8 @@ export function App() {
     setIsPublishing(true);
 
     try {
-      const response = await fetch(
-        `${apiBaseUrl}/admin/pages/${encodeURIComponent(
-          parsed.data.meta.slug,
-        )}/publish`,
+      const response = await adminRequest(
+        `/admin/pages/${encodeURIComponent(parsed.data.meta.slug)}/publish`,
         {
           body: JSON.stringify({ data: parsed.data }),
           headers: {
@@ -603,6 +588,11 @@ export function App() {
           "Published. Refresh the storefront page to load the latest published content.",
       });
     } catch (error) {
+      if (error instanceof AuthRequiredError) {
+        globalThis.location.assign("/login");
+        return;
+      }
+
       setPublishFeedback({
         type: "error",
         message: formatRequestError(error),
@@ -613,8 +603,7 @@ export function App() {
   }
 
   return (
-    <ConfigProvider theme={adminTheme}>
-      <Layout style={{ minHeight: "100vh" }}>
+    <Layout style={{ minHeight: "100vh" }}>
         <Sider width={240}>
           <div style={{ color: "white", fontWeight: 700, padding: 20 }}>
             App Starter
@@ -623,9 +612,16 @@ export function App() {
         </Sider>
         <Layout>
           <Header
-            style={{ background: "#fff", borderBottom: "1px solid #eee" }}
+            style={{
+              alignItems: "center",
+              background: "#fff",
+              borderBottom: "1px solid #eee",
+              display: "flex",
+              justifyContent: "space-between",
+            }}
           >
             <Typography.Text strong>Engineering Scaffold</Typography.Text>
+            <LogoutButton />
           </Header>
           <Content style={{ padding: 24 }}>
             <div
@@ -1129,6 +1125,5 @@ export function App() {
           </Content>
         </Layout>
       </Layout>
-    </ConfigProvider>
   );
 }
