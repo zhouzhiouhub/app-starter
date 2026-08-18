@@ -1,7 +1,8 @@
+import type { IncomingMessage, ServerResponse } from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 
 const repoRoot = fileURLToPath(new URL("../..", import.meta.url));
 const apiProxy = {
@@ -11,9 +12,51 @@ const apiProxy = {
   },
 };
 
+function redirectBrowserLoginGet(): Plugin {
+  function attach(server: {
+    middlewares: {
+      use: (
+        handler: (
+          req: IncomingMessage,
+          res: ServerResponse,
+          next: () => void,
+        ) => void,
+      ) => void;
+    };
+  }) {
+    server.middlewares.use(
+      (req: IncomingMessage, res: ServerResponse, next: () => void) => {
+        if (!isAuthLoginGet(req)) {
+          next();
+          return;
+        }
+
+        res.statusCode = 302;
+        res.setHeader("Location", "/login");
+        res.end();
+      },
+    );
+  }
+
+  return {
+    configurePreviewServer: attach,
+    configureServer: attach,
+    name: "redirect-browser-login-get",
+  };
+}
+
+function isAuthLoginGet(req: IncomingMessage): boolean {
+  if (req.method !== "GET" && req.method !== "HEAD") {
+    return false;
+  }
+
+  const requestPath = (req.url ?? "").split("?")[0];
+  return requestPath === "/api/v1/auth/login";
+}
+
 export default defineConfig({
   envDir: repoRoot,
-  plugins: [react()],
+  plugins: [react(), redirectBrowserLoginGet()],
   resolve: {
     alias: {
       "@app-starter/admin-theme": path.join(
