@@ -1,13 +1,6 @@
 import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
-import {
-  apiErrorCodes,
-  collectMediaReferences,
-  pageSchema,
-  readMediaAssetId,
-  resolveMediaReferences,
-  type PageSchema,
-} from "@app-starter/schema";
+import { apiErrorCodes, type PageSchema } from "@app-starter/schema";
 import { runTenantIdempotent } from "../../common/idempotency-record.js";
 import type { Actor } from "../identity/identity.types.js";
 import { PrismaService } from "../prisma/prisma.service.js";
@@ -33,8 +26,9 @@ import {
   assertTenantR2Key,
   parseConfirmMediaInput,
   parseCreateUploadUrlInput,
-  parseListMediaQuery,
 } from "./media.validation.js";
+import { listMediaAssets } from "./use-cases/list-media-assets.js";
+import { resolveSchemaMediaReferences } from "./use-cases/resolve-schema-media-references.js";
 
 @Injectable()
 export class MediaService {
@@ -49,31 +43,7 @@ export class MediaService {
     },
     actor: Actor,
   ) {
-    const { page, limit, status, type } = parseListMediaQuery(query);
-    const skip = (page - 1) * limit;
-    const where: Prisma.MediaAssetWhereInput = {
-      tenantId: actor.tenantId,
-      ...(type ? { type } : {}),
-    };
-
-    const assets = await this.prisma.mediaAsset.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-    });
-    const filtered = assets
-      .map(toMediaAssetResponse)
-      .filter((asset) => status === "all" || asset.status === status);
-
-    return {
-      data: filtered.slice(skip, skip + limit),
-      meta: {
-        requestId: "local-dev",
-        tenantId: actor.tenantId,
-        total: filtered.length,
-        page,
-        limit,
-      },
-    };
+    return listMediaAssets(this.prisma, query, actor);
   }
 
   createUploadUrl(
@@ -168,35 +138,7 @@ export class MediaService {
     schema: PageSchema,
     tenantId: string,
   ): Promise<PageSchema> {
-    const references = collectMediaReferences(schema);
-
-    if (references.length === 0) {
-      return schema;
-    }
-
-    const ids = references
-      .map((reference) => readMediaAssetId(reference))
-      .filter((id): id is string => Boolean(id));
-    const assets = await this.prisma.mediaAsset.findMany({
-      where: {
-        id: { in: ids },
-        tenantId,
-      },
-      select: {
-        id: true,
-        url: true,
-      },
-    });
-    const urlsByReference = new Map(
-      assets.map((asset) => [`media://${asset.id}`, asset.url]),
-    );
-
-    return pageSchema.parse(
-      resolveMediaReferences(
-        schema,
-        (reference) => urlsByReference.get(reference) ?? reference,
-      ),
-    );
+    return resolveSchemaMediaReferences(this.prisma, schema, tenantId);
   }
 
   async assertSchemaMediaReferencesPublishable(
