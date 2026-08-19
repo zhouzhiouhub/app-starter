@@ -104,3 +104,33 @@ test("publish preflight warns about missing gallery image alt text", () => {
   );
   assert.equal(blocker, null);
 });
+
+test("publish preflight flags invalid section CTA links", () => {
+  const schema = structuredClone(exampleLandingPage);
+
+  schema.sections[0].props.ctaHref = "javascript:alert(1)";
+
+  const issues = collectPublishPreflightIssues(schema);
+  const blocker = findBlockingPublishPreflightIssue(schema);
+
+  assert.deepEqual(
+    issues.map((issue) => [issue.field, issue.severity]),
+    [["sections[0].props.ctaHref", "error"]],
+  );
+  assert.equal(blocker?.field, "sections[0].props.ctaHref");
+});
+
+test("publish preflight warns about incomplete section CTA pairs", () => {
+  const schema = structuredClone(exampleLandingPage);
+
+  schema.sections[0].props.ctaHref = "";
+
+  const issues = collectPublishPreflightIssues(schema);
+  const blocker = findBlockingPublishPreflightIssue(schema);
+
+  assert.deepEqual(
+    issues.map((issue) => [issue.field, issue.severity]),
+    [["sections[0].props.ctaHref", "warning"]],
+  );
+  assert.equal(blocker, null);
+});

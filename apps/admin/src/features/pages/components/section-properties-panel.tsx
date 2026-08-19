@@ -1,6 +1,11 @@
 import { Empty, Form, Input, Typography } from "antd";
 import type { PageSchema, SectionNode, Viewport } from "@app-starter/schema";
 import {
+  readCtaHrefFeedback,
+  readCtaLabelFeedback,
+  type CtaFieldFeedback,
+} from "../cta-feedback";
+import {
   readSectionText,
   updateSectionTextField,
   type SectionTextValueKind,
@@ -85,42 +90,52 @@ export function SectionPropertiesPanel(props: {
         <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
       ) : (
         <Form layout="vertical">
-          {fields.map((field) => (
-            <Form.Item key={field.name} label={field.label}>
-              {field.control === "textarea" ? (
-                <Input.TextArea
-                  onChange={(event) =>
-                    props.onChange(
-                      updateSectionTextField(
-                        props.schema,
-                        section.id,
-                        field.name,
-                        event.target.value,
-                        field.valueKind,
-                      ),
-                    )
-                  }
-                  rows={4}
-                  value={readSectionText(section.props[field.name])}
-                />
-              ) : (
-                <Input
-                  onChange={(event) =>
-                    props.onChange(
-                      updateSectionTextField(
-                        props.schema,
-                        section.id,
-                        field.name,
-                        event.target.value,
-                        field.valueKind,
-                      ),
-                    )
-                  }
-                  value={readSectionText(section.props[field.name])}
-                />
-              )}
-            </Form.Item>
-          ))}
+          {fields.map((field) => {
+            const value = readSectionText(section.props[field.name]);
+            const feedback = readSectionPropertyFeedback(section, field, value);
+
+            return (
+              <Form.Item
+                help={feedback.help}
+                key={field.name}
+                label={field.label}
+                validateStatus={feedback.status}
+              >
+                {field.control === "textarea" ? (
+                  <Input.TextArea
+                    onChange={(event) =>
+                      props.onChange(
+                        updateSectionTextField(
+                          props.schema,
+                          section.id,
+                          field.name,
+                          event.target.value,
+                          field.valueKind,
+                        ),
+                      )
+                    }
+                    rows={4}
+                    value={value}
+                  />
+                ) : (
+                  <Input
+                    onChange={(event) =>
+                      props.onChange(
+                        updateSectionTextField(
+                          props.schema,
+                          section.id,
+                          field.name,
+                          event.target.value,
+                          field.valueKind,
+                        ),
+                      )
+                    }
+                    value={value}
+                  />
+                )}
+              </Form.Item>
+            );
+          })}
           {section.component === "faq" ? (
             <FaqItemsFields
               onChange={props.onChange}
@@ -152,4 +167,26 @@ export function SectionPropertiesPanel(props: {
       )}
     </section>
   );
+}
+
+function readSectionPropertyFeedback(
+  section: SectionNode,
+  field: SectionPropertyField,
+  value: string,
+): CtaFieldFeedback {
+  if (field.name === "ctaHref") {
+    return readCtaHrefFeedback(
+      readSectionText(section.props.ctaLabel),
+      value,
+    );
+  }
+
+  if (field.name === "ctaLabel") {
+    return readCtaLabelFeedback(
+      value,
+      readSectionText(section.props.ctaHref),
+    );
+  }
+
+  return {};
 }

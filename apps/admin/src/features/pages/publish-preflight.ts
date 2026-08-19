@@ -1,8 +1,13 @@
 import type { PageSchema } from "@app-starter/schema";
+import {
+  readCtaHrefFeedback,
+  readCtaLabelFeedback,
+} from "./cta-feedback.ts";
 import { readImageAltFeedback } from "./image-alt-feedback.ts";
 import { readImageSrcFeedback } from "./image-src-feedback.ts";
 import { readSafeHrefFeedback } from "./safe-href-feedback.ts";
 import { readSeoFieldFeedback } from "./seo-feedback.ts";
+import { readSectionText } from "./section-content-updates.ts";
 import { readImages } from "./section-list-prop-updates.ts";
 import type { SeoField } from "./seo-updates";
 
@@ -37,6 +42,14 @@ interface ImageAltCheck {
   field: string;
   label: string;
   value: string | undefined;
+}
+
+interface CtaPairCheck {
+  hrefField: string;
+  hrefValue: string | undefined;
+  label: string;
+  labelField: string;
+  labelValue: string | undefined;
 }
 
 export function collectPublishPreflightIssues(
@@ -128,6 +141,16 @@ function collectSectionIssues(
 ): void {
   schema.sections.forEach((section, sectionIndex) => {
     if (section.component !== "image-gallery") {
+      if (section.component === "cta-bar" || section.component === "hero-banner") {
+        addCtaPairIssues(issues, {
+          hrefField: `sections[${sectionIndex}].props.ctaHref`,
+          hrefValue: readSectionText(section.props.ctaHref),
+          label: `${section.component} CTA`,
+          labelField: `sections[${sectionIndex}].props.ctaLabel`,
+          labelValue: readSectionText(section.props.ctaLabel),
+        });
+      }
+
       return;
     }
 
@@ -144,6 +167,30 @@ function collectSectionIssues(
       });
     });
   });
+}
+
+function addCtaPairIssues(
+  issues: PublishPreflightIssue[],
+  check: CtaPairCheck,
+): void {
+  const hrefFeedback = readCtaHrefFeedback(check.labelValue, check.hrefValue);
+  const labelFeedback = readCtaLabelFeedback(check.labelValue, check.hrefValue);
+
+  if (hrefFeedback.status) {
+    issues.push({
+      field: check.hrefField,
+      message: `${check.label} link: ${hrefFeedback.help ?? "Enter a valid CTA link."}`,
+      severity: hrefFeedback.status,
+    });
+  }
+
+  if (labelFeedback.status) {
+    issues.push({
+      field: check.labelField,
+      message: `${check.label} label: ${labelFeedback.help ?? "Enter a CTA label."}`,
+      severity: labelFeedback.status,
+    });
+  }
 }
 
 function addSafeHrefIssue(

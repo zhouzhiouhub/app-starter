@@ -148,6 +148,7 @@ export const exampleLandingPage: PageSchema = pageSchema.parse({
           defaultValue:
             "A schema-first foundation for pages, preview, publishing, localization, commerce reservations, and future theme extensibility.",
         },
+        ctaHref: "/en",
         ctaLabel: "Preview",
       },
       layout: {
