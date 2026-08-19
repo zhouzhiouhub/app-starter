@@ -58,8 +58,8 @@ export async function runSmokeTest(input) {
     recordSmokeCheck(report, "auth.login");
     await assertFeatureFlagsDisabled(input, accessToken);
     recordSmokeCheck(report, "feature-flags.disabled");
-    await assertMediaUploadTarget(input, accessToken);
-    recordSmokeCheck(report, "media.upload-target");
+    const mediaDetails = await assertMediaUploadTarget(input, accessToken);
+    recordSmokeCheck(report, "media.upload-target", mediaDetails);
     const page = await assertPreviewFlow(input, accessToken, schema, title);
     recordSmokeCheck(report, "page.preview", { pageId: page.id });
     const publish = await publishPage(input, accessToken, page.id, schema);

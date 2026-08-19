@@ -5,6 +5,7 @@ import { join } from "node:path";
 import test from "node:test";
 import { readApiErrorCode } from "./feature-flags-smoke.mjs";
 import {
+  createMediaSmokeDetails,
   isCdnUrlForR2Key,
   isMediaListResponseContainingAsset,
   isMediaReference,
@@ -175,6 +176,33 @@ test("smoke helpers validate media list filter responses", () => {
     false,
   );
   assert.equal(isMediaListResponseContainingAsset({ data: [] }, asset), false);
+});
+
+test("smoke helpers summarize media checks without signed upload URLs", () => {
+  const details = createMediaSmokeDetails(
+    {
+      uploadUrl:
+        "https://account.r2.cloudflarestorage.com/bucket/key?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Signature=secret",
+    },
+    {
+      id: "asset-1",
+      r2Key: "tenant/2026/08/19/smoke.png",
+      reference: "media://asset-1",
+      url: "https://cdn.example.com/tenant/2026/08/19/smoke.png",
+    },
+    true,
+  );
+
+  assert.deepEqual(details, {
+    assetId: "asset-1",
+    cdnHost: "cdn.example.com",
+    isR2UploadUrl: true,
+    productionCdn: true,
+    r2Key: "tenant/2026/08/19/smoke.png",
+    reference: "media://asset-1",
+    uploadedObject: true,
+  });
+  assert.equal("uploadUrl" in details, false);
 });
 
 test("smoke helpers validate preview token responses", () => {

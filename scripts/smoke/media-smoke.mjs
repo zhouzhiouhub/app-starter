@@ -53,6 +53,8 @@ export async function assertMediaUploadTarget(input, accessToken) {
       ? "Media R2 upload, CDN confirmation, and list filters passed."
       : "Media upload target, confirm, and list filters passed.",
   );
+
+  return createMediaSmokeDetails(target, asset, input.requireR2Upload);
 }
 
 export function isR2UploadUrl(value) {
@@ -107,6 +109,18 @@ export function isMediaListResponseContainingAsset(body, asset) {
     match.status === "active" &&
     match.type === "image"
   );
+}
+
+export function createMediaSmokeDetails(target, asset, requireR2Upload) {
+  return {
+    assetId: asset.id,
+    cdnHost: readUrlHost(asset.url),
+    isR2UploadUrl: isR2UploadUrl(target.uploadUrl),
+    productionCdn: isProductionCdnUrl(asset.url),
+    r2Key: asset.r2Key,
+    reference: asset.reference,
+    uploadedObject: Boolean(requireR2Upload),
+  };
 }
 
 function assertUploadTargetShape(target) {
@@ -249,6 +263,14 @@ function assertMediaAssetShape(asset, target, requireProductionCdn) {
 function assertString(value, field) {
   if (typeof value !== "string" || !value) {
     throw new Error(`Media upload target returned an invalid ${field}.`);
+  }
+}
+
+function readUrlHost(value) {
+  try {
+    return new URL(value).hostname;
+  } catch {
+    return null;
   }
 }
 
