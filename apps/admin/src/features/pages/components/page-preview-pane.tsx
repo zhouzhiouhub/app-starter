@@ -1,6 +1,12 @@
-import { Segmented, Typography } from "antd";
+import { useMemo } from "react";
+import { Alert, Segmented, Typography } from "antd";
 import { PageRenderer } from "@app-starter/renderer";
-import type { PageSchema, Viewport } from "@app-starter/schema";
+import {
+  collectMediaReferences,
+  type PageSchema,
+  type Viewport,
+} from "@app-starter/schema";
+import { readMediaResolverFeedback } from "../../media/media-resolver-feedback";
 import { useMediaResolver } from "../../media/hooks/use-media-resolver";
 
 export function PagePreviewPane(props: {
@@ -8,7 +14,17 @@ export function PagePreviewPane(props: {
   onViewportChange: (viewport: Viewport) => void;
   viewport: Viewport;
 }) {
-  const resolveMediaUrl = useMediaResolver();
+  const mediaResolver = useMediaResolver();
+  const mediaReferences = useMemo(
+    () => collectMediaReferences(props.schema),
+    [props.schema],
+  );
+  const mediaFeedback = readMediaResolverFeedback({
+    error: mediaResolver.error,
+    isLoading: mediaResolver.isLoading,
+    references: mediaReferences,
+    urlsByReference: mediaResolver.urlsByReference,
+  });
 
   return (
     <section
@@ -40,6 +56,15 @@ export function PagePreviewPane(props: {
           value={props.viewport}
         />
       </div>
+      {mediaFeedback ? (
+        <Alert
+          description={mediaFeedback.description}
+          message={mediaFeedback.message}
+          showIcon
+          style={{ marginBottom: 16 }}
+          type={mediaFeedback.type}
+        />
+      ) : null}
       <div
         style={{
           border: "1px solid #eee",
@@ -50,7 +75,7 @@ export function PagePreviewPane(props: {
         }}
       >
         <PageRenderer
-          resolveMediaUrl={resolveMediaUrl}
+          resolveMediaUrl={mediaResolver.resolveMediaUrl}
           schema={props.schema}
           viewport={props.viewport}
         />
