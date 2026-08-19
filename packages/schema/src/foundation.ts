@@ -127,13 +127,63 @@ export const i18nTextSchema = z.object({
 });
 export type I18nText = z.infer<typeof i18nTextSchema>;
 
+const unsafeHrefCharacters = new Set(["<", ">", '"', "'", "`", "\\"]);
+
+export function isSafeHref(value: string): boolean {
+  const href = value.trim();
+
+  if (!href || hasUnsafeHrefCharacter(href)) {
+    return false;
+  }
+
+  if (href.startsWith("/")) {
+    return !href.startsWith("//");
+  }
+
+  if (href.startsWith("#")) {
+    return true;
+  }
+
+  if (href.startsWith("mailto:") || href.startsWith("tel:")) {
+    return href.length > href.indexOf(":") + 1;
+  }
+
+  if (href.startsWith("http://") || href.startsWith("https://")) {
+    try {
+      const parsed = new URL(href);
+      return (
+        (parsed.protocol === "http:" || parsed.protocol === "https:") &&
+        Boolean(parsed.hostname) &&
+        !parsed.username &&
+        !parsed.password
+      );
+    } catch {
+      return false;
+    }
+  }
+
+  return false;
+}
+
+function hasUnsafeHrefCharacter(href: string): boolean {
+  return Array.from(href).some((character) => {
+    const codePoint = character.codePointAt(0) ?? 0;
+
+    return (
+      codePoint <= 0x20 ||
+      codePoint === 0x7f ||
+      unsafeHrefCharacters.has(character)
+    );
+  });
+}
+
 export const safeHrefSchema = z
   .string()
+  .trim()
   .min(1)
-  .regex(
-    /^(\/(?!\/)|#|https?:\/\/|mailto:|tel:)/,
-    "Href must be relative, http(s), mailto, tel, or hash",
-  );
+  .refine(isSafeHref, {
+    message: "Href must be relative, http(s), mailto, tel, or hash",
+  });
 export type SafeHref = z.infer<typeof safeHrefSchema>;
 
 export const seoUrlSchema = z

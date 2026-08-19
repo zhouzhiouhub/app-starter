@@ -27,6 +27,15 @@ test("rich text sanitizer protects links opened in a new tab", () => {
   );
 });
 
+test("rich text sanitizer blocks links with control characters", () => {
+  assert.equal(
+    sanitizeRichText(
+      '<a href="https://example.com&#10;javascript:alert(1)">Bad</a>',
+    ),
+    "Bad",
+  );
+});
+
 test("rich text component renders sanitized HTML content", () => {
   const node = RichText({
     content: {

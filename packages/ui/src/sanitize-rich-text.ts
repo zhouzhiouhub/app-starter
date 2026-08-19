@@ -110,7 +110,9 @@ function readAttribute(rawAttributes: string, name: string): string | undefined 
   );
   const match = pattern.exec(rawAttributes);
 
-  return match?.[1] ?? match?.[2] ?? match?.[3];
+  const value = match?.[1] ?? match?.[2] ?? match?.[3];
+
+  return value ? decodeAttributeValue(value) : undefined;
 }
 
 function escapeText(value: string | undefined): string {
@@ -122,4 +124,42 @@ function escapeText(value: string | undefined): string {
 
 function escapeAttribute(value: string): string {
   return escapeText(value).replace(/"/g, "&quot;");
+}
+
+function decodeAttributeValue(value: string): string {
+  return value.replace(
+    /&(?:#(\d+)|#x([0-9a-f]+)|amp|lt|gt|quot|apos);/gi,
+    (entity, decimal: string | undefined, hexadecimal: string | undefined) => {
+      if (decimal) {
+        return readCodePoint(Number(decimal));
+      }
+
+      if (hexadecimal) {
+        return readCodePoint(Number.parseInt(hexadecimal, 16));
+      }
+
+      switch (entity.toLowerCase()) {
+        case "&amp;":
+          return "&";
+        case "&lt;":
+          return "<";
+        case "&gt;":
+          return ">";
+        case "&quot;":
+          return '"';
+        case "&apos;":
+          return "'";
+        default:
+          return entity;
+      }
+    },
+  );
+}
+
+function readCodePoint(value: number): string {
+  if (!Number.isInteger(value) || value < 0 || value > 0x10ffff) {
+    return "";
+  }
+
+  return String.fromCodePoint(value);
 }

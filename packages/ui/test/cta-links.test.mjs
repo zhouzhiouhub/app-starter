@@ -37,6 +37,21 @@ test("CTA components block unsafe href protocols", () => {
   assert.equal(blocked?.props["data-cta-href-blocked"], "javascript:alert(1)");
 });
 
+test("CTA components block hrefs with control characters", () => {
+  const cta = CtaBar({
+    ctaHref: "https://example.com\njavascript:alert(1)",
+    ctaLabel: "Launch",
+    title: "Ready",
+  });
+  const blocked = findFirstElement(cta, "span");
+
+  assert.equal(findFirstElement(cta, "a"), null);
+  assert.equal(
+    blocked?.props["data-cta-href-blocked"],
+    "https://example.com\njavascript:alert(1)",
+  );
+});
+
 function findFirstElement(node, type) {
   if (!node || typeof node !== "object") {
     return null;
