@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { Alert, Tag, Typography } from "antd";
-import type { PageSchema, Viewport } from "@app-starter/schema";
+import {
+  getOrderedSectionsForViewport,
+  type PageSchema,
+  type Viewport,
+} from "@app-starter/schema";
 import { getStorefrontPagePath } from "../storefront-url";
 import type {
   EditorFeedback,
@@ -43,21 +47,25 @@ export function PageEditor(props: {
   const [selectedSectionId, setSelectedSectionId] = useState(
     props.schema.sections[0]?.id ?? null,
   );
+  const orderedSections = useMemo(
+    () => getOrderedSectionsForViewport(props.schema, props.viewport),
+    [props.schema, props.viewport],
+  );
   const selectedSection = useMemo(
     () =>
-      props.schema.sections.find(
+      orderedSections.find(
         (section) => section.id === selectedSectionId,
       ) ?? null,
-    [props.schema.sections, selectedSectionId],
+    [orderedSections, selectedSectionId],
   );
 
   useEffect(() => {
-    const firstSectionId = props.schema.sections[0]?.id ?? null;
+    const firstSectionId = orderedSections[0]?.id ?? null;
 
     if (!selectedSection && selectedSectionId !== firstSectionId) {
       setSelectedSectionId(firstSectionId);
     }
-  }, [props.schema.sections, selectedSection, selectedSectionId]);
+  }, [orderedSections, selectedSection, selectedSectionId]);
 
   return (
     <div>
