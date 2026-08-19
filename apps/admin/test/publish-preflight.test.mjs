@@ -134,3 +134,20 @@ test("publish preflight warns about incomplete section CTA pairs", () => {
   );
   assert.equal(blocker, null);
 });
+
+test("publish preflight warns about sanitized rich text content", () => {
+  const schema = structuredClone(exampleLandingPage);
+
+  schema.sections[1].props.content = {
+    defaultValue: '<p onclick="alert(1)">Safe</p><script>alert(2)</script>',
+  };
+
+  const issues = collectPublishPreflightIssues(schema);
+  const blocker = findBlockingPublishPreflightIssue(schema);
+
+  assert.deepEqual(
+    issues.map((issue) => [issue.field, issue.severity]),
+    [["sections[1].props.content", "warning"]],
+  );
+  assert.equal(blocker, null);
+});

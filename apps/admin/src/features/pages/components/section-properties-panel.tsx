@@ -6,6 +6,10 @@ import {
   type CtaFieldFeedback,
 } from "../cta-feedback";
 import {
+  readRichTextFeedback,
+  type RichTextFeedback,
+} from "../rich-text-feedback";
+import {
   readSectionText,
   updateSectionTextField,
   type SectionTextValueKind,
@@ -173,7 +177,7 @@ function readSectionPropertyFeedback(
   section: SectionNode,
   field: SectionPropertyField,
   value: string,
-): CtaFieldFeedback {
+): CtaFieldFeedback | RichTextFeedback {
   if (field.name === "ctaHref") {
     return readCtaHrefFeedback(
       readSectionText(section.props.ctaLabel),
@@ -186,6 +190,10 @@ function readSectionPropertyFeedback(
       value,
       readSectionText(section.props.ctaHref),
     );
+  }
+
+  if (section.component === "rich-text" && field.name === "content") {
+    return readRichTextFeedback(value);
   }
 
   return {};

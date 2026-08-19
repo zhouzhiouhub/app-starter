@@ -6,6 +6,7 @@ import {
 import { readImageAltFeedback } from "./image-alt-feedback.ts";
 import { readImageSrcFeedback } from "./image-src-feedback.ts";
 import type { PublishPreflightIssue } from "./publish-preflight-types.ts";
+import { readRichTextFeedback } from "./rich-text-feedback.ts";
 import { readSectionText } from "./section-content-updates.ts";
 import { readImages } from "./section-list-prop-updates.ts";
 
@@ -27,6 +28,12 @@ interface CtaPairCheck {
   label: string;
   labelField: string;
   labelValue: string | undefined;
+}
+
+interface RichTextCheck {
+  field: string;
+  label: string;
+  value: string | undefined;
 }
 
 export function collectSectionPreflightIssues(
@@ -59,6 +66,14 @@ export function collectSectionPreflightIssues(
         label: `${section.component} CTA`,
         labelField: `sections[${sectionIndex}].props.ctaLabel`,
         labelValue: readSectionText(section.props.ctaLabel),
+      });
+    }
+
+    if (section.component === "rich-text") {
+      addRichTextIssue(issues, {
+        field: `sections[${sectionIndex}].props.content`,
+        label: `Rich text section ${sectionIndex + 1}`,
+        value: readSectionText(section.props.content),
       });
     }
   });
@@ -103,6 +118,23 @@ function addImageSrcIssue(
   issues.push({
     field: check.field,
     message: `${check.label}: ${feedback.help ?? "Enter a valid image source."}`,
+    severity: feedback.status,
+  });
+}
+
+function addRichTextIssue(
+  issues: PublishPreflightIssue[],
+  check: RichTextCheck,
+): void {
+  const feedback = readRichTextFeedback(check.value);
+
+  if (!feedback.status) {
+    return;
+  }
+
+  issues.push({
+    field: check.field,
+    message: `${check.label}: ${feedback.help ?? "Review rich text markup."}`,
     severity: feedback.status,
   });
 }
