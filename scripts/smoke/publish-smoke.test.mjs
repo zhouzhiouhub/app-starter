@@ -2,8 +2,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   getStorefrontPath,
+  hasNoIndexRobots,
   joinUrl,
   normalizeApiBaseUrl,
+  parseSitemapUrls,
   readConfig,
 } from "./publish-smoke.mjs";
 import { buildSmokePageSchema } from "./smoke-page-schema.mjs";
@@ -26,6 +28,31 @@ test("smoke helpers normalize API base URLs", () => {
     normalizeApiBaseUrl("http://localhost:4000/api/v1/"),
     "http://localhost:4000/api/v1",
   );
+});
+
+test("smoke helpers parse sitemap URLs", () => {
+  assert.deepEqual(
+    parseSitemapUrls(`<?xml version="1.0"?>
+<urlset>
+  <url><loc>https://web.example.com/en</loc></url>
+  <url><loc>https://web.example.com/en/campaign</loc></url>
+</urlset>`),
+    ["https://web.example.com/en", "https://web.example.com/en/campaign"],
+  );
+});
+
+test("smoke helpers detect noindex robots metadata", () => {
+  assert.equal(
+    hasNoIndexRobots(
+      '<meta content="noindex, nofollow" name="robots" />',
+    ),
+    true,
+  );
+  assert.equal(
+    hasNoIndexRobots('<meta name="robots" content="index, follow" />'),
+    false,
+  );
+  assert.equal(hasNoIndexRobots("<title>noindex copy</title>"), false);
 });
 
 test("readConfig uses seeded defaults and explicit smoke overrides", async () => {

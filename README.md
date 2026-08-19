@@ -519,7 +519,7 @@ pnpm --filter @app-starter/renderer build
 pnpm smoke:publish
 ```
 
-该脚本会登录默认管理员，发布一个唯一 slug 的测试页，验证公共页面 API 和前台 HTML 是否读取到同一份已发布内容。若只想验证发布与前台读取、暂不强制 ISR 回调，可临时设置：
+该脚本会登录默认管理员，发布一个唯一 slug 的测试页，验证公共页面 API、前台 HTML、`robots.txt`、`sitemap.xml` 和 404/noindex 是否读取到同一份已发布内容并满足 SEO 发布门禁。若只想验证发布与前台读取、暂不强制 ISR 回调，可临时设置：
 
 ```powershell
 $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish

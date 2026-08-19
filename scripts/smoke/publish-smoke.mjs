@@ -1,5 +1,21 @@
 import { randomUUID } from "node:crypto";
 import { buildSmokePageSchema } from "./smoke-page-schema.mjs";
+import {
+  assertIndexableStorefrontPage,
+  assertNotFoundPage,
+  assertRobots,
+  assertSitemap,
+  assertStorefrontPage,
+  getStorefrontPath,
+  joinUrl,
+} from "./storefront-smoke.mjs";
+
+export {
+  getStorefrontPath,
+  hasNoIndexRobots,
+  joinUrl,
+  parseSitemapUrls,
+} from "./storefront-smoke.mjs";
 
 const defaultApiUrl = "http://localhost:4000";
 const defaultWebUrl = "http://localhost:3000";
@@ -27,7 +43,11 @@ export async function runSmokeTest(input) {
   const publish = await publishPage(input, accessToken, schema);
   assertPublishedResponse(publish, input, title);
   await assertPublicApi(input, title);
-  await assertStorefrontPage(input, title);
+  const storefrontHtml = await assertStorefrontPage(input, title);
+  assertIndexableStorefrontPage(storefrontHtml);
+  await assertRobots(input);
+  await assertSitemap(input);
+  await assertNotFoundPage(input);
 
   console.log("\nSmoke publish passed.");
   console.log(
@@ -142,36 +162,11 @@ async function assertPublicApi(input, title) {
     throw new Error("Public page API did not return the published title.");
   }
 
-  console.log("Public page API passed.");
-}
-
-async function assertStorefrontPage(input, title) {
-  const url = joinUrl(input.webUrl, getStorefrontPath(input.locale, input.slug));
-  let lastError = "";
-
-  for (let attempt = 1; attempt <= input.retryAttempts; attempt += 1) {
-    try {
-      const response = await fetch(url, { method: "GET" });
-      const text = await response.text();
-
-      if (response.ok && text.includes(title)) {
-        console.log("Storefront page passed.");
-        return;
-      }
-
-      lastError = `status ${response.status}, title present: ${text.includes(title)}`;
-    } catch (error) {
-      lastError = readErrorMessage(error);
-    }
-
-    if (attempt < input.retryAttempts) {
-      await delay(input.retryDelayMs);
-    }
+  if (response.body?.data?.seo?.noIndex === true) {
+    throw new Error("Public page API returned the smoke page as noIndex.");
   }
 
-  throw new Error(
-    `Storefront page did not show the published title (${lastError}).`,
-  );
+  console.log("Public page API passed.");
 }
 
 async function assertReachable(url, label) {
@@ -220,15 +215,6 @@ function normalizeOrigin(value) {
   return value.trim().replace(/\/+$/, "");
 }
 
-export function getStorefrontPath(locale, slug) {
-  const prefix = locale.split("-")[0].toLowerCase();
-  return slug === "home" ? `/${prefix}` : `/${prefix}/${slug}`;
-}
-
-export function joinUrl(origin, path) {
-  return `${origin}${path.startsWith("/") ? path : `/${path}`}`;
-}
-
 function createSmokeSlug() {
   return `smoke-${Date.now().toString(36)}-${Math.random()
     .toString(36)
@@ -260,10 +246,6 @@ function readPositiveIntEnv(name, fallback) {
   return fallback;
 }
 
-function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 function readHttpError(response, fallback) {
   const message =
     response.body?.error?.message ??
@@ -282,7 +264,7 @@ export function printHelp() {
   console.log(`Usage: pnpm smoke:publish
 
 Publishes a unique smoke-test page through the Admin API, then verifies the
-public page API and storefront HTML.
+public page API, storefront HTML, robots.txt, sitemap.xml, and 404 behavior.
 
 Environment:
   API_URL                         API origin or /api/v1 base. Default: ${defaultApiUrl}
