@@ -17,7 +17,12 @@ import type {
   PageSummary,
   PageVersionSummary,
 } from "../types";
+import { usePageEditorAutosave } from "./use-page-editor-autosave";
 import { useSchemaHistory } from "./use-schema-history";
+
+interface SaveDraftOptions {
+  silent?: boolean;
+}
 
 export function usePageEditor(pageId: string | undefined) {
   const [page, setPage] = useState<PageSummary | null>(null);
@@ -84,13 +89,16 @@ export function usePageEditor(pageId: string | undefined) {
     void load();
   }, [load]);
 
-  const saveDraft = useCallback(async () => {
+  const saveDraft = useCallback(async (options: SaveDraftOptions = {}) => {
     if (!pageId || !draftSchema) {
       return;
     }
 
     setIsSaving(true);
-    setFeedback(null);
+
+    if (!options.silent) {
+      setFeedback(null);
+    }
 
     try {
       const summary = await savePageDraft(pageId, draftSchema);
@@ -99,10 +107,14 @@ export function usePageEditor(pageId: string | undefined) {
       setPage(detail);
       setVersions(detail.versions);
       setSavedDraftFingerprint(createSchemaFingerprint(draftSchema));
-      setFeedback({
-        message: "Draft saved. Publish when you want the storefront to update.",
-        type: "success",
-      });
+
+      if (!options.silent) {
+        setFeedback({
+          message:
+            "Draft saved. Publish when you want the storefront to update.",
+          type: "success",
+        });
+      }
     } catch (caught) {
       if (caught instanceof AuthRequiredError) {
         globalThis.location.assign("/login");
@@ -245,6 +257,22 @@ export function usePageEditor(pageId: string | undefined) {
     Boolean(draftFingerprint) &&
     Boolean(savedDraftFingerprint) &&
     draftFingerprint !== savedDraftFingerprint;
+  const isAutosaveBusy =
+    isCreatingPreview ||
+    isLoading ||
+    isPublishing ||
+    isSaving ||
+    Boolean(rollingBackVersionId);
+  const saveDraftSilently = useCallback(
+    () => saveDraft({ silent: true }),
+    [saveDraft],
+  );
+
+  usePageEditorAutosave({
+    enabled: isDraftDirty,
+    isBusy: isAutosaveBusy,
+    onSaveDraft: saveDraftSilently,
+  });
 
   return {
     canRedo,
