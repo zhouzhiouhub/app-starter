@@ -107,6 +107,63 @@ test("media service stores archive responses by idempotency key", async () => {
   ]);
 });
 
+test("media service stores upload URL responses by idempotency key", async () => {
+  const idempotencyCalls = [];
+  let storedRecord = null;
+  const service = new MediaService({
+    idempotencyRecord: {
+      findUnique(options) {
+        idempotencyCalls.push([
+          "findUnique",
+          options.where.tenantId_scope_key.scope,
+        ]);
+        return Promise.resolve(storedRecord);
+      },
+      create(options) {
+        idempotencyCalls.push(["create", options.data.scope]);
+        storedRecord = {
+          id: "idem-1",
+          requestHash: options.data.requestHash,
+          response: null,
+          status: "pending",
+        };
+        return Promise.resolve({ id: "idem-1" });
+      },
+      update(options) {
+        idempotencyCalls.push(["update", options.data.status]);
+        assert.match(options.data.response.data.r2Key, /^tenant-1\//);
+        storedRecord = {
+          ...storedRecord,
+          response: options.data.response,
+          status: options.data.status,
+        };
+        return Promise.resolve(storedRecord);
+      },
+      deleteMany() {
+        throw new Error("deleteMany should not run for successful upload URL.");
+      },
+    },
+  });
+  const key = "8d0671c4-46f2-49e4-823f-69f9f6dd0ca3";
+  const input = {
+    filename: "hero.png",
+    mimeType: "image/png",
+    size: 2048,
+  };
+
+  const first = await service.createUploadUrl(input, key, actor);
+  const second = await service.createUploadUrl(input, key, actor);
+
+  assert.equal(first.data.r2Key, second.data.r2Key);
+  assert.equal(first.data.uploadUrl, second.data.uploadUrl);
+  assert.deepEqual(idempotencyCalls, [
+    ["findUnique", "media:upload-url"],
+    ["create", "media:upload-url"],
+    ["update", "completed"],
+    ["findUnique", "media:upload-url"],
+  ]);
+});
+
 test("media service blocks archive when page versions reference the asset", async () => {
   const service = new MediaService({
     mediaAsset: {

@@ -34,8 +34,16 @@ export class MediaController {
 
   @Post("upload-url")
   @RequireScopes("media:write")
-  createUploadUrl(@CurrentUser() actor: Actor, @Body() body: unknown) {
-    return this.media.createUploadUrl(body, actor);
+  createUploadUrl(
+    @CurrentUser() actor: Actor,
+    @Body() body: unknown,
+    @Headers("idempotency-key") idempotencyKey: string | undefined,
+  ) {
+    return this.media.createUploadUrl(
+      body,
+      requireIdempotencyKey(idempotencyKey),
+      actor,
+    );
   }
 
   @Post("confirm")

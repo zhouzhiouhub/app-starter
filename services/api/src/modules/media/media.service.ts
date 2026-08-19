@@ -79,33 +79,46 @@ export class MediaService {
     };
   }
 
-  createUploadUrl(body: unknown, actor: Actor) {
+  createUploadUrl(
+    body: unknown,
+    idempotencyKey: string | undefined,
+    actor: Actor,
+  ) {
     const input = parseCreateUploadUrlInput(body);
-    const r2Key = createMediaR2Key({
-      filename: input.filename,
-      tenantId: actor.tenantId,
-    });
-    const uploadTarget = createMediaUploadTarget({
-      mimeType: input.mimeType,
-      r2Key,
-    });
 
-    return {
-      data: {
-        uploadUrl: uploadTarget.uploadUrl,
-        method: "PUT",
-        r2Key,
-        type: inferMediaAssetType(input.mimeType),
-        headers: uploadTarget.headers,
-        maxSize: MEDIA_MAX_UPLOAD_BYTES,
-        expiresAt: uploadTarget.expiresAt.toISOString(),
-        confirmPath: "/api/v1/media/confirm",
-      } satisfies MediaUploadUrlResponse,
-      meta: {
-        requestId: "local-dev",
-        tenantId: actor.tenantId,
+    return runTenantIdempotent(this.prisma, {
+      body: input,
+      key: idempotencyKey,
+      scope: "media:upload-url",
+      tenantId: actor.tenantId,
+      operation: () => {
+        const r2Key = createMediaR2Key({
+          filename: input.filename,
+          tenantId: actor.tenantId,
+        });
+        const uploadTarget = createMediaUploadTarget({
+          mimeType: input.mimeType,
+          r2Key,
+        });
+
+        return Promise.resolve({
+          data: {
+            uploadUrl: uploadTarget.uploadUrl,
+            method: "PUT",
+            r2Key,
+            type: inferMediaAssetType(input.mimeType),
+            headers: uploadTarget.headers,
+            maxSize: MEDIA_MAX_UPLOAD_BYTES,
+            expiresAt: uploadTarget.expiresAt.toISOString(),
+            confirmPath: "/api/v1/media/confirm",
+          } satisfies MediaUploadUrlResponse,
+          meta: {
+            requestId: "local-dev",
+            tenantId: actor.tenantId,
+          },
+        });
       },
-    };
+    });
   }
 
   async confirm(

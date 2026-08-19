@@ -142,7 +142,7 @@ export async function createMediaUploadUrl(input: {
         mimeType: input.mimeType,
         size: input.size,
       }),
-      headers: { "Content-Type": "application/json" },
+      headers: jsonHeaders(),
       method: "POST",
     },
     "Upload URL could not be prepared.",
