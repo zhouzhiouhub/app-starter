@@ -1,5 +1,6 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
+import { createSmokeEnvironmentDiagnostics } from "./environment-diagnostics.mjs";
 
 export function createSmokeReport(input, title, now = new Date()) {
   return {
@@ -14,6 +15,8 @@ export function createSmokeReport(input, title, now = new Date()) {
       webUrl: input.webUrl,
     },
     error: null,
+    environment:
+      input.environmentDiagnostics ?? createSmokeEnvironmentDiagnostics(),
     finishedAt: null,
     pageId: null,
     slug: input.slug,

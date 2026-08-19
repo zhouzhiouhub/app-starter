@@ -29,6 +29,7 @@ import {
   recordSmokeCheck,
   writeSmokeReportIfConfigured,
 } from "./smoke-report.mjs";
+import { createSmokeEnvironmentDiagnostics } from "./environment-diagnostics.mjs";
 
 test("smoke helpers preserve nested storefront slugs", () => {
   assert.equal(getStorefrontPath("en-US", "home"), "/en");
@@ -284,6 +285,7 @@ test("smoke report helpers capture pass and failure state without secrets", () =
       slug: "smoke-page",
       tenantSlug: "default",
       webUrl: "https://web.example.com",
+      environmentDiagnostics: createSmokeEnvironmentDiagnostics({}),
     },
     "Smoke Page",
     new Date("2026-08-19T00:00:00.000Z"),
@@ -299,6 +301,7 @@ test("smoke report helpers capture pass and failure state without secrets", () =
   assert.equal(report.startedAt, "2026-08-19T00:00:00.000Z");
   assert.equal(report.pageId, "page-1");
   assert.equal(report.checks[0].name, "api.health");
+  assert.equal(report.environment.media.cdnHost, "cdn.local.invalid");
   assert.equal("password" in report.config, false);
 
   failSmokeReport(report, new Error("boom"));
