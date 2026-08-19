@@ -16,6 +16,7 @@
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch --preserveWatchOutput",
     "prebuild": "pnpm --filter @app-starter/schema --filter @app-starter/ui build",
+    "pretest": "pnpm run build",
     "pretypecheck": "pnpm --filter @app-starter/schema --filter @app-starter/ui build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",

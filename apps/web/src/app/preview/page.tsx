@@ -1,4 +1,4 @@
-import { PageRenderer } from "@app-starter/renderer";
+import { ResponsivePageRenderer } from "@app-starter/renderer";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getPreviewPage } from "../../lib/published-page";
@@ -29,5 +29,5 @@ export default async function PreviewPage(props: {
     notFound();
   }
 
-  return <PageRenderer schema={schema} viewport="desktop" />;
+  return <ResponsivePageRenderer schema={schema} />;
 }

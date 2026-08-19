@@ -1,4 +1,4 @@
-import { PageRenderer } from "@app-starter/renderer";
+import { ResponsivePageRenderer } from "@app-starter/renderer";
 import { resolveLocaleFromPath } from "@app-starter/schema";
 import { notFound } from "next/navigation";
 import { buildPageMetadata } from "../../../lib/page-metadata";
@@ -30,5 +30,5 @@ export default async function LocalizedPage(props: {
     notFound();
   }
 
-  return <PageRenderer schema={schema} viewport="desktop" />;
+  return <ResponsivePageRenderer schema={schema} />;
 }
