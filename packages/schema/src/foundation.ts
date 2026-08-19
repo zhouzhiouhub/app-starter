@@ -188,11 +188,11 @@ export type SafeHref = z.infer<typeof safeHrefSchema>;
 
 export const seoUrlSchema = z
   .string()
+  .trim()
   .min(1)
-  .regex(
-    /^(\/(?!\/)|https?:\/\/)/,
-    "SEO URL must be relative or http(s)",
-  );
+  .refine(isSeoUrl, {
+    message: "SEO URL must be relative or http(s)",
+  });
 export type SeoUrl = z.infer<typeof seoUrlSchema>;
 
 export const seoImageUrlSchema = z.union([
@@ -200,6 +200,34 @@ export const seoImageUrlSchema = z.union([
   mediaAssetReferenceSchema,
 ]);
 export type SeoImageUrl = z.infer<typeof seoImageUrlSchema>;
+
+export function isSeoUrl(value: string): boolean {
+  const url = value.trim();
+
+  if (!url || hasUnsafeHrefCharacter(url)) {
+    return false;
+  }
+
+  if (url.startsWith("/")) {
+    return !url.startsWith("//");
+  }
+
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    try {
+      const parsed = new URL(url);
+      return (
+        (parsed.protocol === "http:" || parsed.protocol === "https:") &&
+        Boolean(parsed.hostname) &&
+        !parsed.username &&
+        !parsed.password
+      );
+    } catch {
+      return false;
+    }
+  }
+
+  return false;
+}
 
 export const layoutBoxSchema = z.object({
   x: z.number().default(0),
