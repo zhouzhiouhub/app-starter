@@ -111,6 +111,7 @@ test("sites service updates the current tenant site", async () => {
       domain: "store.example.com",
       name: "Storefront",
     },
+    undefined,
     actor,
   );
 
@@ -134,9 +135,78 @@ test("sites service maps duplicate domains to conflicts", async () => {
   const service = new SitesService(prisma);
 
   await assert.rejects(
-    () => service.updateCurrent({ domain: "used.example.com" }, actor),
+    () =>
+      service.updateCurrent({ domain: "used.example.com" }, undefined, actor),
     (error) => error instanceof ConflictException,
   );
+});
+
+test("sites service stores update responses by idempotency key", async () => {
+  const idempotencyCalls = [];
+  let storedRecord = null;
+  let updateCalls = 0;
+  const prisma = {
+    idempotencyRecord: {
+      findUnique(options) {
+        idempotencyCalls.push([
+          "findUnique",
+          options.where.tenantId_scope_key.scope,
+        ]);
+        return Promise.resolve(storedRecord);
+      },
+      create(options) {
+        idempotencyCalls.push(["create", options.data.scope]);
+        storedRecord = {
+          id: "idem-1",
+          requestHash: options.data.requestHash,
+          response: null,
+          status: "pending",
+        };
+        return Promise.resolve({ id: "idem-1" });
+      },
+      update(options) {
+        idempotencyCalls.push(["update", options.data.status]);
+        assert.equal(options.data.response.data.domain, "store.example.com");
+        storedRecord = {
+          ...storedRecord,
+          response: options.data.response,
+          status: options.data.status,
+        };
+        return Promise.resolve(storedRecord);
+      },
+      deleteMany() {
+        throw new Error("deleteMany should not run for successful site update.");
+      },
+    },
+    site: {
+      findFirst: async () => site,
+      update: async (query) => {
+        updateCalls += 1;
+        return {
+          ...site,
+          ...query.data,
+        };
+      },
+    },
+  };
+  const service = new SitesService(prisma);
+  const key = "b4f7a547-c365-42cf-9322-762f1d8f5834";
+  const input = {
+    domain: "store.example.com",
+    name: "Storefront",
+  };
+
+  const first = await service.updateCurrent(input, key, actor);
+  const second = await service.updateCurrent(input, key, actor);
+
+  assert.equal(first.data.domain, second.data.domain);
+  assert.equal(updateCalls, 1);
+  assert.deepEqual(idempotencyCalls, [
+    ["findUnique", "sites:current:update"],
+    ["create", "sites:current:update"],
+    ["update", "completed"],
+    ["findUnique", "sites:current:update"],
+  ]);
 });
 
 test("page site lookup falls back after the default domain changes", async () => {

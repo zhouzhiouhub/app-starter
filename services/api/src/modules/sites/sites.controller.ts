@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Put, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Headers, Put, UseGuards } from "@nestjs/common";
 import { AdminApiGuard } from "../../common/admin-api.guard.js";
 import { CurrentUser } from "../../common/current-user.decorator.js";
+import { requireIdempotencyKey } from "../../common/idempotency-key.js";
 import { RequireScopes } from "../../common/require-scopes.decorator.js";
 import type { Actor } from "../identity/identity.types.js";
 import { SitesService } from "./sites.service.js";
@@ -18,7 +19,15 @@ export class SitesController {
 
   @Put("current")
   @RequireScopes("site:write")
-  updateCurrent(@CurrentUser() actor: Actor, @Body() body: unknown) {
-    return this.sites.updateCurrent(body, actor);
+  updateCurrent(
+    @CurrentUser() actor: Actor,
+    @Body() body: unknown,
+    @Headers("idempotency-key") idempotencyKey: string | undefined,
+  ) {
+    return this.sites.updateCurrent(
+      body,
+      requireIdempotencyKey(idempotencyKey),
+      actor,
+    );
   }
 }

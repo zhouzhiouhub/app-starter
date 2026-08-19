@@ -1,5 +1,6 @@
 import { adminRequest } from "../auth/api";
 import { readApiErrorMessage } from "../../lib/api-error";
+import { createIdempotencyKey } from "../../lib/idempotency-key";
 import type { SiteSettings, UpdateSiteSettingsInput } from "./types";
 
 export async function getSiteSettings(): Promise<SiteSettings> {
@@ -23,7 +24,7 @@ export async function updateSiteSettings(
     "/sites/current",
     {
       body: JSON.stringify(input),
-      headers: { "Content-Type": "application/json" },
+      headers: jsonHeaders(),
       method: "PUT",
     },
     "Site settings could not be saved.",
@@ -34,6 +35,13 @@ export async function updateSiteSettings(
   }
 
   return result.data;
+}
+
+function jsonHeaders(): HeadersInit {
+  return {
+    "Content-Type": "application/json",
+    "Idempotency-Key": createIdempotencyKey(),
+  };
 }
 
 async function readAdminJson<T>(
