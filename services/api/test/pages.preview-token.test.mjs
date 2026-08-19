@@ -82,6 +82,7 @@ test("preview token verification accepts the previous secret during rotation", (
 
 test("createPreviewToken signs a tenant-scoped page token", async () => {
   await withEnv({ PREVIEW_TOKEN_SECRET: "preview-secret" }, async () => {
+    const auditCalls = [];
     const prisma = {
       page: {
         findFirst(query) {
@@ -108,7 +109,14 @@ test("createPreviewToken signs a tenant-scoped page token", async () => {
         },
       },
     };
-    const response = await createPreviewToken(prisma, "page-1", actor());
+    const response = await createPreviewToken(
+      prisma,
+      {
+        record: async (input) => auditCalls.push(input),
+      },
+      "page-1",
+      actor(),
+    );
 
     assert.equal(response.data.slug, "campaign");
     assert.equal(typeof response.data.token, "string");
@@ -116,6 +124,14 @@ test("createPreviewToken signs a tenant-scoped page token", async () => {
       verifyPagePreviewToken(response.data.token)?.tenantId,
       "tenant-1",
     );
+    assert.equal(auditCalls.length, 1);
+    assert.equal(auditCalls[0].action, "preview_token.created");
+    assert.equal(auditCalls[0].actorId, "user-1");
+    assert.equal(auditCalls[0].targetId, "page-1");
+    assert.equal(auditCalls[0].targetType, "page");
+    assert.equal(auditCalls[0].metadata.slug, "campaign");
+    assert.equal(typeof auditCalls[0].metadata.expiresAt, "string");
+    assert.equal("token" in auditCalls[0].metadata, false);
   });
 });
 

@@ -1,5 +1,6 @@
 import { ServiceUnavailableException } from "@nestjs/common";
 import { apiErrorCodes } from "@app-starter/schema";
+import type { AuditService } from "../../audit/audit.service.js";
 import type { Actor } from "../../identity/identity.types.js";
 import type { PrismaService } from "../../prisma/prisma.service.js";
 import {
@@ -11,6 +12,7 @@ import { notFound } from "../pages.validation.js";
 
 export async function createPreviewToken(
   prisma: PrismaService,
+  audit: Pick<AuditService, "record">,
   id: string,
   actor: Actor,
 ) {
@@ -36,10 +38,25 @@ export async function createPreviewToken(
       slug: page.slug,
       tenantId: actor.tenantId,
     });
+    const expiresAt = preview.expiresAt.toISOString();
+
+    await audit.record({
+      action: "preview_token.created",
+      actorId: actor.id,
+      metadata: {
+        expiresAt,
+        siteId: site.id,
+        slug: page.slug,
+      },
+      requestId: "local-dev",
+      targetId: page.id,
+      targetType: "page",
+      tenantId: actor.tenantId,
+    });
 
     return {
       data: {
-        expiresAt: preview.expiresAt.toISOString(),
+        expiresAt,
         slug: page.slug,
         token: preview.token,
       },

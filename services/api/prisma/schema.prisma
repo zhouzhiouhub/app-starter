@@ -16,6 +16,7 @@ model Tenant {
   users              User[]
   roles              Role[]
   idempotencyRecords IdempotencyRecord[]
+  auditLogs          AuditLog[]
 }
 
 model Site {
@@ -147,4 +148,20 @@ model IdempotencyRecord {
 
   @@unique([tenantId, scope, key])
   @@index([tenantId, createdAt])
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  tenantId   String
+  actorId    String?
+  action     String
+  targetType String
+  targetId   String?
+  requestId  String?
+  metadata   Json     @default("{}")
+  createdAt  DateTime @default(now())
+  tenant     Tenant   @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId, createdAt])
+  @@index([tenantId, action])
 }
