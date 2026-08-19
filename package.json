@@ -12,7 +12,8 @@
     "predev": "node scripts/check-install.mjs && pnpm run build:api-packages && pnpm run build:admin-packages",
     "lint": "pnpm -r --if-present lint",
     "smoke:publish": "node scripts/smoke-publish.mjs",
-    "test": "pnpm -r --if-present test",
+    "test": "pnpm -r --if-present test && pnpm run test:smoke",
+    "test:smoke": "node --test scripts/smoke/*.test.mjs",
     "typecheck": "pnpm -r --if-present typecheck",
     "format:check": "prettier --check ."
   },

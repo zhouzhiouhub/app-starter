@@ -206,7 +206,7 @@ function parseJson(text, url) {
   }
 }
 
-function normalizeApiBaseUrl(value) {
+export function normalizeApiBaseUrl(value) {
   const origin = normalizeOrigin(value);
 
   if (origin.endsWith("/api/v1")) {
@@ -220,12 +220,12 @@ function normalizeOrigin(value) {
   return value.trim().replace(/\/+$/, "");
 }
 
-function getStorefrontPath(locale, slug) {
+export function getStorefrontPath(locale, slug) {
   const prefix = locale.split("-")[0].toLowerCase();
   return slug === "home" ? `/${prefix}` : `/${prefix}/${slug}`;
 }
 
-function joinUrl(origin, path) {
+export function joinUrl(origin, path) {
   return `${origin}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
