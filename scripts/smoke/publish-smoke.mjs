@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { assertFeatureFlagsDisabled } from "./feature-flags-smoke.mjs";
+import { assertMediaUploadTarget } from "./media-smoke.mjs";
 import { buildSmokePageSchema } from "./smoke-page-schema.mjs";
 import {
   assertIndexableStorefrontPage,
@@ -42,6 +43,7 @@ export async function runSmokeTest(input) {
   await assertReachable(`${input.apiBaseUrl}/health`, "API health");
   const accessToken = await login(input);
   await assertFeatureFlagsDisabled(input, accessToken);
+  await assertMediaUploadTarget(input, accessToken);
   const publish = await publishPage(input, accessToken, schema);
   assertPublishedResponse(publish, input, title);
   await assertPublicApi(input, title);
@@ -67,6 +69,7 @@ export function readConfig() {
       "SMOKE_ADMIN_PASSWORD",
       readEnv("SEED_ADMIN_PASSWORD", defaultPassword),
     ),
+    requireR2Upload: readBooleanEnv("SMOKE_REQUIRE_R2_UPLOAD", false),
     requireRevalidation: readBooleanEnv("SMOKE_REQUIRE_REVALIDATION", true),
     retryAttempts: readPositiveIntEnv("SMOKE_RETRY_ATTEMPTS", 8),
     retryDelayMs: readPositiveIntEnv("SMOKE_RETRY_DELAY_MS", 1000),
@@ -266,8 +269,8 @@ export function printHelp() {
   console.log(`Usage: pnpm smoke:publish
 
 Publishes a unique smoke-test page through the Admin API, then verifies the
-public page API, storefront HTML, robots.txt, sitemap.xml, 404 behavior, and
-MVP disabled feature flags.
+public page API, media upload target, storefront HTML, robots.txt, sitemap.xml,
+404 behavior, and MVP disabled feature flags.
 
 Environment:
   API_URL                         API origin or /api/v1 base. Default: ${defaultApiUrl}
@@ -276,6 +279,7 @@ Environment:
   SMOKE_ADMIN_PASSWORD            Admin password. Default: SEED_ADMIN_PASSWORD or ${defaultPassword}
   SMOKE_TENANT_SLUG               Tenant slug. Default: ${defaultTenantSlug}
   SMOKE_PAGE_SLUG                 Optional fixed page slug.
+  SMOKE_REQUIRE_R2_UPLOAD         Require Cloudflare R2 presigned URL. Default: false
   SMOKE_REQUIRE_REVALIDATION      Require meta.revalidation.triggered. Default: true
   SMOKE_RETRY_ATTEMPTS            Storefront fetch attempts. Default: 8
   SMOKE_RETRY_DELAY_MS            Delay between attempts. Default: 1000

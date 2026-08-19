@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readApiErrorCode } from "./feature-flags-smoke.mjs";
+import { isR2UploadUrl } from "./media-smoke.mjs";
 import {
   getStorefrontPath,
   hasNoIndexRobots,
@@ -69,6 +70,22 @@ test("smoke helpers read API error codes", () => {
   assert.equal(readApiErrorCode({}), null);
 });
 
+test("smoke helpers detect R2 upload URLs", () => {
+  assert.equal(
+    isR2UploadUrl(
+      "https://account.r2.cloudflarestorage.com/bucket/key?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Signature=abc123",
+    ),
+    true,
+  );
+  assert.equal(
+    isR2UploadUrl(
+      "https://uploads.example.com/key?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Signature=abc123",
+    ),
+    false,
+  );
+  assert.equal(isR2UploadUrl("not-a-url"), false);
+});
+
 test("readConfig uses seeded defaults and explicit smoke overrides", async () => {
   await withEnv(
     {
@@ -78,6 +95,7 @@ test("readConfig uses seeded defaults and explicit smoke overrides", async () =>
       SMOKE_ADMIN_EMAIL: "owner@example.com",
       SMOKE_ADMIN_PASSWORD: "ChangeMe456!",
       SMOKE_PAGE_SLUG: "legal/terms",
+      SMOKE_REQUIRE_R2_UPLOAD: "true",
       SMOKE_REQUIRE_REVALIDATION: "false",
       SMOKE_TENANT_SLUG: "",
       WEB_URL: "https://web.example.com/",
@@ -88,6 +106,7 @@ test("readConfig uses seeded defaults and explicit smoke overrides", async () =>
       assert.equal(config.apiBaseUrl, "http://api.example.com/api/v1");
       assert.equal(config.email, "owner@example.com");
       assert.equal(config.password, "ChangeMe456!");
+      assert.equal(config.requireR2Upload, true);
       assert.equal(config.requireRevalidation, false);
       assert.equal(config.slug, "legal/terms");
       assert.equal(config.tenantSlug, "default");
