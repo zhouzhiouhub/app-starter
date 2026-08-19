@@ -33,6 +33,10 @@ function formatRevalidationStatus(
     return "Storefront revalidation was skipped because the URL is not configured.";
   }
 
+  if (revalidation.reason === "request-timeout") {
+    return "Storefront revalidation timed out. Check the Web URL, revalidate route, and STOREFRONT_REVALIDATE_TIMEOUT_MS.";
+  }
+
   if (revalidation.reason === "request-failed") {
     return formatRequestFailedRevalidation(revalidation.status);
   }

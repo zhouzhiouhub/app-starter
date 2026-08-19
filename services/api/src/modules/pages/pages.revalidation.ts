@@ -66,8 +66,13 @@ export async function triggerStorefrontRevalidation(
     }
 
     return { paths, tags, triggered: true };
-  } catch {
-    return { paths, reason: "request-failed", tags, triggered: false };
+  } catch (error) {
+    const reason =
+      controller.signal.aborted || isAbortError(error)
+        ? "request-timeout"
+        : "request-failed";
+
+    return { paths, reason, tags, triggered: false };
   } finally {
     clearTimeout(timeout);
   }
@@ -97,4 +102,13 @@ function readRevalidationTimeoutMs(): number {
   }
 
   return defaultTimeoutMs;
+}
+
+function isAbortError(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "name" in error &&
+    error.name === "AbortError"
+  );
 }

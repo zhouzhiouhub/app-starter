@@ -1,8 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import {
-  triggerStorefrontRevalidation,
-} from "../dist/modules/pages/pages.revalidation.js";
+import { triggerStorefrontRevalidation } from "../dist/modules/pages/pages.revalidation.js";
 
 test("storefront revalidation skips when secret is missing", async () => {
   await withEnv(
@@ -71,6 +69,54 @@ test("storefront revalidation posts the page payload with secret header", async 
         market: "us",
         slug: "contact",
       });
+    },
+  );
+});
+
+test("storefront revalidation distinguishes timeouts from request failures", async () => {
+  await withEnv(
+    {
+      STOREFRONT_REVALIDATE_SECRET: "secret-1",
+      STOREFRONT_REVALIDATE_TIMEOUT_MS: "1",
+      STOREFRONT_REVALIDATE_URL: "https://web.example.com/api/revalidate",
+      WEB_URL: "",
+    },
+    async () => {
+      const timeout = await triggerStorefrontRevalidation(
+        {
+          locale: "en-US",
+          market: "us",
+          slug: "contact",
+        },
+        async (_url, init) =>
+          new Promise((_resolve, reject) => {
+            init.signal.addEventListener(
+              "abort",
+              () => {
+                const error = new Error("aborted");
+                error.name = "AbortError";
+                reject(error);
+              },
+              { once: true },
+            );
+          }),
+      );
+
+      const failure = await triggerStorefrontRevalidation(
+        {
+          locale: "en-US",
+          market: "us",
+          slug: "contact",
+        },
+        async () => {
+          throw new Error("network failed");
+        },
+      );
+
+      assert.equal(timeout.triggered, false);
+      assert.equal(timeout.reason, "request-timeout");
+      assert.equal(failure.triggered, false);
+      assert.equal(failure.reason, "request-failed");
     },
   );
 });

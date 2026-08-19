@@ -66,13 +66,13 @@ test("publication feedback distinguishes HTTP failures from timeout style failur
       action: "publish",
       revalidation: {
         paths: ["/en/contact"],
-        reason: "request-failed",
+        reason: "request-timeout",
         tags: [],
         triggered: false,
       },
       slug: "contact",
     }),
-    /failed or timed out.*STOREFRONT_REVALIDATE_TIMEOUT_MS/,
+    /timed out.*STOREFRONT_REVALIDATE_TIMEOUT_MS/,
   );
 });
 

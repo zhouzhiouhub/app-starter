@@ -29,17 +29,17 @@ test("smoke helpers summarize revalidation results for reports", () => {
     createRevalidationSmokeDetails(
       {
         paths: ["/en/contact"],
-        reason: "request-failed",
+        reason: "request-timeout",
         tags: [],
         triggered: false,
       },
       { requireRevalidation: true },
     ),
     {
-      diagnosis: "request-failed-or-timeout",
+      diagnosis: "request-timeout",
       pathCount: 1,
       paths: ["/en/contact"],
-      reason: "request-failed",
+      reason: "request-timeout",
       required: true,
       status: null,
       tagCount: 0,

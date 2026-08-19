@@ -39,6 +39,10 @@ function readRevalidationDiagnosis(input) {
     return "missing-url";
   }
 
+  if (input.reason === "request-timeout") {
+    return "request-timeout";
+  }
+
   if (input.reason === "request-failed") {
     return readFailedRequestDiagnosis(input.status);
   }
