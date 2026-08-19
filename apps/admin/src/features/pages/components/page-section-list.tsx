@@ -12,7 +12,10 @@ import {
   type SectionNode,
   type Viewport,
 } from "@app-starter/schema";
-import { moveSection } from "../section-order-updates";
+import {
+  copyDesktopSectionOrderToMobile,
+  moveSection,
+} from "../section-order-updates";
 import { readSectionText } from "../section-content-updates";
 import {
   duplicateSection,
@@ -65,7 +68,29 @@ export function PageSectionList(props: {
         padding: 20,
       }}
     >
-      <Typography.Title level={4}>Sections</Typography.Title>
+      <div
+        style={{
+          alignItems: "center",
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: 16,
+        }}
+      >
+        <Typography.Title level={4} style={{ margin: 0 }}>
+          Sections
+        </Typography.Title>
+        {props.viewport === "mobile" ? (
+          <Button
+            icon={<CopyOutlined />}
+            onClick={() =>
+              props.onChange(copyDesktopSectionOrderToMobile(props.schema))
+            }
+            size="small"
+          >
+            Copy desktop order
+          </Button>
+        ) : null}
+      </div>
       {sections.length === 0 ? (
         <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
       ) : (

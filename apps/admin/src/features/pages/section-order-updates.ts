@@ -7,6 +7,15 @@ import {
 
 export type SectionMoveDirection = "down" | "up";
 
+export function copyDesktopSectionOrderToMobile(
+  current: PageSchema,
+): PageSchema {
+  const desktopSectionOrder = getOrderedSectionsForViewport(current, "desktop")
+    .map((section) => section.id);
+
+  return setSectionOrderForViewport(current, "mobile", desktopSectionOrder);
+}
+
 export function moveSection(
   current: PageSchema,
   sectionId: string,
