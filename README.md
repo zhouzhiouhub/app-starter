@@ -41,6 +41,7 @@
 - 页面管理 API：列表、创建、保存草稿、按 ID 发布。
 - 前台 `GET /api/v1/public/pages/:slug` 读取已发布 `PageVersion`。
 - 前台 `sitemap.xml` 和 `robots.txt` 已接入已发布页面清单。
+- 前台未知路径会返回 404，并优先渲染已发布的 `404` 系统页。
 - 现有后台 Publish 仍走 `POST /api/v1/admin/pages/:slug/publish`，底层已改为写入数据库。
 - Admin 登录：Email + Password + JWT（Access Token + Refresh Token 轮换）。
 - 后台管理接口校验 Bearer Token 与权限 Scope，并按登录租户隔离页面数据。
@@ -478,6 +479,7 @@ POST /api/v1/public/checkout
 - `POST /api/v1/pages`、`PUT /api/v1/pages/:id/schema`、发布接口需要 `Idempotency-Key`。
 - `GET /api/v1/public/pages` 返回已发布页面摘要，用于前台 sitemap。
 - `GET /api/v1/public/pages/:slug` 只返回已发布版本；未发布或不存在时返回 `NOT_FOUND`。
+- 前台只渲染已发布页面；未发布或不存在的 slug 进入 404 页面。
 - 当前 `cart` 和 `checkout` 会返回 `COMMERCE_DISABLED`，这是预期行为。
 - 本地默认管理员：`admin@example.com` / `ChangeMe123!`（可通过 `SEED_ADMIN_EMAIL`、`SEED_ADMIN_PASSWORD` 覆盖）。
 

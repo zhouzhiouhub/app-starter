@@ -13,6 +13,10 @@ export function createInitialPageSections(input: {
     return [createPolicySection(input.title)];
   }
 
+  if (input.templateId === "system" || normalizedSlug === "404") {
+    return createSystemPageSections(input.title);
+  }
+
   if (normalizedSlug === "home" || normalizedSlug === "") {
     return input.homeSections;
   }
@@ -37,6 +41,45 @@ function createPolicySection(title: string): SectionNode {
     },
     visibility: { desktop: true, mobile: true },
   };
+}
+
+function createSystemPageSections(title: string): SectionNode[] {
+  return [
+    {
+      id: "system-hero",
+      component: "hero-banner",
+      layout: {
+        desktop: { height: 520, width: 1200, x: 0, y: 0 },
+        mobile: { height: 560, width: 390, x: 0, y: 0 },
+      },
+      props: {
+        body: {
+          defaultValue:
+            "The page you are looking for may have moved, expired, or never existed.",
+        },
+        ctaLabel: "Go home",
+        eyebrow: "404",
+        title: { defaultValue: title },
+      },
+      visibility: { desktop: true, mobile: true },
+    },
+    {
+      id: "system-copy",
+      component: "rich-text",
+      layout: {
+        desktop: { width: 1200, x: 0, y: 520 },
+        mobile: { width: 390, x: 0, y: 560 },
+      },
+      props: {
+        content: {
+          defaultValue:
+            "Use the navigation to continue browsing, or return to the homepage.",
+        },
+        title: { defaultValue: "Page not found" },
+      },
+      visibility: { desktop: true, mobile: true },
+    },
+  ];
 }
 
 function createNamedLandingSections(

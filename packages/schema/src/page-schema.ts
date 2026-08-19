@@ -160,6 +160,10 @@ function getFallbackPageTitle(slug: string): string {
     return "Terms of Service";
   }
 
+  if (normalizedSlug === "404" || normalizedSlug.endsWith("/404")) {
+    return "Page not found";
+  }
+
   if (normalizedSlug === "home" || normalizedSlug === "") {
     return "Home";
   }

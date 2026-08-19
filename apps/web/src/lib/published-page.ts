@@ -24,27 +24,37 @@ export async function getPublishedPage(input: {
     return null;
   }
 
-  const published = await fetchPublishedSchema({
+  return fetchPublishedSchema({
     locale,
     market: defaultMarket,
     slug: slug.data
+  });
+}
+
+export async function getNotFoundPage(input?: {
+  locale?: string;
+}): Promise<PageSchema> {
+  const defaultMarket = process.env.DEFAULT_MARKET ?? "us";
+  const locale =
+    input?.locale || (process.env.FALLBACK_LOCALE ?? "en-US");
+  const published = await fetchPublishedSchema({
+    locale,
+    market: defaultMarket,
+    slug: "404"
   });
 
   if (published) {
     return published;
   }
 
-  const home =
-    slug.data === "home"
-      ? null
-      : await fetchPublishedSchema({
-          locale,
-          market: defaultMarket,
-          slug: "home"
-        });
+  const home = await fetchPublishedSchema({
+    locale,
+    market: defaultMarket,
+    slug: "home"
+  });
 
   return createFallbackPage({
-    slug: slug.data,
+    slug: "404",
     locale,
     market: defaultMarket,
     siteChrome: home?.chrome

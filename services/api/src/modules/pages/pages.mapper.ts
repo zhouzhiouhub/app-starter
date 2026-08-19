@@ -66,6 +66,10 @@ export function resolvePageType(
   slug: string,
   templateId?: PageTemplateId,
 ): "landing" | "policy" | "system" {
+  if (templateId === "system") {
+    return "system";
+  }
+
   if (templateId === "policy" || getFallbackPageTemplateId(slug) === "policy") {
     return "policy";
   }

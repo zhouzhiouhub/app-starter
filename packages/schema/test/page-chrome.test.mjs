@@ -223,6 +223,19 @@ test("privacy and terms fallback pages keep global chrome visible", () => {
   assert.equal(privacyPage.sections[0]?.component, "rich-text");
 });
 
+test("404 fallback pages use the system template", () => {
+  assert.equal(getFallbackPageTemplateId("404"), "system");
+
+  const notFoundPage = createFallbackPage({ slug: "404" });
+
+  assert.equal(notFoundPage.meta.title, "Page not found");
+  assert.equal(notFoundPage.template.id, "system");
+  assert.equal(notFoundPage.chrome.header.enabled, true);
+  assert.equal(notFoundPage.chrome.footer.enabled, true);
+  assert.equal(notFoundPage.sections[0]?.id, "system-hero");
+  assert.equal(notFoundPage.sections[0]?.props.eyebrow, "404");
+});
+
 test("fallback pages inherit site chrome content without turning chrome off", () => {
   const siteChrome = pageSchema.parse(
     minimalPage({

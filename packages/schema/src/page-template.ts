@@ -8,6 +8,7 @@ export const pageTemplateIdSchema = z.enum([
   "default",
   "landing-blank",
   "policy",
+  "system",
 ]);
 export type PageTemplateId = z.infer<typeof pageTemplateIdSchema>;
 
@@ -46,6 +47,15 @@ export const pageTemplatePresets = {
       footer: { enabled: true, variant: "default" },
     }),
   },
+  system: {
+    id: "system",
+    label: "System",
+    description: "System page such as 404, with standard storefront chrome.",
+    chrome: pageChromeSchema.parse({
+      header: { enabled: true, variant: "default" },
+      footer: { enabled: true, variant: "default" },
+    }),
+  },
 } satisfies Record<
   PageTemplateId,
   {
@@ -69,6 +79,10 @@ export function getFallbackPageTemplateId(slug: string): PageTemplateId {
 
   if (leafSlug === "home" || leafSlug === "") {
     return "landing-blank";
+  }
+
+  if (leafSlug === "404") {
+    return "system";
   }
 
   if (

@@ -37,6 +37,7 @@ test("resolvePageType maps templates and system slugs", () => {
   assert.equal(resolvePageType("privacy", "policy"), "policy");
   assert.equal(resolvePageType("privacy-policy"), "policy");
   assert.equal(resolvePageType("404"), "system");
+  assert.equal(resolvePageType("not-found", "system"), "system");
 });
 
 test("createInitialPageSchema applies the selected template", () => {
