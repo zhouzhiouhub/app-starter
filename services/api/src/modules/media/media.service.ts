@@ -185,7 +185,21 @@ export class MediaService {
     );
   }
 
-  async archive(id: string, actor: Actor) {
+  async archive(
+    id: string,
+    actor: Actor,
+    idempotencyKey: string | undefined,
+  ) {
+    return runTenantIdempotent(this.prisma, {
+      body: { id },
+      key: idempotencyKey,
+      scope: `media:${id}:archive`,
+      tenantId: actor.tenantId,
+      operation: () => this.archiveAsset(id, actor),
+    });
+  }
+
+  private async archiveAsset(id: string, actor: Actor) {
     const asset = await this.prisma.mediaAsset.findFirst({
       where: {
         id,

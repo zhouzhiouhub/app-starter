@@ -46,6 +46,9 @@ export async function archiveMediaAsset(assetId: string): Promise<MediaAsset> {
   const result = await readAdminJson<{ data?: MediaAsset }>(
     `/media/${encodeURIComponent(assetId)}/archive`,
     {
+      headers: {
+        "Idempotency-Key": createIdempotencyKey(),
+      },
       method: "POST",
     },
     "Media asset could not be archived.",

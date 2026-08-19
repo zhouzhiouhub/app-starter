@@ -54,7 +54,11 @@ export class MediaController {
 
   @Post(":id/archive")
   @RequireScopes("media:write")
-  archive(@CurrentUser() actor: Actor, @Param("id") id: string) {
-    return this.media.archive(id, actor);
+  archive(
+    @CurrentUser() actor: Actor,
+    @Headers("idempotency-key") idempotencyKey: string | undefined,
+    @Param("id") id: string,
+  ) {
+    return this.media.archive(id, actor, requireIdempotencyKey(idempotencyKey));
   }
 }
