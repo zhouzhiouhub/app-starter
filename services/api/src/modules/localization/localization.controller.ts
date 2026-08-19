@@ -1,12 +1,18 @@
 import {
+  BadRequestException,
   Body,
   ConflictException,
   Controller,
   Get,
   Post,
+  Query,
   UseGuards,
 } from "@nestjs/common";
-import { apiErrorCodes } from "@app-starter/schema";
+import {
+  apiErrorCodes,
+  defaultRuntimeConfig,
+  localeCodeSchema,
+} from "@app-starter/schema";
 import { AdminApiGuard } from "../../common/admin-api.guard.js";
 import { RequireScopes } from "../../common/require-scopes.decorator.js";
 
@@ -46,12 +52,16 @@ export class LocalizationController {
 
   @Get("translations")
   @RequireScopes("translation:read")
-  getTranslations() {
+  getTranslations(@Query("locale") locale?: string) {
+    const localeContext = resolveTranslationLocale(locale);
+
     return {
       data: [],
       meta: {
         requestId: "local-dev",
-        locale: process.env.DEFAULT_LOCALE ?? "en-US"
+        locale: localeContext.locale,
+        fallbackLocale: localeContext.defaultLocale,
+        isFallback: localeContext.isFallback
       }
     };
   }
@@ -74,4 +84,32 @@ export class LocalizationController {
       meta: { requestId: "local-dev" }
     };
   }
+}
+
+function resolveTranslationLocale(locale: string | undefined): {
+  defaultLocale: string;
+  isFallback: boolean;
+  locale: string;
+} {
+  const defaultLocale =
+    process.env.DEFAULT_LOCALE ?? defaultRuntimeConfig.defaultLocale;
+  const requestedLocale = locale ?? defaultLocale;
+  const parsed = localeCodeSchema.safeParse(requestedLocale);
+
+  if (!parsed.success) {
+    throw new BadRequestException({
+      code: apiErrorCodes.VALIDATION_ERROR,
+      message: "Locale must look like en-US."
+    });
+  }
+
+  const isFallback =
+    process.env.MULTI_LOCALE_ENABLED !== "true" &&
+    parsed.data !== defaultLocale;
+
+  return {
+    defaultLocale,
+    isFallback,
+    locale: isFallback ? defaultLocale : parsed.data
+  };
 }

@@ -31,6 +31,37 @@ test("locale creation rejects writes while multi-locale is disabled", () => {
   });
 });
 
+test("admin translations expose default locale fallback metadata", () => {
+  withEnv(
+    {
+      DEFAULT_LOCALE: "en-US",
+      FALLBACK_LOCALE: "en-US",
+      MULTI_LOCALE_ENABLED: "false",
+    },
+    () => {
+      const controller = new LocalizationController();
+      const defaultResponse = controller.getTranslations();
+      const fallbackResponse = controller.getTranslations("de-DE");
+
+      assert.equal(defaultResponse.meta.locale, "en-US");
+      assert.equal(defaultResponse.meta.fallbackLocale, "en-US");
+      assert.equal(defaultResponse.meta.isFallback, false);
+      assert.equal(fallbackResponse.meta.locale, "en-US");
+      assert.equal(fallbackResponse.meta.fallbackLocale, "en-US");
+      assert.equal(fallbackResponse.meta.isFallback, true);
+    },
+  );
+});
+
+test("admin translations reject invalid locale format", () => {
+  const controller = new LocalizationController();
+
+  assertApiBadRequest(
+    () => controller.getTranslations("bad_locale"),
+    apiErrorCodes.VALIDATION_ERROR,
+  );
+});
+
 test("public config exposes MVP disabled flags", () => {
   withEnv(
     {
@@ -54,6 +85,16 @@ test("public config exposes MVP disabled flags", () => {
     },
   );
 });
+
+function assertApiBadRequest(fn, expectedCode) {
+  assert.throws(
+    fn,
+    (error) =>
+      typeof error.getStatus === "function" &&
+      error.getStatus() === 400 &&
+      error.getResponse()?.code === expectedCode,
+  );
+}
 
 function assertApiConflict(fn, expectedCode) {
   assert.throws(
