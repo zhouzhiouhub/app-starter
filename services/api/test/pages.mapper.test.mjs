@@ -9,6 +9,7 @@ import {
   toPageSummary,
   unwrapBodyData,
 } from "../dist/modules/pages/pages.mapper.js";
+import { publishPage } from "../dist/modules/pages/use-cases/publish-page.js";
 import { rollbackPage } from "../dist/modules/pages/use-cases/rollback-page.js";
 import {
   persistRollbackVersion,
@@ -187,6 +188,7 @@ test("rollbackPage publishes a new version using the selected version schema", a
   const calls = {
     createdVersion: null,
     pageUpdate: null,
+    revalidation: null,
   };
   const prisma = createRollbackPrisma({
     onCreateVersion: (input) => {
@@ -217,6 +219,10 @@ test("rollbackPage publishes a new version using the selected version schema", a
     { versionId: "version-1" },
     undefined,
     createActor(),
+    async (input) => {
+      calls.revalidation = input;
+      return { paths: ["/", "/en"], tags: ["published-page"], triggered: true };
+    },
   );
 
   assert.equal(result.data.meta.slug, "home");
@@ -228,6 +234,79 @@ test("rollbackPage publishes a new version using the selected version schema", a
   assert.equal(calls.pageUpdate.publishedVersionId, "version-rollback");
   assert.equal(calls.pageUpdate.status, "published");
   assert.equal(calls.pageUpdate.title, "Previous Home");
+  assert.deepEqual(calls.revalidation, {
+    locale: "en-US",
+    market: "us",
+    slug: "home",
+  });
+  assert.equal(result.meta.revalidation.triggered, true);
+});
+
+test("publishPage triggers storefront revalidation after publishing", async () => {
+  const schema = createInitialPageSchema({
+    slug: "contact",
+    title: "Contact",
+  });
+  const calls = {
+    pageUpdate: null,
+    revalidation: null,
+  };
+  const prisma = {
+    $transaction: async (fn) =>
+      fn({
+        page: {
+          findFirst: async () => ({
+            id: "page-1",
+            siteId: "site-1",
+            slug: "contact",
+            versions: [{ id: "version-1", status: "published", version: 2 }],
+          }),
+          update: async (input) => {
+            calls.pageUpdate = input.data;
+            return {};
+          },
+        },
+        pageVersion: {
+          create: async (input) => ({
+            id: "version-2",
+            createdAt: new Date("2026-08-18T00:00:00.000Z"),
+            publishedAt: input.data.publishedAt,
+            status: input.data.status,
+            version: input.data.version,
+          }),
+        },
+      }),
+    site: {
+      findFirst: async () => ({
+        id: "site-1",
+        tenantId: "tenant-1",
+      }),
+    },
+  };
+
+  const result = await publishPage(
+    prisma,
+    "page-1",
+    schema,
+    undefined,
+    createActor(),
+    async (input) => {
+      calls.revalidation = input;
+      return {
+        paths: ["/en/contact"],
+        tags: ["published-page"],
+        triggered: true,
+      };
+    },
+  );
+
+  assert.equal(calls.pageUpdate.publishedVersionId, "version-2");
+  assert.deepEqual(calls.revalidation, {
+    locale: "en-US",
+    market: "us",
+    slug: "contact",
+  });
+  assert.equal(result.meta.revalidation.triggered, true);
 });
 
 test("rollbackPage rejects draft target versions", async () => {

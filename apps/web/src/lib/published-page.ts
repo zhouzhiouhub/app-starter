@@ -1,7 +1,9 @@
 import {
   createFallbackPage,
+  getPublishedPageCacheTags,
   pageSchema,
   pageSlugSchema,
+  publishedPageRevalidateSeconds,
   type PageSchema
 } from "@app-starter/schema";
 
@@ -62,7 +64,10 @@ async function fetchPublishedSchema(input: {
     const response = await fetch(
       `${apiBaseUrl}/public/pages/${encodeURIComponent(input.slug)}?${searchParams}`,
       {
-        cache: "no-store"
+        next: {
+          revalidate: publishedPageRevalidateSeconds,
+          tags: getPublishedPageCacheTags(input)
+        }
       }
     );
 

@@ -4,8 +4,11 @@ import {
   createFallbackPage,
   getFallbackPageTemplateId,
   getPageTemplateChrome,
+  getPublishedPageCacheTags,
+  getPublishedPageRevalidationPaths,
   getStorefrontHref,
   collectMediaReferences,
+  publishedPageRevalidateSeconds,
   pageSchema,
   resolveMediaReferences,
   resolveLocaleFromPath,
@@ -293,4 +296,28 @@ test("storefront hrefs use short language prefixes", () => {
   assert.equal(resolveLocaleFromPath("en"), "en-US");
   assert.equal(resolveLocaleFromPath("en-US"), "en-US");
   assert.equal(resolveLocaleFromPath("de"), "de");
+});
+
+test("published page cache helpers define ISR tags and paths", () => {
+  assert.equal(publishedPageRevalidateSeconds, 60);
+  assert.deepEqual(
+    getPublishedPageCacheTags({
+      locale: "en-US",
+      market: "us",
+      slug: "contact",
+    }),
+    [
+      "published-page",
+      "published-page:us:en-US",
+      "published-page:us:en-US:contact",
+    ],
+  );
+  assert.deepEqual(
+    getPublishedPageRevalidationPaths({ locale: "en-US", slug: "home" }),
+    ["/", "/en"],
+  );
+  assert.deepEqual(
+    getPublishedPageRevalidationPaths({ locale: "en-US", slug: "contact" }),
+    ["/en/contact"],
+  );
 });

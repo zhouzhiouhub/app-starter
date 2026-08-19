@@ -24,6 +24,43 @@ export function getStorefrontHref(locale: string, slug = "home"): string {
   return `/${prefix}/${normalizedSlug}`;
 }
 
+export const publishedPageRevalidateSeconds = 60;
+export const storefrontRevalidateSecretHeader =
+  "x-storefront-revalidate-secret";
+
+export function getPublishedPageCacheTags(input: {
+  locale: string;
+  market: string;
+  slug: string;
+}): string[] {
+  const slug = normalizePageSlugForCache(input.slug);
+
+  return [
+    "published-page",
+    `published-page:${input.market}:${input.locale}`,
+    `published-page:${input.market}:${input.locale}:${slug}`,
+  ];
+}
+
+export function getPublishedPageRevalidationPaths(input: {
+  locale: string;
+  slug: string;
+}): string[] {
+  const slug = normalizePageSlugForCache(input.slug);
+  const path = getStorefrontHref(input.locale, slug);
+
+  if (slug === "home") {
+    return Array.from(new Set(["/", path]));
+  }
+
+  return [path];
+}
+
+function normalizePageSlugForCache(slug: string): string {
+  const normalized = slug.replace(/^\/+|\/+$/g, "");
+  return normalized || "home";
+}
+
 export function rewriteStorefrontHref(href: string): string {
   return href.replace(
     /^\/([a-z]{2})-[A-Z]{2}(?=\/|$)/,

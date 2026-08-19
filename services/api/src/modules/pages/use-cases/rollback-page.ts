@@ -3,6 +3,11 @@ import { apiErrorCodes } from "@app-starter/schema";
 import type { Actor } from "../../identity/identity.types.js";
 import type { PrismaService } from "../../prisma/prisma.service.js";
 import { runIdempotent } from "../pages.idempotency.js";
+import {
+  triggerStorefrontRevalidation,
+  type StorefrontRevalidationInput,
+  type StorefrontRevalidationResult,
+} from "../pages.revalidation.js";
 import { getSiteForTenant } from "../pages.site.js";
 import {
   notFound,
@@ -11,12 +16,17 @@ import {
 } from "../pages.validation.js";
 import { persistRollbackVersion } from "../pages.versions.js";
 
+type StorefrontRevalidator = (
+  input: StorefrontRevalidationInput,
+) => Promise<StorefrontRevalidationResult>;
+
 export async function rollbackPage(
   prisma: PrismaService,
   id: string,
   body: unknown,
   idempotencyKey: string | undefined,
   actor: Actor,
+  revalidator: StorefrontRevalidator = triggerStorefrontRevalidation,
 ) {
   const site = await getSiteForTenant(prisma, actor.tenantId);
   const input = parseRollbackInput(body);
@@ -88,6 +98,11 @@ export async function rollbackPage(
           siteId: site.id,
           market: schema.meta.market,
           locale: schema.meta.locale,
+          revalidation: await revalidator({
+            locale: schema.meta.locale,
+            market: schema.meta.market,
+            slug: schema.meta.slug,
+          }),
         },
       };
     },

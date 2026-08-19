@@ -287,6 +287,10 @@ FALLBACK_LOCALE=en-US
 WEB_URL=http://localhost:3000
 ADMIN_URL=http://localhost:5173
 API_URL=http://localhost:4000
+
+STOREFRONT_REVALIDATE_SECRET=local-revalidate-secret
+STOREFRONT_REVALIDATE_URL=http://localhost:3000/api/revalidate
+STOREFRONT_REVALIDATE_TIMEOUT_MS=5000
 ```
 
 如果你的 PostgreSQL 密码就是 `postgres`：
@@ -311,6 +315,10 @@ FALLBACK_LOCALE=en-US
 WEB_URL=https://your-storefront.example.com
 ADMIN_URL=https://your-admin.example.com
 API_URL=https://your-api.example.com
+
+STOREFRONT_REVALIDATE_SECRET=use-a-secret-value
+STOREFRONT_REVALIDATE_URL=https://your-storefront.example.com/api/revalidate
+STOREFRONT_REVALIDATE_TIMEOUT_MS=5000
 ```
 
 线上注意事项：

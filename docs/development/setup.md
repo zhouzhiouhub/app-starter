@@ -28,6 +28,15 @@ COMMERCE_ENABLED=false
 MULTI_LOCALE_ENABLED=false
 ```
 
+For storefront ISR, set the same secret in the API and Web runtimes. The API
+uses `STOREFRONT_REVALIDATE_URL` to call the Web app after publish or rollback:
+
+```bash
+STOREFRONT_REVALIDATE_SECRET=local-revalidate-secret
+STOREFRONT_REVALIDATE_URL=http://localhost:3000/api/revalidate
+STOREFRONT_REVALIDATE_TIMEOUT_MS=5000
+```
+
 ## Run
 
 ```bash

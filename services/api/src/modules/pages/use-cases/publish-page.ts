@@ -2,9 +2,18 @@ import type { PageSchema } from "@app-starter/schema";
 import type { Actor } from "../../identity/identity.types.js";
 import type { PrismaService } from "../../prisma/prisma.service.js";
 import { runIdempotent } from "../pages.idempotency.js";
+import {
+  triggerStorefrontRevalidation,
+  type StorefrontRevalidationInput,
+  type StorefrontRevalidationResult,
+} from "../pages.revalidation.js";
 import { getSiteForTenant } from "../pages.site.js";
 import { notFound, parseSchema, readSchema } from "../pages.validation.js";
 import { persistPublishedVersion } from "../pages.versions.js";
+
+type StorefrontRevalidator = (
+  input: StorefrontRevalidationInput,
+) => Promise<StorefrontRevalidationResult>;
 
 export async function publishPage(
   prisma: PrismaService,
@@ -12,6 +21,7 @@ export async function publishPage(
   body: unknown | undefined,
   idempotencyKey: string | undefined,
   actor: Actor,
+  revalidator: StorefrontRevalidator = triggerStorefrontRevalidation,
 ) {
   const site = await getSiteForTenant(prisma, actor.tenantId);
 
@@ -70,6 +80,11 @@ export async function publishPage(
           siteId: site.id,
           market: schema.meta.market,
           locale: schema.meta.locale,
+          revalidation: await revalidator({
+            locale: schema.meta.locale,
+            market: schema.meta.market,
+            slug: schema.meta.slug,
+          }),
         },
       };
     },
