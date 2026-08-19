@@ -2,11 +2,13 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   createMediaSmokeDetails,
+  formatMediaListFilterDiagnostic,
   isCdnUrlForR2Key,
   isMediaListResponseContainingAsset,
   isMediaReference,
   isProductionCdnUrl,
   isR2UploadUrl,
+  readMediaListFilterDiagnostic,
 } from "./media-smoke.mjs";
 
 test("smoke helpers detect R2 upload URLs", () => {
@@ -92,6 +94,49 @@ test("smoke helpers validate media list filter responses", () => {
     false,
   );
   assert.equal(isMediaListResponseContainingAsset({ data: [] }, asset), false);
+});
+
+test("smoke helpers summarize media list filter mismatches", () => {
+  const asset = {
+    filename: "smoke.png",
+    id: "asset-1",
+    reference: "media://asset-1",
+  };
+  const diagnostic = readMediaListFilterDiagnostic(
+    {
+      data: [
+        {
+          filename: "smoke.png",
+          id: "asset-1",
+          reference: "media://asset-1",
+          status: "archived",
+          type: "image",
+        },
+        {
+          filename: "other.png",
+          id: "asset-2",
+          reference: "media://asset-2",
+          status: "active",
+          type: "image",
+        },
+      ],
+    },
+    asset,
+  );
+
+  assert.deepEqual(diagnostic, {
+    expectedAssetId: "asset-1",
+    filenameMatches: true,
+    idPresent: true,
+    itemCount: 2,
+    referenceMatches: true,
+    status: "archived",
+    type: "image",
+  });
+  assert.equal(
+    formatMediaListFilterDiagnostic(diagnostic),
+    "items: 2, expected asset: asset-1, id present: true, filename matches: true, reference matches: true, status: archived, type: image",
+  );
 });
 
 test("smoke helpers summarize media checks without signed upload URLs", () => {

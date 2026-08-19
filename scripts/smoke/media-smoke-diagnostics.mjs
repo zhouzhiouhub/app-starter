@@ -37,19 +37,34 @@ export function isMediaReference(value) {
 }
 
 export function isMediaListResponseContainingAsset(body, asset) {
+  const diagnostic = readMediaListFilterDiagnostic(body, asset);
+
+  return (
+    diagnostic.idPresent &&
+    diagnostic.filenameMatches &&
+    diagnostic.referenceMatches &&
+    diagnostic.status === "active" &&
+    diagnostic.type === "image"
+  );
+}
+
+export function readMediaListFilterDiagnostic(body, asset) {
   const items = Array.isArray(body?.data) ? body.data : [];
   const match = items.find((item) => item?.id === asset?.id);
 
-  if (!match) {
-    return false;
-  }
+  return {
+    expectedAssetId: asset?.id ?? null,
+    filenameMatches: match?.filename === asset?.filename,
+    idPresent: Boolean(match),
+    itemCount: items.length,
+    referenceMatches: match?.reference === asset?.reference,
+    status: typeof match?.status === "string" ? match.status : null,
+    type: typeof match?.type === "string" ? match.type : null,
+  };
+}
 
-  return (
-    match.filename === asset.filename &&
-    match.reference === asset.reference &&
-    match.status === "active" &&
-    match.type === "image"
-  );
+export function formatMediaListFilterDiagnostic(diagnostic) {
+  return `items: ${diagnostic.itemCount}, expected asset: ${diagnostic.expectedAssetId ?? "unknown"}, id present: ${diagnostic.idPresent}, filename matches: ${diagnostic.filenameMatches}, reference matches: ${diagnostic.referenceMatches}, status: ${diagnostic.status ?? "missing"}, type: ${diagnostic.type ?? "missing"}`;
 }
 
 export function createMediaSmokeDetails(target, asset, requireR2Upload) {

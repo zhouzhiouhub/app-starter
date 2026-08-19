@@ -2,20 +2,24 @@ import { Buffer } from "node:buffer";
 import { randomUUID } from "node:crypto";
 import {
   createMediaSmokeDetails,
+  formatMediaListFilterDiagnostic,
   isCdnUrlForR2Key,
   isMediaListResponseContainingAsset,
   isMediaReference,
   isProductionCdnUrl,
   isR2UploadUrl,
+  readMediaListFilterDiagnostic,
 } from "./media-smoke-diagnostics.mjs";
 
 export {
   createMediaSmokeDetails,
+  formatMediaListFilterDiagnostic,
   isCdnUrlForR2Key,
   isMediaListResponseContainingAsset,
   isMediaReference,
   isProductionCdnUrl,
   isR2UploadUrl,
+  readMediaListFilterDiagnostic,
 } from "./media-smoke-diagnostics.mjs";
 
 const smokeImage = {
@@ -171,8 +175,12 @@ async function assertMediaListFilters(input, accessToken, asset) {
   }
 
   if (!isMediaListResponseContainingAsset(response.body, asset)) {
+    const diagnostic = readMediaListFilterDiagnostic(response.body, asset);
+
     throw new Error(
-      "Media list filter check did not return the confirmed image asset.",
+      `Media list filter check did not return the confirmed image asset (${formatMediaListFilterDiagnostic(
+        diagnostic,
+      )}).`,
     );
   }
 }
