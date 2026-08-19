@@ -6,6 +6,7 @@ import test from "node:test";
 import { readApiErrorCode } from "./feature-flags-smoke.mjs";
 import {
   isCdnUrlForR2Key,
+  isMediaListResponseContainingAsset,
   isMediaReference,
   isProductionCdnUrl,
   isR2UploadUrl,
@@ -130,6 +131,50 @@ test("smoke helpers validate CDN URLs and media references", () => {
   );
   assert.equal(isMediaReference("media://asset_123"), true);
   assert.equal(isMediaReference("https://cdn.example.com/asset_123"), false);
+});
+
+test("smoke helpers validate media list filter responses", () => {
+  const asset = {
+    filename: "smoke.png",
+    id: "asset-1",
+    reference: "media://asset-1",
+  };
+
+  assert.equal(
+    isMediaListResponseContainingAsset(
+      {
+        data: [
+          {
+            filename: "smoke.png",
+            id: "asset-1",
+            reference: "media://asset-1",
+            status: "active",
+            type: "image",
+          },
+        ],
+      },
+      asset,
+    ),
+    true,
+  );
+  assert.equal(
+    isMediaListResponseContainingAsset(
+      {
+        data: [
+          {
+            filename: "smoke.png",
+            id: "asset-1",
+            reference: "media://asset-1",
+            status: "archived",
+            type: "image",
+          },
+        ],
+      },
+      asset,
+    ),
+    false,
+  );
+  assert.equal(isMediaListResponseContainingAsset({ data: [] }, asset), false);
 });
 
 test("smoke helpers validate preview token responses", () => {

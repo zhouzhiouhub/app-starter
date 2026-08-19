@@ -333,7 +333,7 @@ export function printHelp() {
 Publishes a unique smoke-test page through the Admin API, then verifies the
 page editor draft save, Preview Token, public preview API, Web preview page,
 publish API, rollback API, audit logs, public page API, media upload target,
-storefront HTML, robots.txt, sitemap.xml, 404 behavior, and MVP disabled feature flags.
+media list filters, storefront HTML, robots.txt, sitemap.xml, 404 behavior, and MVP disabled feature flags.
 
 Environment:
   API_URL                         API origin or /api/v1 base. Default: ${defaultApiUrl}

@@ -46,11 +46,12 @@ export async function assertMediaUploadTarget(input, accessToken) {
 
   const asset = await confirmSmokeImage(input, accessToken, target);
   assertMediaAssetShape(asset, target, input.requireR2Upload);
+  await assertMediaListFilters(input, accessToken, asset);
 
   console.log(
     input.requireR2Upload
-      ? "Media R2 upload and CDN confirmation passed."
-      : "Media upload target and confirm passed.",
+      ? "Media R2 upload, CDN confirmation, and list filters passed."
+      : "Media upload target, confirm, and list filters passed.",
   );
 }
 
@@ -90,6 +91,22 @@ export function isProductionCdnUrl(value) {
 
 export function isMediaReference(value) {
   return typeof value === "string" && /^media:\/\/[a-zA-Z0-9_-]+$/.test(value);
+}
+
+export function isMediaListResponseContainingAsset(body, asset) {
+  const items = Array.isArray(body?.data) ? body.data : [];
+  const match = items.find((item) => item?.id === asset?.id);
+
+  if (!match) {
+    return false;
+  }
+
+  return (
+    match.filename === asset.filename &&
+    match.reference === asset.reference &&
+    match.status === "active" &&
+    match.type === "image"
+  );
 }
 
 function assertUploadTargetShape(target) {
@@ -163,6 +180,30 @@ async function confirmSmokeImage(input, accessToken, target) {
   }
 
   return response.body?.data;
+}
+
+async function assertMediaListFilters(input, accessToken, asset) {
+  const query = new URLSearchParams({
+    limit: "20",
+    page: "1",
+    status: "active",
+    type: "image",
+  });
+  const response = await fetchJson(`${input.apiBaseUrl}/media?${query}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(readHttpError(response, "Media list filter check failed."));
+  }
+
+  if (!isMediaListResponseContainingAsset(response.body, asset)) {
+    throw new Error(
+      "Media list filter check did not return the confirmed image asset.",
+    );
+  }
 }
 
 function assertMediaAssetShape(asset, target, requireProductionCdn) {
