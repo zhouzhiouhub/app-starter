@@ -3,8 +3,9 @@ export function createRevalidationSmokeDetails(revalidation, input) {
   const tags = readStringArray(revalidation?.tags);
   const reason =
     typeof revalidation?.reason === "string" ? revalidation.reason : null;
-  const status =
-    Number.isInteger(revalidation?.status) ? revalidation.status : null;
+  const status = Number.isInteger(revalidation?.status)
+    ? revalidation.status
+    : null;
   const triggered = revalidation?.triggered === true;
 
   return {
@@ -38,15 +39,35 @@ function readRevalidationDiagnosis(input) {
     return "missing-url";
   }
 
-  if (input.reason === "request-failed" && input.status) {
-    return "request-failed";
-  }
-
   if (input.reason === "request-failed") {
-    return "request-failed-or-timeout";
+    return readFailedRequestDiagnosis(input.status);
   }
 
   return input.required ? "missing-revalidation-meta" : "not-required";
+}
+
+function readFailedRequestDiagnosis(status) {
+  if (status === 400) {
+    return "invalid-revalidation-payload";
+  }
+
+  if (status === 401 || status === 403) {
+    return "revalidation-secret-mismatch";
+  }
+
+  if (status === 404) {
+    return "revalidate-route-missing";
+  }
+
+  if (status === 503) {
+    return "web-revalidation-not-configured";
+  }
+
+  if (status) {
+    return "request-failed";
+  }
+
+  return "request-failed-or-timeout";
 }
 
 function readStringArray(value) {

@@ -55,6 +55,24 @@ function formatStatus(status: number | undefined): string {
 }
 
 function formatRequestFailedRevalidation(status: number | undefined): string {
+  if (status === 400) {
+    return "Storefront revalidation rejected the page payload with HTTP 400. Check the page slug, locale, and market.";
+  }
+
+  if (status === 401 || status === 403) {
+    return `Storefront revalidation failed${formatStatus(
+      status,
+    )}. Check that API and Web use the same STOREFRONT_REVALIDATE_SECRET.`;
+  }
+
+  if (status === 404) {
+    return "Storefront revalidation route was not found with HTTP 404. Check STOREFRONT_REVALIDATE_URL or WEB_URL.";
+  }
+
+  if (status === 503) {
+    return "Storefront revalidation route is not configured on Web with HTTP 503. Check STOREFRONT_REVALIDATE_SECRET on the Web service.";
+  }
+
   if (typeof status === "number") {
     return `Storefront revalidation failed${formatStatus(
       status,

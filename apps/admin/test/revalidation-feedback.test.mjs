@@ -59,7 +59,7 @@ test("publication feedback distinguishes HTTP failures from timeout style failur
       },
       slug: "contact",
     }),
-    /failed with HTTP 503.*route and secret/,
+    /not configured on Web with HTTP 503.*STOREFRONT_REVALIDATE_SECRET/,
   );
   assert.match(
     buildPublicationFeedback({
@@ -73,5 +73,50 @@ test("publication feedback distinguishes HTTP failures from timeout style failur
       slug: "contact",
     }),
     /failed or timed out.*STOREFRONT_REVALIDATE_TIMEOUT_MS/,
+  );
+});
+
+test("publication feedback explains actionable revalidation HTTP statuses", () => {
+  assert.match(
+    buildPublicationFeedback({
+      action: "publish",
+      revalidation: {
+        paths: ["/en/contact"],
+        reason: "request-failed",
+        status: 400,
+        tags: [],
+        triggered: false,
+      },
+      slug: "contact",
+    }),
+    /page slug, locale, and market/,
+  );
+  assert.match(
+    buildPublicationFeedback({
+      action: "publish",
+      revalidation: {
+        paths: ["/en/contact"],
+        reason: "request-failed",
+        status: 401,
+        tags: [],
+        triggered: false,
+      },
+      slug: "contact",
+    }),
+    /same STOREFRONT_REVALIDATE_SECRET/,
+  );
+  assert.match(
+    buildPublicationFeedback({
+      action: "publish",
+      revalidation: {
+        paths: ["/en/contact"],
+        reason: "request-failed",
+        status: 404,
+        tags: [],
+        triggered: false,
+      },
+      slug: "contact",
+    }),
+    /STOREFRONT_REVALIDATE_URL or WEB_URL/,
   );
 });
