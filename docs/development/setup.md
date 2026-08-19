@@ -141,7 +141,9 @@ The smoke admin account must include `audit:read`; rerun the seed after pulling
 role changes if the audit log check returns 403.
 Set `SMOKE_REPORT_PATH=tmp/smoke-report.json` to write a machine-readable report
 with the checked slug, page ID, storefront URL, media environment diagnostics,
-and passed/failed check list.
+and passed/failed check list. If the smoke run fails, the report records the
+failed check name and error message so production R2 / CDN, ISR, and SEO
+failures can be triaged from the JSON artifact.
 
 By default the script requires `meta.revalidation.triggered=true`, so keep
 `STOREFRONT_REVALIDATE_SECRET` configured in both API and Web. To test only the

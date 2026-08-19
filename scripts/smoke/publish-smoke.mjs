@@ -14,6 +14,7 @@ import {
   createSmokeReport,
   failSmokeReport,
   recordSmokeCheck,
+  recordSmokeCheckFailure,
   writeSmokeReportIfConfigured,
 } from "./smoke-report.mjs";
 import {
@@ -56,50 +57,79 @@ export async function runSmokeTest(input) {
   console.log(`Web: ${input.webUrl}`);
 
   try {
-    await assertReachable(`${input.apiBaseUrl}/health`, "API health");
-    recordSmokeCheck(report, "api.health");
-    const accessToken = await login(input);
-    recordSmokeCheck(report, "auth.login");
-    await assertFeatureFlagsDisabled(input, accessToken);
-    recordSmokeCheck(report, "feature-flags.disabled");
-    const mediaDetails = await assertMediaUploadTarget(input, accessToken);
-    recordSmokeCheck(report, "media.upload-target", mediaDetails);
-    const page = await assertPreviewFlow(input, accessToken, schema, title);
-    recordSmokeCheck(report, "page.preview", { pageId: page.id });
-    const publish = await publishPage(input, accessToken, page.id, schema);
-    assertPublishedResponse(publish, input, title);
-    recordSmokeCheck(report, "page.publish", {
-      revalidation: publish?.meta?.revalidation ?? null,
-    });
-    const rollback = await assertRollbackFlow(input, accessToken, {
-      pageId: page.id,
-      title,
-    });
-    recordSmokeCheck(report, "page.rollback", rollback);
-    await assertAuditLogs(input, accessToken, page.id, [
-      "preview_token.created",
-      "page.published",
-      "page.rolled_back",
-    ]);
-    recordSmokeCheck(report, "audit.logs", {
-      actions: ["preview_token.created", "page.published", "page.rolled_back"],
-    });
-    await assertPublicApi(input, title);
-    recordSmokeCheck(report, "public-page.api");
-    recordSmokeCheck(
+    await runSmokeStep(report, "api.health", () =>
+      assertReachable(`${input.apiBaseUrl}/health`, "API health"),
+    );
+    const accessToken = await runSmokeStep(report, "auth.login", () =>
+      login(input),
+    );
+    await runSmokeStep(report, "feature-flags.disabled", () =>
+      assertFeatureFlagsDisabled(input, accessToken),
+    );
+    await runSmokeStep(
+      report,
+      "media.upload-target",
+      () => assertMediaUploadTarget(input, accessToken),
+      (details) => details,
+    );
+    const page = await runSmokeStep(
+      report,
+      "page.preview",
+      () => assertPreviewFlow(input, accessToken, schema, title),
+      (result) => ({ pageId: result.id }),
+    );
+    await runSmokeStep(
+      report,
+      "page.publish",
+      async () => {
+        const publish = await publishPage(input, accessToken, page.id, schema);
+        assertPublishedResponse(publish, input, title);
+        return publish;
+      },
+      (publish) => ({ revalidation: publish?.meta?.revalidation ?? null }),
+    );
+    await runSmokeStep(
+      report,
+      "page.rollback",
+      () =>
+        assertRollbackFlow(input, accessToken, {
+          pageId: page.id,
+          title,
+        }),
+      (rollback) => rollback,
+    );
+    await runSmokeStep(
+      report,
+      "audit.logs",
+      async () => {
+        const actions = [
+          "preview_token.created",
+          "page.published",
+          "page.rolled_back",
+        ];
+        await assertAuditLogs(input, accessToken, page.id, actions);
+        return { actions };
+      },
+      (details) => details,
+    );
+    await runSmokeStep(report, "public-page.api", () =>
+      assertPublicApi(input, title),
+    );
+    await runSmokeStep(
       report,
       "public-page.fallback-api",
-      await assertPublicFallbackApi(input, title),
+      () => assertPublicFallbackApi(input, title),
+      (details) => details,
     );
-    const storefrontHtml = await assertStorefrontPage(input, title);
-    assertIndexableStorefrontPage(storefrontHtml);
-    recordSmokeCheck(report, "storefront.page");
-    await assertRobots(input);
-    recordSmokeCheck(report, "seo.robots");
-    await assertSitemap(input);
-    recordSmokeCheck(report, "seo.sitemap");
-    await assertNotFoundPage(input);
-    recordSmokeCheck(report, "seo.not-found");
+    await runSmokeStep(report, "storefront.page", async () => {
+      const storefrontHtml = await assertStorefrontPage(input, title);
+      assertIndexableStorefrontPage(storefrontHtml);
+    });
+    await runSmokeStep(report, "seo.robots", () => assertRobots(input));
+    await runSmokeStep(report, "seo.sitemap", () => assertSitemap(input));
+    await runSmokeStep(report, "seo.not-found", () =>
+      assertNotFoundPage(input),
+    );
 
     const storefrontUrl = joinUrl(
       input.webUrl,
@@ -112,6 +142,22 @@ export async function runSmokeTest(input) {
   } catch (error) {
     failSmokeReport(report, error);
     await writeFailureReport(input, report);
+    throw error;
+  }
+}
+
+async function runSmokeStep(
+  report,
+  name,
+  action,
+  readDetails = () => ({}),
+) {
+  try {
+    const result = await action();
+    recordSmokeCheck(report, name, readDetails(result));
+    return result;
+  } catch (error) {
+    recordSmokeCheckFailure(report, name, error);
     throw error;
   }
 }

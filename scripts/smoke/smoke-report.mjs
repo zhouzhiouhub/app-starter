@@ -36,6 +36,18 @@ export function recordSmokeCheck(report, name, details = {}) {
   });
 }
 
+export function recordSmokeCheckFailure(report, name, error, details = {}) {
+  report.checks.push({
+    details,
+    error: {
+      message: readErrorMessage(error),
+    },
+    failedAt: new Date().toISOString(),
+    name,
+    status: "failed",
+  });
+}
+
 export function completeSmokeReport(report, input) {
   report.finishedAt = new Date().toISOString();
   report.pageId = input.pageId;
@@ -45,10 +57,14 @@ export function completeSmokeReport(report, input) {
 
 export function failSmokeReport(report, error) {
   report.error = {
-    message: error instanceof Error ? error.message : String(error),
+    message: readErrorMessage(error),
   };
   report.finishedAt = new Date().toISOString();
   report.status = "failed";
+}
+
+function readErrorMessage(error) {
+  return error instanceof Error ? error.message : String(error);
 }
 
 export async function writeSmokeReportIfConfigured(input, report) {

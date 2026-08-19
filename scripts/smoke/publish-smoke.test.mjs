@@ -27,6 +27,7 @@ import {
   createSmokeReport,
   failSmokeReport,
   recordSmokeCheck,
+  recordSmokeCheckFailure,
   writeSmokeReportIfConfigured,
 } from "./smoke-report.mjs";
 import { createSmokeEnvironmentDiagnostics } from "./environment-diagnostics.mjs";
@@ -304,8 +305,12 @@ test("smoke report helpers capture pass and failure state without secrets", () =
   assert.equal(report.environment.media.cdnHost, "cdn.local.invalid");
   assert.equal("password" in report.config, false);
 
+  recordSmokeCheckFailure(report, "media.upload-target", new Error("R2 failed"));
   failSmokeReport(report, new Error("boom"));
   assert.equal(report.status, "failed");
+  assert.equal(report.checks[1].name, "media.upload-target");
+  assert.equal(report.checks[1].status, "failed");
+  assert.equal(report.checks[1].error.message, "R2 failed");
   assert.equal(report.error.message, "boom");
 });
 
