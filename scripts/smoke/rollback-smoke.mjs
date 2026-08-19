@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { createRevalidationSmokeDetails } from "./revalidation-smoke.mjs";
 import { buildSmokePageSchema } from "./smoke-page-schema.mjs";
 
 export async function assertRollbackFlow(input, accessToken, options) {
@@ -66,7 +67,9 @@ async function readPublishedVersionId(input, accessToken, pageId) {
   const versionId = readPublishedVersionIdFromDetail(detail);
 
   if (!versionId) {
-    throw new Error("Page detail did not include a published version to roll back to.");
+    throw new Error(
+      "Page detail did not include a published version to roll back to.",
+    );
   }
 
   return versionId;
@@ -95,7 +98,9 @@ async function publishRollbackCandidate(
   }
 
   if (!isRollbackResponse(response.body, input, title)) {
-    throw new Error("Rollback candidate publish returned an unexpected schema.");
+    throw new Error(
+      "Rollback candidate publish returned an unexpected schema.",
+    );
   }
 }
 
@@ -150,10 +155,14 @@ function writeHeaders(accessToken) {
 
 function assertRollbackRevalidation(revalidation, input) {
   if (input.requireRevalidation && revalidation?.triggered !== true) {
-    throw new Error(
-      `Rollback revalidation was not triggered (${revalidation?.reason ?? "unknown reason"}).`,
-    );
+    throw new Error(formatRollbackRevalidationFailure(revalidation, input));
   }
+}
+
+export function formatRollbackRevalidationFailure(revalidation, input) {
+  const details = createRevalidationSmokeDetails(revalidation, input);
+
+  return `Rollback revalidation was not triggered (diagnosis: ${details.diagnosis}, reason: ${details.reason ?? "unknown"}, status: ${details.status ?? "none"}, paths: ${details.pathCount}).`;
 }
 
 async function fetchJson(url, init) {

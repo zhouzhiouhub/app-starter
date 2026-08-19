@@ -1,10 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { hasUnsafeAuditMetadata, isPageAuditLog } from "./audit-smoke.mjs";
 import {
-  hasUnsafeAuditMetadata,
-  isPageAuditLog,
-} from "./audit-smoke.mjs";
-import {
+  formatRollbackRevalidationFailure,
   isRollbackResponse,
   readPublishedVersionIdFromDetail,
 } from "./rollback-smoke.mjs";
@@ -121,5 +119,27 @@ test("smoke helpers validate rollback page responses", () => {
       "Smoke Page",
     ),
     false,
+  );
+});
+
+test("smoke helpers explain rollback revalidation failures", () => {
+  assert.equal(
+    formatRollbackRevalidationFailure(
+      {
+        paths: ["/en/contact"],
+        reason: "request-failed",
+        status: 401,
+        tags: [],
+        triggered: false,
+      },
+      { requireRevalidation: true },
+    ),
+    "Rollback revalidation was not triggered (diagnosis: revalidation-secret-mismatch, reason: request-failed, status: 401, paths: 1).",
+  );
+  assert.equal(
+    formatRollbackRevalidationFailure(undefined, {
+      requireRevalidation: true,
+    }),
+    "Rollback revalidation was not triggered (diagnosis: missing-revalidation-meta, reason: unknown, status: none, paths: 0).",
   );
 });
