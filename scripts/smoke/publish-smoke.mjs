@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { assertFeatureFlagsDisabled } from "./feature-flags-smoke.mjs";
 import { assertMediaUploadTarget } from "./media-smoke.mjs";
+import { assertPreviewFlow } from "./preview-smoke.mjs";
 import { buildSmokePageSchema } from "./smoke-page-schema.mjs";
 import {
   assertIndexableStorefrontPage,
@@ -44,7 +45,8 @@ export async function runSmokeTest(input) {
   const accessToken = await login(input);
   await assertFeatureFlagsDisabled(input, accessToken);
   await assertMediaUploadTarget(input, accessToken);
-  const publish = await publishPage(input, accessToken, schema);
+  const page = await assertPreviewFlow(input, accessToken, schema, title);
+  const publish = await publishPage(input, accessToken, page.id, schema);
   assertPublishedResponse(publish, input, title);
   await assertPublicApi(input, title);
   const storefrontHtml = await assertStorefrontPage(input, title);
@@ -104,9 +106,9 @@ async function login(input) {
   return accessToken;
 }
 
-async function publishPage(input, accessToken, schema) {
+async function publishPage(input, accessToken, pageId, schema) {
   const response = await fetchJson(
-    `${input.apiBaseUrl}/admin/pages/${encodeURIComponent(input.slug)}/publish`,
+    `${input.apiBaseUrl}/pages/${encodeURIComponent(pageId)}/publish`,
     {
       body: JSON.stringify(schema),
       headers: {
@@ -269,8 +271,9 @@ export function printHelp() {
   console.log(`Usage: pnpm smoke:publish
 
 Publishes a unique smoke-test page through the Admin API, then verifies the
-public page API, media upload target, storefront HTML, robots.txt, sitemap.xml,
-404 behavior, and MVP disabled feature flags.
+page editor draft save, Preview Token, public preview API, Web preview page,
+publish API, public page API, media upload target, storefront HTML, robots.txt,
+sitemap.xml, 404 behavior, and MVP disabled feature flags.
 
 Environment:
   API_URL                         API origin or /api/v1 base. Default: ${defaultApiUrl}

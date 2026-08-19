@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readApiErrorCode } from "./feature-flags-smoke.mjs";
 import { isR2UploadUrl } from "./media-smoke.mjs";
+import { getPreviewPath, isPreviewTokenShape } from "./preview-smoke.mjs";
 import {
   getStorefrontPath,
   hasNoIndexRobots,
@@ -19,6 +20,11 @@ test("smoke helpers preserve nested storefront slugs", () => {
     joinUrl("https://example.com", "/en/legal/terms"),
     "https://example.com/en/legal/terms",
   );
+});
+
+test("smoke helpers build preview paths safely", () => {
+  assert.equal(getPreviewPath("abc.def"), "/preview?token=abc.def");
+  assert.equal(getPreviewPath("a+b/c"), "/preview?token=a%2Bb%2Fc");
 });
 
 test("smoke helpers normalize API base URLs", () => {
@@ -84,6 +90,42 @@ test("smoke helpers detect R2 upload URLs", () => {
     false,
   );
   assert.equal(isR2UploadUrl("not-a-url"), false);
+});
+
+test("smoke helpers validate preview token responses", () => {
+  assert.equal(
+    isPreviewTokenShape(
+      {
+        expiresAt: "2026-08-19T10:00:00.000Z",
+        slug: "smoke-page",
+        token: "payload.signature",
+      },
+      "smoke-page",
+    ),
+    true,
+  );
+  assert.equal(
+    isPreviewTokenShape(
+      {
+        expiresAt: "not-a-date",
+        slug: "smoke-page",
+        token: "payload.signature",
+      },
+      "smoke-page",
+    ),
+    false,
+  );
+  assert.equal(
+    isPreviewTokenShape(
+      {
+        expiresAt: "2026-08-19T10:00:00.000Z",
+        slug: "other-page",
+        token: "payload.signature",
+      },
+      "smoke-page",
+    ),
+    false,
+  );
 });
 
 test("readConfig uses seeded defaults and explicit smoke overrides", async () => {
