@@ -63,21 +63,64 @@ async function fetchPublicPage(input, context) {
 }
 
 function assertPublishedPageBody(body, input) {
-  if (body?.data?.meta?.title !== input.expectedTitle) {
-    throw new Error("Public page API did not return the published title.");
+  const diagnostic = readPublicPageBodyDiagnostic(body, input);
+
+  if (!diagnostic.titleMatches) {
+    throw new Error(
+      `Public page API did not return the published title (${formatPublicPageBodyDiagnostic(
+        diagnostic,
+      )}).`,
+    );
   }
 
-  if (body?.data?.seo?.noIndex === true) {
-    throw new Error("Public page API returned the smoke page as noIndex.");
+  if (diagnostic.noIndex === true) {
+    throw new Error(
+      `Public page API returned the smoke page as noIndex (${formatPublicPageBodyDiagnostic(
+        diagnostic,
+      )}).`,
+    );
   }
 
-  if (body?.meta?.locale !== input.expectedLocale) {
-    throw new Error("Public page API returned an unexpected locale.");
+  if (!diagnostic.localeMatches) {
+    throw new Error(
+      `Public page API returned an unexpected locale (${formatPublicPageBodyDiagnostic(
+        diagnostic,
+      )}).`,
+    );
   }
 
-  if (body?.meta?.isFallback !== input.expectedFallback) {
-    throw new Error("Public page API returned an unexpected fallback flag.");
+  if (!diagnostic.fallbackMatches) {
+    throw new Error(
+      `Public page API returned an unexpected fallback flag (${formatPublicPageBodyDiagnostic(
+        diagnostic,
+      )}).`,
+    );
   }
+}
+
+export function readPublicPageBodyDiagnostic(body, input) {
+  const title = body?.data?.meta?.title ?? null;
+  const locale = body?.meta?.locale ?? null;
+  const fallbackLocale = body?.meta?.fallbackLocale ?? null;
+  const isFallback = body?.meta?.isFallback ?? null;
+
+  return {
+    expectedFallback: input.expectedFallback,
+    expectedLocale: input.expectedLocale,
+    expectedTitle: input.expectedTitle,
+    fallbackLocale,
+    fallbackMatches: isFallback === input.expectedFallback,
+    isFallback,
+    locale,
+    localeMatches: locale === input.expectedLocale,
+    noIndex: body?.data?.seo?.noIndex === true,
+    title,
+    titleMatches: title === input.expectedTitle,
+  };
+}
+
+export function formatPublicPageBodyDiagnostic(diagnostic) {
+  return `title: ${diagnostic.title ?? "missing"} (expected ${diagnostic.expectedTitle}), locale: ${diagnostic.locale ?? "missing"} (expected ${diagnostic.expectedLocale}), fallback: ${diagnostic.isFallback ?? "missing"} (expected ${diagnostic.expectedFallback}), fallback locale: ${diagnostic.fallbackLocale ?? "missing"}, noIndex: ${diagnostic.noIndex}`;
 }
 
 async function fetchJson(url, init) {

@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { isPublicPageFallbackResponse } from "./public-api-smoke.mjs";
+import {
+  formatPublicPageBodyDiagnostic,
+  isPublicPageFallbackResponse,
+  readPublicPageBodyDiagnostic,
+} from "./public-api-smoke.mjs";
 
 test("public API smoke helper validates fallback response metadata", () => {
   assert.equal(
@@ -44,5 +48,48 @@ test("public API smoke helper validates fallback response metadata", () => {
       },
     ),
     false,
+  );
+});
+
+test("public API smoke helper summarizes page body mismatches", () => {
+  const diagnostic = readPublicPageBodyDiagnostic(
+    {
+      data: {
+        meta: {
+          title: "Draft Page",
+        },
+        seo: {
+          noIndex: true,
+        },
+      },
+      meta: {
+        fallbackLocale: "en-US",
+        isFallback: false,
+        locale: "de-DE",
+      },
+    },
+    {
+      expectedFallback: true,
+      expectedLocale: "en-US",
+      expectedTitle: "Published Page",
+    },
+  );
+
+  assert.deepEqual(diagnostic, {
+    expectedFallback: true,
+    expectedLocale: "en-US",
+    expectedTitle: "Published Page",
+    fallbackLocale: "en-US",
+    fallbackMatches: false,
+    isFallback: false,
+    locale: "de-DE",
+    localeMatches: false,
+    noIndex: true,
+    title: "Draft Page",
+    titleMatches: false,
+  });
+  assert.equal(
+    formatPublicPageBodyDiagnostic(diagnostic),
+    "title: Draft Page (expected Published Page), locale: de-DE (expected en-US), fallback: false (expected true), fallback locale: en-US, noIndex: true",
   );
 });
