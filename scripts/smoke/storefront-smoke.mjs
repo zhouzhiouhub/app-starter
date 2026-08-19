@@ -69,21 +69,55 @@ export function assertIndexableStorefrontPage(html) {
 export async function assertRobots(input) {
   const url = joinUrl(input.webUrl, "/robots.txt");
   const response = await fetchText(url);
-  const text = response.text.toLowerCase();
+  const robotsAttempt = readRobotsAttempt(response, input.webUrl);
 
   if (!response.ok) {
-    throw new Error(readHttpTextError(response, "robots.txt failed."));
+    throw new Error(
+      `robots.txt failed (${formatRobotsAttempt(robotsAttempt)}).`,
+    );
   }
 
-  if (!text.includes("user-agent") || !text.includes("sitemap:")) {
-    throw new Error("robots.txt did not include user-agent and sitemap lines.");
+  if (!robotsAttempt.hasUserAgent || !robotsAttempt.hasSitemapLine) {
+    throw new Error(
+      `robots.txt did not include user-agent and sitemap lines (${formatRobotsAttempt(
+        robotsAttempt,
+      )}).`,
+    );
   }
 
-  if (!text.includes(joinUrl(input.webUrl, "/sitemap.xml").toLowerCase())) {
-    throw new Error("robots.txt did not point to the storefront sitemap.");
+  if (!robotsAttempt.pointsToSitemap) {
+    throw new Error(
+      `robots.txt did not point to the storefront sitemap (${formatRobotsAttempt(
+        robotsAttempt,
+      )}).`,
+    );
   }
 
   console.log("robots.txt passed.");
+}
+
+export function readRobotsAttempt(response, webUrl) {
+  const text = response.text.toLowerCase();
+  const sitemapUrl = joinUrl(webUrl, "/sitemap.xml").toLowerCase();
+
+  return {
+    bodySnippet: response.ok ? null : readBodySnippet(response.text),
+    hasSitemapLine: text.includes("sitemap:"),
+    hasUserAgent: text.includes("user-agent"),
+    ok: response.ok,
+    pointsToSitemap: text.includes(sitemapUrl),
+    status: response.status,
+    statusText: response.statusText || "",
+  };
+}
+
+export function formatRobotsAttempt(attempt) {
+  const statusText = attempt.statusText ? ` ${attempt.statusText}` : "";
+  const body = attempt.bodySnippet
+    ? `, body: ${JSON.stringify(attempt.bodySnippet)}`
+    : "";
+
+  return `status ${attempt.status}${statusText}, user-agent: ${attempt.hasUserAgent}, sitemap line: ${attempt.hasSitemapLine}, sitemap URL: ${attempt.pointsToSitemap}${body}`;
 }
 
 export async function assertSitemap(input) {
@@ -97,20 +131,18 @@ export async function assertSitemap(input) {
   for (let attempt = 1; attempt <= input.retryAttempts; attempt += 1) {
     try {
       const response = await fetchText(url);
-      const urls = parseSitemapUrls(response.text);
+      const sitemapAttempt = readSitemapAttempt(response, expectedUrl);
 
       if (
-        response.ok &&
-        urls.includes(expectedUrl) &&
-        !urls.some(isNotFoundSitemapUrl)
+        sitemapAttempt.ok &&
+        sitemapAttempt.expectedUrlPresent &&
+        !sitemapAttempt.notFoundUrlPresent
       ) {
         console.log("sitemap.xml passed.");
         return;
       }
 
-      lastError = `status ${response.status}, expected URL present: ${urls.includes(
-        expectedUrl,
-      )}, 404 present: ${urls.some(isNotFoundSitemapUrl)}`;
+      lastError = formatSitemapAttempt(sitemapAttempt);
     } catch (error) {
       lastError = readErrorMessage(error);
     }
@@ -125,22 +157,75 @@ export async function assertSitemap(input) {
   );
 }
 
+export function readSitemapAttempt(response, expectedUrl) {
+  const urls = parseSitemapUrls(response.text);
+
+  return {
+    bodySnippet: response.ok ? null : readBodySnippet(response.text),
+    expectedUrlPresent: urls.includes(expectedUrl),
+    notFoundUrlPresent: urls.some(isNotFoundSitemapUrl),
+    ok: response.ok,
+    status: response.status,
+    statusText: response.statusText || "",
+    urlCount: urls.length,
+  };
+}
+
+export function formatSitemapAttempt(attempt) {
+  const statusText = attempt.statusText ? ` ${attempt.statusText}` : "";
+  const body = attempt.bodySnippet
+    ? `, body: ${JSON.stringify(attempt.bodySnippet)}`
+    : "";
+
+  return `status ${attempt.status}${statusText}, expected URL present: ${attempt.expectedUrlPresent}, 404 present: ${attempt.notFoundUrlPresent}, URL count: ${attempt.urlCount}${body}`;
+}
+
 export async function assertNotFoundPage(input) {
   const slug = `${input.slug}-missing-${Date.now().toString(36)}`;
   const url = joinUrl(input.webUrl, getStorefrontPath(input.locale, slug));
   const response = await fetchText(url);
+  const notFoundAttempt = readNotFoundAttempt(response);
 
-  if (response.status !== 404) {
+  if (notFoundAttempt.status !== 404) {
     throw new Error(
-      `Unknown storefront page returned ${response.status}, not 404.`,
+      `Unknown storefront page did not return 404 (${formatNotFoundAttempt(
+        notFoundAttempt,
+      )}).`,
     );
   }
 
-  if (!hasNoIndexRobots(response.text)) {
-    throw new Error("Unknown storefront page did not render noindex metadata.");
+  if (!notFoundAttempt.noIndex) {
+    throw new Error(
+      `Unknown storefront page did not render noindex metadata (${formatNotFoundAttempt(
+        notFoundAttempt,
+      )}).`,
+    );
   }
 
   console.log("404 page passed.");
+}
+
+export function readNotFoundAttempt(response) {
+  const noIndex = hasNoIndexRobots(response.text);
+
+  return {
+    bodySnippet:
+      response.status === 404 && noIndex
+        ? null
+        : readBodySnippet(response.text),
+    noIndex,
+    status: response.status,
+    statusText: response.statusText || "",
+  };
+}
+
+export function formatNotFoundAttempt(attempt) {
+  const statusText = attempt.statusText ? ` ${attempt.statusText}` : "";
+  const body = attempt.bodySnippet
+    ? `, body: ${JSON.stringify(attempt.bodySnippet)}`
+    : "";
+
+  return `status ${attempt.status}${statusText}, noindex: ${attempt.noIndex}${body}`;
 }
 
 export function getStorefrontPath(locale, slug) {
@@ -188,12 +273,6 @@ function isNotFoundSitemapUrl(url) {
 
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function readHttpTextError(response, fallback) {
-  const message =
-    response.statusText || response.text.slice(0, 160) || fallback;
-  return `${fallback} ${response.status}: ${message}`;
 }
 
 function readBodySnippet(text) {
