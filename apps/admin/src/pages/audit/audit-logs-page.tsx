@@ -6,6 +6,7 @@ import { AuditLogTable } from "../../features/audit/components/audit-log-table";
 import {
   buildAuditLogSearch,
   readAuditLogFilters,
+  readAuditLogPage,
 } from "../../features/audit/filter-query";
 import { useAuditLogList } from "../../features/audit/hooks/use-audit-log-list";
 import type { AuditLogFilters } from "../../features/audit/types";
@@ -16,13 +17,22 @@ export function AuditLogsPage() {
     () => readAuditLogFilters(searchParams),
     [searchParams],
   );
+  const page = useMemo(() => readAuditLogPage(searchParams), [searchParams]);
   const setFilters = useCallback(
     (nextFilters: AuditLogFilters) => {
       setSearchParams(buildAuditLogSearch(nextFilters), { replace: true });
     },
     [setSearchParams],
   );
-  const { error, isLoading, load, logs, meta } = useAuditLogList(filters);
+  const setPage = useCallback(
+    (nextPage: number) => {
+      setSearchParams(buildAuditLogSearch(filters, { page: nextPage }), {
+        replace: true,
+      });
+    },
+    [filters, setSearchParams],
+  );
+  const { error, isLoading, logs, meta } = useAuditLogList(filters, page);
 
   return (
     <div>
@@ -44,7 +54,7 @@ export function AuditLogsPage() {
         <AuditLogTable
           isLoading={isLoading}
           logs={logs}
-          onPageChange={(page) => void load(page)}
+          onPageChange={setPage}
           page={meta.page}
           pageSize={meta.limit}
           total={meta.total}

@@ -5,7 +5,7 @@ import { listAuditLogs } from "../api";
 import { DEFAULT_AUDIT_LOG_LIST_LIMIT } from "../constants";
 import type { AuditLog, AuditLogFilters, AuditLogListMeta } from "../types";
 
-export function useAuditLogList(filters: AuditLogFilters) {
+export function useAuditLogList(filters: AuditLogFilters, page = 1) {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [meta, setMeta] = useState<AuditLogListMeta>({
     limit: DEFAULT_AUDIT_LOG_LIST_LIMIT,
@@ -15,14 +15,14 @@ export function useAuditLogList(filters: AuditLogFilters) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async (page = 1) => {
+  const load = useCallback(async (nextPage = page) => {
     setIsLoading(true);
     setError(null);
 
     try {
       const result = await listAuditLogs(
         filters,
-        page,
+        nextPage,
         DEFAULT_AUDIT_LOG_LIST_LIMIT,
       );
       setLogs(result.data);
@@ -37,11 +37,11 @@ export function useAuditLogList(filters: AuditLogFilters) {
     } finally {
       setIsLoading(false);
     }
-  }, [filters]);
+  }, [filters, page]);
 
   useEffect(() => {
-    void load(1);
-  }, [load]);
+    void load(page);
+  }, [load, page]);
 
   return { error, isLoading, load, logs, meta };
 }

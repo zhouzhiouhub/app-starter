@@ -1,4 +1,6 @@
-import { Table, Tag, Typography } from "antd";
+import { ExportOutlined } from "@ant-design/icons";
+import { Button, Space, Table, Tag, Tooltip, Typography } from "antd";
+import { useNavigate } from "react-router-dom";
 import type { AuditLog } from "../types";
 
 export function AuditLogTable(props: {
@@ -30,11 +32,7 @@ export function AuditLogTable(props: {
         },
         {
           key: "target",
-          render: (_, log) => (
-            <Typography.Text code copyable={Boolean(log.targetId)}>
-              {formatTarget(log)}
-            </Typography.Text>
-          ),
+          render: (_, log) => <AuditTargetCell log={log} />,
           title: "Target",
           width: 260,
         },
@@ -82,6 +80,33 @@ export function AuditLogTable(props: {
       }}
       rowKey="id"
     />
+  );
+}
+
+function AuditTargetCell(props: { log: AuditLog }) {
+  const navigate = useNavigate();
+  const pageTargetId =
+    props.log.targetType === "page" ? props.log.targetId : null;
+
+  return (
+    <Space size={8}>
+      <Typography.Text code copyable={Boolean(props.log.targetId)}>
+        {formatTarget(props.log)}
+      </Typography.Text>
+      {pageTargetId ? (
+        <Tooltip title="Open page editor">
+          <Button
+            aria-label="Open page editor"
+            icon={<ExportOutlined />}
+            onClick={() =>
+              navigate(`/pages/${encodeURIComponent(pageTargetId)}`)
+            }
+            size="small"
+            type="text"
+          />
+        </Tooltip>
+      ) : null}
+    </Space>
   );
 }
 
