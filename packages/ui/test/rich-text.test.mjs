@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { RichText, sanitizeRichText } from "../dist/index.js";
+import {
+  containsSanitizedRichTextMarkup,
+  RichText,
+  sanitizeRichText,
+} from "../dist/index.js";
 
 test("rich text sanitizer keeps basic editorial markup", () => {
   assert.equal(
@@ -50,5 +54,22 @@ test("rich text component renders sanitized HTML content", () => {
   assert.equal(
     content.props.dangerouslySetInnerHTML.__html,
     '<p>Intro</p><a href="tel:+15551234567">Call</a>',
+  );
+});
+
+test("rich text sanitizer reports markup that will be rewritten", () => {
+  assert.equal(
+    containsSanitizedRichTextMarkup(
+      '<p>Hello <strong>team</strong> <a href="/en/contact">Contact</a></p>',
+    ),
+    false,
+  );
+  assert.equal(
+    containsSanitizedRichTextMarkup('<p onclick="alert(1)">Safe</p>'),
+    true,
+  );
+  assert.equal(
+    containsSanitizedRichTextMarkup('<a href="javascript:alert(1)">Bad</a>'),
+    true,
   );
 });

@@ -53,6 +53,9 @@ importers:
       '@app-starter/schema':
         specifier: workspace:*
         version: link:../../packages/schema
+      '@app-starter/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       antd:
         specifier: ^6.0.0
         version: 6.6.1(luxon@3.7.2)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)

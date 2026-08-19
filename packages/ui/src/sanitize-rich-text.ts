@@ -16,7 +16,15 @@ const removableContentTags =
   /<\s*(script|style|iframe|object|embed|svg|math)\b[\s\S]*?<\s*\/\s*\1\s*>/gi;
 const remainingBlockedTags =
   /<\s*\/?\s*(script|style|iframe|object|embed|svg|math|link|meta)\b[^>]*>/gi;
+const attributeNamePattern =
+  /(?:^|\s)([a-z0-9:-]+)\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>"']+)/gi;
 const tagPattern = /<\/?[^>]+>/g;
+
+interface RichTextTag {
+  closing: boolean;
+  name: string;
+  rawAttributes: string;
+}
 
 interface SanitizedTag {
   blockedAnchor?: boolean;
@@ -53,36 +61,97 @@ export function sanitizeRichText(value: string): string {
   return output;
 }
 
+export function containsSanitizedRichTextMarkup(value: string): boolean {
+  for (const match of value.matchAll(tagPattern)) {
+    const parsed = parseRichTextTag(match[0]);
+
+    if (!parsed) {
+      continue;
+    }
+
+    if (parsed.name === "a") {
+      if (!parsed.closing && hasSanitizedAnchorMarkup(parsed.rawAttributes)) {
+        return true;
+      }
+
+      continue;
+    }
+
+    if (!allowedTextTags.has(parsed.name)) {
+      return true;
+    }
+
+    if (!parsed.closing && parsed.rawAttributes.trim()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function sanitizeTag(tag: string): SanitizedTag {
-  const parsed = /^<\s*(\/?)\s*([a-z0-9]+)\b([^>]*)>/i.exec(tag);
+  const parsed = parseRichTextTag(tag);
 
   if (!parsed) {
     return { html: "" };
   }
 
-  const [, closingSlash, rawName, rawAttributes = ""] = parsed;
-
-  if (!rawName) {
-    return { html: "" };
-  }
-
-  const name = rawName.toLowerCase();
-
-  if (name === "a") {
-    return closingSlash
+  if (parsed.name === "a") {
+    return parsed.closing
       ? { closingAnchor: true, html: "</a>" }
-      : sanitizeAnchorTag(rawAttributes);
+      : sanitizeAnchorTag(parsed.rawAttributes);
   }
 
-  if (!allowedTextTags.has(name)) {
+  if (!allowedTextTags.has(parsed.name)) {
     return { html: "" };
   }
 
-  if (name === "br") {
+  if (parsed.name === "br") {
     return { html: "<br>" };
   }
 
-  return { html: closingSlash ? `</${name}>` : `<${name}>` };
+  return {
+    html: parsed.closing ? `</${parsed.name}>` : `<${parsed.name}>`,
+  };
+}
+
+function parseRichTextTag(tag: string): RichTextTag | null {
+  const parsed = /^<\s*(\/?)\s*([a-z0-9]+)\b([^>]*)>/i.exec(tag);
+  const name = parsed?.[2]?.toLowerCase();
+
+  if (!parsed || !name) {
+    return null;
+  }
+
+  return {
+    closing: Boolean(parsed[1]),
+    name,
+    rawAttributes: parsed[3] ?? "",
+  };
+}
+
+function hasSanitizedAnchorMarkup(rawAttributes: string): boolean {
+  const href = readSafeHref(readAttribute(rawAttributes, "href"));
+
+  if (!href) {
+    return true;
+  }
+
+  const target = readAttribute(rawAttributes, "target");
+
+  if (target && target !== "_blank") {
+    return true;
+  }
+
+  return readAttributeNames(rawAttributes).some(
+    (name) => name !== "href" && name !== "target",
+  );
+}
+
+function readAttributeNames(rawAttributes: string): string[] {
+  return Array.from(rawAttributes.matchAll(attributeNamePattern)).map(
+    (match) => (match[1] ?? "").toLowerCase(),
+  );
 }
 
 function sanitizeAnchorTag(rawAttributes: string): SanitizedTag {
