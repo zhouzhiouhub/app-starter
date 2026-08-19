@@ -3,6 +3,7 @@ import { assertAuditLogs } from "./audit-smoke.mjs";
 import { assertFeatureFlagsDisabled } from "./feature-flags-smoke.mjs";
 import { assertMediaUploadTarget } from "./media-smoke.mjs";
 import { assertPreviewFlow } from "./preview-smoke.mjs";
+import { assertRollbackFlow } from "./rollback-smoke.mjs";
 import { buildSmokePageSchema } from "./smoke-page-schema.mjs";
 import {
   completeSmokeReport,
@@ -66,9 +67,18 @@ export async function runSmokeTest(input) {
     recordSmokeCheck(report, "page.publish", {
       revalidation: publish?.meta?.revalidation ?? null,
     });
-    await assertAuditLogs(input, accessToken, page.id);
+    const rollback = await assertRollbackFlow(input, accessToken, {
+      pageId: page.id,
+      title,
+    });
+    recordSmokeCheck(report, "page.rollback", rollback);
+    await assertAuditLogs(input, accessToken, page.id, [
+      "preview_token.created",
+      "page.published",
+      "page.rolled_back",
+    ]);
     recordSmokeCheck(report, "audit.logs", {
-      actions: ["preview_token.created", "page.published"],
+      actions: ["preview_token.created", "page.published", "page.rolled_back"],
     });
     await assertPublicApi(input, title);
     recordSmokeCheck(report, "public-page.api");
@@ -322,8 +332,8 @@ export function printHelp() {
 
 Publishes a unique smoke-test page through the Admin API, then verifies the
 page editor draft save, Preview Token, public preview API, Web preview page,
-publish API, audit logs, public page API, media upload target, storefront HTML,
-robots.txt, sitemap.xml, 404 behavior, and MVP disabled feature flags.
+publish API, rollback API, audit logs, public page API, media upload target,
+storefront HTML, robots.txt, sitemap.xml, 404 behavior, and MVP disabled feature flags.
 
 Environment:
   API_URL                         API origin or /api/v1 base. Default: ${defaultApiUrl}

@@ -1,14 +1,18 @@
-export async function assertAuditLogs(input, accessToken, pageId) {
-  await assertAuditLog(input, accessToken, {
-    action: "preview_token.created",
-    label: "Preview Token audit log",
-    pageId,
-  });
-  await assertAuditLog(input, accessToken, {
-    action: "page.published",
-    label: "Page publish audit log",
-    pageId,
-  });
+const defaultAuditActions = ["preview_token.created", "page.published"];
+
+export async function assertAuditLogs(
+  input,
+  accessToken,
+  pageId,
+  actions = defaultAuditActions,
+) {
+  for (const action of actions) {
+    await assertAuditLog(input, accessToken, {
+      action,
+      label: `${action} audit log`,
+      pageId,
+    });
+  }
 
   console.log("Audit log checks passed.");
 }
