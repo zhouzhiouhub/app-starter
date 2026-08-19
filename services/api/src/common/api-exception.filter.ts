@@ -66,6 +66,10 @@ function normalizeError(body: unknown, statusCode: number): NormalizedError {
         : "Request failed.",
   };
 
+  if (statusCode >= HttpStatus.INTERNAL_SERVER_ERROR) {
+    return fallback;
+  }
+
   if (typeof body === "string") {
     return {
       ...fallback,
