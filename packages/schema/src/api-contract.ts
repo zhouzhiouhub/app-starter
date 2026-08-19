@@ -14,17 +14,28 @@ export const apiErrorCodes = {
 
 export type ApiErrorCode = (typeof apiErrorCodes)[keyof typeof apiErrorCodes];
 
+export interface StorefrontRevalidationResult {
+  paths: string[];
+  reason?: "missing-secret" | "missing-url" | "request-failed" | string;
+  status?: number;
+  tags: string[];
+  triggered: boolean;
+}
+
+export interface ApiResponseMeta {
+  requestId: string;
+  tenantId?: string;
+  siteId?: string;
+  market?: string;
+  locale?: string;
+  fallbackLocale?: string;
+  isFallback?: boolean;
+  revalidation?: StorefrontRevalidationResult;
+}
+
 export interface ApiResponse<T> {
   data: T;
-  meta?: {
-    requestId: string;
-    tenantId?: string;
-    siteId?: string;
-    market?: string;
-    locale?: string;
-    fallbackLocale?: string;
-    isFallback?: boolean;
-  };
+  meta?: ApiResponseMeta;
 }
 
 export interface ApiErrorResponse {

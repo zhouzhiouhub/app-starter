@@ -9,10 +9,8 @@ import {
   rollbackPage,
   savePageDraft,
 } from "../api";
-import {
-  getStorefrontPageUrl,
-  getStorefrontPreviewUrl,
-} from "../storefront-url";
+import { getStorefrontPreviewUrl } from "../storefront-url";
+import { buildPublicationFeedback } from "../revalidation-feedback";
 import type {
   EditorFeedback,
   PageSummary,
@@ -123,12 +121,16 @@ export function usePageEditor(pageId: string | undefined) {
 
     try {
       const published = await publishPage(pageId, draftSchema);
-      resetSchema(published);
+      resetSchema(published.schema);
       const detail = await getPage(pageId);
       setPage(detail);
       setVersions(detail.versions);
       setFeedback({
-        message: `Published. Open ${getStorefrontPageUrl(published.meta.slug)} to see this page. Home stays at /en.`,
+        message: buildPublicationFeedback({
+          action: "publish",
+          revalidation: published.meta?.revalidation,
+          slug: published.schema.meta.slug,
+        }),
         type: "success",
       });
     } catch (caught) {
@@ -196,12 +198,16 @@ export function usePageEditor(pageId: string | undefined) {
 
       try {
         const rolledBack = await rollbackPage(pageId, versionId);
-        resetSchema(rolledBack);
+        resetSchema(rolledBack.schema);
         const detail = await getPage(pageId);
         setPage(detail);
         setVersions(detail.versions);
         setFeedback({
-          message: `Rolled back. Open ${getStorefrontPageUrl(rolledBack.meta.slug)} to review the storefront.`,
+          message: buildPublicationFeedback({
+            action: "rollback",
+            revalidation: rolledBack.meta?.revalidation,
+            slug: rolledBack.schema.meta.slug,
+          }),
           type: "success",
         });
       } catch (caught) {

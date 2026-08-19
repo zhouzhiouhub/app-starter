@@ -2,17 +2,12 @@ import {
   getPublishedPageCacheTags,
   getPublishedPageRevalidationPaths,
   storefrontRevalidateSecretHeader,
+  type StorefrontRevalidationResult,
 } from "@app-starter/schema";
 
 const defaultTimeoutMs = 5000;
 
-export type StorefrontRevalidationResult = {
-  paths: string[];
-  reason?: string;
-  status?: number;
-  tags: string[];
-  triggered: boolean;
-};
+export type { StorefrontRevalidationResult };
 
 export type StorefrontRevalidationInput = {
   locale: string;

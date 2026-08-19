@@ -1,4 +1,8 @@
-import type { PageSchema, PageTemplateId } from "@app-starter/schema";
+import type {
+  ApiResponseMeta,
+  PageSchema,
+  PageTemplateId,
+} from "@app-starter/schema";
 
 export interface PageSummary {
   createdAt: string;
@@ -27,6 +31,11 @@ export interface PageDetail extends PageSummary {
   draftSchema: PageSchema | null;
   publishedSchema: PageSchema | null;
   versions: PageVersionSummary[];
+}
+
+export interface PageMutationResult {
+  meta: ApiResponseMeta | null;
+  schema: PageSchema;
 }
 
 export interface PageListMeta {

@@ -6,6 +6,7 @@ import type {
   CreatePageInput,
   PageDetail,
   PageListMeta,
+  PageMutationResult,
   PagePreviewToken,
   PageSummary,
 } from "./types";
@@ -108,9 +109,12 @@ export async function savePageDraft(
 export async function publishPage(
   pageId: string,
   schema: PageSchema,
-): Promise<PageSchema> {
+): Promise<PageMutationResult> {
   const parsed = requireValidSchema(schema);
-  const result = await readAdminJson<{ data?: unknown }>(
+  const result = await readAdminJson<{
+    data?: unknown;
+    meta?: PageMutationResult["meta"];
+  }>(
     `/pages/${encodeURIComponent(pageId)}/publish`,
     {
       body: JSON.stringify(parsed),
@@ -120,14 +124,20 @@ export async function publishPage(
     "Publish request failed.",
   );
 
-  return pageSchema.parse(result.data);
+  return {
+    meta: result.meta ?? null,
+    schema: pageSchema.parse(result.data),
+  };
 }
 
 export async function rollbackPage(
   pageId: string,
   versionId: string,
-): Promise<PageSchema> {
-  const result = await readAdminJson<{ data?: unknown }>(
+): Promise<PageMutationResult> {
+  const result = await readAdminJson<{
+    data?: unknown;
+    meta?: PageMutationResult["meta"];
+  }>(
     `/pages/${encodeURIComponent(pageId)}/rollback`,
     {
       body: JSON.stringify({ versionId }),
@@ -137,7 +147,10 @@ export async function rollbackPage(
     "Rollback request failed.",
   );
 
-  return pageSchema.parse(result.data);
+  return {
+    meta: result.meta ?? null,
+    schema: pageSchema.parse(result.data),
+  };
 }
 
 function requireValidSchema(schema: PageSchema): PageSchema {
