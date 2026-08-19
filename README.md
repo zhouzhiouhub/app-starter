@@ -52,7 +52,7 @@
 - 编辑器可生成短期 Preview Token，并通过前台 `/preview?token=` 渲染草稿。
 - Preview Token 签发会写入只追加的 AuditLog，且不记录 token 明文。
 - 页面发布和回滚会写入只追加的 AuditLog，记录 actor、tenant、page、site、slug 和版本 ID。
-- 后台可通过 `GET /api/v1/audit-logs` 只读查询当前 Tenant 的审计日志，入口需要 `audit:read`。
+- 后台可通过 Audit Logs 页面或 `GET /api/v1/audit-logs` 只读查询当前 Tenant 的审计日志，入口需要 `audit:read`。
 - Page Builder 已具备区块库、区块排序、属性面板、Desktop / Mobile 布局编辑、Undo / Redo。
 - 媒体库已具备列表、登记外部媒体、上传目标生成、归档和 `media://` 引用解析。
 - Settings 已具备默认站点名称与域名管理，并展示 MVP 默认市场、Locale、Currency、功能开关和 Analytics 配置。
@@ -583,7 +583,7 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 - 短期 Preview Token 与前台 `/preview?token=` 草稿预览。
 - Preview Token 签发审计日志。
 - 页面发布 / 回滚审计日志。
-- 审计日志只读查询 API 与 `audit:read` 权限。
+- Audit Logs 后台页面、审计日志只读查询 API 与 `audit:read` 权限。
 - 区块库、区块排序、区块属性面板、Undo / Redo。
 - 媒体库列表、上传目标、外部媒体登记、归档和 `media://` 选择。
 - Settings 默认站点名称、域名与 Analytics 配置展示页。

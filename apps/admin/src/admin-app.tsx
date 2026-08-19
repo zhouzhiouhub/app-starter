@@ -14,6 +14,11 @@ const DashboardPage = lazy(() =>
     default: module.DashboardPage,
   })),
 );
+const AuditLogsPage = lazy(() =>
+  import("./pages/audit/audit-logs-page").then((module) => ({
+    default: module.AuditLogsPage,
+  })),
+);
 const LoginPage = lazy(() =>
   import("./pages/login/login-page").then((module) => ({
     default: module.LoginPage,
@@ -94,6 +99,7 @@ export function AdminApp() {
                 element={<SettingsPage />}
                 path="/settings"
               />
+              <Route element={<AuditLogsPage />} path="/audit-logs" />
             </Route>
             <Route element={<Navigate replace to="/" />} path="*" />
           </Routes>

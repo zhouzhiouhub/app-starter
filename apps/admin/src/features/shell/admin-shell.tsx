@@ -1,4 +1,5 @@
 import {
+  AuditOutlined,
   AppstoreOutlined,
   FileTextOutlined,
   GlobalOutlined,
@@ -18,6 +19,7 @@ const { Content, Header, Sider } = Layout;
 
 const menuIcons = {
   "/": <AppstoreOutlined />,
+  "/audit-logs": <AuditOutlined />,
   "/localization": <GlobalOutlined />,
   "/media": <PictureOutlined />,
   "/pages": <FileTextOutlined />,

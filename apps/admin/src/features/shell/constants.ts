@@ -4,6 +4,7 @@ export const adminMenuItems = [
   { key: "/media", label: "Media" },
   { key: "/localization", label: "Localization" },
   { key: "/settings", label: "Settings" },
+  { key: "/audit-logs", label: "Audit Logs" },
 ] as const;
 
 export type AdminMenuKey = (typeof adminMenuItems)[number]["key"];

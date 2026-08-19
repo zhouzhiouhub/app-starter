@@ -100,6 +100,8 @@ short-lived token, and opens the Web app at `/preview?token=...`.
 Open `http://localhost:5173/settings` to manage the default site name and
 domain, and to inspect the MVP default market, locale, currency, and feature
 flags.
+Open `http://localhost:5173/audit-logs` to review tenant-scoped Preview Token,
+publish, and rollback audit logs.
 
 Default local ports:
 
