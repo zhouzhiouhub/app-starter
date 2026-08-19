@@ -114,11 +114,21 @@ export function isMediaListResponseContainingAsset(body, asset) {
 export function createMediaSmokeDetails(target, asset, requireR2Upload) {
   return {
     assetId: asset.id,
+    assetSize: asset.size ?? null,
+    assetStatus: asset.status ?? null,
+    assetType: asset.type ?? null,
     cdnHost: readUrlHost(asset.url),
+    cdnUrlMatchesR2Key: isCdnUrlForR2Key(asset.url, target.r2Key),
+    confirmPath: target.confirmPath,
     isR2UploadUrl: isR2UploadUrl(target.uploadUrl),
+    presignedUrlHost: readUrlHost(target.uploadUrl),
     productionCdn: isProductionCdnUrl(asset.url),
     r2Key: asset.r2Key,
     reference: asset.reference,
+    uploadContentType: target.headers?.["Content-Type"] ?? null,
+    uploadExpiresAt: target.expiresAt,
+    uploadMaxSize: target.maxSize,
+    uploadMethod: target.method,
     uploadedObject: Boolean(requireR2Upload),
   };
 }

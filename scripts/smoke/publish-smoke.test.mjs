@@ -183,13 +183,26 @@ test("smoke helpers validate media list filter responses", () => {
 test("smoke helpers summarize media checks without signed upload URLs", () => {
   const details = createMediaSmokeDetails(
     {
+      confirmPath: "/api/v1/media/confirm",
+      expiresAt: "2026-08-19T10:00:00.000Z",
+      headers: {
+        "Content-Type": "image/png",
+      },
+      maxSize: 26214400,
+      method: "PUT",
+      r2Key: "tenant/2026/08/19/smoke.png",
+      type: "image",
       uploadUrl:
         "https://account.r2.cloudflarestorage.com/bucket/key?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Signature=secret",
     },
     {
       id: "asset-1",
+      mimeType: "image/png",
       r2Key: "tenant/2026/08/19/smoke.png",
       reference: "media://asset-1",
+      size: 68,
+      status: "active",
+      type: "image",
       url: "https://cdn.example.com/tenant/2026/08/19/smoke.png",
     },
     true,
@@ -197,14 +210,25 @@ test("smoke helpers summarize media checks without signed upload URLs", () => {
 
   assert.deepEqual(details, {
     assetId: "asset-1",
+    assetSize: 68,
+    assetStatus: "active",
+    assetType: "image",
     cdnHost: "cdn.example.com",
+    cdnUrlMatchesR2Key: true,
+    confirmPath: "/api/v1/media/confirm",
     isR2UploadUrl: true,
+    presignedUrlHost: "account.r2.cloudflarestorage.com",
     productionCdn: true,
     r2Key: "tenant/2026/08/19/smoke.png",
     reference: "media://asset-1",
+    uploadContentType: "image/png",
+    uploadExpiresAt: "2026-08-19T10:00:00.000Z",
+    uploadMaxSize: 26214400,
+    uploadMethod: "PUT",
     uploadedObject: true,
   });
   assert.equal("uploadUrl" in details, false);
+  assert.equal(JSON.stringify(details).includes("X-Amz-Signature"), false);
 });
 
 test("smoke helpers validate preview token responses", () => {
