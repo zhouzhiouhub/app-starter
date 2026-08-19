@@ -5,7 +5,7 @@
 当前目标不是一次性复制 Shopify 全量能力，而是先完成一个可长期演进的建站平台工程基础：前台渲染、后台管理壳、API 服务、Page Schema、共享 Renderer、数据库模型、二次开发入口和后续电商/多语言能力预留。
 
 > 当前日期：2026-08-19
-> 当前阶段：建站 MVP 的页面管理、站点设置、Page Builder、媒体、SEO、预览令牌、发布历史、回滚和前台 ISR 刷新链路已逐步落地；下一步是补齐生产部署 smoke test 和更完整的发布验收。
+> 当前阶段：建站 MVP 的页面管理、站点设置、Page Builder、媒体、SEO、预览令牌、发布历史、回滚、审计日志、前台 ISR 刷新链路与发布 smoke 报告已逐步落地；下一步是在真实生产 R2 / CDN 环境执行验收并归档报告。
 
 ## 1. 当前进度
 
@@ -600,7 +600,7 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 
 ```text
 生产 R2 / CDN 配置验收
-发布后 smoke test
+真实生产环境执行 pnpm smoke:publish 并归档 SMOKE_REPORT_PATH 报告
 ```
 
 ## 14. 二次开发规则
