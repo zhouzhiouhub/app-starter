@@ -13,6 +13,13 @@ export interface SiteSettings {
     commerceEnabled: boolean;
     multiLocaleEnabled: boolean;
   };
+  analytics: {
+    enabled: boolean;
+    consentGranted: boolean;
+    gtmContainerId: string | null;
+    ga4MeasurementId: string | null;
+    clarityProjectId: string | null;
+  };
   createdAt: string;
 }
 

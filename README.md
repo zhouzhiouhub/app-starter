@@ -52,7 +52,7 @@
 - 编辑器可生成短期 Preview Token，并通过前台 `/preview?token=` 渲染草稿。
 - Page Builder 已具备区块库、区块排序、属性面板、Desktop / Mobile 布局编辑、Undo / Redo。
 - 媒体库已具备列表、登记外部媒体、上传目标生成、归档和 `media://` 引用解析。
-- Settings 已具备默认站点名称与域名管理，并展示 MVP 默认市场、Locale、Currency 和功能开关。
+- Settings 已具备默认站点名称与域名管理，并展示 MVP 默认市场、Locale、Currency、功能开关和 Analytics 配置。
 
 ### 当前还没有完成
 
@@ -301,6 +301,12 @@ STOREFRONT_REVALIDATE_TIMEOUT_MS=5000
 
 PREVIEW_TOKEN_SECRET=
 PREVIEW_TOKEN_TTL_SECONDS=3600
+
+ANALYTICS_ENABLED=false
+ANALYTICS_CONSENT_GRANTED=false
+GTM_CONTAINER_ID=
+GA4_MEASUREMENT_ID=
+CLARITY_PROJECT_ID=
 ```
 
 如果你的 PostgreSQL 密码就是 `postgres`：
@@ -332,6 +338,12 @@ STOREFRONT_REVALIDATE_TIMEOUT_MS=5000
 
 PREVIEW_TOKEN_SECRET=use-a-different-secret-value
 PREVIEW_TOKEN_TTL_SECONDS=3600
+
+ANALYTICS_ENABLED=false
+ANALYTICS_CONSENT_GRANTED=false
+GTM_CONTAINER_ID=GTM-XXXXXXX
+GA4_MEASUREMENT_ID=G-XXXXXXXXXX
+CLARITY_PROJECT_ID=xxxxxxxxxx
 ```
 
 线上注意事项：
@@ -339,6 +351,7 @@ PREVIEW_TOKEN_TTL_SECONDS=3600
 - 不要把线上 `DATABASE_URL` 写成 `localhost`。
 - 不要把本机 PostgreSQL 密码用于生产环境。
 - 不要把生产数据库连接串提交到 Git。
+- Analytics 脚本只有在 `ANALYTICS_ENABLED=true` 且 `ANALYTICS_CONSENT_GRANTED=true` 时才会加载；未接入 Consent 机制前保持关闭。
 - 如果数据库服务商提供 pooled connection string 和 direct connection string，API 运行时优先使用 pooled connection string，数据库迁移任务按服务商要求使用 direct connection string。
 
 当前 Prisma CLI 会在 `services/api` 包目录下运行，因此建议同时创建：
@@ -562,7 +575,7 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 - 短期 Preview Token 与前台 `/preview?token=` 草稿预览。
 - 区块库、区块排序、区块属性面板、Undo / Redo。
 - 媒体库列表、上传目标、外部媒体登记、归档和 `media://` 选择。
-- Settings 默认站点名称与域名管理页。
+- Settings 默认站点名称、域名与 Analytics 配置展示页。
 - Publish 按钮，发布结果写入 PostgreSQL。
 - 启动时尝试加载已发布的 `home` 页面。
 - 自定义后台模块扩展入口。

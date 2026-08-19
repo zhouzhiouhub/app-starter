@@ -22,6 +22,18 @@ export function toSiteSettingsResponse(site: SiteSettingsRecord) {
       commerceEnabled: process.env.COMMERCE_ENABLED === "true",
       multiLocaleEnabled: process.env.MULTI_LOCALE_ENABLED === "true",
     },
+    analytics: {
+      enabled: process.env.ANALYTICS_ENABLED === "true",
+      consentGranted: process.env.ANALYTICS_CONSENT_GRANTED === "true",
+      gtmContainerId: readOptionalEnv("GTM_CONTAINER_ID"),
+      ga4MeasurementId: readOptionalEnv("GA4_MEASUREMENT_ID"),
+      clarityProjectId: readOptionalEnv("CLARITY_PROJECT_ID"),
+    },
     createdAt: site.createdAt.toISOString(),
   };
+}
+
+function readOptionalEnv(name: string): string | null {
+  const value = process.env[name]?.trim();
+  return value ? value : null;
 }

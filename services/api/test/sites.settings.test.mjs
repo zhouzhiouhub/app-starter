@@ -32,14 +32,26 @@ test("site settings response includes runtime defaults and feature flags", () =>
   withEnv(
     {
       COMMERCE_ENABLED: "false",
+      ANALYTICS_CONSENT_GRANTED: "false",
+      ANALYTICS_ENABLED: "true",
+      CLARITY_PROJECT_ID: "clarity123",
       DEFAULT_CURRENCY: "USD",
       DEFAULT_LOCALE: "en-US",
       DEFAULT_MARKET: "us",
       FALLBACK_LOCALE: "en-US",
+      GA4_MEASUREMENT_ID: "G-ABC1234567",
+      GTM_CONTAINER_ID: "GTM-ABC1234",
       MULTI_LOCALE_ENABLED: "false",
     },
     () => {
       assert.deepEqual(toSiteSettingsResponse(site), {
+        analytics: {
+          clarityProjectId: "clarity123",
+          consentGranted: false,
+          enabled: true,
+          ga4MeasurementId: "G-ABC1234567",
+          gtmContainerId: "GTM-ABC1234",
+        },
         createdAt: "2026-08-19T00:00:00.000Z",
         defaults: {
           currency: "USD",

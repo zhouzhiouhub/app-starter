@@ -46,6 +46,17 @@ PREVIEW_TOKEN_SECRET=
 PREVIEW_TOKEN_TTL_SECONDS=3600
 ```
 
+Analytics provider IDs can be configured through environment variables, but the
+Web app only loads GTM, GA4, or Clarity when both runtime gates are explicit:
+
+```bash
+ANALYTICS_ENABLED=false
+ANALYTICS_CONSENT_GRANTED=false
+GTM_CONTAINER_ID=
+GA4_MEASUREMENT_ID=
+CLARITY_PROJECT_ID=
+```
+
 ## Run
 
 ```bash

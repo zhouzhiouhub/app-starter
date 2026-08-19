@@ -88,6 +88,33 @@ export function SiteSettingsForm(props: {
               props.settings.featureFlags.multiLocaleEnabled,
             ),
           },
+          {
+            key: "analyticsEnabled",
+            label: "Analytics",
+            children: featureFlagTag(props.settings.analytics.enabled),
+          },
+          {
+            key: "analyticsConsent",
+            label: "Analytics consent",
+            children: featureFlagTag(props.settings.analytics.consentGranted),
+          },
+          {
+            key: "gtm",
+            label: "GTM container",
+            children: props.settings.analytics.gtmContainerId ?? "not configured",
+          },
+          {
+            key: "ga4",
+            label: "GA4 measurement",
+            children:
+              props.settings.analytics.ga4MeasurementId ?? "not configured",
+          },
+          {
+            key: "clarity",
+            label: "Clarity project",
+            children:
+              props.settings.analytics.clarityProjectId ?? "not configured",
+          },
         ]}
         size="middle"
       />
