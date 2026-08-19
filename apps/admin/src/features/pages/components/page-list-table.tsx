@@ -1,5 +1,7 @@
-import { Button, Space, Table, Tag, Typography } from "antd";
+import { AuditOutlined } from "@ant-design/icons";
+import { Button, Space, Table, Tag, Tooltip, Typography } from "antd";
 import { useNavigate } from "react-router-dom";
+import { buildPageAuditLogPath } from "../audit-log-link";
 import { getStorefrontPagePath } from "../storefront-url";
 import type { PageSummary } from "../types";
 import { ViewStorefrontLink } from "./view-storefront-link";
@@ -55,6 +57,14 @@ export function PageListTable(props: {
               >
                 Edit
               </Button>
+              <Tooltip title="Audit logs">
+                <Button
+                  aria-label={`Audit logs for ${page.title}`}
+                  icon={<AuditOutlined />}
+                  onClick={() => navigate(buildPageAuditLogPath(page.id))}
+                  type="text"
+                />
+              </Tooltip>
               <ViewStorefrontLink
                 published={page.status === "published"}
                 slug={page.slug}
