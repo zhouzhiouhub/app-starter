@@ -38,3 +38,31 @@ test("image gallery keeps placeholders for blank image rows", () => {
   assert.equal(placeholder.props["data-gallery-image-missing"], "empty-src");
   assert.equal(placeholder.props["data-media-reference"], undefined);
 });
+
+test("image gallery blocks unsafe image source protocols", () => {
+  const gallery = ImageGallery({
+    images: [
+      { alt: "Bad protocol", src: "javascript:alert(1)" },
+      { alt: "Inline SVG", src: "data:image/svg+xml,<svg onload=alert(1)>" },
+    ],
+  });
+
+  for (const placeholder of gallery.props.children) {
+    assert.equal(placeholder.type, "div");
+    assert.equal(placeholder.props["data-gallery-image-missing"], "unsafe-src");
+  }
+});
+
+test("image gallery blocks image sources with control characters", () => {
+  const gallery = ImageGallery({
+    images: [{ src: "https://example.com/image.jpg\njavascript:alert(1)" }],
+  });
+  const placeholder = gallery.props.children[0];
+
+  assert.equal(placeholder.type, "div");
+  assert.equal(placeholder.props["data-gallery-image-missing"], "unsafe-src");
+  assert.equal(
+    placeholder.props["data-media-reference"],
+    "https://example.com/image.jpg\njavascript:alert(1)",
+  );
+});
