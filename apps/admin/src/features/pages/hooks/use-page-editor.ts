@@ -12,6 +12,7 @@ import {
 import { getStorefrontPreviewUrl } from "../storefront-url";
 import { createSchemaFingerprint } from "../schema-fingerprint";
 import { buildPublicationFeedback } from "../revalidation-feedback";
+import { findBlockingPublishPreflightIssue } from "../publish-preflight";
 import type {
   EditorFeedback,
   PageSummary,
@@ -132,6 +133,16 @@ export function usePageEditor(pageId: string | undefined) {
 
   const publish = useCallback(async () => {
     if (!pageId || !draftSchema) {
+      return;
+    }
+
+    const blockingIssue = findBlockingPublishPreflightIssue(draftSchema);
+
+    if (blockingIssue) {
+      setFeedback({
+        message: `Cannot publish yet. ${blockingIssue.message}`,
+        type: "error",
+      });
       return;
     }
 
