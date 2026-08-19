@@ -72,6 +72,7 @@ export async function createPreviewToken(
   const result = await readAdminJson<{ data?: PagePreviewToken }>(
     `/pages/${encodeURIComponent(pageId)}/preview-token`,
     {
+      headers: idempotencyHeaders(),
       method: "POST",
     },
     "Preview token could not be created.",
@@ -169,6 +170,12 @@ function requireValidSchema(schema: PageSchema): PageSchema {
 function jsonHeaders(): HeadersInit {
   return {
     "Content-Type": "application/json",
+    ...idempotencyHeaders(),
+  };
+}
+
+function idempotencyHeaders(): HeadersInit {
+  return {
     "Idempotency-Key": createIdempotencyKey(),
   };
 }

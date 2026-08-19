@@ -35,8 +35,18 @@ export class PagesService {
     return getPageById(this.prisma, id, actor);
   }
 
-  async createPreviewToken(id: string, actor: Actor) {
-    return createPreviewToken(this.prisma, this.audit, id, actor);
+  async createPreviewToken(
+    id: string,
+    idempotencyKey: string | undefined,
+    actor: Actor,
+  ) {
+    return createPreviewToken(
+      this.prisma,
+      this.audit,
+      id,
+      idempotencyKey,
+      actor,
+    );
   }
 
   async create(body: unknown, idempotencyKey: string | undefined, actor: Actor) {
