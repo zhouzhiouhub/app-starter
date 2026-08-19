@@ -6,12 +6,14 @@ import { listMediaAssets } from "../api";
 import type {
   MediaAsset,
   MediaAssetListStatus,
+  MediaAssetType,
   MediaListMeta,
 } from "../types";
 
 export function useMediaList(
   status: MediaAssetListStatus = "active",
   page = 1,
+  type: MediaAssetType | null = null,
 ) {
   const [assets, setAssets] = useState<MediaAsset[]>([]);
   const [meta, setMeta] = useState<MediaListMeta>({
@@ -31,6 +33,7 @@ export function useMediaList(
         nextPage,
         DEFAULT_MEDIA_LIST_LIMIT,
         status,
+        type ?? undefined,
       );
       setAssets(result.data);
       setMeta(result.meta);
@@ -44,7 +47,7 @@ export function useMediaList(
     } finally {
       setIsLoading(false);
     }
-  }, [page, status]);
+  }, [page, status, type]);
 
   useEffect(() => {
     void load(page);

@@ -1,4 +1,4 @@
-import { Alert, Modal, Segmented, Space, Typography } from "antd";
+import { Alert, Modal, Segmented, Select, Space, Typography } from "antd";
 import { useCallback, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { archiveMediaAsset } from "../../features/media/api";
@@ -9,10 +9,13 @@ import {
   buildMediaListSearch,
   readMediaListPage,
   readMediaListStatus,
+  readMediaListType,
 } from "../../features/media/media-list-query";
+import { mediaTypeFilterOptions } from "../../features/media/constants";
 import type {
   MediaAsset,
   MediaAssetListStatus,
+  MediaAssetType,
 } from "../../features/media/types";
 import { formatRequestError } from "../../lib/api-error";
 
@@ -22,25 +25,38 @@ export function MediaPage() {
     () => readMediaListStatus(searchParams),
     [searchParams],
   );
+  const type = useMemo(() => readMediaListType(searchParams), [searchParams]);
   const page = useMemo(() => readMediaListPage(searchParams), [searchParams]);
   const [archiveError, setArchiveError] = useState<string | null>(null);
   const [archivingId, setArchivingId] = useState<string | null>(null);
-  const { assets, error, isLoading, load, meta } = useMediaList(status, page);
+  const { assets, error, isLoading, load, meta } = useMediaList(
+    status,
+    page,
+    type,
+  );
   const setStatus = useCallback(
     (nextStatus: MediaAssetListStatus) => {
-      setSearchParams(buildMediaListSearch({ status: nextStatus }), {
+      setSearchParams(buildMediaListSearch({ status: nextStatus, type }), {
         replace: true,
       });
     },
-    [setSearchParams],
+    [setSearchParams, type],
   );
-  const setPage = useCallback(
-    (nextPage: number) => {
-      setSearchParams(buildMediaListSearch({ page: nextPage, status }), {
+  const setType = useCallback(
+    (nextType: MediaAssetType | null) => {
+      setSearchParams(buildMediaListSearch({ status, type: nextType }), {
         replace: true,
       });
     },
     [setSearchParams, status],
+  );
+  const setPage = useCallback(
+    (nextPage: number) => {
+      setSearchParams(buildMediaListSearch({ page: nextPage, status, type }), {
+        replace: true,
+      });
+    },
+    [setSearchParams, status, type],
   );
 
   function confirmArchive(asset: MediaAsset) {
@@ -96,6 +112,14 @@ export function MediaPage() {
         ]}
         style={{ marginBottom: 16 }}
         value={status}
+      />
+      <Select
+        onChange={(value) =>
+          setType(value === "all" ? null : (value as MediaAssetType))
+        }
+        options={mediaTypeFilterOptions}
+        style={{ marginBottom: 16, marginLeft: 12, width: 180 }}
+        value={type ?? "all"}
       />
       {error || archiveError ? (
         <Alert

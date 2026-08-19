@@ -4,6 +4,7 @@ import { createIdempotencyKey } from "../../lib/idempotency-key";
 import type {
   MediaAsset,
   MediaAssetListStatus,
+  MediaAssetType,
   MediaListMeta,
   MediaUploadTarget,
   RegisterMediaInput,
@@ -14,12 +15,18 @@ export async function listMediaAssets(
   page = 1,
   limit = 20,
   status: MediaAssetListStatus = "active",
+  type?: MediaAssetType,
 ): Promise<{ data: MediaAsset[]; meta: MediaListMeta }> {
   const query = new URLSearchParams({
     limit: String(limit),
     page: String(page),
     status,
   });
+
+  if (type) {
+    query.set("type", type);
+  }
+
   const result = await readAdminJson<{
     data?: MediaAsset[];
     meta?: Partial<MediaListMeta>;

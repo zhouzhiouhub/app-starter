@@ -1,4 +1,4 @@
-import type { MediaAssetListStatus } from "./types";
+import type { MediaAssetListStatus, MediaAssetType } from "./types";
 
 const defaultPage = 1;
 const defaultStatus: MediaAssetListStatus = "active";
@@ -7,10 +7,17 @@ const mediaListStatuses = new Set<MediaAssetListStatus>([
   "archived",
   "all",
 ]);
+const mediaListTypes = new Set<MediaAssetType>([
+  "image",
+  "video",
+  "pdf",
+  "other",
+]);
 
 interface MediaListSearchOptions {
   page?: number;
   status?: MediaAssetListStatus;
+  type?: MediaAssetType | null;
 }
 
 export function readMediaListPage(searchParams: URLSearchParams): number {
@@ -35,6 +42,18 @@ export function readMediaListStatus(
   return status as MediaAssetListStatus;
 }
 
+export function readMediaListType(
+  searchParams: URLSearchParams,
+): MediaAssetType | null {
+  const type = searchParams.get("type")?.trim();
+
+  if (!type || !mediaListTypes.has(type as MediaAssetType)) {
+    return null;
+  }
+
+  return type as MediaAssetType;
+}
+
 export function buildMediaListSearch(
   options: MediaListSearchOptions = {},
 ): string {
@@ -43,6 +62,10 @@ export function buildMediaListSearch(
 
   if (status !== defaultStatus) {
     searchParams.set("status", status);
+  }
+
+  if (options.type) {
+    searchParams.set("type", options.type);
   }
 
   if (options.page && options.page > defaultPage) {
