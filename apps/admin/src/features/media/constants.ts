@@ -1,4 +1,5 @@
 export const DEFAULT_MEDIA_LIST_LIMIT = 20;
+export const MEDIA_MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
 
 export const mediaTypeFilterOptions = [
   { label: "All types", value: "all" },
@@ -17,3 +18,7 @@ export const mediaMimeTypeOptions = [
   { label: "MP4 video", value: "video/mp4" },
   { label: "PDF", value: "application/pdf" },
 ];
+
+export const mediaAllowedMimeTypes = mediaMimeTypeOptions.map(
+  (option) => option.value,
+);

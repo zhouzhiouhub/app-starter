@@ -14,6 +14,11 @@ import {
 import { useState } from "react";
 import { mediaMimeTypeOptions } from "../constants";
 import { registerMediaAsset, uploadMediaFile } from "../api";
+import {
+  MEDIA_MAX_UPLOAD_BYTES,
+  mediaMaxUploadSizeLabel,
+  readMediaUploadFileError,
+} from "../media-upload-validation";
 import type { RegisterMediaInput } from "../types";
 
 type MediaModalMode = "upload" | "external";
@@ -111,6 +116,14 @@ export function RegisterMediaModal(props: { onCreated: () => void }) {
                         .map((item) => item.value)
                         .join(",")}
                       beforeUpload={(file) => {
+                        const fileError = readMediaUploadFileError(file);
+
+                        if (fileError) {
+                          setSelectedFile(null);
+                          setError(fileError);
+                          return Upload.LIST_IGNORE;
+                        }
+
                         setSelectedFile(file);
                         setError(null);
                         return false;
@@ -191,11 +204,13 @@ export function RegisterMediaModal(props: { onCreated: () => void }) {
                       initialValue={1}
                       label="Size"
                       name="size"
+                      extra={`Maximum ${mediaMaxUploadSizeLabel}.`}
                       rules={[
                         { required: true, message: "Enter the file size." },
                       ]}
                     >
                       <InputNumber
+                        max={MEDIA_MAX_UPLOAD_BYTES}
                         min={1}
                         precision={0}
                         style={{ width: "100%" }}
