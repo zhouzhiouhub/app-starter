@@ -1,6 +1,10 @@
+import "reflect-metadata";
 import assert from "node:assert/strict";
 import test from "node:test";
+import { REQUIRE_SCOPES_KEY } from "../dist/common/require-scopes.decorator.js";
+import { AuditController } from "../dist/modules/audit/audit.controller.js";
 import { AuditService } from "../dist/modules/audit/audit.service.js";
+import { TENANT_ADMIN_PERMISSIONS } from "../dist/modules/identity/identity.constants.js";
 
 test("audit service appends audit log records", async () => {
   const calls = [];
@@ -58,4 +62,95 @@ test("audit service allows system actors and empty metadata", async () => {
     targetType: "system",
     tenantId: "tenant-1",
   });
+});
+
+test("audit service lists tenant-scoped logs with filters and pagination", async () => {
+  const calls = {};
+  const createdAt = new Date("2026-08-19T00:00:00.000Z");
+  const service = new AuditService({
+    $transaction: async (operations) => Promise.all(operations),
+    auditLog: {
+      count: async (query) => {
+        calls.count = query;
+        return 1;
+      },
+      findMany: async (query) => {
+        calls.findMany = query;
+        return [
+          {
+            id: "audit-1",
+            action: "page.published",
+            actorId: "user-1",
+            createdAt,
+            metadata: {
+              schema: { sections: [] },
+              siteId: "site-1",
+              slug: "home",
+              token: "secret-token",
+            },
+            requestId: "request-1",
+            targetId: "page-1",
+            targetType: "page",
+            tenantId: "tenant-1",
+          },
+        ];
+      },
+    },
+  });
+
+  const response = await service.list(
+    {
+      action: "page.published",
+      actorId: "user-1",
+      limit: "10",
+      page: "2",
+      targetId: "page-1",
+      targetType: "page",
+    },
+    { tenantId: "tenant-1" },
+  );
+
+  assert.deepEqual(calls.count.where, {
+    action: "page.published",
+    actorId: "user-1",
+    targetId: "page-1",
+    targetType: "page",
+    tenantId: "tenant-1",
+  });
+  assert.equal(calls.findMany.skip, 10);
+  assert.equal(calls.findMany.take, 10);
+  assert.deepEqual(calls.findMany.orderBy, { createdAt: "desc" });
+  assert.equal(response.meta.total, 1);
+  assert.equal(response.meta.page, 2);
+  assert.equal(response.data[0].createdAt, "2026-08-19T00:00:00.000Z");
+  assert.equal(response.data[0].metadata.slug, "home");
+  assert.equal(response.data[0].metadata.schema, "[redacted]");
+  assert.equal(response.data[0].metadata.token, "[redacted]");
+});
+
+test("audit log query rejects unsafe filter values", async () => {
+  const service = new AuditService({});
+
+  await assert.rejects(
+    () =>
+      service.list(
+        { action: "page.published;drop" },
+        { tenantId: "tenant-1" },
+      ),
+    (error) => {
+      assert.equal(error.getStatus(), 400);
+      assert.equal(error.getResponse().code, "VALIDATION_ERROR");
+      return true;
+    },
+  );
+});
+
+test("audit log endpoint requires audit read scope", () => {
+  const scopes = Reflect.getMetadata(
+    REQUIRE_SCOPES_KEY,
+    AuditController.prototype.list,
+  );
+
+  assert.deepEqual(scopes, ["audit:read"]);
+  assert.equal(TENANT_ADMIN_PERMISSIONS.includes("audit:read"), true);
 });

@@ -21,6 +21,7 @@ const TENANT_ADMIN_PERMISSIONS = [
   "translation:read",
   "product:read",
   "order:read",
+  "audit:read",
 ];
 const BCRYPT_COST = 12;
 

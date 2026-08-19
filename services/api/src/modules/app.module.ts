@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
+import { AuditModule } from "./audit/audit.module.js";
 import { CommerceModule } from "./commerce/commerce.module.js";
 import { HealthModule } from "./health/health.module.js";
 import { IdentityModule } from "./identity/identity.module.js";
@@ -18,6 +19,7 @@ import { SitesModule } from "./sites/sites.module.js";
     }),
     PrismaModule,
     IdentityModule,
+    AuditModule,
     HealthModule,
     PagesModule,
     MediaModule,
