@@ -1,4 +1,10 @@
-import type { PageSchema, SectionNode, Viewport } from "@app-starter/schema";
+import {
+  getOrderedSectionsForViewport,
+  setSectionOrderForViewport,
+  type PageSchema,
+  type SectionNode,
+  type Viewport,
+} from "@app-starter/schema";
 
 export type SectionTemplateId =
   | "cta-bar"
@@ -82,38 +88,81 @@ export function duplicateSection(
   };
   const sections = [...current.sections];
   sections.splice(index + 1, 0, duplicated);
+  let schema: PageSchema = {
+    ...current,
+    sections,
+  };
+
+  schema = insertSectionAfter(schema, sectionId, duplicatedId, "desktop");
+  schema = insertSectionAfter(schema, sectionId, duplicatedId, "mobile");
 
   return {
-    schema: {
-      ...current,
-      sections,
-    },
+    schema,
     sectionId: duplicatedId,
   };
 }
 
 export function removeSection(current: PageSchema, sectionId: string): PageSchema {
-  return {
+  let schema: PageSchema = {
     ...current,
     sections: current.sections.filter((section) => section.id !== sectionId),
   };
+
+  schema = removeSectionFromOrder(schema, sectionId, "desktop");
+  schema = removeSectionFromOrder(schema, sectionId, "mobile");
+
+  return schema;
 }
 
 export function getNextSelectedSectionId(
   current: PageSchema,
   sectionId: string,
+  viewport?: Viewport,
 ): string | null {
-  const index = current.sections.findIndex((section) => section.id === sectionId);
+  const sections = viewport
+    ? getOrderedSectionsForViewport(current, viewport)
+    : current.sections;
+  const index = sections.findIndex((section) => section.id === sectionId);
 
   if (index < 0) {
-    return current.sections[0]?.id ?? null;
+    return sections[0]?.id ?? null;
   }
 
   return (
-    current.sections[index + 1]?.id ??
-    current.sections[index - 1]?.id ??
+    sections[index + 1]?.id ??
+    sections[index - 1]?.id ??
     null
   );
+}
+
+function insertSectionAfter(
+  current: PageSchema,
+  sourceSectionId: string,
+  insertedSectionId: string,
+  viewport: Viewport,
+): PageSchema {
+  const sectionOrder = getOrderedSectionsForViewport(current, viewport)
+    .map((section) => section.id)
+    .filter((sectionId) => sectionId !== insertedSectionId);
+  const sourceIndex = sectionOrder.indexOf(sourceSectionId);
+  const insertIndex =
+    sourceIndex >= 0 ? sourceIndex + 1 : sectionOrder.length;
+
+  sectionOrder.splice(insertIndex, 0, insertedSectionId);
+
+  return setSectionOrderForViewport(current, viewport, sectionOrder);
+}
+
+function removeSectionFromOrder(
+  current: PageSchema,
+  sectionIdToRemove: string,
+  viewport: Viewport,
+): PageSchema {
+  const sectionOrder = getOrderedSectionsForViewport(current, viewport)
+    .map((section) => section.id)
+    .filter((sectionId) => sectionId !== sectionIdToRemove);
+
+  return setSectionOrderForViewport(current, viewport, sectionOrder);
 }
 
 function createSection(

@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   createFallbackPage,
   getFallbackPageTemplateId,
+  getOrderedSectionsForViewport,
   getPageTemplateChrome,
   getPublishedPageCacheTags,
   getPublishedPageRevalidationPaths,
@@ -14,6 +15,7 @@ import {
   resolveMediaReferences,
   resolveLocaleFromPath,
   rewriteStorefrontHref,
+  setSectionOrderForViewport,
   toStorefrontPathPrefix,
 } from "../dist/index.js";
 
@@ -36,6 +38,18 @@ function minimalPage(input = {}) {
       description: "",
     },
     ...input,
+  };
+}
+
+function section(id, component) {
+  return {
+    component,
+    id,
+    layout: {
+      desktop: { width: 1200, x: 0, y: 0 },
+      mobile: { width: 390, x: 0, y: 0 },
+    },
+    props: {},
   };
 }
 
@@ -119,6 +133,41 @@ test("page schema rejects unsafe chrome navigation hrefs", () => {
       }),
     ),
   );
+});
+
+test("page schema orders sections per viewport with legacy fallback", () => {
+  const page = pageSchema.parse(
+    minimalPage({
+      layout: {
+        desktop: {
+          sectionOrder: ["copy", "hero", "missing", "copy"],
+        },
+        mobile: {},
+      },
+      sections: [
+        section("hero", "hero-banner"),
+        section("copy", "rich-text"),
+        section("cta", "cta-bar"),
+      ],
+    }),
+  );
+
+  assert.deepEqual(
+    getOrderedSectionsForViewport(page, "desktop").map((node) => node.id),
+    ["copy", "hero", "cta"],
+  );
+  assert.deepEqual(
+    getOrderedSectionsForViewport(page, "mobile").map((node) => node.id),
+    ["hero", "copy", "cta"],
+  );
+
+  const reordered = setSectionOrderForViewport(page, "mobile", ["cta", "hero"]);
+
+  assert.deepEqual(reordered.layout.mobile.sectionOrder, [
+    "cta",
+    "hero",
+    "copy",
+  ]);
 });
 
 test("page schema accepts safe SEO URLs", () => {

@@ -6,7 +6,12 @@ import {
   HolderOutlined,
 } from "@ant-design/icons";
 import { Button, Empty, List, Modal, Space, Tooltip, Typography } from "antd";
-import type { PageSchema, SectionNode } from "@app-starter/schema";
+import {
+  getOrderedSectionsForViewport,
+  type PageSchema,
+  type SectionNode,
+  type Viewport,
+} from "@app-starter/schema";
 import { moveSection } from "../section-order-updates";
 import { readSectionText } from "../section-content-updates";
 import {
@@ -20,7 +25,10 @@ export function PageSectionList(props: {
   onSelect: (sectionId: string) => void;
   selectedSectionId: string | null;
   schema: PageSchema;
+  viewport: Viewport;
 }) {
+  const sections = getOrderedSectionsForViewport(props.schema, props.viewport);
+
   function handleDuplicate(section: SectionNode) {
     const result = duplicateSection(props.schema, section.id);
     props.onChange(result.schema);
@@ -28,7 +36,11 @@ export function PageSectionList(props: {
   }
 
   function handleRemove(section: SectionNode) {
-    const nextSelectedId = getNextSelectedSectionId(props.schema, section.id);
+    const nextSelectedId = getNextSelectedSectionId(
+      props.schema,
+      section.id,
+      props.viewport,
+    );
 
     Modal.confirm({
       cancelText: "Cancel",
@@ -54,11 +66,11 @@ export function PageSectionList(props: {
       }}
     >
       <Typography.Title level={4}>Sections</Typography.Title>
-      {props.schema.sections.length === 0 ? (
+      {sections.length === 0 ? (
         <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
       ) : (
         <List
-          dataSource={props.schema.sections}
+          dataSource={sections}
           renderItem={(section, index) => (
             <List.Item
               actions={[
@@ -69,7 +81,14 @@ export function PageSectionList(props: {
                     icon={<ArrowUpOutlined />}
                     onClick={(event) => {
                       event.stopPropagation();
-                      props.onChange(moveSection(props.schema, section.id, "up"));
+                      props.onChange(
+                        moveSection(
+                          props.schema,
+                          section.id,
+                          "up",
+                          props.viewport,
+                        ),
+                      );
                     }}
                     size="small"
                   />
@@ -77,12 +96,17 @@ export function PageSectionList(props: {
                 <Tooltip key="down" title="Move down">
                   <Button
                     aria-label={`Move ${sectionLabel(section)} down`}
-                    disabled={index === props.schema.sections.length - 1}
+                    disabled={index === sections.length - 1}
                     icon={<ArrowDownOutlined />}
                     onClick={(event) => {
                       event.stopPropagation();
                       props.onChange(
-                        moveSection(props.schema, section.id, "down"),
+                        moveSection(
+                          props.schema,
+                          section.id,
+                          "down",
+                          props.viewport,
+                        ),
                       );
                     }}
                     size="small"

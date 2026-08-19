@@ -1,4 +1,9 @@
-import type { PageSchema, SectionNode } from "@app-starter/schema";
+import {
+  getOrderedSectionsForViewport,
+  setSectionOrderForViewport,
+  type PageSchema,
+  type Viewport,
+} from "@app-starter/schema";
 
 export type SectionMoveDirection = "down" | "up";
 
@@ -6,37 +11,35 @@ export function moveSection(
   current: PageSchema,
   sectionId: string,
   direction: SectionMoveDirection,
+  viewport: Viewport,
 ): PageSchema {
-  const index = current.sections.findIndex(
-    (section) => section.id === sectionId,
+  const orderedSectionIds = getOrderedSectionsForViewport(current, viewport).map(
+    (section) => section.id,
   );
+  const index = orderedSectionIds.indexOf(sectionId);
   const nextIndex = direction === "up" ? index - 1 : index + 1;
 
-  if (!canMoveSection(current.sections, index, nextIndex)) {
+  if (!canMoveSection(orderedSectionIds, index, nextIndex)) {
     return current;
   }
 
-  const sections = [...current.sections];
-  const section = sections[index];
-  const target = sections[nextIndex];
+  const sectionIdToMove = orderedSectionIds[index];
+  const targetSectionId = orderedSectionIds[nextIndex];
 
-  if (!section || !target) {
+  if (!sectionIdToMove || !targetSectionId) {
     return current;
   }
 
-  sections[index] = target;
-  sections[nextIndex] = section;
+  orderedSectionIds[index] = targetSectionId;
+  orderedSectionIds[nextIndex] = sectionIdToMove;
 
-  return {
-    ...current,
-    sections,
-  };
+  return setSectionOrderForViewport(current, viewport, orderedSectionIds);
 }
 
 function canMoveSection(
-  sections: SectionNode[],
+  sectionIds: string[],
   index: number,
   nextIndex: number,
 ): boolean {
-  return index >= 0 && nextIndex >= 0 && nextIndex < sections.length;
+  return index >= 0 && nextIndex >= 0 && nextIndex < sectionIds.length;
 }

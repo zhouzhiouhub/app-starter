@@ -1,5 +1,6 @@
 import type { ComponentType, CSSProperties, ReactNode } from "react";
 import {
+  getOrderedSectionsForViewport,
   getStorefrontHref,
   resolveMediaReferences,
   rewriteStorefrontHref,
@@ -166,6 +167,8 @@ export function renderSection(
 export function PageRenderer(
   props: { schema: PageSchema } & RenderOptions,
 ): ReactNode {
+  const viewport = props.viewport ?? "desktop";
+  const sections = getOrderedSectionsForViewport(props.schema, viewport);
   const header = renderChromeSlot(
     props.schema.chrome.header,
     props.chrome?.header,
@@ -191,8 +194,10 @@ export function PageRenderer(
         data-locale={props.schema.meta.locale}
         data-market={props.schema.meta.market}
       >
-        {props.schema.sections.map((section) => (
-          <div key={section.id}>{renderSection(section, props)}</div>
+        {sections.map((section) => (
+          <div key={section.id}>
+            {renderSection(section, { ...props, viewport })}
+          </div>
         ))}
       </main>
       {footer}

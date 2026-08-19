@@ -131,6 +131,7 @@ export function PageEditor(props: {
             onSelect={setSelectedSectionId}
             selectedSectionId={selectedSectionId}
             schema={props.schema}
+            viewport={props.viewport}
           />
           <SectionPropertiesPanel
             onChange={props.onSchemaChange}

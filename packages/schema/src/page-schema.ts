@@ -7,6 +7,8 @@ import {
   pageSlugSchema,
   sectionNodeSchema,
   seoConfigSchema,
+  type SectionNode,
+  type Viewport,
 } from "./foundation.js";
 import {
   pageChromeSchema,
@@ -19,6 +21,20 @@ import {
   type PageTemplateId,
 } from "./page-template.js";
 
+export const pageViewportLayoutSchema = z
+  .object({
+    sectionOrder: z.array(z.string().min(1)).optional(),
+  })
+  .catchall(z.unknown())
+  .default({});
+export type PageViewportLayout = z.infer<typeof pageViewportLayoutSchema>;
+
+export const pageLayoutSchema = z.object({
+  desktop: pageViewportLayoutSchema,
+  mobile: pageViewportLayoutSchema,
+});
+export type PageLayout = z.infer<typeof pageLayoutSchema>;
+
 export const pageSchema = z.object({
   version: z.literal("1.0"),
   meta: z.object({
@@ -27,10 +43,7 @@ export const pageSchema = z.object({
     market: marketCodeSchema.default("us"),
     locale: localeCodeSchema.default("en-US"),
   }),
-  layout: z.object({
-    desktop: z.record(z.unknown()).default({}),
-    mobile: z.record(z.unknown()).default({}),
-  }),
+  layout: pageLayoutSchema,
   template: pageTemplateSchema,
   chrome: pageChromeSchema,
   sections: z.array(sectionNodeSchema),
@@ -41,6 +54,72 @@ export const pageSchema = z.object({
   }),
 });
 export type PageSchema = z.infer<typeof pageSchema>;
+
+export function getOrderedSectionsForViewport(
+  schema: PageSchema,
+  viewport: Viewport,
+): SectionNode[] {
+  const sectionsById = new Map(
+    schema.sections.map((section) => [section.id, section]),
+  );
+  const orderedSections: SectionNode[] = [];
+
+  for (const sectionId of normalizeSectionOrder(
+    schema.sections,
+    schema.layout[viewport].sectionOrder,
+  )) {
+    const section = sectionsById.get(sectionId);
+
+    if (section) {
+      orderedSections.push(section);
+    }
+  }
+
+  return orderedSections;
+}
+
+export function setSectionOrderForViewport(
+  schema: PageSchema,
+  viewport: Viewport,
+  sectionOrder: string[],
+): PageSchema {
+  return {
+    ...schema,
+    layout: {
+      ...schema.layout,
+      [viewport]: {
+        ...schema.layout[viewport],
+        sectionOrder: normalizeSectionOrder(schema.sections, sectionOrder),
+      },
+    },
+  };
+}
+
+function normalizeSectionOrder(
+  sections: SectionNode[],
+  sectionOrder: string[] = [],
+): string[] {
+  const sectionIds = new Set(sections.map((section) => section.id));
+  const seen = new Set<string>();
+  const normalized: string[] = [];
+
+  for (const sectionId of sectionOrder) {
+    if (!sectionIds.has(sectionId) || seen.has(sectionId)) {
+      continue;
+    }
+
+    seen.add(sectionId);
+    normalized.push(sectionId);
+  }
+
+  for (const section of sections) {
+    if (!seen.has(section.id)) {
+      normalized.push(section.id);
+    }
+  }
+
+  return normalized;
+}
 
 export const exampleLandingPage: PageSchema = pageSchema.parse({
   version: "1.0",
