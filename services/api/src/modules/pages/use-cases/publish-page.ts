@@ -2,6 +2,7 @@ import type { PageSchema } from "@app-starter/schema";
 import type { Actor } from "../../identity/identity.types.js";
 import type { PrismaService } from "../../prisma/prisma.service.js";
 import { runIdempotent } from "../pages.idempotency.js";
+import { assertPageLocaleCanPublish } from "../pages.locale-policy.js";
 import {
   triggerStorefrontRevalidation,
   type StorefrontRevalidationInput,
@@ -53,6 +54,8 @@ export async function publishPage(
         if (!parsed) {
           throw notFound("Page has no schema to publish.");
         }
+
+        assertPageLocaleCanPublish(parsed);
 
         const publishedVersion = await persistPublishedVersion(tx, {
           authorId: actor.id,

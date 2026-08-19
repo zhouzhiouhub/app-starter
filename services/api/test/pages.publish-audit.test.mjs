@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { apiErrorCodes } from "../../../packages/schema/dist/index.js";
 import { createInitialPageSchema } from "../dist/modules/pages/pages.mapper.js";
 import { publishPage } from "../dist/modules/pages/use-cases/publish-page.js";
 import { rollbackPage } from "../dist/modules/pages/use-cases/rollback-page.js";
@@ -38,6 +39,34 @@ test("publishPage records a page published audit log", async () => {
   assert.equal("schema" in calls.audit.metadata, false);
 });
 
+test("publishPage rejects non-default locale while multi-locale is disabled", async () => {
+  await withEnv(
+    {
+      DEFAULT_LOCALE: "en-US",
+      MULTI_LOCALE_ENABLED: "false",
+    },
+    async () => {
+      const schema = withLocale(
+        createInitialPageSchema({
+          slug: "launch",
+          title: "Launch",
+        }),
+        "de-DE",
+      );
+      const calls = { audit: null };
+      const prisma = createPublishPrisma(calls);
+
+      await assertApiConflictRejects(
+        () => publishPage(prisma, "page-1", schema, undefined, createActor()),
+        apiErrorCodes.MULTI_LOCALE_DISABLED,
+      );
+
+      assert.equal(calls.audit, null);
+      assert.equal(calls.versionCreate, undefined);
+    },
+  );
+});
+
 test("rollbackPage records source and rollback version audit metadata", async () => {
   const schema = createInitialPageSchema({
     slug: "home",
@@ -71,6 +100,41 @@ test("rollbackPage records source and rollback version audit metadata", async ()
   assert.equal("schema" in calls.audit.metadata, false);
 });
 
+test("rollbackPage rejects non-default locale while multi-locale is disabled", async () => {
+  await withEnv(
+    {
+      DEFAULT_LOCALE: "en-US",
+      MULTI_LOCALE_ENABLED: "false",
+    },
+    async () => {
+      const schema = withLocale(
+        createInitialPageSchema({
+          slug: "home",
+          title: "Previous Home",
+        }),
+        "de-DE",
+      );
+      const calls = { audit: null };
+      const prisma = createRollbackPrisma(schema, calls);
+
+      await assertApiConflictRejects(
+        () =>
+          rollbackPage(
+            prisma,
+            "page-1",
+            { versionId: "version-1" },
+            undefined,
+            createActor(),
+          ),
+        apiErrorCodes.MULTI_LOCALE_DISABLED,
+      );
+
+      assert.equal(calls.audit, null);
+      assert.equal(calls.rollbackCreate, undefined);
+    },
+  );
+});
+
 function createActor() {
   return {
     email: "admin@example.com",
@@ -102,13 +166,17 @@ function createPublishPrisma(calls) {
           update: async () => ({}),
         },
         pageVersion: {
-          create: async (input) => ({
-            id: "version-2",
-            createdAt: new Date("2026-08-18T00:00:00.000Z"),
-            publishedAt: input.data.publishedAt,
-            status: input.data.status,
-            version: input.data.version,
-          }),
+          create: async (input) => {
+            calls.versionCreate = input.data;
+
+            return {
+              id: "version-2",
+              createdAt: new Date("2026-08-18T00:00:00.000Z"),
+              publishedAt: input.data.publishedAt,
+              status: input.data.status,
+              version: input.data.version,
+            };
+          },
         },
       }),
     site: {
@@ -142,13 +210,17 @@ function createRollbackPrisma(schema, calls) {
           update: async () => ({}),
         },
         pageVersion: {
-          create: async (input) => ({
-            id: "version-rollback",
-            createdAt: new Date("2026-08-18T00:00:00.000Z"),
-            publishedAt: input.data.publishedAt,
-            status: input.data.status,
-            version: input.data.version,
-          }),
+          create: async (input) => {
+            calls.rollbackCreate = input.data;
+
+            return {
+              id: "version-rollback",
+              createdAt: new Date("2026-08-18T00:00:00.000Z"),
+              publishedAt: input.data.publishedAt,
+              status: input.data.status,
+              version: input.data.version,
+            };
+          },
           findFirst: async () => ({
             id: "version-1",
             pageId: "page-1",
@@ -164,4 +236,46 @@ function createRollbackPrisma(schema, calls) {
       }),
     },
   };
+}
+
+async function assertApiConflictRejects(fn, expectedCode) {
+  await assert.rejects(
+    fn,
+    (error) =>
+      typeof error.getStatus === "function" &&
+      error.getStatus() === 409 &&
+      error.getResponse()?.code === expectedCode,
+  );
+}
+
+function withLocale(schema, locale) {
+  return {
+    ...schema,
+    meta: {
+      ...schema.meta,
+      locale,
+    },
+  };
+}
+
+async function withEnv(values, fn) {
+  const previous = Object.fromEntries(
+    Object.keys(values).map((key) => [key, process.env[key]]),
+  );
+
+  for (const [key, value] of Object.entries(values)) {
+    process.env[key] = value;
+  }
+
+  try {
+    await fn();
+  } finally {
+    for (const [key, value] of Object.entries(previous)) {
+      if (value === undefined) {
+        delete process.env[key];
+      } else {
+        process.env[key] = value;
+      }
+    }
+  }
 }

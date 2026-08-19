@@ -3,6 +3,7 @@ import { apiErrorCodes } from "@app-starter/schema";
 import type { Actor } from "../../identity/identity.types.js";
 import type { PrismaService } from "../../prisma/prisma.service.js";
 import { runIdempotent } from "../pages.idempotency.js";
+import { assertPageLocaleCanPublish } from "../pages.locale-policy.js";
 import {
   triggerStorefrontRevalidation,
   type StorefrontRevalidationInput,
@@ -72,6 +73,8 @@ export async function rollbackPage(
         }
 
         const parsed = readSchema(target.schema, page.slug);
+        assertPageLocaleCanPublish(parsed);
+
         const rollbackVersion = await persistRollbackVersion(tx, {
           authorId: actor.id,
           latest: page.versions[0],
