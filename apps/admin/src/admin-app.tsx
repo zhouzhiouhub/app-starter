@@ -34,6 +34,11 @@ const PagesListPage = lazy(() =>
     default: module.PagesListPage,
   })),
 );
+const SettingsPage = lazy(() =>
+  import("./pages/settings/settings-page").then((module) => ({
+    default: module.SettingsPage,
+  })),
+);
 const PlaceholderPage = lazy(() =>
   import("./features/shell/placeholder-page").then((module) => ({
     default: module.PlaceholderPage,
@@ -86,12 +91,7 @@ export function AdminApp() {
                 path="/localization"
               />
               <Route
-                element={
-                  <PlaceholderPage
-                    description="Site, domain, and integration settings are not in this slice."
-                    title="Settings"
-                  />
-                }
+                element={<SettingsPage />}
                 path="/settings"
               />
             </Route>

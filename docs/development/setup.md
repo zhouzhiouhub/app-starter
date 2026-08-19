@@ -56,7 +56,9 @@ pnpm dev
 
 Page write APIs use an `IdempotencyRecord` table. After pulling schema changes,
 run `prisma db push` again in local development so repeated publish/create
-requests can be safely deduplicated.
+requests can be safely deduplicated. After pulling role or scope changes, run
+`pnpm --filter @app-starter/api run prisma:seed` again and sign in with a fresh
+Admin session.
 
 Admin page, localization, and commerce management APIs require a Bearer access
 token from `POST /api/v1/auth/login`. Public storefront routes stay unauthenticated.
@@ -74,6 +76,9 @@ After sign-in, open `http://localhost:5173/pages` to list and create pages.
 The editor at `/pages/:id` loads the draft schema, can save a draft, and can
 publish to the storefront. The Preview action saves the draft, creates a
 short-lived token, and opens the Web app at `/preview?token=...`.
+Open `http://localhost:5173/settings` to manage the default site name and
+domain, and to inspect the MVP default market, locale, currency, and feature
+flags.
 
 Default local ports:
 

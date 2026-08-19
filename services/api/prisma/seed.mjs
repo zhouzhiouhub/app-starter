@@ -13,6 +13,8 @@ const TENANT_ADMIN_PERMISSIONS = [
   "page:publish",
   "media:read",
   "media:write",
+  "site:read",
+  "site:write",
   "market:read",
   "locale:read",
   "locale:write",

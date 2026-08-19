@@ -11,11 +11,20 @@ export async function getSiteForTenant(
     where: { domain: DEFAULT_SITE_DOMAIN, tenantId },
   });
 
-  if (!site) {
+  if (site) {
+    return site;
+  }
+
+  const fallback = await prisma.site.findFirst({
+    where: { tenantId },
+    orderBy: { createdAt: "asc" },
+  });
+
+  if (!fallback) {
     throw missingDefaultSite();
   }
 
-  return site;
+  return fallback;
 }
 
 export async function getPublicDefaultSite(prisma: PrismaService) {
@@ -23,11 +32,19 @@ export async function getPublicDefaultSite(prisma: PrismaService) {
     where: { domain: DEFAULT_SITE_DOMAIN },
   });
 
-  if (!site) {
+  if (site) {
+    return site;
+  }
+
+  const fallback = await prisma.site.findFirst({
+    orderBy: { createdAt: "asc" },
+  });
+
+  if (!fallback) {
     throw missingDefaultSite();
   }
 
-  return site;
+  return fallback;
 }
 
 function missingDefaultSite() {

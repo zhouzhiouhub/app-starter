@@ -8,6 +8,7 @@ import { MediaModule } from "./media/media.module.js";
 import { PagesModule } from "./pages/pages.module.js";
 import { PrismaModule } from "./prisma/prisma.module.js";
 import { PublicModule } from "./public/public.module.js";
+import { SitesModule } from "./sites/sites.module.js";
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { PublicModule } from "./public/public.module.js";
     HealthModule,
     PagesModule,
     MediaModule,
+    SitesModule,
     PublicModule,
     LocalizationModule,
     CommerceModule
