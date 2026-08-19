@@ -4,6 +4,7 @@ import {
   type PageSchema,
 } from "@app-starter/schema";
 import { MediaAssetSelect } from "../../media/components/media-asset-select";
+import { readSeoFieldFeedback } from "../seo-feedback";
 import {
   updateSeoField,
   updateSeoNoIndex,
@@ -71,51 +72,59 @@ export function SeoSettingsPanel(props: {
             unCheckedChildren="No index"
           />
         </Form.Item>
-        {seoFields.map((item) => (
-          <Form.Item key={item.field} label={item.label}>
-            {item.rows ? (
-              <Input.TextArea
-                onChange={(event) =>
-                  handleChange(item.field, event.target.value)
-                }
-                placeholder={item.placeholder}
-                rows={item.rows}
-                value={props.schema.seo[item.field] ?? ""}
-              />
-            ) : item.field === "ogImage" ? (
-              <>
+        {seoFields.map((item) => {
+          const value = props.schema.seo[item.field] ?? "";
+          const feedback = readSeoFieldFeedback(item.field, value);
+
+          return (
+            <Form.Item
+              help={feedback.help}
+              key={item.field}
+              label={item.label}
+              validateStatus={feedback.status}
+            >
+              {item.rows ? (
+                <Input.TextArea
+                  onChange={(event) =>
+                    handleChange(item.field, event.target.value)
+                  }
+                  placeholder={item.placeholder}
+                  rows={item.rows}
+                  value={value}
+                />
+              ) : item.field === "ogImage" ? (
+                <>
+                  <Input
+                    onChange={(event) =>
+                      handleChange(item.field, event.target.value)
+                    }
+                    placeholder={item.placeholder}
+                    style={{ marginBottom: 8 }}
+                    value={value}
+                  />
+                  <MediaAssetSelect
+                    onSelect={(asset) =>
+                      handleChange(item.field, asset.reference)
+                    }
+                    value={
+                      isMediaAssetReference(value)
+                        ? props.schema.seo[item.field]
+                        : undefined
+                    }
+                  />
+                </>
+              ) : (
                 <Input
                   onChange={(event) =>
                     handleChange(item.field, event.target.value)
                   }
                   placeholder={item.placeholder}
-                  style={{ marginBottom: 8 }}
-                  value={props.schema.seo[item.field] ?? ""}
+                  value={value}
                 />
-                <MediaAssetSelect
-                  onSelect={(asset) =>
-                    handleChange(item.field, asset.reference)
-                  }
-                  value={
-                    isMediaAssetReference(
-                      props.schema.seo[item.field] ?? "",
-                    )
-                      ? props.schema.seo[item.field]
-                      : undefined
-                  }
-                />
-              </>
-            ) : (
-              <Input
-                onChange={(event) =>
-                  handleChange(item.field, event.target.value)
-                }
-                placeholder={item.placeholder}
-                value={props.schema.seo[item.field] ?? ""}
-              />
-            )}
-          </Form.Item>
-        ))}
+              )}
+            </Form.Item>
+          );
+        })}
       </Form>
     </section>
   );
