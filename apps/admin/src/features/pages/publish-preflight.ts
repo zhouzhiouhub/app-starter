@@ -1,4 +1,5 @@
 import type { PageSchema } from "@app-starter/schema";
+import { readImageAltFeedback } from "./image-alt-feedback.ts";
 import { readImageSrcFeedback } from "./image-src-feedback.ts";
 import { readSafeHrefFeedback } from "./safe-href-feedback.ts";
 import { readSeoFieldFeedback } from "./seo-feedback.ts";
@@ -27,6 +28,12 @@ interface SeoCheck {
 }
 
 interface ImageSrcCheck {
+  field: string;
+  label: string;
+  value: string | undefined;
+}
+
+interface ImageAltCheck {
   field: string;
   label: string;
   value: string | undefined;
@@ -130,6 +137,11 @@ function collectSectionIssues(
         label: `Image gallery image ${imageIndex + 1}`,
         value: image.src,
       });
+      addImageAltIssue(issues, {
+        field: `sections[${sectionIndex}].props.images[${imageIndex}].alt`,
+        label: `Image gallery image ${imageIndex + 1} alt text`,
+        value: image.alt,
+      });
     });
   });
 }
@@ -183,6 +195,23 @@ function addImageSrcIssue(
   issues.push({
     field: check.field,
     message: `${check.label}: ${feedback.help ?? "Enter a valid image source."}`,
+    severity: feedback.status,
+  });
+}
+
+function addImageAltIssue(
+  issues: PublishPreflightIssue[],
+  check: ImageAltCheck,
+): void {
+  const feedback = readImageAltFeedback(check.value);
+
+  if (!feedback.status) {
+    return;
+  }
+
+  issues.push({
+    field: check.field,
+    message: `${check.label}: ${feedback.help ?? "Enter image alt text."}`,
     severity: feedback.status,
   });
 }

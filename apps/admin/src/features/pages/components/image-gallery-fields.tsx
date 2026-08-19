@@ -6,13 +6,15 @@ import {
   type SectionNode,
 } from "@app-starter/schema";
 import { MediaAssetSelect } from "../../media/components/media-asset-select";
+import { readImageAltFeedback } from "../image-alt-feedback";
+import type { ImageSrcFeedback } from "../image-src-feedback";
+import { readImageSrcFeedback } from "../image-src-feedback";
 import {
   addImage,
   readImages,
   removeImage,
   updateImage,
 } from "../section-list-prop-updates";
-import { readImageSrcFeedback } from "../image-src-feedback";
 
 export function ImageGalleryFields(props: {
   onChange: (schema: PageSchema) => void;
@@ -26,6 +28,7 @@ export function ImageGalleryFields(props: {
       <Space direction="vertical" style={{ width: "100%" }}>
         {images.length === 0 ? <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} /> : null}
         {images.map((image, index) => {
+          const altFeedback = readImageAltFeedback(image.alt);
           const srcFeedback = readImageSrcFeedback(image.src);
 
           return (
@@ -64,6 +67,7 @@ export function ImageGalleryFields(props: {
                     )
                   }
                   placeholder="Alt text"
+                  status={altFeedback.status}
                   value={image.alt}
                 />
                 <Tooltip title="Remove">
@@ -78,13 +82,8 @@ export function ImageGalleryFields(props: {
                   />
                 </Tooltip>
               </Space.Compact>
-              {srcFeedback.help ? (
-                <Typography.Text
-                  type={srcFeedback.status === "error" ? "danger" : "warning"}
-                >
-                  {srcFeedback.help}
-                </Typography.Text>
-              ) : null}
+              {renderImageFeedback(srcFeedback)}
+              {renderImageFeedback(altFeedback)}
               <MediaAssetSelect
                 onSelect={(asset) =>
                   props.onChange(
@@ -116,6 +115,22 @@ export function ImageGalleryFields(props: {
         </Button>
       </Space>
     </Form.Item>
+  );
+}
+
+function renderImageFeedback(
+  feedback: ImageSrcFeedback | ReturnType<typeof readImageAltFeedback>,
+) {
+  if (!feedback.help) {
+    return null;
+  }
+
+  return (
+    <Typography.Text
+      type={feedback.status === "error" ? "danger" : "warning"}
+    >
+      {feedback.help}
+    </Typography.Text>
   );
 }
 

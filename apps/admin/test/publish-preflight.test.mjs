@@ -79,3 +79,28 @@ test("publish preflight flags invalid gallery image sources", () => {
   );
   assert.equal(blocker?.field, "sections[2].props.images[0].src");
 });
+
+test("publish preflight warns about missing gallery image alt text", () => {
+  const schema = structuredClone(exampleLandingPage);
+
+  schema.sections.push({
+    id: "gallery",
+    component: "image-gallery",
+    props: {
+      images: [{ alt: "", src: "/images/gallery.jpg" }],
+    },
+    layout: {
+      desktop: { x: 0, y: 900, width: 1200 },
+      mobile: { x: 0, y: 900, width: 390 },
+    },
+  });
+
+  const issues = collectPublishPreflightIssues(schema);
+  const blocker = findBlockingPublishPreflightIssue(schema);
+
+  assert.deepEqual(
+    issues.map((issue) => [issue.field, issue.severity]),
+    [["sections[2].props.images[0].alt", "warning"]],
+  );
+  assert.equal(blocker, null);
+});
