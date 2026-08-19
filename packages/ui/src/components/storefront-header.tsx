@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { ChromeLink } from "../chrome-link.js";
 import { text } from "../text.js";
 import type {
   StorefrontChromeVariant,
@@ -25,12 +26,14 @@ export function StorefrontHeader(props: {
   return (
     <header className="border-b border-gray-200 bg-white">
       <div className="mx-auto flex min-h-16 max-w-6xl items-center justify-between gap-4 px-6 md:px-10">
-        <a
+        <ChromeLink
+          blockedDataName="data-chrome-brand-href-blocked"
           className="text-base font-semibold text-gray-950"
-          href={brand?.href ?? "/"}
+          fallbackHref="/"
+          href={brand?.href}
         >
           {text(brand?.label) || "App Starter"}
-        </a>
+        </ChromeLink>
         {isMinimal ? null : (
           <div className="flex items-center gap-6">
             {navigation.length === 0 ? null : (
@@ -39,15 +42,15 @@ export function StorefrontHeader(props: {
                 className="flex items-center gap-6"
               >
                 {navigation.map((item) => (
-                  <a
+                  <ChromeLink
+                    blockedDataName="data-chrome-navigation-href-blocked"
                     className="text-sm font-medium text-gray-600 hover:text-gray-950"
                     href={item.href}
                     key={item.id ?? `${item.href}-${text(item.label)}`}
-                    rel={item.openInNewTab ? "noreferrer" : undefined}
-                    target={item.openInNewTab ? "_blank" : undefined}
+                    openInNewTab={item.openInNewTab}
                   >
                     {text(item.label)}
-                  </a>
+                  </ChromeLink>
                 ))}
               </nav>
             )}
@@ -62,13 +65,14 @@ export function StorefrontHeader(props: {
                 </summary>
                 <div className="absolute right-0 z-10 mt-2 min-w-32 rounded-md border border-gray-200 bg-white py-1 shadow-lg">
                   {localeOptions.map((locale) => (
-                    <a
+                    <ChromeLink
+                      blockedDataName="data-chrome-locale-href-blocked"
                       className="block px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-950"
                       href={locale.href ?? `/${locale.code}`}
                       key={locale.code}
                     >
                       {text(locale.label)}
-                    </a>
+                    </ChromeLink>
                   ))}
                 </div>
               </details>
