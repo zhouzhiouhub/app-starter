@@ -5,7 +5,7 @@ import { listPages } from "../api";
 import { DEFAULT_PAGE_LIST_LIMIT } from "../constants";
 import type { PageListMeta, PageSummary } from "../types";
 
-export function usePageList() {
+export function usePageList(page = 1) {
   const [pages, setPages] = useState<PageSummary[]>([]);
   const [meta, setMeta] = useState<PageListMeta>({
     limit: DEFAULT_PAGE_LIST_LIMIT,
@@ -15,12 +15,12 @@ export function usePageList() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async (page = 1) => {
+  const load = useCallback(async (nextPage = page) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const result = await listPages(page, DEFAULT_PAGE_LIST_LIMIT);
+      const result = await listPages(nextPage, DEFAULT_PAGE_LIST_LIMIT);
       setPages(result.data);
       setMeta(result.meta);
     } catch (caught) {
@@ -33,11 +33,11 @@ export function usePageList() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [page]);
 
   useEffect(() => {
-    void load(1);
-  }, [load]);
+    void load(page);
+  }, [load, page]);
 
   return { error, isLoading, load, meta, pages };
 }

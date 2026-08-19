@@ -1,10 +1,24 @@
 import { Alert, Space, Typography } from "antd";
+import { useCallback, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import { CreatePageModal } from "../../features/pages/components/create-page-modal";
 import { PageListTable } from "../../features/pages/components/page-list-table";
 import { usePageList } from "../../features/pages/hooks/use-page-list";
+import {
+  buildPageListSearch,
+  readPageListPage,
+} from "../../features/pages/page-list-query";
 
 export function PagesListPage() {
-  const { error, isLoading, load, meta, pages } = usePageList();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = useMemo(() => readPageListPage(searchParams), [searchParams]);
+  const setPage = useCallback(
+    (nextPage: number) => {
+      setSearchParams(buildPageListSearch(nextPage), { replace: true });
+    },
+    [setSearchParams],
+  );
+  const { error, isLoading, meta, pages } = usePageList(page);
 
   return (
     <div>
@@ -38,7 +52,7 @@ export function PagesListPage() {
       <Space direction="vertical" size={16} style={{ width: "100%" }}>
         <PageListTable
           isLoading={isLoading}
-          onPageChange={(page) => void load(page)}
+          onPageChange={setPage}
           page={meta.page}
           pageSize={meta.limit}
           pages={pages}
