@@ -382,12 +382,28 @@ test("published page cache helpers define ISR tags and paths", () => {
   assert.equal(publishedPagesCacheTag, "published-page");
   assert.deepEqual(
     getPublishedPageCacheTags({
+      fallbackLocale: "en-US",
       locale: "en-US",
       market: "us",
       slug: "contact",
     }),
     [
       "published-page",
+      "published-page:us:en-US",
+      "published-page:us:en-US:contact",
+    ],
+  );
+  assert.deepEqual(
+    getPublishedPageCacheTags({
+      fallbackLocale: "en-US",
+      locale: "de-DE",
+      market: "us",
+      slug: "contact",
+    }),
+    [
+      "published-page",
+      "published-page:us:de-DE",
+      "published-page:us:de-DE:contact",
       "published-page:us:en-US",
       "published-page:us:en-US:contact",
     ],

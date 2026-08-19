@@ -25,6 +25,7 @@ export async function getPublishedPage(input: {
   }
 
   return fetchPublishedSchema({
+    fallbackLocale: process.env.FALLBACK_LOCALE ?? "en-US",
     locale,
     market: defaultMarket,
     slug: slug.data
@@ -38,6 +39,7 @@ export async function getNotFoundPage(input?: {
   const locale =
     input?.locale || (process.env.FALLBACK_LOCALE ?? "en-US");
   const published = await fetchPublishedSchema({
+    fallbackLocale: process.env.FALLBACK_LOCALE ?? "en-US",
     locale,
     market: defaultMarket,
     slug: "404"
@@ -48,6 +50,7 @@ export async function getNotFoundPage(input?: {
   }
 
   const home = await fetchPublishedSchema({
+    fallbackLocale: process.env.FALLBACK_LOCALE ?? "en-US",
     locale,
     market: defaultMarket,
     slug: "home"
@@ -82,6 +85,7 @@ export async function getPreviewPage(token: string): Promise<PageSchema | null> 
 }
 
 async function fetchPublishedSchema(input: {
+  fallbackLocale: string;
   locale: string;
   market: string;
   slug: string;

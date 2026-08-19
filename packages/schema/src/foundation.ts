@@ -30,17 +30,33 @@ export const storefrontRevalidateSecretHeader =
   "x-storefront-revalidate-secret";
 
 export function getPublishedPageCacheTags(input: {
+  fallbackLocale?: string;
+  fallbackMarket?: string;
   locale: string;
   market: string;
   slug: string;
 }): string[] {
   const slug = normalizePageSlugForCache(input.slug);
+  const contexts = [
+    {
+      locale: input.locale,
+      market: input.market,
+    },
+    {
+      locale: input.fallbackLocale ?? input.locale,
+      market: input.fallbackMarket ?? input.market,
+    },
+  ];
 
   return [
     publishedPagesCacheTag,
-    `published-page:${input.market}:${input.locale}`,
-    `published-page:${input.market}:${input.locale}:${slug}`,
-  ];
+    ...contexts.flatMap((context) => [
+      `published-page:${context.market}:${context.locale}`,
+      `published-page:${context.market}:${context.locale}:${slug}`,
+    ]),
+  ].filter(
+    (tag, index, tags) => tags.indexOf(tag) === index,
+  );
 }
 
 export function getPublishedPageRevalidationPaths(input: {
