@@ -1,11 +1,16 @@
 import type { PageSchema } from "@app-starter/schema";
 import type { PrismaService } from "../../prisma/prisma.service.js";
+import {
+  matchesPublishedPageContext,
+  type PublishedPageContext,
+} from "../pages.public-context.js";
 import { getPublicDefaultSite } from "../pages.site.js";
 import { parseSlug, readSchema } from "../pages.validation.js";
 
 export async function getPublishedPageBySlug(
   prisma: PrismaService,
   slug: string,
+  context: PublishedPageContext,
   resolveMediaReferences?: (
     schema: PageSchema,
     tenantId: string,
@@ -38,6 +43,10 @@ export async function getPublishedPageBySlug(
   }
 
   const schema = readSchema(published.schema, page.slug);
+  if (!matchesPublishedPageContext(schema, context)) {
+    return null;
+  }
+
   return resolveMediaReferences
     ? resolveMediaReferences(schema, site.tenantId)
     : schema;

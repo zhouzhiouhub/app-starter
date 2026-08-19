@@ -3,6 +3,7 @@ import { AuditService } from "../audit/audit.service.js";
 import type { Actor } from "../identity/identity.types.js";
 import { MediaService } from "../media/media.service.js";
 import { PrismaService } from "../prisma/prisma.service.js";
+import type { PublishedPageContext } from "./pages.public-context.js";
 import { createPage } from "./use-cases/create-page.js";
 import { createPreviewToken } from "./use-cases/create-preview-token.js";
 import { getPageById } from "./use-cases/get-page-by-id.js";
@@ -84,8 +85,11 @@ export class PagesService {
     );
   }
 
-  async getPublishedBySlug(slug: string) {
-    return getPublishedPageBySlug(this.prisma, slug, (schema, tenantId) =>
+  async getPublishedBySlug(slug: string, context: PublishedPageContext) {
+    return getPublishedPageBySlug(this.prisma, slug, context, (
+      schema,
+      tenantId,
+    ) =>
       this.media.resolveSchemaMediaReferences(schema, tenantId),
     );
   }
@@ -96,7 +100,7 @@ export class PagesService {
     );
   }
 
-  async listPublished() {
-    return listPublishedPages(this.prisma);
+  async listPublished(context: PublishedPageContext) {
+    return listPublishedPages(this.prisma, context);
   }
 }

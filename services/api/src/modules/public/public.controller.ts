@@ -80,7 +80,10 @@ export class PublicController {
   ) {
     const localeContext = resolvePublicLocale(locale);
     const marketContext = resolvePublicMarket(market);
-    const pages = await this.pages.listPublished();
+    const pages = await this.pages.listPublished({
+      locale: localeContext.locale,
+      market: marketContext.market,
+    });
 
     return {
       data: pages.data,
@@ -102,7 +105,10 @@ export class PublicController {
   ) {
     const localeContext = resolvePublicLocale(locale);
     const marketContext = resolvePublicMarket(market);
-    const page = await this.pages.getPublishedBySlug(slug);
+    const page = await this.pages.getPublishedBySlug(slug, {
+      locale: localeContext.locale,
+      market: marketContext.market,
+    });
 
     if (!page) {
       throw new NotFoundException({

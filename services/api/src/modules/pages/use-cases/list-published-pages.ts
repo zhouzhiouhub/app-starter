@@ -1,5 +1,9 @@
 import type { Prisma } from "@prisma/client";
 import type { PrismaService } from "../../prisma/prisma.service.js";
+import {
+  matchesPublishedPageContext,
+  type PublishedPageContext,
+} from "../pages.public-context.js";
 import { getPublicDefaultSite } from "../pages.site.js";
 import { readSchema } from "../pages.validation.js";
 
@@ -15,7 +19,10 @@ type PublishedPageRecord = {
   }>;
 };
 
-export async function listPublishedPages(prisma: PrismaService) {
+export async function listPublishedPages(
+  prisma: PrismaService,
+  context: PublishedPageContext,
+) {
   const site = await getPublicDefaultSite(prisma);
   const pages = await prisma.page.findMany({
     where: {
@@ -40,7 +47,9 @@ export async function listPublishedPages(prisma: PrismaService) {
     },
   });
 
-  const summaries = pages.flatMap(toPublishedPageSummary);
+  const summaries = pages.flatMap((page) =>
+    toPublishedPageSummary(page, context),
+  );
 
   return {
     data: summaries,
@@ -53,7 +62,10 @@ export async function listPublishedPages(prisma: PrismaService) {
   };
 }
 
-function toPublishedPageSummary(page: PublishedPageRecord) {
+function toPublishedPageSummary(
+  page: PublishedPageRecord,
+  context: PublishedPageContext,
+) {
   const publishedVersion = page.versions.find(
     (version) => version.id === page.publishedVersionId,
   );
@@ -63,6 +75,9 @@ function toPublishedPageSummary(page: PublishedPageRecord) {
   }
 
   const schema = readSchema(publishedVersion.schema, page.slug);
+  if (!matchesPublishedPageContext(schema, context)) {
+    return [];
+  }
 
   return [
     {
