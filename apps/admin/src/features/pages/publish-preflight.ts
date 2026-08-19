@@ -1,6 +1,8 @@
 import type { PageSchema } from "@app-starter/schema";
+import { readImageSrcFeedback } from "./image-src-feedback.ts";
 import { readSafeHrefFeedback } from "./safe-href-feedback.ts";
 import { readSeoFieldFeedback } from "./seo-feedback.ts";
+import { readImages } from "./section-list-prop-updates.ts";
 import type { SeoField } from "./seo-updates";
 
 export type PublishPreflightSeverity = "error" | "warning";
@@ -24,6 +26,12 @@ interface SeoCheck {
   value: string | undefined;
 }
 
+interface ImageSrcCheck {
+  field: string;
+  label: string;
+  value: string | undefined;
+}
+
 export function collectPublishPreflightIssues(
   schema: PageSchema,
 ): PublishPreflightIssue[] {
@@ -31,6 +39,7 @@ export function collectPublishPreflightIssues(
 
   collectChromeIssues(schema, issues);
   collectSeoIssues(schema, issues);
+  collectSectionIssues(schema, issues);
 
   return issues;
 }
@@ -106,6 +115,25 @@ function collectSeoIssues(
   });
 }
 
+function collectSectionIssues(
+  schema: PageSchema,
+  issues: PublishPreflightIssue[],
+): void {
+  schema.sections.forEach((section, sectionIndex) => {
+    if (section.component !== "image-gallery") {
+      return;
+    }
+
+    readImages(section).forEach((image, imageIndex) => {
+      addImageSrcIssue(issues, {
+        field: `sections[${sectionIndex}].props.images[${imageIndex}].src`,
+        label: `Image gallery image ${imageIndex + 1}`,
+        value: image.src,
+      });
+    });
+  });
+}
+
 function addSafeHrefIssue(
   issues: PublishPreflightIssue[],
   check: SafeHrefCheck,
@@ -138,6 +166,23 @@ function addSeoIssue(
   issues.push({
     field: `seo.${check.field}`,
     message: `${check.label}: ${feedback.help ?? "Enter a valid SEO value."}`,
+    severity: feedback.status,
+  });
+}
+
+function addImageSrcIssue(
+  issues: PublishPreflightIssue[],
+  check: ImageSrcCheck,
+): void {
+  const feedback = readImageSrcFeedback(check.value);
+
+  if (!feedback.status) {
+    return;
+  }
+
+  issues.push({
+    field: check.field,
+    message: `${check.label}: ${feedback.help ?? "Enter a valid image source."}`,
     severity: feedback.status,
   });
 }

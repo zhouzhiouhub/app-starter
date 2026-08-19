@@ -1,5 +1,5 @@
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
-import { Button, Empty, Form, Input, Space, Tooltip } from "antd";
+import { Button, Empty, Form, Input, Space, Tooltip, Typography } from "antd";
 import {
   isMediaAssetReference,
   type PageSchema,
@@ -12,6 +12,7 @@ import {
   removeImage,
   updateImage,
 } from "../section-list-prop-updates";
+import { readImageSrcFeedback } from "../image-src-feedback";
 
 export function ImageGalleryFields(props: {
   onChange: (schema: PageSchema) => void;
@@ -24,79 +25,89 @@ export function ImageGalleryFields(props: {
     <Form.Item label="Images">
       <Space direction="vertical" style={{ width: "100%" }}>
         {images.length === 0 ? <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} /> : null}
-        {images.map((image, index) => (
-          <Space
-            direction="vertical"
-            key={`${index}-${image.src}`}
-            style={{ width: "100%" }}
-          >
-            <Space.Compact block>
-              <Input
-                onChange={(event) =>
+        {images.map((image, index) => {
+          const srcFeedback = readImageSrcFeedback(image.src);
+
+          return (
+            <Space
+              direction="vertical"
+              key={`${index}-${image.src}`}
+              style={{ width: "100%" }}
+            >
+              <Space.Compact block>
+                <Input
+                  onChange={(event) =>
+                    props.onChange(
+                      updateImage(
+                        props.schema,
+                        props.section.id,
+                        index,
+                        "src",
+                        event.target.value,
+                      ),
+                    )
+                  }
+                  placeholder="Image URL or media:// reference"
+                  status={srcFeedback.status}
+                  value={image.src}
+                />
+                <Input
+                  onChange={(event) =>
+                    props.onChange(
+                      updateImage(
+                        props.schema,
+                        props.section.id,
+                        index,
+                        "alt",
+                        event.target.value,
+                      ),
+                    )
+                  }
+                  placeholder="Alt text"
+                  value={image.alt}
+                />
+                <Tooltip title="Remove">
+                  <Button
+                    danger
+                    icon={<DeleteOutlined />}
+                    onClick={() =>
+                      props.onChange(
+                        removeImage(props.schema, props.section.id, index),
+                      )
+                    }
+                  />
+                </Tooltip>
+              </Space.Compact>
+              {srcFeedback.help ? (
+                <Typography.Text
+                  type={srcFeedback.status === "error" ? "danger" : "warning"}
+                >
+                  {srcFeedback.help}
+                </Typography.Text>
+              ) : null}
+              <MediaAssetSelect
+                onSelect={(asset) =>
                   props.onChange(
                     updateImage(
-                      props.schema,
-                      props.section.id,
-                      index,
-                      "src",
-                      event.target.value,
-                    ),
-                  )
-                }
-                placeholder="Image URL or media:// reference"
-                value={image.src}
-              />
-              <Input
-                onChange={(event) =>
-                  props.onChange(
-                    updateImage(
-                      props.schema,
+                      updateImage(
+                        props.schema,
+                        props.section.id,
+                        index,
+                        "src",
+                        asset.reference,
+                      ),
                       props.section.id,
                       index,
                       "alt",
-                      event.target.value,
+                      image.alt || readAssetAltText(asset.metadata, asset.filename),
                     ),
                   )
                 }
-                placeholder="Alt text"
-                value={image.alt}
+                value={isMediaAssetReference(image.src) ? image.src : undefined}
               />
-              <Tooltip title="Remove">
-                <Button
-                  danger
-                  icon={<DeleteOutlined />}
-                  onClick={() =>
-                    props.onChange(
-                      removeImage(props.schema, props.section.id, index),
-                    )
-                  }
-                />
-              </Tooltip>
-            </Space.Compact>
-            <MediaAssetSelect
-              onSelect={(asset) =>
-                props.onChange(
-                  updateImage(
-                    updateImage(
-                      props.schema,
-                      props.section.id,
-                      index,
-                      "src",
-                      asset.reference,
-                    ),
-                    props.section.id,
-                    index,
-                    "alt",
-                    image.alt || readAssetAltText(asset.metadata, asset.filename),
-                  ),
-                )
-              }
-              value={
-                isMediaAssetReference(image.src) ? image.src : undefined
-              }
-            />
-          </Space>
-        ))}
+            </Space>
+          );
+        })}
         <Button
           icon={<PlusOutlined />}
           onClick={() => props.onChange(addImage(props.schema, props.section.id))}

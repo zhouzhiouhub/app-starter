@@ -47,3 +47,35 @@ test("publish preflight distinguishes SEO errors from warnings", () => {
   );
   assert.equal(blocker?.field, "seo.canonical");
 });
+
+test("publish preflight flags invalid gallery image sources", () => {
+  const schema = structuredClone(exampleLandingPage);
+
+  schema.sections.push({
+    id: "gallery",
+    component: "image-gallery",
+    props: {
+      images: [
+        { alt: "Unsafe", src: "javascript:alert(1)" },
+        { alt: "Blank", src: "" },
+        { alt: "Media", src: "media://asset-1" },
+      ],
+    },
+    layout: {
+      desktop: { x: 0, y: 900, width: 1200 },
+      mobile: { x: 0, y: 900, width: 390 },
+    },
+  });
+
+  const issues = collectPublishPreflightIssues(schema);
+  const blocker = findBlockingPublishPreflightIssue(schema);
+
+  assert.deepEqual(
+    issues.map((issue) => [issue.field, issue.severity]),
+    [
+      ["sections[2].props.images[0].src", "error"],
+      ["sections[2].props.images[1].src", "warning"],
+    ],
+  );
+  assert.equal(blocker?.field, "sections[2].props.images[0].src");
+});
