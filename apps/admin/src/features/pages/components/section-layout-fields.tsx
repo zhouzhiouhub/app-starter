@@ -1,12 +1,22 @@
 import { CopyOutlined } from "@ant-design/icons";
-import { Button, Form, InputNumber, Space, Switch, Typography } from "antd";
+import {
+  Button,
+  Form,
+  Input,
+  InputNumber,
+  Space,
+  Switch,
+  Typography,
+} from "antd";
 import type { PageSchema, SectionNode, Viewport } from "@app-starter/schema";
 import {
   copyDesktopLayoutToMobile,
   readSectionLayout,
   updateSectionLayoutField,
+  updateSectionLayoutTextField,
   updateSectionVisibility,
   type SectionLayoutField,
+  type SectionLayoutTextField,
 } from "../section-layout-updates";
 
 const numericFields: Array<{
@@ -18,6 +28,15 @@ const numericFields: Array<{
   { field: "y", label: "Y", min: 0 },
   { field: "width", label: "Width", min: 1 },
   { field: "height", label: "Height", min: 1 },
+];
+
+const textFields: Array<{
+  field: SectionLayoutTextField;
+  label: string;
+  placeholder: string;
+}> = [
+  { field: "padding", label: "Padding", placeholder: "24px 40px" },
+  { field: "gap", label: "Gap", placeholder: "16px" },
 ];
 
 export function SectionLayoutFields(props: {
@@ -93,6 +112,28 @@ export function SectionLayoutFields(props: {
                 );
               }}
               value={layout[item.field]}
+            />
+          </Form.Item>
+        ))}
+      </Space>
+      <Space style={{ width: "100%" }} wrap>
+        {textFields.map((item) => (
+          <Form.Item key={item.field} label={item.label}>
+            <Input
+              onChange={(event) =>
+                props.onChange(
+                  updateSectionLayoutTextField(
+                    props.schema,
+                    props.section.id,
+                    props.viewport,
+                    item.field,
+                    event.target.value,
+                  ),
+                )
+              }
+              placeholder={item.placeholder}
+              style={{ width: 160 }}
+              value={layout[item.field] ?? ""}
             />
           </Form.Item>
         ))}

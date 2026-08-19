@@ -6,6 +6,7 @@ import type {
 } from "@app-starter/schema";
 
 export type SectionLayoutField = "height" | "width" | "x" | "y";
+export type SectionLayoutTextField = "gap" | "padding";
 
 export function readSectionLayout(
   section: SectionNode,
@@ -50,6 +51,36 @@ export function updateSectionLayoutField(
   };
 }
 
+export function updateSectionLayoutTextField(
+  current: PageSchema,
+  sectionId: string,
+  viewport: Viewport,
+  field: SectionLayoutTextField,
+  value: string,
+): PageSchema {
+  return {
+    ...current,
+    sections: current.sections.map((section) => {
+      if (section.id !== sectionId) {
+        return section;
+      }
+
+      const layout = readSectionLayout(section, viewport);
+      const nextLayout = value.trim()
+        ? { ...layout, [field]: value }
+        : omitLayoutTextField(layout, field);
+
+      return {
+        ...section,
+        layout: {
+          ...section.layout,
+          [viewport]: nextLayout,
+        },
+      };
+    }),
+  };
+}
+
 export function updateSectionVisibility(
   current: PageSchema,
   sectionId: string,
@@ -72,6 +103,14 @@ export function updateSectionVisibility(
       };
     }),
   };
+}
+
+function omitLayoutTextField(
+  layout: LayoutBox,
+  field: SectionLayoutTextField,
+): LayoutBox {
+  const { [field]: _removed, ...nextLayout } = layout;
+  return nextLayout;
 }
 
 export function copyDesktopLayoutToMobile(
