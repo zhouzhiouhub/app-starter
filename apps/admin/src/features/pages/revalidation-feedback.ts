@@ -1,5 +1,5 @@
 import type { StorefrontRevalidationResult } from "@app-starter/schema";
-import { getStorefrontPageUrl } from "./storefront-url";
+import { getStorefrontPageUrl } from "./storefront-url.ts";
 
 export function buildPublicationFeedback(input: {
   action: "publish" | "rollback";
@@ -34,9 +34,7 @@ function formatRevalidationStatus(
   }
 
   if (revalidation.reason === "request-failed") {
-    return `Storefront revalidation failed${formatStatus(
-      revalidation.status,
-    )}.`;
+    return formatRequestFailedRevalidation(revalidation.status);
   }
 
   return `Storefront revalidation was not triggered${formatReason(
@@ -54,6 +52,16 @@ function formatPathCount(count: number): string {
 
 function formatStatus(status: number | undefined): string {
   return typeof status === "number" ? ` with HTTP ${status}` : "";
+}
+
+function formatRequestFailedRevalidation(status: number | undefined): string {
+  if (typeof status === "number") {
+    return `Storefront revalidation failed${formatStatus(
+      status,
+    )}. Check the Web revalidate route and secret configuration.`;
+  }
+
+  return "Storefront revalidation request failed or timed out. Check the Web URL, revalidate route, and STOREFRONT_REVALIDATE_TIMEOUT_MS.";
 }
 
 function formatReason(reason: string | undefined): string {
