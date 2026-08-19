@@ -43,6 +43,43 @@ test("preview tokens verify, expire, and reject tampering", () => {
   );
 });
 
+test("preview token verification accepts the previous secret during rotation", () => {
+  const now = new Date("2026-08-19T00:00:00.000Z");
+  const oldEnv = {
+    PREVIEW_TOKEN_SECRET: "old-preview-secret",
+    PREVIEW_TOKEN_TTL_SECONDS: "60",
+  };
+  const rotatedEnv = {
+    PREVIEW_TOKEN_PREVIOUS_SECRET: "old-preview-secret",
+    PREVIEW_TOKEN_SECRET: "new-preview-secret",
+    PREVIEW_TOKEN_TTL_SECONDS: "60",
+  };
+  const oldToken = createPagePreviewToken({
+    env: oldEnv,
+    now,
+    pageId: "page-1",
+    slug: "campaign",
+    tenantId: "tenant-1",
+  }).token;
+  const newToken = createPagePreviewToken({
+    env: rotatedEnv,
+    now,
+    pageId: "page-1",
+    slug: "campaign",
+    tenantId: "tenant-1",
+  }).token;
+
+  assert.equal(
+    verifyPagePreviewToken(oldToken, { env: rotatedEnv, now })?.tenantId,
+    "tenant-1",
+  );
+  assert.equal(verifyPagePreviewToken(newToken, { env: oldEnv, now }), null);
+  assert.equal(
+    verifyPagePreviewToken(newToken, { env: rotatedEnv, now })?.tenantId,
+    "tenant-1",
+  );
+});
+
 test("createPreviewToken signs a tenant-scoped page token", async () => {
   await withEnv({ PREVIEW_TOKEN_SECRET: "preview-secret" }, async () => {
     const prisma = {

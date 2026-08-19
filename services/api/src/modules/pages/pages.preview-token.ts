@@ -41,7 +41,10 @@ export function createPagePreviewToken(input: {
 
   return {
     expiresAt,
-    token: `${encodedPayload}.${sign(encodedPayload, readPreviewTokenSecret(input.env))}`,
+    token: `${encodedPayload}.${sign(
+      encodedPayload,
+      readPreviewTokenSecret(input.env),
+    )}`,
   };
 }
 
@@ -58,7 +61,7 @@ export function verifyPagePreviewToken(
     return null;
   }
 
-  if (!safeEqual(signature, sign(encodedPayload, readPreviewTokenSecret(input.env)))) {
+  if (!hasValidSignature(encodedPayload, signature, input.env)) {
     return null;
   }
 
@@ -86,6 +89,22 @@ function readPreviewTokenSecret(env = process.env): string {
   return localPreviewTokenSecret;
 }
 
+function readPreviousPreviewTokenSecret(
+  env = process.env,
+): string | null {
+  const configured = env.PREVIEW_TOKEN_PREVIOUS_SECRET?.trim();
+  return configured || null;
+}
+
+function readPreviewTokenVerificationSecrets(env = process.env): string[] {
+  return [
+    readPreviewTokenSecret(env),
+    readPreviousPreviewTokenSecret(env),
+  ].filter((secret, index, secrets): secret is string =>
+    Boolean(secret && secrets.indexOf(secret) === index),
+  );
+}
+
 function readPreviewTokenTtlSeconds(env = process.env): number {
   const parsed = Number(env.PREVIEW_TOKEN_TTL_SECONDS);
 
@@ -100,6 +119,16 @@ function sign(encodedPayload: string, secret: string): string {
   return createHmac("sha256", secret)
     .update(encodedPayload)
     .digest("base64url");
+}
+
+function hasValidSignature(
+  encodedPayload: string,
+  signature: string,
+  env = process.env,
+): boolean {
+  return readPreviewTokenVerificationSecrets(env).some((secret) =>
+    safeEqual(signature, sign(encodedPayload, secret)),
+  );
 }
 
 function safeEqual(left: string, right: string): boolean {

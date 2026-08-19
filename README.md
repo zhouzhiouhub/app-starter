@@ -56,7 +56,7 @@
 
 ### 当前还没有完成
 
-- Preview Token 生产密钥轮换和审计。
+- Preview Token 使用审计日志。
 - 生产环境 R2 凭据、CDN 域名和真实上传链路验收。
 - 高还原差异检测和完整 Figma 自动导入。
 - 多语言运营后台。
@@ -300,6 +300,7 @@ STOREFRONT_REVALIDATE_URL=http://localhost:3000/api/revalidate
 STOREFRONT_REVALIDATE_TIMEOUT_MS=5000
 
 PREVIEW_TOKEN_SECRET=
+PREVIEW_TOKEN_PREVIOUS_SECRET=
 PREVIEW_TOKEN_TTL_SECONDS=3600
 
 ANALYTICS_ENABLED=false
@@ -337,6 +338,7 @@ STOREFRONT_REVALIDATE_URL=https://your-storefront.example.com/api/revalidate
 STOREFRONT_REVALIDATE_TIMEOUT_MS=5000
 
 PREVIEW_TOKEN_SECRET=use-a-different-secret-value
+PREVIEW_TOKEN_PREVIOUS_SECRET=
 PREVIEW_TOKEN_TTL_SECONDS=3600
 
 ANALYTICS_ENABLED=false
@@ -352,6 +354,7 @@ CLARITY_PROJECT_ID=xxxxxxxxxx
 - 不要把本机 PostgreSQL 密码用于生产环境。
 - 不要把生产数据库连接串提交到 Git。
 - Analytics 脚本只有在 `ANALYTICS_ENABLED=true` 且 `ANALYTICS_CONSENT_GRANTED=true` 时才会加载；未接入 Consent 机制前保持关闭。
+- 轮换 Preview Token 密钥时，先把旧值放入 `PREVIEW_TOKEN_PREVIOUS_SECRET`，再更新 `PREVIEW_TOKEN_SECRET`；等待超过 `PREVIEW_TOKEN_TTL_SECONDS` 后再移除旧值。
 - 如果数据库服务商提供 pooled connection string 和 direct connection string，API 运行时优先使用 pooled connection string，数据库迁移任务按服务商要求使用 direct connection string。
 
 当前 Prisma CLI 会在 `services/api` 包目录下运行，因此建议同时创建：
@@ -582,14 +585,14 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 
 还没有：
 
-- Preview Token 生产密钥轮换和审计。
+- Preview Token 使用审计日志。
 - 生产 R2 上传链路的真实环境验收。
 - 多语言运营后台。
 
 下一阶段应优先做生产上线前的站点与部署验收：
 
 ```text
-Preview Token 生产密钥轮换和审计
+Preview Token 使用审计日志
 生产 R2 / CDN 配置验收
 发布后 smoke test
 ```

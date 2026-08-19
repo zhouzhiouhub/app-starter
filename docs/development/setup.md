@@ -43,8 +43,15 @@ must set an explicit secret:
 
 ```bash
 PREVIEW_TOKEN_SECRET=
+PREVIEW_TOKEN_PREVIOUS_SECRET=
 PREVIEW_TOKEN_TTL_SECONDS=3600
 ```
+
+To rotate the Preview Token secret, deploy the new value in
+`PREVIEW_TOKEN_SECRET` and keep the old value in
+`PREVIEW_TOKEN_PREVIOUS_SECRET` for longer than `PREVIEW_TOKEN_TTL_SECONDS`.
+New preview links are signed with the current secret; existing unexpired links
+can still be verified with the previous secret during the rotation window.
 
 Analytics provider IDs can be configured through environment variables, but the
 Web app only loads GTM, GA4, or Clarity when both runtime gates are explicit:
