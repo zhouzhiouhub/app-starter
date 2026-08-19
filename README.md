@@ -49,16 +49,19 @@
 - 种子数据会创建默认 Tenant Admin（`admin@example.com` / `ChangeMe123!`）。
 - 后台 Pages 列表、新建页面、按页面 ID 打开编辑器。
 - 编辑器可保存草稿（`PUT /api/v1/pages/:id/schema`）或发布（`POST /api/v1/pages/:id/publish`）。
+- Page Builder 已具备区块库、区块排序、属性面板、Desktop / Mobile 布局编辑、Undo / Redo。
+- 媒体库已具备列表、登记外部媒体、上传目标生成、归档和 `media://` 引用解析。
 
 ### 当前还没有完成
 
 - 站点管理后台页。
-- 可视化 Page Builder（区块排序、属性面板、Undo / Redo）。
-- 媒体库上传与 Cloudflare R2 对接。
+- 可分享 Preview URL / Preview Token。
+- 生产环境 R2 凭据、CDN 域名和真实上传链路验收。
+- 高还原差异检测和完整 Figma 自动导入。
 - 多语言运营后台。
 - 真实电商购物车、结账、支付、订单能力。
 
-当前后台已能列出页面、创建页面，并按页面 ID 编辑 Chrome / Schema、保存草稿和发布。区块级 Page Builder 仍未完成。
+当前后台已能列出页面、创建页面，并按页面 ID 编辑 Chrome / Schema、区块内容、布局、SEO、媒体引用、保存草稿、发布和回滚。
 
 ## 2. 项目定位
 
@@ -548,24 +551,27 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 - Ant Design 布局。
 - Admin 登录页与 JWT 会话。
 - 页面 Chrome 编辑、Desktop / Mobile 预览。
+- 页面列表、新建页面、保存草稿、发布和回滚。
+- 区块库、区块排序、区块属性面板、Undo / Redo。
+- 媒体库列表、上传目标、外部媒体登记、归档和 `media://` 选择。
 - Publish 按钮，发布结果写入 PostgreSQL。
 - 启动时尝试加载已发布的 `home` 页面。
 - 自定义后台模块扩展入口。
 
 还没有：
 
-- 页面列表与新建页面。
-- Section 级属性面板。
-- 媒体库。
+- 站点设置管理页。
+- 可分享 Preview URL / Preview Token。
+- 生产 R2 上传链路的真实环境验收。
+- 多语言运营后台。
 
-下一阶段应优先做页面生命周期 UI：
+下一阶段应优先做生产上线前的站点与预览能力：
 
 ```text
-页面列表
-新建页面
-编辑并保存草稿
-发布页面
-前台读取已发布页面
+站点设置
+Preview Token
+生产 R2 / CDN 配置验收
+发布后 smoke test
 ```
 
 ## 14. 二次开发规则
