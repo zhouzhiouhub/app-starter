@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { createFallbackPage, type Viewport } from "@app-starter/schema";
-import { AuthRequiredError } from "../../auth/api";
+import type { Viewport } from "@app-starter/schema";
+import { redirectWhenAuthRequired } from "../../auth/auth-redirect";
 import { formatRequestError } from "../../../lib/api-error";
 import {
   createPreviewToken,
@@ -13,6 +13,13 @@ import { getStorefrontPreviewUrl } from "../storefront-url";
 import { createSchemaFingerprint } from "../schema-fingerprint";
 import { buildPublicationFeedback } from "../revalidation-feedback";
 import { findBlockingPublishPreflightIssue } from "../publish-preflight";
+import { readEditorErrorFeedback } from "../editor-feedback";
+import {
+  readPageEditorDraftState,
+  readPageEditorSavedState,
+  type PageEditorDraftState,
+  type PageEditorSavedState,
+} from "../page-editor-detail-state";
 import type {
   EditorFeedback,
   PageSummary,
@@ -21,9 +28,7 @@ import type {
 import { usePageEditorAutosave } from "./use-page-editor-autosave";
 import { useSchemaHistory } from "./use-schema-history";
 
-interface SaveDraftOptions {
-  silent?: boolean;
-}
+interface SaveDraftOptions { silent?: boolean; }
 
 export function usePageEditor(pageId: string | undefined) {
   const [page, setPage] = useState<PageSummary | null>(null);
@@ -51,6 +56,20 @@ export function usePageEditor(pageId: string | undefined) {
     undo,
   } = useSchemaHistory();
 
+  const applySavedState = useCallback((state: PageEditorSavedState) => {
+    setPage(state.page);
+    setVersions(state.versions);
+    setSavedDraftFingerprint(state.savedDraftFingerprint);
+  }, []);
+
+  const applyDraftState = useCallback(
+    (state: PageEditorDraftState) => {
+      applySavedState(state);
+      resetSchema(state.schema);
+    },
+    [applySavedState, resetSchema],
+  );
+
   const load = useCallback(async () => {
     if (!pageId) {
       setError("Page id is missing.");
@@ -63,20 +82,9 @@ export function usePageEditor(pageId: string | undefined) {
 
     try {
       const detail = await getPage(pageId);
-      const schema =
-        detail.draftSchema ??
-        createFallbackPage({
-          slug: detail.slug,
-          title: detail.title,
-        });
-
-      setPage(detail);
-      setVersions(detail.versions);
-      resetSchema(schema);
-      setSavedDraftFingerprint(createSchemaFingerprint(schema));
+      applyDraftState(readPageEditorDraftState(detail));
     } catch (caught) {
-      if (caught instanceof AuthRequiredError) {
-        globalThis.location.assign("/login");
+      if (redirectWhenAuthRequired(caught)) {
         return;
       }
 
@@ -84,7 +92,7 @@ export function usePageEditor(pageId: string | undefined) {
     } finally {
       setIsLoading(false);
     }
-  }, [pageId, resetSchema]);
+  }, [applyDraftState, pageId]);
 
   useEffect(() => {
     void load();
@@ -102,12 +110,10 @@ export function usePageEditor(pageId: string | undefined) {
     }
 
     try {
-      const summary = await savePageDraft(pageId, draftSchema);
-      setPage(summary);
-      const detail = await getPage(pageId);
-      setPage(detail);
-      setVersions(detail.versions);
-      setSavedDraftFingerprint(createSchemaFingerprint(draftSchema));
+      await savePageDraft(pageId, draftSchema);
+      applySavedState(
+        readPageEditorSavedState(await getPage(pageId), draftSchema),
+      );
 
       if (!options.silent) {
         setFeedback({
@@ -117,19 +123,15 @@ export function usePageEditor(pageId: string | undefined) {
         });
       }
     } catch (caught) {
-      if (caught instanceof AuthRequiredError) {
-        globalThis.location.assign("/login");
+      if (redirectWhenAuthRequired(caught)) {
         return;
       }
 
-      setFeedback({
-        message: formatRequestError(caught),
-        type: "error",
-      });
+      setFeedback(readEditorErrorFeedback(caught));
     } finally {
       setIsSaving(false);
     }
-  }, [draftSchema, pageId]);
+  }, [applySavedState, draftSchema, pageId]);
 
   const publish = useCallback(async () => {
     if (!pageId || !draftSchema) {
@@ -152,10 +154,9 @@ export function usePageEditor(pageId: string | undefined) {
     try {
       const published = await publishPage(pageId, draftSchema);
       resetSchema(published.schema);
-      setSavedDraftFingerprint(createSchemaFingerprint(published.schema));
-      const detail = await getPage(pageId);
-      setPage(detail);
-      setVersions(detail.versions);
+      applySavedState(
+        readPageEditorSavedState(await getPage(pageId), published.schema),
+      );
       setFeedback({
         message: buildPublicationFeedback({
           action: "publish",
@@ -165,19 +166,15 @@ export function usePageEditor(pageId: string | undefined) {
         type: "success",
       });
     } catch (caught) {
-      if (caught instanceof AuthRequiredError) {
-        globalThis.location.assign("/login");
+      if (redirectWhenAuthRequired(caught)) {
         return;
       }
 
-      setFeedback({
-        message: formatRequestError(caught),
-        type: "error",
-      });
+      setFeedback(readEditorErrorFeedback(caught));
     } finally {
       setIsPublishing(false);
     }
-  }, [draftSchema, pageId, resetSchema]);
+  }, [applySavedState, draftSchema, pageId, resetSchema]);
 
   const openPreview = useCallback(async () => {
     if (!pageId || !draftSchema) {
@@ -188,12 +185,10 @@ export function usePageEditor(pageId: string | undefined) {
     setFeedback(null);
 
     try {
-      const summary = await savePageDraft(pageId, draftSchema);
-      setPage(summary);
-      const detail = await getPage(pageId);
-      setPage(detail);
-      setVersions(detail.versions);
-      setSavedDraftFingerprint(createSchemaFingerprint(draftSchema));
+      await savePageDraft(pageId, draftSchema);
+      applySavedState(
+        readPageEditorSavedState(await getPage(pageId), draftSchema),
+      );
       const preview = await createPreviewToken(pageId);
       globalThis.open(
         getStorefrontPreviewUrl(preview.token),
@@ -205,19 +200,15 @@ export function usePageEditor(pageId: string | undefined) {
         type: "success",
       });
     } catch (caught) {
-      if (caught instanceof AuthRequiredError) {
-        globalThis.location.assign("/login");
+      if (redirectWhenAuthRequired(caught)) {
         return;
       }
 
-      setFeedback({
-        message: formatRequestError(caught),
-        type: "error",
-      });
+      setFeedback(readEditorErrorFeedback(caught));
     } finally {
       setIsCreatingPreview(false);
     }
-  }, [draftSchema, pageId]);
+  }, [applySavedState, draftSchema, pageId]);
 
   const rollbackToVersion = useCallback(
     async (versionId: string) => {
@@ -231,10 +222,9 @@ export function usePageEditor(pageId: string | undefined) {
       try {
         const rolledBack = await rollbackPage(pageId, versionId);
         resetSchema(rolledBack.schema);
-        setSavedDraftFingerprint(createSchemaFingerprint(rolledBack.schema));
-        const detail = await getPage(pageId);
-        setPage(detail);
-        setVersions(detail.versions);
+        applySavedState(
+          readPageEditorSavedState(await getPage(pageId), rolledBack.schema),
+        );
         setFeedback({
           message: buildPublicationFeedback({
             action: "rollback",
@@ -244,20 +234,16 @@ export function usePageEditor(pageId: string | undefined) {
           type: "success",
         });
       } catch (caught) {
-        if (caught instanceof AuthRequiredError) {
-          globalThis.location.assign("/login");
+        if (redirectWhenAuthRequired(caught)) {
           return;
         }
 
-        setFeedback({
-          message: formatRequestError(caught),
-          type: "error",
-        });
+        setFeedback(readEditorErrorFeedback(caught));
       } finally {
         setRollingBackVersionId(null);
       }
     },
-    [pageId, resetSchema],
+    [applySavedState, pageId, resetSchema],
   );
 
   const draftFingerprint = useMemo(
