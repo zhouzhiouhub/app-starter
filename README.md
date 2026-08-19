@@ -4,8 +4,8 @@
 
 当前目标不是一次性复制 Shopify 全量能力，而是先完成一个可长期演进的建站平台工程基础：前台渲染、后台管理壳、API 服务、Page Schema、共享 Renderer、数据库模型、二次开发入口和后续电商/多语言能力预留。
 
-> 当前日期：2026-08-18
-> 当前阶段：后台页面列表、新建页面、草稿保存和按 ID 发布已落地。下一步是 Page Builder 区块排序、属性面板和 Undo / Redo。
+> 当前日期：2026-08-19
+> 当前阶段：建站 MVP 的页面管理、Page Builder、媒体、SEO、发布历史、回滚和前台 ISR 刷新链路已逐步落地；下一步是补齐生产部署 smoke test 和更完整的发布验收。
 
 ## 1. 当前进度
 
@@ -456,6 +456,7 @@ POST /api/v1/pages
 GET  /api/v1/pages/:id
 PUT  /api/v1/pages/:id/schema
 POST /api/v1/pages/:id/publish
+POST /api/v1/pages/:id/rollback
 POST /api/v1/admin/pages/:slug/publish
 
 GET  /api/v1/markets
@@ -504,6 +505,18 @@ pnpm --filter @app-starter/admin build
 pnpm --filter @app-starter/web build
 pnpm --filter @app-starter/api build
 pnpm --filter @app-starter/renderer build
+```
+
+发布链路 Smoke Test（需要 API、Web 已启动，并配置 Storefront ISR revalidation secret）：
+
+```powershell
+pnpm smoke:publish
+```
+
+该脚本会登录默认管理员，发布一个唯一 slug 的测试页，验证公共页面 API 和前台 HTML 是否读取到同一份已发布内容。若只想验证发布与前台读取、暂不强制 ISR 回调，可临时设置：
+
+```powershell
+$env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 ```
 
 当前已验证通过：

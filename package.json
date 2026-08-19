@@ -11,6 +11,7 @@
     "dev": "pnpm --parallel --filter @app-starter/schema --filter @app-starter/extension-sdk --filter @app-starter/admin-theme --filter @app-starter/custom-admin --filter @app-starter/web --filter @app-starter/admin --filter @app-starter/api dev",
     "predev": "node scripts/check-install.mjs && pnpm run build:api-packages && pnpm run build:admin-packages",
     "lint": "pnpm -r --if-present lint",
+    "smoke:publish": "node scripts/smoke-publish.mjs",
     "test": "pnpm -r --if-present test",
     "typecheck": "pnpm -r --if-present typecheck",
     "format:check": "prettier --check ."

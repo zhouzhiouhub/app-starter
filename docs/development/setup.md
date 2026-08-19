@@ -75,3 +75,23 @@ Admin Vite is bound to `0.0.0.0`, so you can open it from a LAN IP such as
 `http://192.168.0.200:5173`. In development, Admin calls `/api/v1` on the same
 origin and Vite proxies those requests to `http://127.0.0.1:4000`. Wait until
 the API logs `Nest application successfully started` before signing in.
+
+## Publish Smoke Test
+
+After API and Web are running, verify the publishing path with:
+
+```bash
+pnpm smoke:publish
+```
+
+The script logs in with `SMOKE_ADMIN_EMAIL` / `SMOKE_ADMIN_PASSWORD` (falling
+back to the seeded admin), publishes a unique page through the Admin API, checks
+`GET /api/v1/public/pages/:slug`, then checks the storefront HTML at `/en/:slug`.
+
+By default the script requires `meta.revalidation.triggered=true`, so keep
+`STOREFRONT_REVALIDATE_SECRET` configured in both API and Web. To test only the
+publish and storefront read path while wiring revalidation, run:
+
+```bash
+SMOKE_REQUIRE_REVALIDATION=false pnpm smoke:publish
+```
