@@ -1,23 +1,14 @@
 import type { PageSchema } from "@app-starter/schema";
 import {
-  readCtaHrefFeedback,
-  readCtaLabelFeedback,
-} from "./cta-feedback.ts";
-import { readImageAltFeedback } from "./image-alt-feedback.ts";
-import { readImageSrcFeedback } from "./image-src-feedback.ts";
+  type PublishPreflightIssue,
+  type PublishPreflightSeverity,
+} from "./publish-preflight-types.ts";
 import { readSafeHrefFeedback } from "./safe-href-feedback.ts";
 import { readSeoFieldFeedback } from "./seo-feedback.ts";
-import { readSectionText } from "./section-content-updates.ts";
-import { readImages } from "./section-list-prop-updates.ts";
+import { collectSectionPreflightIssues } from "./section-publish-preflight.ts";
 import type { SeoField } from "./seo-updates";
 
-export type PublishPreflightSeverity = "error" | "warning";
-
-export interface PublishPreflightIssue {
-  field: string;
-  message: string;
-  severity: PublishPreflightSeverity;
-}
+export type { PublishPreflightIssue, PublishPreflightSeverity };
 
 interface SafeHrefCheck {
   allowEmpty?: boolean;
@@ -32,26 +23,6 @@ interface SeoCheck {
   value: string | undefined;
 }
 
-interface ImageSrcCheck {
-  field: string;
-  label: string;
-  value: string | undefined;
-}
-
-interface ImageAltCheck {
-  field: string;
-  label: string;
-  value: string | undefined;
-}
-
-interface CtaPairCheck {
-  hrefField: string;
-  hrefValue: string | undefined;
-  label: string;
-  labelField: string;
-  labelValue: string | undefined;
-}
-
 export function collectPublishPreflightIssues(
   schema: PageSchema,
 ): PublishPreflightIssue[] {
@@ -59,7 +30,7 @@ export function collectPublishPreflightIssues(
 
   collectChromeIssues(schema, issues);
   collectSeoIssues(schema, issues);
-  collectSectionIssues(schema, issues);
+  issues.push(...collectSectionPreflightIssues(schema));
 
   return issues;
 }
@@ -135,64 +106,6 @@ function collectSeoIssues(
   });
 }
 
-function collectSectionIssues(
-  schema: PageSchema,
-  issues: PublishPreflightIssue[],
-): void {
-  schema.sections.forEach((section, sectionIndex) => {
-    if (section.component !== "image-gallery") {
-      if (section.component === "cta-bar" || section.component === "hero-banner") {
-        addCtaPairIssues(issues, {
-          hrefField: `sections[${sectionIndex}].props.ctaHref`,
-          hrefValue: readSectionText(section.props.ctaHref),
-          label: `${section.component} CTA`,
-          labelField: `sections[${sectionIndex}].props.ctaLabel`,
-          labelValue: readSectionText(section.props.ctaLabel),
-        });
-      }
-
-      return;
-    }
-
-    readImages(section).forEach((image, imageIndex) => {
-      addImageSrcIssue(issues, {
-        field: `sections[${sectionIndex}].props.images[${imageIndex}].src`,
-        label: `Image gallery image ${imageIndex + 1}`,
-        value: image.src,
-      });
-      addImageAltIssue(issues, {
-        field: `sections[${sectionIndex}].props.images[${imageIndex}].alt`,
-        label: `Image gallery image ${imageIndex + 1} alt text`,
-        value: image.alt,
-      });
-    });
-  });
-}
-
-function addCtaPairIssues(
-  issues: PublishPreflightIssue[],
-  check: CtaPairCheck,
-): void {
-  const hrefFeedback = readCtaHrefFeedback(check.labelValue, check.hrefValue);
-  const labelFeedback = readCtaLabelFeedback(check.labelValue, check.hrefValue);
-
-  if (hrefFeedback.status) {
-    issues.push({
-      field: check.hrefField,
-      message: `${check.label} link: ${hrefFeedback.help ?? "Enter a valid CTA link."}`,
-      severity: hrefFeedback.status,
-    });
-  }
-
-  if (labelFeedback.status) {
-    issues.push({
-      field: check.labelField,
-      message: `${check.label} label: ${labelFeedback.help ?? "Enter a CTA label."}`,
-      severity: labelFeedback.status,
-    });
-  }
-}
-
 function addSafeHrefIssue(
   issues: PublishPreflightIssue[],
   check: SafeHrefCheck,
@@ -225,40 +138,6 @@ function addSeoIssue(
   issues.push({
     field: `seo.${check.field}`,
     message: `${check.label}: ${feedback.help ?? "Enter a valid SEO value."}`,
-    severity: feedback.status,
-  });
-}
-
-function addImageSrcIssue(
-  issues: PublishPreflightIssue[],
-  check: ImageSrcCheck,
-): void {
-  const feedback = readImageSrcFeedback(check.value);
-
-  if (!feedback.status) {
-    return;
-  }
-
-  issues.push({
-    field: check.field,
-    message: `${check.label}: ${feedback.help ?? "Enter a valid image source."}`,
-    severity: feedback.status,
-  });
-}
-
-function addImageAltIssue(
-  issues: PublishPreflightIssue[],
-  check: ImageAltCheck,
-): void {
-  const feedback = readImageAltFeedback(check.value);
-
-  if (!feedback.status) {
-    return;
-  }
-
-  issues.push({
-    field: check.field,
-    message: `${check.label}: ${feedback.help ?? "Enter image alt text."}`,
     severity: feedback.status,
   });
 }
