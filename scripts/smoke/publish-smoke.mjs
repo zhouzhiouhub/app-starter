@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { assertAuditLogs } from "./audit-smoke.mjs";
 import { assertFeatureFlagsDisabled } from "./feature-flags-smoke.mjs";
 import { assertMediaUploadTarget } from "./media-smoke.mjs";
 import { assertPreviewFlow } from "./preview-smoke.mjs";
@@ -48,6 +49,7 @@ export async function runSmokeTest(input) {
   const page = await assertPreviewFlow(input, accessToken, schema, title);
   const publish = await publishPage(input, accessToken, page.id, schema);
   assertPublishedResponse(publish, input, title);
+  await assertAuditLogs(input, accessToken, page.id);
   await assertPublicApi(input, title);
   const storefrontHtml = await assertStorefrontPage(input, title);
   assertIndexableStorefrontPage(storefrontHtml);
@@ -272,8 +274,8 @@ export function printHelp() {
 
 Publishes a unique smoke-test page through the Admin API, then verifies the
 page editor draft save, Preview Token, public preview API, Web preview page,
-publish API, public page API, media upload target, storefront HTML, robots.txt,
-sitemap.xml, 404 behavior, and MVP disabled feature flags.
+publish API, audit logs, public page API, media upload target, storefront HTML,
+robots.txt, sitemap.xml, 404 behavior, and MVP disabled feature flags.
 
 Environment:
   API_URL                         API origin or /api/v1 base. Default: ${defaultApiUrl}

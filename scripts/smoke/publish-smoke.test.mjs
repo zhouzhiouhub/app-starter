@@ -1,5 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import {
+  hasUnsafeAuditMetadata,
+  isPageAuditLog,
+} from "./audit-smoke.mjs";
 import { readApiErrorCode } from "./feature-flags-smoke.mjs";
 import {
   isCdnUrlForR2Key,
@@ -155,6 +159,55 @@ test("smoke helpers validate preview token responses", () => {
       "smoke-page",
     ),
     false,
+  );
+});
+
+test("smoke helpers validate safe page audit logs", () => {
+  assert.equal(
+    isPageAuditLog(
+      {
+        action: "page.published",
+        metadata: {
+          publishedVersionId: "version-1",
+          slug: "smoke-page",
+        },
+        targetId: "page-1",
+        targetType: "page",
+      },
+      {
+        action: "page.published",
+        pageId: "page-1",
+        slug: "smoke-page",
+      },
+    ),
+    true,
+  );
+  assert.equal(
+    isPageAuditLog(
+      {
+        action: "preview_token.created",
+        metadata: {
+          slug: "smoke-page",
+          token: "[redacted]",
+        },
+        targetId: "page-1",
+        targetType: "page",
+      },
+      {
+        action: "preview_token.created",
+        pageId: "page-1",
+        slug: "smoke-page",
+      },
+    ),
+    false,
+  );
+  assert.equal(
+    hasUnsafeAuditMetadata({
+      nested: {
+        previewSecret: "[redacted]",
+      },
+    }),
+    true,
   );
 });
 
