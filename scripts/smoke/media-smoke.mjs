@@ -1,9 +1,26 @@
+import { Buffer } from "node:buffer";
+import { randomUUID } from "node:crypto";
+
+const smokeImage = {
+  body: Buffer.from(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgF/6YxS7wAAAABJRU5ErkJggg==",
+    "base64",
+  ),
+  filename: `smoke-${Date.now().toString(36)}.png`,
+  metadata: {
+    alt: "Smoke test pixel",
+    height: 1,
+    width: 1,
+  },
+  mimeType: "image/png",
+};
+
 export async function assertMediaUploadTarget(input, accessToken) {
   const response = await fetchJson(`${input.apiBaseUrl}/media/upload-url`, {
     body: JSON.stringify({
-      filename: `smoke-${Date.now().toString(36)}.webp`,
-      mimeType: "image/webp",
-      size: 128,
+      filename: smokeImage.filename,
+      mimeType: smokeImage.mimeType,
+      size: smokeImage.body.byteLength,
     }),
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -16,16 +33,24 @@ export async function assertMediaUploadTarget(input, accessToken) {
     throw new Error(readHttpError(response, "Media upload target failed."));
   }
 
-  assertUploadTargetShape(response.body?.data);
+  const target = response.body?.data;
+  assertUploadTargetShape(target);
 
-  if (input.requireR2Upload && !isR2UploadUrl(response.body.data.uploadUrl)) {
+  if (input.requireR2Upload && !isR2UploadUrl(target.uploadUrl)) {
     throw new Error("Media upload target is not a Cloudflare R2 presigned URL.");
   }
 
+  if (input.requireR2Upload) {
+    await uploadSmokeImage(target);
+  }
+
+  const asset = await confirmSmokeImage(input, accessToken, target);
+  assertMediaAssetShape(asset, target, input.requireR2Upload);
+
   console.log(
     input.requireR2Upload
-      ? "Media R2 upload target passed."
-      : "Media upload target passed.",
+      ? "Media R2 upload and CDN confirmation passed."
+      : "Media upload target and confirm passed.",
   );
 }
 
@@ -40,6 +65,31 @@ export function isR2UploadUrl(value) {
   } catch {
     return false;
   }
+}
+
+export function isCdnUrlForR2Key(value, r2Key) {
+  try {
+    const url = new URL(value);
+    return (
+      ["http:", "https:"].includes(url.protocol) &&
+      decodeURIComponent(url.pathname).endsWith(`/${r2Key}`)
+    );
+  } catch {
+    return false;
+  }
+}
+
+export function isProductionCdnUrl(value) {
+  try {
+    const url = new URL(value);
+    return !url.hostname.endsWith(".local.invalid");
+  } catch {
+    return false;
+  }
+}
+
+export function isMediaReference(value) {
+  return typeof value === "string" && /^media:\/\/[a-zA-Z0-9_-]+$/.test(value);
 }
 
 function assertUploadTargetShape(target) {
@@ -71,8 +121,87 @@ function assertUploadTargetShape(target) {
     throw new Error("Media upload target returned an invalid expiresAt.");
   }
 
-  if (target.headers?.["Content-Type"] !== "image/webp") {
+  if (target.headers?.["Content-Type"] !== smokeImage.mimeType) {
     throw new Error("Media upload target did not preserve the content type.");
+  }
+}
+
+async function uploadSmokeImage(target) {
+  const response = await fetch(target.uploadUrl, {
+    body: smokeImage.body,
+    headers: target.headers,
+    method: target.method,
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(
+      `R2 object upload failed. ${response.status}: ${text.slice(0, 160)}`,
+    );
+  }
+}
+
+async function confirmSmokeImage(input, accessToken, target) {
+  const response = await fetchJson(`${input.apiBaseUrl}/media/confirm`, {
+    body: JSON.stringify({
+      filename: smokeImage.filename,
+      metadata: smokeImage.metadata,
+      mimeType: smokeImage.mimeType,
+      r2Key: target.r2Key,
+      size: smokeImage.body.byteLength,
+    }),
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+      "Idempotency-Key": randomUUID(),
+    },
+    method: "POST",
+  });
+
+  if (!response.ok) {
+    throw new Error(readHttpError(response, "Media confirm failed."));
+  }
+
+  return response.body?.data;
+}
+
+function assertMediaAssetShape(asset, target, requireProductionCdn) {
+  if (!asset || typeof asset !== "object") {
+    throw new Error("Media confirm did not return a data object.");
+  }
+
+  assertString(asset.id, "id");
+  assertString(asset.url, "url");
+  assertString(asset.reference, "reference");
+
+  if (asset.filename !== smokeImage.filename) {
+    throw new Error("Media confirm did not preserve the filename.");
+  }
+
+  if (asset.mimeType !== smokeImage.mimeType || asset.type !== "image") {
+    throw new Error("Media confirm returned an unexpected media type.");
+  }
+
+  if (asset.r2Key !== target.r2Key) {
+    throw new Error("Media confirm returned an unexpected R2 key.");
+  }
+
+  if (asset.size !== smokeImage.body.byteLength) {
+    throw new Error("Media confirm returned an unexpected file size.");
+  }
+
+  if (!isMediaReference(asset.reference)) {
+    throw new Error("Media confirm returned an invalid media:// reference.");
+  }
+
+  if (!isCdnUrlForR2Key(asset.url, target.r2Key)) {
+    throw new Error("Media confirm returned a CDN URL for the wrong object.");
+  }
+
+  if (requireProductionCdn && !isProductionCdnUrl(asset.url)) {
+    throw new Error(
+      "Media confirm used the local CDN fallback; set MEDIA_CDN_BASE_URL.",
+    );
   }
 }
 

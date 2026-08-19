@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readApiErrorCode } from "./feature-flags-smoke.mjs";
-import { isR2UploadUrl } from "./media-smoke.mjs";
+import {
+  isCdnUrlForR2Key,
+  isMediaReference,
+  isProductionCdnUrl,
+  isR2UploadUrl,
+} from "./media-smoke.mjs";
 import { getPreviewPath, isPreviewTokenShape } from "./preview-smoke.mjs";
 import {
   getStorefrontPath,
@@ -90,6 +95,31 @@ test("smoke helpers detect R2 upload URLs", () => {
     false,
   );
   assert.equal(isR2UploadUrl("not-a-url"), false);
+});
+
+test("smoke helpers validate CDN URLs and media references", () => {
+  assert.equal(
+    isCdnUrlForR2Key(
+      "https://cdn.example.com/tenant/2026/08/19/smoke.png",
+      "tenant/2026/08/19/smoke.png",
+    ),
+    true,
+  );
+  assert.equal(
+    isCdnUrlForR2Key(
+      "https://cdn.example.com/tenant/2026/08/19/other.png",
+      "tenant/2026/08/19/smoke.png",
+    ),
+    false,
+  );
+  assert.equal(isProductionCdnUrl("https://cdn.example.com/file.png"), true);
+  assert.equal(isProductionCdnUrl("https://cdn.local.invalid/file.png"), false);
+  assert.equal(
+    isProductionCdnUrl("https://uploads.local.invalid/file.png"),
+    false,
+  );
+  assert.equal(isMediaReference("media://asset_123"), true);
+  assert.equal(isMediaReference("https://cdn.example.com/asset_123"), false);
 });
 
 test("smoke helpers validate preview token responses", () => {

@@ -282,7 +282,7 @@ Environment:
   SMOKE_ADMIN_PASSWORD            Admin password. Default: SEED_ADMIN_PASSWORD or ${defaultPassword}
   SMOKE_TENANT_SLUG               Tenant slug. Default: ${defaultTenantSlug}
   SMOKE_PAGE_SLUG                 Optional fixed page slug.
-  SMOKE_REQUIRE_R2_UPLOAD         Require Cloudflare R2 presigned URL. Default: false
+  SMOKE_REQUIRE_R2_UPLOAD         Require R2 presigned URL, actual PUT upload, and production CDN URL. Default: false
   SMOKE_REQUIRE_REVALIDATION      Require meta.revalidation.triggered. Default: true
   SMOKE_RETRY_ATTEMPTS            Storefront fetch attempts. Default: 8
   SMOKE_RETRY_DELAY_MS            Delay between attempts. Default: 1000

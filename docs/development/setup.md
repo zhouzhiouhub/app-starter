@@ -100,9 +100,11 @@ back to the seeded admin), verifies the MVP disabled feature flags
 creates a Preview Token, checks the public preview API and Web `/preview`
 route, publishes a unique page through the Admin API, checks
 `GET /api/v1/public/pages/:slug`, then checks the media upload target,
-storefront HTML, `robots.txt`, `sitemap.xml`, and 404/noindex behavior. Set
-`SMOKE_REQUIRE_R2_UPLOAD=true` in production if the deployment must fail unless
-the upload target is a Cloudflare R2 presigned URL.
+media confirmation, storefront HTML, `robots.txt`, `sitemap.xml`, and
+404/noindex behavior. Set `SMOKE_REQUIRE_R2_UPLOAD=true` in production if the
+deployment must fail unless the upload target is a Cloudflare R2 presigned URL,
+the test object can be uploaded with PUT, and `MEDIA_CDN_BASE_URL` produces a
+non-local CDN URL.
 
 By default the script requires `meta.revalidation.triggered=true`, so keep
 `STOREFRONT_REVALIDATE_SECRET` configured in both API and Web. To test only the
