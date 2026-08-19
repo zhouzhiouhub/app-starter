@@ -1,5 +1,22 @@
 import { Buffer } from "node:buffer";
 import { randomUUID } from "node:crypto";
+import {
+  createMediaSmokeDetails,
+  isCdnUrlForR2Key,
+  isMediaListResponseContainingAsset,
+  isMediaReference,
+  isProductionCdnUrl,
+  isR2UploadUrl,
+} from "./media-smoke-diagnostics.mjs";
+
+export {
+  createMediaSmokeDetails,
+  isCdnUrlForR2Key,
+  isMediaListResponseContainingAsset,
+  isMediaReference,
+  isProductionCdnUrl,
+  isR2UploadUrl,
+} from "./media-smoke-diagnostics.mjs";
 
 const smokeImage = {
   body: Buffer.from(
@@ -37,7 +54,9 @@ export async function assertMediaUploadTarget(input, accessToken) {
   assertUploadTargetShape(target);
 
   if (input.requireR2Upload && !isR2UploadUrl(target.uploadUrl)) {
-    throw new Error("Media upload target is not a Cloudflare R2 presigned URL.");
+    throw new Error(
+      "Media upload target is not a Cloudflare R2 presigned URL.",
+    );
   }
 
   if (input.requireR2Upload) {
@@ -57,82 +76,6 @@ export async function assertMediaUploadTarget(input, accessToken) {
   return createMediaSmokeDetails(target, asset, input.requireR2Upload);
 }
 
-export function isR2UploadUrl(value) {
-  try {
-    const url = new URL(value);
-    return (
-      url.hostname.endsWith(".r2.cloudflarestorage.com") &&
-      url.searchParams.get("X-Amz-Algorithm") === "AWS4-HMAC-SHA256" &&
-      Boolean(url.searchParams.get("X-Amz-Signature"))
-    );
-  } catch {
-    return false;
-  }
-}
-
-export function isCdnUrlForR2Key(value, r2Key) {
-  try {
-    const url = new URL(value);
-    return (
-      ["http:", "https:"].includes(url.protocol) &&
-      decodeURIComponent(url.pathname).endsWith(`/${r2Key}`)
-    );
-  } catch {
-    return false;
-  }
-}
-
-export function isProductionCdnUrl(value) {
-  try {
-    const url = new URL(value);
-    return !url.hostname.endsWith(".local.invalid");
-  } catch {
-    return false;
-  }
-}
-
-export function isMediaReference(value) {
-  return typeof value === "string" && /^media:\/\/[a-zA-Z0-9_-]+$/.test(value);
-}
-
-export function isMediaListResponseContainingAsset(body, asset) {
-  const items = Array.isArray(body?.data) ? body.data : [];
-  const match = items.find((item) => item?.id === asset?.id);
-
-  if (!match) {
-    return false;
-  }
-
-  return (
-    match.filename === asset.filename &&
-    match.reference === asset.reference &&
-    match.status === "active" &&
-    match.type === "image"
-  );
-}
-
-export function createMediaSmokeDetails(target, asset, requireR2Upload) {
-  return {
-    assetId: asset.id,
-    assetSize: asset.size ?? null,
-    assetStatus: asset.status ?? null,
-    assetType: asset.type ?? null,
-    cdnHost: readUrlHost(asset.url),
-    cdnUrlMatchesR2Key: isCdnUrlForR2Key(asset.url, target.r2Key),
-    confirmPath: target.confirmPath,
-    isR2UploadUrl: isR2UploadUrl(target.uploadUrl),
-    presignedUrlHost: readUrlHost(target.uploadUrl),
-    productionCdn: isProductionCdnUrl(asset.url),
-    r2Key: asset.r2Key,
-    reference: asset.reference,
-    uploadContentType: target.headers?.["Content-Type"] ?? null,
-    uploadExpiresAt: target.expiresAt,
-    uploadMaxSize: target.maxSize,
-    uploadMethod: target.method,
-    uploadedObject: Boolean(requireR2Upload),
-  };
-}
-
 function assertUploadTargetShape(target) {
   if (!target || typeof target !== "object") {
     throw new Error("Media upload target did not return a data object.");
@@ -143,11 +86,15 @@ function assertUploadTargetShape(target) {
   assertString(target.expiresAt, "expiresAt");
 
   if (target.method !== "PUT") {
-    throw new Error(`Media upload target method must be PUT, got ${target.method}.`);
+    throw new Error(
+      `Media upload target method must be PUT, got ${target.method}.`,
+    );
   }
 
   if (target.type !== "image") {
-    throw new Error(`Media upload target type must be image, got ${target.type}.`);
+    throw new Error(
+      `Media upload target type must be image, got ${target.type}.`,
+    );
   }
 
   if (target.confirmPath !== "/api/v1/media/confirm") {
@@ -273,14 +220,6 @@ function assertMediaAssetShape(asset, target, requireProductionCdn) {
 function assertString(value, field) {
   if (typeof value !== "string" || !value) {
     throw new Error(`Media upload target returned an invalid ${field}.`);
-  }
-}
-
-function readUrlHost(value) {
-  try {
-    return new URL(value).hostname;
-  } catch {
-    return null;
   }
 }
 
