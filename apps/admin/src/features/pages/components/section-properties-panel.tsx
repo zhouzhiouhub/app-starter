@@ -26,6 +26,12 @@ const sectionPropertyFields: Record<string, SectionPropertyField[]> = {
       name: "ctaLabel",
       valueKind: "plain",
     },
+    {
+      control: "input",
+      label: "CTA link",
+      name: "ctaHref",
+      valueKind: "plain",
+    },
   ],
   "hero-banner": [
     { control: "input", label: "Eyebrow", name: "eyebrow", valueKind: "plain" },
@@ -35,6 +41,12 @@ const sectionPropertyFields: Record<string, SectionPropertyField[]> = {
       control: "input",
       label: "CTA label",
       name: "ctaLabel",
+      valueKind: "plain",
+    },
+    {
+      control: "input",
+      label: "CTA link",
+      name: "ctaHref",
       valueKind: "plain",
     },
   ],
