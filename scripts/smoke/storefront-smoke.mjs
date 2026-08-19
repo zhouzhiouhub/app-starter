@@ -1,18 +1,30 @@
 export async function assertStorefrontPage(input, title) {
-  const url = joinUrl(input.webUrl, getStorefrontPath(input.locale, input.slug));
+  const url = joinUrl(
+    input.webUrl,
+    getStorefrontPath(input.locale, input.slug),
+  );
   let lastError = "";
 
   for (let attempt = 1; attempt <= input.retryAttempts; attempt += 1) {
     try {
       const response = await fetch(url, { method: "GET" });
       const text = await response.text();
+      const pageAttempt = readStorefrontPageAttempt(
+        {
+          ok: response.ok,
+          status: response.status,
+          statusText: response.statusText,
+          text,
+        },
+        title,
+      );
 
-      if (response.ok && text.includes(title)) {
+      if (pageAttempt.ok && pageAttempt.titlePresent) {
         console.log("Storefront page passed.");
         return text;
       }
 
-      lastError = `status ${response.status}, title present: ${text.includes(title)}`;
+      lastError = formatStorefrontPageAttempt(pageAttempt);
     } catch (error) {
       lastError = readErrorMessage(error);
     }
@@ -25,6 +37,25 @@ export async function assertStorefrontPage(input, title) {
   throw new Error(
     `Storefront page did not show the published title (${lastError}).`,
   );
+}
+
+export function readStorefrontPageAttempt(response, title) {
+  return {
+    bodySnippet: response.ok ? null : readBodySnippet(response.text),
+    ok: response.ok,
+    status: response.status,
+    statusText: response.statusText || "",
+    titlePresent: response.text.includes(title),
+  };
+}
+
+export function formatStorefrontPageAttempt(attempt) {
+  const statusText = attempt.statusText ? ` ${attempt.statusText}` : "";
+  const body = attempt.bodySnippet
+    ? `, body: ${JSON.stringify(attempt.bodySnippet)}`
+    : "";
+
+  return `status ${attempt.status}${statusText}, title present: ${attempt.titlePresent}${body}`;
 }
 
 export function assertIndexableStorefrontPage(html) {
@@ -160,8 +191,14 @@ function delay(ms) {
 }
 
 function readHttpTextError(response, fallback) {
-  const message = response.statusText || response.text.slice(0, 160) || fallback;
+  const message =
+    response.statusText || response.text.slice(0, 160) || fallback;
   return `${fallback} ${response.status}: ${message}`;
+}
+
+function readBodySnippet(text) {
+  const snippet = text.replace(/\s+/g, " ").trim().slice(0, 160);
+  return snippet || null;
 }
 
 function readErrorMessage(error) {
