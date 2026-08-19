@@ -47,6 +47,10 @@ export interface RenderOptions {
   resolveMediaUrl?: (reference: MediaAssetReference) => string;
 }
 
+interface SectionRenderOptions extends RenderOptions {
+  verticalOffset?: number;
+}
+
 function renderChromeSlot(
   region: PageChromeRegion,
   slot: ReactNode | ((region: PageChromeRegion) => ReactNode) | undefined,
@@ -108,6 +112,7 @@ function resolveFooterContent(schema: PageSchema): FooterChromeContent {
 function createSectionLayoutStyle(
   node: SectionNode,
   viewport: Viewport,
+  verticalOffset = 0,
 ): CSSProperties | undefined {
   const layout = node.layout[viewport];
 
@@ -120,6 +125,7 @@ function createSectionLayoutStyle(
     gap: layout.gap,
     marginLeft: layout.x,
     marginRight: "auto",
+    marginTop: verticalOffset > 0 ? verticalOffset : undefined,
     maxWidth: "100%",
     minHeight: layout.height,
     padding: layout.padding,
@@ -129,7 +135,7 @@ function createSectionLayoutStyle(
 
 export function renderSection(
   node: SectionNode,
-  options: RenderOptions = {},
+  options: SectionRenderOptions = {},
 ): ReactNode {
   const registry = options.registry ?? defaultComponentRegistry;
   const Component = registry[node.component];
@@ -157,11 +163,40 @@ export function renderSection(
     <div
       data-component={node.component}
       data-section-id={node.id}
-      style={createSectionLayoutStyle(node, viewport)}
+      style={createSectionLayoutStyle(node, viewport, options.verticalOffset)}
     >
       <Component {...componentProps} />
     </div>
   );
+}
+
+function createSectionVerticalOffsets(
+  sections: SectionNode[],
+  viewport: Viewport,
+): Map<string, number> {
+  const offsets = new Map<string, number>();
+  let previousVisibleBottom = 0;
+
+  for (const section of sections) {
+    if (section.visibility?.[viewport] === false) {
+      continue;
+    }
+
+    const layout = section.layout[viewport];
+
+    if (!layout) {
+      offsets.set(section.id, 0);
+      continue;
+    }
+
+    offsets.set(section.id, Math.max(0, layout.y - previousVisibleBottom));
+    previousVisibleBottom = Math.max(
+      previousVisibleBottom,
+      layout.y + (layout.height ?? 0),
+    );
+  }
+
+  return offsets;
 }
 
 export function PageRenderer(
@@ -169,6 +204,7 @@ export function PageRenderer(
 ): ReactNode {
   const viewport = props.viewport ?? "desktop";
   const sections = getOrderedSectionsForViewport(props.schema, viewport);
+  const verticalOffsets = createSectionVerticalOffsets(sections, viewport);
   const header = renderChromeSlot(
     props.schema.chrome.header,
     props.chrome?.header,
@@ -196,7 +232,11 @@ export function PageRenderer(
       >
         {sections.map((section) => (
           <div key={section.id}>
-            {renderSection(section, { ...props, viewport })}
+            {renderSection(section, {
+              ...props,
+              verticalOffset: verticalOffsets.get(section.id),
+              viewport,
+            })}
           </div>
         ))}
       </main>
