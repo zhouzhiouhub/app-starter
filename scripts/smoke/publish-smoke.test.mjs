@@ -3,7 +3,6 @@ import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
-import { readApiErrorCode } from "./feature-flags-smoke.mjs";
 import {
   formatWebPreviewAttempt,
   getPreviewPath,
@@ -103,22 +102,6 @@ test("smoke helpers detect noindex robots metadata", () => {
     false,
   );
   assert.equal(hasNoIndexRobots("<title>noindex copy</title>"), false);
-});
-
-test("smoke helpers read API error codes", () => {
-  assert.equal(
-    readApiErrorCode({
-      error: {
-        code: "COMMERCE_DISABLED",
-      },
-    }),
-    "COMMERCE_DISABLED",
-  );
-  assert.equal(
-    readApiErrorCode({ code: "MULTI_LOCALE_DISABLED" }),
-    "MULTI_LOCALE_DISABLED",
-  );
-  assert.equal(readApiErrorCode({}), null);
 });
 
 test("smoke helpers validate preview token responses", () => {

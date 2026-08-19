@@ -50,7 +50,9 @@ async function assertPublicTranslationFallback(input) {
     response.body?.meta?.fallbackLocale !== expectedConfig.defaultLocale ||
     response.body?.meta?.isFallback !== true
   ) {
-    throw new Error("Public translations did not fall back to the default locale.");
+    throw new Error(
+      "Public translations did not fall back to the default locale.",
+    );
   }
 }
 
@@ -92,13 +94,36 @@ async function assertLocaleCreationDisabled(input, accessToken) {
 
 async function assertErrorResponse(url, init, expectedCode) {
   const response = await fetchJson(url, init);
-  const code = readApiErrorCode(response.body);
+  const diagnostic = readDisabledEndpointDiagnostic(response);
 
-  if (response.status !== 409 || code !== expectedCode) {
+  if (diagnostic.status !== 409 || diagnostic.code !== expectedCode) {
     throw new Error(
-      `${url} expected 409 ${expectedCode}, got ${response.status} ${code ?? "NO_CODE"}.`,
+      `${url} expected 409 ${expectedCode}, got ${formatDisabledEndpointDiagnostic(
+        diagnostic,
+      )}.`,
     );
   }
+}
+
+export function readDisabledEndpointDiagnostic(response) {
+  return {
+    code: readApiErrorCode(response.body),
+    message:
+      response.body?.error?.message ??
+      response.body?.message ??
+      response.statusText ??
+      null,
+    status: response.status,
+    statusText: response.statusText || "",
+  };
+}
+
+export function formatDisabledEndpointDiagnostic(diagnostic) {
+  const statusText = diagnostic.statusText ? ` ${diagnostic.statusText}` : "";
+  const code = diagnostic.code ?? "NO_CODE";
+  const message = diagnostic.message ? `: ${diagnostic.message}` : "";
+
+  return `${diagnostic.status}${statusText} ${code}${message}`;
 }
 
 async function fetchJson(url, init) {
