@@ -7,6 +7,7 @@ import {
   type StorefrontRevalidationInput,
   type StorefrontRevalidationResult,
 } from "../pages.revalidation.js";
+import { recordPagePublishedAudit } from "../pages.audit.js";
 import { getSiteForTenant } from "../pages.site.js";
 import { notFound, parseSchema, readSchema } from "../pages.validation.js";
 import { persistPublishedVersion } from "../pages.versions.js";
@@ -67,6 +68,14 @@ export async function publishPage(
             status: "published",
             publishedVersionId: publishedVersion.id,
           },
+        });
+
+        await recordPagePublishedAudit(tx, {
+          actor,
+          pageId: current.id,
+          publishedVersionId: publishedVersion.id,
+          schema: parsed,
+          site,
         });
 
         return parsed;

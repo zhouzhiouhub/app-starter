@@ -72,10 +72,11 @@ pnpm --filter @app-starter/api run prisma:seed
 pnpm dev
 ```
 
-Page write APIs use an `IdempotencyRecord` table, and Preview Token issuance
-uses an append-only `AuditLog` table. After pulling schema changes, run
-`prisma db push` again in local development so repeated publish/create requests
-can be safely deduplicated and preview issuance can be audited. After pulling
+Page write APIs use an `IdempotencyRecord` table, and Preview Token issuance plus
+page publish/rollback use an append-only `AuditLog` table. After pulling schema
+changes, run `prisma db push` again in local development so repeated
+publish/create requests can be safely deduplicated and sensitive page actions can
+be audited. After pulling
 role or scope changes, run `pnpm --filter @app-starter/api run prisma:seed`
 again and sign in with a fresh Admin session.
 

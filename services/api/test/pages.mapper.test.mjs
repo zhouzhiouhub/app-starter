@@ -255,6 +255,9 @@ test("publishPage triggers storefront revalidation after publishing", async () =
   const prisma = {
     $transaction: async (fn) =>
       fn({
+        auditLog: {
+          create: async () => ({}),
+        },
         page: {
           findFirst: async () => ({
             id: "page-1",
@@ -359,6 +362,12 @@ function createRollbackPrisma(options) {
   return {
     $transaction: async (fn) =>
       fn({
+        auditLog: {
+          create: async (input) => {
+            options.onAudit?.(input);
+            return {};
+          },
+        },
         page: {
           findFirst: async () => ({
             id: "page-1",

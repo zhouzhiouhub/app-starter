@@ -8,6 +8,7 @@ import {
   type StorefrontRevalidationInput,
   type StorefrontRevalidationResult,
 } from "../pages.revalidation.js";
+import { recordPageRollbackAudit } from "../pages.audit.js";
 import { getSiteForTenant } from "../pages.site.js";
 import {
   notFound,
@@ -85,6 +86,15 @@ export async function rollbackPage(
             status: "published",
             title: parsed.meta.title,
           },
+        });
+
+        await recordPageRollbackAudit(tx, {
+          actor,
+          pageId: page.id,
+          rollbackVersionId: rollbackVersion.id,
+          schema: parsed,
+          site,
+          targetVersionId: target.id,
         });
 
         return parsed;

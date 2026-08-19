@@ -51,6 +51,7 @@
 - 编辑器可保存草稿（`PUT /api/v1/pages/:id/schema`）或发布（`POST /api/v1/pages/:id/publish`）。
 - 编辑器可生成短期 Preview Token，并通过前台 `/preview?token=` 渲染草稿。
 - Preview Token 签发会写入只追加的 AuditLog，且不记录 token 明文。
+- 页面发布和回滚会写入只追加的 AuditLog，记录 actor、tenant、page、site、slug 和版本 ID。
 - Page Builder 已具备区块库、区块排序、属性面板、Desktop / Mobile 布局编辑、Undo / Redo。
 - 媒体库已具备列表、登记外部媒体、上传目标生成、归档和 `media://` 引用解析。
 - Settings 已具备默认站点名称与域名管理，并展示 MVP 默认市场、Locale、Currency、功能开关和 Analytics 配置。
@@ -577,6 +578,7 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 - 页面列表、新建页面、保存草稿、发布和回滚。
 - 短期 Preview Token 与前台 `/preview?token=` 草稿预览。
 - Preview Token 签发审计日志。
+- 页面发布 / 回滚审计日志。
 - 区块库、区块排序、区块属性面板、Undo / Redo。
 - 媒体库列表、上传目标、外部媒体登记、归档和 `media://` 选择。
 - Settings 默认站点名称、域名与 Analytics 配置展示页。
