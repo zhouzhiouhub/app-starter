@@ -1,5 +1,6 @@
 import { Form, Input, Typography } from "antd";
 import type { PageSchema } from "@app-starter/schema";
+import { readSafeHrefFeedback } from "../safe-href-feedback";
 import { ChromeNavigationList } from "./chrome-navigation-list";
 
 export function ChromeFooterContentFields(props: {
@@ -15,6 +16,7 @@ export function ChromeFooterContentFields(props: {
   schema: PageSchema;
 }) {
   const footer = props.schema.chrome.footer.content;
+  const brandHrefFeedback = readSafeHrefFeedback(footer.brand.href);
 
   return (
     <>
@@ -25,7 +27,11 @@ export function ChromeFooterContentFields(props: {
           value={footer.brand.label.defaultValue}
         />
       </Form.Item>
-      <Form.Item label="Brand link">
+      <Form.Item
+        help={brandHrefFeedback.help}
+        label="Brand link"
+        validateStatus={brandHrefFeedback.status}
+      >
         <Input
           onChange={(event) => props.onBrandChange("href", event.target.value)}
           value={footer.brand.href}

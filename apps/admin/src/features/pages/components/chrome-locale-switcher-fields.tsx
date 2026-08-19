@@ -1,6 +1,7 @@
 import { Button, Form, Input, Space, Switch, Typography } from "antd";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { toStorefrontPathPrefix, type PageSchema } from "@app-starter/schema";
+import { readSafeHrefFeedback } from "../safe-href-feedback";
 
 export function ChromeLocaleSwitcherFields(props: {
   onAdd: () => void;
@@ -38,57 +39,69 @@ export function ChromeLocaleSwitcherFields(props: {
       </Form.Item>
       <Typography.Text strong>Locales</Typography.Text>
       <Space direction="vertical" size={12} style={{ marginTop: 12, width: "100%" }}>
-        {switcher.locales.map((locale, index) => (
-          <div
-            key={`header-locale-${index}`}
-            style={{
-              alignItems: "center",
-              display: "grid",
-              gap: 8,
-              gridTemplateColumns:
-                "minmax(0, 0.8fr) minmax(0, 1fr) minmax(0, 1fr) auto",
-            }}
-          >
-            <Input
-              aria-label="Locale code"
-              disabled={!switcher.enabled}
-              onChange={(event) =>
-                props.onOptionChange(index, "code", event.target.value)
-              }
-              placeholder="Code, e.g. en-US"
-              value={locale.code}
-            />
-            <Input
-              aria-label="Locale label"
-              disabled={!switcher.enabled}
-              onChange={(event) =>
-                props.onOptionChange(index, "label", event.target.value)
-              }
-              placeholder="Display name"
-              value={locale.label.defaultValue}
-            />
-            <Input
-              aria-label="Locale link"
-              disabled={!switcher.enabled}
-              onChange={(event) =>
-                props.onOptionChange(index, "href", event.target.value)
-              }
-              placeholder={
-                locale.code
-                  ? `/${toStorefrontPathPrefix(locale.code)}`
-                  : "Link, e.g. /en"
-              }
-              value={locale.href ?? ""}
-            />
-            <Button
-              aria-label="Remove locale"
-              danger
-              disabled={!switcher.enabled}
-              icon={<DeleteOutlined />}
-              onClick={() => props.onRemove(index)}
-            />
-          </div>
-        ))}
+        {switcher.locales.map((locale, index) => {
+          const hrefFeedback = readSafeHrefFeedback(locale.href, {
+            allowEmpty: true,
+          });
+
+          return (
+            <div
+              key={`header-locale-${index}`}
+              style={{
+                alignItems: "start",
+                display: "grid",
+                gap: 8,
+                gridTemplateColumns:
+                  "minmax(0, 0.8fr) minmax(0, 1fr) minmax(0, 1fr) auto",
+              }}
+            >
+              <Input
+                aria-label="Locale code"
+                disabled={!switcher.enabled}
+                onChange={(event) =>
+                  props.onOptionChange(index, "code", event.target.value)
+                }
+                placeholder="Code, e.g. en-US"
+                value={locale.code}
+              />
+              <Input
+                aria-label="Locale label"
+                disabled={!switcher.enabled}
+                onChange={(event) =>
+                  props.onOptionChange(index, "label", event.target.value)
+                }
+                placeholder="Display name"
+                value={locale.label.defaultValue}
+              />
+              <Form.Item
+                help={hrefFeedback.help}
+                style={{ marginBottom: 0 }}
+                validateStatus={hrefFeedback.status}
+              >
+                <Input
+                  aria-label="Locale link"
+                  disabled={!switcher.enabled}
+                  onChange={(event) =>
+                    props.onOptionChange(index, "href", event.target.value)
+                  }
+                  placeholder={
+                    locale.code
+                      ? `/${toStorefrontPathPrefix(locale.code)}`
+                      : "Link, e.g. /en"
+                  }
+                  value={locale.href ?? ""}
+                />
+              </Form.Item>
+              <Button
+                aria-label="Remove locale"
+                danger
+                disabled={!switcher.enabled}
+                icon={<DeleteOutlined />}
+                onClick={() => props.onRemove(index)}
+              />
+            </div>
+          );
+        })}
         <Button
           disabled={!switcher.enabled}
           icon={<PlusOutlined />}
