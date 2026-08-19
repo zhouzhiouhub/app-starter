@@ -68,7 +68,20 @@ export class PagesService {
     idempotencyKey: string | undefined,
     actor: Actor,
   ) {
-    return publishPage(this.prisma, id, body, idempotencyKey, actor);
+    return publishPage(
+      this.prisma,
+      id,
+      body,
+      idempotencyKey,
+      actor,
+      undefined,
+      (schema, tenantId, client) =>
+        this.media.assertSchemaMediaReferencesPublishable(
+          schema,
+          tenantId,
+          client,
+        ),
+    );
   }
 
   async rollback(
@@ -77,7 +90,20 @@ export class PagesService {
     idempotencyKey: string | undefined,
     actor: Actor,
   ) {
-    return rollbackPage(this.prisma, id, body, idempotencyKey, actor);
+    return rollbackPage(
+      this.prisma,
+      id,
+      body,
+      idempotencyKey,
+      actor,
+      undefined,
+      (schema, tenantId, client) =>
+        this.media.assertSchemaMediaReferencesPublishable(
+          schema,
+          tenantId,
+          client,
+        ),
+    );
   }
 
   async publishBySlug(
@@ -92,6 +118,12 @@ export class PagesService {
       body,
       idempotencyKey,
       actor,
+      (schema, tenantId, client) =>
+        this.media.assertSchemaMediaReferencesPublishable(
+          schema,
+          tenantId,
+          client,
+        ),
     );
   }
 

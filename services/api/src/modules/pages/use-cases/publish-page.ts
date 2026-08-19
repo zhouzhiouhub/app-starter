@@ -1,4 +1,5 @@
 import type { PageSchema } from "@app-starter/schema";
+import type { Prisma } from "@prisma/client";
 import type { Actor } from "../../identity/identity.types.js";
 import type { PrismaService } from "../../prisma/prisma.service.js";
 import { runIdempotent } from "../pages.idempotency.js";
@@ -17,6 +18,12 @@ type StorefrontRevalidator = (
   input: StorefrontRevalidationInput,
 ) => Promise<StorefrontRevalidationResult>;
 
+type MediaReferenceValidator = (
+  schema: PageSchema,
+  tenantId: string,
+  client: Prisma.TransactionClient,
+) => Promise<void>;
+
 export async function publishPage(
   prisma: PrismaService,
   id: string,
@@ -24,6 +31,7 @@ export async function publishPage(
   idempotencyKey: string | undefined,
   actor: Actor,
   revalidator: StorefrontRevalidator = triggerStorefrontRevalidation,
+  validateMediaReferences: MediaReferenceValidator = async () => undefined,
 ) {
   const site = await getSiteForTenant(prisma, actor.tenantId);
 
@@ -56,6 +64,7 @@ export async function publishPage(
         }
 
         assertPageLocaleCanPublish(parsed);
+        await validateMediaReferences(parsed, site.tenantId, tx);
 
         const publishedVersion = await persistPublishedVersion(tx, {
           authorId: actor.id,

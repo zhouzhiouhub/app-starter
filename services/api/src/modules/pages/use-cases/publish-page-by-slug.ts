@@ -7,12 +7,15 @@ import { parseSchema, parseSlug } from "../pages.validation.js";
 import { createPage } from "./create-page.js";
 import { publishPage } from "./publish-page.js";
 
+type MediaReferenceValidator = Parameters<typeof publishPage>[6];
+
 export async function publishPageBySlug(
   prisma: PrismaService,
   slug: string,
   body: unknown,
   idempotencyKey: string | undefined,
   actor: Actor,
+  validateMediaReferences?: MediaReferenceValidator,
 ) {
   const site = await getSiteForTenant(prisma, actor.tenantId);
   const normalizedSlug = parseSlug(slug);
@@ -45,10 +48,26 @@ export async function publishPageBySlug(
           actor,
         );
 
-        return publishPage(prisma, created.data.id, schema, undefined, actor);
+        return publishPage(
+          prisma,
+          created.data.id,
+          schema,
+          undefined,
+          actor,
+          undefined,
+          validateMediaReferences,
+        );
       }
 
-      return publishPage(prisma, page.id, schema, undefined, actor);
+      return publishPage(
+        prisma,
+        page.id,
+        schema,
+        undefined,
+        actor,
+        undefined,
+        validateMediaReferences,
+      );
     },
   });
 }

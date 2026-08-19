@@ -67,6 +67,44 @@ test("publishPage rejects non-default locale while multi-locale is disabled", as
   );
 });
 
+test("publishPage validates media references before creating a version", async () => {
+  const schema = createInitialPageSchema({
+    slug: "launch",
+    title: "Launch",
+  });
+  schema.sections[0].props = {
+    image: "media://asset-missing",
+  };
+  const calls = { audit: null };
+  const prisma = createPublishPrisma(calls);
+
+  await assert.rejects(
+    () =>
+      publishPage(
+        prisma,
+        "page-1",
+        schema,
+        undefined,
+        createActor(),
+        undefined,
+        async (validatedSchema, tenantId, client) => {
+          assert.equal(validatedSchema.meta.slug, "launch");
+          assert.equal(
+            validatedSchema.sections[0].props.image,
+            "media://asset-missing",
+          );
+          assert.equal(tenantId, "tenant-1");
+          assert.equal(typeof client.mediaAsset.findMany, "function");
+          throw new Error("Missing media reference.");
+        },
+      ),
+    /Missing media reference/,
+  );
+
+  assert.equal(calls.audit, null);
+  assert.equal(calls.versionCreate, undefined);
+});
+
 test("rollbackPage records source and rollback version audit metadata", async () => {
   const schema = createInitialPageSchema({
     slug: "home",
@@ -98,6 +136,40 @@ test("rollbackPage records source and rollback version audit metadata", async ()
   assert.equal(calls.audit.metadata.rollbackVersionId, "version-rollback");
   assert.equal(calls.audit.metadata.targetVersionId, "version-1");
   assert.equal("schema" in calls.audit.metadata, false);
+});
+
+test("rollbackPage validates media references before creating a version", async () => {
+  const schema = createInitialPageSchema({
+    slug: "home",
+    title: "Previous Home",
+  });
+  schema.sections[0].props = {
+    image: "media://asset-missing",
+  };
+  const calls = { audit: null };
+  const prisma = createRollbackPrisma(schema, calls);
+
+  await assert.rejects(
+    () =>
+      rollbackPage(
+        prisma,
+        "page-1",
+        { versionId: "version-1" },
+        undefined,
+        createActor(),
+        undefined,
+        async (validatedSchema, tenantId, client) => {
+          assert.equal(validatedSchema.meta.slug, "home");
+          assert.equal(tenantId, "tenant-1");
+          assert.equal(typeof client.mediaAsset.findMany, "function");
+          throw new Error("Missing media reference.");
+        },
+      ),
+    /Missing media reference/,
+  );
+
+  assert.equal(calls.audit, null);
+  assert.equal(calls.rollbackCreate, undefined);
 });
 
 test("rollbackPage rejects non-default locale while multi-locale is disabled", async () => {
@@ -178,6 +250,9 @@ function createPublishPrisma(calls) {
             };
           },
         },
+        mediaAsset: {
+          findMany: async () => [],
+        },
       }),
     site: {
       findFirst: async () => ({
@@ -227,6 +302,9 @@ function createRollbackPrisma(schema, calls) {
             schema,
             status: "published",
           }),
+        },
+        mediaAsset: {
+          findMany: async () => [],
         },
       }),
     site: {

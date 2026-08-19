@@ -1,5 +1,6 @@
 import { BadRequestException } from "@nestjs/common";
-import { apiErrorCodes } from "@app-starter/schema";
+import { apiErrorCodes, type PageSchema } from "@app-starter/schema";
+import type { Prisma } from "@prisma/client";
 import type { Actor } from "../../identity/identity.types.js";
 import type { PrismaService } from "../../prisma/prisma.service.js";
 import { runIdempotent } from "../pages.idempotency.js";
@@ -22,6 +23,12 @@ type StorefrontRevalidator = (
   input: StorefrontRevalidationInput,
 ) => Promise<StorefrontRevalidationResult>;
 
+type MediaReferenceValidator = (
+  schema: PageSchema,
+  tenantId: string,
+  client: Prisma.TransactionClient,
+) => Promise<void>;
+
 export async function rollbackPage(
   prisma: PrismaService,
   id: string,
@@ -29,6 +36,7 @@ export async function rollbackPage(
   idempotencyKey: string | undefined,
   actor: Actor,
   revalidator: StorefrontRevalidator = triggerStorefrontRevalidation,
+  validateMediaReferences: MediaReferenceValidator = async () => undefined,
 ) {
   const site = await getSiteForTenant(prisma, actor.tenantId);
   const input = parseRollbackInput(body);
@@ -74,6 +82,7 @@ export async function rollbackPage(
 
         const parsed = readSchema(target.schema, page.slug);
         assertPageLocaleCanPublish(parsed);
+        await validateMediaReferences(parsed, site.tenantId, tx);
 
         const rollbackVersion = await persistRollbackVersion(tx, {
           authorId: actor.id,
