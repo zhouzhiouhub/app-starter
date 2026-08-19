@@ -3,6 +3,10 @@ import { assertAuditLogs } from "./audit-smoke.mjs";
 import { assertFeatureFlagsDisabled } from "./feature-flags-smoke.mjs";
 import { assertMediaUploadTarget } from "./media-smoke.mjs";
 import { assertPreviewFlow } from "./preview-smoke.mjs";
+import {
+  assertPublicApi,
+  assertPublicFallbackApi,
+} from "./public-api-smoke.mjs";
 import { assertRollbackFlow } from "./rollback-smoke.mjs";
 import { buildSmokePageSchema } from "./smoke-page-schema.mjs";
 import {
@@ -82,6 +86,11 @@ export async function runSmokeTest(input) {
     });
     await assertPublicApi(input, title);
     recordSmokeCheck(report, "public-page.api");
+    recordSmokeCheck(
+      report,
+      "public-page.fallback-api",
+      await assertPublicFallbackApi(input, title),
+    );
     const storefrontHtml = await assertStorefrontPage(input, title);
     assertIndexableStorefrontPage(storefrontHtml);
     recordSmokeCheck(report, "storefront.page");
@@ -197,30 +206,6 @@ function assertPublishedResponse(response, input, title) {
   } else {
     console.log("Storefront revalidation skipped by configuration.");
   }
-}
-
-async function assertPublicApi(input, title) {
-  const params = new URLSearchParams({
-    locale: input.locale,
-    market: input.market,
-  });
-  const response = await fetchJson(
-    `${input.apiBaseUrl}/public/pages/${encodeURIComponent(input.slug)}?${params}`,
-  );
-
-  if (!response.ok) {
-    throw new Error(readHttpError(response, "Public page API failed."));
-  }
-
-  if (response.body?.data?.meta?.title !== title) {
-    throw new Error("Public page API did not return the published title.");
-  }
-
-  if (response.body?.data?.seo?.noIndex === true) {
-    throw new Error("Public page API returned the smoke page as noIndex.");
-  }
-
-  console.log("Public page API passed.");
 }
 
 async function assertReachable(url, label) {
