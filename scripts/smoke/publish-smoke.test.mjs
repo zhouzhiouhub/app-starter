@@ -4,7 +4,12 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import { readApiErrorCode } from "./feature-flags-smoke.mjs";
-import { getPreviewPath, isPreviewTokenShape } from "./preview-smoke.mjs";
+import {
+  formatWebPreviewAttempt,
+  getPreviewPath,
+  isPreviewTokenShape,
+  readWebPreviewAttempt,
+} from "./preview-smoke.mjs";
 import {
   getStorefrontPath,
   hasNoIndexRobots,
@@ -62,9 +67,7 @@ test("smoke helpers parse sitemap URLs", () => {
 
 test("smoke helpers detect noindex robots metadata", () => {
   assert.equal(
-    hasNoIndexRobots(
-      '<meta content="noindex, nofollow" name="robots" />',
-    ),
+    hasNoIndexRobots('<meta content="noindex, nofollow" name="robots" />'),
     true,
   );
   assert.equal(
@@ -83,7 +86,10 @@ test("smoke helpers read API error codes", () => {
     }),
     "COMMERCE_DISABLED",
   );
-  assert.equal(readApiErrorCode({ code: "MULTI_LOCALE_DISABLED" }), "MULTI_LOCALE_DISABLED");
+  assert.equal(
+    readApiErrorCode({ code: "MULTI_LOCALE_DISABLED" }),
+    "MULTI_LOCALE_DISABLED",
+  );
   assert.equal(readApiErrorCode({}), null);
 });
 
@@ -120,6 +126,44 @@ test("smoke helpers validate preview token responses", () => {
       "smoke-page",
     ),
     false,
+  );
+});
+
+test("smoke helpers summarize web preview attempts", () => {
+  const passed = readWebPreviewAttempt(
+    {
+      ok: true,
+      status: 200,
+      statusText: "OK",
+      text: '<html><head><meta name="robots" content="noindex" /></head><body>Draft title</body></html>',
+    },
+    "Draft title",
+  );
+  const failed = readWebPreviewAttempt(
+    {
+      ok: false,
+      status: 500,
+      statusText: "Internal Server Error",
+      text: "<html>\n  <body>Preview crashed while loading draft</body>\n</html>",
+    },
+    "Draft title",
+  );
+
+  assert.deepEqual(passed, {
+    bodySnippet: null,
+    noIndex: true,
+    ok: true,
+    status: 200,
+    statusText: "OK",
+    titlePresent: true,
+  });
+  assert.equal(
+    failed.bodySnippet,
+    "<html> <body>Preview crashed while loading draft</body> </html>",
+  );
+  assert.equal(
+    formatWebPreviewAttempt(failed),
+    'status 500 Internal Server Error, title present: false, noindex: false, body: "<html> <body>Preview crashed while loading draft</body> </html>"',
   );
 });
 
@@ -185,7 +229,11 @@ test("smoke report helpers capture pass and failure state without secrets", () =
   assert.equal(report.environment.media.cdnHost, "cdn.local.invalid");
   assert.equal("password" in report.config, false);
 
-  recordSmokeCheckFailure(report, "media.upload-target", new Error("R2 failed"));
+  recordSmokeCheckFailure(
+    report,
+    "media.upload-target",
+    new Error("R2 failed"),
+  );
   failSmokeReport(report, new Error("boom"));
   assert.equal(report.status, "failed");
   assert.equal(report.checks[1].name, "media.upload-target");

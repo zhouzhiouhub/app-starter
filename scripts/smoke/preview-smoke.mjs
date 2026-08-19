@@ -29,6 +29,29 @@ export function isPreviewTokenShape(value, slug) {
   );
 }
 
+export function readWebPreviewAttempt(response, title) {
+  const titlePresent = response.text.includes(title);
+  const noIndex = hasNoIndexRobots(response.text);
+
+  return {
+    bodySnippet: response.ok ? null : readBodySnippet(response.text),
+    noIndex,
+    ok: response.ok,
+    status: response.status,
+    statusText: response.statusText || "",
+    titlePresent,
+  };
+}
+
+export function formatWebPreviewAttempt(attempt) {
+  const statusText = attempt.statusText ? ` ${attempt.statusText}` : "";
+  const body = attempt.bodySnippet
+    ? `, body: ${JSON.stringify(attempt.bodySnippet)}`
+    : "";
+
+  return `status ${attempt.status}${statusText}, title present: ${attempt.titlePresent}, noindex: ${attempt.noIndex}${body}`;
+}
+
 async function ensureSmokePage(input, accessToken, title) {
   const existing = await findPageBySlug(input, accessToken);
 
@@ -156,15 +179,14 @@ async function assertWebPreview(input, token, title) {
   for (let attempt = 1; attempt <= input.retryAttempts; attempt += 1) {
     try {
       const response = await fetchText(url);
-      const titlePresent = response.text.includes(title);
-      const noIndex = hasNoIndexRobots(response.text);
+      const attempt = readWebPreviewAttempt(response, title);
 
-      if (response.ok && titlePresent && noIndex) {
+      if (attempt.ok && attempt.titlePresent && attempt.noIndex) {
         console.log("Web preview page passed.");
         return;
       }
 
-      lastError = `status ${response.status}, title present: ${titlePresent}, noindex: ${noIndex}`;
+      lastError = formatWebPreviewAttempt(attempt);
     } catch (error) {
       lastError = readErrorMessage(error);
     }
@@ -233,6 +255,11 @@ function readHttpError(response, fallback) {
 
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function readBodySnippet(text) {
+  const snippet = text.replace(/\s+/g, " ").trim().slice(0, 160);
+  return snippet || null;
 }
 
 function readErrorMessage(error) {
