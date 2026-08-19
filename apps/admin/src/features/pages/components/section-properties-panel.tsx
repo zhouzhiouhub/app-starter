@@ -69,7 +69,7 @@ export function SectionPropertiesPanel(props: {
       }}
     >
       <Typography.Title level={4}>Section properties</Typography.Title>
-      {!section || fields.length === 0 ? (
+      {!section ? (
         <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
       ) : (
         <Form layout="vertical">
