@@ -12,6 +12,7 @@ import {
   type SectionNode,
   type Viewport,
 } from "@app-starter/schema";
+import { copyAllDesktopLayoutsToMobile } from "../section-layout-updates";
 import {
   copyDesktopSectionOrderToMobile,
   moveSection,
@@ -80,15 +81,26 @@ export function PageSectionList(props: {
           Sections
         </Typography.Title>
         {props.viewport === "mobile" ? (
-          <Button
-            icon={<CopyOutlined />}
-            onClick={() =>
-              props.onChange(copyDesktopSectionOrderToMobile(props.schema))
-            }
-            size="small"
-          >
-            Copy desktop order
-          </Button>
+          <Space size={8} wrap>
+            <Button
+              icon={<CopyOutlined />}
+              onClick={() =>
+                props.onChange(copyDesktopSectionOrderToMobile(props.schema))
+              }
+              size="small"
+            >
+              Copy order
+            </Button>
+            <Button
+              icon={<CopyOutlined />}
+              onClick={() =>
+                props.onChange(copyAllDesktopLayoutsToMobile(props.schema))
+              }
+              size="small"
+            >
+              Copy layouts
+            </Button>
+          </Space>
         ) : null}
       </div>
       {sections.length === 0 ? (

@@ -124,18 +124,31 @@ export function copyDesktopLayoutToMobile(
         return section;
       }
 
-      const desktopLayout = readSectionLayout(section, "desktop");
-
-      return {
-        ...section,
-        layout: {
-          ...section.layout,
-          mobile: {
-            ...desktopLayout,
-            width: Math.min(desktopLayout.width, 390),
-          },
-        },
-      };
+      return copySectionDesktopLayoutToMobile(section);
     }),
+  };
+}
+
+export function copyAllDesktopLayoutsToMobile(current: PageSchema): PageSchema {
+  return {
+    ...current,
+    sections: current.sections.map((section) =>
+      copySectionDesktopLayoutToMobile(section),
+    ),
+  };
+}
+
+function copySectionDesktopLayoutToMobile(section: SectionNode): SectionNode {
+  const desktopLayout = readSectionLayout(section, "desktop");
+
+  return {
+    ...section,
+    layout: {
+      ...section.layout,
+      mobile: {
+        ...desktopLayout,
+        width: Math.min(desktopLayout.width, 390),
+      },
+    },
   };
 }
