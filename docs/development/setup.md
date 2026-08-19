@@ -146,7 +146,9 @@ failed check name and error message so production R2 / CDN, ISR, and SEO
 failures can be triaged from the JSON artifact. Media check details include the
 presigned URL host, CDN host, CDN/R2 key match status, upload target metadata,
 and whether a real object upload was required, but never include the signed
-upload URL itself.
+upload URL itself. Publish revalidation details include a `diagnosis` field for
+triggered, missing secret, missing URL, HTTP request failure, and network or
+timeout-style failures.
 
 By default the script requires `meta.revalidation.triggered=true`, so keep
 `STOREFRONT_REVALIDATE_SECRET` configured in both API and Web. To test only the

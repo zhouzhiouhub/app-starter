@@ -8,6 +8,7 @@ import {
   assertPublicFallbackApi,
 } from "./public-api-smoke.mjs";
 import { assertRollbackFlow } from "./rollback-smoke.mjs";
+import { createRevalidationSmokeDetails } from "./revalidation-smoke.mjs";
 import { buildSmokePageSchema } from "./smoke-page-schema.mjs";
 import {
   completeSmokeReport,
@@ -86,7 +87,12 @@ export async function runSmokeTest(input) {
         assertPublishedResponse(publish, input, title);
         return publish;
       },
-      (publish) => ({ revalidation: publish?.meta?.revalidation ?? null }),
+      (publish) => ({
+        revalidation: createRevalidationSmokeDetails(
+          publish?.meta?.revalidation,
+          input,
+        ),
+      }),
     );
     await runSmokeStep(
       report,
