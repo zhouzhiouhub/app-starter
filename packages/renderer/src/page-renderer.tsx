@@ -118,7 +118,7 @@ function createSectionLayoutStyle(
   return {
     boxSizing: "border-box",
     gap: layout.gap,
-    marginLeft: layout.x > 0 ? layout.x : "auto",
+    marginLeft: layout.x,
     marginRight: "auto",
     maxWidth: "100%",
     minHeight: layout.height,
