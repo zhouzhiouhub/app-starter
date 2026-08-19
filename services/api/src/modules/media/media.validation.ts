@@ -2,6 +2,7 @@ import { BadRequestException } from "@nestjs/common";
 import { apiErrorCodes } from "@app-starter/schema";
 import { z, ZodError } from "zod";
 import {
+  DEFAULT_MEDIA_CDN_BASE_URL,
   MEDIA_ALLOWED_MIME_TYPES,
   MEDIA_MAX_UPLOAD_BYTES,
 } from "./media.constants.js";
@@ -112,6 +113,44 @@ export function assertTenantR2Key(r2Key: string, tenantId: string) {
   }
 }
 
+export function assertAllowedMediaUrl(
+  url: string,
+  env: Record<string, string | undefined> = process.env,
+) {
+  const parsed = new URL(url);
+  const allowedHosts = readAllowedMediaUrlHosts(env);
+
+  if (!["http:", "https:"].includes(parsed.protocol)) {
+    throw new BadRequestException({
+      code: apiErrorCodes.VALIDATION_ERROR,
+      message: "Media URL must be http(s).",
+    });
+  }
+
+  if (!allowedHosts.has(parsed.hostname.toLowerCase())) {
+    throw new BadRequestException({
+      code: apiErrorCodes.VALIDATION_ERROR,
+      message: "Media URL host is not allowed.",
+      details: {
+        host: parsed.hostname,
+      },
+    });
+  }
+}
+
+export function readAllowedMediaUrlHosts(
+  env: Record<string, string | undefined> = process.env,
+): Set<string> {
+  return new Set(
+    [
+      ...readHostsFromList(env.MEDIA_EXTERNAL_URL_HOSTS),
+      readHostFromUrl(env.MEDIA_CDN_BASE_URL),
+      readHostFromUrl(env.CDN_BASE_URL),
+      readHostFromUrl(DEFAULT_MEDIA_CDN_BASE_URL),
+    ].filter((host): host is string => Boolean(host)),
+  );
+}
+
 function unwrapBodyData(body: unknown): Record<string, unknown> {
   if (!body || typeof body !== "object") {
     throw new Error("Request body must be an object.");
@@ -147,5 +186,36 @@ function parseOrThrow<T>(fn: () => T): T {
     }
 
     throw error;
+  }
+}
+
+function readHostsFromList(value: string | undefined): string[] {
+  if (!value) {
+    return [];
+  }
+
+  return value
+    .split(",")
+    .map((item) => readHostFromUrlOrHost(item.trim()))
+    .filter((host): host is string => Boolean(host));
+}
+
+function readHostFromUrlOrHost(value: string): string | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  return readHostFromUrl(value) ?? value.toLowerCase();
+}
+
+function readHostFromUrl(value: string | undefined): string | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  try {
+    return new URL(value).hostname.toLowerCase();
+  } catch {
+    return undefined;
   }
 }

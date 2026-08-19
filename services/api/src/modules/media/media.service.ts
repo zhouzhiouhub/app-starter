@@ -32,6 +32,7 @@ import {
 } from "./media.upload-target.js";
 import { findMediaUsage } from "./media.usage.js";
 import {
+  assertAllowedMediaUrl,
   assertTenantR2Key,
   parseConfirmMediaInput,
   parseCreateUploadUrlInput,
@@ -114,6 +115,9 @@ export class MediaService {
   ) {
     const input = parseConfirmMediaInput(body);
     assertTenantR2Key(input.r2Key, actor.tenantId);
+    if (input.url) {
+      assertAllowedMediaUrl(input.url);
+    }
 
     return runTenantIdempotent(this.prisma, {
       body: input,
