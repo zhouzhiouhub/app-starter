@@ -1,11 +1,5 @@
-import {
-  ArrowDownOutlined,
-  ArrowUpOutlined,
-  CopyOutlined,
-  DeleteOutlined,
-  HolderOutlined,
-} from "@ant-design/icons";
-import { Button, Empty, List, Modal, Space, Tooltip, Typography } from "antd";
+import { CopyOutlined } from "@ant-design/icons";
+import { Button, Empty, List, Modal, Space, Typography } from "antd";
 import {
   getOrderedSectionsForViewport,
   type PageSchema,
@@ -15,14 +9,14 @@ import {
 import { copyAllDesktopLayoutsToMobile } from "../section-layout-updates";
 import {
   copyDesktopSectionOrderToMobile,
-  moveSection,
 } from "../section-order-updates";
-import { readSectionText } from "../section-content-updates";
+import { getSectionLabel } from "../section-label";
 import {
   duplicateSection,
   getNextSelectedSectionId,
   removeSection,
 } from "../section-management-updates";
+import { PageSectionListItem } from "./page-section-list-item";
 
 export function PageSectionList(props: {
   onChange: (schema: PageSchema) => void;
@@ -55,7 +49,7 @@ export function PageSectionList(props: {
         props.onChange(removeSection(props.schema, section.id));
         props.onSelect(nextSelectedId ?? "");
       },
-      title: `Delete ${sectionLabel(section)}?`,
+      title: `Delete ${getSectionLabel(section)}?`,
     });
   }
 
@@ -108,106 +102,24 @@ export function PageSectionList(props: {
       ) : (
         <List
           dataSource={sections}
-          renderItem={(section, index) => (
-            <List.Item
-              actions={[
-                <Tooltip key="up" title="Move up">
-                  <Button
-                    aria-label={`Move ${sectionLabel(section)} up`}
-                    disabled={index === 0}
-                    icon={<ArrowUpOutlined />}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      props.onChange(
-                        moveSection(
-                          props.schema,
-                          section.id,
-                          "up",
-                          props.viewport,
-                        ),
-                      );
-                    }}
-                    size="small"
-                  />
-                </Tooltip>,
-                <Tooltip key="down" title="Move down">
-                  <Button
-                    aria-label={`Move ${sectionLabel(section)} down`}
-                    disabled={index === sections.length - 1}
-                    icon={<ArrowDownOutlined />}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      props.onChange(
-                        moveSection(
-                          props.schema,
-                          section.id,
-                          "down",
-                          props.viewport,
-                        ),
-                      );
-                    }}
-                    size="small"
-                  />
-                </Tooltip>,
-                <Tooltip key="duplicate" title="Duplicate">
-                  <Button
-                    aria-label={`Duplicate ${sectionLabel(section)}`}
-                    icon={<CopyOutlined />}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      handleDuplicate(section);
-                    }}
-                    size="small"
-                  />
-                </Tooltip>,
-                <Tooltip key="delete" title="Delete">
-                  <Button
-                    aria-label={`Delete ${sectionLabel(section)}`}
-                    danger
-                    icon={<DeleteOutlined />}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      handleRemove(section);
-                    }}
-                    size="small"
-                  />
-                </Tooltip>,
-              ]}
-              onClick={() => props.onSelect(section.id)}
-              style={{
-                background:
-                  props.selectedSectionId === section.id ? "#f0f5ff" : "#fff",
-                cursor: "pointer",
-              }}
-            >
-              <List.Item.Meta
-                avatar={<HolderOutlined style={{ color: "#8c8c8c" }} />}
-                description={section.component}
-                title={
-                  <Space size={8}>
-                    <Typography.Text strong>
-                      {index + 1}. {sectionLabel(section)}
-                    </Typography.Text>
-                    <Typography.Text code>{section.id}</Typography.Text>
-                  </Space>
-                }
-              />
-            </List.Item>
-          )}
+          renderItem={(section, index) =>
+            <PageSectionListItem
+              index={index}
+              key={section.id}
+              onDuplicate={handleDuplicate}
+              onRemove={handleRemove}
+              onSchemaChange={props.onChange}
+              onSelect={props.onSelect}
+              schema={props.schema}
+              section={section}
+              sectionCount={sections.length}
+              selectedSectionId={props.selectedSectionId}
+              viewport={props.viewport}
+            />
+          }
           size="small"
         />
       )}
     </section>
   );
-}
-
-function sectionLabel(section: SectionNode): string {
-  const title = readSectionText(section.props.title);
-
-  if (title) {
-    return title;
-  }
-
-  const eyebrow = readSectionText(section.props.eyebrow);
-  return eyebrow || section.component;
 }

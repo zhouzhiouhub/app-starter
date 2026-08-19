@@ -109,7 +109,8 @@ function omitLayoutTextField(
   layout: LayoutBox,
   field: SectionLayoutTextField,
 ): LayoutBox {
-  const { [field]: _removed, ...nextLayout } = layout;
+  const nextLayout = { ...layout };
+  delete nextLayout[field];
   return nextLayout;
 }
 
