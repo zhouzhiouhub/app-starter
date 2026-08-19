@@ -145,19 +145,19 @@ export function renderSection(
     return null;
   }
 
-  if (!Component) {
-    return options.onMissingComponent ? (
-      options.onMissingComponent(node)
-    ) : (
+  const content = Component ? (
+    <Component
+      {...(options.resolveMediaUrl
+        ? resolveMediaReferences(node.props, options.resolveMediaUrl)
+        : node.props)}
+    />
+  ) : (
+    options.onMissingComponent?.(node) ?? (
       <section data-component-missing={node.component} data-section-id={node.id}>
         Missing component: {node.component}
       </section>
-    );
-  }
-
-  const componentProps = options.resolveMediaUrl
-    ? resolveMediaReferences(node.props, options.resolveMediaUrl)
-    : node.props;
+    )
+  );
 
   return (
     <div
@@ -165,7 +165,7 @@ export function renderSection(
       data-section-id={node.id}
       style={createSectionLayoutStyle(node, viewport, options.verticalOffset)}
     >
-      <Component {...componentProps} />
+      {content}
     </div>
   );
 }
