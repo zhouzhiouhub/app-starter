@@ -22,6 +22,7 @@ export function PageEditor(props: {
   canUndo: boolean;
   feedback: EditorFeedback | null;
   isCreatingPreview: boolean;
+  isDraftDirty: boolean;
   isPublishing: boolean;
   isSaving: boolean;
   onFeedbackClose: () => void;
@@ -82,6 +83,7 @@ export function PageEditor(props: {
         <PageEditorToolbar
           canRedo={props.canRedo}
           canUndo={props.canUndo}
+          isDraftDirty={props.isDraftDirty}
           isCreatingPreview={props.isCreatingPreview}
           isPublishing={props.isPublishing}
           isSaving={props.isSaving}
@@ -108,6 +110,9 @@ export function PageEditor(props: {
       <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
         <Tag color={props.page.status === "published" ? "green" : "default"}>
           {props.page.status}
+        </Tag>
+        <Tag color={props.isDraftDirty ? "orange" : "default"}>
+          {props.isDraftDirty ? "Unsaved draft" : "Draft saved"}
         </Tag>
         <Tag color="blue">DEFAULT_LOCALE=en-US</Tag>
         <Tag color="default">COMMERCE_ENABLED=false</Tag>

@@ -15,6 +15,7 @@ import { getStorefrontPageUrl } from "../storefront-url";
 export function PageEditorToolbar(props: {
   canRedo: boolean;
   canUndo: boolean;
+  isDraftDirty: boolean;
   isPublishing: boolean;
   isCreatingPreview: boolean;
   isSaving: boolean;
@@ -48,13 +49,18 @@ export function PageEditorToolbar(props: {
           onClick={props.onRedo}
         />
       </Tooltip>
-      <Button
-        icon={<SaveOutlined />}
-        loading={props.isSaving}
-        onClick={props.onSaveDraft}
+      <Tooltip
+        title={props.isDraftDirty ? "Save draft" : "No draft changes to save"}
       >
-        Save draft
-      </Button>
+        <Button
+          disabled={!props.isDraftDirty}
+          icon={<SaveOutlined />}
+          loading={props.isSaving}
+          onClick={props.onSaveDraft}
+        >
+          Save draft
+        </Button>
+      </Tooltip>
       <Button
         icon={<EyeOutlined />}
         loading={props.isCreatingPreview}

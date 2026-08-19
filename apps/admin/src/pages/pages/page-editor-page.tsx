@@ -36,6 +36,7 @@ export function PageEditorPage() {
       canUndo={editor.canUndo}
       feedback={editor.feedback}
       isCreatingPreview={editor.isCreatingPreview}
+      isDraftDirty={editor.isDraftDirty}
       isPublishing={editor.isPublishing}
       isSaving={editor.isSaving}
       onFeedbackClose={() => editor.setFeedback(null)}

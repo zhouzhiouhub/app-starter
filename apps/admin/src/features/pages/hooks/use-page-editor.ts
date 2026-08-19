@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { createFallbackPage, type Viewport } from "@app-starter/schema";
 import { AuthRequiredError } from "../../auth/api";
 import { formatRequestError } from "../../../lib/api-error";
@@ -10,6 +10,7 @@ import {
   savePageDraft,
 } from "../api";
 import { getStorefrontPreviewUrl } from "../storefront-url";
+import { createSchemaFingerprint } from "../schema-fingerprint";
 import { buildPublicationFeedback } from "../revalidation-feedback";
 import type {
   EditorFeedback,
@@ -22,6 +23,9 @@ export function usePageEditor(pageId: string | undefined) {
   const [page, setPage] = useState<PageSummary | null>(null);
   const [versions, setVersions] = useState<PageVersionSummary[]>([]);
   const [viewport, setViewport] = useState<Viewport>("desktop");
+  const [savedDraftFingerprint, setSavedDraftFingerprint] = useState<
+    string | null
+  >(null);
   const [feedback, setFeedback] = useState<EditorFeedback | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreatingPreview, setIsCreatingPreview] = useState(false);
@@ -53,15 +57,17 @@ export function usePageEditor(pageId: string | undefined) {
 
     try {
       const detail = await getPage(pageId);
+      const schema =
+        detail.draftSchema ??
+        createFallbackPage({
+          slug: detail.slug,
+          title: detail.title,
+        });
+
       setPage(detail);
       setVersions(detail.versions);
-      resetSchema(
-        detail.draftSchema ??
-          createFallbackPage({
-            slug: detail.slug,
-            title: detail.title,
-          }),
-      );
+      resetSchema(schema);
+      setSavedDraftFingerprint(createSchemaFingerprint(schema));
     } catch (caught) {
       if (caught instanceof AuthRequiredError) {
         globalThis.location.assign("/login");
@@ -92,6 +98,7 @@ export function usePageEditor(pageId: string | undefined) {
       const detail = await getPage(pageId);
       setPage(detail);
       setVersions(detail.versions);
+      setSavedDraftFingerprint(createSchemaFingerprint(draftSchema));
       setFeedback({
         message: "Draft saved. Publish when you want the storefront to update.",
         type: "success",
@@ -122,6 +129,7 @@ export function usePageEditor(pageId: string | undefined) {
     try {
       const published = await publishPage(pageId, draftSchema);
       resetSchema(published.schema);
+      setSavedDraftFingerprint(createSchemaFingerprint(published.schema));
       const detail = await getPage(pageId);
       setPage(detail);
       setVersions(detail.versions);
@@ -162,6 +170,7 @@ export function usePageEditor(pageId: string | undefined) {
       const detail = await getPage(pageId);
       setPage(detail);
       setVersions(detail.versions);
+      setSavedDraftFingerprint(createSchemaFingerprint(draftSchema));
       const preview = await createPreviewToken(pageId);
       globalThis.open(
         getStorefrontPreviewUrl(preview.token),
@@ -199,6 +208,7 @@ export function usePageEditor(pageId: string | undefined) {
       try {
         const rolledBack = await rollbackPage(pageId, versionId);
         resetSchema(rolledBack.schema);
+        setSavedDraftFingerprint(createSchemaFingerprint(rolledBack.schema));
         const detail = await getPage(pageId);
         setPage(detail);
         setVersions(detail.versions);
@@ -227,6 +237,15 @@ export function usePageEditor(pageId: string | undefined) {
     [pageId, resetSchema],
   );
 
+  const draftFingerprint = useMemo(
+    () => createSchemaFingerprint(draftSchema),
+    [draftSchema],
+  );
+  const isDraftDirty =
+    Boolean(draftFingerprint) &&
+    Boolean(savedDraftFingerprint) &&
+    draftFingerprint !== savedDraftFingerprint;
+
   return {
     canRedo,
     canUndo,
@@ -234,6 +253,7 @@ export function usePageEditor(pageId: string | undefined) {
     error,
     feedback,
     isCreatingPreview,
+    isDraftDirty,
     isLoading,
     isPublishing,
     isSaving,
