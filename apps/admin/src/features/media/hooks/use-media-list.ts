@@ -9,7 +9,10 @@ import type {
   MediaListMeta,
 } from "../types";
 
-export function useMediaList(status: MediaAssetListStatus = "active") {
+export function useMediaList(
+  status: MediaAssetListStatus = "active",
+  page = 1,
+) {
   const [assets, setAssets] = useState<MediaAsset[]>([]);
   const [meta, setMeta] = useState<MediaListMeta>({
     limit: DEFAULT_MEDIA_LIST_LIMIT,
@@ -19,13 +22,13 @@ export function useMediaList(status: MediaAssetListStatus = "active") {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async (page = 1) => {
+  const load = useCallback(async (nextPage = page) => {
     setIsLoading(true);
     setError(null);
 
     try {
       const result = await listMediaAssets(
-        page,
+        nextPage,
         DEFAULT_MEDIA_LIST_LIMIT,
         status,
       );
@@ -41,11 +44,11 @@ export function useMediaList(status: MediaAssetListStatus = "active") {
     } finally {
       setIsLoading(false);
     }
-  }, [status]);
+  }, [page, status]);
 
   useEffect(() => {
-    void load(1);
-  }, [load]);
+    void load(page);
+  }, [load, page]);
 
   return { assets, error, isLoading, load, meta };
 }

@@ -1,9 +1,15 @@
 import { Alert, Modal, Segmented, Space, Typography } from "antd";
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { archiveMediaAsset } from "../../features/media/api";
 import { MediaListTable } from "../../features/media/components/media-list-table";
 import { RegisterMediaModal } from "../../features/media/components/register-media-modal";
 import { useMediaList } from "../../features/media/hooks/use-media-list";
+import {
+  buildMediaListSearch,
+  readMediaListPage,
+  readMediaListStatus,
+} from "../../features/media/media-list-query";
 import type {
   MediaAsset,
   MediaAssetListStatus,
@@ -11,10 +17,31 @@ import type {
 import { formatRequestError } from "../../lib/api-error";
 
 export function MediaPage() {
-  const [status, setStatus] = useState<MediaAssetListStatus>("active");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const status = useMemo(
+    () => readMediaListStatus(searchParams),
+    [searchParams],
+  );
+  const page = useMemo(() => readMediaListPage(searchParams), [searchParams]);
   const [archiveError, setArchiveError] = useState<string | null>(null);
   const [archivingId, setArchivingId] = useState<string | null>(null);
-  const { assets, error, isLoading, load, meta } = useMediaList(status);
+  const { assets, error, isLoading, load, meta } = useMediaList(status, page);
+  const setStatus = useCallback(
+    (nextStatus: MediaAssetListStatus) => {
+      setSearchParams(buildMediaListSearch({ status: nextStatus }), {
+        replace: true,
+      });
+    },
+    [setSearchParams],
+  );
+  const setPage = useCallback(
+    (nextPage: number) => {
+      setSearchParams(buildMediaListSearch({ page: nextPage, status }), {
+        replace: true,
+      });
+    },
+    [setSearchParams, status],
+  );
 
   function confirmArchive(asset: MediaAsset) {
     Modal.confirm({
@@ -84,7 +111,7 @@ export function MediaPage() {
           assets={assets}
           isLoading={isLoading}
           onArchive={confirmArchive}
-          onPageChange={(page) => void load(page)}
+          onPageChange={setPage}
           page={meta.page}
           pageSize={meta.limit}
           total={meta.total}
