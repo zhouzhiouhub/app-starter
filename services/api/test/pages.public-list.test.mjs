@@ -2,6 +2,28 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { listPublishedPages } from "../dist/modules/pages/use-cases/list-published-pages.js";
 
+function createSchema(slug, title, noIndex = false) {
+  return {
+    version: "1.0",
+    meta: {
+      slug,
+      title,
+      market: "us",
+      locale: "en-US",
+    },
+    layout: {
+      desktop: {},
+      mobile: {},
+    },
+    sections: [],
+    seo: {
+      description: "",
+      noIndex,
+      title,
+    },
+  };
+}
+
 test("listPublishedPages returns public summaries for published pages", async () => {
   const updatedAt = new Date("2026-08-19T00:00:00.000Z");
   const publishedAt = new Date("2026-08-19T00:01:00.000Z");
@@ -24,6 +46,7 @@ test("listPublishedPages returns public summaries for published pages", async ()
               {
                 id: "version-1",
                 publishedAt,
+                schema: createSchema("home", "Home"),
               },
             ],
           },
@@ -36,10 +59,12 @@ test("listPublishedPages returns public summaries for published pages", async ()
               {
                 id: "version-2",
                 publishedAt: new Date("2026-08-18T00:00:00.000Z"),
+                schema: createSchema("legal/terms", "Terms"),
               },
               {
                 id: "version-3",
                 publishedAt: null,
+                schema: createSchema("legal/terms", "Terms", true),
               },
             ],
           },
@@ -65,12 +90,14 @@ test("listPublishedPages returns public summaries for published pages", async ()
 
   assert.deepEqual(result.data, [
     {
+      noIndex: false,
       slug: "home",
       title: "Home",
       publishedAt: "2026-08-19T00:01:00.000Z",
       updatedAt: "2026-08-19T00:00:00.000Z",
     },
     {
+      noIndex: true,
       slug: "legal/terms",
       title: "Terms",
       publishedAt: null,

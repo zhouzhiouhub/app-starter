@@ -144,9 +144,15 @@ export function createFallbackPage(input: {
     }),
     seo: {
       ...exampleLandingPage.seo,
+      noIndex: isNoIndexFallbackPage(input.slug),
       title,
     },
   });
+}
+
+function isNoIndexFallbackPage(slug: string): boolean {
+  const normalizedSlug = slug.toLowerCase().replace(/^\/+|\/+$/g, "");
+  return normalizedSlug === "404" || normalizedSlug.endsWith("/404");
 }
 
 function getFallbackPageTitle(slug: string): string {

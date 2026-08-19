@@ -10,6 +10,7 @@ const apiBaseUrl =
   "http://localhost:4000/api/v1";
 
 export type PublishedPageSummary = {
+  noIndex: boolean;
   publishedAt: string | null;
   slug: string;
   title: string;
@@ -68,6 +69,7 @@ function readPublishedPageSummary(value: unknown): PublishedPageSummary[] {
 
   return [
     {
+      noIndex: record.noIndex === true,
       publishedAt:
         typeof record.publishedAt === "string" ? record.publishedAt : null,
       slug: record.slug,

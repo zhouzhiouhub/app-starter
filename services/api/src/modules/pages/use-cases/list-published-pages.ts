@@ -1,5 +1,7 @@
+import type { Prisma } from "@prisma/client";
 import type { PrismaService } from "../../prisma/prisma.service.js";
 import { getPublicDefaultSite } from "../pages.site.js";
+import { readSchema } from "../pages.validation.js";
 
 type PublishedPageRecord = {
   publishedVersionId: string | null;
@@ -9,6 +11,7 @@ type PublishedPageRecord = {
   versions: Array<{
     id: string;
     publishedAt: Date | null;
+    schema: Prisma.JsonValue;
   }>;
 };
 
@@ -31,6 +34,7 @@ export async function listPublishedPages(prisma: PrismaService) {
         select: {
           id: true,
           publishedAt: true,
+          schema: true,
         },
       },
     },
@@ -58,8 +62,11 @@ function toPublishedPageSummary(page: PublishedPageRecord) {
     return [];
   }
 
+  const schema = readSchema(publishedVersion.schema, page.slug);
+
   return [
     {
+      noIndex: schema.seo.noIndex,
       slug: page.slug,
       title: page.title,
       publishedAt: publishedVersion.publishedAt?.toISOString() ?? null,

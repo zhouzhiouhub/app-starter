@@ -1,10 +1,14 @@
-import { Form, Input, Typography } from "antd";
+import { Form, Input, Switch, Typography } from "antd";
 import {
   isMediaAssetReference,
   type PageSchema,
 } from "@app-starter/schema";
 import { MediaAssetSelect } from "../../media/components/media-asset-select";
-import { updateSeoField, type SeoField } from "../seo-updates";
+import {
+  updateSeoField,
+  updateSeoNoIndex,
+  type SeoField,
+} from "../seo-updates";
 
 const seoFields: Array<{
   field: SeoField;
@@ -43,6 +47,10 @@ export function SeoSettingsPanel(props: {
     props.onChange(updateSeoField(props.schema, field, value));
   }
 
+  function handleIndexingChange(checked: boolean) {
+    props.onChange(updateSeoNoIndex(props.schema, !checked));
+  }
+
   return (
     <section
       style={{
@@ -55,6 +63,14 @@ export function SeoSettingsPanel(props: {
     >
       <Typography.Title level={4}>SEO</Typography.Title>
       <Form layout="vertical">
+        <Form.Item label="Search indexing">
+          <Switch
+            checked={!props.schema.seo.noIndex}
+            checkedChildren="Index"
+            onChange={handleIndexingChange}
+            unCheckedChildren="No index"
+          />
+        </Form.Item>
         {seoFields.map((item) => (
           <Form.Item key={item.field} label={item.label}>
             {item.rows ? (

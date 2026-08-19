@@ -168,6 +168,7 @@ export const seoConfigSchema = z.object({
   description: z.string().default(""),
   ogImage: seoImageUrlSchema.optional(),
   canonical: seoUrlSchema.optional(),
+  noIndex: z.boolean().default(false),
 });
 export type SeoConfig = z.infer<typeof seoConfigSchema>;
 

@@ -3,6 +3,10 @@ import type { Metadata } from "next";
 import { getNotFoundPage } from "../lib/published-page";
 
 export const metadata: Metadata = {
+  robots: {
+    follow: false,
+    index: false,
+  },
   title: "Page not found",
 };
 

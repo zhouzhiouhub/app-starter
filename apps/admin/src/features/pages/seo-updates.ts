@@ -15,3 +15,16 @@ export function updateSeoField(
     },
   };
 }
+
+export function updateSeoNoIndex(
+  current: PageSchema,
+  noIndex: boolean,
+): PageSchema {
+  return {
+    ...current,
+    seo: {
+      ...current.seo,
+      noIndex,
+    },
+  };
+}

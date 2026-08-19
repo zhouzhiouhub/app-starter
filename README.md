@@ -41,6 +41,7 @@
 - 页面管理 API：列表、创建、保存草稿、按 ID 发布。
 - 前台 `GET /api/v1/public/pages/:slug` 读取已发布 `PageVersion`。
 - 前台 `sitemap.xml` 和 `robots.txt` 已接入已发布页面清单。
+- 页面 SEO 支持 `noIndex`，前台 metadata 会输出 robots，sitemap 会排除 noIndex 和 404 系统页。
 - 前台未知路径会返回 404，并优先渲染已发布的 `404` 系统页。
 - 现有后台 Publish 仍走 `POST /api/v1/admin/pages/:slug/publish`，底层已改为写入数据库。
 - Admin 登录：Email + Password + JWT（Access Token + Refresh Token 轮换）。

@@ -135,6 +135,21 @@ test("page schema accepts safe SEO URLs", () => {
 
   assert.equal(parsed.seo.canonical, "https://example.com/en/test-page");
   assert.equal(parsed.seo.ogImage, "media://asset-1");
+  assert.equal(parsed.seo.noIndex, false);
+});
+
+test("page schema accepts noIndex SEO flag", () => {
+  const parsed = pageSchema.parse(
+    minimalPage({
+      seo: {
+        description: "Hidden from search results",
+        noIndex: true,
+        title: "Hidden page",
+      },
+    }),
+  );
+
+  assert.equal(parsed.seo.noIndex, true);
 });
 
 test("page schema keeps canonical URLs stricter than SEO images", () => {
@@ -232,6 +247,7 @@ test("404 fallback pages use the system template", () => {
   assert.equal(notFoundPage.template.id, "system");
   assert.equal(notFoundPage.chrome.header.enabled, true);
   assert.equal(notFoundPage.chrome.footer.enabled, true);
+  assert.equal(notFoundPage.seo.noIndex, true);
   assert.equal(notFoundPage.sections[0]?.id, "system-hero");
   assert.equal(notFoundPage.sections[0]?.props.eyebrow, "404");
 });
