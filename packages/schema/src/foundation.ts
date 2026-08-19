@@ -25,6 +25,7 @@ export function getStorefrontHref(locale: string, slug = "home"): string {
 }
 
 export const publishedPageRevalidateSeconds = 60;
+export const publishedPagesCacheTag = "published-page";
 export const storefrontRevalidateSecretHeader =
   "x-storefront-revalidate-secret";
 
@@ -36,7 +37,7 @@ export function getPublishedPageCacheTags(input: {
   const slug = normalizePageSlugForCache(input.slug);
 
   return [
-    "published-page",
+    publishedPagesCacheTag,
     `published-page:${input.market}:${input.locale}`,
     `published-page:${input.market}:${input.locale}:${slug}`,
   ];

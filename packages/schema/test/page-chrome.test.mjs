@@ -9,6 +9,7 @@ import {
   getStorefrontHref,
   collectMediaReferences,
   publishedPageRevalidateSeconds,
+  publishedPagesCacheTag,
   pageSchema,
   resolveMediaReferences,
   resolveLocaleFromPath,
@@ -300,6 +301,7 @@ test("storefront hrefs use short language prefixes", () => {
 
 test("published page cache helpers define ISR tags and paths", () => {
   assert.equal(publishedPageRevalidateSeconds, 60);
+  assert.equal(publishedPagesCacheTag, "published-page");
   assert.deepEqual(
     getPublishedPageCacheTags({
       locale: "en-US",

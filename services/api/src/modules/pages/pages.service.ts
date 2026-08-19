@@ -6,6 +6,7 @@ import { createPage } from "./use-cases/create-page.js";
 import { getPageById } from "./use-cases/get-page-by-id.js";
 import { getPublishedPageBySlug } from "./use-cases/get-published-page-by-slug.js";
 import { listPages } from "./use-cases/list-pages.js";
+import { listPublishedPages } from "./use-cases/list-published-pages.js";
 import { publishPage } from "./use-cases/publish-page.js";
 import { publishPageBySlug } from "./use-cases/publish-page-by-slug.js";
 import { rollbackPage } from "./use-cases/rollback-page.js";
@@ -79,5 +80,9 @@ export class PagesService {
     return getPublishedPageBySlug(this.prisma, slug, (schema, tenantId) =>
       this.media.resolveSchemaMediaReferences(schema, tenantId),
     );
+  }
+
+  async listPublished() {
+    return listPublishedPages(this.prisma);
   }
 }

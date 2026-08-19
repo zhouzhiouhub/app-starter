@@ -68,6 +68,27 @@ export class PublicController {
     };
   }
 
+  @Get("pages")
+  async listPages(
+    @Query("locale") locale?: string,
+    @Query("market") market?: string,
+  ) {
+    const localeContext = resolvePublicLocale(locale);
+    const marketContext = resolvePublicMarket(market);
+    const pages = await this.pages.listPublished();
+
+    return {
+      data: pages.data,
+      meta: {
+        ...pages.meta,
+        market: marketContext.market,
+        locale: localeContext.locale,
+        fallbackLocale: localeContext.defaultLocale,
+        isFallback: localeContext.isFallback || marketContext.isFallback,
+      },
+    };
+  }
+
   @Get("pages/:slug")
   async getPage(
     @Param("slug") slug: string,

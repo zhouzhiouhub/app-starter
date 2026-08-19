@@ -40,6 +40,7 @@
 - 种子数据会创建默认 Tenant / Site，以及已发布的 `home` 示例页。
 - 页面管理 API：列表、创建、保存草稿、按 ID 发布。
 - 前台 `GET /api/v1/public/pages/:slug` 读取已发布 `PageVersion`。
+- 前台 `sitemap.xml` 和 `robots.txt` 已接入已发布页面清单。
 - 现有后台 Publish 仍走 `POST /api/v1/admin/pages/:slug/publish`，底层已改为写入数据库。
 - Admin 登录：Email + Password + JWT（Access Token + Refresh Token 轮换）。
 - 后台管理接口校验 Bearer Token 与权限 Scope，并按登录租户隔离页面数据。
@@ -442,6 +443,7 @@ API Health: http://localhost:4000/api/v1/health
 ```text
 GET  /api/v1/health
 GET  /api/v1/public/config
+GET  /api/v1/public/pages
 GET  /api/v1/public/pages/:slug
 GET  /api/v1/public/translations/:locale
 
@@ -474,6 +476,7 @@ POST /api/v1/public/checkout
 
 - 后台页面、Localization 和商品/订单列表接口需要 `Authorization: Bearer {accessToken}`。
 - `POST /api/v1/pages`、`PUT /api/v1/pages/:id/schema`、发布接口需要 `Idempotency-Key`。
+- `GET /api/v1/public/pages` 返回已发布页面摘要，用于前台 sitemap。
 - `GET /api/v1/public/pages/:slug` 只返回已发布版本；未发布或不存在时返回 `NOT_FOUND`。
 - 当前 `cart` 和 `checkout` 会返回 `COMMERCE_DISABLED`，这是预期行为。
 - 本地默认管理员：`admin@example.com` / `ChangeMe123!`（可通过 `SEED_ADMIN_EMAIL`、`SEED_ADMIN_PASSWORD` 覆盖）。
