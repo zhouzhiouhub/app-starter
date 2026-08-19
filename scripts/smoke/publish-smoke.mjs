@@ -5,6 +5,13 @@ import { assertMediaUploadTarget } from "./media-smoke.mjs";
 import { assertPreviewFlow } from "./preview-smoke.mjs";
 import { buildSmokePageSchema } from "./smoke-page-schema.mjs";
 import {
+  completeSmokeReport,
+  createSmokeReport,
+  failSmokeReport,
+  recordSmokeCheck,
+  writeSmokeReportIfConfigured,
+} from "./smoke-report.mjs";
+import {
   assertIndexableStorefrontPage,
   assertNotFoundPage,
   assertRobots,
@@ -31,6 +38,7 @@ const defaultTenantSlug = "default";
 
 export async function runSmokeTest(input) {
   const title = `Smoke Publish ${new Date().toISOString()}`;
+  const report = createSmokeReport(input, title);
   const schema = buildSmokePageSchema({
     locale: input.locale,
     market: input.market,
@@ -42,25 +50,51 @@ export async function runSmokeTest(input) {
   console.log(`API: ${input.apiBaseUrl}`);
   console.log(`Web: ${input.webUrl}`);
 
-  await assertReachable(`${input.apiBaseUrl}/health`, "API health");
-  const accessToken = await login(input);
-  await assertFeatureFlagsDisabled(input, accessToken);
-  await assertMediaUploadTarget(input, accessToken);
-  const page = await assertPreviewFlow(input, accessToken, schema, title);
-  const publish = await publishPage(input, accessToken, page.id, schema);
-  assertPublishedResponse(publish, input, title);
-  await assertAuditLogs(input, accessToken, page.id);
-  await assertPublicApi(input, title);
-  const storefrontHtml = await assertStorefrontPage(input, title);
-  assertIndexableStorefrontPage(storefrontHtml);
-  await assertRobots(input);
-  await assertSitemap(input);
-  await assertNotFoundPage(input);
+  try {
+    await assertReachable(`${input.apiBaseUrl}/health`, "API health");
+    recordSmokeCheck(report, "api.health");
+    const accessToken = await login(input);
+    recordSmokeCheck(report, "auth.login");
+    await assertFeatureFlagsDisabled(input, accessToken);
+    recordSmokeCheck(report, "feature-flags.disabled");
+    await assertMediaUploadTarget(input, accessToken);
+    recordSmokeCheck(report, "media.upload-target");
+    const page = await assertPreviewFlow(input, accessToken, schema, title);
+    recordSmokeCheck(report, "page.preview", { pageId: page.id });
+    const publish = await publishPage(input, accessToken, page.id, schema);
+    assertPublishedResponse(publish, input, title);
+    recordSmokeCheck(report, "page.publish", {
+      revalidation: publish?.meta?.revalidation ?? null,
+    });
+    await assertAuditLogs(input, accessToken, page.id);
+    recordSmokeCheck(report, "audit.logs", {
+      actions: ["preview_token.created", "page.published"],
+    });
+    await assertPublicApi(input, title);
+    recordSmokeCheck(report, "public-page.api");
+    const storefrontHtml = await assertStorefrontPage(input, title);
+    assertIndexableStorefrontPage(storefrontHtml);
+    recordSmokeCheck(report, "storefront.page");
+    await assertRobots(input);
+    recordSmokeCheck(report, "seo.robots");
+    await assertSitemap(input);
+    recordSmokeCheck(report, "seo.sitemap");
+    await assertNotFoundPage(input);
+    recordSmokeCheck(report, "seo.not-found");
 
-  console.log("\nSmoke publish passed.");
-  console.log(
-    `Storefront URL: ${joinUrl(input.webUrl, getStorefrontPath(input.locale, input.slug))}`,
-  );
+    const storefrontUrl = joinUrl(
+      input.webUrl,
+      getStorefrontPath(input.locale, input.slug),
+    );
+    completeSmokeReport(report, { pageId: page.id, storefrontUrl });
+    await writeSmokeReportIfConfigured(input, report);
+    console.log("\nSmoke publish passed.");
+    console.log(`Storefront URL: ${storefrontUrl}`);
+  } catch (error) {
+    failSmokeReport(report, error);
+    await writeFailureReport(input, report);
+    throw error;
+  }
 }
 
 export function readConfig() {
@@ -77,6 +111,7 @@ export function readConfig() {
     requireRevalidation: readBooleanEnv("SMOKE_REQUIRE_REVALIDATION", true),
     retryAttempts: readPositiveIntEnv("SMOKE_RETRY_ATTEMPTS", 8),
     retryDelayMs: readPositiveIntEnv("SMOKE_RETRY_DELAY_MS", 1000),
+    reportPath: readOptionalEnv("SMOKE_REPORT_PATH"),
     slug: readEnv("SMOKE_PAGE_SLUG", createSmokeSlug()),
     tenantSlug: readEnv("SMOKE_TENANT_SLUG", defaultTenantSlug),
     webUrl: normalizeOrigin(readEnv("WEB_URL", defaultWebUrl)),
@@ -235,6 +270,11 @@ function readEnv(name, fallback) {
   return value ? value : fallback;
 }
 
+function readOptionalEnv(name) {
+  const value = process.env[name]?.trim();
+  return value ? value : null;
+}
+
 function readBooleanEnv(name, fallback) {
   const value = process.env[name]?.trim().toLowerCase();
 
@@ -265,6 +305,14 @@ function readHttpError(response, fallback) {
   return `${fallback} ${response.status}: ${message}`;
 }
 
+async function writeFailureReport(input, report) {
+  try {
+    await writeSmokeReportIfConfigured(input, report);
+  } catch (error) {
+    console.error(`Smoke report could not be written: ${readErrorMessage(error)}`);
+  }
+}
+
 export function readErrorMessage(error) {
   return error instanceof Error ? error.message : String(error);
 }
@@ -288,5 +336,6 @@ Environment:
   SMOKE_REQUIRE_REVALIDATION      Require meta.revalidation.triggered. Default: true
   SMOKE_RETRY_ATTEMPTS            Storefront fetch attempts. Default: 8
   SMOKE_RETRY_DELAY_MS            Delay between attempts. Default: 1000
+  SMOKE_REPORT_PATH               Optional JSON report output path.
 `);
 }

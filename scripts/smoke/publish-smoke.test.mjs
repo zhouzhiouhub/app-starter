@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import test from "node:test";
 import {
   hasUnsafeAuditMetadata,
@@ -21,6 +24,13 @@ import {
   readConfig,
 } from "./publish-smoke.mjs";
 import { buildSmokePageSchema } from "./smoke-page-schema.mjs";
+import {
+  completeSmokeReport,
+  createSmokeReport,
+  failSmokeReport,
+  recordSmokeCheck,
+  writeSmokeReportIfConfigured,
+} from "./smoke-report.mjs";
 
 test("smoke helpers preserve nested storefront slugs", () => {
   assert.equal(getStorefrontPath("en-US", "home"), "/en");
@@ -222,6 +232,7 @@ test("readConfig uses seeded defaults and explicit smoke overrides", async () =>
       SMOKE_PAGE_SLUG: "legal/terms",
       SMOKE_REQUIRE_R2_UPLOAD: "true",
       SMOKE_REQUIRE_REVALIDATION: "false",
+      SMOKE_REPORT_PATH: "tmp/smoke-report.json",
       SMOKE_TENANT_SLUG: "",
       WEB_URL: "https://web.example.com/",
     },
@@ -233,11 +244,76 @@ test("readConfig uses seeded defaults and explicit smoke overrides", async () =>
       assert.equal(config.password, "ChangeMe456!");
       assert.equal(config.requireR2Upload, true);
       assert.equal(config.requireRevalidation, false);
+      assert.equal(config.reportPath, "tmp/smoke-report.json");
       assert.equal(config.slug, "legal/terms");
       assert.equal(config.tenantSlug, "default");
       assert.equal(config.webUrl, "https://web.example.com");
     },
   );
+});
+
+test("smoke report helpers capture pass and failure state without secrets", () => {
+  const report = createSmokeReport(
+    {
+      apiBaseUrl: "https://api.example.com/api/v1",
+      locale: "en-US",
+      market: "us",
+      password: "ChangeMe123!",
+      requireR2Upload: true,
+      requireRevalidation: false,
+      slug: "smoke-page",
+      tenantSlug: "default",
+      webUrl: "https://web.example.com",
+    },
+    "Smoke Page",
+    new Date("2026-08-19T00:00:00.000Z"),
+  );
+
+  recordSmokeCheck(report, "api.health");
+  completeSmokeReport(report, {
+    pageId: "page-1",
+    storefrontUrl: "https://web.example.com/en/smoke-page",
+  });
+
+  assert.equal(report.status, "passed");
+  assert.equal(report.startedAt, "2026-08-19T00:00:00.000Z");
+  assert.equal(report.pageId, "page-1");
+  assert.equal(report.checks[0].name, "api.health");
+  assert.equal("password" in report.config, false);
+
+  failSmokeReport(report, new Error("boom"));
+  assert.equal(report.status, "failed");
+  assert.equal(report.error.message, "boom");
+});
+
+test("smoke report helper writes JSON when configured", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "app-smoke-"));
+
+  try {
+    const reportPath = join(directory, "report.json");
+    const report = createSmokeReport(
+      {
+        apiBaseUrl: "https://api.example.com/api/v1",
+        locale: "en-US",
+        market: "us",
+        requireR2Upload: false,
+        requireRevalidation: true,
+        slug: "smoke-page",
+        tenantSlug: "default",
+        webUrl: "https://web.example.com",
+      },
+      "Smoke Page",
+      new Date("2026-08-19T00:00:00.000Z"),
+    );
+
+    await writeSmokeReportIfConfigured({ reportPath }, report);
+    const written = JSON.parse(await readFile(reportPath, "utf8"));
+
+    assert.equal(written.slug, "smoke-page");
+    assert.equal(written.config.apiBaseUrl, "https://api.example.com/api/v1");
+  } finally {
+    await rm(directory, { force: true, recursive: true });
+  }
 });
 
 test("buildSmokePageSchema returns a publishable landing schema", () => {
