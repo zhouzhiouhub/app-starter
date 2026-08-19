@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
-import type { PageSchema } from "@app-starter/schema";
+import {
+  isMediaAssetReference,
+  type PageSchema,
+} from "@app-starter/schema";
 
 export function buildPageMetadata(schema: PageSchema | null): Metadata {
   if (!schema) {
@@ -12,7 +15,7 @@ export function buildPageMetadata(schema: PageSchema | null): Metadata {
   const title = schema.seo.title || schema.meta.title;
   const description = schema.seo.description || undefined;
   const canonical = schema.seo.canonical || undefined;
-  const ogImage = schema.seo.ogImage || undefined;
+  const ogImage = readResolvedSeoImage(schema.seo.ogImage);
 
   return {
     alternates: canonical
@@ -29,6 +32,14 @@ export function buildPageMetadata(schema: PageSchema | null): Metadata {
     robots: createRobots(schema.seo.noIndex),
     title,
   };
+}
+
+function readResolvedSeoImage(value: string | undefined): string | undefined {
+  if (!value || isMediaAssetReference(value)) {
+    return undefined;
+  }
+
+  return value;
 }
 
 function createRobots(noIndex: boolean): Metadata["robots"] {
