@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { assertFeatureFlagsDisabled } from "./feature-flags-smoke.mjs";
 import { buildSmokePageSchema } from "./smoke-page-schema.mjs";
 import {
   assertIndexableStorefrontPage,
@@ -40,6 +41,7 @@ export async function runSmokeTest(input) {
 
   await assertReachable(`${input.apiBaseUrl}/health`, "API health");
   const accessToken = await login(input);
+  await assertFeatureFlagsDisabled(input, accessToken);
   const publish = await publishPage(input, accessToken, schema);
   assertPublishedResponse(publish, input, title);
   await assertPublicApi(input, title);
@@ -264,7 +266,8 @@ export function printHelp() {
   console.log(`Usage: pnpm smoke:publish
 
 Publishes a unique smoke-test page through the Admin API, then verifies the
-public page API, storefront HTML, robots.txt, sitemap.xml, and 404 behavior.
+public page API, storefront HTML, robots.txt, sitemap.xml, 404 behavior, and
+MVP disabled feature flags.
 
 Environment:
   API_URL                         API origin or /api/v1 base. Default: ${defaultApiUrl}

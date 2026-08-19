@@ -1,4 +1,11 @@
-import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  ConflictException,
+  Controller,
+  Get,
+  Post,
+  UseGuards,
+} from "@nestjs/common";
 import { apiErrorCodes } from "@app-starter/schema";
 import { AdminApiGuard } from "../../common/admin-api.guard.js";
 import { RequireScopes } from "../../common/require-scopes.decorator.js";
@@ -53,13 +60,10 @@ export class LocalizationController {
   @RequireScopes("locale:write")
   createLocale(@Body() body: { code?: string }) {
     if (process.env.MULTI_LOCALE_ENABLED !== "true") {
-      return {
-        error: {
-          code: apiErrorCodes.MULTI_LOCALE_DISABLED,
-          message: `Cannot create locale ${body.code ?? ""} while multi-locale is disabled.`,
-          requestId: "local-dev"
-        }
-      };
+      throw new ConflictException({
+        code: apiErrorCodes.MULTI_LOCALE_DISABLED,
+        message: `Cannot create locale ${body.code ?? ""} while multi-locale is disabled.`,
+      });
     }
 
     return {

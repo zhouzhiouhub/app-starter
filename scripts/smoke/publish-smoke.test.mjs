@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readApiErrorCode } from "./feature-flags-smoke.mjs";
 import {
   getStorefrontPath,
   hasNoIndexRobots,
@@ -53,6 +54,19 @@ test("smoke helpers detect noindex robots metadata", () => {
     false,
   );
   assert.equal(hasNoIndexRobots("<title>noindex copy</title>"), false);
+});
+
+test("smoke helpers read API error codes", () => {
+  assert.equal(
+    readApiErrorCode({
+      error: {
+        code: "COMMERCE_DISABLED",
+      },
+    }),
+    "COMMERCE_DISABLED",
+  );
+  assert.equal(readApiErrorCode({ code: "MULTI_LOCALE_DISABLED" }), "MULTI_LOCALE_DISABLED");
+  assert.equal(readApiErrorCode({}), null);
 });
 
 test("readConfig uses seeded defaults and explicit smoke overrides", async () => {

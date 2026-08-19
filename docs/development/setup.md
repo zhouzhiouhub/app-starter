@@ -85,8 +85,10 @@ pnpm smoke:publish
 ```
 
 The script logs in with `SMOKE_ADMIN_EMAIL` / `SMOKE_ADMIN_PASSWORD` (falling
-back to the seeded admin), publishes a unique page through the Admin API, checks
-`GET /api/v1/public/pages/:slug`, then checks the storefront HTML at `/en/:slug`.
+back to the seeded admin), verifies the MVP disabled feature flags
+(`COMMERCE_ENABLED=false` and `MULTI_LOCALE_ENABLED=false`), publishes a unique
+page through the Admin API, checks `GET /api/v1/public/pages/:slug`, then checks
+the storefront HTML, `robots.txt`, `sitemap.xml`, and 404/noindex behavior.
 
 By default the script requires `meta.revalidation.triggered=true`, so keep
 `STOREFRONT_REVALIDATE_SECRET` configured in both API and Web. To test only the

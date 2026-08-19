@@ -1,4 +1,10 @@
-import { Controller, Get, Post, UseGuards } from "@nestjs/common";
+import {
+  ConflictException,
+  Controller,
+  Get,
+  Post,
+  UseGuards,
+} from "@nestjs/common";
 import { apiErrorCodes } from "@app-starter/schema";
 import { AdminApiGuard } from "../../common/admin-api.guard.js";
 import { RequireScopes } from "../../common/require-scopes.decorator.js";
@@ -36,12 +42,9 @@ export class CommerceController {
   }
 
   private disabled() {
-    return {
-      error: {
-        code: apiErrorCodes.COMMERCE_DISABLED,
-        message: "Commerce is reserved in MVP and disabled by default.",
-        requestId: "local-dev"
-      }
-    };
+    throw new ConflictException({
+      code: apiErrorCodes.COMMERCE_DISABLED,
+      message: "Commerce is reserved in MVP and disabled by default.",
+    });
   }
 }
