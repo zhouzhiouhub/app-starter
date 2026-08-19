@@ -13,6 +13,7 @@ import {
 } from "antd";
 import { useState } from "react";
 import { mediaMimeTypeOptions } from "../constants";
+import { readExternalMediaUrlError } from "../external-media-url-validation";
 import { registerMediaAsset, uploadMediaFile } from "../api";
 import {
   MEDIA_MAX_UPLOAD_BYTES,
@@ -176,7 +177,15 @@ export function RegisterMediaModal(props: { onCreated: () => void }) {
                       name="url"
                       rules={[
                         { required: true, message: "Enter an asset URL." },
-                        { type: "url", message: "Enter a valid URL." },
+                        {
+                          validator: async (_rule, value: string | undefined) => {
+                            const urlError = readExternalMediaUrlError(value);
+
+                            if (urlError) {
+                              throw new Error(urlError);
+                            }
+                          },
+                        },
                       ]}
                     >
                       <Input placeholder="https://cdn.example.com/hero.webp" />

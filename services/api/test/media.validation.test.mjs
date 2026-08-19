@@ -52,3 +52,15 @@ test("media URL allowlist rejects unsafe protocols", () => {
     },
   );
 });
+
+test("media URL allowlist rejects embedded credentials", () => {
+  assert.throws(
+    () =>
+      assertAllowedMediaUrl("https://user:pass@cdn.example.com/hero.webp", {
+        MEDIA_CDN_BASE_URL: "https://cdn.example.com",
+      }),
+    {
+      name: "BadRequestException",
+    },
+  );
+});

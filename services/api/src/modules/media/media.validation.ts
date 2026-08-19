@@ -127,6 +127,13 @@ export function assertAllowedMediaUrl(
     });
   }
 
+  if (parsed.username || parsed.password) {
+    throw new BadRequestException({
+      code: apiErrorCodes.VALIDATION_ERROR,
+      message: "Media URL must not include credentials.",
+    });
+  }
+
   if (!allowedHosts.has(parsed.hostname.toLowerCase())) {
     throw new BadRequestException({
       code: apiErrorCodes.VALIDATION_ERROR,
