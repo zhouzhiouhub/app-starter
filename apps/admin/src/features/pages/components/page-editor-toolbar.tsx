@@ -1,4 +1,5 @@
 import {
+  AuditOutlined,
   EyeOutlined,
   ExportOutlined,
   RedoOutlined,
@@ -8,6 +9,7 @@ import {
 } from "@ant-design/icons";
 import { Button, Space, Tooltip } from "antd";
 import { useNavigate } from "react-router-dom";
+import { buildPageAuditLogPath } from "../audit-log-link";
 import { getStorefrontPageUrl } from "../storefront-url";
 
 export function PageEditorToolbar(props: {
@@ -21,6 +23,7 @@ export function PageEditorToolbar(props: {
   onRedo: () => void;
   onSaveDraft: () => void;
   onUndo: () => void;
+  pageId: string;
   published: boolean;
   slug: string;
 }) {
@@ -66,6 +69,12 @@ export function PageEditorToolbar(props: {
         type="primary"
       >
         Publish
+      </Button>
+      <Button
+        icon={<AuditOutlined />}
+        onClick={() => navigate(buildPageAuditLogPath(props.pageId))}
+      >
+        Audit logs
       </Button>
       <Button
         disabled={!props.published}

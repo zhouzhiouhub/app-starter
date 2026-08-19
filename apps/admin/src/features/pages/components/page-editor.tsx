@@ -90,6 +90,7 @@ export function PageEditor(props: {
           onRedo={props.onRedo}
           onSaveDraft={props.onSaveDraft}
           onUndo={props.onUndo}
+          pageId={props.page.id}
           published={props.page.status === "published"}
           slug={props.page.slug}
         />

@@ -1,5 +1,6 @@
 import { ReloadOutlined, SearchOutlined } from "@ant-design/icons";
 import { Button, Form, Input, Select, Space } from "antd";
+import { useEffect } from "react";
 import { auditActionOptions } from "../constants";
 import type { AuditLogFilters } from "../types";
 
@@ -9,10 +10,14 @@ export function AuditLogFiltersBar(props: {
 }) {
   const [form] = Form.useForm<AuditLogFilters>();
 
+  useEffect(() => {
+    form.setFieldsValue(toFilterFormValues(props.filters));
+  }, [form, props.filters]);
+
   return (
     <Form
       form={form}
-      initialValues={props.filters}
+      initialValues={toFilterFormValues(props.filters)}
       layout="inline"
       onFinish={(values) => props.onChange(compactFilters(values))}
     >
@@ -41,7 +46,7 @@ export function AuditLogFiltersBar(props: {
           <Button
             icon={<ReloadOutlined />}
             onClick={() => {
-              form.resetFields();
+              form.setFieldsValue(toFilterFormValues({}));
               props.onChange({});
             }}
           >
@@ -51,6 +56,15 @@ export function AuditLogFiltersBar(props: {
       </Form.Item>
     </Form>
   );
+}
+
+function toFilterFormValues(filters: AuditLogFilters): AuditLogFilters {
+  return {
+    action: filters.action,
+    actorId: filters.actorId,
+    targetId: filters.targetId,
+    targetType: filters.targetType,
+  };
 }
 
 function compactFilters(filters: AuditLogFilters): AuditLogFilters {
