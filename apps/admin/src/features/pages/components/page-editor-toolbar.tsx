@@ -1,4 +1,5 @@
 import {
+  EyeOutlined,
   ExportOutlined,
   RedoOutlined,
   SaveOutlined,
@@ -13,7 +14,9 @@ export function PageEditorToolbar(props: {
   canRedo: boolean;
   canUndo: boolean;
   isPublishing: boolean;
+  isCreatingPreview: boolean;
   isSaving: boolean;
+  onOpenPreview: () => void;
   onPublish: () => void;
   onRedo: () => void;
   onSaveDraft: () => void;
@@ -48,6 +51,13 @@ export function PageEditorToolbar(props: {
         onClick={props.onSaveDraft}
       >
         Save draft
+      </Button>
+      <Button
+        icon={<EyeOutlined />}
+        loading={props.isCreatingPreview}
+        onClick={props.onOpenPreview}
+      >
+        Preview
       </Button>
       <Button
         icon={<UploadOutlined />}

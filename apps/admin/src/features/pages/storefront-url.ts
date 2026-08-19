@@ -14,6 +14,11 @@ export function getStorefrontPageUrl(
   return `${readWebOrigin()}${getStorefrontPagePath(slug, locale)}`;
 }
 
+export function getStorefrontPreviewUrl(token: string): string {
+  const searchParams = new URLSearchParams({ token });
+  return `${readWebOrigin()}/preview?${searchParams.toString()}`;
+}
+
 function readWebOrigin(): string {
   const configured = (
     import.meta as unknown as {

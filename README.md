@@ -5,7 +5,7 @@
 当前目标不是一次性复制 Shopify 全量能力，而是先完成一个可长期演进的建站平台工程基础：前台渲染、后台管理壳、API 服务、Page Schema、共享 Renderer、数据库模型、二次开发入口和后续电商/多语言能力预留。
 
 > 当前日期：2026-08-19
-> 当前阶段：建站 MVP 的页面管理、Page Builder、媒体、SEO、发布历史、回滚和前台 ISR 刷新链路已逐步落地；下一步是补齐生产部署 smoke test 和更完整的发布验收。
+> 当前阶段：建站 MVP 的页面管理、Page Builder、媒体、SEO、预览令牌、发布历史、回滚和前台 ISR 刷新链路已逐步落地；下一步是补齐生产部署 smoke test 和更完整的发布验收。
 
 ## 1. 当前进度
 
@@ -49,13 +49,14 @@
 - 种子数据会创建默认 Tenant Admin（`admin@example.com` / `ChangeMe123!`）。
 - 后台 Pages 列表、新建页面、按页面 ID 打开编辑器。
 - 编辑器可保存草稿（`PUT /api/v1/pages/:id/schema`）或发布（`POST /api/v1/pages/:id/publish`）。
+- 编辑器可生成短期 Preview Token，并通过前台 `/preview?token=` 渲染草稿。
 - Page Builder 已具备区块库、区块排序、属性面板、Desktop / Mobile 布局编辑、Undo / Redo。
 - 媒体库已具备列表、登记外部媒体、上传目标生成、归档和 `media://` 引用解析。
 
 ### 当前还没有完成
 
 - 站点管理后台页。
-- 可分享 Preview URL / Preview Token。
+- Preview Token 生产密钥轮换和审计。
 - 生产环境 R2 凭据、CDN 域名和真实上传链路验收。
 - 高还原差异检测和完整 Figma 自动导入。
 - 多语言运营后台。
@@ -297,6 +298,9 @@ API_URL=http://localhost:4000
 STOREFRONT_REVALIDATE_SECRET=local-revalidate-secret
 STOREFRONT_REVALIDATE_URL=http://localhost:3000/api/revalidate
 STOREFRONT_REVALIDATE_TIMEOUT_MS=5000
+
+PREVIEW_TOKEN_SECRET=
+PREVIEW_TOKEN_TTL_SECONDS=3600
 ```
 
 如果你的 PostgreSQL 密码就是 `postgres`：
@@ -325,6 +329,9 @@ API_URL=https://your-api.example.com
 STOREFRONT_REVALIDATE_SECRET=use-a-secret-value
 STOREFRONT_REVALIDATE_URL=https://your-storefront.example.com/api/revalidate
 STOREFRONT_REVALIDATE_TIMEOUT_MS=5000
+
+PREVIEW_TOKEN_SECRET=use-a-different-secret-value
+PREVIEW_TOKEN_TTL_SECONDS=3600
 ```
 
 线上注意事项：
@@ -552,6 +559,7 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 - Admin 登录页与 JWT 会话。
 - 页面 Chrome 编辑、Desktop / Mobile 预览。
 - 页面列表、新建页面、保存草稿、发布和回滚。
+- 短期 Preview Token 与前台 `/preview?token=` 草稿预览。
 - 区块库、区块排序、区块属性面板、Undo / Redo。
 - 媒体库列表、上传目标、外部媒体登记、归档和 `media://` 选择。
 - Publish 按钮，发布结果写入 PostgreSQL。
@@ -561,15 +569,15 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 还没有：
 
 - 站点设置管理页。
-- 可分享 Preview URL / Preview Token。
+- Preview Token 生产密钥轮换和审计。
 - 生产 R2 上传链路的真实环境验收。
 - 多语言运营后台。
 
-下一阶段应优先做生产上线前的站点与预览能力：
+下一阶段应优先做生产上线前的站点与部署验收：
 
 ```text
 站点设置
-Preview Token
+Preview Token 生产密钥轮换和审计
 生产 R2 / CDN 配置验收
 发布后 smoke test
 ```

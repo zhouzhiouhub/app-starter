@@ -51,6 +51,12 @@ export class PagesController {
     return this.pages.getById(id, actor);
   }
 
+  @Post(":id/preview-token")
+  @RequireScopes("page:read")
+  createPreviewToken(@CurrentUser() actor: Actor, @Param("id") id: string) {
+    return this.pages.createPreviewToken(id, actor);
+  }
+
   @Put(":id/schema")
   @RequireScopes("page:write")
   saveDraft(

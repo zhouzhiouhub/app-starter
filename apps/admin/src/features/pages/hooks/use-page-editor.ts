@@ -2,8 +2,17 @@ import { useCallback, useEffect, useState } from "react";
 import { createFallbackPage, type Viewport } from "@app-starter/schema";
 import { AuthRequiredError } from "../../auth/api";
 import { formatRequestError } from "../../../lib/api-error";
-import { getPage, publishPage, rollbackPage, savePageDraft } from "../api";
-import { getStorefrontPageUrl } from "../storefront-url";
+import {
+  createPreviewToken,
+  getPage,
+  publishPage,
+  rollbackPage,
+  savePageDraft,
+} from "../api";
+import {
+  getStorefrontPageUrl,
+  getStorefrontPreviewUrl,
+} from "../storefront-url";
 import type {
   EditorFeedback,
   PageSummary,
@@ -17,6 +26,7 @@ export function usePageEditor(pageId: string | undefined) {
   const [viewport, setViewport] = useState<Viewport>("desktop");
   const [feedback, setFeedback] = useState<EditorFeedback | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCreatingPreview, setIsCreatingPreview] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [rollingBackVersionId, setRollingBackVersionId] = useState<
@@ -136,6 +146,45 @@ export function usePageEditor(pageId: string | undefined) {
     }
   }, [draftSchema, pageId, resetSchema]);
 
+  const openPreview = useCallback(async () => {
+    if (!pageId || !draftSchema) {
+      return;
+    }
+
+    setIsCreatingPreview(true);
+    setFeedback(null);
+
+    try {
+      const summary = await savePageDraft(pageId, draftSchema);
+      setPage(summary);
+      const detail = await getPage(pageId);
+      setPage(detail);
+      setVersions(detail.versions);
+      const preview = await createPreviewToken(pageId);
+      globalThis.open(
+        getStorefrontPreviewUrl(preview.token),
+        "_blank",
+        "noreferrer",
+      );
+      setFeedback({
+        message: `Preview opened. This link expires at ${preview.expiresAt}.`,
+        type: "success",
+      });
+    } catch (caught) {
+      if (caught instanceof AuthRequiredError) {
+        globalThis.location.assign("/login");
+        return;
+      }
+
+      setFeedback({
+        message: formatRequestError(caught),
+        type: "error",
+      });
+    } finally {
+      setIsCreatingPreview(false);
+    }
+  }, [draftSchema, pageId]);
+
   const rollbackToVersion = useCallback(
     async (versionId: string) => {
       if (!pageId) {
@@ -178,10 +227,12 @@ export function usePageEditor(pageId: string | undefined) {
     draftSchema,
     error,
     feedback,
+    isCreatingPreview,
     isLoading,
     isPublishing,
     isSaving,
     page,
+    openPreview,
     publish,
     redo,
     rollbackToVersion,

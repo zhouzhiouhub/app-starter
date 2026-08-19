@@ -21,9 +21,11 @@ export function PageEditor(props: {
   canRedo: boolean;
   canUndo: boolean;
   feedback: EditorFeedback | null;
+  isCreatingPreview: boolean;
   isPublishing: boolean;
   isSaving: boolean;
   onFeedbackClose: () => void;
+  onOpenPreview: () => void;
   onPublish: () => void;
   onRedo: () => void;
   onRollbackVersion: (versionId: string) => void | Promise<void>;
@@ -80,8 +82,10 @@ export function PageEditor(props: {
         <PageEditorToolbar
           canRedo={props.canRedo}
           canUndo={props.canUndo}
+          isCreatingPreview={props.isCreatingPreview}
           isPublishing={props.isPublishing}
           isSaving={props.isSaving}
+          onOpenPreview={props.onOpenPreview}
           onPublish={props.onPublish}
           onRedo={props.onRedo}
           onSaveDraft={props.onSaveDraft}

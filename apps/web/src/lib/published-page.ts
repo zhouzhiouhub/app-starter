@@ -61,6 +61,26 @@ export async function getNotFoundPage(input?: {
   });
 }
 
+export async function getPreviewPage(token: string): Promise<PageSchema | null> {
+  try {
+    const response = await fetch(
+      `${apiBaseUrl}/public/preview/${encodeURIComponent(token)}`,
+      {
+        cache: "no-store",
+      },
+    );
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const result = (await response.json()) as { data?: unknown };
+    return pageSchema.parse(result.data);
+  } catch {
+    return null;
+  }
+}
+
 async function fetchPublishedSchema(input: {
   locale: string;
   market: string;

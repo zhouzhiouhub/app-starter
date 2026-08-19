@@ -35,9 +35,11 @@ export function PageEditorPage() {
       canRedo={editor.canRedo}
       canUndo={editor.canUndo}
       feedback={editor.feedback}
+      isCreatingPreview={editor.isCreatingPreview}
       isPublishing={editor.isPublishing}
       isSaving={editor.isSaving}
       onFeedbackClose={() => editor.setFeedback(null)}
+      onOpenPreview={() => void editor.openPreview()}
       onPublish={() => void editor.publish()}
       onRedo={editor.redo}
       onRollbackVersion={(versionId) => void editor.rollbackToVersion(versionId)}

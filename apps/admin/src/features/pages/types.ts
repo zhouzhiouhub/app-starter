@@ -45,3 +45,9 @@ export interface EditorFeedback {
   message: string;
   type: "success" | "error";
 }
+
+export interface PagePreviewToken {
+  expiresAt: string;
+  slug: string;
+  token: string;
+}

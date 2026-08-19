@@ -37,6 +37,15 @@ STOREFRONT_REVALIDATE_URL=http://localhost:3000/api/revalidate
 STOREFRONT_REVALIDATE_TIMEOUT_MS=5000
 ```
 
+Preview links use a short-lived token. Local development can leave
+`PREVIEW_TOKEN_SECRET` empty, which uses a non-production fallback. Production
+must set an explicit secret:
+
+```bash
+PREVIEW_TOKEN_SECRET=
+PREVIEW_TOKEN_TTL_SECONDS=3600
+```
+
 ## Run
 
 ```bash
@@ -63,7 +72,8 @@ login to the Vite server itself.
 
 After sign-in, open `http://localhost:5173/pages` to list and create pages.
 The editor at `/pages/:id` loads the draft schema, can save a draft, and can
-publish to the storefront.
+publish to the storefront. The Preview action saves the draft, creates a
+short-lived token, and opens the Web app at `/preview?token=...`.
 
 Default local ports:
 

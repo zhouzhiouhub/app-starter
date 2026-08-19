@@ -68,6 +68,11 @@ export class PublicController {
     };
   }
 
+  @Get("preview/:token")
+  getPreview(@Param("token") token: string) {
+    return this.pages.getPreviewByToken(token);
+  }
+
   @Get("pages")
   async listPages(
     @Query("locale") locale?: string,

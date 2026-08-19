@@ -3,7 +3,9 @@ import type { Actor } from "../identity/identity.types.js";
 import { MediaService } from "../media/media.service.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { createPage } from "./use-cases/create-page.js";
+import { createPreviewToken } from "./use-cases/create-preview-token.js";
 import { getPageById } from "./use-cases/get-page-by-id.js";
+import { getPreviewPageByToken } from "./use-cases/get-preview-page-by-token.js";
 import { getPublishedPageBySlug } from "./use-cases/get-published-page-by-slug.js";
 import { listPages } from "./use-cases/list-pages.js";
 import { listPublishedPages } from "./use-cases/list-published-pages.js";
@@ -28,6 +30,10 @@ export class PagesService {
 
   async getById(id: string, actor: Actor) {
     return getPageById(this.prisma, id, actor);
+  }
+
+  async createPreviewToken(id: string, actor: Actor) {
+    return createPreviewToken(this.prisma, id, actor);
   }
 
   async create(body: unknown, idempotencyKey: string | undefined, actor: Actor) {
@@ -78,6 +84,12 @@ export class PagesService {
 
   async getPublishedBySlug(slug: string) {
     return getPublishedPageBySlug(this.prisma, slug, (schema, tenantId) =>
+      this.media.resolveSchemaMediaReferences(schema, tenantId),
+    );
+  }
+
+  async getPreviewByToken(token: string) {
+    return getPreviewPageByToken(this.prisma, token, (schema, tenantId) =>
       this.media.resolveSchemaMediaReferences(schema, tenantId),
     );
   }

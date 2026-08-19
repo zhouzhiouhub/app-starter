@@ -6,6 +6,7 @@ import type {
   CreatePageInput,
   PageDetail,
   PageListMeta,
+  PagePreviewToken,
   PageSummary,
 } from "./types";
 
@@ -59,6 +60,24 @@ export async function getPage(pageId: string): Promise<PageDetail> {
 
   if (!result.data?.id) {
     throw new Error("Page could not be loaded.");
+  }
+
+  return result.data;
+}
+
+export async function createPreviewToken(
+  pageId: string,
+): Promise<PagePreviewToken> {
+  const result = await readAdminJson<{ data?: PagePreviewToken }>(
+    `/pages/${encodeURIComponent(pageId)}/preview-token`,
+    {
+      method: "POST",
+    },
+    "Preview token could not be created.",
+  );
+
+  if (!result.data?.token) {
+    throw new Error("Preview token could not be created.");
   }
 
   return result.data;
