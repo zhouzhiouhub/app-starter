@@ -5,17 +5,7 @@ import {
   getFallbackPageTemplateId,
   pageSchema,
 } from "../dist/index.js";
-
-function minimalPage(input = {}) {
-  return {
-    version: "1.0",
-    meta: { slug: "test-page", title: "Test page", market: "us", locale: "en-US" },
-    layout: { desktop: {}, mobile: {} },
-    sections: [],
-    seo: { title: "Test page", description: "" },
-    ...input,
-  };
-}
+import { minimalPage } from "./page-schema-test-helpers.mjs";
 
 test("named landing fallback pages do not reuse the home hero", () => {
   const faq = createFallbackPage({ slug: "faq", title: "Faq" });
