@@ -15,8 +15,8 @@ Module({
     {
       provide: IdentityService,
       useValue: {
-        login() {
-          return { data: { loggedIn: true } };
+        login(_body, requestId) {
+          return { data: { loggedIn: true }, meta: { requestId } };
         },
       },
     },
@@ -49,12 +49,16 @@ test("auth login route accepts GET for the hint and POST for login", async () =>
 
     const postResponse = await fetch(`http://127.0.0.1:${port}/api/v1/auth/login`, {
       body: JSON.stringify({ email: "admin@example.com", password: "ChangeMe123!" }),
-      headers: { "content-type": "application/json" },
+      headers: {
+        "content-type": "application/json",
+        "x-request-id": "request-login-route",
+      },
       method: "POST",
     });
     assert.equal(postResponse.ok, true);
     const postBody = await postResponse.json();
     assert.equal(postBody.data.loggedIn, true);
+    assert.equal(postBody.meta.requestId, "request-login-route");
   } finally {
     await app.close();
   }

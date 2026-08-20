@@ -1,5 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import {
+  toAuthSessionResponse,
+  toCurrentUserResponse,
+} from "../dist/modules/identity/identity.mapper.js";
 import { loginBodySchema } from "../dist/modules/identity/identity.validation.js";
 import { hashPassword, verifyPassword } from "../dist/modules/identity/password.js";
 import { TokenService } from "../dist/modules/identity/token.service.js";
@@ -42,4 +46,28 @@ test("token service signs and verifies RS256 access tokens", async () => {
   assert.deepEqual(claims.scopes, ["page:read", "page:write"]);
   assert.notEqual(issued.refreshToken, issued.accessToken);
   assert.equal(tokens.hashRefreshToken(issued.refreshToken).length, 64);
+});
+
+test("identity response mappers carry the current request id", () => {
+  const actor = {
+    email: "admin@example.com",
+    id: "user-1",
+    name: "Admin",
+    roles: ["tenant-admin"],
+    scopes: ["page:read"],
+    status: "active",
+    tenantId: "tenant-1",
+  };
+  const session = toAuthSessionResponse(
+    actor,
+    {
+      accessToken: "access-token",
+      refreshToken: "refresh-token",
+    },
+    "request-auth-session",
+  );
+  const currentUser = toCurrentUserResponse(actor, "request-auth-me");
+
+  assert.equal(session.meta.requestId, "request-auth-session");
+  assert.equal(currentUser.meta.requestId, "request-auth-me");
 });

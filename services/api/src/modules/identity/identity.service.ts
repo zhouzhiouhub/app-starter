@@ -36,7 +36,7 @@ export class IdentityService {
     private readonly tokens: TokenService,
   ) {}
 
-  async login(body: unknown) {
+  async login(body: unknown, requestId = "local-dev") {
     const input = this.parseLogin(body);
     const user = await this.findUserByEmail(input.tenantSlug, input.email);
 
@@ -48,10 +48,10 @@ export class IdentityService {
     }
 
     this.assertActive(user.status);
-    return this.issueSession(toActorFromUser(user));
+    return this.issueSession(toActorFromUser(user), undefined, requestId);
   }
 
-  async refresh(body: unknown) {
+  async refresh(body: unknown, requestId = "local-dev") {
     const { refreshToken } = this.parseRefresh(body);
     const tokenHash = this.tokens.hashRefreshToken(refreshToken);
     const current = await this.prisma.refreshToken.findUnique({
@@ -81,11 +81,11 @@ export class IdentityService {
 
     this.assertActive(current.user.status);
     const actor = toActorFromUser(current.user);
-    const session = await this.issueSession(actor, current.id);
+    const session = await this.issueSession(actor, current.id, requestId);
     return session;
   }
 
-  async logout(body: unknown) {
+  async logout(body: unknown, requestId = "local-dev") {
     const { refreshToken } = this.parseRefresh(body);
     const tokenHash = this.tokens.hashRefreshToken(refreshToken);
     await this.prisma.refreshToken.updateMany({
@@ -95,12 +95,12 @@ export class IdentityService {
 
     return {
       data: { success: true },
-      meta: { requestId: "local-dev" },
+      meta: { requestId },
     };
   }
 
-  async getMe(actor: Actor) {
-    return toCurrentUserResponse(actor);
+  async getMe(actor: Actor, requestId = "local-dev") {
+    return toCurrentUserResponse(actor, requestId);
   }
 
   async readActorFromAuthorization(
@@ -137,7 +137,11 @@ export class IdentityService {
     }
   }
 
-  private async issueSession(actor: Actor, previousTokenId?: string) {
+  private async issueSession(
+    actor: Actor,
+    previousTokenId?: string,
+    requestId = "local-dev",
+  ) {
     const tokens = await this.tokens.issueTokens(actor);
     const created = await this.prisma.refreshToken.create({
       data: {
@@ -158,7 +162,7 @@ export class IdentityService {
       });
     }
 
-    return toAuthSessionResponse(actor, tokens);
+    return toAuthSessionResponse(actor, tokens, requestId);
   }
 
   private async findUserByEmail(tenantSlug: string, email: string) {

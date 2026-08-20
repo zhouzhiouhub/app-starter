@@ -41,7 +41,11 @@ export function toActor(user: UserRecord, roles: RoleRecord[]): Actor {
   };
 }
 
-export function toAuthSessionResponse(actor: Actor, tokens: AuthTokens) {
+export function toAuthSessionResponse(
+  actor: Actor,
+  tokens: AuthTokens,
+  requestId = "local-dev",
+) {
   return {
     data: {
       accessToken: tokens.accessToken,
@@ -58,13 +62,13 @@ export function toAuthSessionResponse(actor: Actor, tokens: AuthTokens) {
       },
     },
     meta: {
-      requestId: "local-dev",
+      requestId,
       tenantId: actor.tenantId,
     },
   };
 }
 
-export function toCurrentUserResponse(actor: Actor) {
+export function toCurrentUserResponse(actor: Actor, requestId = "local-dev") {
   return {
     data: {
       email: actor.email,
@@ -75,7 +79,7 @@ export function toCurrentUserResponse(actor: Actor) {
       tenantId: actor.tenantId,
     },
     meta: {
-      requestId: "local-dev",
+      requestId,
       tenantId: actor.tenantId,
     },
   };
