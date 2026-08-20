@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { hasUnsafeAuditMetadata, isPageAuditLog } from "./audit-smoke.mjs";
+import {
+  formatPageAuditLogDiagnostic,
+  hasUnsafeAuditMetadata,
+  isPageAuditLog,
+  readPageAuditLogDiagnostic,
+} from "./audit-smoke.mjs";
 import {
   formatRollbackRevalidationFailure,
   isRollbackResponse,
@@ -73,6 +78,87 @@ test("smoke helpers validate safe page audit logs", () => {
       },
     ),
     true,
+  );
+});
+
+test("smoke helpers summarize missing audit log diagnostics", () => {
+  const diagnostic = readPageAuditLogDiagnostic(
+    [
+      {
+        action: "page.published",
+        metadata: {
+          slug: "smoke-page",
+        },
+        targetId: "other-page",
+        targetType: "page",
+      },
+      {
+        action: "preview_token.created",
+        metadata: {
+          slug: "smoke-page",
+          token: "secret-token-value",
+        },
+        targetId: "page-1",
+        targetType: "page",
+      },
+      {
+        action: "page.published",
+        metadata: {
+          slug: "smoke-page",
+        },
+        targetId: "page-1",
+        targetType: "site",
+      },
+    ],
+    {
+      action: "page.published",
+      pageId: "page-1",
+      slug: "smoke-page",
+    },
+  );
+
+  assert.deepEqual(diagnostic, {
+    actionMatches: 2,
+    dataType: "array",
+    itemCount: 3,
+    slugMatches: 3,
+    targetIdMatches: 2,
+    targetTypeMatches: 2,
+    unsafeMetadataCount: 1,
+    validMatches: 0,
+  });
+  assert.equal(
+    formatPageAuditLogDiagnostic(diagnostic),
+    "data: array, items: 3, action matches: 2, target id matches: 2, target type matches: 2, slug matches: 3, unsafe metadata: 1, valid matches: 0",
+  );
+  assert.equal(
+    formatPageAuditLogDiagnostic(diagnostic).includes("secret-token-value"),
+    false,
+  );
+});
+
+test("smoke helpers diagnose malformed audit log payloads", () => {
+  assert.deepEqual(
+    readPageAuditLogDiagnostic(
+      {
+        data: [],
+      },
+      {
+        action: "page.published",
+        pageId: "page-1",
+        slug: "smoke-page",
+      },
+    ),
+    {
+      actionMatches: 0,
+      dataType: "object",
+      itemCount: 0,
+      slugMatches: 0,
+      targetIdMatches: 0,
+      targetTypeMatches: 0,
+      unsafeMetadataCount: 0,
+      validMatches: 0,
+    },
   );
 });
 

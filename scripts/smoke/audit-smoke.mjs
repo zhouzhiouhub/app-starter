@@ -65,7 +65,9 @@ async function assertAuditLog(input, accessToken, options) {
   );
 
   if (!response.ok) {
-    throw new Error(readHttpError(response, `${options.label} request failed.`));
+    throw new Error(
+      readHttpError(response, `${options.label} request failed.`),
+    );
   }
 
   const logs = Array.isArray(response.body?.data) ? response.body.data : [];
@@ -78,10 +80,42 @@ async function assertAuditLog(input, accessToken, options) {
   );
 
   if (!found) {
+    const diagnostic = readPageAuditLogDiagnostic(response.body?.data, {
+      action: options.action,
+      pageId: options.pageId,
+      slug: input.slug,
+    });
+
     throw new Error(
-      `${options.label} was not found for page ${options.pageId}.`,
+      `${options.label} was not found for page ${options.pageId} (${formatPageAuditLogDiagnostic(
+        diagnostic,
+      )}).`,
     );
   }
+}
+
+export function readPageAuditLogDiagnostic(value, options) {
+  const logs = Array.isArray(value) ? value : [];
+
+  return {
+    actionMatches: logs.filter((log) => log?.action === options.action).length,
+    dataType: readDataType(value),
+    itemCount: logs.length,
+    slugMatches: logs.filter(
+      (log) => readAuditMetadata(log).slug === options.slug,
+    ).length,
+    targetIdMatches: logs.filter((log) => log?.targetId === options.pageId)
+      .length,
+    targetTypeMatches: logs.filter((log) => log?.targetType === "page").length,
+    unsafeMetadataCount: logs.filter((log) =>
+      hasUnsafeAuditMetadata(readAuditMetadata(log)),
+    ).length,
+    validMatches: logs.filter((log) => isPageAuditLog(log, options)).length,
+  };
+}
+
+export function formatPageAuditLogDiagnostic(diagnostic) {
+  return `data: ${diagnostic.dataType}, items: ${diagnostic.itemCount}, action matches: ${diagnostic.actionMatches}, target id matches: ${diagnostic.targetIdMatches}, target type matches: ${diagnostic.targetTypeMatches}, slug matches: ${diagnostic.slugMatches}, unsafe metadata: ${diagnostic.unsafeMetadataCount}, valid matches: ${diagnostic.validMatches}`;
 }
 
 function buildAuditQuery(options) {
@@ -92,6 +126,18 @@ function buildAuditQuery(options) {
     targetId: options.pageId,
     targetType: "page",
   }).toString();
+}
+
+function readDataType(value) {
+  if (Array.isArray(value)) {
+    return "array";
+  }
+
+  if (value === null) {
+    return "null";
+  }
+
+  return typeof value;
 }
 
 function readAuditMetadata(log) {
