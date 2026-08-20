@@ -7,6 +7,8 @@ import {
   redactSmokeSecrets,
 } from "./smoke-secrets.mjs";
 
+export const smokeReportSchemaVersion = "smoke-report.v1";
+
 export function createSmokeReport(input, title, now = new Date()) {
   const config = createSmokeReportConfig(input);
   const environment =
@@ -26,6 +28,7 @@ export function createSmokeReport(input, title, now = new Date()) {
     finishedAt: null,
     pageId: null,
     productionReadiness: createSmokeProductionReadiness(environment, config),
+    schemaVersion: smokeReportSchemaVersion,
     slug: input.slug,
     startedAt: now.toISOString(),
     status: "running",

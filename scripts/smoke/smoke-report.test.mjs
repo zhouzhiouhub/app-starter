@@ -8,6 +8,7 @@ import {
   failSmokeReport,
   recordSmokeCheck,
   recordSmokeCheckFailure,
+  smokeReportSchemaVersion,
   writeSmokeReportIfConfigured,
 } from "./smoke-report.mjs";
 
@@ -35,6 +36,7 @@ test("smoke report redacts secrets from failure messages", () => {
   failSmokeReport(report, error);
 
   const serialized = JSON.stringify(report);
+  assert.equal(report.schemaVersion, smokeReportSchemaVersion);
   assert.equal(serialized.includes("ChangeMe456!"), false);
   assert.equal(serialized.includes("header.payload.signature"), false);
   assert.equal(report.checks[0].error.message.includes("[redacted]"), true);
@@ -154,6 +156,10 @@ test("smoke report redacts secrets from check details", async () => {
     await writeSmokeReportIfConfigured({ reportPath }, report);
     const written = await readFile(reportPath, "utf8");
 
+    assert.equal(
+      written.includes(`"schemaVersion": "${smokeReportSchemaVersion}"`),
+      true,
+    );
     assert.equal(written.includes("payload.signature"), false);
     assert.equal(written.includes("credential-value"), false);
     assert.equal(written.includes("signature-value"), false);
