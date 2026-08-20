@@ -14,6 +14,7 @@ import { createSchemaFingerprint } from "../schema-fingerprint";
 import { buildPublicationFeedback } from "../revalidation-feedback";
 import { findBlockingPublishPreflightIssue } from "../publish-preflight";
 import { readMediaPublishPreflightIssue } from "../media-publish-preflight";
+import { openStorefrontPreviewWindow } from "../preview-window";
 import { readEditorErrorFeedback } from "../editor-feedback";
 import {
   readPageEditorDraftState,
@@ -205,11 +206,7 @@ export function usePageEditor(pageId: string | undefined) {
         readPageEditorSavedState(await getPage(pageId), draftSchema),
       );
       const preview = await createPreviewToken(pageId);
-      globalThis.open(
-        getStorefrontPreviewUrl(preview.token),
-        "_blank",
-        "noreferrer",
-      );
+      openStorefrontPreviewWindow(getStorefrontPreviewUrl(preview.token));
       setFeedback({
         message: `Preview opened. This link expires at ${preview.expiresAt}.`,
         type: "success",
