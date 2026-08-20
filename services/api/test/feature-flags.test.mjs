@@ -138,6 +138,76 @@ test("public config exposes MVP disabled flags", () => {
   );
 });
 
+test("public config ignores invalid runtime defaults", () => {
+  withEnv(
+    {
+      DEFAULT_CURRENCY: "usd",
+      DEFAULT_LOCALE: "bad_locale",
+      DEFAULT_MARKET: "Bad-Market",
+      FALLBACK_LOCALE: "still_bad",
+    },
+    () => {
+      const controller = new PublicController({});
+      const response = controller.getConfig();
+
+      assert.equal(response.data.defaultCurrency, "USD");
+      assert.equal(response.data.defaultLocale, "en-US");
+      assert.equal(response.data.defaultMarket, "us");
+      assert.equal(response.data.fallbackLocale, "en-US");
+      assert.equal(response.meta.locale, "en-US");
+      assert.equal(response.meta.market, "us");
+    },
+  );
+});
+
+test("public translations expose configured fallback locale metadata", () => {
+  withEnv(
+    {
+      DEFAULT_LOCALE: "en-US",
+      FALLBACK_LOCALE: "de-DE",
+      MULTI_LOCALE_ENABLED: "false",
+    },
+    () => {
+      const controller = new PublicController({});
+      const response = controller.getTranslations("fr-FR");
+
+      assert.equal(response.data.locale, "en-US");
+      assert.equal(response.meta.locale, "en-US");
+      assert.equal(response.meta.fallbackLocale, "de-DE");
+      assert.equal(response.meta.isFallback, true);
+    },
+  );
+});
+
+test("public pages fall back when runtime defaults are invalid", async () => {
+  await withEnv(
+    {
+      DEFAULT_LOCALE: "bad_locale",
+      DEFAULT_MARKET: "Bad-Market",
+    },
+    async () => {
+      const controller = new PublicController({
+        listPublished(input) {
+          assert.deepEqual(input, {
+            locale: "en-US",
+            market: "us",
+          });
+
+          return Promise.resolve({
+            data: [],
+            meta: { requestId: "local-dev" },
+          });
+        },
+      });
+      const response = await controller.listPages();
+
+      assert.equal(response.meta.locale, "en-US");
+      assert.equal(response.meta.market, "us");
+      assert.equal(response.meta.isFallback, false);
+    },
+  );
+});
+
 function assertApiBadRequest(fn, expectedCode) {
   assert.throws(
     fn,
@@ -168,14 +238,26 @@ function withEnv(values, fn) {
   }
 
   try {
-    return fn();
-  } finally {
-    for (const [key, value] of Object.entries(previous)) {
-      if (value === undefined) {
-        delete process.env[key];
-      } else {
-        process.env[key] = value;
-      }
+    const result = fn();
+
+    if (result && typeof result.finally === "function") {
+      return result.finally(() => restoreEnv(previous));
+    }
+
+    restoreEnv(previous);
+    return result;
+  } catch (error) {
+    restoreEnv(previous);
+    throw error;
+  }
+}
+
+function restoreEnv(previous) {
+  for (const [key, value] of Object.entries(previous)) {
+    if (value === undefined) {
+      delete process.env[key];
+    } else {
+      process.env[key] = value;
     }
   }
 }

@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
@@ -10,18 +9,18 @@ import {
   Query,
   UseGuards,
 } from "@nestjs/common";
-import {
-  apiErrorCodes,
-  defaultRuntimeConfig,
-  localeCodeSchema,
-  marketCodeSchema,
-} from "@app-starter/schema";
+import { apiErrorCodes } from "@app-starter/schema";
 import { AdminApiGuard } from "../../common/admin-api.guard.js";
 import { CurrentUser } from "../../common/current-user.decorator.js";
 import { RequireScopes } from "../../common/require-scopes.decorator.js";
 import { requireIdempotencyKey } from "../../common/idempotency-key.js";
 import type { Actor } from "../identity/identity.types.js";
 import { PagesService } from "../pages/pages.service.js";
+import {
+  readPublicRuntimeConfig,
+  resolvePublicLocale,
+  resolvePublicMarket,
+} from "./public.runtime-config.js";
 
 @Controller("public")
 export class PublicController {
@@ -29,23 +28,14 @@ export class PublicController {
 
   @Get("config")
   getConfig() {
+    const config = readPublicRuntimeConfig();
+
     return {
-      data: {
-        commerceEnabled: process.env.COMMERCE_ENABLED === "true",
-        multiLocaleEnabled: process.env.MULTI_LOCALE_ENABLED === "true",
-        defaultMarket:
-          process.env.DEFAULT_MARKET ?? defaultRuntimeConfig.defaultMarket,
-        defaultLocale:
-          process.env.DEFAULT_LOCALE ?? defaultRuntimeConfig.defaultLocale,
-        defaultCurrency:
-          process.env.DEFAULT_CURRENCY ?? defaultRuntimeConfig.defaultCurrency,
-        fallbackLocale:
-          process.env.FALLBACK_LOCALE ?? defaultRuntimeConfig.fallbackLocale,
-      },
+      data: config,
       meta: {
         requestId: "local-dev",
-        market: process.env.DEFAULT_MARKET ?? "us",
-        locale: process.env.DEFAULT_LOCALE ?? "en-US",
+        market: config.defaultMarket,
+        locale: config.defaultLocale,
       },
     };
   }
@@ -62,7 +52,7 @@ export class PublicController {
       meta: {
         requestId: "local-dev",
         locale: localeContext.locale,
-        fallbackLocale: localeContext.defaultLocale,
+        fallbackLocale: localeContext.fallbackLocale,
         isFallback: localeContext.isFallback,
       },
     };
@@ -91,7 +81,7 @@ export class PublicController {
         ...pages.meta,
         market: marketContext.market,
         locale: localeContext.locale,
-        fallbackLocale: localeContext.defaultLocale,
+        fallbackLocale: localeContext.fallbackLocale,
         isFallback: localeContext.isFallback || marketContext.isFallback,
       },
     };
@@ -123,7 +113,7 @@ export class PublicController {
         requestId: "local-dev",
         market: marketContext.market,
         locale: localeContext.locale,
-        fallbackLocale: localeContext.defaultLocale,
+        fallbackLocale: localeContext.fallbackLocale,
         isFallback: localeContext.isFallback || marketContext.isFallback,
       },
     };
@@ -150,57 +140,4 @@ export class AdminPagesController {
       actor,
     );
   }
-}
-
-function resolvePublicLocale(locale: string | undefined): {
-  defaultLocale: string;
-  isFallback: boolean;
-  locale: string;
-} {
-  const defaultLocale =
-    process.env.DEFAULT_LOCALE ?? defaultRuntimeConfig.defaultLocale;
-  const requestedLocale = locale ?? defaultLocale;
-  const parsed = localeCodeSchema.safeParse(requestedLocale);
-
-  if (!parsed.success) {
-    throwValidationError("Locale must look like en-US.");
-  }
-
-  const isFallback =
-    process.env.MULTI_LOCALE_ENABLED !== "true" &&
-    parsed.data !== defaultLocale;
-
-  return {
-    defaultLocale,
-    isFallback,
-    locale: isFallback ? defaultLocale : parsed.data,
-  };
-}
-
-function resolvePublicMarket(market: string | undefined): {
-  isFallback: boolean;
-  market: string;
-} {
-  const defaultMarket =
-    process.env.DEFAULT_MARKET ?? defaultRuntimeConfig.defaultMarket;
-  const requestedMarket = market ?? defaultMarket;
-  const parsed = marketCodeSchema.safeParse(requestedMarket);
-
-  if (!parsed.success) {
-    throwValidationError("Market code must be lowercase.");
-  }
-
-  const isFallback = parsed.data !== defaultMarket;
-
-  return {
-    isFallback,
-    market: isFallback ? defaultMarket : parsed.data,
-  };
-}
-
-function throwValidationError(message: string): never {
-  throw new BadRequestException({
-    code: apiErrorCodes.VALIDATION_ERROR,
-    message,
-  });
 }
