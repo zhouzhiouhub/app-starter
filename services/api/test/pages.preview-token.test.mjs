@@ -43,6 +43,40 @@ test("preview tokens verify, expire, and reject tampering", () => {
   );
 });
 
+test("preview token TTL stays within the one hour preview window", () => {
+  const now = new Date("2026-08-19T00:00:00.000Z");
+
+  assert.equal(
+    createPagePreviewToken({
+      env: {
+        PREVIEW_TOKEN_SECRET: "preview-secret",
+        PREVIEW_TOKEN_TTL_SECONDS: "1",
+      },
+      now,
+      pageId: "page-1",
+      slug: "campaign",
+      tenantId: "tenant-1",
+    }).expiresAt.toISOString(),
+    "2026-08-19T00:00:01.000Z",
+  );
+
+  for (const value of ["0", "-1", "3600.5", "86400", "Infinity", "soon"]) {
+    assert.equal(
+      createPagePreviewToken({
+        env: {
+          PREVIEW_TOKEN_SECRET: "preview-secret",
+          PREVIEW_TOKEN_TTL_SECONDS: value,
+        },
+        now,
+        pageId: "page-1",
+        slug: "campaign",
+        tenantId: "tenant-1",
+      }).expiresAt.toISOString(),
+      "2026-08-19T01:00:00.000Z",
+    );
+  }
+});
+
 test("preview token verification accepts the previous secret during rotation", () => {
   const now = new Date("2026-08-19T00:00:00.000Z");
   const oldEnv = {

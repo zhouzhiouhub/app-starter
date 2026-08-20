@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
 const defaultPreviewTokenTtlSeconds = 60 * 60;
+const maxPreviewTokenTtlSeconds = defaultPreviewTokenTtlSeconds;
 const localPreviewTokenSecret = "local-dev-preview-token-secret";
 
 export class PreviewTokenConfigurationError extends Error {
@@ -108,7 +109,11 @@ function readPreviewTokenVerificationSecrets(env = process.env): string[] {
 function readPreviewTokenTtlSeconds(env = process.env): number {
   const parsed = Number(env.PREVIEW_TOKEN_TTL_SECONDS);
 
-  if (Number.isInteger(parsed) && parsed > 0 && parsed <= 24 * 60 * 60) {
+  if (
+    Number.isInteger(parsed) &&
+    parsed > 0 &&
+    parsed <= maxPreviewTokenTtlSeconds
+  ) {
     return parsed;
   }
 
