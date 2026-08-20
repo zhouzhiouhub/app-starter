@@ -3,12 +3,14 @@ import {
   ConflictException,
   Controller,
   Get,
+  Headers,
   Post,
   Query,
   UseGuards,
 } from "@nestjs/common";
 import { apiErrorCodes } from "@app-starter/schema";
 import { AdminApiGuard } from "../../common/admin-api.guard.js";
+import { requireIdempotencyKey } from "../../common/idempotency-key.js";
 import { RequireScopes } from "../../common/require-scopes.decorator.js";
 import { readApiRuntimeDefaults } from "../../common/runtime-defaults.js";
 import {
@@ -72,7 +74,10 @@ export class LocalizationController {
 
   @Post("locales")
   @RequireScopes("locale:write")
-  createLocale(@Body() body: unknown) {
+  createLocale(
+    @Body() body: unknown,
+    @Headers("idempotency-key") idempotencyKey?: string,
+  ) {
     if (process.env.MULTI_LOCALE_ENABLED !== "true") {
       throw new ConflictException({
         code: apiErrorCodes.MULTI_LOCALE_DISABLED,
@@ -80,6 +85,7 @@ export class LocalizationController {
       });
     }
 
+    requireIdempotencyKey(idempotencyKey);
     const input = parseCreateLocaleInput(body);
 
     return {

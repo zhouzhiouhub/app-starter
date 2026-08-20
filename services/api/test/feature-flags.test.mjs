@@ -5,6 +5,8 @@ import { CommerceController } from "../dist/modules/commerce/commerce.controller
 import { LocalizationController } from "../dist/modules/localization/localization.controller.js";
 import { PublicController } from "../dist/modules/public/public.controller.js";
 
+const idempotencyKey = "7f10f6d3-02d9-4f3d-a69d-49b26ec63132";
+
 test("commerce endpoints reject writes while commerce is disabled", () => {
   withEnv({ COMMERCE_ENABLED: "false" }, () => {
     const controller = new CommerceController();
@@ -50,13 +52,32 @@ test("locale creation validates locale codes when multi-locale is enabled", () =
   withEnv({ MULTI_LOCALE_ENABLED: "true" }, () => {
     const controller = new LocalizationController();
 
-    assert.equal(controller.createLocale({ code: "de-DE" }).data.code, "de-DE");
     assert.equal(
-      controller.createLocale({ data: { code: "fr-FR" } }).data.code,
+      controller.createLocale({ code: "de-DE" }, idempotencyKey).data.code,
+      "de-DE",
+    );
+    assert.equal(
+      controller.createLocale({ data: { code: "fr-FR" } }, idempotencyKey).data
+        .code,
       "fr-FR",
     );
     assertApiBadRequest(
-      () => controller.createLocale({ code: "bad_locale" }),
+      () => controller.createLocale({ code: "bad_locale" }, idempotencyKey),
+      apiErrorCodes.VALIDATION_ERROR,
+    );
+  });
+});
+
+test("locale creation requires idempotency keys when multi-locale is enabled", () => {
+  withEnv({ MULTI_LOCALE_ENABLED: "true" }, () => {
+    const controller = new LocalizationController();
+
+    assertApiBadRequest(
+      () => controller.createLocale({ code: "de-DE" }),
+      apiErrorCodes.VALIDATION_ERROR,
+    );
+    assertApiBadRequest(
+      () => controller.createLocale({ code: "de-DE" }, "retry-me"),
       apiErrorCodes.VALIDATION_ERROR,
     );
   });
