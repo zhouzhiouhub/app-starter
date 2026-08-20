@@ -164,8 +164,8 @@ media confirmation, media list filters, storefront HTML, `robots.txt`,
 `sitemap.xml`, and 404/noindex
 behavior. Set `SMOKE_REQUIRE_R2_UPLOAD=true` in production if the deployment
 must fail unless the upload target is a Cloudflare R2 presigned URL, the test
-object can be uploaded with PUT, and `MEDIA_CDN_BASE_URL` produces a non-local
-CDN URL.
+object can be uploaded with PUT, and `MEDIA_CDN_BASE_URL` produces an HTTPS CDN
+URL on a non-local host without query strings or embedded credentials.
 The smoke admin account must include `audit:read`; rerun the seed after pulling
 role changes if the audit log check returns 403.
 Set `SMOKE_REPORT_PATH=tmp/smoke-report.json` to write a machine-readable report

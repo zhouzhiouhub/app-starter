@@ -3,8 +3,15 @@ export function isR2UploadUrl(value) {
     const url = new URL(value);
     return (
       url.protocol === "https:" &&
+      !url.username &&
+      !url.password &&
       url.hostname.endsWith(".r2.cloudflarestorage.com") &&
+      !url.hash &&
       url.searchParams.get("X-Amz-Algorithm") === "AWS4-HMAC-SHA256" &&
+      Boolean(url.searchParams.get("X-Amz-Credential")) &&
+      Boolean(url.searchParams.get("X-Amz-Date")) &&
+      hasSafeExpiresQuery(url.searchParams.get("X-Amz-Expires")) &&
+      url.searchParams.get("X-Amz-SignedHeaders") === "content-type;host" &&
       Boolean(url.searchParams.get("X-Amz-Signature"))
     );
   } catch {
@@ -36,7 +43,14 @@ export function isCdnUrlForR2Key(value, r2Key) {
 export function isProductionCdnUrl(value) {
   try {
     const url = new URL(value);
-    return !url.hostname.endsWith(".local.invalid");
+    return (
+      url.protocol === "https:" &&
+      !url.username &&
+      !url.password &&
+      !url.search &&
+      !url.hash &&
+      !isLocalHostname(url.hostname)
+    );
   } catch {
     return false;
   }
@@ -114,4 +128,44 @@ function readUrlHost(value) {
   } catch {
     return null;
   }
+}
+
+function hasSafeExpiresQuery(value) {
+  return Boolean(value && /^\d+$/.test(value) && Number(value) > 0);
+}
+
+function isLocalHostname(hostname) {
+  const normalized = hostname.toLowerCase();
+
+  return (
+    normalized === "localhost" ||
+    normalized.endsWith(".localhost") ||
+    normalized.endsWith(".local") ||
+    normalized.endsWith(".local.invalid") ||
+    normalized === "::1" ||
+    normalized === "[::1]" ||
+    isPrivateOrLocalIpv4(normalized)
+  );
+}
+
+function isPrivateOrLocalIpv4(hostname) {
+  const parts = hostname.split(".").map((part) => Number(part));
+
+  if (
+    parts.length !== 4 ||
+    parts.some((part) => !Number.isInteger(part) || part < 0 || part > 255)
+  ) {
+    return false;
+  }
+
+  const [first, second] = parts;
+
+  return (
+    first === 0 ||
+    first === 10 ||
+    first === 127 ||
+    (first === 169 && second === 254) ||
+    (first === 172 && second >= 16 && second <= 31) ||
+    (first === 192 && second === 168)
+  );
 }
