@@ -32,15 +32,15 @@ test("site settings response includes runtime defaults and feature flags", () =>
   withEnv(
     {
       COMMERCE_ENABLED: "false",
-      ANALYTICS_CONSENT_GRANTED: "false",
-      ANALYTICS_ENABLED: "true",
-      CLARITY_PROJECT_ID: "clarity123",
+      ANALYTICS_CONSENT_GRANTED: " FALSE ",
+      ANALYTICS_ENABLED: " TRUE ",
+      CLARITY_PROJECT_ID: " clarity123 ",
       DEFAULT_CURRENCY: "USD",
       DEFAULT_LOCALE: "en-US",
       DEFAULT_MARKET: "us",
       FALLBACK_LOCALE: "en-US",
-      GA4_MEASUREMENT_ID: "G-ABC1234567",
-      GTM_CONTAINER_ID: "GTM-ABC1234",
+      GA4_MEASUREMENT_ID: " G-ABC1234567 ",
+      GTM_CONTAINER_ID: " GTM-ABC1234 ",
       MULTI_LOCALE_ENABLED: "false",
     },
     () => {
@@ -67,6 +67,27 @@ test("site settings response includes runtime defaults and feature flags", () =>
         id: "site-1",
         name: "Default Site",
         tenantId: "tenant-1",
+      });
+    },
+  );
+});
+
+test("site settings response ignores invalid analytics provider ids", () => {
+  withEnv(
+    {
+      ANALYTICS_CONSENT_GRANTED: "true",
+      ANALYTICS_ENABLED: "true",
+      CLARITY_PROJECT_ID: "clarity-123",
+      GA4_MEASUREMENT_ID: "GA-123",
+      GTM_CONTAINER_ID: "https://tag.example.com",
+    },
+    () => {
+      assert.deepEqual(toSiteSettingsResponse(site).analytics, {
+        clarityProjectId: null,
+        consentGranted: true,
+        enabled: true,
+        ga4MeasurementId: null,
+        gtmContainerId: null,
       });
     },
   );
