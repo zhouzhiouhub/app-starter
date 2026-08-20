@@ -16,6 +16,7 @@ import {
 import { assertRollbackFlow } from "./rollback-smoke.mjs";
 import { createRevalidationSmokeDetails } from "./revalidation-smoke.mjs";
 import { buildSmokePageSchema } from "./smoke-page-schema.mjs";
+import { printSmokeProductionReadiness } from "./smoke-readiness-cli.mjs";
 import { redactSmokeSecrets } from "./smoke-secrets.mjs";
 import {
   completeSmokeReport,
@@ -165,6 +166,7 @@ export async function runSmokeTest(input) {
     completeSmokeReport(report, { pageId: page.id, storefrontUrl });
     await writeSmokeReportIfConfigured(input, report);
     console.log("\nSmoke publish passed.");
+    printSmokeProductionReadiness(report.productionReadiness);
     console.log(`Storefront URL: ${storefrontUrl}`);
   } catch (error) {
     failSmokeReport(report, error);
