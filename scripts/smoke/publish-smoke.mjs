@@ -225,9 +225,7 @@ function assertPublishedResponse(response, input, title) {
   const revalidation = response?.meta?.revalidation;
 
   if (input.requireRevalidation && revalidation?.triggered !== true) {
-    throw new Error(
-      `Storefront revalidation was not triggered (${revalidation?.reason ?? "unknown reason"}).`,
-    );
+    throw createPublishRevalidationFailure(revalidation, input);
   }
 
   if (revalidation?.triggered === true) {
@@ -237,6 +235,31 @@ function assertPublishedResponse(response, input, title) {
   } else {
     console.log("Storefront revalidation skipped by configuration.");
   }
+}
+
+function createPublishRevalidationFailure(revalidation, input) {
+  const details = createRevalidationSmokeDetails(revalidation, input);
+  const error = new Error(formatPublishRevalidationDetails(details));
+  error.smokeDetails = { revalidation: details };
+
+  return error;
+}
+
+export function formatPublishRevalidationFailure(revalidation, input) {
+  return formatPublishRevalidationDetails(
+    createRevalidationSmokeDetails(revalidation, input),
+  );
+}
+
+function formatPublishRevalidationDetails(details) {
+  return [
+    "Storefront revalidation was not triggered",
+    `(diagnosis: ${details.diagnosis},`,
+    `reason: ${details.reason ?? "unknown"},`,
+    `status: ${details.status ?? "none"},`,
+    `paths: ${details.pathCount},`,
+    `tags: ${details.tagCount}).`,
+  ].join(" ");
 }
 
 async function assertReachable(url, label) {

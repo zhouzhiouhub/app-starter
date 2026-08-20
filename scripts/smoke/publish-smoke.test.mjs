@@ -19,6 +19,7 @@ import {
   normalizeSmokeSlug,
   normalizeWebOrigin,
   parseSitemapUrls,
+  formatPublishRevalidationFailure,
   readConfig,
 } from "./publish-smoke.mjs";
 import {
@@ -202,6 +203,29 @@ test("smoke helpers validate preview token responses", () => {
       "smoke-page",
     ),
     false,
+  );
+});
+
+test("smoke helpers format publish revalidation failures with diagnostics", () => {
+  assert.equal(
+    formatPublishRevalidationFailure(
+      {
+        paths: ["/en/contact"],
+        reason: "request-failed",
+        status: 401,
+        tags: ["published-page"],
+        triggered: false,
+      },
+      { requireRevalidation: true },
+    ),
+    [
+      "Storefront revalidation was not triggered",
+      "(diagnosis: revalidation-secret-mismatch,",
+      "reason: request-failed,",
+      "status: 401,",
+      "paths: 1,",
+      "tags: 1).",
+    ].join(" "),
   );
 });
 

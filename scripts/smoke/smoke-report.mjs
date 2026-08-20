@@ -45,7 +45,7 @@ export function recordSmokeCheck(report, name, details = {}) {
 
 export function recordSmokeCheckFailure(report, name, error, details = {}) {
   report.checks.push({
-    details: redactSmokeReportValue(details),
+    details: redactSmokeReportValue(readFailureDetails(error, details)),
     error: {
       message: readErrorMessage(error),
     },
@@ -72,6 +72,27 @@ export function failSmokeReport(report, error) {
 
 function readErrorMessage(error) {
   return redactSmokeSecrets(error instanceof Error ? error.message : error);
+}
+
+function readFailureDetails(error, details) {
+  return {
+    ...readErrorDetails(error),
+    ...readPlainRecord(details),
+  };
+}
+
+function readErrorDetails(error) {
+  if (!error || typeof error !== "object") {
+    return {};
+  }
+
+  return readPlainRecord(error.smokeDetails);
+}
+
+function readPlainRecord(value) {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? value
+    : {};
 }
 
 export async function writeSmokeReportIfConfigured(input, report) {

@@ -91,3 +91,42 @@ test("smoke report redacts secrets from check details", async () => {
     await rm(directory, { force: true, recursive: true });
   }
 });
+
+test("smoke report keeps structured failure diagnostics from errors", () => {
+  const report = createSmokeReport(
+    {
+      apiBaseUrl: "https://api.example.com/api/v1",
+      locale: "en-US",
+      market: "us",
+      requireR2Upload: false,
+      requireRevalidation: true,
+      slug: "smoke-page",
+      tenantSlug: "default",
+      webUrl: "https://web.example.com",
+    },
+    "Smoke Page",
+    new Date("2026-08-20T00:00:00.000Z"),
+  );
+  const error = new Error("Revalidation failed with token=payload.signature");
+  error.smokeDetails = {
+    revalidation: {
+      diagnosis: "revalidation-secret-mismatch",
+      previewToken: "payload.signature",
+      status: 401,
+    },
+  };
+
+  recordSmokeCheckFailure(report, "page.publish", error);
+
+  assert.deepEqual(report.checks[0].details, {
+    revalidation: {
+      diagnosis: "revalidation-secret-mismatch",
+      previewToken: "[redacted]",
+      status: 401,
+    },
+  });
+  assert.equal(
+    report.checks[0].error.message.includes("payload.signature"),
+    false,
+  );
+});
