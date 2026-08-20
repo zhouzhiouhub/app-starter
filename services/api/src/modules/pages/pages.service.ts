@@ -151,13 +151,16 @@ export class PagesService {
     );
   }
 
-  async getPreviewByToken(token: string) {
-    return getPreviewPageByToken(this.prisma, token, (schema, tenantId) =>
+  async getPreviewByToken(token: string, requestId = "local-dev") {
+    return getPreviewPageByToken(this.prisma, token, requestId, (
+      schema,
+      tenantId,
+    ) =>
       this.media.resolveSchemaMediaReferences(schema, tenantId),
     );
   }
 
-  async listPublished(context: PublishedPageContext) {
-    return listPublishedPages(this.prisma, context);
+  async listPublished(context: PublishedPageContext, requestId = "local-dev") {
+    return listPublishedPages(this.prisma, context, requestId);
   }
 }

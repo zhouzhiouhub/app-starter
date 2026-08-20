@@ -63,8 +63,11 @@ export class PublicController {
   }
 
   @Get("preview/:token")
-  getPreview(@Param("token") token: string) {
-    return this.pages.getPreviewByToken(token);
+  getPreview(
+    @Param("token") token: string,
+    @CurrentRequestId() requestId = "local-dev",
+  ) {
+    return this.pages.getPreviewByToken(token, requestId);
   }
 
   @Get("pages")
@@ -75,10 +78,13 @@ export class PublicController {
   ) {
     const localeContext = resolvePublicLocale(locale);
     const marketContext = resolvePublicMarket(market);
-    const pages = await this.pages.listPublished({
-      locale: localeContext.locale,
-      market: marketContext.market,
-    });
+    const pages = await this.pages.listPublished(
+      {
+        locale: localeContext.locale,
+        market: marketContext.market,
+      },
+      requestId,
+    );
 
     return {
       data: pages.data,

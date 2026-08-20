@@ -321,9 +321,14 @@ test("getPreviewPageByToken returns the latest draft schema", async () => {
         },
       },
     };
-    const response = await getPreviewPageByToken(prisma, token);
+    const response = await getPreviewPageByToken(
+      prisma,
+      token,
+      "request-public-preview",
+    );
 
     assert.equal(response.data.meta.title, "Draft Campaign");
+    assert.equal(response.meta.requestId, "request-public-preview");
     assert.equal(response.meta.preview, true);
     assert.equal(response.meta.slug, "campaign");
   });

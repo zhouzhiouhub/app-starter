@@ -10,6 +10,7 @@ import { notFound, readSchema } from "../pages.validation.js";
 export async function getPreviewPageByToken(
   prisma: PrismaService,
   token: string,
+  requestId = "local-dev",
   resolveMediaReferences?: (
     schema: PageSchema,
     tenantId: string,
@@ -50,7 +51,7 @@ export async function getPreviewPageByToken(
   return {
     data: resolved,
     meta: {
-      requestId: "local-dev",
+      requestId,
       tenantId: page.site.tenantId,
       siteId: page.site.id,
       preview: true,

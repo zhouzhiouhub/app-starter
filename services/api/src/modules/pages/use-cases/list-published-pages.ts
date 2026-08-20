@@ -22,6 +22,7 @@ type PublishedPageRecord = {
 export async function listPublishedPages(
   prisma: PrismaService,
   context: PublishedPageContext,
+  requestId = "local-dev",
 ) {
   const site = await getPublicDefaultSite(prisma);
   const pages = await prisma.page.findMany({
@@ -54,7 +55,7 @@ export async function listPublishedPages(
   return {
     data: summaries,
     meta: {
-      requestId: "local-dev",
+      requestId,
       tenantId: site.tenantId,
       siteId: site.id,
       total: summaries.length,

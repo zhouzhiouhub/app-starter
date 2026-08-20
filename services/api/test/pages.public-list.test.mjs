@@ -108,10 +108,14 @@ test("listPublishedPages returns public summaries for published pages", async ()
     },
   };
 
-  const result = await listPublishedPages(prisma, {
-    locale: "en-US",
-    market: "us",
-  });
+  const result = await listPublishedPages(
+    prisma,
+    {
+      locale: "en-US",
+      market: "us",
+    },
+    "request-public-list",
+  );
 
   assert.deepEqual(result.data, [
     {
@@ -131,6 +135,7 @@ test("listPublishedPages returns public summaries for published pages", async ()
   ]);
   assert.equal(result.meta.total, 2);
   assert.equal(result.meta.tenantId, "tenant-1");
+  assert.equal(result.meta.requestId, "request-public-list");
 });
 
 test("listPublishedPages filters summaries by published locale and market", async () => {
