@@ -16,6 +16,35 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
   });
 
   assert.deepEqual(diagnostics, {
+    deployment: {
+      admin: {
+        configured: false,
+        host: "localhost",
+        path: "",
+        productionReady: false,
+        urlIssue: "local-host",
+        urlSafe: false,
+        variable: "ADMIN_URL",
+      },
+      api: {
+        configured: false,
+        host: "localhost",
+        path: "",
+        productionReady: false,
+        urlIssue: "local-host",
+        urlSafe: false,
+        variable: "API_URL",
+      },
+      web: {
+        configured: false,
+        host: "localhost",
+        path: "",
+        productionReady: false,
+        urlIssue: "local-host",
+        urlSafe: false,
+        variable: "WEB_URL",
+      },
+    },
     media: {
       cdnConfigured: true,
       cdnHost: "cdn.brand-assets.com",
@@ -50,6 +79,79 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
   assert.equal(serialized.includes("bucket-name"), false);
   assert.equal(serialized.includes("account-id"), false);
   assert.equal(serialized.includes("access-key"), false);
+});
+
+test("smoke environment diagnostics reports deployment URL readiness", () => {
+  const diagnostics = createSmokeEnvironmentDiagnostics({
+    ADMIN_URL: "https://admin.brand.com",
+    API_URL: "https://api.brand.com/api/v1",
+    WEB_URL: "https://store.brand.com",
+  });
+
+  assert.deepEqual(diagnostics.deployment, {
+    admin: {
+      configured: true,
+      host: "admin.brand.com",
+      path: "",
+      productionReady: true,
+      urlIssue: null,
+      urlSafe: true,
+      variable: "ADMIN_URL",
+    },
+    api: {
+      configured: true,
+      host: "api.brand.com",
+      path: "/api/v1",
+      productionReady: true,
+      urlIssue: null,
+      urlSafe: true,
+      variable: "API_URL",
+    },
+    web: {
+      configured: true,
+      host: "store.brand.com",
+      path: "",
+      productionReady: true,
+      urlIssue: null,
+      urlSafe: true,
+      variable: "WEB_URL",
+    },
+  });
+});
+
+test("smoke environment diagnostics reports unsafe deployment URLs", () => {
+  const diagnostics = createSmokeEnvironmentDiagnostics({
+    ADMIN_URL: "http://localhost:5173",
+    API_URL: "https://api.example.com/graphql",
+    WEB_URL: "https://store.example.com/page",
+  });
+
+  assert.equal(diagnostics.deployment.admin.urlIssue, "local-host");
+  assert.equal(diagnostics.deployment.admin.productionReady, false);
+  assert.equal(diagnostics.deployment.api.urlIssue, "unexpected-path");
+  assert.equal(diagnostics.deployment.api.productionReady, false);
+  assert.equal(diagnostics.deployment.web.urlIssue, "unexpected-path");
+  assert.equal(diagnostics.deployment.web.productionReady, false);
+});
+
+test("smoke environment diagnostics uses smoke input deployment URLs", () => {
+  const diagnostics = createSmokeEnvironmentDiagnostics(
+    {
+      API_URL: "https://api.example.com/api/v1",
+      WEB_URL: "https://web.example.com",
+    },
+    {
+      apiBaseUrl: "https://api.brand.com/api/v1",
+      webUrl: "https://store.brand.com",
+    },
+  );
+
+  assert.equal(diagnostics.deployment.api.host, "api.brand.com");
+  assert.equal(diagnostics.deployment.api.configured, true);
+  assert.equal(diagnostics.deployment.api.productionReady, true);
+  assert.equal(diagnostics.deployment.web.host, "store.brand.com");
+  assert.equal(diagnostics.deployment.web.configured, true);
+  assert.equal(diagnostics.deployment.web.productionReady, true);
 });
 
 test("smoke environment diagnostics reports missing R2 and CDN fallback", () => {

@@ -41,6 +41,29 @@ test("smoke report redacts secrets from failure messages", () => {
   assert.equal(report.error.message.includes("[redacted]"), true);
 });
 
+test("smoke report includes deployment diagnostics for effective smoke URLs", () => {
+  const report = createSmokeReport(
+    {
+      apiBaseUrl: "https://api.brand.com/api/v1",
+      locale: "en-US",
+      market: "us",
+      requireR2Upload: false,
+      requireRevalidation: true,
+      slug: "smoke-page",
+      tenantSlug: "default",
+      webUrl: "https://store.brand.com",
+    },
+    "Smoke Page",
+    new Date("2026-08-20T00:00:00.000Z"),
+  );
+
+  assert.equal(report.environment.deployment.api.host, "api.brand.com");
+  assert.equal(report.environment.deployment.api.path, "/api/v1");
+  assert.equal(report.environment.deployment.api.productionReady, true);
+  assert.equal(report.environment.deployment.web.host, "store.brand.com");
+  assert.equal(report.environment.deployment.web.productionReady, true);
+});
+
 test("smoke report redacts secrets from check details", async () => {
   const directory = await mkdtemp(join(tmpdir(), "app-smoke-report-"));
 

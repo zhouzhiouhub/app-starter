@@ -22,7 +22,9 @@ export function createSmokeReport(input, title, now = new Date()) {
     environment:
       input.environmentDiagnostics ??
       createSmokeEnvironmentDiagnostics(process.env, {
+        apiBaseUrl: input.apiBaseUrl,
         requireRevalidation: input.requireRevalidation,
+        webUrl: input.webUrl,
       }),
     finishedAt: null,
     pageId: null,

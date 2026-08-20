@@ -2,6 +2,7 @@ import {
   isLocalHostname,
   isPlaceholderHostname,
 } from "./cdn-hostname.mjs";
+import { createDeploymentDiagnostics } from "./deployment-diagnostics.mjs";
 
 const defaultMediaCdnBaseUrl = "https://cdn.local.invalid";
 const defaultRevalidatePath = "/api/revalidate";
@@ -27,6 +28,7 @@ export function createSmokeEnvironmentDiagnostics(
   );
 
   return {
+    deployment: createDeploymentDiagnostics(env, options),
     media: {
       cdnConfigured,
       cdnHost: cdn.host,
