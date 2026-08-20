@@ -3,11 +3,9 @@ import {
   publishedPageRevalidateSeconds,
   publishedPagesCacheTag,
 } from "@app-starter/schema";
+import { getApiBaseUrl } from "./runtime-url";
 
-const apiBaseUrl =
-  process.env.API_INTERNAL_URL ??
-  process.env.NEXT_PUBLIC_API_URL ??
-  "http://localhost:4000/api/v1";
+const apiBaseUrl = getApiBaseUrl();
 
 export type PublishedPageSummary = {
   noIndex: boolean;
@@ -26,15 +24,12 @@ export async function listPublishedPages(input?: {
       locale: input?.locale ?? defaultRuntimeConfig.defaultLocale,
       market: input?.market ?? defaultRuntimeConfig.defaultMarket,
     });
-    const response = await fetch(
-      `${apiBaseUrl}/public/pages?${searchParams}`,
-      {
-        next: {
-          revalidate: publishedPageRevalidateSeconds,
-          tags: [publishedPagesCacheTag],
-        },
+    const response = await fetch(`${apiBaseUrl}/public/pages?${searchParams}`, {
+      next: {
+        revalidate: publishedPageRevalidateSeconds,
+        tags: [publishedPagesCacheTag],
       },
-    );
+    });
 
     if (!response.ok) {
       return [];

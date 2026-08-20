@@ -4,13 +4,11 @@ import {
   pageSchema,
   pageSlugSchema,
   publishedPageRevalidateSeconds,
-  type PageSchema
+  type PageSchema,
 } from "@app-starter/schema";
+import { getApiBaseUrl } from "./runtime-url";
 
-const apiBaseUrl =
-  process.env.API_INTERNAL_URL ??
-  process.env.NEXT_PUBLIC_API_URL ??
-  "http://localhost:4000/api/v1";
+const apiBaseUrl = getApiBaseUrl();
 
 export async function getPublishedPage(input: {
   locale: string;
@@ -28,7 +26,7 @@ export async function getPublishedPage(input: {
     fallbackLocale: process.env.FALLBACK_LOCALE ?? "en-US",
     locale,
     market: defaultMarket,
-    slug: slug.data
+    slug: slug.data,
   });
 }
 
@@ -36,13 +34,12 @@ export async function getNotFoundPage(input?: {
   locale?: string;
 }): Promise<PageSchema> {
   const defaultMarket = process.env.DEFAULT_MARKET ?? "us";
-  const locale =
-    input?.locale || (process.env.FALLBACK_LOCALE ?? "en-US");
+  const locale = input?.locale || (process.env.FALLBACK_LOCALE ?? "en-US");
   const published = await fetchPublishedSchema({
     fallbackLocale: process.env.FALLBACK_LOCALE ?? "en-US",
     locale,
     market: defaultMarket,
-    slug: "404"
+    slug: "404",
   });
 
   if (published) {
@@ -53,18 +50,20 @@ export async function getNotFoundPage(input?: {
     fallbackLocale: process.env.FALLBACK_LOCALE ?? "en-US",
     locale,
     market: defaultMarket,
-    slug: "home"
+    slug: "home",
   });
 
   return createFallbackPage({
     slug: "404",
     locale,
     market: defaultMarket,
-    siteChrome: home?.chrome
+    siteChrome: home?.chrome,
   });
 }
 
-export async function getPreviewPage(token: string): Promise<PageSchema | null> {
+export async function getPreviewPage(
+  token: string,
+): Promise<PageSchema | null> {
   try {
     const response = await fetch(
       `${apiBaseUrl}/public/preview/${encodeURIComponent(token)}`,
@@ -93,16 +92,16 @@ async function fetchPublishedSchema(input: {
   try {
     const searchParams = new URLSearchParams({
       locale: input.locale,
-      market: input.market
+      market: input.market,
     });
     const response = await fetch(
       `${apiBaseUrl}/public/pages/${encodeURIComponent(input.slug)}?${searchParams}`,
       {
         next: {
           revalidate: publishedPageRevalidateSeconds,
-          tags: getPublishedPageCacheTags(input)
-        }
-      }
+          tags: getPublishedPageCacheTags(input),
+        },
+      },
     );
 
     if (!response.ok) {
