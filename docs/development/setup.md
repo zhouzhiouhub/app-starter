@@ -37,6 +37,9 @@ STOREFRONT_REVALIDATE_URL=http://localhost:3000/api/revalidate
 STOREFRONT_REVALIDATE_TIMEOUT_MS=5000
 ```
 
+`STOREFRONT_REVALIDATE_URL` can be the full Web revalidation route. If it is
+set to the Web origin only, the API normalizes it to `/api/revalidate`.
+
 Preview links use a short-lived token. Local development can leave
 `PREVIEW_TOKEN_SECRET` empty, which uses a non-production fallback. Production
 must set an explicit secret:

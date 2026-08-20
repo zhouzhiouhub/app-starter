@@ -88,7 +88,7 @@ export function resolveStorefrontRevalidateUrl(
   const configured = readSafeHttpUrl(env.STOREFRONT_REVALIDATE_URL);
 
   if (configured) {
-    return `${configured.origin}${trimTrailingSlashes(configured.pathname)}`;
+    return createRevalidateEndpointUrl(configured);
   }
 
   if (rawConfigured) {
@@ -102,6 +102,16 @@ export function resolveStorefrontRevalidateUrl(
   }
 
   return `${webUrl.origin}/api/revalidate`;
+}
+
+function createRevalidateEndpointUrl(url: URL): string {
+  const pathname = trimTrailingSlashes(url.pathname);
+
+  if (pathname === "/") {
+    return `${url.origin}/api/revalidate`;
+  }
+
+  return `${url.origin}${pathname}`;
 }
 
 function readSafeHttpUrl(value: string | undefined): URL | null {

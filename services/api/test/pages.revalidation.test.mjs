@@ -91,6 +91,13 @@ test("storefront revalidation URL resolver normalizes safe URLs", () => {
     }),
     "https://web.example.com/api/revalidate",
   );
+  assert.equal(
+    resolveStorefrontRevalidateUrl({
+      STOREFRONT_REVALIDATE_URL: " https://web.example.com/ ",
+      WEB_URL: "",
+    }),
+    "https://web.example.com/api/revalidate",
+  );
 });
 
 test("storefront revalidation URL resolver rejects unsafe URLs", () => {
