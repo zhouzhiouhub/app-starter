@@ -150,7 +150,31 @@ function readArrayLength(value) {
 }
 
 function readErrorMessage(error) {
-  return redactSmokeSecrets(error instanceof Error ? error.message : error);
+  return redactSmokeSecrets(readErrorMessageValue(error));
+}
+
+function readErrorMessageValue(error) {
+  if (error instanceof Error) {
+    return readNonEmptyString(error.message);
+  }
+
+  if (isPlainRecord(error) && typeof error.message === "string") {
+    return readNonEmptyString(error.message);
+  }
+
+  if (typeof error === "string") {
+    return readNonEmptyString(error);
+  }
+
+  return error === null || error === undefined
+    ? "Unknown smoke failure."
+    : readNonEmptyString(String(error));
+}
+
+function readNonEmptyString(value) {
+  const trimmed = value.trim();
+
+  return trimmed.length > 0 ? trimmed : "Unknown smoke failure.";
 }
 
 function readFailureDetails(error, details) {

@@ -164,3 +164,67 @@ test("smoke report keeps structured failure diagnostics from errors", () => {
     false,
   );
 });
+
+test("smoke report reads messages from object-shaped failures", () => {
+  const report = createSmokeReport(
+    {
+      apiBaseUrl: "https://api.example.com/api/v1",
+      locale: "en-US",
+      market: "us",
+      requireR2Upload: false,
+      requireRevalidation: true,
+      slug: "smoke-page",
+      tenantSlug: "default",
+      webUrl: "https://web.example.com",
+    },
+    "Smoke Page",
+    new Date("2026-08-20T00:00:00.000Z"),
+  );
+  const failure = {
+    message: "Fetch failed with token=payload.signature",
+    smokeDetails: {
+      request: {
+        previewToken: "payload.signature",
+        status: 503,
+      },
+    },
+  };
+
+  recordSmokeCheckFailure(report, "public-page.api", failure);
+  failSmokeReport(report, failure);
+
+  assert.equal(
+    report.checks[0].error.message,
+    "Fetch failed with token=[redacted]",
+  );
+  assert.equal(report.error.message, "Fetch failed with token=[redacted]");
+  assert.deepEqual(report.checks[0].details, {
+    request: {
+      previewToken: "[redacted]",
+      status: 503,
+    },
+  });
+});
+
+test("smoke report uses a stable fallback for empty failures", () => {
+  const report = createSmokeReport(
+    {
+      apiBaseUrl: "https://api.example.com/api/v1",
+      locale: "en-US",
+      market: "us",
+      requireR2Upload: false,
+      requireRevalidation: true,
+      slug: "smoke-page",
+      tenantSlug: "default",
+      webUrl: "https://web.example.com",
+    },
+    "Smoke Page",
+    new Date("2026-08-20T00:00:00.000Z"),
+  );
+
+  recordSmokeCheckFailure(report, "auth.login", "");
+  failSmokeReport(report, null);
+
+  assert.equal(report.checks[0].error.message, "Unknown smoke failure.");
+  assert.equal(report.error.message, "Unknown smoke failure.");
+});
