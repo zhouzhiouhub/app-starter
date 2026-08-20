@@ -110,6 +110,7 @@ test("audit service lists tenant-scoped logs with filters and pagination", async
       targetType: "page",
     },
     { tenantId: "tenant-1" },
+    "request-audit-list",
   );
 
   assert.deepEqual(calls.count.where, {
@@ -124,6 +125,7 @@ test("audit service lists tenant-scoped logs with filters and pagination", async
   assert.deepEqual(calls.findMany.orderBy, { createdAt: "desc" });
   assert.equal(response.meta.total, 1);
   assert.equal(response.meta.page, 2);
+  assert.equal(response.meta.requestId, "request-audit-list");
   assert.equal(response.data[0].createdAt, "2026-08-19T00:00:00.000Z");
   assert.equal(response.data[0].metadata.slug, "home");
   assert.equal(response.data[0].metadata.apiToken, "[redacted]");

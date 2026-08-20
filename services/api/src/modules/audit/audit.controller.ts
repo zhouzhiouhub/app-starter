@@ -1,6 +1,7 @@
 import { Controller, Get, Query, UseGuards } from "@nestjs/common";
 import { AdminApiGuard } from "../../common/admin-api.guard.js";
 import { CurrentUser } from "../../common/current-user.decorator.js";
+import { CurrentRequestId } from "../../common/request-id.decorator.js";
 import { RequireScopes } from "../../common/require-scopes.decorator.js";
 import type { Actor } from "../identity/identity.types.js";
 import { AuditService } from "./audit.service.js";
@@ -20,10 +21,12 @@ export class AuditController {
     @Query("page") page?: string,
     @Query("targetId") targetId?: string,
     @Query("targetType") targetType?: string,
+    @CurrentRequestId() requestId = "local-dev",
   ) {
     return this.audit.list(
       { action, actorId, limit, page, targetId, targetType },
       actor,
+      requestId,
     );
   }
 }

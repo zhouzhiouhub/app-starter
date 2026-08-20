@@ -23,7 +23,11 @@ export class AuditService {
     });
   }
 
-  async list(query: ListAuditLogsQuery, actor: { tenantId: string }) {
+  async list(
+    query: ListAuditLogsQuery,
+    actor: { tenantId: string },
+    requestId = "local-dev",
+  ) {
     const input = parseListAuditLogsQuery(query);
     const skip = (input.page - 1) * input.limit;
     const where: Prisma.AuditLogWhereInput = {
@@ -47,7 +51,7 @@ export class AuditService {
     return {
       data: logs.map(toAuditLogResponse),
       meta: {
-        requestId: "local-dev",
+        requestId,
         tenantId: actor.tenantId,
         total,
         page: input.page,
