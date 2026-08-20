@@ -10,6 +10,9 @@ import type {
   RegisterMediaInput,
   UploadMediaFileInput,
 } from "./types";
+import { listAllMediaAssetPages } from "./media-list-pagination";
+
+const mediaResolverPageLimit = 100;
 
 export async function listMediaAssets(
   page = 1,
@@ -40,6 +43,13 @@ export async function listMediaAssets(
       total: result.meta?.total ?? result.data?.length ?? 0,
     },
   };
+}
+
+export async function listAllActiveMediaAssets(): Promise<MediaAsset[]> {
+  return listAllMediaAssetPages(
+    (page, limit) => listMediaAssets(page, limit),
+    mediaResolverPageLimit,
+  );
 }
 
 export async function archiveMediaAsset(assetId: string): Promise<MediaAsset> {

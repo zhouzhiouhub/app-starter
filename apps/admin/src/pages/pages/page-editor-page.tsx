@@ -39,11 +39,15 @@ export function PageEditorPage() {
       isDraftDirty={editor.isDraftDirty}
       isPublishing={editor.isPublishing}
       isSaving={editor.isSaving}
+      mediaReferences={editor.mediaReferences}
+      mediaResolver={editor.mediaResolver}
       onFeedbackClose={() => editor.setFeedback(null)}
       onOpenPreview={() => void editor.openPreview()}
       onPublish={() => void editor.publish()}
       onRedo={editor.redo}
-      onRollbackVersion={(versionId) => void editor.rollbackToVersion(versionId)}
+      onRollbackVersion={(versionId) =>
+        void editor.rollbackToVersion(versionId)
+      }
       onSaveDraft={() => void editor.saveDraft()}
       onSchemaChange={(schema) => editor.setDraftSchema(schema)}
       onUndo={editor.undo}

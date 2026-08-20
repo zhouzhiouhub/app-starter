@@ -1,12 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { MediaAssetReference } from "@app-starter/schema";
 import { formatRequestError } from "../../../lib/api-error";
-import { listMediaAssets } from "../api";
+import { listAllActiveMediaAssets } from "../api";
 
-export function useMediaResolver() {
-  const [urlsByReference, setUrlsByReference] = useState<Record<string, string>>(
-    {},
-  );
+export interface MediaResolverState {
+  error: string | null;
+  isLoading: boolean;
+  resolveMediaUrl: (reference: MediaAssetReference) => string;
+  urlsByReference: Record<string, string>;
+}
+
+export function useMediaResolver(): MediaResolverState {
+  const [urlsByReference, setUrlsByReference] = useState<
+    Record<string, string>
+  >({});
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -16,15 +23,15 @@ export function useMediaResolver() {
     setError(null);
     setIsLoading(true);
 
-    listMediaAssets(1, 100)
-      .then((result) => {
+    listAllActiveMediaAssets()
+      .then((assets) => {
         if (!active) {
           return;
         }
 
         setUrlsByReference(
           Object.fromEntries(
-            result.data.map((asset) => [asset.reference, asset.url]),
+            assets.map((asset) => [asset.reference, asset.url]),
           ),
         );
         setError(null);

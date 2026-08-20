@@ -13,6 +13,7 @@ import { getStorefrontPreviewUrl } from "../storefront-url";
 import { createSchemaFingerprint } from "../schema-fingerprint";
 import { buildPublicationFeedback } from "../revalidation-feedback";
 import { findBlockingPublishPreflightIssue } from "../publish-preflight";
+import { readMediaPublishPreflightIssue } from "../media-publish-preflight";
 import { readEditorErrorFeedback } from "../editor-feedback";
 import {
   readPageEditorDraftState,
@@ -20,15 +21,14 @@ import {
   type PageEditorDraftState,
   type PageEditorSavedState,
 } from "../page-editor-detail-state";
-import type {
-  EditorFeedback,
-  PageSummary,
-  PageVersionSummary,
-} from "../types";
+import type { EditorFeedback, PageSummary, PageVersionSummary } from "../types";
 import { usePageEditorAutosave } from "./use-page-editor-autosave";
+import { usePageMediaPreflight } from "./use-page-media-preflight";
 import { useSchemaHistory } from "./use-schema-history";
 
-interface SaveDraftOptions { silent?: boolean; }
+interface SaveDraftOptions {
+  silent?: boolean;
+}
 
 export function usePageEditor(pageId: string | undefined) {
   const [page, setPage] = useState<PageSummary | null>(null);
@@ -55,6 +55,8 @@ export function usePageEditor(pageId: string | undefined) {
     schema: draftSchema,
     undo,
   } = useSchemaHistory();
+  const { mediaFeedback, mediaReferences, mediaResolver } =
+    usePageMediaPreflight(draftSchema);
 
   const applySavedState = useCallback((state: PageEditorSavedState) => {
     setPage(state.page);
@@ -98,40 +100,43 @@ export function usePageEditor(pageId: string | undefined) {
     void load();
   }, [load]);
 
-  const saveDraft = useCallback(async (options: SaveDraftOptions = {}) => {
-    if (!pageId || !draftSchema) {
-      return;
-    }
-
-    setIsSaving(true);
-
-    if (!options.silent) {
-      setFeedback(null);
-    }
-
-    try {
-      await savePageDraft(pageId, draftSchema);
-      applySavedState(
-        readPageEditorSavedState(await getPage(pageId), draftSchema),
-      );
-
-      if (!options.silent) {
-        setFeedback({
-          message:
-            "Draft saved. Publish when you want the storefront to update.",
-          type: "success",
-        });
-      }
-    } catch (caught) {
-      if (redirectWhenAuthRequired(caught)) {
+  const saveDraft = useCallback(
+    async (options: SaveDraftOptions = {}) => {
+      if (!pageId || !draftSchema) {
         return;
       }
 
-      setFeedback(readEditorErrorFeedback(caught));
-    } finally {
-      setIsSaving(false);
-    }
-  }, [applySavedState, draftSchema, pageId]);
+      setIsSaving(true);
+
+      if (!options.silent) {
+        setFeedback(null);
+      }
+
+      try {
+        await savePageDraft(pageId, draftSchema);
+        applySavedState(
+          readPageEditorSavedState(await getPage(pageId), draftSchema),
+        );
+
+        if (!options.silent) {
+          setFeedback({
+            message:
+              "Draft saved. Publish when you want the storefront to update.",
+            type: "success",
+          });
+        }
+      } catch (caught) {
+        if (redirectWhenAuthRequired(caught)) {
+          return;
+        }
+
+        setFeedback(readEditorErrorFeedback(caught));
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [applySavedState, draftSchema, pageId],
+  );
 
   const publish = useCallback(async () => {
     if (!pageId || !draftSchema) {
@@ -143,6 +148,16 @@ export function usePageEditor(pageId: string | undefined) {
     if (blockingIssue) {
       setFeedback({
         message: `Cannot publish yet. ${blockingIssue.message}`,
+        type: "error",
+      });
+      return;
+    }
+
+    const mediaIssue = readMediaPublishPreflightIssue(mediaFeedback);
+
+    if (mediaIssue) {
+      setFeedback({
+        message: `Cannot publish yet. ${mediaIssue.message}`,
         type: "error",
       });
       return;
@@ -174,7 +189,7 @@ export function usePageEditor(pageId: string | undefined) {
     } finally {
       setIsPublishing(false);
     }
-  }, [applySavedState, draftSchema, pageId, resetSchema]);
+  }, [applySavedState, draftSchema, mediaFeedback, pageId, resetSchema]);
 
   const openPreview = useCallback(async () => {
     if (!pageId || !draftSchema) {
@@ -282,6 +297,9 @@ export function usePageEditor(pageId: string | undefined) {
     isLoading,
     isPublishing,
     isSaving,
+    mediaFeedback,
+    mediaReferences,
+    mediaResolver,
     page,
     openPreview,
     publish,

@@ -2,15 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import { Alert, Tag, Typography } from "antd";
 import {
   getOrderedSectionsForViewport,
+  type MediaAssetReference,
   type PageSchema,
   type Viewport,
 } from "@app-starter/schema";
+import type { MediaResolverState } from "../../media/hooks/use-media-resolver";
 import { getStorefrontPagePath } from "../storefront-url";
-import type {
-  EditorFeedback,
-  PageSummary,
-  PageVersionSummary,
-} from "../types";
+import type { EditorFeedback, PageSummary, PageVersionSummary } from "../types";
 import { ChromeSettingsPanel } from "./chrome-settings-panel";
 import { PageContentFields } from "./page-content-fields";
 import { PageEditorToolbar } from "./page-editor-toolbar";
@@ -29,6 +27,8 @@ export function PageEditor(props: {
   isDraftDirty: boolean;
   isPublishing: boolean;
   isSaving: boolean;
+  mediaReferences: MediaAssetReference[];
+  mediaResolver: MediaResolverState;
   onFeedbackClose: () => void;
   onOpenPreview: () => void;
   onPublish: () => void;
@@ -53,9 +53,8 @@ export function PageEditor(props: {
   );
   const selectedSection = useMemo(
     () =>
-      orderedSections.find(
-        (section) => section.id === selectedSectionId,
-      ) ?? null,
+      orderedSections.find((section) => section.id === selectedSectionId) ??
+      null,
     [orderedSections, selectedSectionId],
   );
 
@@ -172,6 +171,8 @@ export function PageEditor(props: {
           />
         </div>
         <PagePreviewPane
+          mediaReferences={props.mediaReferences}
+          mediaResolver={props.mediaResolver}
           onViewportChange={props.onViewportChange}
           schema={props.schema}
           viewport={props.viewport}

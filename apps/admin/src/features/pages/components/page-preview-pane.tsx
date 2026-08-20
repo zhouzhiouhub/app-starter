@@ -1,29 +1,25 @@
-import { useMemo } from "react";
 import { Alert, Segmented, Typography } from "antd";
 import { PageRenderer } from "@app-starter/renderer";
-import {
-  collectMediaReferences,
-  type PageSchema,
-  type Viewport,
+import type {
+  MediaAssetReference,
+  PageSchema,
+  Viewport,
 } from "@app-starter/schema";
 import { readMediaResolverFeedback } from "../../media/media-resolver-feedback";
-import { useMediaResolver } from "../../media/hooks/use-media-resolver";
+import type { MediaResolverState } from "../../media/hooks/use-media-resolver";
 
 export function PagePreviewPane(props: {
+  mediaReferences: MediaAssetReference[];
+  mediaResolver: MediaResolverState;
   schema: PageSchema;
   onViewportChange: (viewport: Viewport) => void;
   viewport: Viewport;
 }) {
-  const mediaResolver = useMediaResolver();
-  const mediaReferences = useMemo(
-    () => collectMediaReferences(props.schema),
-    [props.schema],
-  );
   const mediaFeedback = readMediaResolverFeedback({
-    error: mediaResolver.error,
-    isLoading: mediaResolver.isLoading,
-    references: mediaReferences,
-    urlsByReference: mediaResolver.urlsByReference,
+    error: props.mediaResolver.error,
+    isLoading: props.mediaResolver.isLoading,
+    references: props.mediaReferences,
+    urlsByReference: props.mediaResolver.urlsByReference,
   });
 
   return (
@@ -75,7 +71,7 @@ export function PagePreviewPane(props: {
         }}
       >
         <PageRenderer
-          resolveMediaUrl={mediaResolver.resolveMediaUrl}
+          resolveMediaUrl={props.mediaResolver.resolveMediaUrl}
           schema={props.schema}
           viewport={props.viewport}
         />
