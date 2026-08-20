@@ -108,6 +108,7 @@ test("smoke report includes production readiness summary", () => {
 
   assert.deepEqual(report.productionReadiness, {
     blockers: [],
+    nextActions: [],
     productionReady: true,
     warnings: [],
   });

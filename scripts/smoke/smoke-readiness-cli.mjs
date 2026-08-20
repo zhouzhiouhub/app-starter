@@ -16,6 +16,9 @@ export function formatSmokeProductionReadiness(readiness) {
   const blockers = Array.isArray(readiness?.blockers)
     ? readiness.blockers
     : [];
+  const nextActions = Array.isArray(readiness?.nextActions)
+    ? readiness.nextActions
+    : [];
   const warnings = Array.isArray(readiness?.warnings)
     ? readiness.warnings
     : [];
@@ -24,7 +27,7 @@ export function formatSmokeProductionReadiness(readiness) {
     return formatReadyLines(warnings);
   }
 
-  return formatBlockedLines(blockers, warnings);
+  return formatBlockedLines(blockers, nextActions, warnings);
 }
 
 function formatReadyLines(warnings) {
@@ -34,12 +37,24 @@ function formatReadyLines(warnings) {
   ];
 }
 
-function formatBlockedLines(blockers, warnings) {
+function formatBlockedLines(blockers, nextActions, warnings) {
   return [
     "\nProduction readiness: blocked.",
     "Production smoke passed, but the report is not yet production-ready:",
     ...blockers.map((blocker) => `  - ${formatIssue(blocker)}`),
+    ...formatNextActionLines(nextActions),
     ...warnings.map((warning) => `  Warning: ${formatIssue(warning)}`),
+  ];
+}
+
+function formatNextActionLines(actions) {
+  if (actions.length === 0) {
+    return [];
+  }
+
+  return [
+    "Next actions:",
+    ...actions.map((action) => `  - ${formatAction(action)}`),
   ];
 }
 
@@ -52,6 +67,13 @@ function formatIssue(issue) {
   return redactSmokeSecrets(
     `[${area}/${code}] ${message}${context ? ` (${context})` : ""}`,
   );
+}
+
+function formatAction(action) {
+  const area = action?.area ?? "unknown";
+  const message = action?.action ?? "Review the production readiness blocker.";
+
+  return redactSmokeSecrets(`[${area}] ${message}`);
 }
 
 function formatIssueContext(issue) {

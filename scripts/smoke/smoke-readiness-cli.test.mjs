@@ -34,6 +34,16 @@ test("smoke readiness CLI formats blockers with remediation context", () => {
         missingRequired: ["R2_SECRET_ACCESS_KEY"],
       },
     ],
+    nextActions: [
+      {
+        action: "Set API_URL to the deployed API HTTPS origin.",
+        area: "deployment.api",
+      },
+      {
+        action: "Set missing R2 variables: R2_SECRET_ACCESS_KEY.",
+        area: "media.r2",
+      },
+    ],
     productionReady: false,
     warnings: [],
   });
@@ -43,6 +53,9 @@ test("smoke readiness CLI formats blockers with remediation context", () => {
     "Production smoke passed, but the report is not yet production-ready:",
     "  - [deployment.api/placeholder-host] API_URL must be a production HTTPS URL. (host: api.example.com, path: /api/v1, variable: API_URL)",
     "  - [media.r2/missing-required-env] Configure all required R2 variables before production smoke. (missing: R2_SECRET_ACCESS_KEY)",
+    "Next actions:",
+    "  - [deployment.api] Set API_URL to the deployed API HTTPS origin.",
+    "  - [media.r2] Set missing R2 variables: R2_SECRET_ACCESS_KEY.",
   ]);
 });
 
@@ -76,6 +89,12 @@ test("smoke readiness CLI writes blocked reports to warning output", () => {
           area: "deployment.admin",
           issue: "admin-smoke-not-required",
           message: "Set SMOKE_REQUIRE_ADMIN_APP=true.",
+        },
+      ],
+      nextActions: [
+        {
+          action: "Set SMOKE_REQUIRE_ADMIN_APP=true.",
+          area: "deployment.admin",
         },
       ],
       productionReady: false,

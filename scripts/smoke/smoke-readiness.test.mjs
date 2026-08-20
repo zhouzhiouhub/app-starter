@@ -10,6 +10,7 @@ test("smoke readiness passes when every production gate is proven", () => {
 
   assert.deepEqual(readiness, {
     blockers: [],
+    nextActions: [],
     productionReady: true,
     warnings: [],
   });
@@ -32,6 +33,23 @@ test("smoke readiness marks omitted production gates as blockers", () => {
     ],
   );
   assert.equal(readiness.productionReady, false);
+  assert.deepEqual(
+    readiness.nextActions.map((item) => [item.area, item.action]),
+    [
+      [
+        "deployment.admin",
+        "Set ADMIN_URL to the deployed Admin origin and SMOKE_REQUIRE_ADMIN_APP=true.",
+      ],
+      [
+        "media.r2",
+        "Configure R2 credentials and set SMOKE_REQUIRE_R2_UPLOAD=true.",
+      ],
+      [
+        "revalidation",
+        "Keep SMOKE_REQUIRE_REVALIDATION=true and configure storefront revalidation.",
+      ],
+    ],
+  );
 });
 
 test("smoke readiness reports unsafe deployment and environment blockers", () => {
@@ -94,6 +112,21 @@ test("smoke readiness reports unsafe deployment and environment blockers", () =>
   assert.deepEqual(readiness.blockers[2].missingRequired, [
     "R2_SECRET_ACCESS_KEY",
   ]);
+  assert.deepEqual(
+    readiness.nextActions.map((item) => item.area),
+    [
+      "deployment.api",
+      "deployment.admin",
+      "media.r2",
+      "media.cdn",
+      "revalidation.secret",
+      "revalidation.url",
+    ],
+  );
+  assert.equal(
+    readiness.nextActions[2].action,
+    "Set missing R2 variables: R2_SECRET_ACCESS_KEY.",
+  );
 });
 
 test("smoke readiness warns when revalidation uses WEB_URL fallback", () => {
@@ -114,6 +147,13 @@ test("smoke readiness warns when revalidation uses WEB_URL fallback", () => {
     },
   ]);
   assert.equal(readiness.productionReady, true);
+  assert.deepEqual(readiness.nextActions, [
+    {
+      action:
+        "Optionally set STOREFRONT_REVALIDATE_URL explicitly instead of relying on WEB_URL fallback.",
+      area: "revalidation.url",
+    },
+  ]);
 });
 
 function createReadyConfig() {

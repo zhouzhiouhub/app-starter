@@ -563,7 +563,7 @@ pnpm smoke:publish
 布尔 smoke 开关只接受 `true`/`false`、`1`/`0`、`yes`/`no`、`on`/`off`，拼写错误会直接失败。
 `SMOKE_RETRY_ATTEMPTS` 必须为 1-60，`SMOKE_RETRY_DELAY_MS` 必须为 1-60000 毫秒。
 `SMOKE_REPORT_PATH` 必须是 `tmp/`、`reports/`、`artifacts/` 或 `.tmp/` 下的相对 `.json` 路径，避免报告写到源码或系统目录。
-Smoke 报告 details 与失败消息会在写入报告或打印到 CLI 前脱敏 Preview Token、敏感 query、JSON 凭据字段、R2 签名参数和 Bearer Token；`environment.deployment` 会标记 API / Web / Admin URL 是否仍为本地、占位域名、非 HTTPS 或异常路径；`productionReadiness` 会汇总生产上线 blocker，只有 API / Web / Admin、R2 / CDN 和 ISR revalidation 生产门禁都被证明时才会返回 `productionReady=true`，CLI 也会在 smoke 通过后直接打印 blocked / ready 结论。
+Smoke 报告 details 与失败消息会在写入报告或打印到 CLI 前脱敏 Preview Token、敏感 query、JSON 凭据字段、R2 签名参数和 Bearer Token；`environment.deployment` 会标记 API / Web / Admin URL 是否仍为本地、占位域名、非 HTTPS 或异常路径；`productionReadiness` 会汇总生产上线 blocker 和 `nextActions` 操作清单，只有 API / Web / Admin、R2 / CDN 和 ISR revalidation 生产门禁都被证明时才会返回 `productionReady=true`，CLI 也会在 smoke 通过后直接打印 blocked / ready 结论。
 
 ```powershell
 $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
