@@ -43,6 +43,23 @@ test("preview tokens verify, expire, and reject tampering", () => {
   );
 });
 
+test("preview token verification rejects malformed token shapes early", () => {
+  const productionEnv = {
+    NODE_ENV: "production",
+    PREVIEW_TOKEN_SECRET: "",
+  };
+
+  for (const token of [
+    "",
+    "payload.signature.extra",
+    "payload.signature!",
+    `payload.${"a".repeat(42)}`,
+    `${"a".repeat(2049)}.${"b".repeat(43)}`,
+  ]) {
+    assert.equal(verifyPagePreviewToken(token, { env: productionEnv }), null);
+  }
+});
+
 test("preview token TTL stays within the one hour preview window", () => {
   const now = new Date("2026-08-19T00:00:00.000Z");
 
@@ -307,6 +324,21 @@ test("getPreviewPageByToken returns the latest draft schema", async () => {
     assert.equal(response.meta.preview, true);
     assert.equal(response.meta.slug, "campaign");
   });
+});
+
+test("getPreviewPageByToken rejects malformed tokens before database lookup", async () => {
+  const prisma = {
+    page: {
+      findFirst() {
+        throw new Error("database should not be queried");
+      },
+    },
+  };
+
+  await assert.rejects(
+    () => getPreviewPageByToken(prisma, "not a preview token"),
+    /Preview token is invalid or expired/,
+  );
 });
 
 function actor() {

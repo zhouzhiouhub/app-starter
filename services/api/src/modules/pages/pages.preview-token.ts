@@ -2,6 +2,9 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 
 const defaultPreviewTokenTtlSeconds = 60 * 60;
 const maxPreviewTokenTtlSeconds = defaultPreviewTokenTtlSeconds;
+const maxPreviewTokenLength = 2048;
+const previewTokenSignatureLength = 43;
+const previewTokenSegmentPattern = /^[A-Za-z0-9_-]+$/;
 const localPreviewTokenSecret = "local-dev-preview-token-secret";
 
 export class PreviewTokenConfigurationError extends Error {
@@ -56,17 +59,17 @@ export function verifyPagePreviewToken(
     now?: Date;
   } = {},
 ): PagePreviewTokenPayload | null {
-  const [encodedPayload, signature, extra] = token.split(".");
+  const parts = readPreviewTokenParts(token);
 
-  if (!encodedPayload || !signature || extra) {
+  if (!parts) {
     return null;
   }
 
-  if (!hasValidSignature(encodedPayload, signature, input.env)) {
+  if (!hasValidSignature(parts.encodedPayload, parts.signature, input.env)) {
     return null;
   }
 
-  const payload = decodeJson(encodedPayload);
+  const payload = decodeJson(parts.encodedPayload);
   const now = toUnixSeconds(input.now ?? new Date());
 
   if (!isPreviewTokenPayload(payload) || payload.exp <= now) {
@@ -74,6 +77,27 @@ export function verifyPagePreviewToken(
   }
 
   return payload;
+}
+
+function readPreviewTokenParts(
+  token: string,
+): { encodedPayload: string; signature: string } | null {
+  if (!token || token.length > maxPreviewTokenLength) {
+    return null;
+  }
+
+  const [encodedPayload, signature, extra] = token.split(".");
+
+  if (
+    !isPreviewTokenSegment(encodedPayload) ||
+    !isPreviewTokenSegment(signature) ||
+    signature.length !== previewTokenSignatureLength ||
+    extra
+  ) {
+    return null;
+  }
+
+  return { encodedPayload, signature };
 }
 
 function readPreviewTokenSecret(env = process.env): string {
@@ -144,6 +168,10 @@ function safeEqual(left: string, right: string): boolean {
     leftBuffer.length === rightBuffer.length &&
     timingSafeEqual(leftBuffer, rightBuffer)
   );
+}
+
+function isPreviewTokenSegment(value: string | undefined): value is string {
+  return Boolean(value && previewTokenSegmentPattern.test(value));
 }
 
 function encodeJson(value: unknown): string {
