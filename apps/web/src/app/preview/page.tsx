@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getPreviewPage } from "../../lib/published-page";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   robots: {
     follow: false,
