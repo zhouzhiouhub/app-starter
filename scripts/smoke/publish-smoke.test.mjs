@@ -22,10 +22,6 @@ import {
   formatPublishRevalidationFailure,
   readConfig,
 } from "./publish-smoke.mjs";
-import {
-  formatStorefrontPageAttempt,
-  readStorefrontPageAttempt,
-} from "./storefront-smoke.mjs";
 import { buildSmokePageSchema } from "./smoke-page-schema.mjs";
 import {
   completeSmokeReport,
@@ -131,30 +127,6 @@ test("smoke helpers parse sitemap URLs", () => {
   <url><loc>https://web.example.com/en/campaign</loc></url>
 </urlset>`),
     ["https://web.example.com/en", "https://web.example.com/en/campaign"],
-  );
-});
-
-test("smoke helpers summarize storefront page attempts", () => {
-  const failed = readStorefrontPageAttempt(
-    {
-      ok: false,
-      status: 503,
-      statusText: "Service Unavailable",
-      text: "<html>\n<body>Storefront render failed</body>\n</html>",
-    },
-    "Published title",
-  );
-
-  assert.deepEqual(failed, {
-    bodySnippet: "<html> <body>Storefront render failed</body> </html>",
-    ok: false,
-    status: 503,
-    statusText: "Service Unavailable",
-    titlePresent: false,
-  });
-  assert.equal(
-    formatStorefrontPageAttempt(failed),
-    'status 503 Service Unavailable, title present: false, body: "<html> <body>Storefront render failed</body> </html>"',
   );
 });
 

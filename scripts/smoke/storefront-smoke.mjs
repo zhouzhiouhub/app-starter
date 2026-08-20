@@ -42,22 +42,35 @@ export async function assertStorefrontPage(input, title) {
 }
 
 export function readStorefrontPageAttempt(response, title) {
+  const documentTitle = readDocumentTitle(response.text);
+  const titlePresent = response.text.includes(title);
+
   return {
-    bodySnippet: response.ok ? null : readBodySnippet(response.text),
+    bodySnippet:
+      response.ok && titlePresent ? null : readBodySnippet(response.text),
+    diagnosis: readStorefrontPageDiagnosis(
+      response,
+      titlePresent,
+      documentTitle,
+    ),
+    documentTitle,
     ok: response.ok,
     status: response.status,
     statusText: response.statusText || "",
-    titlePresent: response.text.includes(title),
+    titlePresent,
   };
 }
 
 export function formatStorefrontPageAttempt(attempt) {
   const statusText = attempt.statusText ? ` ${attempt.statusText}` : "";
+  const documentTitle = attempt.documentTitle
+    ? `, document title: ${JSON.stringify(attempt.documentTitle)}`
+    : "";
   const body = attempt.bodySnippet
     ? `, body: ${JSON.stringify(attempt.bodySnippet)}`
     : "";
 
-  return `status ${attempt.status}${statusText}, title present: ${attempt.titlePresent}${body}`;
+  return `status ${attempt.status}${statusText}, diagnosis: ${attempt.diagnosis}, title present: ${attempt.titlePresent}${documentTitle}${body}`;
 }
 
 export function assertIndexableStorefrontPage(html) {
@@ -283,6 +296,31 @@ function readBodySnippet(text) {
     .trim()
     .slice(0, 160);
   return snippet || null;
+}
+
+function readDocumentTitle(html) {
+  const title = html.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)?.[1];
+  const normalized = title?.replace(/\s+/g, " ").trim();
+
+  return normalized || null;
+}
+
+function readStorefrontPageDiagnosis(response, titlePresent, documentTitle) {
+  if (!response.ok) {
+    return "http-error";
+  }
+
+  if (titlePresent) {
+    return "published-title-present";
+  }
+
+  if (hasNoIndexRobots(response.text)) {
+    return "noindex-page";
+  }
+
+  return documentTitle
+    ? "stale-or-fallback-content"
+    : "published-title-missing";
 }
 
 function readErrorMessage(error) {

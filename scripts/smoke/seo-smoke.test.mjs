@@ -1,13 +1,66 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  formatStorefrontPageAttempt,
   formatNotFoundAttempt,
   formatRobotsAttempt,
   formatSitemapAttempt,
+  readStorefrontPageAttempt,
   readNotFoundAttempt,
   readRobotsAttempt,
   readSitemapAttempt,
 } from "./storefront-smoke.mjs";
+
+test("smoke helpers summarize storefront page attempts", () => {
+  const failed = readStorefrontPageAttempt(
+    {
+      ok: false,
+      status: 503,
+      statusText: "Service Unavailable",
+      text: "<html>\n<body>Storefront render failed</body>\n</html>",
+    },
+    "Published title",
+  );
+
+  assert.deepEqual(failed, {
+    bodySnippet: "<html> <body>Storefront render failed</body> </html>",
+    diagnosis: "http-error",
+    documentTitle: null,
+    ok: false,
+    status: 503,
+    statusText: "Service Unavailable",
+    titlePresent: false,
+  });
+  assert.equal(
+    formatStorefrontPageAttempt(failed),
+    'status 503 Service Unavailable, diagnosis: http-error, title present: false, body: "<html> <body>Storefront render failed</body> </html>"',
+  );
+
+  const stale = readStorefrontPageAttempt(
+    {
+      ok: true,
+      status: 200,
+      statusText: "OK",
+      text: "<html><head><title>Previous campaign</title></head><body>Old page content</body></html>",
+    },
+    "Published title",
+  );
+
+  assert.deepEqual(stale, {
+    bodySnippet:
+      "<html><head><title>Previous campaign</title></head><body>Old page content</body></html>",
+    diagnosis: "stale-or-fallback-content",
+    documentTitle: "Previous campaign",
+    ok: true,
+    status: 200,
+    statusText: "OK",
+    titlePresent: false,
+  });
+  assert.equal(
+    formatStorefrontPageAttempt(stale),
+    'status 200 OK, diagnosis: stale-or-fallback-content, title present: false, document title: "Previous campaign", body: "<html><head><title>Previous campaign</title></head><body>Old page content</body></html>"',
+  );
+});
 
 test("smoke helpers summarize robots, sitemap, and 404 attempts", () => {
   const robots = readRobotsAttempt(
