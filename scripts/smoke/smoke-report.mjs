@@ -8,6 +8,17 @@ import {
 } from "./smoke-secrets.mjs";
 
 export const smokeReportSchemaVersion = "smoke-report.v1";
+const writableReportFields = [
+  "checks",
+  "config",
+  "environment",
+  "productionReadiness",
+  "schemaVersion",
+  "slug",
+  "startedAt",
+  "status",
+  "title",
+];
 
 export function createSmokeReport(input, title, now = new Date()) {
   const config = createSmokeReportConfig(input);
@@ -117,6 +128,7 @@ export async function writeSmokeReportIfConfigured(input, report) {
     return;
   }
 
+  assertSmokeReportWritable(report);
   await mkdir(dirname(input.reportPath), { recursive: true });
   await writeFile(
     input.reportPath,
@@ -124,4 +136,38 @@ export async function writeSmokeReportIfConfigured(input, report) {
     "utf8",
   );
   console.log(`Smoke report written: ${input.reportPath}`);
+}
+
+export function assertSmokeReportWritable(report) {
+  const missingFields = writableReportFields.filter(
+    (field) => !hasReportField(report, field),
+  );
+
+  if (report?.schemaVersion !== smokeReportSchemaVersion) {
+    missingFields.push("schemaVersion");
+  }
+
+  if (missingFields.length > 0) {
+    throw new Error(
+      `Smoke report is missing required fields: ${[
+        ...new Set(missingFields),
+      ].join(", ")}.`,
+    );
+  }
+
+  if (!Array.isArray(report.checks)) {
+    throw new Error("Smoke report checks must be an array.");
+  }
+
+  if (!isPlainRecord(report.productionReadiness)) {
+    throw new Error("Smoke report productionReadiness must be an object.");
+  }
+}
+
+function hasReportField(report, field) {
+  return report && typeof report === "object" && field in report;
+}
+
+function isPlainRecord(value) {
+  return value && typeof value === "object" && !Array.isArray(value);
 }

@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import {
+  assertSmokeReportWritable,
   createSmokeReport,
   failSmokeReport,
   recordSmokeCheck,
@@ -116,6 +117,49 @@ test("smoke report includes production readiness summary", () => {
   });
 });
 
+test("smoke report validates required fields before writing", () => {
+  const report = createSmokeReport(
+    {
+      apiBaseUrl: "https://api.example.com/api/v1",
+      locale: "en-US",
+      market: "us",
+      requireR2Upload: false,
+      requireRevalidation: true,
+      slug: "smoke-page",
+      tenantSlug: "default",
+      webUrl: "https://web.example.com",
+    },
+    "Smoke Page",
+    new Date("2026-08-20T00:00:00.000Z"),
+  );
+
+  assert.doesNotThrow(() => assertSmokeReportWritable(report));
+  assert.throws(
+    () =>
+      assertSmokeReportWritable({
+        checks: [],
+        schemaVersion: smokeReportSchemaVersion,
+      }),
+    /config, environment, productionReadiness, slug, startedAt, status, title/,
+  );
+  assert.throws(
+    () =>
+      assertSmokeReportWritable({
+        ...report,
+        checks: {},
+      }),
+    /checks must be an array/,
+  );
+  assert.throws(
+    () =>
+      assertSmokeReportWritable({
+        ...report,
+        productionReadiness: [],
+      }),
+    /productionReadiness must be an object/,
+  );
+});
+
 test("smoke report redacts secrets from check details", async () => {
   const directory = await mkdtemp(join(tmpdir(), "app-smoke-report-"));
 
@@ -166,6 +210,29 @@ test("smoke report redacts secrets from check details", async () => {
     assert.equal(written.includes("refresh-token-value"), false);
     assert.match(written, /X-Amz-Credential=\[redacted\]/);
     assert.match(written, /X-Amz-Signature=\[redacted\]/);
+  } finally {
+    await rm(directory, { force: true, recursive: true });
+  }
+});
+
+test("smoke report writer rejects incomplete reports before disk write", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "app-smoke-report-invalid-"));
+
+  try {
+    const reportPath = join(directory, "report.json");
+
+    await assert.rejects(
+      () =>
+        writeSmokeReportIfConfigured(
+          { reportPath },
+          {
+            checks: [],
+            schemaVersion: "old-version",
+          },
+        ),
+      /Smoke report is missing required fields/,
+    );
+    await assert.rejects(() => readFile(reportPath, "utf8"));
   } finally {
     await rm(directory, { force: true, recursive: true });
   }
