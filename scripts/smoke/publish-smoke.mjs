@@ -26,6 +26,7 @@ import {
   recordSmokeCheckFailure,
   writeSmokeReportIfConfigured,
 } from "./smoke-report.mjs";
+import { printSmokeReportSummary } from "./smoke-report-cli.mjs";
 import {
   assertIndexableStorefrontPage,
   assertNotFoundPage,
@@ -166,11 +167,13 @@ export async function runSmokeTest(input) {
     completeSmokeReport(report, { pageId: page.id, storefrontUrl });
     await writeSmokeReportIfConfigured(input, report);
     console.log("\nSmoke publish passed.");
+    printSmokeReportSummary(report);
     printSmokeProductionReadiness(report.productionReadiness);
     console.log(`Storefront URL: ${storefrontUrl}`);
   } catch (error) {
     failSmokeReport(report, error);
     await writeFailureReport(input, report);
+    printSmokeReportSummary(report);
     throw error;
   }
 }
