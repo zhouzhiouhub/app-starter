@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  assertAllowedExternalMediaUrl,
   assertAllowedMediaUrl,
   readAllowedMediaUrlHosts,
 } from "../dist/modules/media/media.validation.js";
@@ -13,6 +14,17 @@ test("media URL allowlist includes configured CDN hosts", () => {
 
   assert.equal(hosts.has("cdn.example.com"), true);
   assert.equal(hosts.has("legacy-cdn.example.com"), true);
+});
+
+test("media URL allowlist ignores unsafe configured CDN hosts", () => {
+  const hosts = readAllowedMediaUrlHosts({
+    CDN_BASE_URL: "https://legacy-cdn.example.com/assets?token=1",
+    MEDIA_CDN_BASE_URL: "https://user:pass@cdn.example.com/media",
+  });
+
+  assert.equal(hosts.has("cdn.example.com"), false);
+  assert.equal(hosts.has("legacy-cdn.example.com"), false);
+  assert.equal(hosts.has("cdn.local.invalid"), true);
 });
 
 test("media URL allowlist accepts explicit external hosts", () => {
@@ -35,6 +47,27 @@ test("media URL allowlist rejects unlisted hosts", () => {
       assertAllowedMediaUrl("https://untrusted.example.net/hero.webp", {
         MEDIA_CDN_BASE_URL: "https://cdn.example.com",
       }),
+    {
+      name: "BadRequestException",
+    },
+  );
+});
+
+test("external media URL validation only accepts explicit external hosts", () => {
+  const env = {
+    MEDIA_CDN_BASE_URL: "https://cdn.example.com",
+    MEDIA_EXTERNAL_URL_HOSTS: "images.example.com",
+  };
+
+  assert.doesNotThrow(() =>
+    assertAllowedExternalMediaUrl("https://images.example.com/hero.webp", env),
+  );
+  assert.throws(
+    () =>
+      assertAllowedExternalMediaUrl(
+        "https://cdn.example.com/tenant-2/hero.webp",
+        env,
+      ),
     {
       name: "BadRequestException",
     },

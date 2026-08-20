@@ -1,4 +1,8 @@
-import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { Prisma } from "@prisma/client";
 import { apiErrorCodes, type PageSchema } from "@app-starter/schema";
 import { runTenantIdempotent } from "../../common/idempotency-record.js";
@@ -10,10 +14,7 @@ import {
   inferMediaAssetType,
   toMediaAssetResponse,
 } from "./media.mapper.js";
-import {
-  readArchivedAt,
-  writeArchiveMetadata,
-} from "./media.metadata.js";
+import { readArchivedAt, writeArchiveMetadata } from "./media.metadata.js";
 import { assertSchemaMediaReferencesPublishable } from "./media.publish-validation.js";
 import type { MediaUploadUrlResponse } from "./media.types.js";
 import {
@@ -22,7 +23,7 @@ import {
 } from "./media.upload-target.js";
 import { findMediaUsage } from "./media.usage.js";
 import {
-  assertAllowedMediaUrl,
+  assertAllowedExternalMediaUrl,
   assertTenantR2Key,
   parseConfirmMediaInput,
   parseCreateUploadUrlInput,
@@ -96,7 +97,7 @@ export class MediaService {
     const input = parseConfirmMediaInput(body);
     assertTenantR2Key(input.r2Key, actor.tenantId);
     if (input.url) {
-      assertAllowedMediaUrl(input.url);
+      assertAllowedExternalMediaUrl(input.url);
     }
 
     return runTenantIdempotent(this.prisma, {
@@ -149,11 +150,7 @@ export class MediaService {
     await assertSchemaMediaReferencesPublishable(client, schema, tenantId);
   }
 
-  async archive(
-    id: string,
-    actor: Actor,
-    idempotencyKey: string | undefined,
-  ) {
+  async archive(id: string, actor: Actor, idempotencyKey: string | undefined) {
     return runTenantIdempotent(this.prisma, {
       body: { id },
       key: idempotencyKey,

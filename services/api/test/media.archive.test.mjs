@@ -165,6 +165,41 @@ test("media service stores upload URL responses by idempotency key", async () =>
   ]);
 });
 
+test("media service rejects external registrations on managed CDN hosts", async () => {
+  const restoreEnv = setTestEnv({
+    MEDIA_CDN_BASE_URL: "https://cdn.example.com/media",
+    MEDIA_EXTERNAL_URL_HOSTS: undefined,
+  });
+  const service = new MediaService({});
+
+  try {
+    await assert.rejects(
+      () =>
+        service.confirm(
+          {
+            filename: "hero.png",
+            mimeType: "image/png",
+            r2Key: "tenant-1/imports/hero.png",
+            size: 2048,
+            url: "https://cdn.example.com/tenant-2/private.png",
+          },
+          undefined,
+          actor,
+        ),
+      (error) => {
+        assert.equal(error.getStatus(), 400);
+        assert.equal(
+          error.getResponse().message,
+          "External media URL host is not allowed.",
+        );
+        return true;
+      },
+    );
+  } finally {
+    restoreEnv();
+  }
+});
+
 test("media service blocks archive when page versions reference the asset", async () => {
   const service = new MediaService({
     mediaAsset: {
@@ -265,5 +300,29 @@ function createAsset(input = {}) {
     mimeType: "image/png",
     metadata: input.metadata ?? {},
     createdAt: new Date("2026-08-18T00:00:00.000Z"),
+  };
+}
+
+function setTestEnv(updates) {
+  const previous = new Map();
+
+  for (const key of Object.keys(updates)) {
+    previous.set(key, process.env[key]);
+
+    if (updates[key] === undefined) {
+      delete process.env[key];
+    } else {
+      process.env[key] = updates[key];
+    }
+  }
+
+  return () => {
+    for (const [key, value] of previous) {
+      if (value === undefined) {
+        delete process.env[key];
+      } else {
+        process.env[key] = value;
+      }
+    }
   };
 }
