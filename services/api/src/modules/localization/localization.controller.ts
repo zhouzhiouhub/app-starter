@@ -12,6 +12,7 @@ import { apiErrorCodes } from "@app-starter/schema";
 import { AdminApiGuard } from "../../common/admin-api.guard.js";
 import { isMultiLocaleEnabled } from "../../common/feature-flags.js";
 import { requireIdempotencyKey } from "../../common/idempotency-key.js";
+import { CurrentRequestId } from "../../common/request-id.decorator.js";
 import { RequireScopes } from "../../common/require-scopes.decorator.js";
 import { readApiRuntimeDefaults } from "../../common/runtime-defaults.js";
 import {
@@ -26,7 +27,7 @@ import {
 export class LocalizationController {
   @Get("markets")
   @RequireScopes("market:read")
-  getMarkets() {
+  getMarkets(@CurrentRequestId() requestId = "local-dev") {
     const defaults = readApiRuntimeDefaults();
 
     return {
@@ -38,13 +39,13 @@ export class LocalizationController {
           status: "active",
         },
       ],
-      meta: { requestId: "local-dev" },
+      meta: { requestId },
     };
   }
 
   @Get("locales")
   @RequireScopes("locale:read")
-  getLocales() {
+  getLocales(@CurrentRequestId() requestId = "local-dev") {
     return {
       data: [
         {
@@ -53,19 +54,22 @@ export class LocalizationController {
           status: "active",
         },
       ],
-      meta: { requestId: "local-dev" },
+      meta: { requestId },
     };
   }
 
   @Get("translations")
   @RequireScopes("translation:read")
-  getTranslations(@Query("locale") locale?: string) {
+  getTranslations(
+    @Query("locale") locale?: string,
+    @CurrentRequestId() requestId = "local-dev",
+  ) {
     const localeContext = resolveTranslationLocale(locale);
 
     return {
       data: [],
       meta: {
-        requestId: "local-dev",
+        requestId,
         locale: localeContext.locale,
         fallbackLocale: localeContext.fallbackLocale,
         isFallback: localeContext.isFallback,
@@ -78,6 +82,7 @@ export class LocalizationController {
   createLocale(
     @Body() body: unknown,
     @Headers("idempotency-key") idempotencyKey?: string,
+    @CurrentRequestId() requestId = "local-dev",
   ) {
     if (!isMultiLocaleEnabled()) {
       throw new ConflictException({
@@ -94,7 +99,7 @@ export class LocalizationController {
         code: input.code,
         status: "draft",
       },
-      meta: { requestId: "local-dev" },
+      meta: { requestId },
     };
   }
 }

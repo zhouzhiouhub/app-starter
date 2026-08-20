@@ -90,11 +90,14 @@ test("locale creation does not echo disabled invalid locale input", () => {
 test("locale creation validates locale codes when multi-locale is enabled", () => {
   withEnv({ MULTI_LOCALE_ENABLED: " TRUE " }, () => {
     const controller = new LocalizationController();
-
-    assert.equal(
-      controller.createLocale({ code: "de-DE" }, idempotencyKey).data.code,
-      "de-DE",
+    const created = controller.createLocale(
+      { code: "de-DE" },
+      idempotencyKey,
+      "request-locale-create",
     );
+
+    assert.equal(created.data.code, "de-DE");
+    assert.equal(created.meta.requestId, "request-locale-create");
     assert.equal(
       controller.createLocale({ data: { code: "fr-FR" } }, idempotencyKey).data
         .code,
@@ -132,9 +135,12 @@ test("admin locales ignore invalid default locale environment values", () => {
     },
     () => {
       const controller = new LocalizationController();
-      const locales = controller.getLocales();
-      const markets = controller.getMarkets();
-      const translations = controller.getTranslations();
+      const locales = controller.getLocales("request-admin-locales");
+      const markets = controller.getMarkets("request-admin-markets");
+      const translations = controller.getTranslations(
+        undefined,
+        "request-admin-translations",
+      );
 
       assert.equal(locales.data[0].code, "en-US");
       assert.equal(locales.data[0].fallbackLocale, "en-US");
@@ -143,6 +149,9 @@ test("admin locales ignore invalid default locale environment values", () => {
       assert.equal(markets.data[0].defaultLocale, "en-US");
       assert.equal(translations.meta.locale, "en-US");
       assert.equal(translations.meta.fallbackLocale, "en-US");
+      assert.equal(locales.meta.requestId, "request-admin-locales");
+      assert.equal(markets.meta.requestId, "request-admin-markets");
+      assert.equal(translations.meta.requestId, "request-admin-translations");
     },
   );
 });
