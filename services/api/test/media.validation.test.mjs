@@ -3,8 +3,29 @@ import test from "node:test";
 import {
   assertAllowedExternalMediaUrl,
   assertAllowedMediaUrl,
+  parseCreateUploadUrlInput,
   readAllowedMediaUrlHosts,
 } from "../dist/modules/media/media.validation.js";
+
+test("parseCreateUploadUrlInput validates file metadata", () => {
+  const parsed = parseCreateUploadUrlInput({
+    data: {
+      filename: "hero.webp",
+      mimeType: "IMAGE/WEBP",
+      size: "4096",
+    },
+  });
+
+  assert.equal(parsed.mimeType, "image/webp");
+  assert.equal(parsed.size, 4096);
+  assert.throws(() =>
+    parseCreateUploadUrlInput({
+      filename: "unsafe.exe",
+      mimeType: "application/x-msdownload",
+      size: 100,
+    }),
+  );
+});
 
 test("media URL allowlist includes configured CDN hosts", () => {
   const hosts = readAllowedMediaUrlHosts({
