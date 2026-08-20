@@ -1,3 +1,5 @@
+import { posix, win32 } from "node:path";
+
 const defaultApiUrl = "http://localhost:4000";
 const defaultWebUrl = "http://localhost:3000";
 const defaultLocale = "en-US";
@@ -10,6 +12,8 @@ const retryDelayMsRange = { max: 60000, min: 1 };
 const localeCodePattern = /^[a-z]{2}(?:-[A-Z]{2})?$/;
 const marketCodePattern = /^[a-z][a-z0-9-]{1,15}$/;
 const pageSlugPattern = /^[a-z0-9]+(?:[-/][a-z0-9]+)*$/;
+const reportPathSegmentPattern = /^[A-Za-z0-9._-]+$/;
+const reportPathRoots = new Set([".tmp", "artifacts", "reports", "tmp"]);
 
 export function readConfig() {
   return {
@@ -36,7 +40,7 @@ export function readConfig() {
       1000,
       retryDelayMsRange,
     ),
-    reportPath: readOptionalEnv("SMOKE_REPORT_PATH"),
+    reportPath: readSmokeReportPathEnv("SMOKE_REPORT_PATH"),
     slug: normalizeSmokeSlug(readEnv("SMOKE_PAGE_SLUG", createSmokeSlug())),
     tenantSlug: readEnv("SMOKE_TENANT_SLUG", defaultTenantSlug),
     webUrl: normalizeWebOrigin(readEnv("WEB_URL", defaultWebUrl)),
@@ -131,6 +135,51 @@ export function normalizeSmokePositiveInt(value, name, range) {
   return number;
 }
 
+export function normalizeSmokeReportPath(value) {
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    throw new Error("SMOKE_REPORT_PATH must not be empty.");
+  }
+
+  if (
+    trimmed.includes("\0") ||
+    posix.isAbsolute(trimmed) ||
+    win32.isAbsolute(trimmed)
+  ) {
+    throw new Error("SMOKE_REPORT_PATH must be a relative JSON report path.");
+  }
+
+  const normalized = trimmed.replace(/\\/g, "/");
+  const segments = normalized.split("/");
+
+  if (segments.length < 2 || !reportPathRoots.has(segments[0])) {
+    throw new Error(
+      "SMOKE_REPORT_PATH must be under tmp/, reports/, artifacts/, or .tmp/.",
+    );
+  }
+
+  if (
+    segments.some(
+      (segment) =>
+        !segment ||
+        segment === "." ||
+        segment === ".." ||
+        !reportPathSegmentPattern.test(segment),
+    )
+  ) {
+    throw new Error(
+      "SMOKE_REPORT_PATH must use safe path segments without traversal.",
+    );
+  }
+
+  if (!segments.at(-1).toLowerCase().endsWith(".json")) {
+    throw new Error("SMOKE_REPORT_PATH must end with .json.");
+  }
+
+  return normalized;
+}
+
 export function printHelp() {
   console.log(`Usage: pnpm smoke:publish
 
@@ -152,7 +201,7 @@ Environment:
   SMOKE_REQUIRE_REVALIDATION      Require meta.revalidation.triggered. true/false. Default: true
   SMOKE_RETRY_ATTEMPTS            Storefront fetch attempts. 1-60. Default: 8
   SMOKE_RETRY_DELAY_MS            Delay between attempts in ms. 1-60000. Default: 1000
-  SMOKE_REPORT_PATH               Optional JSON report output path.
+  SMOKE_REPORT_PATH               Optional relative JSON report path under tmp/, reports/, artifacts/, or .tmp/.
 `);
 }
 
@@ -195,11 +244,6 @@ function readEnv(name, fallback) {
   return value ? value : fallback;
 }
 
-function readOptionalEnv(name) {
-  const value = process.env[name]?.trim();
-  return value ? value : null;
-}
-
 function readBooleanEnv(name, fallback) {
   const value = process.env[name]?.trim();
 
@@ -218,4 +262,14 @@ function readPositiveIntEnv(name, fallback, range) {
   }
 
   return normalizeSmokePositiveInt(value, name, range);
+}
+
+function readSmokeReportPathEnv(name) {
+  const value = process.env[name]?.trim();
+
+  if (!value) {
+    return null;
+  }
+
+  return normalizeSmokeReportPath(value);
 }

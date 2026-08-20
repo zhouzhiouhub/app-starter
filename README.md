@@ -556,6 +556,7 @@ pnpm smoke:publish
 `SMOKE_PAGE_SLUG`、`SMOKE_LOCALE`、`SMOKE_MARKET` 也会在创建测试页前按 Page Schema 上下文格式校验。
 布尔 smoke 开关只接受 `true`/`false`、`1`/`0`、`yes`/`no`、`on`/`off`，拼写错误会直接失败。
 `SMOKE_RETRY_ATTEMPTS` 必须为 1-60，`SMOKE_RETRY_DELAY_MS` 必须为 1-60000 毫秒。
+`SMOKE_REPORT_PATH` 必须是 `tmp/`、`reports/`、`artifacts/` 或 `.tmp/` 下的相对 `.json` 路径，避免报告写到源码或系统目录。
 
 ```powershell
 $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
