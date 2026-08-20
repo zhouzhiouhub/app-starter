@@ -30,7 +30,7 @@ export function createMediaUploadTarget(input: {
   env?: R2UploadEnv;
 }): MediaUploadTarget {
   const env = input.env ?? process.env;
-  const ttlSeconds = input.ttlSeconds ?? MEDIA_UPLOAD_URL_TTL_SECONDS;
+  const ttlSeconds = readMediaUploadTargetTtlSeconds(input.ttlSeconds);
   const now = input.now ?? new Date();
   const expiresAt = new Date(now.getTime() + ttlSeconds * 1000);
 
@@ -146,6 +146,19 @@ function hasR2UploadConfig(
     env.R2_BUCKET &&
     env.R2_SECRET_ACCESS_KEY,
   );
+}
+
+function readMediaUploadTargetTtlSeconds(value: number | undefined): number {
+  if (
+    typeof value === "number" &&
+    Number.isInteger(value) &&
+    value > 0 &&
+    value <= MEDIA_UPLOAD_URL_TTL_SECONDS
+  ) {
+    return value;
+  }
+
+  return MEDIA_UPLOAD_URL_TTL_SECONDS;
 }
 
 function buildObjectUrl(baseUrl: string, objectKey: string): string {

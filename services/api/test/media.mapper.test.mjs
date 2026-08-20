@@ -193,6 +193,44 @@ test("createMediaUploadTarget returns R2 presigned PUT URLs when configured", ()
   assert.equal(target.expiresAt.toISOString(), "2026-08-18T00:15:00.000Z");
 });
 
+test("createMediaUploadTarget keeps upload URLs short lived", () => {
+  for (const ttlSeconds of [0, 901, 3600, 1.5, Number.POSITIVE_INFINITY]) {
+    const target = createMediaUploadTarget({
+      mimeType: "image/png",
+      now: new Date("2026-08-18T00:00:00.000Z"),
+      r2Key: "tenant-1/2026/08/18/asset.png",
+      ttlSeconds,
+      env: {
+        R2_ACCOUNT_ID: "account-1",
+        R2_ACCESS_KEY_ID: "access-key",
+        R2_BUCKET: "media-bucket",
+        R2_SECRET_ACCESS_KEY: "secret-key",
+      },
+    });
+    const url = new URL(target.uploadUrl);
+
+    assert.equal(url.searchParams.get("X-Amz-Expires"), "900");
+    assert.equal(target.expiresAt.toISOString(), "2026-08-18T00:15:00.000Z");
+  }
+
+  const target = createMediaUploadTarget({
+    mimeType: "image/png",
+    now: new Date("2026-08-18T00:00:00.000Z"),
+    r2Key: "tenant-1/2026/08/18/asset.png",
+    ttlSeconds: 60,
+    env: {
+      R2_ACCOUNT_ID: "account-1",
+      R2_ACCESS_KEY_ID: "access-key",
+      R2_BUCKET: "media-bucket",
+      R2_SECRET_ACCESS_KEY: "secret-key",
+    },
+  });
+  const url = new URL(target.uploadUrl);
+
+  assert.equal(url.searchParams.get("X-Amz-Expires"), "60");
+  assert.equal(target.expiresAt.toISOString(), "2026-08-18T00:01:00.000Z");
+});
+
 test("createMediaUploadTarget falls back to configured upload base URLs", () => {
   const target = createMediaUploadTarget({
     mimeType: "image/png",
