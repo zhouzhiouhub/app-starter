@@ -31,6 +31,58 @@ test("locale creation rejects writes while multi-locale is disabled", () => {
   });
 });
 
+test("locale creation does not echo disabled invalid locale input", () => {
+  withEnv({ MULTI_LOCALE_ENABLED: "false" }, () => {
+    const controller = new LocalizationController();
+
+    assert.throws(
+      () => controller.createLocale({ code: "<script>alert(1)</script>" }),
+      (error) =>
+        typeof error.getStatus === "function" &&
+        error.getStatus() === 409 &&
+        error.getResponse()?.code === apiErrorCodes.MULTI_LOCALE_DISABLED &&
+        !error.getResponse()?.message.includes("<script>"),
+    );
+  });
+});
+
+test("locale creation validates locale codes when multi-locale is enabled", () => {
+  withEnv({ MULTI_LOCALE_ENABLED: "true" }, () => {
+    const controller = new LocalizationController();
+
+    assert.equal(controller.createLocale({ code: "de-DE" }).data.code, "de-DE");
+    assert.equal(
+      controller.createLocale({ data: { code: "fr-FR" } }).data.code,
+      "fr-FR",
+    );
+    assertApiBadRequest(
+      () => controller.createLocale({ code: "bad_locale" }),
+      apiErrorCodes.VALIDATION_ERROR,
+    );
+  });
+});
+
+test("admin locales ignore invalid default locale environment values", () => {
+  withEnv(
+    {
+      DEFAULT_LOCALE: "bad_locale",
+      FALLBACK_LOCALE: "still_bad",
+    },
+    () => {
+      const controller = new LocalizationController();
+      const locales = controller.getLocales();
+      const markets = controller.getMarkets();
+      const translations = controller.getTranslations();
+
+      assert.equal(locales.data[0].code, "en-US");
+      assert.equal(locales.data[0].fallbackLocale, "en-US");
+      assert.equal(markets.data[0].defaultLocale, "en-US");
+      assert.equal(translations.meta.locale, "en-US");
+      assert.equal(translations.meta.fallbackLocale, "en-US");
+    },
+  );
+});
+
 test("admin translations expose default locale fallback metadata", () => {
   withEnv(
     {
