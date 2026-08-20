@@ -19,6 +19,9 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
     media: {
       cdnConfigured: true,
       cdnHost: "cdn.example.com",
+      cdnProductionReady: true,
+      cdnUrlIssue: null,
+      cdnUrlSafe: true,
       cdnUsesLocalFallback: false,
       externalUrlHosts: ["images.example.com", "assets.example.org"],
       r2: {
@@ -61,6 +64,9 @@ test("smoke environment diagnostics reports missing R2 and CDN fallback", () => 
   assert.equal(diagnostics.media.r2.configured, false);
   assert.equal(diagnostics.media.cdnConfigured, false);
   assert.equal(diagnostics.media.cdnHost, "cdn.local.invalid");
+  assert.equal(diagnostics.media.cdnProductionReady, false);
+  assert.equal(diagnostics.media.cdnUrlIssue, "local-host");
+  assert.equal(diagnostics.media.cdnUrlSafe, false);
   assert.equal(diagnostics.media.cdnUsesLocalFallback, true);
   assert.deepEqual(diagnostics.revalidation, {
     configured: false,
@@ -74,6 +80,41 @@ test("smoke environment diagnostics reports missing R2 and CDN fallback", () => 
     urlSource: null,
     usesWebUrlFallback: false,
   });
+});
+
+test("smoke environment diagnostics reports unsafe CDN configuration", () => {
+  const withQuery = createSmokeEnvironmentDiagnostics({
+    MEDIA_CDN_BASE_URL: "https://cdn.example.com/media?token=1",
+  });
+  const localhost = createSmokeEnvironmentDiagnostics({
+    MEDIA_CDN_BASE_URL: "http://localhost:3000/media",
+  });
+  const privateHost = createSmokeEnvironmentDiagnostics({
+    MEDIA_CDN_BASE_URL: "https://10.0.0.1/media",
+  });
+
+  assert.deepEqual(
+    {
+      cdnHost: withQuery.media.cdnHost,
+      cdnProductionReady: withQuery.media.cdnProductionReady,
+      cdnUrlIssue: withQuery.media.cdnUrlIssue,
+      cdnUrlSafe: withQuery.media.cdnUrlSafe,
+      cdnUsesLocalFallback: withQuery.media.cdnUsesLocalFallback,
+    },
+    {
+      cdnHost: "cdn.example.com",
+      cdnProductionReady: false,
+      cdnUrlIssue: "unsupported-url-parts",
+      cdnUrlSafe: false,
+      cdnUsesLocalFallback: false,
+    },
+  );
+  assert.equal(localhost.media.cdnUrlIssue, "unsupported-protocol");
+  assert.equal(localhost.media.cdnProductionReady, false);
+  assert.equal(localhost.media.cdnUsesLocalFallback, true);
+  assert.equal(privateHost.media.cdnUrlIssue, "local-host");
+  assert.equal(privateHost.media.cdnProductionReady, false);
+  assert.equal(privateHost.media.cdnUsesLocalFallback, true);
 });
 
 test("smoke environment diagnostics reports revalidation WEB_URL fallback", () => {

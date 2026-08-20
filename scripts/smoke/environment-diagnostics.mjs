@@ -13,7 +13,8 @@ export function createSmokeEnvironmentDiagnostics(
 ) {
   const mediaCdnBaseUrl = readEnv(env, "MEDIA_CDN_BASE_URL");
   const legacyCdnBaseUrl = readEnv(env, "CDN_BASE_URL");
-  const cdnHost = readUrlHost(
+  const cdnConfigured = Boolean(mediaCdnBaseUrl ?? legacyCdnBaseUrl);
+  const cdn = readCdnDiagnostics(
     mediaCdnBaseUrl ?? legacyCdnBaseUrl ?? defaultMediaCdnBaseUrl,
   );
   const missingR2Variables = r2RequiredVariables.filter(
@@ -22,9 +23,12 @@ export function createSmokeEnvironmentDiagnostics(
 
   return {
     media: {
-      cdnConfigured: Boolean(mediaCdnBaseUrl ?? legacyCdnBaseUrl),
-      cdnHost,
-      cdnUsesLocalFallback: Boolean(cdnHost?.endsWith(".local.invalid")),
+      cdnConfigured,
+      cdnHost: cdn.host,
+      cdnProductionReady: cdn.productionReady,
+      cdnUrlIssue: cdn.issue,
+      cdnUrlSafe: cdn.safe,
+      cdnUsesLocalFallback: cdn.localHost,
       externalUrlHosts: readHostList(readEnv(env, "MEDIA_EXTERNAL_URL_HOSTS")),
       r2: {
         configured: missingR2Variables.length === 0,
@@ -74,6 +78,64 @@ function readUrlHost(value) {
   } catch {
     return null;
   }
+}
+
+function readCdnDiagnostics(value) {
+  let url;
+
+  try {
+    url = new URL(value);
+  } catch {
+    return {
+      host: null,
+      issue: "invalid-url",
+      localHost: false,
+      productionReady: false,
+      safe: false,
+    };
+  }
+
+  const host = url.hostname || null;
+
+  if (url.protocol !== "https:") {
+    return {
+      host,
+      issue: "unsupported-protocol",
+      localHost: isLocalHostname(url.hostname),
+      productionReady: false,
+      safe: false,
+    };
+  }
+
+  if (url.username || url.password) {
+    return {
+      host,
+      issue: "embedded-credentials",
+      localHost: isLocalHostname(url.hostname),
+      productionReady: false,
+      safe: false,
+    };
+  }
+
+  if (url.search || url.hash) {
+    return {
+      host,
+      issue: "unsupported-url-parts",
+      localHost: isLocalHostname(url.hostname),
+      productionReady: false,
+      safe: false,
+    };
+  }
+
+  const localHost = isLocalHostname(url.hostname);
+
+  return {
+    host,
+    issue: localHost ? "local-host" : null,
+    localHost,
+    productionReady: !localHost,
+    safe: !localHost,
+  };
 }
 
 function readRevalidationDiagnostics(env, options) {
@@ -178,4 +240,40 @@ function readBooleanEnv(env, name, fallback) {
   }
 
   return ["1", "true", "yes", "on"].includes(value);
+}
+
+function isLocalHostname(hostname) {
+  const normalized = hostname.toLowerCase();
+
+  return (
+    normalized === "localhost" ||
+    normalized.endsWith(".localhost") ||
+    normalized.endsWith(".local") ||
+    normalized.endsWith(".local.invalid") ||
+    normalized === "::1" ||
+    normalized === "[::1]" ||
+    isPrivateOrLocalIpv4(normalized)
+  );
+}
+
+function isPrivateOrLocalIpv4(hostname) {
+  const parts = hostname.split(".").map((part) => Number(part));
+
+  if (
+    parts.length !== 4 ||
+    parts.some((part) => !Number.isInteger(part) || part < 0 || part > 255)
+  ) {
+    return false;
+  }
+
+  const [first, second] = parts;
+
+  return (
+    first === 0 ||
+    first === 10 ||
+    first === 127 ||
+    (first === 169 && second === 254) ||
+    (first === 172 && second >= 16 && second <= 31) ||
+    (first === 192 && second === 168)
+  );
 }

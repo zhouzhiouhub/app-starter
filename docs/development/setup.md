@@ -176,7 +176,9 @@ failed check name and error message so production R2 / CDN, ISR, and SEO
 failures can be triaged from the JSON artifact. Media check details include the
 presigned URL host, CDN host, upload URL/R2 key match status, CDN/R2 key match
 status, upload target metadata, and whether a real object upload was required,
-but never include the signed upload URL itself. Publish revalidation details
+but never include the signed upload URL itself. Media environment diagnostics
+also record whether the CDN URL is HTTPS, production-ready, and free of query
+strings or embedded credentials. Publish revalidation details
 include a `diagnosis` field for triggered, missing secret, missing URL, HTTP
 request failure, and network or timeout-style failures. Revalidation environment
 diagnostics record only non-secret readiness metadata: whether a secret is
