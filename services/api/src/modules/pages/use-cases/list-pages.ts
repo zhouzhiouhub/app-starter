@@ -8,6 +8,7 @@ export async function listPages(
   prisma: PrismaService,
   query: { page?: string | number; limit?: string | number },
   actor: Actor,
+  requestId = "local-dev",
 ) {
   const { page, limit } = parseListPagesQuery(query);
   const site = await getSiteForTenant(prisma, actor.tenantId);
@@ -26,7 +27,7 @@ export async function listPages(
   return {
     data: pages.map(toPageSummary),
     meta: {
-      requestId: "local-dev",
+      requestId,
       tenantId: site.tenantId,
       siteId: site.id,
       total,

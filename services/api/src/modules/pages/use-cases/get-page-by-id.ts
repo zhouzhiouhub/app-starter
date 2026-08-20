@@ -12,6 +12,7 @@ export async function getPageById(
   prisma: PrismaService,
   id: string,
   actor: Actor,
+  requestId = "local-dev",
 ) {
   const site = await getSiteForTenant(prisma, actor.tenantId);
   const page = await prisma.page.findFirst({
@@ -50,7 +51,7 @@ export async function getPageById(
       ),
     },
     meta: {
-      requestId: "local-dev",
+      requestId,
       tenantId: site.tenantId,
       siteId: site.id,
     },

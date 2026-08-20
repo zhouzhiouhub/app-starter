@@ -11,6 +11,7 @@ export async function savePageDraft(
   body: unknown,
   idempotencyKey: string | undefined,
   actor: Actor,
+  requestId = "local-dev",
 ) {
   const site = await getSiteForTenant(prisma, actor.tenantId);
 
@@ -69,7 +70,7 @@ export async function savePageDraft(
       return {
         data: toPageSummary(page),
         meta: {
-          requestId: "local-dev",
+          requestId,
           tenantId: site.tenantId,
           siteId: site.id,
         },

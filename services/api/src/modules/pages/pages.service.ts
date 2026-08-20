@@ -27,12 +27,13 @@ export class PagesService {
   async list(
     query: { page?: string | number; limit?: string | number },
     actor: Actor,
+    requestId: string,
   ) {
-    return listPages(this.prisma, query, actor);
+    return listPages(this.prisma, query, actor, requestId);
   }
 
-  async getById(id: string, actor: Actor) {
-    return getPageById(this.prisma, id, actor);
+  async getById(id: string, actor: Actor, requestId: string) {
+    return getPageById(this.prisma, id, actor, requestId);
   }
 
   async createPreviewToken(
@@ -51,8 +52,13 @@ export class PagesService {
     );
   }
 
-  async create(body: unknown, idempotencyKey: string | undefined, actor: Actor) {
-    return createPage(this.prisma, body, idempotencyKey, actor);
+  async create(
+    body: unknown,
+    idempotencyKey: string | undefined,
+    actor: Actor,
+    requestId: string,
+  ) {
+    return createPage(this.prisma, body, idempotencyKey, actor, requestId);
   }
 
   async saveDraft(
@@ -60,8 +66,9 @@ export class PagesService {
     body: unknown,
     idempotencyKey: string | undefined,
     actor: Actor,
+    requestId: string,
   ) {
-    return savePageDraft(this.prisma, id, body, idempotencyKey, actor);
+    return savePageDraft(this.prisma, id, body, idempotencyKey, actor, requestId);
   }
 
   async publish(

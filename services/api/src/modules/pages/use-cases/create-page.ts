@@ -17,6 +17,7 @@ export async function createPage(
   body: unknown,
   idempotencyKey: string | undefined,
   actor: Actor,
+  requestId = "local-dev",
 ) {
   const site = await getSiteForTenant(prisma, actor.tenantId);
   const input = parseCreateInput(body);
@@ -51,7 +52,7 @@ export async function createPage(
         return {
           data: toPageSummary(page),
           meta: {
-            requestId: "local-dev",
+            requestId,
             tenantId: site.tenantId,
             siteId: site.id,
           },

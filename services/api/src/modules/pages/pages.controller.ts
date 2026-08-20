@@ -28,14 +28,16 @@ export class PagesController {
     @CurrentUser() actor: Actor,
     @Query("page") page?: string,
     @Query("limit") limit?: string,
+    @CurrentRequestId() requestId = "local-dev",
   ) {
-    return this.pages.list({ page, limit }, actor);
+    return this.pages.list({ page, limit }, actor, requestId);
   }
 
   @Post()
   @RequireScopes("page:write")
   create(
     @CurrentUser() actor: Actor,
+    @CurrentRequestId() requestId: string,
     @Body() body: unknown,
     @Headers("idempotency-key") idempotencyKey: string | undefined,
   ) {
@@ -43,13 +45,18 @@ export class PagesController {
       body,
       requireIdempotencyKey(idempotencyKey),
       actor,
+      requestId,
     );
   }
 
   @Get(":id")
   @RequireScopes("page:read")
-  getById(@CurrentUser() actor: Actor, @Param("id") id: string) {
-    return this.pages.getById(id, actor);
+  getById(
+    @CurrentUser() actor: Actor,
+    @CurrentRequestId() requestId = "local-dev",
+    @Param("id") id: string,
+  ) {
+    return this.pages.getById(id, actor, requestId);
   }
 
   @Post(":id/preview-token")
@@ -72,6 +79,7 @@ export class PagesController {
   @RequireScopes("page:write")
   saveDraft(
     @CurrentUser() actor: Actor,
+    @CurrentRequestId() requestId: string,
     @Body() body: unknown,
     @Headers("idempotency-key") idempotencyKey: string | undefined,
     @Param("id") id: string,
@@ -81,6 +89,7 @@ export class PagesController {
       body,
       requireIdempotencyKey(idempotencyKey),
       actor,
+      requestId,
     );
   }
 

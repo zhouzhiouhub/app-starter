@@ -47,6 +47,7 @@ export async function publishPageBySlug(
           },
           undefined,
           actor,
+          requestId,
         );
 
         return publishPage(
