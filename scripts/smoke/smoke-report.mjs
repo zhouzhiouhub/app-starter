@@ -1,7 +1,10 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { createSmokeEnvironmentDiagnostics } from "./environment-diagnostics.mjs";
-import { redactSmokeSecrets } from "./smoke-secrets.mjs";
+import {
+  redactSmokeReportValue,
+  redactSmokeSecrets,
+} from "./smoke-secrets.mjs";
 
 export function createSmokeReport(input, title, now = new Date()) {
   return {
@@ -33,7 +36,7 @@ export function createSmokeReport(input, title, now = new Date()) {
 
 export function recordSmokeCheck(report, name, details = {}) {
   report.checks.push({
-    details,
+    details: redactSmokeReportValue(details),
     name,
     passedAt: new Date().toISOString(),
     status: "passed",
@@ -42,7 +45,7 @@ export function recordSmokeCheck(report, name, details = {}) {
 
 export function recordSmokeCheckFailure(report, name, error, details = {}) {
   report.checks.push({
-    details,
+    details: redactSmokeReportValue(details),
     error: {
       message: readErrorMessage(error),
     },
@@ -79,7 +82,7 @@ export async function writeSmokeReportIfConfigured(input, report) {
   await mkdir(dirname(input.reportPath), { recursive: true });
   await writeFile(
     input.reportPath,
-    `${JSON.stringify(report, null, 2)}\n`,
+    `${JSON.stringify(redactSmokeReportValue(report), null, 2)}\n`,
     "utf8",
   );
   console.log(`Smoke report written: ${input.reportPath}`);
