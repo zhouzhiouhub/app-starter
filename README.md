@@ -4,7 +4,7 @@
 
 当前目标不是一次性复制 Shopify 全量能力，而是先完成一个可长期演进的建站平台工程基础：前台渲染、后台管理壳、API 服务、Page Schema、共享 Renderer、数据库模型、二次开发入口和后续电商/多语言能力预留。
 
-> 当前日期：2026-08-19
+> 当前日期：2026-08-20
 > 当前阶段：建站 MVP 的页面管理、站点设置、Page Builder、媒体、SEO、预览令牌、发布历史、回滚、审计日志、前台 ISR 刷新链路与发布 smoke 报告已逐步落地；下一步是在真实生产 R2 / CDN 环境执行验收并归档报告。
 
 ## 1. 当前进度
@@ -639,8 +639,10 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 
 ## 15. 下一阶段计划
 
-Phase 1 后台功能一期剩余：
+优先做上线前验收和生产化收口：
 
-1. Admin 页面列表。
-2. Admin 新建页面并进入现有编辑器。
-3. 保存草稿与发布按钮分离。
+1. 在真实 R2 / CDN 环境配置 `MEDIA_CDN_BASE_URL`、R2 凭据和 CDN 域名，执行 `pnpm smoke:publish` 并归档 `SMOKE_REPORT_PATH`。
+2. 补齐部署 Smoke Test：前台 Vercel、API 独立 Node 服务、Admin 静态托管、环境变量清单和回滚步骤。
+3. 做 Page Builder 视觉验收：Desktop / Mobile 双端检查、核心区块与设计稿差异记录、媒体解析异常态。
+4. 补多语言运营后台前的最小闭环：只读 Locale / Translation 视图、非默认 Locale 关闭态提示与权限测试。
+5. 保持 Commerce 关闭态，只继续完善 Products / Orders 空列表和 `COMMERCE_DISABLED` 错误分支测试；不进入真实交易。
