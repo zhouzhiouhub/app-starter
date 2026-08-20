@@ -8,6 +8,7 @@ import {
   isMediaReference,
   isProductionCdnUrl,
   isR2UploadUrl,
+  isR2UploadUrlForKey,
   readMediaListFilterDiagnostic,
 } from "./media-smoke.mjs";
 
@@ -24,7 +25,37 @@ test("smoke helpers detect R2 upload URLs", () => {
     ),
     false,
   );
+  assert.equal(
+    isR2UploadUrl(
+      "http://account.r2.cloudflarestorage.com/bucket/key?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Signature=abc123",
+    ),
+    false,
+  );
   assert.equal(isR2UploadUrl("not-a-url"), false);
+});
+
+test("smoke helpers match R2 upload URLs to object keys", () => {
+  assert.equal(
+    isR2UploadUrlForKey(
+      "https://account.r2.cloudflarestorage.com/bucket/tenant/2026/08/19/smoke%20image.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Signature=abc123",
+      "tenant/2026/08/19/smoke image.png",
+    ),
+    true,
+  );
+  assert.equal(
+    isR2UploadUrlForKey(
+      "https://account.r2.cloudflarestorage.com/bucket/tenant/2026/08/19/other.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Signature=abc123",
+      "tenant/2026/08/19/smoke.png",
+    ),
+    false,
+  );
+  assert.equal(
+    isR2UploadUrlForKey(
+      "https://uploads.example.com/tenant/2026/08/19/smoke.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Signature=abc123",
+      "tenant/2026/08/19/smoke.png",
+    ),
+    false,
+  );
 });
 
 test("smoke helpers validate CDN URLs and media references", () => {
@@ -152,7 +183,7 @@ test("smoke helpers summarize media checks without signed upload URLs", () => {
       r2Key: "tenant/2026/08/19/smoke.png",
       type: "image",
       uploadUrl:
-        "https://account.r2.cloudflarestorage.com/bucket/key?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Signature=secret",
+        "https://account.r2.cloudflarestorage.com/bucket/tenant/2026/08/19/smoke.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Signature=secret",
     },
     {
       id: "asset-1",
@@ -184,6 +215,7 @@ test("smoke helpers summarize media checks without signed upload URLs", () => {
     uploadExpiresAt: "2026-08-19T10:00:00.000Z",
     uploadMaxSize: 26214400,
     uploadMethod: "PUT",
+    uploadUrlMatchesR2Key: true,
     uploadedObject: true,
   });
   assert.equal("uploadUrl" in details, false);

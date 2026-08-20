@@ -158,13 +158,14 @@ revalidation environment diagnostics, and passed/failed check list. If the smoke
 run fails, the report records the
 failed check name and error message so production R2 / CDN, ISR, and SEO
 failures can be triaged from the JSON artifact. Media check details include the
-presigned URL host, CDN host, CDN/R2 key match status, upload target metadata,
-and whether a real object upload was required, but never include the signed
-upload URL itself. Publish revalidation details include a `diagnosis` field for
-triggered, missing secret, missing URL, HTTP request failure, and network or
-timeout-style failures. Revalidation environment diagnostics record only
-non-secret readiness metadata: whether a secret is configured, the URL source,
-endpoint host/path, URL safety, and whether the smoke run requires revalidation.
+presigned URL host, CDN host, upload URL/R2 key match status, CDN/R2 key match
+status, upload target metadata, and whether a real object upload was required,
+but never include the signed upload URL itself. Publish revalidation details
+include a `diagnosis` field for triggered, missing secret, missing URL, HTTP
+request failure, and network or timeout-style failures. Revalidation environment
+diagnostics record only non-secret readiness metadata: whether a secret is
+configured, the URL source, endpoint host/path, URL safety, and whether the
+smoke run requires revalidation.
 
 By default the script requires `meta.revalidation.triggered=true`, so keep
 `STOREFRONT_REVALIDATE_SECRET` configured in both API and Web. To test only the

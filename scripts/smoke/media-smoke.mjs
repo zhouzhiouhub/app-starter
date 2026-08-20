@@ -8,6 +8,7 @@ import {
   isMediaReference,
   isProductionCdnUrl,
   isR2UploadUrl,
+  isR2UploadUrlForKey,
   readMediaListFilterDiagnostic,
 } from "./media-smoke-diagnostics.mjs";
 
@@ -19,6 +20,7 @@ export {
   isMediaReference,
   isProductionCdnUrl,
   isR2UploadUrl,
+  isR2UploadUrlForKey,
   readMediaListFilterDiagnostic,
 } from "./media-smoke-diagnostics.mjs";
 
@@ -59,7 +61,16 @@ export async function assertMediaUploadTarget(input, accessToken) {
 
   if (input.requireR2Upload && !isR2UploadUrl(target.uploadUrl)) {
     throw new Error(
-      "Media upload target is not a Cloudflare R2 presigned URL.",
+      "Media upload target is not a secure Cloudflare R2 presigned URL.",
+    );
+  }
+
+  if (
+    input.requireR2Upload &&
+    !isR2UploadUrlForKey(target.uploadUrl, target.r2Key)
+  ) {
+    throw new Error(
+      "Media upload target URL does not match the returned R2 key.",
     );
   }
 

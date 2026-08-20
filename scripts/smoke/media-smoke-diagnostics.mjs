@@ -2,10 +2,20 @@ export function isR2UploadUrl(value) {
   try {
     const url = new URL(value);
     return (
+      url.protocol === "https:" &&
       url.hostname.endsWith(".r2.cloudflarestorage.com") &&
       url.searchParams.get("X-Amz-Algorithm") === "AWS4-HMAC-SHA256" &&
       Boolean(url.searchParams.get("X-Amz-Signature"))
     );
+  } catch {
+    return false;
+  }
+}
+
+export function isR2UploadUrlForKey(value, r2Key) {
+  try {
+    const url = new URL(value);
+    return isR2UploadUrl(value) && decodedPathEndsWithKey(url, r2Key);
   } catch {
     return false;
   }
@@ -16,7 +26,7 @@ export function isCdnUrlForR2Key(value, r2Key) {
     const url = new URL(value);
     return (
       ["http:", "https:"].includes(url.protocol) &&
-      decodeURIComponent(url.pathname).endsWith(`/${r2Key}`)
+      decodedPathEndsWithKey(url, r2Key)
     );
   } catch {
     return false;
@@ -85,8 +95,17 @@ export function createMediaSmokeDetails(target, asset, requireR2Upload) {
     uploadExpiresAt: target.expiresAt,
     uploadMaxSize: target.maxSize,
     uploadMethod: target.method,
+    uploadUrlMatchesR2Key: isR2UploadUrlForKey(target.uploadUrl, target.r2Key),
     uploadedObject: Boolean(requireR2Upload),
   };
+}
+
+function decodedPathEndsWithKey(url, r2Key) {
+  try {
+    return decodeURIComponent(url.pathname).endsWith(`/${r2Key}`);
+  } catch {
+    return false;
+  }
 }
 
 function readUrlHost(value) {
