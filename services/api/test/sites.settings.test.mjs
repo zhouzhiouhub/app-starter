@@ -108,6 +108,20 @@ test("site settings response normalizes feature flag environment values", () => 
   );
 });
 
+test("site settings response rejects misspelled boolean environment values", () => {
+  withEnv(
+    {
+      ANALYTICS_ENABLED: "treu",
+    },
+    () => {
+      assert.throws(
+        () => toSiteSettingsResponse(site),
+        /ANALYTICS_ENABLED must be true or false/,
+      );
+    },
+  );
+});
+
 test("site settings response ignores invalid runtime defaults", () => {
   withEnv(
     {

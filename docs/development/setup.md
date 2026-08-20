@@ -28,6 +28,9 @@ COMMERCE_ENABLED=false
 MULTI_LOCALE_ENABLED=false
 ```
 
+API runtime boolean gates accept only `true`/`false`, `1`/`0`, `yes`/`no`, or
+`on`/`off`; misspelled values fail instead of silently changing feature gates.
+
 For storefront ISR, set the same secret in the API and Web runtimes. The API
 uses `STOREFRONT_REVALIDATE_URL` to call the Web app after publish or rollback:
 

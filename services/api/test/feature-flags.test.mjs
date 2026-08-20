@@ -1,11 +1,50 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { apiErrorCodes } from "../../../packages/schema/dist/index.js";
+import {
+  readApiFeatureFlags,
+  readBooleanEnv,
+} from "../dist/common/feature-flags.js";
 import { CommerceController } from "../dist/modules/commerce/commerce.controller.js";
 import { LocalizationController } from "../dist/modules/localization/localization.controller.js";
 import { PublicController } from "../dist/modules/public/public.controller.js";
 
 const idempotencyKey = "7f10f6d3-02d9-4f3d-a69d-49b26ec63132";
+
+test("API boolean environment flags parse explicit values only", () => {
+  for (const value of ["1", "true", "TRUE", "yes", "on"]) {
+    assert.equal(readBooleanEnv("COMMERCE_ENABLED", value), true);
+  }
+
+  for (const value of ["0", "false", "FALSE", "no", "off"]) {
+    assert.equal(readBooleanEnv("COMMERCE_ENABLED", value), false);
+  }
+
+  assert.equal(readBooleanEnv("COMMERCE_ENABLED", undefined), false);
+  assert.throws(
+    () => readBooleanEnv("COMMERCE_ENABLED", "treu"),
+    /COMMERCE_ENABLED must be true or false/,
+  );
+});
+
+test("API feature flags reject misspelled environment values", () => {
+  assert.throws(
+    () =>
+      readApiFeatureFlags({
+        COMMERCE_ENABLED: "flase",
+        MULTI_LOCALE_ENABLED: "false",
+      }),
+    /COMMERCE_ENABLED must be true or false/,
+  );
+  assert.throws(
+    () =>
+      readApiFeatureFlags({
+        COMMERCE_ENABLED: "false",
+        MULTI_LOCALE_ENABLED: "enabled",
+      }),
+    /MULTI_LOCALE_ENABLED must be true or false/,
+  );
+});
 
 test("commerce endpoints reject writes while commerce is disabled", () => {
   withEnv({ COMMERCE_ENABLED: "false" }, () => {

@@ -12,8 +12,11 @@ export function readAnalyticsRuntimeConfig(
   env: Record<string, string | undefined> = process.env,
 ): AnalyticsRuntimeConfig {
   return {
-    enabled: readBooleanEnv(env.ANALYTICS_ENABLED),
-    consentGranted: readBooleanEnv(env.ANALYTICS_CONSENT_GRANTED),
+    enabled: readBooleanEnv("ANALYTICS_ENABLED", env.ANALYTICS_ENABLED),
+    consentGranted: readBooleanEnv(
+      "ANALYTICS_CONSENT_GRANTED",
+      env.ANALYTICS_CONSENT_GRANTED,
+    ),
     gtmContainerId: readProviderId(env.GTM_CONTAINER_ID, /^GTM-[A-Z0-9]+$/i),
     ga4MeasurementId: readProviderId(env.GA4_MEASUREMENT_ID, /^G-[A-Z0-9]+$/i),
     clarityProjectId: readProviderId(env.CLARITY_PROJECT_ID, /^[a-z0-9]+$/i),

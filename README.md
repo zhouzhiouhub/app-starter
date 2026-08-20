@@ -92,6 +92,8 @@ DEFAULT_CURRENCY=USD
 FALLBACK_LOCALE=en-US
 ```
 
+API 运行时布尔开关只接受 `true`/`false`、`1`/`0`、`yes`/`no`、`on`/`off`，拼写错误会直接失败，避免误改 Feature Flag 边界。
+
 完整产品与架构约束见：
 
 - [独立站设计与建站平台开发设计文档](./独立站设计与建站平台开发设计文档.md)
