@@ -1,4 +1,32 @@
 import { redactSmokeSecrets } from "./smoke-secrets.mjs";
+import {
+  formatNotFoundAttempt,
+  formatRobotsAttempt,
+  formatSitemapAttempt,
+  formatStorefrontPageAttempt,
+  getStorefrontPath,
+  hasNoIndexRobots,
+  joinUrl,
+  readNotFoundAttempt,
+  readRobotsAttempt,
+  readSitemapAttempt,
+  readStorefrontPageAttempt,
+} from "./storefront-smoke-diagnostics.mjs";
+
+export {
+  formatNotFoundAttempt,
+  formatRobotsAttempt,
+  formatSitemapAttempt,
+  formatStorefrontPageAttempt,
+  getStorefrontPath,
+  hasNoIndexRobots,
+  joinUrl,
+  parseSitemapUrls,
+  readNotFoundAttempt,
+  readRobotsAttempt,
+  readSitemapAttempt,
+  readStorefrontPageAttempt,
+} from "./storefront-smoke-diagnostics.mjs";
 
 export async function assertStorefrontPage(input, title) {
   const url = joinUrl(
@@ -56,38 +84,6 @@ export async function assertStorefrontPage(input, title) {
   );
 }
 
-export function readStorefrontPageAttempt(response, title) {
-  const documentTitle = readDocumentTitle(response.text);
-  const titlePresent = response.text.includes(title);
-
-  return {
-    bodySnippet:
-      response.ok && titlePresent ? null : readBodySnippet(response.text),
-    diagnosis: readStorefrontPageDiagnosis(
-      response,
-      titlePresent,
-      documentTitle,
-    ),
-    documentTitle,
-    ok: response.ok,
-    status: response.status,
-    statusText: response.statusText || "",
-    titlePresent,
-  };
-}
-
-export function formatStorefrontPageAttempt(attempt) {
-  const statusText = attempt.statusText ? ` ${attempt.statusText}` : "";
-  const documentTitle = attempt.documentTitle
-    ? `, document title: ${JSON.stringify(attempt.documentTitle)}`
-    : "";
-  const body = attempt.bodySnippet
-    ? `, body: ${JSON.stringify(attempt.bodySnippet)}`
-    : "";
-
-  return `status ${attempt.status}${statusText}, diagnosis: ${attempt.diagnosis}, title present: ${attempt.titlePresent}${documentTitle}${body}`;
-}
-
 function createStorefrontPageFailure(url, expectedTitle, message, attempt) {
   const error = new Error(message);
   error.smokeDetails = {
@@ -115,52 +111,40 @@ export async function assertRobots(input) {
   const robotsAttempt = readRobotsAttempt(response, input.webUrl);
 
   if (!response.ok) {
-    throw new Error(
+    throw createSeoSmokeFailure(
+      "robots",
+      url,
       `robots.txt failed (${formatRobotsAttempt(robotsAttempt)}).`,
+      robotsAttempt,
+      { expectedSitemapUrl: joinUrl(input.webUrl, "/sitemap.xml") },
     );
   }
 
   if (!robotsAttempt.hasUserAgent || !robotsAttempt.hasSitemapLine) {
-    throw new Error(
+    throw createSeoSmokeFailure(
+      "robots",
+      url,
       `robots.txt did not include user-agent and sitemap lines (${formatRobotsAttempt(
         robotsAttempt,
       )}).`,
+      robotsAttempt,
+      { expectedSitemapUrl: joinUrl(input.webUrl, "/sitemap.xml") },
     );
   }
 
   if (!robotsAttempt.pointsToSitemap) {
-    throw new Error(
+    throw createSeoSmokeFailure(
+      "robots",
+      url,
       `robots.txt did not point to the storefront sitemap (${formatRobotsAttempt(
         robotsAttempt,
       )}).`,
+      robotsAttempt,
+      { expectedSitemapUrl: joinUrl(input.webUrl, "/sitemap.xml") },
     );
   }
 
   console.log("robots.txt passed.");
-}
-
-export function readRobotsAttempt(response, webUrl) {
-  const text = response.text.toLowerCase();
-  const sitemapUrl = joinUrl(webUrl, "/sitemap.xml").toLowerCase();
-
-  return {
-    bodySnippet: response.ok ? null : readBodySnippet(response.text),
-    hasSitemapLine: text.includes("sitemap:"),
-    hasUserAgent: text.includes("user-agent"),
-    ok: response.ok,
-    pointsToSitemap: text.includes(sitemapUrl),
-    status: response.status,
-    statusText: response.statusText || "",
-  };
-}
-
-export function formatRobotsAttempt(attempt) {
-  const statusText = attempt.statusText ? ` ${attempt.statusText}` : "";
-  const body = attempt.bodySnippet
-    ? `, body: ${JSON.stringify(attempt.bodySnippet)}`
-    : "";
-
-  return `status ${attempt.status}${statusText}, user-agent: ${attempt.hasUserAgent}, sitemap line: ${attempt.hasSitemapLine}, sitemap URL: ${attempt.pointsToSitemap}${body}`;
 }
 
 export async function assertSitemap(input) {
@@ -170,6 +154,7 @@ export async function assertSitemap(input) {
     getStorefrontPath(input.locale, input.slug),
   );
   let lastError = "";
+  let lastAttempt = null;
 
   for (let attempt = 1; attempt <= input.retryAttempts; attempt += 1) {
     try {
@@ -186,8 +171,19 @@ export async function assertSitemap(input) {
       }
 
       lastError = formatSitemapAttempt(sitemapAttempt);
+      lastAttempt = sitemapAttempt;
     } catch (error) {
       lastError = readErrorMessage(error);
+      lastAttempt = {
+        bodySnippet: null,
+        error: lastError,
+        expectedUrlPresent: false,
+        notFoundUrlPresent: false,
+        ok: false,
+        status: null,
+        statusText: "",
+        urlCount: 0,
+      };
     }
 
     if (attempt < input.retryAttempts) {
@@ -195,32 +191,13 @@ export async function assertSitemap(input) {
     }
   }
 
-  throw new Error(
+  throw createSeoSmokeFailure(
+    "sitemap",
+    url,
     `sitemap.xml did not include the published page (${lastError}).`,
+    lastAttempt,
+    { expectedUrl },
   );
-}
-
-export function readSitemapAttempt(response, expectedUrl) {
-  const urls = parseSitemapUrls(response.text);
-
-  return {
-    bodySnippet: response.ok ? null : readBodySnippet(response.text),
-    expectedUrlPresent: urls.includes(expectedUrl),
-    notFoundUrlPresent: urls.some(isNotFoundSitemapUrl),
-    ok: response.ok,
-    status: response.status,
-    statusText: response.statusText || "",
-    urlCount: urls.length,
-  };
-}
-
-export function formatSitemapAttempt(attempt) {
-  const statusText = attempt.statusText ? ` ${attempt.statusText}` : "";
-  const body = attempt.bodySnippet
-    ? `, body: ${JSON.stringify(attempt.bodySnippet)}`
-    : "";
-
-  return `status ${attempt.status}${statusText}, expected URL present: ${attempt.expectedUrlPresent}, 404 present: ${attempt.notFoundUrlPresent}, URL count: ${attempt.urlCount}${body}`;
 }
 
 export async function assertNotFoundPage(input) {
@@ -230,70 +207,41 @@ export async function assertNotFoundPage(input) {
   const notFoundAttempt = readNotFoundAttempt(response);
 
   if (notFoundAttempt.status !== 404) {
-    throw new Error(
+    throw createSeoSmokeFailure(
+      "notFound",
+      url,
       `Unknown storefront page did not return 404 (${formatNotFoundAttempt(
         notFoundAttempt,
       )}).`,
+      notFoundAttempt,
     );
   }
 
   if (!notFoundAttempt.noIndex) {
-    throw new Error(
+    throw createSeoSmokeFailure(
+      "notFound",
+      url,
       `Unknown storefront page did not render noindex metadata (${formatNotFoundAttempt(
         notFoundAttempt,
       )}).`,
+      notFoundAttempt,
     );
   }
 
   console.log("404 page passed.");
 }
 
-export function readNotFoundAttempt(response) {
-  const noIndex = hasNoIndexRobots(response.text);
-
-  return {
-    bodySnippet:
-      response.status === 404 && noIndex
-        ? null
-        : readBodySnippet(response.text),
-    noIndex,
-    status: response.status,
-    statusText: response.statusText || "",
+function createSeoSmokeFailure(key, url, message, attempt, extra = {}) {
+  const error = new Error(message);
+  error.smokeDetails = {
+    [key]: {
+      ...(attempt ?? {}),
+      ...extra,
+      url,
+    },
   };
-}
 
-export function formatNotFoundAttempt(attempt) {
-  const statusText = attempt.statusText ? ` ${attempt.statusText}` : "";
-  const body = attempt.bodySnippet
-    ? `, body: ${JSON.stringify(attempt.bodySnippet)}`
-    : "";
-
-  return `status ${attempt.status}${statusText}, noindex: ${attempt.noIndex}${body}`;
-}
-
-export function getStorefrontPath(locale, slug) {
-  const prefix = locale.split("-")[0].toLowerCase();
-  return slug === "home" ? `/${prefix}` : `/${prefix}/${slug}`;
-}
-
-export function joinUrl(origin, path) {
-  return `${origin}${path.startsWith("/") ? path : `/${path}`}`;
-}
-
-export function parseSitemapUrls(xml) {
-  return Array.from(xml.matchAll(/<loc>([^<]+)<\/loc>/g), (match) =>
-    match[1].trim(),
-  );
-}
-
-export function hasNoIndexRobots(html) {
-  return Array.from(html.matchAll(/<meta\b[^>]*>/gi)).some((match) => {
-    const tag = match[0];
-    return (
-      /\bname=["']robots["']/i.test(tag) &&
-      /\bcontent=["'][^"']*\bnoindex\b[^"']*["']/i.test(tag)
-    );
-  });
+  return error;
 }
 
 async function fetchText(url, init) {
@@ -309,46 +257,8 @@ async function fetchText(url, init) {
   };
 }
 
-function isNotFoundSitemapUrl(url) {
-  const normalized = url.replace(/\/+$/, "");
-  return normalized.endsWith("/404");
-}
-
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function readBodySnippet(text) {
-  const snippet = redactSmokeSecrets(text)
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 160);
-  return snippet || null;
-}
-
-function readDocumentTitle(html) {
-  const title = html.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)?.[1];
-  const normalized = title?.replace(/\s+/g, " ").trim();
-
-  return normalized || null;
-}
-
-function readStorefrontPageDiagnosis(response, titlePresent, documentTitle) {
-  if (!response.ok) {
-    return "http-error";
-  }
-
-  if (titlePresent) {
-    return "published-title-present";
-  }
-
-  if (hasNoIndexRobots(response.text)) {
-    return "noindex-page";
-  }
-
-  return documentTitle
-    ? "stale-or-fallback-content"
-    : "published-title-missing";
 }
 
 function readErrorMessage(error) {
