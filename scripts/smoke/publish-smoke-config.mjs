@@ -87,6 +87,20 @@ export function normalizeSmokeSlug(value) {
   return slug;
 }
 
+export function normalizeSmokeBoolean(value, name) {
+  const normalized = value.trim().toLowerCase();
+
+  if (["1", "true", "yes", "on"].includes(normalized)) {
+    return true;
+  }
+
+  if (["0", "false", "no", "off"].includes(normalized)) {
+    return false;
+  }
+
+  throw new Error(`${name} must be true or false.`);
+}
+
 export function printHelp() {
   console.log(`Usage: pnpm smoke:publish
 
@@ -104,8 +118,8 @@ Environment:
   SMOKE_PAGE_SLUG                 Optional fixed lowercase page slug.
   SMOKE_LOCALE                    Locale code. Default: ${defaultLocale}
   SMOKE_MARKET                    Market code. Default: ${defaultMarket}
-  SMOKE_REQUIRE_R2_UPLOAD         Require R2 presigned URL, actual PUT upload, and production CDN URL. Default: false
-  SMOKE_REQUIRE_REVALIDATION      Require meta.revalidation.triggered. Default: true
+  SMOKE_REQUIRE_R2_UPLOAD         Require R2 presigned URL, actual PUT upload, and production CDN URL. true/false. Default: false
+  SMOKE_REQUIRE_REVALIDATION      Require meta.revalidation.triggered. true/false. Default: true
   SMOKE_RETRY_ATTEMPTS            Storefront fetch attempts. Default: 8
   SMOKE_RETRY_DELAY_MS            Delay between attempts. Default: 1000
   SMOKE_REPORT_PATH               Optional JSON report output path.
@@ -157,13 +171,13 @@ function readOptionalEnv(name) {
 }
 
 function readBooleanEnv(name, fallback) {
-  const value = process.env[name]?.trim().toLowerCase();
+  const value = process.env[name]?.trim();
 
   if (!value) {
     return fallback;
   }
 
-  return ["1", "true", "yes", "on"].includes(value);
+  return normalizeSmokeBoolean(value, name);
 }
 
 function readPositiveIntEnv(name, fallback) {

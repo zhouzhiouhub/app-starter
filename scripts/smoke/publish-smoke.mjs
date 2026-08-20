@@ -36,6 +36,7 @@ export {
 } from "./storefront-smoke.mjs";
 export {
   normalizeApiBaseUrl,
+  normalizeSmokeBoolean,
   normalizeSmokeLocale,
   normalizeSmokeMarket,
   normalizeSmokeSlug,

@@ -137,6 +137,8 @@ credentials, query strings, fragments, unsupported protocols, and unexpected
 paths before it sends login or publish requests. It also validates
 `SMOKE_PAGE_SLUG`, `SMOKE_LOCALE`, and `SMOKE_MARKET` before creating the smoke
 page so invalid schema context fails before any publish request is sent.
+Boolean smoke flags accept only `true`/`false`, `1`/`0`, `yes`/`no`, or
+`on`/`off`; misspelled values fail instead of silently disabling a check.
 
 The script logs in with `SMOKE_ADMIN_EMAIL` / `SMOKE_ADMIN_PASSWORD` (falling
 back to the seeded admin), verifies the MVP disabled feature flags
