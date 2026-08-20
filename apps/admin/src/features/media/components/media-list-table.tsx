@@ -1,9 +1,6 @@
-import {
-  CopyOutlined,
-  DeleteOutlined,
-  LinkOutlined,
-} from "@ant-design/icons";
+import { CopyOutlined, DeleteOutlined, LinkOutlined } from "@ant-design/icons";
 import { Button, Image, Space, Table, Tag, Tooltip, Typography } from "antd";
+import { readSafeMediaAssetUrl } from "../media-asset-url";
 import type { MediaAsset } from "../types";
 
 export function MediaListTable(props: {
@@ -79,33 +76,11 @@ export function MediaListTable(props: {
         {
           key: "actions",
           render: (_, asset) => (
-            <Space>
-              <Tooltip title="Open asset URL">
-                <Button
-                  href={asset.url}
-                  icon={<LinkOutlined />}
-                  target="_blank"
-                  type="link"
-                />
-              </Tooltip>
-              <Tooltip title="Copy media reference">
-                <Button
-                  icon={<CopyOutlined />}
-                  onClick={() => void copyText(asset.reference)}
-                  type="text"
-                />
-              </Tooltip>
-              <Tooltip title="Archive asset">
-                <Button
-                  danger
-                  disabled={asset.status !== "active"}
-                  icon={<DeleteOutlined />}
-                  loading={props.archivingId === asset.id}
-                  onClick={() => props.onArchive(asset)}
-                  type="text"
-                />
-              </Tooltip>
-            </Space>
+            <MediaActions
+              archivingId={props.archivingId}
+              asset={asset}
+              onArchive={props.onArchive}
+            />
           ),
           title: "",
           width: 160,
@@ -124,13 +99,57 @@ export function MediaListTable(props: {
   );
 }
 
+function MediaActions(props: {
+  archivingId: string | null;
+  asset: MediaAsset;
+  onArchive: (asset: MediaAsset) => void;
+}) {
+  const safeAssetUrl = readSafeMediaAssetUrl(props.asset.url);
+
+  return (
+    <Space>
+      <Tooltip
+        title={safeAssetUrl ? "Open asset URL" : "Asset URL unavailable"}
+      >
+        <Button
+          disabled={!safeAssetUrl}
+          href={safeAssetUrl ?? undefined}
+          icon={<LinkOutlined />}
+          rel="noopener noreferrer"
+          target="_blank"
+          type="link"
+        />
+      </Tooltip>
+      <Tooltip title="Copy media reference">
+        <Button
+          icon={<CopyOutlined />}
+          onClick={() => void copyText(props.asset.reference)}
+          type="text"
+        />
+      </Tooltip>
+      <Tooltip title="Archive asset">
+        <Button
+          danger
+          disabled={props.asset.status !== "active"}
+          icon={<DeleteOutlined />}
+          loading={props.archivingId === props.asset.id}
+          onClick={() => props.onArchive(props.asset)}
+          type="text"
+        />
+      </Tooltip>
+    </Space>
+  );
+}
+
 function MediaPreview(props: { asset: MediaAsset }) {
-  if (props.asset.type === "image") {
+  const safeAssetUrl = readSafeMediaAssetUrl(props.asset.url);
+
+  if (props.asset.type === "image" && safeAssetUrl) {
     return (
       <Image
         alt={props.asset.filename}
         height={56}
-        src={props.asset.url}
+        src={safeAssetUrl}
         style={{ objectFit: "cover" }}
         width={72}
       />
