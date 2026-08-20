@@ -2,13 +2,17 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { NextResponse, type NextRequest } from "next/server";
 import { storefrontRevalidateSecretHeader } from "@app-starter/schema";
 import { readRevalidatePayload } from "../../../lib/revalidate-request";
+import { createRevalidateErrorBody } from "../../../lib/revalidate-response";
+import {
+  hasValidRevalidateSecret,
+  readConfiguredRevalidateSecret,
+} from "../../../lib/revalidate-secret";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   const requestId = readRequestId(request);
-  const configuredSecret =
-    process.env.STOREFRONT_REVALIDATE_SECRET?.trim() ?? "";
+  const configuredSecret = readConfiguredRevalidateSecret();
 
   if (!configuredSecret) {
     return errorResponse({
@@ -23,13 +27,13 @@ export async function POST(request: NextRequest) {
   }
 
   if (
-    request.headers.get(storefrontRevalidateSecretHeader) !== configuredSecret
+    !hasValidRevalidateSecret({
+      configuredSecret,
+      providedSecret: request.headers.get(storefrontRevalidateSecretHeader),
+    })
   ) {
     return errorResponse({
       code: "UNAUTHORIZED",
-      details: {
-        header: storefrontRevalidateSecretHeader,
-      },
       message: "Invalid revalidation secret.",
       requestId,
       status: 401,
@@ -82,14 +86,7 @@ function errorResponse(input: {
   status: number;
 }) {
   return NextResponse.json(
-    {
-      error: {
-        code: input.code,
-        details: input.details,
-        message: input.message,
-        requestId: input.requestId,
-      },
-    },
+    createRevalidateErrorBody(input),
     { status: input.status },
   );
 }
