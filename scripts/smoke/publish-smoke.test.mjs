@@ -14,6 +14,9 @@ import {
   hasNoIndexRobots,
   joinUrl,
   normalizeApiBaseUrl,
+  normalizeSmokeLocale,
+  normalizeSmokeMarket,
+  normalizeSmokeSlug,
   normalizeWebOrigin,
   parseSitemapUrls,
   readConfig,
@@ -55,6 +58,27 @@ test("smoke helpers normalize API base URLs", () => {
   assert.equal(
     normalizeApiBaseUrl("http://localhost:4000/api/v1/"),
     "http://localhost:4000/api/v1",
+  );
+});
+
+test("smoke helpers validate slug locale and market config", async () => {
+  assert.equal(normalizeSmokeSlug(" legal/terms "), "legal/terms");
+  assert.equal(normalizeSmokeLocale(" en-US "), "en-US");
+  assert.equal(normalizeSmokeMarket(" us "), "us");
+  assert.throws(() => normalizeSmokeSlug("../secret"), /SMOKE_PAGE_SLUG/);
+  assert.throws(() => normalizeSmokeSlug("Campaign"), /SMOKE_PAGE_SLUG/);
+  assert.throws(() => normalizeSmokeLocale("bad_locale"), /SMOKE_LOCALE/);
+  assert.throws(() => normalizeSmokeMarket("US"), /SMOKE_MARKET/);
+
+  await withEnv(
+    {
+      API_URL: "https://api.example.com",
+      SMOKE_LOCALE: "english",
+      WEB_URL: "https://web.example.com",
+    },
+    async () => {
+      assert.throws(() => readConfig(), /SMOKE_LOCALE/);
+    },
   );
 });
 

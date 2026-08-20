@@ -5,6 +5,9 @@ const defaultMarket = "us";
 const defaultEmail = "admin@example.com";
 const defaultPassword = "ChangeMe123!";
 const defaultTenantSlug = "default";
+const localeCodePattern = /^[a-z]{2}(?:-[A-Z]{2})?$/;
+const marketCodePattern = /^[a-z][a-z0-9-]{1,15}$/;
+const pageSlugPattern = /^[a-z0-9]+(?:[-/][a-z0-9]+)*$/;
 
 export function readConfig() {
   return {
@@ -13,8 +16,8 @@ export function readConfig() {
       "SMOKE_ADMIN_EMAIL",
       readEnv("SEED_ADMIN_EMAIL", defaultEmail),
     ),
-    locale: readEnv("SMOKE_LOCALE", defaultLocale),
-    market: readEnv("SMOKE_MARKET", defaultMarket),
+    locale: normalizeSmokeLocale(readEnv("SMOKE_LOCALE", defaultLocale)),
+    market: normalizeSmokeMarket(readEnv("SMOKE_MARKET", defaultMarket)),
     password: readEnv(
       "SMOKE_ADMIN_PASSWORD",
       readEnv("SEED_ADMIN_PASSWORD", defaultPassword),
@@ -24,7 +27,7 @@ export function readConfig() {
     retryAttempts: readPositiveIntEnv("SMOKE_RETRY_ATTEMPTS", 8),
     retryDelayMs: readPositiveIntEnv("SMOKE_RETRY_DELAY_MS", 1000),
     reportPath: readOptionalEnv("SMOKE_REPORT_PATH"),
-    slug: readEnv("SMOKE_PAGE_SLUG", createSmokeSlug()),
+    slug: normalizeSmokeSlug(readEnv("SMOKE_PAGE_SLUG", createSmokeSlug())),
     tenantSlug: readEnv("SMOKE_TENANT_SLUG", defaultTenantSlug),
     webUrl: normalizeWebOrigin(readEnv("WEB_URL", defaultWebUrl)),
   };
@@ -52,6 +55,38 @@ export function normalizeWebOrigin(value) {
   return url.origin;
 }
 
+export function normalizeSmokeLocale(value) {
+  const locale = value.trim();
+
+  if (!localeCodePattern.test(locale)) {
+    throw new Error("SMOKE_LOCALE must look like en-US.");
+  }
+
+  return locale;
+}
+
+export function normalizeSmokeMarket(value) {
+  const market = value.trim();
+
+  if (!marketCodePattern.test(market)) {
+    throw new Error("SMOKE_MARKET must be a lowercase market code.");
+  }
+
+  return market;
+}
+
+export function normalizeSmokeSlug(value) {
+  const slug = value.trim();
+
+  if (slug.length > 255 || !pageSlugPattern.test(slug)) {
+    throw new Error(
+      "SMOKE_PAGE_SLUG must use lowercase letters, numbers, hyphens, or slashes.",
+    );
+  }
+
+  return slug;
+}
+
 export function printHelp() {
   console.log(`Usage: pnpm smoke:publish
 
@@ -66,7 +101,9 @@ Environment:
   SMOKE_ADMIN_EMAIL               Admin email. Default: SEED_ADMIN_EMAIL or ${defaultEmail}
   SMOKE_ADMIN_PASSWORD            Admin password. Default: SEED_ADMIN_PASSWORD or ${defaultPassword}
   SMOKE_TENANT_SLUG               Tenant slug. Default: ${defaultTenantSlug}
-  SMOKE_PAGE_SLUG                 Optional fixed page slug.
+  SMOKE_PAGE_SLUG                 Optional fixed lowercase page slug.
+  SMOKE_LOCALE                    Locale code. Default: ${defaultLocale}
+  SMOKE_MARKET                    Market code. Default: ${defaultMarket}
   SMOKE_REQUIRE_R2_UPLOAD         Require R2 presigned URL, actual PUT upload, and production CDN URL. Default: false
   SMOKE_REQUIRE_REVALIDATION      Require meta.revalidation.triggered. Default: true
   SMOKE_RETRY_ATTEMPTS            Storefront fetch attempts. Default: 8
