@@ -8,6 +8,7 @@ import {
 } from "./smoke-secrets.mjs";
 
 export const smokeReportSchemaVersion = "smoke-report.v2";
+const smokeCheckStatuses = new Set(["failed", "passed"]);
 const writableReportFields = [
   "checks",
   "config",
@@ -211,6 +212,7 @@ export function assertSmokeReportWritable(report) {
   if (!Array.isArray(report.checks)) {
     throw new Error("Smoke report checks must be an array.");
   }
+  assertSmokeReportChecksWellFormed(report.checks);
 
   if (!isPlainRecord(report.productionReadiness)) {
     throw new Error("Smoke report productionReadiness must be an object.");
@@ -228,6 +230,18 @@ function assertSmokeReportSummaryCurrent(report) {
 
   if (JSON.stringify(report.summary) !== JSON.stringify(expectedSummary)) {
     throw new Error("Smoke report summary is stale.");
+  }
+}
+
+function assertSmokeReportChecksWellFormed(checks) {
+  const invalidIndex = checks.findIndex(
+    (check) => !isPlainRecord(check) || !smokeCheckStatuses.has(check.status),
+  );
+
+  if (invalidIndex >= 0) {
+    throw new Error(
+      `Smoke report check at index ${invalidIndex} must have status passed or failed.`,
+    );
   }
 }
 

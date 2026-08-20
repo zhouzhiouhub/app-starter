@@ -120,6 +120,22 @@ test("smoke report validates required fields before writing", () => {
     () =>
       assertSmokeReportWritable({
         ...report,
+        checks: [{ name: "api.health", status: "skipped" }],
+      }),
+    /check at index 0 must have status passed or failed/,
+  );
+  assert.throws(
+    () =>
+      assertSmokeReportWritable({
+        ...report,
+        checks: ["api.health"],
+      }),
+    /check at index 0 must have status passed or failed/,
+  );
+  assert.throws(
+    () =>
+      assertSmokeReportWritable({
+        ...report,
         productionReadiness: [],
       }),
     /productionReadiness must be an object/,
