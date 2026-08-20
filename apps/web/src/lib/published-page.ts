@@ -13,6 +13,8 @@ import {
 import { getApiBaseUrl } from "./runtime-url.ts";
 
 const apiBaseUrl = getApiBaseUrl();
+const maxPreviewTokenLength = 2048;
+const previewTokenPattern = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]{43}$/;
 
 export async function getPublishedPage(input: {
   locale: string;
@@ -69,6 +71,10 @@ export async function getNotFoundPage(input?: {
 export async function getPreviewPage(
   token: string,
 ): Promise<PageSchema | null> {
+  if (!isPreviewTokenCandidate(token)) {
+    return null;
+  }
+
   try {
     const response = await fetch(
       `${apiBaseUrl}/public/preview/${encodeURIComponent(token)}`,
@@ -86,6 +92,14 @@ export async function getPreviewPage(
   } catch {
     return null;
   }
+}
+
+function isPreviewTokenCandidate(token: string): boolean {
+  return (
+    token.length <= maxPreviewTokenLength &&
+    token.trim() === token &&
+    previewTokenPattern.test(token)
+  );
 }
 
 async function fetchPublishedSchema(input: {
