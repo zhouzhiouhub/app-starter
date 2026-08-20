@@ -12,6 +12,7 @@ type PageAuditSite = {
 type PageAuditInput = {
   actor: Actor;
   pageId: string;
+  requestId: string;
   schema: PageSchema;
   site: PageAuditSite;
 };
@@ -57,7 +58,7 @@ function createPageAuditData(
       siteId: input.site.id,
       slug: input.schema.meta.slug,
     } as Prisma.InputJsonValue,
-    requestId: "local-dev",
+    requestId: input.requestId,
     targetId: input.pageId,
     targetType: "page",
     tenantId: input.site.tenantId,

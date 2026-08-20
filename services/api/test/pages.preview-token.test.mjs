@@ -168,6 +168,7 @@ test("createPreviewToken signs a tenant-scoped page token", async () => {
       "page-1",
       undefined,
       actor(),
+      "request-preview-1",
     );
 
     assert.equal(response.data.slug, "campaign");
@@ -181,9 +182,11 @@ test("createPreviewToken signs a tenant-scoped page token", async () => {
     assert.equal(auditCalls[0].actorId, "user-1");
     assert.equal(auditCalls[0].targetId, "page-1");
     assert.equal(auditCalls[0].targetType, "page");
+    assert.equal(auditCalls[0].requestId, "request-preview-1");
     assert.equal(auditCalls[0].metadata.slug, "campaign");
     assert.equal(typeof auditCalls[0].metadata.expiresAt, "string");
     assert.equal("token" in auditCalls[0].metadata, false);
+    assert.equal(response.meta.requestId, "request-preview-1");
   });
 });
 

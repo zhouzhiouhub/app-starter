@@ -14,6 +14,7 @@ import { AdminApiGuard } from "../../common/admin-api.guard.js";
 import { CurrentUser } from "../../common/current-user.decorator.js";
 import { RequireScopes } from "../../common/require-scopes.decorator.js";
 import { requireIdempotencyKey } from "../../common/idempotency-key.js";
+import { CurrentRequestId } from "../../common/request-id.decorator.js";
 import type { Actor } from "../identity/identity.types.js";
 import { PagesService } from "../pages/pages.service.js";
 import {
@@ -129,6 +130,7 @@ export class AdminPagesController {
   @RequireScopes("page:publish")
   publishPage(
     @CurrentUser() actor: Actor,
+    @CurrentRequestId() requestId: string,
     @Body() body: unknown,
     @Headers("idempotency-key") idempotencyKey: string | undefined,
     @Param("slug") slug: string,
@@ -138,6 +140,7 @@ export class AdminPagesController {
       body,
       requireIdempotencyKey(idempotencyKey),
       actor,
+      requestId,
     );
   }
 }

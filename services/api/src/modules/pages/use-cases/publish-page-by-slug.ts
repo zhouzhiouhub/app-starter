@@ -16,6 +16,7 @@ export async function publishPageBySlug(
   idempotencyKey: string | undefined,
   actor: Actor,
   validateMediaReferences?: MediaReferenceValidator,
+  requestId = "local-dev",
 ) {
   const site = await getSiteForTenant(prisma, actor.tenantId);
   const normalizedSlug = parseSlug(slug);
@@ -56,6 +57,7 @@ export async function publishPageBySlug(
           actor,
           undefined,
           validateMediaReferences,
+          requestId,
         );
       }
 
@@ -67,6 +69,7 @@ export async function publishPageBySlug(
         actor,
         undefined,
         validateMediaReferences,
+        requestId,
       );
     },
   });

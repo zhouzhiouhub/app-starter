@@ -13,7 +13,7 @@ test("publishPage records a page published audit log", async () => {
   const calls = { audit: null };
   const prisma = createPublishPrisma(calls);
 
-  await publishPage(
+  const response = await publishPage(
     prisma,
     "page-1",
     schema,
@@ -24,6 +24,8 @@ test("publishPage records a page published audit log", async () => {
       tags: ["published-page"],
       triggered: true,
     }),
+    undefined,
+    "request-publish-1",
   );
 
   assert.equal(calls.audit.action, "page.published");
@@ -36,6 +38,8 @@ test("publishPage records a page published audit log", async () => {
   assert.equal(calls.audit.metadata.market, "us");
   assert.equal(calls.audit.metadata.locale, "en-US");
   assert.equal(calls.audit.metadata.publishedVersionId, "version-2");
+  assert.equal(calls.audit.requestId, "request-publish-1");
+  assert.equal(response.meta.requestId, "request-publish-1");
   assert.equal("schema" in calls.audit.metadata, false);
 });
 
@@ -160,7 +164,7 @@ test("rollbackPage records source and rollback version audit metadata", async ()
   const calls = { audit: null };
   const prisma = createRollbackPrisma(schema, calls);
 
-  await rollbackPage(
+  const response = await rollbackPage(
     prisma,
     "page-1",
     { versionId: "version-1" },
@@ -171,6 +175,8 @@ test("rollbackPage records source and rollback version audit metadata", async ()
       tags: ["published-page"],
       triggered: true,
     }),
+    undefined,
+    "request-rollback-1",
   );
 
   assert.equal(calls.audit.action, "page.rolled_back");
@@ -182,6 +188,8 @@ test("rollbackPage records source and rollback version audit metadata", async ()
   assert.equal(calls.audit.metadata.slug, "home");
   assert.equal(calls.audit.metadata.rollbackVersionId, "version-rollback");
   assert.equal(calls.audit.metadata.targetVersionId, "version-1");
+  assert.equal(calls.audit.requestId, "request-rollback-1");
+  assert.equal(response.meta.requestId, "request-rollback-1");
   assert.equal("schema" in calls.audit.metadata, false);
 });
 

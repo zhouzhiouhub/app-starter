@@ -37,6 +37,7 @@ export async function rollbackPage(
   actor: Actor,
   revalidator: StorefrontRevalidator = triggerStorefrontRevalidation,
   validateMediaReferences: MediaReferenceValidator = async () => undefined,
+  requestId = "local-dev",
 ) {
   const site = await getSiteForTenant(prisma, actor.tenantId);
   const input = parseRollbackInput(body);
@@ -103,6 +104,7 @@ export async function rollbackPage(
         await recordPageRollbackAudit(tx, {
           actor,
           pageId: page.id,
+          requestId,
           rollbackVersionId: rollbackVersion.id,
           schema: parsed,
           site,
@@ -115,7 +117,7 @@ export async function rollbackPage(
       return {
         data: schema,
         meta: {
-          requestId: "local-dev",
+          requestId,
           tenantId: site.tenantId,
           siteId: site.id,
           market: schema.meta.market,

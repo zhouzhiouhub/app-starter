@@ -32,6 +32,7 @@ export async function publishPage(
   actor: Actor,
   revalidator: StorefrontRevalidator = triggerStorefrontRevalidation,
   validateMediaReferences: MediaReferenceValidator = async () => undefined,
+  requestId = "local-dev",
 ) {
   const site = await getSiteForTenant(prisma, actor.tenantId);
 
@@ -86,6 +87,7 @@ export async function publishPage(
           actor,
           pageId: current.id,
           publishedVersionId: publishedVersion.id,
+          requestId,
           schema: parsed,
           site,
         });
@@ -96,7 +98,7 @@ export async function publishPage(
       return {
         data: schema,
         meta: {
-          requestId: "local-dev",
+          requestId,
           tenantId: site.tenantId,
           siteId: site.id,
           market: schema.meta.market,

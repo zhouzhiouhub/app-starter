@@ -39,6 +39,7 @@ export class PagesService {
     id: string,
     idempotencyKey: string | undefined,
     actor: Actor,
+    requestId: string,
   ) {
     return createPreviewToken(
       this.prisma,
@@ -46,6 +47,7 @@ export class PagesService {
       id,
       idempotencyKey,
       actor,
+      requestId,
     );
   }
 
@@ -67,6 +69,7 @@ export class PagesService {
     body: unknown | undefined,
     idempotencyKey: string | undefined,
     actor: Actor,
+    requestId: string,
   ) {
     return publishPage(
       this.prisma,
@@ -81,6 +84,7 @@ export class PagesService {
           tenantId,
           client,
         ),
+      requestId,
     );
   }
 
@@ -89,6 +93,7 @@ export class PagesService {
     body: unknown,
     idempotencyKey: string | undefined,
     actor: Actor,
+    requestId: string,
   ) {
     return rollbackPage(
       this.prisma,
@@ -103,6 +108,7 @@ export class PagesService {
           tenantId,
           client,
         ),
+      requestId,
     );
   }
 
@@ -111,6 +117,7 @@ export class PagesService {
     body: unknown,
     idempotencyKey: string | undefined,
     actor: Actor,
+    requestId: string,
   ) {
     return publishPageBySlug(
       this.prisma,
@@ -124,6 +131,7 @@ export class PagesService {
           tenantId,
           client,
         ),
+      requestId,
     );
   }
 

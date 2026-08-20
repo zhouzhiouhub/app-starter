@@ -17,6 +17,7 @@ export async function createPreviewToken(
   id: string,
   idempotencyKey: string | undefined,
   actor: Actor,
+  requestId = "local-dev",
 ) {
   const site = await getSiteForTenant(prisma, actor.tenantId);
 
@@ -57,7 +58,7 @@ export async function createPreviewToken(
             siteId: site.id,
             slug: page.slug,
           },
-          requestId: "local-dev",
+          requestId,
           targetId: page.id,
           targetType: "page",
           tenantId: actor.tenantId,
@@ -70,7 +71,7 @@ export async function createPreviewToken(
             token: preview.token,
           },
           meta: {
-            requestId: "local-dev",
+            requestId,
             tenantId: site.tenantId,
             siteId: site.id,
           },

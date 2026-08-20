@@ -12,6 +12,7 @@ import {
 import { AdminApiGuard } from "../../common/admin-api.guard.js";
 import { CurrentUser } from "../../common/current-user.decorator.js";
 import { requireIdempotencyKey } from "../../common/idempotency-key.js";
+import { CurrentRequestId } from "../../common/request-id.decorator.js";
 import { RequireScopes } from "../../common/require-scopes.decorator.js";
 import type { Actor } from "../identity/identity.types.js";
 import { PagesService } from "./pages.service.js";
@@ -55,6 +56,7 @@ export class PagesController {
   @RequireScopes("page:read")
   createPreviewToken(
     @CurrentUser() actor: Actor,
+    @CurrentRequestId() requestId: string,
     @Headers("idempotency-key") idempotencyKey: string | undefined,
     @Param("id") id: string,
   ) {
@@ -62,6 +64,7 @@ export class PagesController {
       id,
       requireIdempotencyKey(idempotencyKey),
       actor,
+      requestId,
     );
   }
 
@@ -85,6 +88,7 @@ export class PagesController {
   @RequireScopes("page:publish")
   publish(
     @CurrentUser() actor: Actor,
+    @CurrentRequestId() requestId: string,
     @Body() body: unknown,
     @Headers("idempotency-key") idempotencyKey: string | undefined,
     @Param("id") id: string,
@@ -94,6 +98,7 @@ export class PagesController {
       isEmptyBody(body) ? undefined : body,
       requireIdempotencyKey(idempotencyKey),
       actor,
+      requestId,
     );
   }
 
@@ -101,6 +106,7 @@ export class PagesController {
   @RequireScopes("page:publish")
   rollback(
     @CurrentUser() actor: Actor,
+    @CurrentRequestId() requestId: string,
     @Body() body: unknown,
     @Headers("idempotency-key") idempotencyKey: string | undefined,
     @Param("id") id: string,
@@ -110,6 +116,7 @@ export class PagesController {
       body,
       requireIdempotencyKey(idempotencyKey),
       actor,
+      requestId,
     );
   }
 }
