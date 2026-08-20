@@ -9,7 +9,7 @@ import {
 test("storefront URL helper accepts safe configured web origins", () => {
   assert.equal(
     resolveWebOrigin({
-      configured: " https://web.example.com/storefront/ ",
+      configured: " https://web.example.com/ ",
     }),
     "https://web.example.com",
   );
@@ -24,8 +24,8 @@ test("storefront URL helper accepts safe configured web origins", () => {
 test("storefront URL helper falls back to generic WEB_URL origins", () => {
   assert.equal(
     resolveWebOrigin({
-      configured: "javascript:alert(1)",
-      fallbackConfigured: " https://web.example.com/storefront/ ",
+      configured: "https://bad.example.com/storefront",
+      fallbackConfigured: " https://web.example.com/ ",
       windowLocation: {
         hostname: "admin.example.com",
         protocol: "https:",
@@ -58,6 +58,27 @@ test("storefront URL helper rejects unsafe configured web origins", () => {
   assert.equal(
     resolveWebOrigin({
       configured: "ftp://web.example.com",
+      windowLocation,
+    }),
+    "https://admin.example.com:3000",
+  );
+  assert.equal(
+    resolveWebOrigin({
+      configured: "https://web.example.com/storefront",
+      windowLocation,
+    }),
+    "https://admin.example.com:3000",
+  );
+  assert.equal(
+    resolveWebOrigin({
+      configured: "https://web.example.com?tenant=1",
+      windowLocation,
+    }),
+    "https://admin.example.com:3000",
+  );
+  assert.equal(
+    resolveWebOrigin({
+      configured: "https://web.example.com#preview",
       windowLocation,
     }),
     "https://admin.example.com:3000",

@@ -53,7 +53,7 @@ function readRelativeApiBaseUrl(value: string): string | null {
     return null;
   }
 
-  return trimTrailingSlashes(value);
+  return normalizeApiBasePath(value);
 }
 
 function readAbsoluteApiBaseUrl(value: string): string | null {
@@ -70,15 +70,22 @@ function readAbsoluteApiBaseUrl(value: string): string | null {
       return null;
     }
 
-    return `${url.origin}${trimTrailingSlashes(url.pathname)}`;
+    const pathname = normalizeApiBasePath(url.pathname);
+    return pathname ? `${url.origin}${pathname}` : null;
   } catch {
     return null;
   }
 }
 
-function trimTrailingSlashes(value: string): string {
+function normalizeApiBasePath(value: string): string | null {
   const trimmed = value.replace(/\/+$/, "");
-  return trimmed || "/";
+  const pathname = trimmed || "/";
+
+  if (pathname === "/") {
+    return "/api/v1";
+  }
+
+  return pathname === "/api/v1" ? pathname : null;
 }
 
 function isHttpProtocol(protocol: string): boolean {

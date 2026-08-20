@@ -15,7 +15,7 @@ test("API base URL resolver keeps the dev proxy path", () => {
 test("API base URL resolver accepts safe configured bases", () => {
   assert.equal(
     resolveApiBaseUrl({
-      configured: " https://api.example.com/api/v1/ ",
+      configured: " https://api.example.com/ ",
     }),
     "https://api.example.com/api/v1",
   );
@@ -33,11 +33,20 @@ test("API base URL resolver accepts safe configured bases", () => {
   );
 });
 
+test("API base URL resolver normalizes configured origins to the API v1 base", () => {
+  assert.equal(
+    resolveApiBaseUrl({
+      configured: "https://api.example.com",
+    }),
+    "https://api.example.com/api/v1",
+  );
+});
+
 test("API base URL resolver falls back to generic API_URL bases", () => {
   assert.equal(
     resolveApiBaseUrl({
       configured: "javascript:alert(1)",
-      fallbackConfigured: " https://api.example.com/api/v1/ ",
+      fallbackConfigured: " https://api.example.com/ ",
     }),
     "https://api.example.com/api/v1",
   );
@@ -51,6 +60,8 @@ test("API base URL resolver rejects unsafe configured bases", () => {
     "//api.example.com/api/v1",
     "https://api.example.com/api/v1?tenant=1",
     "https://api.example.com/api/v1#admin",
+    "https://api.example.com/admin",
+    "/admin",
     "api.example.com/api/v1",
   ]) {
     assert.equal(

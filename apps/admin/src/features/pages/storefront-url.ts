@@ -67,7 +67,14 @@ function readHttpOrigin(value: string | undefined): string | null {
   try {
     const url = new URL(trimmed);
 
-    if (!isHttpProtocol(url.protocol) || url.username || url.password) {
+    if (
+      !isHttpProtocol(url.protocol) ||
+      url.username ||
+      url.password ||
+      trimTrailingSlashes(url.pathname) !== "/" ||
+      url.search ||
+      url.hash
+    ) {
       return null;
     }
 
@@ -79,4 +86,9 @@ function readHttpOrigin(value: string | undefined): string | null {
 
 function isHttpProtocol(protocol: string): boolean {
   return protocol === "http:" || protocol === "https:";
+}
+
+function trimTrailingSlashes(value: string): string {
+  const trimmed = value.replace(/\/+$/, "");
+  return trimmed || "/";
 }
