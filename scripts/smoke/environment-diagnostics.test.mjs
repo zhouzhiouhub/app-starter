@@ -137,15 +137,20 @@ test("smoke environment diagnostics reports unsafe deployment URLs", () => {
 test("smoke environment diagnostics uses smoke input deployment URLs", () => {
   const diagnostics = createSmokeEnvironmentDiagnostics(
     {
+      ADMIN_URL: "https://admin.example.com",
       API_URL: "https://api.example.com/api/v1",
       WEB_URL: "https://web.example.com",
     },
     {
+      adminUrl: "https://admin.brand.com",
       apiBaseUrl: "https://api.brand.com/api/v1",
       webUrl: "https://store.brand.com",
     },
   );
 
+  assert.equal(diagnostics.deployment.admin.host, "admin.brand.com");
+  assert.equal(diagnostics.deployment.admin.configured, true);
+  assert.equal(diagnostics.deployment.admin.productionReady, true);
   assert.equal(diagnostics.deployment.api.host, "api.brand.com");
   assert.equal(diagnostics.deployment.api.configured, true);
   assert.equal(diagnostics.deployment.api.productionReady, true);

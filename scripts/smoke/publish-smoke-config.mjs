@@ -1,6 +1,9 @@
-import { posix, win32 } from "node:path";
+import { normalizeSmokeReportPath } from "./smoke-report-path-config.mjs";
+
+export { normalizeSmokeReportPath } from "./smoke-report-path-config.mjs";
 
 const defaultApiUrl = "http://localhost:4000";
+const defaultAdminUrl = "http://localhost:5173";
 const defaultWebUrl = "http://localhost:3000";
 const defaultLocale = "en-US";
 const defaultMarket = "us";
@@ -12,11 +15,12 @@ const retryDelayMsRange = { max: 60000, min: 1 };
 const localeCodePattern = /^[a-z]{2}(?:-[A-Z]{2})?$/;
 const marketCodePattern = /^[a-z][a-z0-9-]{1,15}$/;
 const pageSlugPattern = /^[a-z0-9]+(?:[-/][a-z0-9]+)*$/;
-const reportPathSegmentPattern = /^[A-Za-z0-9._-]+$/;
-const reportPathRoots = new Set([".tmp", "artifacts", "reports", "tmp"]);
 
 export function readConfig() {
+  const requireAdminApp = readBooleanEnv("SMOKE_REQUIRE_ADMIN_APP", false);
+
   return {
+    adminUrl: readAdminUrlConfig(requireAdminApp),
     apiBaseUrl: normalizeApiBaseUrl(readEnv("API_URL", defaultApiUrl)),
     email: readEnv(
       "SMOKE_ADMIN_EMAIL",
@@ -28,6 +32,7 @@ export function readConfig() {
       "SMOKE_ADMIN_PASSWORD",
       readEnv("SEED_ADMIN_PASSWORD", defaultPassword),
     ),
+    requireAdminApp,
     requireR2Upload: readBooleanEnv("SMOKE_REQUIRE_R2_UPLOAD", false),
     requireRevalidation: readBooleanEnv("SMOKE_REQUIRE_REVALIDATION", true),
     retryAttempts: readPositiveIntEnv(
@@ -59,11 +64,19 @@ export function normalizeApiBaseUrl(value) {
 }
 
 export function normalizeWebOrigin(value) {
-  const url = readSmokeUrl(value, "WEB_URL");
+  return normalizeOrigin(value, "WEB_URL", "storefront origin", "a");
+}
+
+export function normalizeAdminOrigin(value) {
+  return normalizeOrigin(value, "ADMIN_URL", "admin origin", "an");
+}
+
+function normalizeOrigin(value, name, label, article) {
+  const url = readSmokeUrl(value, name);
   const pathname = trimTrailingSlashes(url.pathname);
 
   if (pathname) {
-    throw new Error("WEB_URL must be a storefront origin without a path.");
+    throw new Error(`${name} must be ${article} ${label} without a path.`);
   }
 
   return url.origin;
@@ -135,51 +148,6 @@ export function normalizeSmokePositiveInt(value, name, range) {
   return number;
 }
 
-export function normalizeSmokeReportPath(value) {
-  const trimmed = value.trim();
-
-  if (!trimmed) {
-    throw new Error("SMOKE_REPORT_PATH must not be empty.");
-  }
-
-  if (
-    trimmed.includes("\0") ||
-    posix.isAbsolute(trimmed) ||
-    win32.isAbsolute(trimmed)
-  ) {
-    throw new Error("SMOKE_REPORT_PATH must be a relative JSON report path.");
-  }
-
-  const normalized = trimmed.replace(/\\/g, "/");
-  const segments = normalized.split("/");
-
-  if (segments.length < 2 || !reportPathRoots.has(segments[0])) {
-    throw new Error(
-      "SMOKE_REPORT_PATH must be under tmp/, reports/, artifacts/, or .tmp/.",
-    );
-  }
-
-  if (
-    segments.some(
-      (segment) =>
-        !segment ||
-        segment === "." ||
-        segment === ".." ||
-        !reportPathSegmentPattern.test(segment),
-    )
-  ) {
-    throw new Error(
-      "SMOKE_REPORT_PATH must use safe path segments without traversal.",
-    );
-  }
-
-  if (!segments.at(-1).toLowerCase().endsWith(".json")) {
-    throw new Error("SMOKE_REPORT_PATH must end with .json.");
-  }
-
-  return normalized;
-}
-
 export function printHelp() {
   console.log(`Usage: pnpm smoke:publish
 
@@ -189,6 +157,7 @@ publish API, rollback API, audit logs, public page API, media upload target,
 media list filters, storefront HTML, robots.txt, sitemap.xml, 404 behavior, and MVP disabled feature flags.
 
 Environment:
+  ADMIN_URL                       Admin app origin. Default: ${defaultAdminUrl}
   API_URL                         API origin or /api/v1 base. Default: ${defaultApiUrl}
   WEB_URL                         Storefront origin. Default: ${defaultWebUrl}
   SMOKE_ADMIN_EMAIL               Admin email. Default: SEED_ADMIN_EMAIL or ${defaultEmail}
@@ -197,6 +166,7 @@ Environment:
   SMOKE_PAGE_SLUG                 Optional fixed lowercase page slug.
   SMOKE_LOCALE                    Locale code. Default: ${defaultLocale}
   SMOKE_MARKET                    Market code. Default: ${defaultMarket}
+  SMOKE_REQUIRE_ADMIN_APP         Require Admin static app HTML at ADMIN_URL. true/false. Default: false
   SMOKE_REQUIRE_R2_UPLOAD         Require R2 presigned URL, actual PUT upload, and production CDN URL. true/false. Default: false
   SMOKE_REQUIRE_REVALIDATION      Require meta.revalidation.triggered. true/false. Default: true
   SMOKE_RETRY_ATTEMPTS            Storefront fetch attempts. 1-60. Default: 8
@@ -237,6 +207,20 @@ function createSmokeSlug() {
   return `smoke-${Date.now().toString(36)}-${Math.random()
     .toString(36)
     .slice(2, 8)}`;
+}
+
+function readAdminUrlConfig(requireAdminApp) {
+  const value = readEnv("ADMIN_URL", defaultAdminUrl);
+
+  if (requireAdminApp) {
+    return normalizeAdminOrigin(value);
+  }
+
+  try {
+    return normalizeAdminOrigin(value);
+  } catch {
+    return null;
+  }
 }
 
 function readEnv(name, fallback) {

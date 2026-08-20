@@ -1,6 +1,12 @@
 import { randomUUID } from "node:crypto";
 import { assertAuditLogs } from "./audit-smoke.mjs";
+import { assertAdminApp } from "./admin-app-smoke.mjs";
 import { assertFeatureFlagsDisabled } from "./feature-flags-smoke.mjs";
+import {
+  assertJsonReachable,
+  fetchJson,
+  readHttpError,
+} from "./http-json-smoke.mjs";
 import { assertMediaUploadTarget } from "./media-smoke.mjs";
 import { assertPreviewFlow } from "./preview-smoke.mjs";
 import {
@@ -36,6 +42,7 @@ export {
   parseSitemapUrls,
 } from "./storefront-smoke.mjs";
 export {
+  normalizeAdminOrigin,
   normalizeApiBaseUrl,
   normalizeSmokeBoolean,
   normalizeSmokeLocale,
@@ -61,11 +68,20 @@ export async function runSmokeTest(input) {
   console.log(`Smoke page slug: ${input.slug}`);
   console.log(`API: ${input.apiBaseUrl}`);
   console.log(`Web: ${input.webUrl}`);
+  console.log(`Admin: ${input.adminUrl ?? "(not required)"}`);
 
   try {
     await runSmokeStep(report, "api.health", () =>
-      assertReachable(`${input.apiBaseUrl}/health`, "API health"),
+      assertJsonReachable(`${input.apiBaseUrl}/health`, "API health"),
     );
+    if (input.requireAdminApp) {
+      await runSmokeStep(
+        report,
+        "admin.app",
+        () => assertAdminApp(input),
+        (details) => details,
+      );
+    }
     const accessToken = await runSmokeStep(report, "auth.login", () =>
       login(input),
     );
@@ -260,52 +276,6 @@ function formatPublishRevalidationDetails(details) {
     `paths: ${details.pathCount},`,
     `tags: ${details.tagCount}).`,
   ].join(" ");
-}
-
-async function assertReachable(url, label) {
-  const response = await fetchJson(url);
-
-  if (!response.ok) {
-    throw new Error(readHttpError(response, `${label} failed.`));
-  }
-
-  console.log(`${label} passed.`);
-}
-
-async function fetchJson(url, init) {
-  const response = await fetch(url, init);
-  const text = await response.text();
-  const body = text ? parseJson(text, url) : null;
-
-  return {
-    body,
-    ok: response.ok,
-    status: response.status,
-    statusText: response.statusText,
-    url,
-  };
-}
-
-function parseJson(text, url) {
-  try {
-    return JSON.parse(text);
-  } catch {
-    throw new Error(
-      redactSmokeSecrets(
-        `${url} returned non-JSON content: ${text.slice(0, 160)}`,
-      ),
-    );
-  }
-}
-
-function readHttpError(response, fallback) {
-  const message =
-    response.body?.error?.message ??
-    response.body?.message ??
-    response.statusText ??
-    fallback;
-
-  return redactSmokeSecrets(`${fallback} ${response.status}: ${message}`);
 }
 
 async function writeFailureReport(input, report) {

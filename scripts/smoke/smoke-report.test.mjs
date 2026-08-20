@@ -44,11 +44,13 @@ test("smoke report redacts secrets from failure messages", () => {
 test("smoke report includes deployment diagnostics for effective smoke URLs", () => {
   const report = createSmokeReport(
     {
+      adminUrl: "https://admin.brand.com",
       apiBaseUrl: "https://api.brand.com/api/v1",
       locale: "en-US",
       market: "us",
       requireR2Upload: false,
       requireRevalidation: true,
+      requireAdminApp: true,
       slug: "smoke-page",
       tenantSlug: "default",
       webUrl: "https://store.brand.com",
@@ -57,6 +59,10 @@ test("smoke report includes deployment diagnostics for effective smoke URLs", ()
     new Date("2026-08-20T00:00:00.000Z"),
   );
 
+  assert.equal(report.config.adminUrl, "https://admin.brand.com");
+  assert.equal(report.config.requireAdminApp, true);
+  assert.equal(report.environment.deployment.admin.host, "admin.brand.com");
+  assert.equal(report.environment.deployment.admin.productionReady, true);
   assert.equal(report.environment.deployment.api.host, "api.brand.com");
   assert.equal(report.environment.deployment.api.path, "/api/v1");
   assert.equal(report.environment.deployment.api.productionReady, true);

@@ -13,6 +13,7 @@ import {
   getStorefrontPath,
   hasNoIndexRobots,
   joinUrl,
+  normalizeAdminOrigin,
   normalizeApiBaseUrl,
   normalizeSmokeLocale,
   normalizeSmokeMarket,
@@ -95,6 +96,10 @@ test("smoke helpers reject unsafe publish URLs", async () => {
   assert.equal(
     normalizeWebOrigin("https://web.example.com/"),
     "https://web.example.com",
+  );
+  assert.equal(
+    normalizeAdminOrigin("https://admin.example.com/"),
+    "https://admin.example.com",
   );
   assert.throws(
     () => normalizeWebOrigin("https://web.example.com/storefront"),
@@ -242,12 +247,14 @@ test("smoke helpers summarize web preview attempts", () => {
 test("readConfig uses seeded defaults and explicit smoke overrides", async () => {
   await withEnv(
     {
+      ADMIN_URL: "https://admin.example.com/",
       API_URL: "http://api.example.com/api/v1/",
       SEED_ADMIN_EMAIL: "",
       SEED_ADMIN_PASSWORD: "",
       SMOKE_ADMIN_EMAIL: "owner@example.com",
       SMOKE_ADMIN_PASSWORD: "ChangeMe456!",
       SMOKE_PAGE_SLUG: "legal/terms",
+      SMOKE_REQUIRE_ADMIN_APP: "true",
       SMOKE_REQUIRE_R2_UPLOAD: "true",
       SMOKE_REQUIRE_REVALIDATION: "false",
       SMOKE_REPORT_PATH: "tmp/smoke-report.json",
@@ -257,9 +264,11 @@ test("readConfig uses seeded defaults and explicit smoke overrides", async () =>
     async () => {
       const config = readConfig();
 
+      assert.equal(config.adminUrl, "https://admin.example.com");
       assert.equal(config.apiBaseUrl, "http://api.example.com/api/v1");
       assert.equal(config.email, "owner@example.com");
       assert.equal(config.password, "ChangeMe456!");
+      assert.equal(config.requireAdminApp, true);
       assert.equal(config.requireR2Upload, true);
       assert.equal(config.requireRevalidation, false);
       assert.equal(config.reportPath, "tmp/smoke-report.json");

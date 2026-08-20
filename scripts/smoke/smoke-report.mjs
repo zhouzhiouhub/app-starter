@@ -10,9 +10,11 @@ export function createSmokeReport(input, title, now = new Date()) {
   return {
     checks: [],
     config: {
+      adminUrl: input.adminUrl ?? null,
       apiBaseUrl: input.apiBaseUrl,
       locale: input.locale,
       market: input.market,
+      requireAdminApp: input.requireAdminApp === true,
       requireR2Upload: input.requireR2Upload,
       requireRevalidation: input.requireRevalidation,
       tenantSlug: input.tenantSlug,
@@ -22,6 +24,7 @@ export function createSmokeReport(input, title, now = new Date()) {
     environment:
       input.environmentDiagnostics ??
       createSmokeEnvironmentDiagnostics(process.env, {
+        adminUrl: input.adminUrl,
         apiBaseUrl: input.apiBaseUrl,
         requireRevalidation: input.requireRevalidation,
         webUrl: input.webUrl,
