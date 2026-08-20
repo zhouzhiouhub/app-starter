@@ -6,6 +6,7 @@ import {
 } from "@nestjs/common";
 import { apiErrorCodes } from "@app-starter/schema";
 import { ApiExceptionFilter } from "../dist/common/api-exception.filter.js";
+import { readRequestId } from "../dist/common/request-id.js";
 
 test("API exception filter hides internal server error messages", () => {
   const filter = new ApiExceptionFilter();
@@ -53,6 +54,34 @@ test("API exception filter keeps client validation details", () => {
       requestId: "local-dev",
     },
   });
+});
+
+test("request id helper accepts only compact safe request identifiers", () => {
+  assert.equal(
+    readRequestId({ "x-request-id": " request-1.alpha:beta_2 " }),
+    "request-1.alpha:beta_2",
+  );
+  assert.equal(readRequestId({ "x-request-id": " " }), "local-dev");
+  assert.equal(
+    readRequestId({ "x-request-id": "request-1\nset-cookie: secret=1" }),
+    "local-dev",
+  );
+  assert.equal(
+    readRequestId({ "x-request-id": "a".repeat(129) }),
+    "local-dev",
+  );
+});
+
+test("API exception filter sanitizes unsafe request ids", () => {
+  const filter = new ApiExceptionFilter();
+  const { host, response } = createHost({
+    "x-request-id": "request-1\nx-secret: leaked",
+  });
+
+  filter.catch(new BadRequestException("Invalid input."), host);
+
+  assert.equal(response.statusCode, 400);
+  assert.equal(response.body.error.requestId, "local-dev");
 });
 
 function createHost(headers = {}) {

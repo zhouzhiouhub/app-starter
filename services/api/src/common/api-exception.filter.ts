@@ -8,6 +8,7 @@ import {
 } from "@nestjs/common";
 import { apiErrorCodes } from "@app-starter/schema";
 import { mapPrismaException } from "./prisma-error.js";
+import { readRequestId, type RequestHeadersLike } from "./request-id.js";
 
 interface HttpResponseLike {
   status: (statusCode: number) => {
@@ -16,7 +17,7 @@ interface HttpResponseLike {
 }
 
 interface HttpRequestLike {
-  headers?: Record<string, string | string[] | undefined>;
+  headers?: RequestHeadersLike;
 }
 
 interface NormalizedError {
@@ -51,7 +52,7 @@ export class ApiExceptionFilter implements ExceptionFilter {
     response.status(statusCode).json({
       error: {
         ...normalized,
-        requestId: getRequestId(request),
+        requestId: readRequestId(request.headers),
       },
     });
   }
@@ -141,14 +142,4 @@ function codeForStatus(statusCode: number): string {
   }
 
   return apiErrorCodes.VALIDATION_ERROR;
-}
-
-function getRequestId(request: HttpRequestLike): string {
-  const value = request.headers?.["x-request-id"];
-
-  if (Array.isArray(value)) {
-    return value[0] ?? "local-dev";
-  }
-
-  return value ?? "local-dev";
 }
