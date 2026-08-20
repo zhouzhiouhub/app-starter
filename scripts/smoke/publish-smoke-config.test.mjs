@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { normalizeSmokeBoolean, readConfig } from "./publish-smoke-config.mjs";
+import {
+  normalizeSmokeBoolean,
+  normalizeSmokePositiveInt,
+  readConfig,
+} from "./publish-smoke-config.mjs";
 
 test("smoke config parses boolean flags from an explicit whitelist", () => {
   for (const value of ["1", "true", "TRUE", "yes", "on"]) {
@@ -42,6 +46,70 @@ test("smoke config rejects misspelled boolean environment values", async () => {
       assert.throws(
         () => readConfig(),
         /SMOKE_REQUIRE_R2_UPLOAD must be true or false/,
+      );
+    },
+  );
+});
+
+test("smoke config validates positive integer retry settings", () => {
+  assert.equal(
+    normalizeSmokePositiveInt(" 8 ", "SMOKE_RETRY_ATTEMPTS", {
+      max: 60,
+      min: 1,
+    }),
+    8,
+  );
+  assert.throws(
+    () =>
+      normalizeSmokePositiveInt("1.5", "SMOKE_RETRY_ATTEMPTS", {
+        max: 60,
+        min: 1,
+      }),
+    /SMOKE_RETRY_ATTEMPTS must be a positive integer/,
+  );
+  assert.throws(
+    () =>
+      normalizeSmokePositiveInt("0", "SMOKE_RETRY_ATTEMPTS", {
+        max: 60,
+        min: 1,
+      }),
+    /SMOKE_RETRY_ATTEMPTS must be between 1 and 60/,
+  );
+  assert.throws(
+    () =>
+      normalizeSmokePositiveInt("61", "SMOKE_RETRY_ATTEMPTS", {
+        max: 60,
+        min: 1,
+      }),
+    /SMOKE_RETRY_ATTEMPTS must be between 1 and 60/,
+  );
+});
+
+test("smoke config rejects invalid retry environment values", async () => {
+  await withEnv(
+    {
+      API_URL: "https://api.example.com",
+      SMOKE_RETRY_ATTEMPTS: "many",
+      WEB_URL: "https://web.example.com",
+    },
+    async () => {
+      assert.throws(
+        () => readConfig(),
+        /SMOKE_RETRY_ATTEMPTS must be a positive integer/,
+      );
+    },
+  );
+
+  await withEnv(
+    {
+      API_URL: "https://api.example.com",
+      SMOKE_RETRY_DELAY_MS: "60001",
+      WEB_URL: "https://web.example.com",
+    },
+    async () => {
+      assert.throws(
+        () => readConfig(),
+        /SMOKE_RETRY_DELAY_MS must be between 1 and 60000/,
       );
     },
   );

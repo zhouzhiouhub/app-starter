@@ -555,6 +555,7 @@ pnpm smoke:publish
 `API_URL` 必须是 API origin 或精确的 `/api/v1` base，`WEB_URL` 必须是前台 origin；Smoke Runner 会在发起登录或发布请求前拒绝嵌入账号密码、query、fragment、异常路径和非 HTTP(S) 协议。
 `SMOKE_PAGE_SLUG`、`SMOKE_LOCALE`、`SMOKE_MARKET` 也会在创建测试页前按 Page Schema 上下文格式校验。
 布尔 smoke 开关只接受 `true`/`false`、`1`/`0`、`yes`/`no`、`on`/`off`，拼写错误会直接失败。
+`SMOKE_RETRY_ATTEMPTS` 必须为 1-60，`SMOKE_RETRY_DELAY_MS` 必须为 1-60000 毫秒。
 
 ```powershell
 $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish

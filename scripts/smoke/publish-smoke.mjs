@@ -39,6 +39,7 @@ export {
   normalizeSmokeBoolean,
   normalizeSmokeLocale,
   normalizeSmokeMarket,
+  normalizeSmokePositiveInt,
   normalizeSmokeSlug,
   normalizeWebOrigin,
   printHelp,

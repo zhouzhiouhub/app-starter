@@ -5,6 +5,8 @@ const defaultMarket = "us";
 const defaultEmail = "admin@example.com";
 const defaultPassword = "ChangeMe123!";
 const defaultTenantSlug = "default";
+const retryAttemptsRange = { max: 60, min: 1 };
+const retryDelayMsRange = { max: 60000, min: 1 };
 const localeCodePattern = /^[a-z]{2}(?:-[A-Z]{2})?$/;
 const marketCodePattern = /^[a-z][a-z0-9-]{1,15}$/;
 const pageSlugPattern = /^[a-z0-9]+(?:[-/][a-z0-9]+)*$/;
@@ -24,8 +26,16 @@ export function readConfig() {
     ),
     requireR2Upload: readBooleanEnv("SMOKE_REQUIRE_R2_UPLOAD", false),
     requireRevalidation: readBooleanEnv("SMOKE_REQUIRE_REVALIDATION", true),
-    retryAttempts: readPositiveIntEnv("SMOKE_RETRY_ATTEMPTS", 8),
-    retryDelayMs: readPositiveIntEnv("SMOKE_RETRY_DELAY_MS", 1000),
+    retryAttempts: readPositiveIntEnv(
+      "SMOKE_RETRY_ATTEMPTS",
+      8,
+      retryAttemptsRange,
+    ),
+    retryDelayMs: readPositiveIntEnv(
+      "SMOKE_RETRY_DELAY_MS",
+      1000,
+      retryDelayMsRange,
+    ),
     reportPath: readOptionalEnv("SMOKE_REPORT_PATH"),
     slug: normalizeSmokeSlug(readEnv("SMOKE_PAGE_SLUG", createSmokeSlug())),
     tenantSlug: readEnv("SMOKE_TENANT_SLUG", defaultTenantSlug),
@@ -101,6 +111,26 @@ export function normalizeSmokeBoolean(value, name) {
   throw new Error(`${name} must be true or false.`);
 }
 
+export function normalizeSmokePositiveInt(value, name, range) {
+  const normalized = value.trim();
+
+  if (!/^\d+$/.test(normalized)) {
+    throw new Error(`${name} must be a positive integer.`);
+  }
+
+  const number = Number(normalized);
+
+  if (
+    !Number.isSafeInteger(number) ||
+    number < range.min ||
+    number > range.max
+  ) {
+    throw new Error(`${name} must be between ${range.min} and ${range.max}.`);
+  }
+
+  return number;
+}
+
 export function printHelp() {
   console.log(`Usage: pnpm smoke:publish
 
@@ -120,8 +150,8 @@ Environment:
   SMOKE_MARKET                    Market code. Default: ${defaultMarket}
   SMOKE_REQUIRE_R2_UPLOAD         Require R2 presigned URL, actual PUT upload, and production CDN URL. true/false. Default: false
   SMOKE_REQUIRE_REVALIDATION      Require meta.revalidation.triggered. true/false. Default: true
-  SMOKE_RETRY_ATTEMPTS            Storefront fetch attempts. Default: 8
-  SMOKE_RETRY_DELAY_MS            Delay between attempts. Default: 1000
+  SMOKE_RETRY_ATTEMPTS            Storefront fetch attempts. 1-60. Default: 8
+  SMOKE_RETRY_DELAY_MS            Delay between attempts in ms. 1-60000. Default: 1000
   SMOKE_REPORT_PATH               Optional JSON report output path.
 `);
 }
@@ -180,12 +210,12 @@ function readBooleanEnv(name, fallback) {
   return normalizeSmokeBoolean(value, name);
 }
 
-function readPositiveIntEnv(name, fallback) {
-  const value = Number(process.env[name]);
+function readPositiveIntEnv(name, fallback, range) {
+  const value = process.env[name]?.trim();
 
-  if (Number.isInteger(value) && value > 0) {
-    return value;
+  if (!value) {
+    return fallback;
   }
 
-  return fallback;
+  return normalizeSmokePositiveInt(value, name, range);
 }

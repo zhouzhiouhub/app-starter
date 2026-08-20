@@ -139,6 +139,8 @@ paths before it sends login or publish requests. It also validates
 page so invalid schema context fails before any publish request is sent.
 Boolean smoke flags accept only `true`/`false`, `1`/`0`, `yes`/`no`, or
 `on`/`off`; misspelled values fail instead of silently disabling a check.
+Retry settings are also validated: `SMOKE_RETRY_ATTEMPTS` must be 1-60 and
+`SMOKE_RETRY_DELAY_MS` must be 1-60000 milliseconds.
 
 The script logs in with `SMOKE_ADMIN_EMAIL` / `SMOKE_ADMIN_PASSWORD` (falling
 back to the seeded admin), verifies the MVP disabled feature flags
