@@ -1,11 +1,11 @@
 import {
-  defaultRuntimeConfig,
   getPublishedPageCacheTags,
   getPublishedPageRevalidationPaths,
   localeCodeSchema,
   marketCodeSchema,
   pageSlugSchema,
 } from "@app-starter/schema";
+import { readWebRuntimeDefaults } from "./runtime-defaults.ts";
 
 export type RevalidateInput = {
   locale: string;
@@ -119,9 +119,11 @@ export function parseRevalidatePayload(
 export function readRevalidateDefaults(
   env: Record<string, string | undefined> = process.env,
 ): RevalidateDefaults {
+  const defaults = readWebRuntimeDefaults(env);
+
   return {
-    locale: env.DEFAULT_LOCALE?.trim() || defaultRuntimeConfig.defaultLocale,
-    market: env.DEFAULT_MARKET?.trim() || defaultRuntimeConfig.defaultMarket,
+    locale: defaults.defaultLocale,
+    market: defaults.defaultMarket,
   };
 }
 

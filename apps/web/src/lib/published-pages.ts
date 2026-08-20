@@ -1,9 +1,13 @@
 import {
-  defaultRuntimeConfig,
   publishedPageRevalidateSeconds,
   publishedPagesCacheTag,
 } from "@app-starter/schema";
-import { getApiBaseUrl } from "./runtime-url";
+import {
+  readWebRuntimeDefaults,
+  resolveWebLocale,
+  resolveWebMarket,
+} from "./runtime-defaults.ts";
+import { getApiBaseUrl } from "./runtime-url.ts";
 
 const apiBaseUrl = getApiBaseUrl();
 
@@ -20,9 +24,17 @@ export async function listPublishedPages(input?: {
   market?: string;
 }): Promise<PublishedPageSummary[]> {
   try {
+    const defaults = readWebRuntimeDefaults();
+    const locale = resolveWebLocale(input?.locale, defaults);
+    const market = resolveWebMarket(input?.market, defaults);
+
+    if (!locale || !market) {
+      return [];
+    }
+
     const searchParams = new URLSearchParams({
-      locale: input?.locale ?? defaultRuntimeConfig.defaultLocale,
-      market: input?.market ?? defaultRuntimeConfig.defaultMarket,
+      locale,
+      market,
     });
     const response = await fetch(`${apiBaseUrl}/public/pages?${searchParams}`, {
       next: {

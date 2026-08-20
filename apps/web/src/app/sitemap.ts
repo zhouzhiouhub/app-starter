@@ -1,16 +1,13 @@
 import type { MetadataRoute } from "next";
-import {
-  defaultRuntimeConfig,
-  getStorefrontHref,
-} from "@app-starter/schema";
+import { getStorefrontHref } from "@app-starter/schema";
 import { listPublishedPages } from "../lib/published-pages";
+import { readWebRuntimeDefaults } from "../lib/runtime-defaults";
 import { getWebOrigin } from "../lib/site-url";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const locale =
-    process.env.DEFAULT_LOCALE ?? defaultRuntimeConfig.defaultLocale;
-  const market =
-    process.env.DEFAULT_MARKET ?? defaultRuntimeConfig.defaultMarket;
+  const defaults = readWebRuntimeDefaults();
+  const locale = defaults.defaultLocale;
+  const market = defaults.defaultMarket;
   const origin = getWebOrigin();
   const pages = await listPublishedPages({ locale, market });
 

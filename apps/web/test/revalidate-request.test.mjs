@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   parseRevalidatePayload,
+  readRevalidateDefaults,
   readRevalidatePayload,
 } from "../src/lib/revalidate-request.ts";
 
@@ -49,6 +50,16 @@ test("revalidate payload defaults locale and market", () => {
     slug: "home",
   });
   assert.deepEqual(result.paths, ["/", "/en"]);
+});
+
+test("revalidate defaults ignore invalid environment values", () => {
+  assert.deepEqual(
+    readRevalidateDefaults({
+      DEFAULT_LOCALE: "bad_locale",
+      DEFAULT_MARKET: "US",
+    }),
+    defaults,
+  );
 });
 
 test("revalidate payload reports invalid JSON", async () => {

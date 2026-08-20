@@ -6,7 +6,11 @@ import {
   publishedPageRevalidateSeconds,
   type PageSchema,
 } from "@app-starter/schema";
-import { getApiBaseUrl } from "./runtime-url";
+import {
+  readWebRuntimeDefaults,
+  resolveWebLocale,
+} from "./runtime-defaults.ts";
+import { getApiBaseUrl } from "./runtime-url.ts";
 
 const apiBaseUrl = getApiBaseUrl();
 
@@ -14,18 +18,18 @@ export async function getPublishedPage(input: {
   locale: string;
   slug: string;
 }): Promise<PageSchema | null> {
-  const defaultMarket = process.env.DEFAULT_MARKET ?? "us";
-  const locale = input.locale || (process.env.FALLBACK_LOCALE ?? "en-US");
+  const defaults = readWebRuntimeDefaults();
+  const locale = resolveWebLocale(input.locale, defaults);
   const slug = pageSlugSchema.safeParse(input.slug);
 
-  if (!slug.success) {
+  if (!locale || !slug.success) {
     return null;
   }
 
   return fetchPublishedSchema({
-    fallbackLocale: process.env.FALLBACK_LOCALE ?? "en-US",
+    fallbackLocale: defaults.fallbackLocale,
     locale,
-    market: defaultMarket,
+    market: defaults.defaultMarket,
     slug: slug.data,
   });
 }
@@ -33,12 +37,13 @@ export async function getPublishedPage(input: {
 export async function getNotFoundPage(input?: {
   locale?: string;
 }): Promise<PageSchema> {
-  const defaultMarket = process.env.DEFAULT_MARKET ?? "us";
-  const locale = input?.locale || (process.env.FALLBACK_LOCALE ?? "en-US");
+  const defaults = readWebRuntimeDefaults();
+  const locale =
+    resolveWebLocale(input?.locale, defaults) ?? defaults.defaultLocale;
   const published = await fetchPublishedSchema({
-    fallbackLocale: process.env.FALLBACK_LOCALE ?? "en-US",
+    fallbackLocale: defaults.fallbackLocale,
     locale,
-    market: defaultMarket,
+    market: defaults.defaultMarket,
     slug: "404",
   });
 
@@ -47,16 +52,16 @@ export async function getNotFoundPage(input?: {
   }
 
   const home = await fetchPublishedSchema({
-    fallbackLocale: process.env.FALLBACK_LOCALE ?? "en-US",
+    fallbackLocale: defaults.fallbackLocale,
     locale,
-    market: defaultMarket,
+    market: defaults.defaultMarket,
     slug: "home",
   });
 
   return createFallbackPage({
     slug: "404",
     locale,
-    market: defaultMarket,
+    market: defaults.defaultMarket,
     siteChrome: home?.chrome,
   });
 }
