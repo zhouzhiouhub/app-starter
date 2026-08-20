@@ -40,11 +40,18 @@ function readHttpBaseUrl(value: string | undefined): string | null {
     return null;
   }
 
-  return `${url.origin}${trimTrailingSlashes(url.pathname)}`;
+  const pathname = normalizeApiBasePath(url.pathname);
+  return pathname ? `${url.origin}${pathname}` : null;
 }
 
 function readHttpOrigin(value: string | undefined): string | null {
-  return readSafeHttpUrl(value)?.origin ?? null;
+  const url = readSafeHttpUrl(value);
+
+  if (!url || trimTrailingSlashes(url.pathname) !== "/") {
+    return null;
+  }
+
+  return url.origin;
 }
 
 function readSafeHttpUrl(value: string | undefined): URL | null {
@@ -76,6 +83,16 @@ function readSafeHttpUrl(value: string | undefined): URL | null {
 function trimTrailingSlashes(value: string): string {
   const trimmed = value.replace(/\/+$/, "");
   return trimmed || "/";
+}
+
+function normalizeApiBasePath(value: string): string | null {
+  const pathname = trimTrailingSlashes(value);
+
+  if (pathname === "/") {
+    return "/api/v1";
+  }
+
+  return pathname === "/api/v1" ? pathname : null;
 }
 
 function isHttpProtocol(protocol: string): boolean {

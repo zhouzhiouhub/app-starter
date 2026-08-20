@@ -5,7 +5,7 @@ import { resolveApiBaseUrl, resolveWebOrigin } from "../src/lib/runtime-url.ts";
 test("runtime URL resolver prefers safe internal API bases", () => {
   assert.equal(
     resolveApiBaseUrl({
-      internalUrl: " https://internal.example.com/api/v1/ ",
+      internalUrl: " https://internal.example.com/ ",
       publicUrl: "https://public.example.com/api/v1",
     }),
     "https://internal.example.com/api/v1",
@@ -40,6 +40,7 @@ test("runtime URL resolver rejects unsafe API bases", () => {
     "https://user:password@api.example.com/api/v1",
     "https://api.example.com/api/v1?tenant=1",
     "https://api.example.com/api/v1#admin",
+    "https://api.example.com/admin",
     "/api/v1",
     "api.example.com/api/v1",
   ]) {
@@ -54,7 +55,7 @@ test("runtime URL resolver accepts safe web origins", () => {
   assert.equal(
     resolveWebOrigin({
       publicWebUrl: "https://public.example.com/",
-      webUrl: " https://web.example.com/storefront/ ",
+      webUrl: " https://web.example.com/ ",
     }),
     "https://web.example.com",
   );
@@ -74,5 +75,12 @@ test("runtime URL resolver falls back from unsafe web origins", () => {
       webUrl: "ftp://web.example.com",
     }),
     "http://localhost:3000",
+  );
+  assert.equal(
+    resolveWebOrigin({
+      publicWebUrl: "https://public.example.com/",
+      webUrl: "https://web.example.com/storefront/",
+    }),
+    "https://public.example.com",
   );
 });
