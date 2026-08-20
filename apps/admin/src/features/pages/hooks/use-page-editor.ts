@@ -1,34 +1,16 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Viewport } from "@app-starter/schema";
 import { redirectWhenAuthRequired } from "../../auth/auth-redirect";
 import { formatRequestError } from "../../../lib/api-error";
-import {
-  createPreviewToken,
-  getPage,
-  publishPage,
-  rollbackPage,
-  savePageDraft,
-} from "../api";
-import { getStorefrontPreviewUrl } from "../storefront-url";
-import { buildPublicationFeedback } from "../revalidation-feedback";
-import { findBlockingPublishPreflightIssue } from "../publish-preflight";
-import { readMediaPublishPreflightIssue } from "../media-publish-preflight";
-import { openStorefrontPreviewWindow } from "../preview-window";
-import { readEditorErrorFeedback } from "../editor-feedback";
-import {
-  readPageEditorDraftState,
-  readPageEditorSavedState,
-} from "../page-editor-detail-state";
+import { getPage } from "../api";
+import { readPageEditorDraftState } from "../page-editor-detail-state";
 import type { EditorFeedback } from "../types";
+import { usePageEditorActions } from "./use-page-editor-actions";
 import { usePageEditorAutosave } from "./use-page-editor-autosave";
 import { usePageEditorAutosaveState } from "./use-page-editor-autosave-state";
 import { usePageMediaPreflight } from "./use-page-media-preflight";
 import { usePageEditorSavedState } from "./use-page-editor-saved-state";
 import { useSchemaHistory } from "./use-schema-history";
-
-interface SaveDraftOptions {
-  silent?: boolean;
-}
 
 export function usePageEditor(pageId: string | undefined) {
   const [viewport, setViewport] = useState<Viewport>("desktop");
@@ -88,162 +70,23 @@ export function usePageEditor(pageId: string | undefined) {
     void load();
   }, [load]);
 
-  const saveDraft = useCallback(
-    async (options: SaveDraftOptions = {}) => {
-      if (!pageId || !draftSchema) {
-        return;
-      }
-
-      setIsSaving(true);
-
-      if (!options.silent) {
-        setFeedback(null);
-      }
-
-      try {
-        await savePageDraft(pageId, draftSchema);
-        applySavedState(
-          readPageEditorSavedState(await getPage(pageId), draftSchema),
-        );
-
-        if (!options.silent) {
-          setFeedback({
-            message:
-              "Draft saved. Publish when you want the storefront to update.",
-            type: "success",
-          });
-        }
-      } catch (caught) {
-        if (redirectWhenAuthRequired(caught)) {
-          return;
-        }
-
-        setFeedback(readEditorErrorFeedback(caught));
-      } finally {
-        setIsSaving(false);
-      }
-    },
-    [applySavedState, draftSchema, pageId],
+  const actionInput = useMemo(
+    () => ({
+      applySavedState,
+      draftSchema,
+      mediaFeedback,
+      pageId,
+      resetSchema,
+      setFeedback,
+      setIsCreatingPreview,
+      setIsPublishing,
+      setIsSaving,
+      setRollingBackVersionId,
+    }),
+    [applySavedState, draftSchema, mediaFeedback, pageId, resetSchema],
   );
-
-  const publish = useCallback(async () => {
-    if (!pageId || !draftSchema) {
-      return;
-    }
-
-    const blockingIssue = findBlockingPublishPreflightIssue(draftSchema);
-
-    if (blockingIssue) {
-      setFeedback({
-        message: `Cannot publish yet. ${blockingIssue.message}`,
-        type: "error",
-      });
-      return;
-    }
-
-    const mediaIssue = readMediaPublishPreflightIssue(mediaFeedback);
-
-    if (mediaIssue) {
-      setFeedback({
-        message: `Cannot publish yet. ${mediaIssue.message}`,
-        type: "error",
-      });
-      return;
-    }
-
-    setIsPublishing(true);
-    setFeedback(null);
-
-    try {
-      const published = await publishPage(pageId, draftSchema);
-      resetSchema(published.schema);
-      applySavedState(
-        readPageEditorSavedState(await getPage(pageId), published.schema),
-      );
-      setFeedback({
-        message: buildPublicationFeedback({
-          action: "publish",
-          revalidation: published.meta?.revalidation,
-          slug: published.schema.meta.slug,
-        }),
-        type: "success",
-      });
-    } catch (caught) {
-      if (redirectWhenAuthRequired(caught)) {
-        return;
-      }
-
-      setFeedback(readEditorErrorFeedback(caught));
-    } finally {
-      setIsPublishing(false);
-    }
-  }, [applySavedState, draftSchema, mediaFeedback, pageId, resetSchema]);
-
-  const openPreview = useCallback(async () => {
-    if (!pageId || !draftSchema) {
-      return;
-    }
-
-    setIsCreatingPreview(true);
-    setFeedback(null);
-
-    try {
-      await savePageDraft(pageId, draftSchema);
-      applySavedState(
-        readPageEditorSavedState(await getPage(pageId), draftSchema),
-      );
-      const preview = await createPreviewToken(pageId);
-      openStorefrontPreviewWindow(getStorefrontPreviewUrl(preview.token));
-      setFeedback({
-        message: `Preview opened. This link expires at ${preview.expiresAt}.`,
-        type: "success",
-      });
-    } catch (caught) {
-      if (redirectWhenAuthRequired(caught)) {
-        return;
-      }
-
-      setFeedback(readEditorErrorFeedback(caught));
-    } finally {
-      setIsCreatingPreview(false);
-    }
-  }, [applySavedState, draftSchema, pageId]);
-
-  const rollbackToVersion = useCallback(
-    async (versionId: string) => {
-      if (!pageId) {
-        return;
-      }
-
-      setRollingBackVersionId(versionId);
-      setFeedback(null);
-
-      try {
-        const rolledBack = await rollbackPage(pageId, versionId);
-        resetSchema(rolledBack.schema);
-        applySavedState(
-          readPageEditorSavedState(await getPage(pageId), rolledBack.schema),
-        );
-        setFeedback({
-          message: buildPublicationFeedback({
-            action: "rollback",
-            revalidation: rolledBack.meta?.revalidation,
-            slug: rolledBack.schema.meta.slug,
-          }),
-          type: "success",
-        });
-      } catch (caught) {
-        if (redirectWhenAuthRequired(caught)) {
-          return;
-        }
-
-        setFeedback(readEditorErrorFeedback(caught));
-      } finally {
-        setRollingBackVersionId(null);
-      }
-    },
-    [applySavedState, pageId, resetSchema],
-  );
+  const { openPreview, publish, rollbackToVersion, saveDraft } =
+    usePageEditorActions(actionInput);
 
   const autosaveState = usePageEditorAutosaveState({
     draftSchema,
