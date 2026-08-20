@@ -4,6 +4,7 @@ import {
   localeCodeSchema,
   marketCodeSchema,
 } from "@app-starter/schema";
+import { readApiFeatureFlags } from "../../common/feature-flags.js";
 import { readApiRuntimeDefaults } from "../../common/runtime-defaults.js";
 
 export type PublicRuntimeConfig = {
@@ -31,10 +32,11 @@ export function readPublicRuntimeConfig(
   env: Record<string, string | undefined> = process.env,
 ): PublicRuntimeConfig {
   const defaults = readApiRuntimeDefaults(env);
+  const flags = readApiFeatureFlags(env);
 
   return {
-    commerceEnabled: env.COMMERCE_ENABLED === "true",
-    multiLocaleEnabled: env.MULTI_LOCALE_ENABLED === "true",
+    commerceEnabled: flags.commerceEnabled,
+    multiLocaleEnabled: flags.multiLocaleEnabled,
     defaultMarket: defaults.market,
     defaultLocale: defaults.locale,
     defaultCurrency: defaults.currency,

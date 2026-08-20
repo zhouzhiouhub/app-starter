@@ -49,7 +49,7 @@ test("locale creation does not echo disabled invalid locale input", () => {
 });
 
 test("locale creation validates locale codes when multi-locale is enabled", () => {
-  withEnv({ MULTI_LOCALE_ENABLED: "true" }, () => {
+  withEnv({ MULTI_LOCALE_ENABLED: " TRUE " }, () => {
     const controller = new LocalizationController();
 
     assert.equal(
@@ -69,7 +69,7 @@ test("locale creation validates locale codes when multi-locale is enabled", () =
 });
 
 test("locale creation requires idempotency keys when multi-locale is enabled", () => {
-  withEnv({ MULTI_LOCALE_ENABLED: "true" }, () => {
+  withEnv({ MULTI_LOCALE_ENABLED: " TRUE " }, () => {
     const controller = new LocalizationController();
 
     assertApiBadRequest(
@@ -221,6 +221,27 @@ test("public config normalizes trimmed runtime defaults", () => {
       assert.equal(response.data.fallbackLocale, "fr-FR");
       assert.equal(response.meta.locale, "de-DE");
       assert.equal(response.meta.market, "eu");
+    },
+  );
+});
+
+test("public config normalizes feature flag environment values", () => {
+  withEnv(
+    {
+      COMMERCE_ENABLED: " TRUE ",
+      DEFAULT_LOCALE: "en-US",
+      FALLBACK_LOCALE: "en-US",
+      MULTI_LOCALE_ENABLED: " TRUE ",
+    },
+    () => {
+      const controller = new PublicController({});
+      const config = controller.getConfig();
+      const translations = controller.getTranslations("fr-FR");
+
+      assert.equal(config.data.commerceEnabled, true);
+      assert.equal(config.data.multiLocaleEnabled, true);
+      assert.equal(translations.data.locale, "fr-FR");
+      assert.equal(translations.meta.isFallback, false);
     },
   );
 });

@@ -1,3 +1,5 @@
+import { readBooleanEnv } from "./feature-flags.js";
+
 export type AnalyticsRuntimeConfig = {
   clarityProjectId: string | null;
   consentGranted: boolean;
@@ -16,10 +18,6 @@ export function readAnalyticsRuntimeConfig(
     ga4MeasurementId: readProviderId(env.GA4_MEASUREMENT_ID, /^G-[A-Z0-9]+$/i),
     clarityProjectId: readProviderId(env.CLARITY_PROJECT_ID, /^[a-z0-9]+$/i),
   };
-}
-
-function readBooleanEnv(value: string | undefined): boolean {
-  return value?.trim().toLowerCase() === "true";
 }
 
 function readProviderId(

@@ -93,6 +93,21 @@ test("site settings response ignores invalid analytics provider ids", () => {
   );
 });
 
+test("site settings response normalizes feature flag environment values", () => {
+  withEnv(
+    {
+      COMMERCE_ENABLED: " TRUE ",
+      MULTI_LOCALE_ENABLED: " TRUE ",
+    },
+    () => {
+      assert.deepEqual(toSiteSettingsResponse(site).featureFlags, {
+        commerceEnabled: true,
+        multiLocaleEnabled: true,
+      });
+    },
+  );
+});
+
 test("site settings response ignores invalid runtime defaults", () => {
   withEnv(
     {

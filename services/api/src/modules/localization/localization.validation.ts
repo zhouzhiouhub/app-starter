@@ -1,6 +1,7 @@
 import { BadRequestException } from "@nestjs/common";
 import { apiErrorCodes, localeCodeSchema } from "@app-starter/schema";
 import { z, ZodError } from "zod";
+import { isMultiLocaleEnabled } from "../../common/feature-flags.js";
 import { readApiRuntimeDefaults } from "../../common/runtime-defaults.js";
 
 const createLocaleInputSchema = z.object({
@@ -49,7 +50,7 @@ export function resolveTranslationLocale(
   }
 
   const isFallback =
-    env.MULTI_LOCALE_ENABLED !== "true" && parsed.data !== defaultLocale;
+    !isMultiLocaleEnabled(env) && parsed.data !== defaultLocale;
 
   return {
     defaultLocale,

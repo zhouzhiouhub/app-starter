@@ -10,6 +10,7 @@ import {
 } from "@nestjs/common";
 import { apiErrorCodes } from "@app-starter/schema";
 import { AdminApiGuard } from "../../common/admin-api.guard.js";
+import { isMultiLocaleEnabled } from "../../common/feature-flags.js";
 import { requireIdempotencyKey } from "../../common/idempotency-key.js";
 import { RequireScopes } from "../../common/require-scopes.decorator.js";
 import { readApiRuntimeDefaults } from "../../common/runtime-defaults.js";
@@ -78,7 +79,7 @@ export class LocalizationController {
     @Body() body: unknown,
     @Headers("idempotency-key") idempotencyKey?: string,
   ) {
-    if (process.env.MULTI_LOCALE_ENABLED !== "true") {
+    if (!isMultiLocaleEnabled()) {
       throw new ConflictException({
         code: apiErrorCodes.MULTI_LOCALE_DISABLED,
         message: "Cannot create locales while multi-locale is disabled.",

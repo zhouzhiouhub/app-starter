@@ -1,4 +1,5 @@
 import { readAnalyticsRuntimeConfig } from "../../common/analytics-config.js";
+import { readApiFeatureFlags } from "../../common/feature-flags.js";
 import { readApiRuntimeDefaults } from "../../common/runtime-defaults.js";
 
 export type SiteSettingsRecord = {
@@ -11,6 +12,7 @@ export type SiteSettingsRecord = {
 
 export function toSiteSettingsResponse(site: SiteSettingsRecord) {
   const defaults = readApiRuntimeDefaults();
+  const featureFlags = readApiFeatureFlags();
   const analytics = readAnalyticsRuntimeConfig();
 
   return {
@@ -24,10 +26,7 @@ export function toSiteSettingsResponse(site: SiteSettingsRecord) {
       currency: defaults.currency,
       fallbackLocale: defaults.fallbackLocale,
     },
-    featureFlags: {
-      commerceEnabled: process.env.COMMERCE_ENABLED === "true",
-      multiLocaleEnabled: process.env.MULTI_LOCALE_ENABLED === "true",
-    },
+    featureFlags,
     analytics,
     createdAt: site.createdAt.toISOString(),
   };
