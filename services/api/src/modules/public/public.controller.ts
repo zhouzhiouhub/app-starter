@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Header,
   Headers,
   NotFoundException,
   Param,
@@ -63,6 +64,7 @@ export class PublicController {
   }
 
   @Get("preview/:token")
+  @Header("Cache-Control", "no-store")
   getPreview(
     @Param("token") token: string,
     @CurrentRequestId() requestId = "local-dev",

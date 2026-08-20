@@ -479,6 +479,7 @@ GET  /api/v1/health
 GET  /api/v1/public/config
 GET  /api/v1/public/pages
 GET  /api/v1/public/pages/:slug
+GET  /api/v1/public/preview/:token
 GET  /api/v1/public/translations/:locale
 
 GET  /api/v1/auth/login          # 浏览器打开时返回用法说明，真正登录请 POST
@@ -515,6 +516,7 @@ POST /api/v1/public/checkout
 - `GET /api/v1/audit-logs` 需要 `audit:read`，只返回当前登录 Tenant 的审计日志，支持按 action、actorId、targetType、targetId 过滤。
 - `GET /api/v1/public/pages` 返回已发布页面摘要，用于前台 sitemap。
 - `GET /api/v1/public/pages/:slug` 只返回已发布版本；未发布或不存在时返回 `NOT_FOUND`。
+- `GET /api/v1/public/preview/:token` 返回短期预览 Token 对应的草稿 Schema，并显式设置 `Cache-Control: no-store`。
 - 前台只渲染已发布页面；未发布或不存在的 slug 进入 404 页面。
 - 当前 `cart` 和 `checkout` 会返回 `COMMERCE_DISABLED`，这是预期行为。
 - 本地默认管理员：`admin@example.com` / `ChangeMe123!`（可通过 `SEED_ADMIN_EMAIL`、`SEED_ADMIN_PASSWORD` 覆盖）。
