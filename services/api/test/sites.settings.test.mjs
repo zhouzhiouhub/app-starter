@@ -182,11 +182,29 @@ test("sites service updates the current tenant site", async () => {
     },
     undefined,
     actor,
+    "request-site-update",
   );
 
   assert.equal(response.data.name, "Storefront");
   assert.equal(response.data.domain, "store.example.com");
   assert.equal(response.meta.siteId, "site-1");
+  assert.equal(response.meta.requestId, "request-site-update");
+});
+
+test("sites service returns request ids for the current site", async () => {
+  const service = new SitesService({
+    site: {
+      findFirst: async (query) => {
+        assert.equal(query.where.tenantId, "tenant-1");
+        return site;
+      },
+    },
+  });
+
+  const response = await service.getCurrent(actor, "request-site-current");
+
+  assert.equal(response.data.id, "site-1");
+  assert.equal(response.meta.requestId, "request-site-current");
 });
 
 test("sites service maps duplicate domains to conflicts", async () => {
@@ -267,10 +285,16 @@ test("sites service stores update responses by idempotency key", async () => {
     name: "Storefront",
   };
 
-  const first = await service.updateCurrent(input, key, actor);
+  const first = await service.updateCurrent(
+    input,
+    key,
+    actor,
+    "request-site-idempotent",
+  );
   const second = await service.updateCurrent(input, key, actor);
 
   assert.equal(first.data.domain, second.data.domain);
+  assert.equal(first.meta.requestId, "request-site-idempotent");
   assert.equal(updateCalls, 1);
   assert.deepEqual(idempotencyCalls, [
     ["findUnique", "sites:current:update"],

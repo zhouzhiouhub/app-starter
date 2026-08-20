@@ -12,13 +12,13 @@ import { parseUpdateSiteSettingsInput } from "./sites.validation.js";
 export class SitesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getCurrent(actor: Actor) {
+  async getCurrent(actor: Actor, requestId = "local-dev") {
     const site = await this.findCurrentSite(actor.tenantId);
 
     return {
       data: toSiteSettingsResponse(site),
       meta: {
-        requestId: "local-dev",
+        requestId,
         tenantId: actor.tenantId,
         siteId: site.id,
       },
@@ -29,6 +29,7 @@ export class SitesService {
     body: unknown,
     idempotencyKey: string | undefined,
     actor: Actor,
+    requestId = "local-dev",
   ) {
     const input = parseUpdateSiteSettingsInput(body);
 
@@ -49,7 +50,7 @@ export class SitesService {
           return {
             data: toSiteSettingsResponse(updated),
             meta: {
-              requestId: "local-dev",
+              requestId,
               tenantId: actor.tenantId,
               siteId: updated.id,
             },
