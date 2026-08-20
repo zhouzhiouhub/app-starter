@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { Viewport } from "@app-starter/schema";
 import { redirectWhenAuthRequired } from "../../auth/auth-redirect";
 import { formatRequestError } from "../../../lib/api-error";
@@ -10,7 +10,6 @@ import {
   savePageDraft,
 } from "../api";
 import { getStorefrontPreviewUrl } from "../storefront-url";
-import { createSchemaFingerprint } from "../schema-fingerprint";
 import { buildPublicationFeedback } from "../revalidation-feedback";
 import { findBlockingPublishPreflightIssue } from "../publish-preflight";
 import { readMediaPublishPreflightIssue } from "../media-publish-preflight";
@@ -19,12 +18,12 @@ import { readEditorErrorFeedback } from "../editor-feedback";
 import {
   readPageEditorDraftState,
   readPageEditorSavedState,
-  type PageEditorDraftState,
-  type PageEditorSavedState,
 } from "../page-editor-detail-state";
-import type { EditorFeedback, PageSummary, PageVersionSummary } from "../types";
+import type { EditorFeedback } from "../types";
 import { usePageEditorAutosave } from "./use-page-editor-autosave";
+import { usePageEditorAutosaveState } from "./use-page-editor-autosave-state";
 import { usePageMediaPreflight } from "./use-page-media-preflight";
+import { usePageEditorSavedState } from "./use-page-editor-saved-state";
 import { useSchemaHistory } from "./use-schema-history";
 
 interface SaveDraftOptions {
@@ -32,12 +31,7 @@ interface SaveDraftOptions {
 }
 
 export function usePageEditor(pageId: string | undefined) {
-  const [page, setPage] = useState<PageSummary | null>(null);
-  const [versions, setVersions] = useState<PageVersionSummary[]>([]);
   const [viewport, setViewport] = useState<Viewport>("desktop");
-  const [savedDraftFingerprint, setSavedDraftFingerprint] = useState<
-    string | null
-  >(null);
   const [feedback, setFeedback] = useState<EditorFeedback | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreatingPreview, setIsCreatingPreview] = useState(false);
@@ -56,22 +50,15 @@ export function usePageEditor(pageId: string | undefined) {
     schema: draftSchema,
     undo,
   } = useSchemaHistory();
+  const {
+    applyDraftState,
+    applySavedState,
+    page,
+    savedDraftFingerprint,
+    versions,
+  } = usePageEditorSavedState({ resetSchema });
   const { mediaFeedback, mediaReferences, mediaResolver } =
     usePageMediaPreflight(draftSchema);
-
-  const applySavedState = useCallback((state: PageEditorSavedState) => {
-    setPage(state.page);
-    setVersions(state.versions);
-    setSavedDraftFingerprint(state.savedDraftFingerprint);
-  }, []);
-
-  const applyDraftState = useCallback(
-    (state: PageEditorDraftState) => {
-      applySavedState(state);
-      resetSchema(state.schema);
-    },
-    [applySavedState, resetSchema],
-  );
 
   const load = useCallback(async () => {
     if (!pageId) {
@@ -258,28 +245,23 @@ export function usePageEditor(pageId: string | undefined) {
     [applySavedState, pageId, resetSchema],
   );
 
-  const draftFingerprint = useMemo(
-    () => createSchemaFingerprint(draftSchema),
-    [draftSchema],
-  );
-  const isDraftDirty =
-    Boolean(draftFingerprint) &&
-    Boolean(savedDraftFingerprint) &&
-    draftFingerprint !== savedDraftFingerprint;
-  const isAutosaveBusy =
-    isCreatingPreview ||
-    isLoading ||
-    isPublishing ||
-    isSaving ||
-    Boolean(rollingBackVersionId);
+  const autosaveState = usePageEditorAutosaveState({
+    draftSchema,
+    isCreatingPreview,
+    isLoading,
+    isPublishing,
+    isSaving,
+    rollingBackVersionId,
+    savedDraftFingerprint,
+  });
   const saveDraftSilently = useCallback(
     () => saveDraft({ silent: true }),
     [saveDraft],
   );
 
   usePageEditorAutosave({
-    enabled: isDraftDirty,
-    isBusy: isAutosaveBusy,
+    enabled: autosaveState.isDraftDirty,
+    isBusy: autosaveState.isAutosaveBusy,
     onSaveDraft: saveDraftSilently,
   });
 
@@ -290,7 +272,7 @@ export function usePageEditor(pageId: string | undefined) {
     error,
     feedback,
     isCreatingPreview,
-    isDraftDirty,
+    isDraftDirty: autosaveState.isDraftDirty,
     isLoading,
     isPublishing,
     isSaving,
