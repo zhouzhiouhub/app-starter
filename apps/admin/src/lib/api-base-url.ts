@@ -1,17 +1,23 @@
 type ViteEnv = {
+  API_URL?: string;
   DEV?: boolean;
   VITE_API_URL?: string;
 };
 
 export function resolveApiBaseUrl(input: {
   configured?: string;
+  fallbackConfigured?: string;
   isDev?: boolean;
 }): string {
   if (input.isDev) {
     return "/api/v1";
   }
 
-  return readConfiguredApiBaseUrl(input.configured) ?? "/api/v1";
+  return (
+    readConfiguredApiBaseUrl(input.configured) ??
+    readConfiguredApiBaseUrl(input.fallbackConfigured) ??
+    "/api/v1"
+  );
 }
 
 export function getApiBaseUrl(): string {
@@ -23,6 +29,7 @@ export function getApiBaseUrl(): string {
 
   return resolveApiBaseUrl({
     configured: env?.VITE_API_URL,
+    fallbackConfigured: env?.API_URL,
     isDev: env?.DEV,
   });
 }

@@ -15,9 +15,12 @@ export function getStorefrontPreviewUrl(token: string): string {
 
 export function resolveWebOrigin(input: {
   configured?: string;
+  fallbackConfigured?: string;
   windowLocation?: Pick<Location, "hostname" | "protocol">;
 }): string {
-  const configured = readHttpOrigin(input.configured);
+  const configured =
+    readHttpOrigin(input.configured) ??
+    readHttpOrigin(input.fallbackConfigured);
 
   if (configured) {
     return configured;
@@ -35,12 +38,15 @@ export function resolveWebOrigin(input: {
 }
 
 function readWebOrigin(): string {
+  const env = (
+    import.meta as unknown as {
+      env?: { VITE_WEB_URL?: string; WEB_URL?: string };
+    }
+  ).env;
+
   return resolveWebOrigin({
-    configured: (
-      import.meta as unknown as {
-        env?: { VITE_WEB_URL?: string };
-      }
-    ).env?.VITE_WEB_URL,
+    configured: env?.VITE_WEB_URL,
+    fallbackConfigured: env?.WEB_URL,
     windowLocation:
       typeof window === "undefined"
         ? undefined

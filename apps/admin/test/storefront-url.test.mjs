@@ -21,6 +21,20 @@ test("storefront URL helper accepts safe configured web origins", () => {
   );
 });
 
+test("storefront URL helper falls back to generic WEB_URL origins", () => {
+  assert.equal(
+    resolveWebOrigin({
+      configured: "javascript:alert(1)",
+      fallbackConfigured: " https://web.example.com/storefront/ ",
+      windowLocation: {
+        hostname: "admin.example.com",
+        protocol: "https:",
+      },
+    }),
+    "https://web.example.com",
+  );
+});
+
 test("storefront URL helper rejects unsafe configured web origins", () => {
   const windowLocation = {
     hostname: "admin.example.com",

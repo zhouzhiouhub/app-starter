@@ -93,6 +93,11 @@ In local development the Admin app calls `/api/v1` on its own origin. Vite
 proxies those requests to the API on port 4000, so the browser does not POST
 login to the Vite server itself.
 
+For Admin production builds, set `VITE_API_URL` and `VITE_WEB_URL` when the
+Admin static origin cannot proxy `/api/v1` or infer the storefront origin. If
+they are empty, the build falls back to the shared `API_URL` and `WEB_URL`
+environment variables.
+
 After sign-in, open `http://localhost:5173/pages` to list and create pages.
 The editor at `/pages/:id` loads the draft schema, can save a draft, and can
 publish to the storefront. The Preview action saves the draft, creates a
