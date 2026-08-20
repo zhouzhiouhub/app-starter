@@ -16,7 +16,7 @@
     "start": "node dist/main.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "pretest": "pnpm run build",
-    "test": "node --test test/admin-api.guard.test.mjs test/api-exception.filter.test.mjs test/audit.service.test.mjs test/cors-origin.test.mjs test/feature-flags.test.mjs test/idempotency-key.test.mjs test/identity.test.mjs test/identity-routes.test.mjs test/media.archive.test.mjs test/media.mapper.test.mjs test/media.validation.test.mjs test/pages.mapper.test.mjs test/pages.preview-token.test.mjs test/pages.publish-audit.test.mjs test/pages.public-list.test.mjs test/pages.revalidation.test.mjs test/prisma-error.test.mjs test/sites.settings.test.mjs"
+    "test": "node --test test/admin-api.guard.test.mjs test/api-exception.filter.test.mjs test/audit.service.test.mjs test/commerce.controller.test.mjs test/cors-origin.test.mjs test/feature-flags.test.mjs test/idempotency-key.test.mjs test/identity.test.mjs test/identity-routes.test.mjs test/media.archive.test.mjs test/media.mapper.test.mjs test/media.validation.test.mjs test/pages.mapper.test.mjs test/pages.preview-token.test.mjs test/pages.publish-audit.test.mjs test/pages.public-list.test.mjs test/pages.revalidation.test.mjs test/prisma-error.test.mjs test/sites.settings.test.mjs"
   },
   "prisma": {
     "schema": "prisma/schema.prisma",

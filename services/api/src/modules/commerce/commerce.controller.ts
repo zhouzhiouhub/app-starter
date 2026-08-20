@@ -7,6 +7,7 @@ import {
 } from "@nestjs/common";
 import { apiErrorCodes } from "@app-starter/schema";
 import { AdminApiGuard } from "../../common/admin-api.guard.js";
+import { CurrentRequestId } from "../../common/request-id.decorator.js";
 import { RequireScopes } from "../../common/require-scopes.decorator.js";
 
 @Controller()
@@ -14,20 +15,20 @@ export class CommerceController {
   @Get("products")
   @UseGuards(AdminApiGuard)
   @RequireScopes("product:read")
-  getProducts() {
+  getProducts(@CurrentRequestId() requestId = "local-dev") {
     return {
       data: [],
-      meta: { requestId: "local-dev" }
+      meta: { requestId },
     };
   }
 
   @Get("orders")
   @UseGuards(AdminApiGuard)
   @RequireScopes("order:read")
-  getOrders() {
+  getOrders(@CurrentRequestId() requestId = "local-dev") {
     return {
       data: [],
-      meta: { requestId: "local-dev" }
+      meta: { requestId },
     };
   }
 
