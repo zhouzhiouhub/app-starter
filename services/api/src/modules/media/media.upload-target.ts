@@ -56,7 +56,10 @@ export function createMediaUploadTarget(input: {
 
   return {
     uploadUrl: buildObjectUrl(
-      env.MEDIA_UPLOAD_BASE_URL ?? DEFAULT_MEDIA_UPLOAD_BASE_URL,
+      readSafeMediaBaseUrl(
+        [env.MEDIA_UPLOAD_BASE_URL],
+        DEFAULT_MEDIA_UPLOAD_BASE_URL,
+      ),
       input.r2Key,
     ),
     headers: {
@@ -66,9 +69,15 @@ export function createMediaUploadTarget(input: {
   };
 }
 
-export function createMediaCdnUrl(r2Key: string, env: R2UploadEnv = process.env) {
+export function createMediaCdnUrl(
+  r2Key: string,
+  env: R2UploadEnv = process.env,
+) {
   return buildObjectUrl(
-    env.MEDIA_CDN_BASE_URL ?? env.CDN_BASE_URL ?? DEFAULT_MEDIA_CDN_BASE_URL,
+    readSafeMediaBaseUrl(
+      [env.MEDIA_CDN_BASE_URL, env.CDN_BASE_URL],
+      DEFAULT_MEDIA_CDN_BASE_URL,
+    ),
     r2Key,
   );
 }
@@ -115,39 +124,83 @@ function createR2PresignedPutUrl(input: {
     sha256Hex(canonicalRequest),
   ].join("\n");
   const signature = hmacHex(
-    getSigningKey(
-      input.secretAccessKey,
-      credentialDate,
-      input.region,
-      "s3",
-    ),
+    getSigningKey(input.secretAccessKey, credentialDate, input.region, "s3"),
     stringToSign,
   );
 
   return `https://${host}${canonicalUri}?${canonicalQuery}&X-Amz-Signature=${signature}`;
 }
 
-function hasR2UploadConfig(env: R2UploadEnv): env is Required<
+function hasR2UploadConfig(
+  env: R2UploadEnv,
+): env is Required<
   Pick<
     R2UploadEnv,
-    | "R2_ACCOUNT_ID"
-    | "R2_ACCESS_KEY_ID"
-    | "R2_BUCKET"
-    | "R2_SECRET_ACCESS_KEY"
+    "R2_ACCOUNT_ID" | "R2_ACCESS_KEY_ID" | "R2_BUCKET" | "R2_SECRET_ACCESS_KEY"
   >
 > &
   R2UploadEnv {
   return Boolean(
     env.R2_ACCOUNT_ID &&
-      env.R2_ACCESS_KEY_ID &&
-      env.R2_BUCKET &&
-      env.R2_SECRET_ACCESS_KEY,
+    env.R2_ACCESS_KEY_ID &&
+    env.R2_BUCKET &&
+    env.R2_SECRET_ACCESS_KEY,
   );
 }
 
 function buildObjectUrl(baseUrl: string, objectKey: string): string {
-  const base = baseUrl.replace(/\/+$/g, "");
+  const base = trimTrailingSlashes(baseUrl);
   return `${base}/${encodeObjectKey(objectKey)}`;
+}
+
+function readSafeMediaBaseUrl(
+  values: Array<string | undefined>,
+  fallback: string,
+): string {
+  for (const value of values) {
+    const url = readSafeHttpUrl(value);
+
+    if (url) {
+      return `${url.origin}${trimTrailingSlashes(url.pathname)}`;
+    }
+  }
+
+  return fallback;
+}
+
+function readSafeHttpUrl(value: string | undefined): URL | null {
+  const trimmed = value?.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  try {
+    const url = new URL(trimmed);
+
+    if (
+      !isHttpProtocol(url.protocol) ||
+      url.username ||
+      url.password ||
+      url.search ||
+      url.hash
+    ) {
+      return null;
+    }
+
+    return url;
+  } catch {
+    return null;
+  }
+}
+
+function trimTrailingSlashes(value: string): string {
+  const trimmed = value.replace(/\/+$/g, "");
+  return trimmed || "/";
+}
+
+function isHttpProtocol(protocol: string): boolean {
+  return protocol === "http:" || protocol === "https:";
 }
 
 function encodeObjectKey(objectKey: string): string {
@@ -155,8 +208,9 @@ function encodeObjectKey(objectKey: string): string {
 }
 
 function encodePathSegment(value: string): string {
-  return encodeURIComponent(value).replace(/[!*'()]/g, (character) =>
-    `%${character.charCodeAt(0).toString(16).toUpperCase()}`,
+  return encodeURIComponent(value).replace(
+    /[!*'()]/g,
+    (character) => `%${character.charCodeAt(0).toString(16).toUpperCase()}`,
   );
 }
 
@@ -164,8 +218,7 @@ function canonicalizeQuery(query: URLSearchParams): string {
   return [...query.entries()]
     .sort(([left], [right]) => left.localeCompare(right))
     .map(
-      ([key, value]) =>
-        `${encodePathSegment(key)}=${encodePathSegment(value)}`,
+      ([key, value]) => `${encodePathSegment(key)}=${encodePathSegment(value)}`,
     )
     .join("&");
 }
@@ -182,10 +235,7 @@ function getSigningKey(
   return hmacBuffer(serviceKey, "aws4_request");
 }
 
-function hmacBuffer(
-  key: string | Buffer,
-  value: string,
-): Buffer {
+function hmacBuffer(key: string | Buffer, value: string): Buffer {
   return createHmac("sha256", key).update(value).digest();
 }
 

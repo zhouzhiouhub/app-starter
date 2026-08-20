@@ -7,7 +7,10 @@ import {
   toMediaAssetResponse,
 } from "../dist/modules/media/media.mapper.js";
 import { MediaService } from "../dist/modules/media/media.service.js";
-import { createMediaUploadTarget } from "../dist/modules/media/media.upload-target.js";
+import {
+  createMediaCdnUrl,
+  createMediaUploadTarget,
+} from "../dist/modules/media/media.upload-target.js";
 import { parseCreateUploadUrlInput } from "../dist/modules/media/media.validation.js";
 
 test("inferMediaAssetType maps allowed media types", () => {
@@ -203,6 +206,47 @@ test("createMediaUploadTarget falls back to configured upload base URLs", () => 
   assert.equal(
     target.uploadUrl,
     "https://uploads.example.com/tenant-1/folder/hero%20image.png",
+  );
+});
+
+test("createMediaUploadTarget rejects unsafe upload base URLs", () => {
+  const target = createMediaUploadTarget({
+    mimeType: "image/png",
+    r2Key: "tenant-1/folder/hero.png",
+    env: {
+      MEDIA_UPLOAD_BASE_URL: "javascript:alert(1)",
+    },
+  });
+
+  assert.equal(
+    target.uploadUrl,
+    "https://uploads.local.invalid/tenant-1/folder/hero.png",
+  );
+});
+
+test("createMediaCdnUrl normalizes safe CDN base URLs", () => {
+  assert.equal(
+    createMediaCdnUrl("tenant-1/folder/hero image.png", {
+      MEDIA_CDN_BASE_URL: " https://cdn.example.com/assets/ ",
+    }),
+    "https://cdn.example.com/assets/tenant-1/folder/hero%20image.png",
+  );
+});
+
+test("createMediaCdnUrl rejects unsafe CDN base URLs", () => {
+  assert.equal(
+    createMediaCdnUrl("tenant-1/folder/hero.png", {
+      CDN_BASE_URL: "https://legacy.example.com/media/",
+      MEDIA_CDN_BASE_URL: "https://user:password@cdn.example.com/media",
+    }),
+    "https://legacy.example.com/media/tenant-1/folder/hero.png",
+  );
+  assert.equal(
+    createMediaCdnUrl("tenant-1/folder/hero.png", {
+      CDN_BASE_URL: "https://legacy.example.com/media?token=1",
+      MEDIA_CDN_BASE_URL: "ftp://cdn.example.com/media",
+    }),
+    "https://cdn.local.invalid/tenant-1/folder/hero.png",
   );
 });
 
