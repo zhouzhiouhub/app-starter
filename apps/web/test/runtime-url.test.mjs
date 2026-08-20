@@ -15,6 +15,18 @@ test("runtime URL resolver prefers safe internal API bases", () => {
 test("runtime URL resolver falls back from unsafe internal API bases", () => {
   assert.equal(
     resolveApiBaseUrl({
+      configuredUrl: " https://api.example.com/api/v1/ ",
+      internalUrl: "javascript:alert(1)",
+      publicUrl: "https://public.example.com/api/v1/",
+    }),
+    "https://api.example.com/api/v1",
+  );
+});
+
+test("runtime URL resolver uses public API bases after unsafe server bases", () => {
+  assert.equal(
+    resolveApiBaseUrl({
+      configuredUrl: "api.example.com/api/v1",
       internalUrl: "javascript:alert(1)",
       publicUrl: "https://public.example.com/api/v1/",
     }),

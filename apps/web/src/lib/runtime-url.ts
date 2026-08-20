@@ -3,17 +3,20 @@ const defaultWebOrigin = "http://localhost:3000";
 
 export function getApiBaseUrl(): string {
   return resolveApiBaseUrl({
+    configuredUrl: process.env.API_URL,
     internalUrl: process.env.API_INTERNAL_URL,
     publicUrl: process.env.NEXT_PUBLIC_API_URL,
   });
 }
 
 export function resolveApiBaseUrl(input: {
+  configuredUrl?: string;
   internalUrl?: string;
   publicUrl?: string;
 }): string {
   return (
     readHttpBaseUrl(input.internalUrl) ??
+    readHttpBaseUrl(input.configuredUrl) ??
     readHttpBaseUrl(input.publicUrl) ??
     defaultApiBaseUrl
   );
