@@ -1,41 +1,50 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { createSmokeEnvironmentDiagnostics } from "./environment-diagnostics.mjs";
+import { createSmokeProductionReadiness } from "./smoke-readiness.mjs";
 import {
   redactSmokeReportValue,
   redactSmokeSecrets,
 } from "./smoke-secrets.mjs";
 
 export function createSmokeReport(input, title, now = new Date()) {
+  const config = createSmokeReportConfig(input);
+  const environment =
+    input.environmentDiagnostics ??
+    createSmokeEnvironmentDiagnostics(process.env, {
+      adminUrl: input.adminUrl,
+      apiBaseUrl: input.apiBaseUrl,
+      requireRevalidation: input.requireRevalidation,
+      webUrl: input.webUrl,
+    });
+
   return {
     checks: [],
-    config: {
-      adminUrl: input.adminUrl ?? null,
-      apiBaseUrl: input.apiBaseUrl,
-      locale: input.locale,
-      market: input.market,
-      requireAdminApp: input.requireAdminApp === true,
-      requireR2Upload: input.requireR2Upload,
-      requireRevalidation: input.requireRevalidation,
-      tenantSlug: input.tenantSlug,
-      webUrl: input.webUrl,
-    },
+    config,
     error: null,
-    environment:
-      input.environmentDiagnostics ??
-      createSmokeEnvironmentDiagnostics(process.env, {
-        adminUrl: input.adminUrl,
-        apiBaseUrl: input.apiBaseUrl,
-        requireRevalidation: input.requireRevalidation,
-        webUrl: input.webUrl,
-      }),
+    environment,
     finishedAt: null,
     pageId: null,
+    productionReadiness: createSmokeProductionReadiness(environment, config),
     slug: input.slug,
     startedAt: now.toISOString(),
     status: "running",
     storefrontUrl: null,
     title,
+  };
+}
+
+function createSmokeReportConfig(input) {
+  return {
+    adminUrl: input.adminUrl ?? null,
+    apiBaseUrl: input.apiBaseUrl,
+    locale: input.locale,
+    market: input.market,
+    requireAdminApp: input.requireAdminApp === true,
+    requireR2Upload: input.requireR2Upload,
+    requireRevalidation: input.requireRevalidation,
+    tenantSlug: input.tenantSlug,
+    webUrl: input.webUrl,
   };
 }
 

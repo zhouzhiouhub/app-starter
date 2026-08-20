@@ -70,6 +70,49 @@ test("smoke report includes deployment diagnostics for effective smoke URLs", ()
   assert.equal(report.environment.deployment.web.productionReady, true);
 });
 
+test("smoke report includes production readiness summary", () => {
+  const report = createSmokeReport(
+    {
+      adminUrl: "https://admin.brand.com",
+      apiBaseUrl: "https://api.brand.com/api/v1",
+      environmentDiagnostics: {
+        deployment: {
+          admin: { productionReady: true },
+          api: { productionReady: true },
+          web: { productionReady: true },
+        },
+        media: {
+          cdnConfigured: true,
+          cdnProductionReady: true,
+          r2: { configured: true, missingRequired: [] },
+        },
+        revalidation: {
+          secretConfigured: true,
+          urlConfigured: true,
+          urlSafe: true,
+          usesWebUrlFallback: false,
+        },
+      },
+      locale: "en-US",
+      market: "us",
+      requireAdminApp: true,
+      requireR2Upload: true,
+      requireRevalidation: true,
+      slug: "smoke-page",
+      tenantSlug: "default",
+      webUrl: "https://store.brand.com",
+    },
+    "Smoke Page",
+    new Date("2026-08-20T00:00:00.000Z"),
+  );
+
+  assert.deepEqual(report.productionReadiness, {
+    blockers: [],
+    productionReady: true,
+    warnings: [],
+  });
+});
+
 test("smoke report redacts secrets from check details", async () => {
   const directory = await mkdtemp(join(tmpdir(), "app-smoke-report-"));
 
