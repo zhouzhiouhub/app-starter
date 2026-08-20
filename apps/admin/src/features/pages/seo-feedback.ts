@@ -1,5 +1,6 @@
 import {
   isMediaAssetReference,
+  isPublishableImageSrc,
   seoImageUrlSchema,
   seoUrlSchema,
 } from "@app-starter/schema";
@@ -32,7 +33,14 @@ export function readSeoFieldFeedback(
   if (field === "ogImage") {
     if (!seoImageUrlSchema.safeParse(input).success) {
       return {
-        help: "Use a relative URL, http(s) image URL, or media:// reference.",
+        help: "Use a relative URL, HTTPS image URL, or media:// reference.",
+        status: "error",
+      };
+    }
+
+    if (!isPublishableImageSrc(input)) {
+      return {
+        help: "Use a relative URL, HTTPS image URL, or media:// reference.",
         status: "error",
       };
     }

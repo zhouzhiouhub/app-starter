@@ -22,3 +22,12 @@ test("page metadata omits unresolved media references from Open Graph images", (
 
   assert.equal(metadata.openGraph?.images, undefined);
 });
+
+test("page metadata omits unsafe Open Graph image URLs", () => {
+  const schema = structuredClone(exampleLandingPage);
+  schema.seo.ogImage = "http://cdn.example.com/og.jpg";
+
+  const metadata = buildPageMetadata(schema);
+
+  assert.equal(metadata.openGraph?.images, undefined);
+});

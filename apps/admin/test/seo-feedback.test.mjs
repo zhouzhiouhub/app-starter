@@ -33,6 +33,10 @@ test("SEO feedback validates Open Graph image URLs and media references", () => 
   assert.deepEqual(readSeoFieldFeedback("ogImage", "https://cdn.example.com/og.jpg"), {});
   assert.equal(readSeoFieldFeedback("ogImage", "media://asset-1").status, "warning");
   assert.equal(
+    readSeoFieldFeedback("ogImage", "http://cdn.example.com/og.jpg").status,
+    "error",
+  );
+  assert.equal(
     readSeoFieldFeedback("ogImage", "javascript:alert(1)").status,
     "error",
   );

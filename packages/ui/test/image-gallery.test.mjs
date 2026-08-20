@@ -42,6 +42,7 @@ test("image gallery keeps placeholders for blank image rows", () => {
 test("image gallery blocks unsafe image source protocols", () => {
   const gallery = ImageGallery({
     images: [
+      { alt: "HTTP", src: "http://cdn.example.com/product.jpg" },
       { alt: "Bad protocol", src: "javascript:alert(1)" },
       { alt: "Inline SVG", src: "data:image/svg+xml,<svg onload=alert(1)>" },
     ],
@@ -65,4 +66,15 @@ test("image gallery blocks image sources with control characters", () => {
     placeholder.props["data-media-reference"],
     "https://example.com/image.jpg\njavascript:alert(1)",
   );
+});
+
+test("image gallery keeps placeholders for non-string image values", () => {
+  const gallery = ImageGallery({
+    images: [{ alt: "Numeric", src: 123 }],
+  });
+  const placeholder = gallery.props.children[0];
+
+  assert.equal(placeholder.type, "div");
+  assert.equal(placeholder.props["data-gallery-image-missing"], "empty-src");
+  assert.equal(placeholder.props["aria-label"], "Numeric");
 });

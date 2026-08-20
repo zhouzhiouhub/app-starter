@@ -57,6 +57,7 @@ test("publish preflight flags invalid gallery image sources", () => {
     props: {
       images: [
         { alt: "Unsafe", src: "javascript:alert(1)" },
+        { alt: "HTTP", src: "http://cdn.example.com/gallery.jpg" },
         { alt: "Blank", src: "" },
         { alt: "Media", src: "media://asset-1" },
       ],
@@ -74,7 +75,8 @@ test("publish preflight flags invalid gallery image sources", () => {
     issues.map((issue) => [issue.field, issue.severity]),
     [
       ["sections[2].props.images[0].src", "error"],
-      ["sections[2].props.images[1].src", "warning"],
+      ["sections[2].props.images[1].src", "error"],
+      ["sections[2].props.images[2].src", "warning"],
     ],
   );
   assert.equal(blocker?.field, "sections[2].props.images[0].src");

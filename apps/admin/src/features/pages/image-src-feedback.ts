@@ -1,4 +1,4 @@
-import { seoImageUrlSchema } from "@app-starter/schema";
+import { isPublishableImageSrc } from "@app-starter/schema";
 
 export interface ImageSrcFeedback {
   help?: string;
@@ -6,7 +6,7 @@ export interface ImageSrcFeedback {
 }
 
 const invalidImageSrcHelp =
-  "Use a relative URL, http(s) image URL, or media://asset-id reference.";
+  "Use a relative URL, HTTPS image URL, or media://asset-id reference.";
 const emptyImageSrcHelp = "Add an image URL or media reference before publishing.";
 
 export function readImageSrcFeedback(
@@ -24,7 +24,7 @@ export function readImageSrcFeedback(
         };
   }
 
-  if (seoImageUrlSchema.safeParse(src).success) {
+  if (isPublishableImageSrc(src)) {
     return {};
   }
 

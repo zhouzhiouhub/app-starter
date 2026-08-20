@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import {
-  isMediaAssetReference,
+  isPublishableImageSrc,
+  mediaAssetReferenceSchema,
   type PageSchema,
 } from "@app-starter/schema";
 
@@ -35,11 +36,13 @@ export function buildPageMetadata(schema: PageSchema | null): Metadata {
 }
 
 function readResolvedSeoImage(value: string | undefined): string | undefined {
-  if (!value || isMediaAssetReference(value)) {
+  const src = value?.trim();
+
+  if (!src || mediaAssetReferenceSchema.safeParse(src).success) {
     return undefined;
   }
 
-  return value;
+  return isPublishableImageSrc(src) ? src : undefined;
 }
 
 function createRobots(noIndex: boolean): Metadata["robots"] {

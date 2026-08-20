@@ -19,12 +19,12 @@ function isSafeImageSrc(src: string): boolean {
     return !src.startsWith("//");
   }
 
-  if (src.startsWith("http://") || src.startsWith("https://")) {
+  if (src.startsWith("https://")) {
     try {
       const parsed = new URL(src);
 
       return (
-        (parsed.protocol === "http:" || parsed.protocol === "https:") &&
+        parsed.protocol === "https:" &&
         Boolean(parsed.hostname) &&
         !parsed.username &&
         !parsed.password

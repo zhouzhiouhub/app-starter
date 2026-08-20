@@ -3,6 +3,7 @@ import type { Prisma } from "@prisma/client";
 import type { Actor } from "../../identity/identity.types.js";
 import type { PrismaService } from "../../prisma/prisma.service.js";
 import { runIdempotent } from "../pages.idempotency.js";
+import { assertPublishablePageImageSources } from "../pages.image-policy.js";
 import { assertPageLocaleCanPublish } from "../pages.locale-policy.js";
 import {
   triggerStorefrontRevalidation,
@@ -65,6 +66,7 @@ export async function publishPage(
         }
 
         assertPageLocaleCanPublish(parsed);
+        assertPublishablePageImageSources(parsed);
         await validateMediaReferences(parsed, site.tenantId, tx);
 
         const publishedVersion = await persistPublishedVersion(tx, {
