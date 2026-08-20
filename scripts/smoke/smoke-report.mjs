@@ -110,10 +110,12 @@ export function failSmokeReport(report, error) {
 
 export function createSmokeReportSummary(report) {
   const checks = Array.isArray(report?.checks) ? report.checks : [];
-  const failedChecks = checks
-    .filter((check) => check?.status === "failed")
-    .map((check) => check?.name)
-    .filter((name) => typeof name === "string" && name.length > 0);
+  const failedCheckEntries = checks.filter(
+    (check) => check?.status === "failed",
+  );
+  const failedChecks = failedCheckEntries.map((check, index) =>
+    readCheckName(check, index),
+  );
   const passedCheckCount = checks.filter(
     (check) => check?.status === "passed",
   ).length;
@@ -122,13 +124,19 @@ export function createSmokeReportSummary(report) {
   return {
     blockerCount: readArrayLength(readiness.blockers),
     checkCount: checks.length,
-    failedCheckCount: failedChecks.length,
+    failedCheckCount: failedCheckEntries.length,
     failedChecks,
     passedCheckCount,
     productionReady: readiness.productionReady === true,
     status: typeof report?.status === "string" ? report.status : "unknown",
     warningCount: readArrayLength(readiness.warnings),
   };
+}
+
+function readCheckName(check, index) {
+  return typeof check?.name === "string" && check.name.length > 0
+    ? check.name
+    : `unnamed-check-${index + 1}`;
 }
 
 export function refreshSmokeReportSummary(report) {

@@ -215,6 +215,43 @@ test("smoke report summarizes completed pass status", () => {
   assert.equal(report.summary.passedCheckCount, 1);
 });
 
+test("smoke report counts failed checks even when names are missing", () => {
+  const report = createSmokeReport(
+    {
+      apiBaseUrl: "https://api.example.com/api/v1",
+      locale: "en-US",
+      market: "us",
+      requireR2Upload: false,
+      requireRevalidation: false,
+      slug: "smoke-page",
+      tenantSlug: "default",
+      webUrl: "https://web.example.com",
+    },
+    "Smoke Page",
+    new Date("2026-08-20T00:00:00.000Z"),
+  );
+
+  report.checks.push(
+    {
+      failedAt: "2026-08-20T00:00:01.000Z",
+      status: "failed",
+    },
+    {
+      failedAt: "2026-08-20T00:00:02.000Z",
+      name: "media.confirm",
+      status: "failed",
+    },
+  );
+  report.summary = createSmokeReportSummary(report);
+
+  assert.equal(report.summary.failedCheckCount, 2);
+  assert.deepEqual(report.summary.failedChecks, [
+    "unnamed-check-1",
+    "media.confirm",
+  ]);
+  assert.doesNotThrow(() => assertSmokeReportWritable(report));
+});
+
 test("smoke report validates required fields before writing", () => {
   const report = createSmokeReport(
     {
