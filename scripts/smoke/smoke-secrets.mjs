@@ -1,18 +1,44 @@
-const secretKeyPattern =
-  "accessToken|authorization|credential|password|previewToken|refreshToken|secret|signature|token|x-amz-credential|x-amz-security-token|x-amz-signature";
+const secretKeyPattern = [
+  "access[-_]?token",
+  "api[-_]?key",
+  "authorization",
+  "cookie",
+  "credential",
+  "id[-_]?token",
+  "password",
+  "preview[-_]?token",
+  "refresh[-_]?token",
+  "secret",
+  "session[-_]?id",
+  "session",
+  "set[-_]?cookie",
+  "signature",
+  "token",
+  "x-amz-[a-z0-9-]+",
+].join("|");
 const sensitiveKeyNames = new Set([
   "accesstoken",
+  "apikey",
   "authorization",
+  "cookie",
   "credential",
+  "idtoken",
   "password",
   "previewtoken",
   "refreshtoken",
   "secret",
+  "session",
+  "sessionid",
+  "setcookie",
   "signature",
   "token",
+  "xamzalgorithm",
   "xamzcredential",
+  "xamzdate",
+  "xamzexpires",
   "xamzsecuritytoken",
   "xamzsignature",
+  "xamzsignedheaders",
 ]);
 
 export function redactSmokeSecrets(value) {
