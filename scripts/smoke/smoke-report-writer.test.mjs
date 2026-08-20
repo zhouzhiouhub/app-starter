@@ -126,6 +126,37 @@ test("smoke report writer rejects incomplete reports before disk write", async (
   }
 });
 
+test("smoke report helper writes JSON when configured", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "app-smoke-"));
+
+  try {
+    const reportPath = join(directory, "report.json");
+    const report = createSmokeReport(
+      {
+        apiBaseUrl: "https://api.example.com/api/v1",
+        locale: "en-US",
+        market: "us",
+        requireR2Upload: false,
+        requireRevalidation: true,
+        slug: "smoke-page",
+        tenantSlug: "default",
+        webUrl: "https://web.example.com",
+      },
+      "Smoke Page",
+      new Date("2026-08-19T00:00:00.000Z"),
+    );
+
+    await writeSmokeReportIfConfigured({ reportPath }, report);
+    const written = JSON.parse(await readFile(reportPath, "utf8"));
+
+    assert.equal(written.slug, "smoke-page");
+    assert.equal(written.config.apiBaseUrl, "https://api.example.com/api/v1");
+    assert.equal(written.environment.revalidation.requireRevalidation, true);
+  } finally {
+    await rm(directory, { force: true, recursive: true });
+  }
+});
+
 test("smoke report keeps structured failure diagnostics from errors", () => {
   const report = createSmokeReport(
     {

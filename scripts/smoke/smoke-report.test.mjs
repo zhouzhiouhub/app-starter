@@ -2,9 +2,14 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   assertSmokeReportWritable,
+  completeSmokeReport,
   createSmokeReport,
+  failSmokeReport,
+  recordSmokeCheck,
+  recordSmokeCheckFailure,
   smokeReportSchemaVersion,
 } from "./smoke-report.mjs";
+import { createSmokeEnvironmentDiagnostics } from "./environment-diagnostics.mjs";
 
 test("smoke report schema version marks the summary contract", () => {
   assert.equal(smokeReportSchemaVersion, "smoke-report.v2");
@@ -81,6 +86,50 @@ test("smoke report includes production readiness summary", () => {
     productionReady: true,
     warnings: [],
   });
+});
+
+test("smoke report helpers capture pass and failure state without secrets", () => {
+  const report = createSmokeReport(
+    {
+      apiBaseUrl: "https://api.example.com/api/v1",
+      environmentDiagnostics: createSmokeEnvironmentDiagnostics({}),
+      locale: "en-US",
+      market: "us",
+      password: "ChangeMe123!",
+      requireR2Upload: true,
+      requireRevalidation: false,
+      slug: "smoke-page",
+      tenantSlug: "default",
+      webUrl: "https://web.example.com",
+    },
+    "Smoke Page",
+    new Date("2026-08-19T00:00:00.000Z"),
+  );
+
+  recordSmokeCheck(report, "api.health");
+  completeSmokeReport(report, {
+    pageId: "page-1",
+    storefrontUrl: "https://web.example.com/en/smoke-page",
+  });
+
+  assert.equal(report.status, "passed");
+  assert.equal(report.startedAt, "2026-08-19T00:00:00.000Z");
+  assert.equal(report.pageId, "page-1");
+  assert.equal(report.checks[0].name, "api.health");
+  assert.equal(report.environment.media.cdnHost, "cdn.local.invalid");
+  assert.equal("password" in report.config, false);
+
+  recordSmokeCheckFailure(
+    report,
+    "media.upload-target",
+    new Error("R2 failed"),
+  );
+  failSmokeReport(report, new Error("boom"));
+  assert.equal(report.status, "failed");
+  assert.equal(report.checks[1].name, "media.upload-target");
+  assert.equal(report.checks[1].status, "failed");
+  assert.equal(report.checks[1].error.message, "R2 failed");
+  assert.equal(report.error.message, "boom");
 });
 
 test("smoke report validates required fields before writing", () => {
