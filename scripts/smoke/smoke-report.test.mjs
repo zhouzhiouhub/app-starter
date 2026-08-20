@@ -15,6 +15,10 @@ import {
   writeSmokeReportIfConfigured,
 } from "./smoke-report.mjs";
 
+test("smoke report schema version marks the summary contract", () => {
+  assert.equal(smokeReportSchemaVersion, "smoke-report.v2");
+});
+
 test("smoke report redacts secrets from failure messages", () => {
   const report = createSmokeReport(
     {

@@ -7,7 +7,7 @@ import {
   redactSmokeSecrets,
 } from "./smoke-secrets.mjs";
 
-export const smokeReportSchemaVersion = "smoke-report.v1";
+export const smokeReportSchemaVersion = "smoke-report.v2";
 const writableReportFields = [
   "checks",
   "config",
