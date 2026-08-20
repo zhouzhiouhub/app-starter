@@ -4,7 +4,7 @@ import { createSmokeEnvironmentDiagnostics } from "./environment-diagnostics.mjs
 
 test("smoke environment diagnostics reports media readiness without secrets", () => {
   const diagnostics = createSmokeEnvironmentDiagnostics({
-    MEDIA_CDN_BASE_URL: "https://cdn.example.com/media",
+    MEDIA_CDN_BASE_URL: "https://cdn.brand-assets.com/media",
     MEDIA_EXTERNAL_URL_HOSTS: "images.example.com, https://assets.example.org",
     R2_ACCESS_KEY_ID: "access-key",
     R2_ACCOUNT_ID: "account-id",
@@ -18,7 +18,7 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
   assert.deepEqual(diagnostics, {
     media: {
       cdnConfigured: true,
-      cdnHost: "cdn.example.com",
+      cdnHost: "cdn.brand-assets.com",
       cdnProductionReady: true,
       cdnUrlIssue: null,
       cdnUrlSafe: true,
@@ -92,6 +92,9 @@ test("smoke environment diagnostics reports unsafe CDN configuration", () => {
   const privateHost = createSmokeEnvironmentDiagnostics({
     MEDIA_CDN_BASE_URL: "https://10.0.0.1/media",
   });
+  const placeholderHost = createSmokeEnvironmentDiagnostics({
+    MEDIA_CDN_BASE_URL: "https://cdn.example.com/media",
+  });
 
   assert.deepEqual(
     {
@@ -115,6 +118,10 @@ test("smoke environment diagnostics reports unsafe CDN configuration", () => {
   assert.equal(privateHost.media.cdnUrlIssue, "local-host");
   assert.equal(privateHost.media.cdnProductionReady, false);
   assert.equal(privateHost.media.cdnUsesLocalFallback, true);
+  assert.equal(placeholderHost.media.cdnUrlIssue, "placeholder-host");
+  assert.equal(placeholderHost.media.cdnProductionReady, false);
+  assert.equal(placeholderHost.media.cdnUrlSafe, false);
+  assert.equal(placeholderHost.media.cdnUsesLocalFallback, false);
 });
 
 test("smoke environment diagnostics reports revalidation WEB_URL fallback", () => {

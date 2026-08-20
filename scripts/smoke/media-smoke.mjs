@@ -234,7 +234,7 @@ function assertMediaAssetShape(asset, target, requireProductionCdn) {
 
   if (requireProductionCdn && !isProductionCdnUrl(asset.url)) {
     throw new Error(
-      "Media confirm used the local CDN fallback; set MEDIA_CDN_BASE_URL.",
+      "Media confirm did not return a production CDN URL; set MEDIA_CDN_BASE_URL to a real HTTPS CDN host.",
     );
   }
 }

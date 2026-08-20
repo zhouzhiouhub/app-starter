@@ -90,7 +90,7 @@ test("smoke helpers match R2 upload URLs to object keys", () => {
 test("smoke helpers validate CDN URLs and media references", () => {
   assert.equal(
     isCdnUrlForR2Key(
-      "https://cdn.example.com/tenant/2026/08/19/smoke.png",
+      "https://cdn.brand-assets.com/tenant/2026/08/19/smoke.png",
       "tenant/2026/08/19/smoke.png",
     ),
     true,
@@ -102,7 +102,11 @@ test("smoke helpers validate CDN URLs and media references", () => {
     ),
     false,
   );
-  assert.equal(isProductionCdnUrl("https://cdn.example.com/file.png"), true);
+  assert.equal(
+    isProductionCdnUrl("https://cdn.brand-assets.com/file.png"),
+    true,
+  );
+  assert.equal(isProductionCdnUrl("https://cdn.example.com/file.png"), false);
   assert.equal(isProductionCdnUrl("http://cdn.example.com/file.png"), false);
   assert.equal(isProductionCdnUrl("https://localhost/file.png"), false);
   assert.equal(isProductionCdnUrl("https://127.0.0.1/file.png"), false);
@@ -233,7 +237,7 @@ test("smoke helpers summarize media checks without signed upload URLs", () => {
       size: 68,
       status: "active",
       type: "image",
-      url: "https://cdn.example.com/tenant/2026/08/19/smoke.png",
+      url: "https://cdn.brand-assets.com/tenant/2026/08/19/smoke.png",
     },
     true,
   );
@@ -243,7 +247,7 @@ test("smoke helpers summarize media checks without signed upload URLs", () => {
     assetSize: 68,
     assetStatus: "active",
     assetType: "image",
-    cdnHost: "cdn.example.com",
+    cdnHost: "cdn.brand-assets.com",
     cdnUrlMatchesR2Key: true,
     confirmPath: "/api/v1/media/confirm",
     isR2UploadUrl: true,

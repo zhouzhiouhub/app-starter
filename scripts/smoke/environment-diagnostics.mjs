@@ -1,3 +1,8 @@
+import {
+  isLocalHostname,
+  isPlaceholderHostname,
+} from "./cdn-hostname.mjs";
+
 const defaultMediaCdnBaseUrl = "https://cdn.local.invalid";
 const defaultRevalidatePath = "/api/revalidate";
 const r2RequiredVariables = [
@@ -128,13 +133,18 @@ function readCdnDiagnostics(value) {
   }
 
   const localHost = isLocalHostname(url.hostname);
+  const placeholderHost = isPlaceholderHostname(url.hostname);
 
   return {
     host,
-    issue: localHost ? "local-host" : null,
+    issue: localHost
+      ? "local-host"
+      : placeholderHost
+        ? "placeholder-host"
+        : null,
     localHost,
-    productionReady: !localHost,
-    safe: !localHost,
+    productionReady: !localHost && !placeholderHost,
+    safe: !localHost && !placeholderHost,
   };
 }
 
@@ -240,40 +250,4 @@ function readBooleanEnv(env, name, fallback) {
   }
 
   return ["1", "true", "yes", "on"].includes(value);
-}
-
-function isLocalHostname(hostname) {
-  const normalized = hostname.toLowerCase();
-
-  return (
-    normalized === "localhost" ||
-    normalized.endsWith(".localhost") ||
-    normalized.endsWith(".local") ||
-    normalized.endsWith(".local.invalid") ||
-    normalized === "::1" ||
-    normalized === "[::1]" ||
-    isPrivateOrLocalIpv4(normalized)
-  );
-}
-
-function isPrivateOrLocalIpv4(hostname) {
-  const parts = hostname.split(".").map((part) => Number(part));
-
-  if (
-    parts.length !== 4 ||
-    parts.some((part) => !Number.isInteger(part) || part < 0 || part > 255)
-  ) {
-    return false;
-  }
-
-  const [first, second] = parts;
-
-  return (
-    first === 0 ||
-    first === 10 ||
-    first === 127 ||
-    (first === 169 && second === 254) ||
-    (first === 172 && second >= 16 && second <= 31) ||
-    (first === 192 && second === 168)
-  );
 }
