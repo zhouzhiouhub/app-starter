@@ -120,10 +120,12 @@ test("smoke report counts failed checks even when names are missing", () => {
 
   report.checks.push(
     {
+      error: { message: "Unnamed check failed." },
       failedAt: "2026-08-20T00:00:01.000Z",
       status: "failed",
     },
     {
+      error: { message: "Media confirm failed." },
       failedAt: "2026-08-20T00:00:02.000Z",
       name: "media.confirm",
       status: "failed",

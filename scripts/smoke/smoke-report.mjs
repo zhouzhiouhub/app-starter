@@ -234,15 +234,49 @@ function assertSmokeReportSummaryCurrent(report) {
 }
 
 function assertSmokeReportChecksWellFormed(checks) {
-  const invalidIndex = checks.findIndex(
-    (check) => !isPlainRecord(check) || !smokeCheckStatuses.has(check.status),
-  );
+  for (const [index, check] of checks.entries()) {
+    if (!isPlainRecord(check) || !smokeCheckStatuses.has(check.status)) {
+      throw new Error(
+        `Smoke report check at index ${index} must have status passed or failed.`,
+      );
+    }
 
-  if (invalidIndex >= 0) {
-    throw new Error(
-      `Smoke report check at index ${invalidIndex} must have status passed or failed.`,
-    );
+    if (check.status === "passed" && !isIsoDateString(check.passedAt)) {
+      throw new Error(
+        `Smoke report passed check at index ${index} must include passedAt.`,
+      );
+    }
+
+    if (check.status === "failed" && !isIsoDateString(check.failedAt)) {
+      throw new Error(
+        `Smoke report failed check at index ${index} must include failedAt.`,
+      );
+    }
+
+    if (check.status === "failed" && !isFailureErrorRecord(check.error)) {
+      throw new Error(
+        `Smoke report failed check at index ${index} must include an error message.`,
+      );
+    }
   }
+}
+
+function isIsoDateString(value) {
+  if (typeof value !== "string") {
+    return false;
+  }
+
+  const date = new Date(value);
+
+  return !Number.isNaN(date.getTime()) && date.toISOString() === value;
+}
+
+function isFailureErrorRecord(value) {
+  return (
+    isPlainRecord(value) &&
+    typeof value.message === "string" &&
+    value.message.length > 0
+  );
 }
 
 function hasReportField(report, field) {
