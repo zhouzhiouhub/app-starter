@@ -1,11 +1,12 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { createSmokeEnvironmentDiagnostics } from "./environment-diagnostics.mjs";
-import { createSmokeProductionReadiness } from "./smoke-readiness.mjs";
 import {
-  redactSmokeReportValue,
-  redactSmokeSecrets,
-} from "./smoke-secrets.mjs";
+  readSmokeErrorMessage,
+  readSmokeFailureDetails,
+} from "./smoke-report-errors.mjs";
+import { createSmokeProductionReadiness } from "./smoke-readiness.mjs";
+import { redactSmokeReportValue } from "./smoke-secrets.mjs";
 
 export const smokeReportSchemaVersion = "smoke-report.v2";
 const smokeCheckStatuses = new Set(["failed", "passed"]);
@@ -81,9 +82,9 @@ export function recordSmokeCheck(report, name, details = {}) {
 
 export function recordSmokeCheckFailure(report, name, error, details = {}) {
   report.checks.push({
-    details: redactSmokeReportValue(readFailureDetails(error, details)),
+    details: redactSmokeReportValue(readSmokeFailureDetails(error, details)),
     error: {
-      message: readErrorMessage(error),
+      message: readSmokeErrorMessage(error),
     },
     failedAt: new Date().toISOString(),
     name,
@@ -102,7 +103,7 @@ export function completeSmokeReport(report, input) {
 
 export function failSmokeReport(report, error) {
   report.error = {
-    message: readErrorMessage(error),
+    message: readSmokeErrorMessage(error),
   };
   report.finishedAt = new Date().toISOString();
   report.status = "failed";
@@ -147,49 +148,6 @@ export function refreshSmokeReportSummary(report) {
 
 function readArrayLength(value) {
   return Array.isArray(value) ? value.length : 0;
-}
-
-function readErrorMessage(error) {
-  return redactSmokeSecrets(readErrorMessageValue(error));
-}
-
-function readErrorMessageValue(error) {
-  if (error instanceof Error) {
-    return readNonEmptyString(error.message);
-  }
-
-  if (isPlainRecord(error) && typeof error.message === "string") {
-    return readNonEmptyString(error.message);
-  }
-
-  if (typeof error === "string") {
-    return readNonEmptyString(error);
-  }
-
-  return error === null || error === undefined
-    ? "Unknown smoke failure."
-    : readNonEmptyString(String(error));
-}
-
-function readNonEmptyString(value) {
-  const trimmed = value.trim();
-
-  return trimmed.length > 0 ? trimmed : "Unknown smoke failure.";
-}
-
-function readFailureDetails(error, details) {
-  return {
-    ...readErrorDetails(error),
-    ...readPlainRecord(details),
-  };
-}
-
-function readErrorDetails(error) {
-  if (!error || typeof error !== "object") {
-    return {};
-  }
-
-  return readPlainRecord(error.smokeDetails);
 }
 
 function readPlainRecord(value) {
