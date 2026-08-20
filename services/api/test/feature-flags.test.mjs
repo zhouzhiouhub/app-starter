@@ -208,7 +208,7 @@ test("public config exposes MVP disabled flags", () => {
     },
     () => {
       const controller = new PublicController({});
-      const response = controller.getConfig();
+      const response = controller.getConfig("request-public-config");
 
       assert.equal(response.data.commerceEnabled, false);
       assert.equal(response.data.multiLocaleEnabled, false);
@@ -216,6 +216,7 @@ test("public config exposes MVP disabled flags", () => {
       assert.equal(response.data.defaultLocale, "en-US");
       assert.equal(response.data.defaultMarket, "us");
       assert.equal(response.data.fallbackLocale, "en-US");
+      assert.equal(response.meta.requestId, "request-public-config");
     },
   );
 });
@@ -275,12 +276,16 @@ test("public config normalizes feature flag environment values", () => {
     () => {
       const controller = new PublicController({});
       const config = controller.getConfig();
-      const translations = controller.getTranslations("fr-FR");
+      const translations = controller.getTranslations(
+        "fr-FR",
+        "request-public-translations",
+      );
 
       assert.equal(config.data.commerceEnabled, true);
       assert.equal(config.data.multiLocaleEnabled, true);
       assert.equal(translations.data.locale, "fr-FR");
       assert.equal(translations.meta.isFallback, false);
+      assert.equal(translations.meta.requestId, "request-public-translations");
     },
   );
 });
@@ -324,11 +329,50 @@ test("public pages fall back when runtime defaults are invalid", async () => {
           });
         },
       });
-      const response = await controller.listPages();
+      const response = await controller.listPages(
+        undefined,
+        undefined,
+        "request-public-pages",
+      );
 
       assert.equal(response.meta.locale, "en-US");
       assert.equal(response.meta.market, "us");
       assert.equal(response.meta.isFallback, false);
+      assert.equal(response.meta.requestId, "request-public-pages");
+    },
+  );
+});
+
+test("public page detail response carries the current request id", async () => {
+  await withEnv(
+    {
+      DEFAULT_LOCALE: "en-US",
+      DEFAULT_MARKET: "us",
+      MULTI_LOCALE_ENABLED: "false",
+    },
+    async () => {
+      const controller = new PublicController({
+        getPublishedBySlug(slug, context) {
+          assert.equal(slug, "home");
+          assert.deepEqual(context, {
+            locale: "en-US",
+            market: "us",
+          });
+
+          return Promise.resolve({ meta: { slug: "home" } });
+        },
+      });
+
+      const response = await controller.getPage(
+        "home",
+        undefined,
+        undefined,
+        "request-public-page",
+      );
+
+      assert.equal(response.meta.requestId, "request-public-page");
+      assert.equal(response.meta.locale, "en-US");
+      assert.equal(response.meta.market, "us");
     },
   );
 });

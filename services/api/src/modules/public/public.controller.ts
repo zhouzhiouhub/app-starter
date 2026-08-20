@@ -28,13 +28,13 @@ export class PublicController {
   constructor(private readonly pages: PagesService) {}
 
   @Get("config")
-  getConfig() {
+  getConfig(@CurrentRequestId() requestId = "local-dev") {
     const config = readPublicRuntimeConfig();
 
     return {
       data: config,
       meta: {
-        requestId: "local-dev",
+        requestId,
         market: config.defaultMarket,
         locale: config.defaultLocale,
       },
@@ -42,7 +42,10 @@ export class PublicController {
   }
 
   @Get("translations/:locale")
-  getTranslations(@Param("locale") locale: string) {
+  getTranslations(
+    @Param("locale") locale: string,
+    @CurrentRequestId() requestId = "local-dev",
+  ) {
     const localeContext = resolvePublicLocale(locale);
 
     return {
@@ -51,7 +54,7 @@ export class PublicController {
         messages: {},
       },
       meta: {
-        requestId: "local-dev",
+        requestId,
         locale: localeContext.locale,
         fallbackLocale: localeContext.fallbackLocale,
         isFallback: localeContext.isFallback,
@@ -68,6 +71,7 @@ export class PublicController {
   async listPages(
     @Query("locale") locale?: string,
     @Query("market") market?: string,
+    @CurrentRequestId() requestId = "local-dev",
   ) {
     const localeContext = resolvePublicLocale(locale);
     const marketContext = resolvePublicMarket(market);
@@ -80,6 +84,7 @@ export class PublicController {
       data: pages.data,
       meta: {
         ...pages.meta,
+        requestId,
         market: marketContext.market,
         locale: localeContext.locale,
         fallbackLocale: localeContext.fallbackLocale,
@@ -93,6 +98,7 @@ export class PublicController {
     @Param("slug") slug: string,
     @Query("locale") locale?: string,
     @Query("market") market?: string,
+    @CurrentRequestId() requestId = "local-dev",
   ) {
     const localeContext = resolvePublicLocale(locale);
     const marketContext = resolvePublicMarket(market);
@@ -111,7 +117,7 @@ export class PublicController {
     return {
       data: page,
       meta: {
-        requestId: "local-dev",
+        requestId,
         market: marketContext.market,
         locale: localeContext.locale,
         fallbackLocale: localeContext.fallbackLocale,
