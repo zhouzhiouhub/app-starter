@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  assertStorefrontPage,
   formatStorefrontPageAttempt,
   formatNotFoundAttempt,
   formatRobotsAttempt,
@@ -59,6 +60,54 @@ test("smoke helpers summarize storefront page attempts", () => {
   assert.equal(
     formatStorefrontPageAttempt(stale),
     'status 200 OK, diagnosis: stale-or-fallback-content, title present: false, document title: "Previous campaign", body: "<html><head><title>Previous campaign</title></head><body>Old page content</body></html>"',
+  );
+});
+
+test("storefront page smoke failure keeps structured diagnostics", async () => {
+  await withFetch(
+    async () =>
+      new Response(
+        "<html><head><title>Previous campaign</title></head><body>Old page content</body></html>",
+        {
+          status: 200,
+          statusText: "OK",
+        },
+      ),
+    async () => {
+      await assert.rejects(
+        () =>
+          assertStorefrontPage(
+            {
+              locale: "en-US",
+              retryAttempts: 1,
+              retryDelayMs: 1,
+              slug: "smoke-page",
+              webUrl: "https://web.example.com",
+            },
+            "Published title",
+          ),
+        (error) => {
+          assert.equal(
+            error.message.includes("stale-or-fallback-content"),
+            true,
+          );
+          assert.deepEqual(error.smokeDetails.storefront, {
+            bodySnippet:
+              "<html><head><title>Previous campaign</title></head><body>Old page content</body></html>",
+            diagnosis: "stale-or-fallback-content",
+            documentTitle: "Previous campaign",
+            expectedTitle: "Published title",
+            ok: true,
+            status: 200,
+            statusText: "OK",
+            titlePresent: false,
+            url: "https://web.example.com/en/smoke-page",
+          });
+
+          return true;
+        },
+      );
+    },
   );
 });
 
@@ -139,3 +188,14 @@ test("smoke helpers summarize robots, sitemap, and 404 attempts", () => {
     'status 404 Not Found, noindex: false, body: "<html><body>Missing page template</body></html>"',
   );
 });
+
+async function withFetch(fetchImplementation, fn) {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = fetchImplementation;
+
+  try {
+    await fn();
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+}

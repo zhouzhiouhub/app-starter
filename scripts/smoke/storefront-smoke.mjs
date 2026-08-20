@@ -6,6 +6,7 @@ export async function assertStorefrontPage(input, title) {
     getStorefrontPath(input.locale, input.slug),
   );
   let lastError = "";
+  let lastAttempt = null;
 
   for (let attempt = 1; attempt <= input.retryAttempts; attempt += 1) {
     try {
@@ -27,8 +28,19 @@ export async function assertStorefrontPage(input, title) {
       }
 
       lastError = formatStorefrontPageAttempt(pageAttempt);
+      lastAttempt = pageAttempt;
     } catch (error) {
       lastError = readErrorMessage(error);
+      lastAttempt = {
+        bodySnippet: null,
+        diagnosis: "request-failed",
+        documentTitle: null,
+        error: lastError,
+        ok: false,
+        status: null,
+        statusText: "",
+        titlePresent: false,
+      };
     }
 
     if (attempt < input.retryAttempts) {
@@ -36,8 +48,11 @@ export async function assertStorefrontPage(input, title) {
     }
   }
 
-  throw new Error(
+  throw createStorefrontPageFailure(
+    url,
+    title,
     `Storefront page did not show the published title (${lastError}).`,
+    lastAttempt,
   );
 }
 
@@ -71,6 +86,19 @@ export function formatStorefrontPageAttempt(attempt) {
     : "";
 
   return `status ${attempt.status}${statusText}, diagnosis: ${attempt.diagnosis}, title present: ${attempt.titlePresent}${documentTitle}${body}`;
+}
+
+function createStorefrontPageFailure(url, expectedTitle, message, attempt) {
+  const error = new Error(message);
+  error.smokeDetails = {
+    storefront: {
+      ...(attempt ?? {}),
+      expectedTitle,
+      url,
+    },
+  };
+
+  return error;
 }
 
 export function assertIndexableStorefrontPage(html) {
