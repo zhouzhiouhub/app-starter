@@ -14,6 +14,7 @@ import {
   hasNoIndexRobots,
   joinUrl,
   normalizeApiBaseUrl,
+  normalizeWebOrigin,
   parseSitemapUrls,
   readConfig,
 } from "./publish-smoke.mjs";
@@ -54,6 +55,46 @@ test("smoke helpers normalize API base URLs", () => {
   assert.equal(
     normalizeApiBaseUrl("http://localhost:4000/api/v1/"),
     "http://localhost:4000/api/v1",
+  );
+});
+
+test("smoke helpers reject unsafe publish URLs", async () => {
+  assert.throws(
+    () => normalizeApiBaseUrl("https://api.example.com/internal"),
+    /API_URL must be an origin URL or an \/api\/v1 base URL/,
+  );
+  assert.throws(
+    () => normalizeApiBaseUrl("https://user:secret@api.example.com"),
+    /API_URL must not include embedded credentials/,
+  );
+  assert.throws(
+    () => normalizeApiBaseUrl("ftp://api.example.com"),
+    /API_URL must use http or https/,
+  );
+  assert.equal(
+    normalizeWebOrigin("https://web.example.com/"),
+    "https://web.example.com",
+  );
+  assert.throws(
+    () => normalizeWebOrigin("https://web.example.com/storefront"),
+    /WEB_URL must be a storefront origin without a path/,
+  );
+  assert.throws(
+    () => normalizeWebOrigin("https://web.example.com?token=secret"),
+    /WEB_URL must not include query strings or fragments/,
+  );
+
+  await withEnv(
+    {
+      API_URL: "https://api.example.com/api/v1?token=secret",
+      WEB_URL: "https://web.example.com",
+    },
+    async () => {
+      assert.throws(
+        () => readConfig(),
+        /API_URL must not include query strings or fragments/,
+      );
+    },
   );
 });
 

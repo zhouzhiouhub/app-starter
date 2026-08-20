@@ -26,18 +26,30 @@ export function readConfig() {
     reportPath: readOptionalEnv("SMOKE_REPORT_PATH"),
     slug: readEnv("SMOKE_PAGE_SLUG", createSmokeSlug()),
     tenantSlug: readEnv("SMOKE_TENANT_SLUG", defaultTenantSlug),
-    webUrl: normalizeOrigin(readEnv("WEB_URL", defaultWebUrl)),
+    webUrl: normalizeWebOrigin(readEnv("WEB_URL", defaultWebUrl)),
   };
 }
 
 export function normalizeApiBaseUrl(value) {
-  const origin = normalizeOrigin(value);
+  const url = readSmokeUrl(value, "API_URL");
+  const pathname = trimTrailingSlashes(url.pathname);
 
-  if (origin.endsWith("/api/v1")) {
-    return origin;
+  if (pathname && pathname !== "/api/v1") {
+    throw new Error("API_URL must be an origin URL or an /api/v1 base URL.");
   }
 
-  return `${origin}/api/v1`;
+  return `${url.origin}/api/v1`;
+}
+
+export function normalizeWebOrigin(value) {
+  const url = readSmokeUrl(value, "WEB_URL");
+  const pathname = trimTrailingSlashes(url.pathname);
+
+  if (pathname) {
+    throw new Error("WEB_URL must be a storefront origin without a path.");
+  }
+
+  return url.origin;
 }
 
 export function printHelp() {
@@ -63,8 +75,32 @@ Environment:
 `);
 }
 
-function normalizeOrigin(value) {
-  return value.trim().replace(/\/+$/, "");
+function readSmokeUrl(value, name) {
+  let url;
+
+  try {
+    url = new URL(value.trim());
+  } catch {
+    throw new Error(`${name} must be an absolute http(s) URL.`);
+  }
+
+  if (!["http:", "https:"].includes(url.protocol)) {
+    throw new Error(`${name} must use http or https.`);
+  }
+
+  if (url.username || url.password) {
+    throw new Error(`${name} must not include embedded credentials.`);
+  }
+
+  if (url.search || url.hash) {
+    throw new Error(`${name} must not include query strings or fragments.`);
+  }
+
+  return url;
+}
+
+function trimTrailingSlashes(pathname) {
+  return pathname.replace(/\/+$/, "");
 }
 
 function createSmokeSlug() {

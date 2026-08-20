@@ -131,6 +131,11 @@ After API and Web are running, verify the publishing path with:
 pnpm smoke:publish
 ```
 
+`API_URL` must be an `http` or `https` origin, or the exact `/api/v1` base URL.
+`WEB_URL` must be the storefront origin. The smoke runner rejects embedded
+credentials, query strings, fragments, unsupported protocols, and unexpected
+paths before it sends login or publish requests.
+
 The script logs in with `SMOKE_ADMIN_EMAIL` / `SMOKE_ADMIN_PASSWORD` (falling
 back to the seeded admin), verifies the MVP disabled feature flags
 (`COMMERCE_ENABLED=false` and `MULTI_LOCALE_ENABLED=false`), saves a draft,
