@@ -24,7 +24,8 @@ test("smoke report CLI formats a ready summary", () => {
       "\nSmoke report summary (smoke-report.v2):",
       "  Status: passed",
       "  Checks: 12/12 passed, 0 failed",
-      "  Production ready: yes",
+      "  Smoke passed: yes",
+      "  Production gates: passed",
     ],
   );
 });
@@ -48,10 +49,37 @@ test("smoke report CLI formats blockers and redacts failed checks", () => {
     "\nSmoke report summary (smoke-report.v2):",
     "  Status: failed",
     "  Checks: 6/7 passed, 1 failed",
-    "  Production ready: no",
+    "  Smoke passed: no",
+    "  Production gates: blocked",
     "  Readiness: 2 blockers, 1 warnings",
     "  Failed checks: preview.token=[redacted]",
   ]);
+});
+
+test("smoke report CLI separates smoke failures from production gates", () => {
+  assert.deepEqual(
+    formatSmokeReportSummary({
+      schemaVersion: "smoke-report.v2",
+      summary: {
+        blockerCount: 0,
+        checkCount: 3,
+        failedCheckCount: 1,
+        failedChecks: ["storefront.page"],
+        passedCheckCount: 2,
+        productionReady: true,
+        status: "failed",
+        warningCount: 0,
+      },
+    }),
+    [
+      "\nSmoke report summary (smoke-report.v2):",
+      "  Status: failed",
+      "  Checks: 2/3 passed, 1 failed",
+      "  Smoke passed: no",
+      "  Production gates: passed",
+      "  Failed checks: storefront.page",
+    ],
+  );
 });
 
 test("smoke report CLI writes failed summaries to warning output", () => {
@@ -68,6 +96,33 @@ test("smoke report CLI writes failed summaries to warning output", () => {
         passedCheckCount: 0,
         productionReady: false,
         status: "failed",
+      },
+    },
+    {
+      log: (line) => logLines.push(line),
+      warn: (line) => warnLines.push(line),
+    },
+  );
+
+  assert.equal(logLines.length, 0);
+  assert.equal(warnLines[0], "\nSmoke report summary (smoke-report.v2):");
+});
+
+test("smoke report CLI writes blocked production gates to warning output", () => {
+  const logLines = [];
+  const warnLines = [];
+
+  printSmokeReportSummary(
+    {
+      schemaVersion: "smoke-report.v2",
+      summary: {
+        blockerCount: 1,
+        checkCount: 3,
+        failedCheckCount: 0,
+        failedChecks: [],
+        passedCheckCount: 3,
+        productionReady: false,
+        status: "passed",
       },
     },
     {

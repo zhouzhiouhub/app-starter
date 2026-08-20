@@ -2,10 +2,9 @@ import { redactSmokeSecrets } from "./smoke-secrets.mjs";
 
 export function printSmokeReportSummary(report, writer = console) {
   const lines = formatSmokeReportSummary(report);
-  const write =
-    report?.summary?.failedCheckCount > 0
-      ? (writer.warn ?? writer.log)
-      : (writer.log ?? writer.warn);
+  const write = isSmokeSummaryClean(report?.summary)
+    ? (writer.log ?? writer.warn)
+    : (writer.warn ?? writer.log);
 
   for (const line of lines) {
     write.call(writer, line);
@@ -19,7 +18,8 @@ export function formatSmokeReportSummary(report) {
     `\nSmoke report summary (${formatText(report?.schemaVersion, "unknown")}):`,
     `  Status: ${formatText(summary.status, "unknown")}`,
     `  Checks: ${readCount(summary.passedCheckCount)}/${readCount(summary.checkCount)} passed, ${readCount(summary.failedCheckCount)} failed`,
-    `  Production ready: ${summary.productionReady === true ? "yes" : "no"}`,
+    `  Smoke passed: ${isSmokeSummaryPassed(summary) ? "yes" : "no"}`,
+    `  Production gates: ${summary.productionReady === true ? "passed" : "blocked"}`,
   ];
   const blockerCount = readCount(summary.blockerCount);
   const warningCount = readCount(summary.warningCount);
@@ -39,6 +39,14 @@ function readSummary(report) {
   return report?.summary && typeof report.summary === "object"
     ? report.summary
     : {};
+}
+
+function isSmokeSummaryClean(summary) {
+  return isSmokeSummaryPassed(summary) && summary?.productionReady === true;
+}
+
+function isSmokeSummaryPassed(summary) {
+  return summary?.status === "passed" && readCount(summary?.failedCheckCount) === 0;
 }
 
 function readFailedChecks(value) {
