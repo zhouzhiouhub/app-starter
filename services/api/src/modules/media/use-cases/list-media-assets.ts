@@ -14,6 +14,7 @@ export async function listMediaAssets(
     type?: string;
   },
   actor: Actor,
+  requestId = "local-dev",
 ) {
   const { page, limit, status, type } = parseListMediaQuery(query);
   const skip = (page - 1) * limit;
@@ -33,7 +34,7 @@ export async function listMediaAssets(
   return {
     data: filtered.slice(skip, skip + limit),
     meta: {
-      requestId: "local-dev",
+      requestId,
       tenantId: actor.tenantId,
       total: filtered.length,
       page,

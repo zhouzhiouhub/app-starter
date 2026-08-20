@@ -39,10 +39,16 @@ test("media service archives assets that are not referenced", async () => {
     },
   });
 
-  const result = await service.archive("asset-1", actor);
+  const result = await service.archive(
+    "asset-1",
+    actor,
+    undefined,
+    "request-media-archive",
+  );
 
   assert.equal(result.data.status, "archived");
   assert.equal(result.data.metadata.archivedBy, "user-1");
+  assert.equal(result.meta.requestId, "request-media-archive");
 });
 
 test("media service stores archive responses by idempotency key", async () => {
@@ -152,17 +158,68 @@ test("media service stores upload URL responses by idempotency key", async () =>
     size: 2048,
   };
 
-  const first = await service.createUploadUrl(input, key, actor);
+  const first = await service.createUploadUrl(
+    input,
+    key,
+    actor,
+    "request-media-upload",
+  );
   const second = await service.createUploadUrl(input, key, actor);
 
   assert.equal(first.data.r2Key, second.data.r2Key);
   assert.equal(first.data.uploadUrl, second.data.uploadUrl);
+  assert.equal(first.meta.requestId, "request-media-upload");
   assert.deepEqual(idempotencyCalls, [
     ["findUnique", "media:upload-url"],
     ["create", "media:upload-url"],
     ["update", "completed"],
     ["findUnique", "media:upload-url"],
   ]);
+});
+
+test("media service returns request ids for confirmed and listed assets", async () => {
+  const asset = createAsset({
+    id: "asset-confirmed",
+    metadata: { alt: "Hero" },
+  });
+  const service = new MediaService({
+    mediaAsset: {
+      create(options) {
+        assert.equal(options.data.r2Key, "tenant-1/imports/hero.png");
+        return Promise.resolve(asset);
+      },
+      findFirst(options) {
+        assert.deepEqual(options.where, {
+          r2Key: "tenant-1/imports/hero.png",
+          tenantId: "tenant-1",
+        });
+        return Promise.resolve(null);
+      },
+      findMany(options) {
+        assert.deepEqual(options.where, {
+          tenantId: "tenant-1",
+        });
+        return Promise.resolve([asset]);
+      },
+    },
+  });
+
+  const confirmed = await service.confirm(
+    {
+      filename: "hero.png",
+      mimeType: "image/png",
+      r2Key: "tenant-1/imports/hero.png",
+      size: 2048,
+    },
+    undefined,
+    actor,
+    "request-media-confirm",
+  );
+  const listed = await service.list({}, actor, "request-media-list");
+
+  assert.equal(confirmed.meta.requestId, "request-media-confirm");
+  assert.equal(listed.meta.requestId, "request-media-list");
+  assert.equal(listed.data[0].id, "asset-confirmed");
 });
 
 test("media service rejects external registrations on managed CDN hosts", async () => {

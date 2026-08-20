@@ -43,14 +43,16 @@ export class MediaService {
       type?: string;
     },
     actor: Actor,
+    requestId = "local-dev",
   ) {
-    return listMediaAssets(this.prisma, query, actor);
+    return listMediaAssets(this.prisma, query, actor, requestId);
   }
 
   createUploadUrl(
     body: unknown,
     idempotencyKey: string | undefined,
     actor: Actor,
+    requestId = "local-dev",
   ) {
     const input = parseCreateUploadUrlInput(body);
 
@@ -81,7 +83,7 @@ export class MediaService {
             confirmPath: "/api/v1/media/confirm",
           } satisfies MediaUploadUrlResponse,
           meta: {
-            requestId: "local-dev",
+            requestId,
             tenantId: actor.tenantId,
           },
         });
@@ -93,6 +95,7 @@ export class MediaService {
     body: unknown,
     idempotencyKey: string | undefined,
     actor: Actor,
+    requestId = "local-dev",
   ) {
     const input = parseConfirmMediaInput(body);
     assertTenantR2Key(input.r2Key, actor.tenantId);
@@ -114,7 +117,7 @@ export class MediaService {
         });
 
         if (existing) {
-          return this.assetResponse(existing, actor.tenantId);
+          return this.assetResponse(existing, actor.tenantId, requestId);
         }
 
         const asset = await this.prisma.mediaAsset.create({
@@ -130,7 +133,7 @@ export class MediaService {
           },
         });
 
-        return this.assetResponse(asset, actor.tenantId);
+        return this.assetResponse(asset, actor.tenantId, requestId);
       },
     });
   }
@@ -150,17 +153,22 @@ export class MediaService {
     await assertSchemaMediaReferencesPublishable(client, schema, tenantId);
   }
 
-  async archive(id: string, actor: Actor, idempotencyKey: string | undefined) {
+  async archive(
+    id: string,
+    actor: Actor,
+    idempotencyKey: string | undefined,
+    requestId = "local-dev",
+  ) {
     return runTenantIdempotent(this.prisma, {
       body: { id },
       key: idempotencyKey,
       scope: `media:${id}:archive`,
       tenantId: actor.tenantId,
-      operation: () => this.archiveAsset(id, actor),
+      operation: () => this.archiveAsset(id, actor, requestId),
     });
   }
 
-  private async archiveAsset(id: string, actor: Actor) {
+  private async archiveAsset(id: string, actor: Actor, requestId: string) {
     const asset = await this.prisma.mediaAsset.findFirst({
       where: {
         id,
@@ -176,7 +184,7 @@ export class MediaService {
     }
 
     if (readArchivedAt(asset.metadata)) {
-      return this.assetResponse(asset, actor.tenantId);
+      return this.assetResponse(asset, actor.tenantId, requestId);
     }
 
     const usage = await findMediaUsage(this.prisma, {
@@ -204,17 +212,18 @@ export class MediaService {
       },
     });
 
-    return this.assetResponse(archived, actor.tenantId);
+    return this.assetResponse(archived, actor.tenantId, requestId);
   }
 
   private assetResponse(
     asset: Parameters<typeof toMediaAssetResponse>[0],
     tenantId: string,
+    requestId = "local-dev",
   ) {
     return {
       data: toMediaAssetResponse(asset),
       meta: {
-        requestId: "local-dev",
+        requestId,
         tenantId,
       },
     };
