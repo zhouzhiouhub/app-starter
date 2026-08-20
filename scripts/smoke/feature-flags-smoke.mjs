@@ -1,3 +1,5 @@
+import { redactSmokeSecrets } from "./smoke-secrets.mjs";
+
 const expectedConfig = {
   commerceEnabled: false,
   defaultCurrency: "USD",
@@ -108,11 +110,12 @@ async function assertErrorResponse(url, init, expectedCode) {
 export function readDisabledEndpointDiagnostic(response) {
   return {
     code: readApiErrorCode(response.body),
-    message:
+    message: redactOptionalSmokeMessage(
       response.body?.error?.message ??
-      response.body?.message ??
-      response.statusText ??
-      null,
+        response.body?.message ??
+        response.statusText ??
+        null,
+    ),
     status: response.status,
     statusText: response.statusText || "",
   };
@@ -144,7 +147,11 @@ function parseJson(text, url) {
   try {
     return JSON.parse(text);
   } catch {
-    throw new Error(`${url} returned non-JSON content: ${text.slice(0, 160)}`);
+    throw new Error(
+      redactSmokeSecrets(
+        `${url} returned non-JSON content: ${text.slice(0, 160)}`,
+      ),
+    );
   }
 }
 
@@ -155,5 +162,9 @@ function readHttpError(response, fallback) {
     response.statusText ??
     fallback;
 
-  return `${fallback} ${response.status}: ${message}`;
+  return redactSmokeSecrets(`${fallback} ${response.status}: ${message}`);
+}
+
+function redactOptionalSmokeMessage(value) {
+  return value === null ? null : redactSmokeSecrets(value);
 }

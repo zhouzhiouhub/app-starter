@@ -173,8 +173,9 @@ include a `diagnosis` field for triggered, missing secret, missing URL, HTTP
 request failure, and network or timeout-style failures. Revalidation environment
 diagnostics record only non-secret readiness metadata: whether a secret is
 configured, the URL source, endpoint host/path, URL safety, and whether the
-smoke run requires revalidation. Preview smoke HTTP errors redact preview token
-paths and sensitive query parameters before they are written to the report.
+smoke run requires revalidation. Smoke failure messages redact preview token
+paths, sensitive query parameters, JSON credential fields, and Bearer tokens
+before they are written to the report or printed by the CLI.
 
 By default the script requires `meta.revalidation.triggered=true`, so keep
 `STOREFRONT_REVALIDATE_SECRET` configured in both API and Web. To test only the

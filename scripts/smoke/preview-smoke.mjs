@@ -4,6 +4,7 @@ import {
   fetchText,
   readErrorMessage,
   readHttpError,
+  redactSmokeSecrets,
 } from "./preview-smoke-http.mjs";
 import { hasNoIndexRobots, joinUrl } from "./storefront-smoke.mjs";
 
@@ -219,6 +220,9 @@ function delay(ms) {
 }
 
 function readBodySnippet(text) {
-  const snippet = text.replace(/\s+/g, " ").trim().slice(0, 160);
+  const snippet = redactSmokeSecrets(text)
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 160);
   return snippet || null;
 }

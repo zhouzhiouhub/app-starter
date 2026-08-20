@@ -1,3 +1,5 @@
+import { redactSmokeSecrets } from "./smoke-secrets.mjs";
+
 const fallbackProbeLocale = "de-DE";
 
 export async function assertPublicApi(input, title) {
@@ -141,7 +143,11 @@ function parseJson(text, url) {
   try {
     return JSON.parse(text);
   } catch {
-    throw new Error(`${url} returned non-JSON content: ${text.slice(0, 160)}`);
+    throw new Error(
+      redactSmokeSecrets(
+        `${url} returned non-JSON content: ${text.slice(0, 160)}`,
+      ),
+    );
   }
 }
 
@@ -152,5 +158,5 @@ function readHttpError(response, fallback) {
     response.statusText ??
     fallback;
 
-  return `${fallback} ${response.status}: ${message}`;
+  return redactSmokeSecrets(`${fallback} ${response.status}: ${message}`);
 }

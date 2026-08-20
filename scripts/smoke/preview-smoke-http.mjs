@@ -1,3 +1,7 @@
+import { redactSmokeSecrets } from "./smoke-secrets.mjs";
+
+export { redactSmokeSecrets };
+
 export async function fetchJson(url, init) {
   const response = await fetch(url, init);
   const text = await response.text();
@@ -39,23 +43,6 @@ export function readErrorMessage(error) {
   return redactSmokeSecrets(
     error instanceof Error ? error.message : String(error),
   );
-}
-
-export function redactSmokeSecrets(value) {
-  return value
-    .replace(/(\/public\/preview\/)[^/?#\s)"']+/gi, "$1[redacted]")
-    .replace(
-      /([?&](?:accessToken|password|previewToken|refreshToken|secret|token)=)[^&#\s)"']+/gi,
-      "$1[redacted]",
-    )
-    .replace(
-      /(\b(?:accessToken|password|previewToken|refreshToken|secret|token)=)[^&#\s)"'<]+/gi,
-      "$1[redacted]",
-    )
-    .replace(
-      /(\b(?:password|secret|token)\s+)((?:[a-zA-Z0-9_-]+\.)+[a-zA-Z0-9._-]+|[a-zA-Z0-9._-]{24,})/gi,
-      "$1[redacted]",
-    );
 }
 
 function parseJson(text, url) {

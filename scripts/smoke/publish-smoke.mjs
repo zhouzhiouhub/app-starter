@@ -10,6 +10,7 @@ import {
 import { assertRollbackFlow } from "./rollback-smoke.mjs";
 import { createRevalidationSmokeDetails } from "./revalidation-smoke.mjs";
 import { buildSmokePageSchema } from "./smoke-page-schema.mjs";
+import { redactSmokeSecrets } from "./smoke-secrets.mjs";
 import {
   completeSmokeReport,
   createSmokeReport,
@@ -266,7 +267,11 @@ function parseJson(text, url) {
   try {
     return JSON.parse(text);
   } catch {
-    throw new Error(`${url} returned non-JSON content: ${text.slice(0, 160)}`);
+    throw new Error(
+      redactSmokeSecrets(
+        `${url} returned non-JSON content: ${text.slice(0, 160)}`,
+      ),
+    );
   }
 }
 
@@ -277,7 +282,7 @@ function readHttpError(response, fallback) {
     response.statusText ??
     fallback;
 
-  return `${fallback} ${response.status}: ${message}`;
+  return redactSmokeSecrets(`${fallback} ${response.status}: ${message}`);
 }
 
 async function writeFailureReport(input, report) {
@@ -291,5 +296,5 @@ async function writeFailureReport(input, report) {
 }
 
 export function readErrorMessage(error) {
-  return error instanceof Error ? error.message : String(error);
+  return redactSmokeSecrets(error instanceof Error ? error.message : error);
 }

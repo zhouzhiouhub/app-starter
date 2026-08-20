@@ -1,3 +1,5 @@
+import { redactSmokeSecrets } from "./smoke-secrets.mjs";
+
 export async function assertStorefrontPage(input, title) {
   const url = joinUrl(
     input.webUrl,
@@ -276,10 +278,13 @@ function delay(ms) {
 }
 
 function readBodySnippet(text) {
-  const snippet = text.replace(/\s+/g, " ").trim().slice(0, 160);
+  const snippet = redactSmokeSecrets(text)
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 160);
   return snippet || null;
 }
 
 function readErrorMessage(error) {
-  return error instanceof Error ? error.message : String(error);
+  return redactSmokeSecrets(error instanceof Error ? error.message : error);
 }

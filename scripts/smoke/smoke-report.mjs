@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { createSmokeEnvironmentDiagnostics } from "./environment-diagnostics.mjs";
+import { redactSmokeSecrets } from "./smoke-secrets.mjs";
 
 export function createSmokeReport(input, title, now = new Date()) {
   return {
@@ -67,7 +68,7 @@ export function failSmokeReport(report, error) {
 }
 
 function readErrorMessage(error) {
-  return error instanceof Error ? error.message : String(error);
+  return redactSmokeSecrets(error instanceof Error ? error.message : error);
 }
 
 export async function writeSmokeReportIfConfigured(input, report) {

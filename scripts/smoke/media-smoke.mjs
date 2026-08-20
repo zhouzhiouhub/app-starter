@@ -1,5 +1,6 @@
 import { Buffer } from "node:buffer";
 import { randomUUID } from "node:crypto";
+import { redactSmokeSecrets } from "./smoke-secrets.mjs";
 import {
   createMediaSmokeDetails,
   formatMediaListFilterDiagnostic,
@@ -139,7 +140,9 @@ async function uploadSmokeImage(target) {
   if (!response.ok) {
     const text = await response.text();
     throw new Error(
-      `R2 object upload failed. ${response.status}: ${text.slice(0, 160)}`,
+      redactSmokeSecrets(
+        `R2 object upload failed. ${response.status}: ${text.slice(0, 160)}`,
+      ),
     );
   }
 }
@@ -260,7 +263,11 @@ function parseJson(text, url) {
   try {
     return JSON.parse(text);
   } catch {
-    throw new Error(`${url} returned non-JSON content: ${text.slice(0, 160)}`);
+    throw new Error(
+      redactSmokeSecrets(
+        `${url} returned non-JSON content: ${text.slice(0, 160)}`,
+      ),
+    );
   }
 }
 
@@ -271,5 +278,5 @@ function readHttpError(response, fallback) {
     response.statusText ??
     fallback;
 
-  return `${fallback} ${response.status}: ${message}`;
+  return redactSmokeSecrets(`${fallback} ${response.status}: ${message}`);
 }
