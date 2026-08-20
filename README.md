@@ -556,7 +556,7 @@ pnpm --filter @app-starter/renderer build
 pnpm smoke:publish
 ```
 
-该脚本会登录默认管理员，先验证 `COMMERCE_ENABLED=false`、`MULTI_LOCALE_ENABLED=false` 的关闭态，生成媒体上传目标、确认媒体入库并校验 CDN URL，再保存草稿、生成 Preview Token、验证公共预览 API 与前台 `/preview?token=`，随后发布一个唯一 slug 的测试页，验证回滚、Preview Token / 页面发布 / 回滚审计日志、公共页面 API、前台 HTML、`robots.txt`、`sitemap.xml` 和 404/noindex 是否读取到同一份已发布内容并满足 SEO 发布门禁。执行账号需要 `audit:read`；设置 `SMOKE_REPORT_PATH=tmp/smoke-report.json` 可输出 JSON 验收报告。生产环境如果要强制验证 R2 Presigned URL、真实 PUT 上传和生产 CDN URL，可设置 `SMOKE_REQUIRE_R2_UPLOAD=true`。若只想验证发布与前台读取、暂不强制 ISR 回调，可临时设置：
+该脚本会登录默认管理员，先验证 `COMMERCE_ENABLED=false`、`MULTI_LOCALE_ENABLED=false` 的关闭态，生成媒体上传目标、确认媒体入库并校验 CDN URL，再保存草稿、生成 Preview Token、验证公共预览 API 与前台 `/preview?token=`，随后发布一个唯一 slug 的测试页，验证回滚、Preview Token / 页面发布 / 回滚审计日志、公共页面 API、前台 HTML、`robots.txt`、`sitemap.xml` 和 404/noindex 是否读取到同一份已发布内容并满足 SEO 发布门禁。执行账号需要 `audit:read`；设置 `SMOKE_REPORT_PATH=tmp/smoke-report.json` 可输出 JSON 验收报告。生产环境如果要强制验证 R2 Presigned URL、真实 PUT 上传和生产 CDN URL，可设置 `SMOKE_REQUIRE_R2_UPLOAD=true`。生产 CDN URL 不能继续使用 `cdn.example.com` 或任何 `example` / `test` / `invalid` / 本地 / 私网域名；这些会被 smoke 诊断判定为非生产可用。若只想验证发布与前台读取、暂不强制 ISR 回调，可临时设置：
 
 `API_URL` 必须是 API origin 或精确的 `/api/v1` base，`WEB_URL` 必须是前台 origin；Smoke Runner 会在发起登录或发布请求前拒绝嵌入账号密码、query、fragment、异常路径和非 HTTP(S) 协议。
 `SMOKE_PAGE_SLUG`、`SMOKE_LOCALE`、`SMOKE_MARKET` 也会在创建测试页前按 Page Schema 上下文格式校验。
@@ -643,7 +643,7 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 
 优先做上线前验收和生产化收口：
 
-1. 在真实 R2 / CDN 环境配置 `MEDIA_CDN_BASE_URL`、R2 凭据和 CDN 域名，执行 `pnpm smoke:publish` 并归档 `SMOKE_REPORT_PATH`。
+1. 在真实 R2 / CDN 环境配置 `MEDIA_CDN_BASE_URL`、R2 凭据和 CDN 域名，确认不是 `example` / `test` / `invalid` / 本地 / 私网域名，执行 `pnpm smoke:publish` 并归档 `SMOKE_REPORT_PATH`。
 2. 补齐部署 Smoke Test：前台 Vercel、API 独立 Node 服务、Admin 静态托管、环境变量清单和回滚步骤。
 3. 做 Page Builder 视觉验收：Desktop / Mobile 双端检查、核心区块与设计稿差异记录、媒体解析异常态。
 4. 补多语言运营后台前的最小闭环：只读 Locale / Translation 视图、非默认 Locale 关闭态提示与权限测试。
