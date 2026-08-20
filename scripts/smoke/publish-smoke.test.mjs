@@ -278,6 +278,7 @@ test("smoke report helper writes JSON when configured", async () => {
 
     assert.equal(written.slug, "smoke-page");
     assert.equal(written.config.apiBaseUrl, "https://api.example.com/api/v1");
+    assert.equal(written.environment.revalidation.requireRevalidation, true);
   } finally {
     await rm(directory, { force: true, recursive: true });
   }

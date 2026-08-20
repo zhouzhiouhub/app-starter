@@ -16,7 +16,10 @@ export function createSmokeReport(input, title, now = new Date()) {
     },
     error: null,
     environment:
-      input.environmentDiagnostics ?? createSmokeEnvironmentDiagnostics(),
+      input.environmentDiagnostics ??
+      createSmokeEnvironmentDiagnostics(process.env, {
+        requireRevalidation: input.requireRevalidation,
+      }),
     finishedAt: null,
     pageId: null,
     slug: input.slug,

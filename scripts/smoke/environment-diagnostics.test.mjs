@@ -11,6 +11,8 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
     R2_BUCKET: "bucket-name",
     R2_REGION: "auto",
     R2_SECRET_ACCESS_KEY: "super-secret",
+    STOREFRONT_REVALIDATE_SECRET: "super-revalidate-secret",
+    STOREFRONT_REVALIDATE_URL: "https://web.example.com/",
   });
 
   assert.deepEqual(diagnostics, {
@@ -25,10 +27,23 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
         region: "auto",
       },
     },
+    revalidation: {
+      configured: true,
+      endpointHost: "web.example.com",
+      endpointPath: "/api/revalidate",
+      requireRevalidation: true,
+      secretConfigured: true,
+      urlConfigured: true,
+      urlIssue: null,
+      urlSafe: true,
+      urlSource: "STOREFRONT_REVALIDATE_URL",
+      usesWebUrlFallback: false,
+    },
   });
 
   const serialized = JSON.stringify(diagnostics);
   assert.equal(serialized.includes("super-secret"), false);
+  assert.equal(serialized.includes("super-revalidate-secret"), false);
   assert.equal(serialized.includes("bucket-name"), false);
   assert.equal(serialized.includes("account-id"), false);
   assert.equal(serialized.includes("access-key"), false);
@@ -47,4 +62,61 @@ test("smoke environment diagnostics reports missing R2 and CDN fallback", () => 
   assert.equal(diagnostics.media.cdnConfigured, false);
   assert.equal(diagnostics.media.cdnHost, "cdn.local.invalid");
   assert.equal(diagnostics.media.cdnUsesLocalFallback, true);
+  assert.deepEqual(diagnostics.revalidation, {
+    configured: false,
+    endpointHost: null,
+    endpointPath: null,
+    requireRevalidation: true,
+    secretConfigured: false,
+    urlConfigured: false,
+    urlIssue: "missing-url",
+    urlSafe: false,
+    urlSource: null,
+    usesWebUrlFallback: false,
+  });
+});
+
+test("smoke environment diagnostics reports revalidation WEB_URL fallback", () => {
+  const diagnostics = createSmokeEnvironmentDiagnostics(
+    {
+      SMOKE_REQUIRE_REVALIDATION: "false",
+      STOREFRONT_REVALIDATE_SECRET: "secret-value",
+      WEB_URL: "https://web.example.com/storefront/",
+    },
+    { requireRevalidation: true },
+  );
+
+  assert.deepEqual(diagnostics.revalidation, {
+    configured: true,
+    endpointHost: "web.example.com",
+    endpointPath: "/api/revalidate",
+    requireRevalidation: true,
+    secretConfigured: true,
+    urlConfigured: true,
+    urlIssue: null,
+    urlSafe: true,
+    urlSource: "WEB_URL",
+    usesWebUrlFallback: true,
+  });
+});
+
+test("smoke environment diagnostics reports unsafe revalidation URLs", () => {
+  const diagnostics = createSmokeEnvironmentDiagnostics({
+    STOREFRONT_REVALIDATE_SECRET: "secret-value",
+    STOREFRONT_REVALIDATE_URL:
+      "https://user:pass@web.example.com/api/revalidate",
+  });
+
+  assert.deepEqual(diagnostics.revalidation, {
+    configured: false,
+    endpointHost: "web.example.com",
+    endpointPath: null,
+    requireRevalidation: true,
+    secretConfigured: true,
+    urlConfigured: true,
+    urlIssue: "embedded-credentials",
+    urlSafe: false,
+    urlSource: "STOREFRONT_REVALIDATE_URL",
+    usesWebUrlFallback: false,
+  });
 });
