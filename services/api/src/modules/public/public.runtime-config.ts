@@ -1,10 +1,10 @@
 import { BadRequestException } from "@nestjs/common";
 import {
   apiErrorCodes,
-  defaultRuntimeConfig,
   localeCodeSchema,
   marketCodeSchema,
 } from "@app-starter/schema";
+import { readApiRuntimeDefaults } from "../../common/runtime-defaults.js";
 
 export type PublicRuntimeConfig = {
   commerceEnabled: boolean;
@@ -30,25 +30,15 @@ export type PublicMarketContext = {
 export function readPublicRuntimeConfig(
   env: Record<string, string | undefined> = process.env,
 ): PublicRuntimeConfig {
+  const defaults = readApiRuntimeDefaults(env);
+
   return {
     commerceEnabled: env.COMMERCE_ENABLED === "true",
     multiLocaleEnabled: env.MULTI_LOCALE_ENABLED === "true",
-    defaultMarket: readMarketEnvValue(
-      env.DEFAULT_MARKET,
-      defaultRuntimeConfig.defaultMarket,
-    ),
-    defaultLocale: readLocaleEnvValue(
-      env.DEFAULT_LOCALE,
-      defaultRuntimeConfig.defaultLocale,
-    ),
-    defaultCurrency: readCurrencyEnvValue(
-      env.DEFAULT_CURRENCY,
-      defaultRuntimeConfig.defaultCurrency,
-    ),
-    fallbackLocale: readLocaleEnvValue(
-      env.FALLBACK_LOCALE,
-      defaultRuntimeConfig.fallbackLocale,
-    ),
+    defaultMarket: defaults.market,
+    defaultLocale: defaults.locale,
+    defaultCurrency: defaults.currency,
+    fallbackLocale: defaults.fallbackLocale,
   };
 }
 
@@ -93,30 +83,6 @@ export function resolvePublicMarket(
     isFallback,
     market: isFallback ? config.defaultMarket : parsed.data,
   };
-}
-
-function readLocaleEnvValue(
-  value: string | undefined,
-  fallback: string,
-): string {
-  const parsed = localeCodeSchema.safeParse(value);
-  return parsed.success ? parsed.data : fallback;
-}
-
-function readMarketEnvValue(
-  value: string | undefined,
-  fallback: string,
-): string {
-  const parsed = marketCodeSchema.safeParse(value);
-  return parsed.success ? parsed.data : fallback;
-}
-
-function readCurrencyEnvValue(
-  value: string | undefined,
-  fallback: string,
-): string {
-  const currency = value?.trim();
-  return currency && /^[A-Z]{3}$/.test(currency) ? currency : fallback;
 }
 
 function throwValidationError(message: string): never {

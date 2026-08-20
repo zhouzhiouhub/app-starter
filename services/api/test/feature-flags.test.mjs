@@ -182,6 +182,28 @@ test("public config ignores invalid runtime defaults", () => {
   );
 });
 
+test("public config normalizes trimmed runtime defaults", () => {
+  withEnv(
+    {
+      DEFAULT_CURRENCY: " EUR ",
+      DEFAULT_LOCALE: " de-DE ",
+      DEFAULT_MARKET: " eu ",
+      FALLBACK_LOCALE: " fr-FR ",
+    },
+    () => {
+      const controller = new PublicController({});
+      const response = controller.getConfig();
+
+      assert.equal(response.data.defaultCurrency, "EUR");
+      assert.equal(response.data.defaultLocale, "de-DE");
+      assert.equal(response.data.defaultMarket, "eu");
+      assert.equal(response.data.fallbackLocale, "fr-FR");
+      assert.equal(response.meta.locale, "de-DE");
+      assert.equal(response.meta.market, "eu");
+    },
+  );
+});
+
 test("public translations expose configured fallback locale metadata", () => {
   withEnv(
     {
