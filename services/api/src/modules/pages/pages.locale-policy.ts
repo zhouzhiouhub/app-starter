@@ -1,13 +1,9 @@
 import { ConflictException } from "@nestjs/common";
-import {
-  apiErrorCodes,
-  defaultRuntimeConfig,
-  type PageSchema,
-} from "@app-starter/schema";
+import { apiErrorCodes, type PageSchema } from "@app-starter/schema";
+import { readApiDefaultLocale } from "../../common/runtime-defaults.js";
 
 export function assertPageLocaleCanPublish(schema: PageSchema): void {
-  const defaultLocale =
-    process.env.DEFAULT_LOCALE ?? defaultRuntimeConfig.defaultLocale;
+  const defaultLocale = readApiDefaultLocale();
 
   if (
     process.env.MULTI_LOCALE_ENABLED !== "true" &&

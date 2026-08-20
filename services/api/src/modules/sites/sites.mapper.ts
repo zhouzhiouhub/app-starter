@@ -1,3 +1,5 @@
+import { readApiRuntimeDefaults } from "../../common/runtime-defaults.js";
+
 export type SiteSettingsRecord = {
   createdAt: Date;
   domain: string;
@@ -7,16 +9,18 @@ export type SiteSettingsRecord = {
 };
 
 export function toSiteSettingsResponse(site: SiteSettingsRecord) {
+  const defaults = readApiRuntimeDefaults();
+
   return {
     id: site.id,
     tenantId: site.tenantId,
     name: site.name,
     domain: site.domain,
     defaults: {
-      market: process.env.DEFAULT_MARKET ?? "us",
-      locale: process.env.DEFAULT_LOCALE ?? "en-US",
-      currency: process.env.DEFAULT_CURRENCY ?? "USD",
-      fallbackLocale: process.env.FALLBACK_LOCALE ?? "en-US",
+      market: defaults.market,
+      locale: defaults.locale,
+      currency: defaults.currency,
+      fallbackLocale: defaults.fallbackLocale,
     },
     featureFlags: {
       commerceEnabled: process.env.COMMERCE_ENABLED === "true",

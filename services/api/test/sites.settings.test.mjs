@@ -72,6 +72,25 @@ test("site settings response includes runtime defaults and feature flags", () =>
   );
 });
 
+test("site settings response ignores invalid runtime defaults", () => {
+  withEnv(
+    {
+      DEFAULT_CURRENCY: "usd",
+      DEFAULT_LOCALE: "bad_locale",
+      DEFAULT_MARKET: "US",
+      FALLBACK_LOCALE: "still_bad",
+    },
+    () => {
+      assert.deepEqual(toSiteSettingsResponse(site).defaults, {
+        currency: "USD",
+        fallbackLocale: "en-US",
+        locale: "en-US",
+        market: "us",
+      });
+    },
+  );
+});
+
 test("site settings validation accepts hostnames and rejects URL paths", () => {
   assert.deepEqual(
     parseUpdateSiteSettingsInput({
@@ -175,7 +194,9 @@ test("sites service stores update responses by idempotency key", async () => {
         return Promise.resolve(storedRecord);
       },
       deleteMany() {
-        throw new Error("deleteMany should not run for successful site update.");
+        throw new Error(
+          "deleteMany should not run for successful site update.",
+        );
       },
     },
     site: {
@@ -245,7 +266,10 @@ test("public site lookup falls back to the first site", async () => {
     },
   };
 
-  assert.equal((await getPublicDefaultSite(prisma)).domain, "store.example.com");
+  assert.equal(
+    (await getPublicDefaultSite(prisma)).domain,
+    "store.example.com",
+  );
 });
 
 function withEnv(values, fn) {

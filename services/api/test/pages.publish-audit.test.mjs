@@ -67,6 +67,28 @@ test("publishPage rejects non-default locale while multi-locale is disabled", as
   );
 });
 
+test("publishPage ignores invalid default locale configuration", async () => {
+  await withEnv(
+    {
+      DEFAULT_LOCALE: "bad_locale",
+      MULTI_LOCALE_ENABLED: "false",
+    },
+    async () => {
+      const schema = createInitialPageSchema({
+        slug: "launch",
+        title: "Launch",
+      });
+      const calls = { audit: null };
+      const prisma = createPublishPrisma(calls);
+
+      await publishPage(prisma, "page-1", schema, undefined, createActor());
+
+      assert.equal(calls.versionCreate.status, "published");
+      assert.equal(calls.audit.action, "page.published");
+    },
+  );
+});
+
 test("publishPage validates media references before creating a version", async () => {
   const schema = createInitialPageSchema({
     slug: "launch",
@@ -231,9 +253,7 @@ function createPublishPrisma(calls) {
             id: "page-1",
             siteId: "site-1",
             slug: "launch",
-            versions: [
-              { id: "version-1", status: "published", version: 1 },
-            ],
+            versions: [{ id: "version-1", status: "published", version: 1 }],
           }),
           update: async () => ({}),
         },
