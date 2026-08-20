@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  readStorefrontRevalidationTimeoutMs,
   resolveStorefrontRevalidateUrl,
   triggerStorefrontRevalidation,
 } from "../dist/modules/pages/pages.revalidation.js";
@@ -153,6 +154,39 @@ test("storefront revalidation skips unsafe URLs without fetching", async () => {
       assert.equal(result.reason, "missing-url");
     },
   );
+});
+
+test("storefront revalidation timeout config stays bounded", () => {
+  assert.equal(
+    readStorefrontRevalidationTimeoutMs({
+      STOREFRONT_REVALIDATE_TIMEOUT_MS: " 15000 ",
+    }),
+    15000,
+  );
+  assert.equal(
+    readStorefrontRevalidationTimeoutMs({
+      STOREFRONT_REVALIDATE_TIMEOUT_MS: "30000",
+    }),
+    30000,
+  );
+
+  for (const value of [
+    "",
+    "0",
+    "-1",
+    "1.5",
+    "1e9",
+    "30001",
+    "Infinity",
+    "later",
+  ]) {
+    assert.equal(
+      readStorefrontRevalidationTimeoutMs({
+        STOREFRONT_REVALIDATE_TIMEOUT_MS: value,
+      }),
+      5000,
+    );
+  }
 });
 
 test("storefront revalidation distinguishes timeouts from request failures", async () => {

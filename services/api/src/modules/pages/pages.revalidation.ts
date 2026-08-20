@@ -6,6 +6,7 @@ import {
 } from "@app-starter/schema";
 
 const defaultTimeoutMs = 5000;
+const maxTimeoutMs = 30000;
 
 export type { StorefrontRevalidationResult };
 
@@ -41,7 +42,7 @@ export async function triggerStorefrontRevalidation(
   const controller = new AbortController();
   const timeout = setTimeout(
     () => controller.abort(),
-    readRevalidationTimeoutMs(),
+    readStorefrontRevalidationTimeoutMs(),
   );
 
   try {
@@ -149,10 +150,18 @@ function isHttpProtocol(protocol: string): boolean {
   return protocol === "http:" || protocol === "https:";
 }
 
-function readRevalidationTimeoutMs(): number {
-  const parsed = Number(process.env.STOREFRONT_REVALIDATE_TIMEOUT_MS);
+export function readStorefrontRevalidationTimeoutMs(
+  env: Record<string, string | undefined> = process.env,
+): number {
+  const value = env.STOREFRONT_REVALIDATE_TIMEOUT_MS?.trim();
 
-  if (Number.isFinite(parsed) && parsed > 0) {
+  if (!value || !/^\d+$/.test(value)) {
+    return defaultTimeoutMs;
+  }
+
+  const parsed = Number(value);
+
+  if (Number.isSafeInteger(parsed) && parsed > 0 && parsed <= maxTimeoutMs) {
     return parsed;
   }
 

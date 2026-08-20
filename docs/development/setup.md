@@ -43,6 +43,8 @@ STOREFRONT_REVALIDATE_TIMEOUT_MS=5000
 
 `STOREFRONT_REVALIDATE_URL` can be the full Web revalidation route. If it is
 set to the Web origin only, the API normalizes it to `/api/revalidate`.
+`STOREFRONT_REVALIDATE_TIMEOUT_MS` accepts integer values from 1 to 30000. Empty,
+invalid, fractional, or longer values fall back to 5000 ms.
 
 Preview links use a short-lived token. Local development can leave
 `PREVIEW_TOKEN_SECRET` empty, which uses a non-production fallback. Production
