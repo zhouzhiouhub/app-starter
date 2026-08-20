@@ -17,6 +17,7 @@ const writableReportFields = [
   "slug",
   "startedAt",
   "status",
+  "summary",
   "title",
 ];
 
@@ -31,7 +32,7 @@ export function createSmokeReport(input, title, now = new Date()) {
       webUrl: input.webUrl,
     });
 
-  return {
+  const report = {
     checks: [],
     config,
     error: null,
@@ -44,8 +45,13 @@ export function createSmokeReport(input, title, now = new Date()) {
     startedAt: now.toISOString(),
     status: "running",
     storefrontUrl: null,
+    summary: null,
     title,
   };
+
+  refreshSmokeReportSummary(report);
+
+  return report;
 }
 
 function createSmokeReportConfig(input) {
@@ -69,6 +75,7 @@ export function recordSmokeCheck(report, name, details = {}) {
     passedAt: new Date().toISOString(),
     status: "passed",
   });
+  refreshSmokeReportSummary(report);
 }
 
 export function recordSmokeCheckFailure(report, name, error, details = {}) {
@@ -81,6 +88,7 @@ export function recordSmokeCheckFailure(report, name, error, details = {}) {
     name,
     status: "failed",
   });
+  refreshSmokeReportSummary(report);
 }
 
 export function completeSmokeReport(report, input) {
@@ -88,6 +96,7 @@ export function completeSmokeReport(report, input) {
   report.pageId = input.pageId;
   report.status = "passed";
   report.storefrontUrl = input.storefrontUrl;
+  refreshSmokeReportSummary(report);
 }
 
 export function failSmokeReport(report, error) {
@@ -96,6 +105,39 @@ export function failSmokeReport(report, error) {
   };
   report.finishedAt = new Date().toISOString();
   report.status = "failed";
+  refreshSmokeReportSummary(report);
+}
+
+export function createSmokeReportSummary(report) {
+  const checks = Array.isArray(report?.checks) ? report.checks : [];
+  const failedChecks = checks
+    .filter((check) => check?.status === "failed")
+    .map((check) => check?.name)
+    .filter((name) => typeof name === "string" && name.length > 0);
+  const passedCheckCount = checks.filter(
+    (check) => check?.status === "passed",
+  ).length;
+  const readiness = readPlainRecord(report?.productionReadiness);
+
+  return {
+    blockerCount: readArrayLength(readiness.blockers),
+    checkCount: checks.length,
+    failedCheckCount: failedChecks.length,
+    failedChecks,
+    passedCheckCount,
+    productionReady: readiness.productionReady === true,
+    status: typeof report?.status === "string" ? report.status : "unknown",
+    warningCount: readArrayLength(readiness.warnings),
+  };
+}
+
+export function refreshSmokeReportSummary(report) {
+  report.summary = createSmokeReportSummary(report);
+  return report.summary;
+}
+
+function readArrayLength(value) {
+  return Array.isArray(value) ? value.length : 0;
 }
 
 function readErrorMessage(error) {
@@ -128,6 +170,9 @@ export async function writeSmokeReportIfConfigured(input, report) {
     return;
   }
 
+  if (isPlainRecord(report)) {
+    refreshSmokeReportSummary(report);
+  }
   assertSmokeReportWritable(report);
   await mkdir(dirname(input.reportPath), { recursive: true });
   await writeFile(
@@ -161,6 +206,20 @@ export function assertSmokeReportWritable(report) {
 
   if (!isPlainRecord(report.productionReadiness)) {
     throw new Error("Smoke report productionReadiness must be an object.");
+  }
+
+  if (!isPlainRecord(report.summary)) {
+    throw new Error("Smoke report summary must be an object.");
+  }
+
+  assertSmokeReportSummaryCurrent(report);
+}
+
+function assertSmokeReportSummaryCurrent(report) {
+  const expectedSummary = createSmokeReportSummary(report);
+
+  if (JSON.stringify(report.summary) !== JSON.stringify(expectedSummary)) {
+    throw new Error("Smoke report summary is stale.");
   }
 }
 
