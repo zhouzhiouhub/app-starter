@@ -78,20 +78,65 @@ export async function triggerStorefrontRevalidation(
   }
 }
 
-function resolveStorefrontRevalidateUrl(): string | null {
-  const configured = process.env.STOREFRONT_REVALIDATE_URL?.trim();
+export function resolveStorefrontRevalidateUrl(
+  env: {
+    STOREFRONT_REVALIDATE_URL?: string;
+    WEB_URL?: string;
+  } = process.env,
+): string | null {
+  const rawConfigured = env.STOREFRONT_REVALIDATE_URL?.trim();
+  const configured = readSafeHttpUrl(env.STOREFRONT_REVALIDATE_URL);
 
   if (configured) {
-    return configured;
+    return `${configured.origin}${trimTrailingSlashes(configured.pathname)}`;
   }
 
-  const webUrl = process.env.WEB_URL?.trim();
+  if (rawConfigured) {
+    return null;
+  }
+
+  const webUrl = readSafeHttpUrl(env.WEB_URL);
 
   if (!webUrl) {
     return null;
   }
 
-  return `${webUrl.replace(/\/$/, "")}/api/revalidate`;
+  return `${webUrl.origin}/api/revalidate`;
+}
+
+function readSafeHttpUrl(value: string | undefined): URL | null {
+  const trimmed = value?.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  try {
+    const url = new URL(trimmed);
+
+    if (
+      !isHttpProtocol(url.protocol) ||
+      url.username ||
+      url.password ||
+      url.search ||
+      url.hash
+    ) {
+      return null;
+    }
+
+    return url;
+  } catch {
+    return null;
+  }
+}
+
+function trimTrailingSlashes(value: string): string {
+  const trimmed = value.replace(/\/+$/, "");
+  return trimmed || "/";
+}
+
+function isHttpProtocol(protocol: string): boolean {
+  return protocol === "http:" || protocol === "https:";
 }
 
 function readRevalidationTimeoutMs(): number {

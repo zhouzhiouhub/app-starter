@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { triggerStorefrontRevalidation } from "../dist/modules/pages/pages.revalidation.js";
+import {
+  resolveStorefrontRevalidateUrl,
+  triggerStorefrontRevalidation,
+} from "../dist/modules/pages/pages.revalidation.js";
 
 test("storefront revalidation skips when secret is missing", async () => {
   await withEnv(
@@ -69,6 +72,78 @@ test("storefront revalidation posts the page payload with secret header", async 
         market: "us",
         slug: "contact",
       });
+    },
+  );
+});
+
+test("storefront revalidation URL resolver normalizes safe URLs", () => {
+  assert.equal(
+    resolveStorefrontRevalidateUrl({
+      STOREFRONT_REVALIDATE_URL: " https://web.example.com/api/revalidate/ ",
+      WEB_URL: "https://fallback.example.com/",
+    }),
+    "https://web.example.com/api/revalidate",
+  );
+  assert.equal(
+    resolveStorefrontRevalidateUrl({
+      STOREFRONT_REVALIDATE_URL: "",
+      WEB_URL: "https://web.example.com/storefront/",
+    }),
+    "https://web.example.com/api/revalidate",
+  );
+});
+
+test("storefront revalidation URL resolver rejects unsafe URLs", () => {
+  for (const values of [
+    {
+      STOREFRONT_REVALIDATE_URL: "javascript:alert(1)",
+      WEB_URL: "https://web.example.com/",
+    },
+    {
+      STOREFRONT_REVALIDATE_URL:
+        "https://user:pass@web.example.com/api/revalidate",
+      WEB_URL: "",
+    },
+    {
+      STOREFRONT_REVALIDATE_URL:
+        "https://web.example.com/api/revalidate?secret=1",
+      WEB_URL: "",
+    },
+    {
+      STOREFRONT_REVALIDATE_URL: "",
+      WEB_URL: "ftp://web.example.com",
+    },
+    {
+      STOREFRONT_REVALIDATE_URL: "",
+      WEB_URL: "https://user:pass@web.example.com",
+    },
+  ]) {
+    assert.equal(resolveStorefrontRevalidateUrl(values), null);
+  }
+});
+
+test("storefront revalidation skips unsafe URLs without fetching", async () => {
+  await withEnv(
+    {
+      STOREFRONT_REVALIDATE_SECRET: "secret-1",
+      STOREFRONT_REVALIDATE_URL:
+        "https://user:pass@web.example.com/api/revalidate",
+      WEB_URL: "",
+    },
+    async () => {
+      const result = await triggerStorefrontRevalidation(
+        {
+          locale: "en-US",
+          market: "us",
+          slug: "contact",
+        },
+        async () => {
+          throw new Error("fetch should not be called");
+        },
+      );
+
+      assert.equal(result.triggered, false);
+      assert.equal(result.reason, "missing-url");
     },
   );
 });
