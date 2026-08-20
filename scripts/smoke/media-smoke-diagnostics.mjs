@@ -3,6 +3,8 @@ import {
   isPlaceholderHostname,
 } from "./cdn-hostname.mjs";
 
+const maxR2PresignedUrlExpiresSeconds = 15 * 60;
+
 export function isR2UploadUrl(value) {
   try {
     const url = new URL(value);
@@ -137,5 +139,12 @@ function readUrlHost(value) {
 }
 
 function hasSafeExpiresQuery(value) {
-  return Boolean(value && /^\d+$/.test(value) && Number(value) > 0);
+  const seconds = Number(value);
+
+  return Boolean(
+    value &&
+      /^\d+$/.test(value) &&
+      seconds > 0 &&
+      seconds <= maxR2PresignedUrlExpiresSeconds,
+  );
 }
