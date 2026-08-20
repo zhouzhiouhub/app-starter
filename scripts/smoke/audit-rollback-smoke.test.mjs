@@ -60,6 +60,14 @@ test("smoke helpers validate safe page audit logs", () => {
     true,
   );
   assert.equal(
+    hasUnsafeAuditMetadata({
+      nested: {
+        previewToken: "[redacted]",
+      },
+    }),
+    true,
+  );
+  assert.equal(
     isPageAuditLog(
       {
         action: "page.rolled_back",

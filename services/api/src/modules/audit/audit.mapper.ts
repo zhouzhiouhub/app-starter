@@ -59,6 +59,7 @@ function shouldRedactMetadataKey(key: string): boolean {
   return (
     sensitiveMetadataKeys.has(normalized) ||
     normalized.endsWith("password") ||
-    normalized.endsWith("secret")
+    normalized.endsWith("secret") ||
+    normalized.endsWith("token")
   );
 }

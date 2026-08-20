@@ -83,6 +83,8 @@ test("audit service lists tenant-scoped logs with filters and pagination", async
             actorId: "user-1",
             createdAt,
             metadata: {
+              apiToken: "api-token",
+              nested: { previewToken: "preview-token" },
               schema: { sections: [] },
               siteId: "site-1",
               slug: "home",
@@ -124,6 +126,8 @@ test("audit service lists tenant-scoped logs with filters and pagination", async
   assert.equal(response.meta.page, 2);
   assert.equal(response.data[0].createdAt, "2026-08-19T00:00:00.000Z");
   assert.equal(response.data[0].metadata.slug, "home");
+  assert.equal(response.data[0].metadata.apiToken, "[redacted]");
+  assert.equal(response.data[0].metadata.nested.previewToken, "[redacted]");
   assert.equal(response.data[0].metadata.schema, "[redacted]");
   assert.equal(response.data[0].metadata.token, "[redacted]");
 });
@@ -133,10 +137,7 @@ test("audit log query rejects unsafe filter values", async () => {
 
   await assert.rejects(
     () =>
-      service.list(
-        { action: "page.published;drop" },
-        { tenantId: "tenant-1" },
-      ),
+      service.list({ action: "page.published;drop" }, { tenantId: "tenant-1" }),
     (error) => {
       assert.equal(error.getStatus(), 400);
       assert.equal(error.getResponse().code, "VALIDATION_ERROR");

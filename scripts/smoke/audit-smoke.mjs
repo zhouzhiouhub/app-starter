@@ -47,6 +47,7 @@ export function hasUnsafeAuditMetadata(value) {
       normalized === "token" ||
       normalized === "schema" ||
       normalized.endsWith("secret") ||
+      normalized.endsWith("token") ||
       normalized.endsWith("password") ||
       hasUnsafeAuditMetadata(child)
     );
