@@ -15,8 +15,8 @@ export function readExternalMediaUrlError(
     return "Enter a valid media URL.";
   }
 
-  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
-    return "Use an http(s) media URL.";
+  if (parsed.protocol !== "https:") {
+    return "Use an https media URL.";
   }
 
   if (parsed.username || parsed.password) {

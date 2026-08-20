@@ -72,6 +72,11 @@ test("external media URL validation only accepts explicit external hosts", () =>
       name: "BadRequestException",
     },
   );
+  assert.throws(
+    () =>
+      assertAllowedExternalMediaUrl("http://images.example.com/hero.webp", env),
+    /External media URL must use https/,
+  );
 });
 
 test("media URL allowlist rejects unsafe protocols", () => {
