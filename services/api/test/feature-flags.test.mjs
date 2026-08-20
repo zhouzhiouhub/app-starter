@@ -65,7 +65,9 @@ test("locale creation validates locale codes when multi-locale is enabled", () =
 test("admin locales ignore invalid default locale environment values", () => {
   withEnv(
     {
+      DEFAULT_CURRENCY: "usd",
       DEFAULT_LOCALE: "bad_locale",
+      DEFAULT_MARKET: "Bad-Market",
       FALLBACK_LOCALE: "still_bad",
     },
     () => {
@@ -76,9 +78,29 @@ test("admin locales ignore invalid default locale environment values", () => {
 
       assert.equal(locales.data[0].code, "en-US");
       assert.equal(locales.data[0].fallbackLocale, "en-US");
+      assert.equal(markets.data[0].code, "us");
+      assert.equal(markets.data[0].currency, "USD");
       assert.equal(markets.data[0].defaultLocale, "en-US");
       assert.equal(translations.meta.locale, "en-US");
       assert.equal(translations.meta.fallbackLocale, "en-US");
+    },
+  );
+});
+
+test("admin translations expose configured fallback locale metadata", () => {
+  withEnv(
+    {
+      DEFAULT_LOCALE: "en-US",
+      FALLBACK_LOCALE: "de-DE",
+      MULTI_LOCALE_ENABLED: "false",
+    },
+    () => {
+      const controller = new LocalizationController();
+      const response = controller.getTranslations("fr-FR");
+
+      assert.equal(response.meta.locale, "en-US");
+      assert.equal(response.meta.fallbackLocale, "de-DE");
+      assert.equal(response.meta.isFallback, true);
     },
   );
 });

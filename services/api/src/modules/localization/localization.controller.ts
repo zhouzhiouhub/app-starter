@@ -10,6 +10,7 @@ import {
 import { apiErrorCodes } from "@app-starter/schema";
 import { AdminApiGuard } from "../../common/admin-api.guard.js";
 import { RequireScopes } from "../../common/require-scopes.decorator.js";
+import { readApiRuntimeDefaults } from "../../common/runtime-defaults.js";
 import {
   parseCreateLocaleInput,
   readDefaultLocale,
@@ -23,12 +24,14 @@ export class LocalizationController {
   @Get("markets")
   @RequireScopes("market:read")
   getMarkets() {
+    const defaults = readApiRuntimeDefaults();
+
     return {
       data: [
         {
-          code: process.env.DEFAULT_MARKET ?? "us",
-          defaultLocale: readDefaultLocale(),
-          currency: process.env.DEFAULT_CURRENCY ?? "USD",
+          code: defaults.market,
+          defaultLocale: defaults.locale,
+          currency: defaults.currency,
           status: "active",
         },
       ],
@@ -61,7 +64,7 @@ export class LocalizationController {
       meta: {
         requestId: "local-dev",
         locale: localeContext.locale,
-        fallbackLocale: localeContext.defaultLocale,
+        fallbackLocale: localeContext.fallbackLocale,
         isFallback: localeContext.isFallback,
       },
     };

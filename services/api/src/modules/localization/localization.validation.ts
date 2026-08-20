@@ -1,10 +1,7 @@
 import { BadRequestException } from "@nestjs/common";
-import {
-  apiErrorCodes,
-  defaultRuntimeConfig,
-  localeCodeSchema,
-} from "@app-starter/schema";
+import { apiErrorCodes, localeCodeSchema } from "@app-starter/schema";
 import { z, ZodError } from "zod";
+import { readApiRuntimeDefaults } from "../../common/runtime-defaults.js";
 
 const createLocaleInputSchema = z.object({
   code: localeCodeSchema,
@@ -21,19 +18,13 @@ export function parseCreateLocaleInput(body: unknown): CreateLocaleInput {
 export function readDefaultLocale(
   env: Record<string, string | undefined> = process.env,
 ): string {
-  return readLocaleEnvValue(
-    env.DEFAULT_LOCALE,
-    defaultRuntimeConfig.defaultLocale,
-  );
+  return readApiRuntimeDefaults(env).locale;
 }
 
 export function readFallbackLocale(
   env: Record<string, string | undefined> = process.env,
 ): string {
-  return readLocaleEnvValue(
-    env.FALLBACK_LOCALE,
-    defaultRuntimeConfig.fallbackLocale,
-  );
+  return readApiRuntimeDefaults(env).fallbackLocale;
 }
 
 export function resolveTranslationLocale(
@@ -41,10 +32,12 @@ export function resolveTranslationLocale(
   env: Record<string, string | undefined> = process.env,
 ): {
   defaultLocale: string;
+  fallbackLocale: string;
   isFallback: boolean;
   locale: string;
 } {
-  const defaultLocale = readDefaultLocale(env);
+  const defaults = readApiRuntimeDefaults(env);
+  const defaultLocale = defaults.locale;
   const requestedLocale = locale ?? defaultLocale;
   const parsed = localeCodeSchema.safeParse(requestedLocale);
 
@@ -60,17 +53,10 @@ export function resolveTranslationLocale(
 
   return {
     defaultLocale,
+    fallbackLocale: defaults.fallbackLocale,
     isFallback,
     locale: isFallback ? defaultLocale : parsed.data,
   };
-}
-
-function readLocaleEnvValue(
-  value: string | undefined,
-  fallback: string,
-): string {
-  const parsed = localeCodeSchema.safeParse(value);
-  return parsed.success ? parsed.data : fallback;
 }
 
 function unwrapBodyData(body: unknown): Record<string, unknown> {
