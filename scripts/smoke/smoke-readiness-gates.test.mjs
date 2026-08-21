@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { createSmokeProductionReadiness } from "./smoke-readiness.mjs";
 import {
-  createSmokeProductionReadiness,
-  createSmokeReadinessNextActions,
-} from "./smoke-readiness.mjs";
+  createReadyConfig,
+  createReadyEnvironment,
+} from "./smoke-readiness-test-fixtures.mjs";
 
 test("smoke readiness passes when every production gate is proven", () => {
   const readiness = createSmokeProductionReadiness(
@@ -132,105 +133,30 @@ test("smoke readiness reports unsafe deployment and environment blockers", () =>
   );
 });
 
-test("smoke readiness warns when revalidation uses WEB_URL fallback", () => {
+test("smoke readiness reports unsafe storefront deployment blockers", () => {
   const environment = createReadyEnvironment();
-  environment.revalidation.usesWebUrlFallback = true;
+  environment.deployment.web = {
+    host: "localhost",
+    path: "",
+    productionReady: false,
+    urlIssue: "local-host",
+    variable: "WEB_URL",
+  };
 
   const readiness = createSmokeProductionReadiness(
     environment,
     createReadyConfig(),
   );
 
-  assert.deepEqual(readiness.warnings, [
-    {
-      area: "revalidation.url",
-      issue: "uses-web-url-fallback",
-      message:
-        "STOREFRONT_REVALIDATE_URL is not set; smoke will derive /api/revalidate from WEB_URL.",
-    },
-  ]);
-  assert.equal(readiness.productionReady, true);
+  assert.deepEqual(
+    readiness.blockers.map((blocker) => [blocker.area, blocker.issue]),
+    [["deployment.web", "local-host"]],
+  );
+  assert.equal(readiness.productionReady, false);
   assert.deepEqual(readiness.nextActions, [
     {
-      action:
-        "Optionally set STOREFRONT_REVALIDATE_URL explicitly instead of relying on WEB_URL fallback.",
-      area: "revalidation.url",
+      action: "Set WEB_URL to the deployed storefront HTTPS origin.",
+      area: "deployment.web",
     },
   ]);
 });
-
-test("smoke readiness next actions preserve the public helper export", () => {
-  assert.deepEqual(
-    createSmokeReadinessNextActions(
-      [
-        {
-          area: "deployment.api",
-          issue: "placeholder-host",
-          message: "API_URL must be production ready.",
-        },
-        {
-          area: "deployment.api",
-          issue: "placeholder-host",
-          message: "API_URL must be production ready.",
-        },
-      ],
-      [
-        {
-          area: "revalidation.url",
-          issue: "uses-web-url-fallback",
-          message: "Uses WEB_URL fallback.",
-        },
-      ],
-    ),
-    [
-      {
-        action:
-          "Set API_URL to the deployed API HTTPS origin or exact /api/v1 base.",
-        area: "deployment.api",
-      },
-      {
-        action:
-          "Optionally set STOREFRONT_REVALIDATE_URL explicitly instead of relying on WEB_URL fallback.",
-        area: "revalidation.url",
-      },
-    ],
-  );
-});
-
-function createReadyConfig() {
-  return {
-    requireAdminApp: true,
-    requireR2Upload: true,
-    requireRevalidation: true,
-  };
-}
-
-function createReadyEnvironment() {
-  return {
-    deployment: {
-      admin: {
-        productionReady: true,
-      },
-      api: {
-        productionReady: true,
-      },
-      web: {
-        productionReady: true,
-      },
-    },
-    media: {
-      cdnConfigured: true,
-      cdnProductionReady: true,
-      r2: {
-        configured: true,
-        missingRequired: [],
-      },
-    },
-    revalidation: {
-      secretConfigured: true,
-      urlConfigured: true,
-      urlSafe: true,
-      usesWebUrlFallback: false,
-    },
-  };
-}
