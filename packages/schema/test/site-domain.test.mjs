@@ -13,6 +13,11 @@ test("site domain helper accepts localhost and public hostnames", () => {
     normalizeSiteDomain(" Store.Brand-Platform.com:8080 "),
     "store.brand-platform.com:8080",
   );
+  assert.equal(
+    normalizeSiteDomain(" Store.Brand-Platform.com:443 "),
+    "store.brand-platform.com",
+  );
+  assert.equal(normalizeSiteDomain("localhost:80"), "localhost");
   assert.equal(readSiteDomainIssue("localhost"), null);
   assert.equal(readSiteDomainIssue("localhost:3000"), null);
   assert.equal(readSiteDomainIssue("store.brand-platform.com"), null);

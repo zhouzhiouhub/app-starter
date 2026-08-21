@@ -34,6 +34,16 @@ test("site settings validation accepts hostnames and rejects URL paths", () => {
       name: "Storefront",
     },
   );
+  assert.deepEqual(
+    parseUpdateSiteSettingsInput({
+      domain: "Store.Brand-Platform.com:443",
+      name: "Storefront",
+    }),
+    {
+      domain: "store.brand-platform.com",
+      name: "Storefront",
+    },
+  );
 
   assert.throws(() =>
     parseUpdateSiteSettingsInput({
@@ -73,7 +83,7 @@ test("sites service updates the current tenant site", async () => {
   const service = new SitesService(prisma);
   const response = await service.updateCurrent(
     {
-      domain: "store.brand-platform.com",
+      domain: "Store.Brand-Platform.com:443",
       name: "Storefront",
     },
     undefined,

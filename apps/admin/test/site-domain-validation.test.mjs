@@ -8,9 +8,10 @@ import {
 
 test("site domain validation accepts localhost and public hosts", async () => {
   assert.equal(
-    normalizeSiteDomainInput(" Store.Brand-Platform.com "),
+    normalizeSiteDomainInput(" Store.Brand-Platform.com:443 "),
     "store.brand-platform.com",
   );
+  assert.equal(normalizeSiteDomainInput("localhost:3000"), "localhost:3000");
   assert.equal(readSiteDomainFormError("localhost"), null);
   assert.equal(readSiteDomainFormError("store.brand-platform.com"), null);
   await validateSiteDomainFormValue({}, "store.brand-platform.com");

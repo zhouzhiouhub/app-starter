@@ -20,7 +20,7 @@ const siteDomainIssueMessages: Record<SiteDomainIssue, string> = {
 };
 
 export function normalizeSiteDomain(value: string): string {
-  return value.trim().toLowerCase();
+  return stripDefaultPort(value.trim().toLowerCase());
 }
 
 export function readSiteDomainHeader(
@@ -32,7 +32,7 @@ export function readSiteDomainHeader(
     return null;
   }
 
-  const normalized = stripDefaultPort(normalizeSiteDomain(raw));
+  const normalized = normalizeSiteDomain(raw);
   return readSiteDomainIssue(normalized) ? null : normalized;
 }
 
