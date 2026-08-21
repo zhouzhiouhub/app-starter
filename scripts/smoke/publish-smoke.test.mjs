@@ -6,6 +6,7 @@ import {
   normalizeSmokeLocale,
   normalizeSmokeMarket,
   normalizeSmokeSlug,
+  normalizeStorefrontHost,
   normalizeWebOrigin,
   readConfig,
 } from "./publish-smoke.mjs";
@@ -26,10 +27,18 @@ test("smoke helpers validate slug locale and market config", async () => {
   assert.equal(normalizeSmokeSlug(" legal/terms "), "legal/terms");
   assert.equal(normalizeSmokeLocale(" en-US "), "en-US");
   assert.equal(normalizeSmokeMarket(" us "), "us");
+  assert.equal(
+    normalizeStorefrontHost(" Store.Brand-Platform.com:443 "),
+    "store.brand-platform.com",
+  );
   assert.throws(() => normalizeSmokeSlug("../secret"), /SMOKE_PAGE_SLUG/);
   assert.throws(() => normalizeSmokeSlug("Campaign"), /SMOKE_PAGE_SLUG/);
   assert.throws(() => normalizeSmokeLocale("bad_locale"), /SMOKE_LOCALE/);
   assert.throws(() => normalizeSmokeMarket("US"), /SMOKE_MARKET/);
+  assert.throws(
+    () => normalizeStorefrontHost("https://store.brand-platform.com"),
+    /SMOKE_STOREFRONT_HOST/,
+  );
 
   await withEnv(
     {
@@ -101,6 +110,7 @@ test("readConfig uses seeded defaults and explicit smoke overrides", async () =>
       SMOKE_REQUIRE_R2_UPLOAD: "true",
       SMOKE_REQUIRE_REVALIDATION: "false",
       SMOKE_REPORT_PATH: "tmp/smoke-report.json",
+      SMOKE_STOREFRONT_HOST: "Store.Brand-Platform.com:443",
       SMOKE_TENANT_SLUG: "",
       WEB_URL: "https://web.example.com/",
     },
@@ -116,6 +126,7 @@ test("readConfig uses seeded defaults and explicit smoke overrides", async () =>
       assert.equal(config.requireRevalidation, false);
       assert.equal(config.reportPath, "tmp/smoke-report.json");
       assert.equal(config.slug, "legal/terms");
+      assert.equal(config.storefrontHost, "store.brand-platform.com");
       assert.equal(config.tenantSlug, "default");
       assert.equal(config.webUrl, "https://web.example.com");
     },

@@ -177,3 +177,19 @@ test("smoke config rejects invalid retry environment values", async () => {
     },
   );
 });
+
+test("smoke config rejects unsafe storefront host overrides", async () => {
+  await withEnv(
+    {
+      API_URL: "https://api.example.com",
+      SMOKE_STOREFRONT_HOST: "store.example.com",
+      WEB_URL: "https://web.example.com",
+    },
+    async () => {
+      assert.throws(
+        () => readConfig(),
+        /SMOKE_STOREFRONT_HOST must be a safe storefront host/,
+      );
+    },
+  );
+});

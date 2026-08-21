@@ -6,10 +6,12 @@ import {
   redactSmokeSecrets,
 } from "./preview-smoke-http.mjs";
 import { hasNoIndexRobots, joinUrl } from "./storefront-smoke.mjs";
+import { createStorefrontSmokeRequestInit } from "./storefront-smoke-http.mjs";
 
 export async function assertPublicPreview(input, token, title) {
   const response = await fetchJson(
     `${input.apiBaseUrl}/public/preview/${encodeURIComponent(token)}`,
+    createStorefrontSmokeRequestInit(input),
   );
 
   if (!response.ok) {
@@ -33,7 +35,10 @@ export async function assertWebPreview(input, token, title) {
 
   for (let attempt = 1; attempt <= input.retryAttempts; attempt += 1) {
     try {
-      const response = await fetchText(url);
+      const response = await fetchText(
+        url,
+        createStorefrontSmokeRequestInit(input),
+      );
       const attempt = readWebPreviewAttempt(response, title);
 
       if (attempt.ok && attempt.titlePresent && attempt.noIndex) {

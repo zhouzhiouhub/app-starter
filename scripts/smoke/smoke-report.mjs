@@ -61,6 +61,7 @@ function createSmokeReportConfig(input) {
     requireAdminApp: input.requireAdminApp === true,
     requireR2Upload: input.requireR2Upload,
     requireRevalidation: input.requireRevalidation,
+    storefrontHost: input.storefrontHost ?? null,
     tenantSlug: input.tenantSlug,
     webUrl: input.webUrl,
   };

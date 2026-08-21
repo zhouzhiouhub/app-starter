@@ -6,6 +6,7 @@ import {
   joinUrl,
   parseSitemapUrls,
 } from "./storefront-smoke.mjs";
+import { createStorefrontSmokeRequestInit } from "./storefront-smoke-http.mjs";
 
 test("storefront smoke helpers preserve nested storefront slugs", () => {
   assert.equal(getStorefrontPath("en-US", "home"), "/en");
@@ -37,4 +38,28 @@ test("storefront smoke helpers detect noindex robots metadata", () => {
     false,
   );
   assert.equal(hasNoIndexRobots("<title>noindex copy</title>"), false);
+});
+
+test("storefront smoke request helper forwards storefront hosts", () => {
+  assert.deepEqual(
+    createStorefrontSmokeRequestInit(
+      { storefrontHost: "store.brand-platform.com" },
+      {
+        headers: {
+          Accept: "text/html",
+        },
+        method: "GET",
+      },
+    ),
+    {
+      headers: {
+        Accept: "text/html",
+        "x-storefront-host": "store.brand-platform.com",
+      },
+      method: "GET",
+    },
+  );
+  assert.deepEqual(createStorefrontSmokeRequestInit({}, { method: "GET" }), {
+    method: "GET",
+  });
 });

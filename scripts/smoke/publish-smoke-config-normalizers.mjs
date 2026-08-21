@@ -1,3 +1,5 @@
+import { readSiteDomainHeader } from "../../packages/schema/dist/index.js";
+
 const localeCodePattern = /^[a-z]{2}(?:-[A-Z]{2})?$/;
 const marketCodePattern = /^[a-z][a-z0-9-]{1,15}$/;
 const pageSlugPattern = /^[a-z0-9]+(?:[-/][a-z0-9]+)*$/;
@@ -15,6 +17,18 @@ export function normalizeApiBaseUrl(value) {
 
 export function normalizeWebOrigin(value) {
   return normalizeOrigin(value, "WEB_URL", "storefront origin", "a");
+}
+
+export function normalizeStorefrontHost(value) {
+  const host = readSiteDomainHeader(value);
+
+  if (!host) {
+    throw new Error(
+      "SMOKE_STOREFRONT_HOST must be a safe storefront host without protocol, path, query, or fragment.",
+    );
+  }
+
+  return host;
 }
 
 export function normalizeAdminOrigin(value) {

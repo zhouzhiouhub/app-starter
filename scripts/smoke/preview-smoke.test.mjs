@@ -95,80 +95,83 @@ test("preview smoke flow sends idempotency keys for write requests", async () =>
   const calls = [];
   const title = "Draft preview title";
 
-  await withFetch(async (url, init = {}) => {
-    calls.push({
-      headers: init.headers ?? {},
-      method: init.method ?? "GET",
-      url,
-    });
-
-    if (url === "https://api.example.com/pages?limit=100") {
-      return jsonResponse({
-        data: [
-          {
-            id: "page-1",
-            slug: "smoke-page",
-          },
-        ],
+  await withFetch(
+    async (url, init = {}) => {
+      calls.push({
+        headers: init.headers ?? {},
+        method: init.method ?? "GET",
+        url,
       });
-    }
 
-    if (url === "https://api.example.com/pages/page-1/schema") {
-      return jsonResponse({
-        data: {
-          title,
-        },
-      });
-    }
+      if (url === "https://api.example.com/pages?limit=100") {
+        return jsonResponse({
+          data: [
+            {
+              id: "page-1",
+              slug: "smoke-page",
+            },
+          ],
+        });
+      }
 
-    if (url === "https://api.example.com/pages/page-1/preview-token") {
-      return jsonResponse({
-        data: {
-          expiresAt: "2026-08-21T00:15:00.000Z",
-          slug: "smoke-page",
-          token: "payload.signature",
-        },
-      });
-    }
-
-    if (url === "https://api.example.com/public/preview/payload.signature") {
-      return jsonResponse({
-        data: {
-          meta: {
+      if (url === "https://api.example.com/pages/page-1/schema") {
+        return jsonResponse({
+          data: {
             title,
           },
-        },
-        meta: {
-          preview: true,
-        },
-      });
-    }
+        });
+      }
 
-    if (url === "https://web.example.com/preview?token=payload.signature") {
-      return new Response(
-        `<html><head><meta name="robots" content="noindex" /></head><body>${title}</body></html>`,
+      if (url === "https://api.example.com/pages/page-1/preview-token") {
+        return jsonResponse({
+          data: {
+            expiresAt: "2026-08-21T00:15:00.000Z",
+            slug: "smoke-page",
+            token: "payload.signature",
+          },
+        });
+      }
+
+      if (url === "https://api.example.com/public/preview/payload.signature") {
+        return jsonResponse({
+          data: {
+            meta: {
+              title,
+            },
+          },
+          meta: {
+            preview: true,
+          },
+        });
+      }
+
+      if (url === "https://web.example.com/preview?token=payload.signature") {
+        return new Response(
+          `<html><head><meta name="robots" content="noindex" /></head><body>${title}</body></html>`,
+          {
+            status: 200,
+            statusText: "OK",
+          },
+        );
+      }
+
+      throw new Error(`Unexpected fetch URL: ${url}`);
+    },
+    async () => {
+      await assertPreviewFlow(
         {
-          status: 200,
-          statusText: "OK",
+          apiBaseUrl: "https://api.example.com",
+          retryAttempts: 1,
+          retryDelayMs: 1,
+          slug: "smoke-page",
+          webUrl: "https://web.example.com",
         },
+        "access-token",
+        { meta: { title } },
+        title,
       );
-    }
-
-    throw new Error(`Unexpected fetch URL: ${url}`);
-  }, async () => {
-    await assertPreviewFlow(
-      {
-        apiBaseUrl: "https://api.example.com",
-        retryAttempts: 1,
-        retryDelayMs: 1,
-        slug: "smoke-page",
-        webUrl: "https://web.example.com",
-      },
-      "access-token",
-      { meta: { title } },
-      title,
-    );
-  });
+    },
+  );
 
   const [, draftSave, previewToken] = calls;
 
@@ -184,6 +187,97 @@ test("preview smoke flow sends idempotency keys for write requests", async () =>
     calls.map((call) => call.method),
     ["GET", "PUT", "POST", "GET", "GET"],
   );
+});
+
+test("preview smoke flow forwards storefront hosts to public preview requests", async () => {
+  const calls = [];
+  const title = "Draft preview title";
+
+  await withFetch(
+    async (url, init = {}) => {
+      calls.push({
+        headers: init.headers ?? {},
+        method: init.method ?? "GET",
+        url,
+      });
+
+      if (url === "https://api.example.com/pages?limit=100") {
+        return jsonResponse({
+          data: [
+            {
+              id: "page-1",
+              slug: "smoke-page",
+            },
+          ],
+        });
+      }
+
+      if (url === "https://api.example.com/pages/page-1/schema") {
+        return jsonResponse({
+          data: {
+            title,
+          },
+        });
+      }
+
+      if (url === "https://api.example.com/pages/page-1/preview-token") {
+        return jsonResponse({
+          data: {
+            expiresAt: "2026-08-21T00:15:00.000Z",
+            slug: "smoke-page",
+            token: "payload.signature",
+          },
+        });
+      }
+
+      if (url === "https://api.example.com/public/preview/payload.signature") {
+        return jsonResponse({
+          data: {
+            meta: {
+              title,
+            },
+          },
+          meta: {
+            preview: true,
+          },
+        });
+      }
+
+      if (url === "https://web.example.com/preview?token=payload.signature") {
+        return new Response(
+          `<html><head><meta name="robots" content="noindex" /></head><body>${title}</body></html>`,
+          {
+            status: 200,
+            statusText: "OK",
+          },
+        );
+      }
+
+      throw new Error(`Unexpected fetch URL: ${url}`);
+    },
+    async () => {
+      await assertPreviewFlow(
+        {
+          apiBaseUrl: "https://api.example.com",
+          retryAttempts: 1,
+          retryDelayMs: 1,
+          slug: "smoke-page",
+          storefrontHost: "store.brand-platform.com",
+          webUrl: "https://web.example.com",
+        },
+        "access-token",
+        { meta: { title } },
+        title,
+      );
+    },
+  );
+
+  assert.deepEqual(calls[3].headers, {
+    "x-storefront-host": "store.brand-platform.com",
+  });
+  assert.deepEqual(calls[4].headers, {
+    "x-storefront-host": "store.brand-platform.com",
+  });
 });
 
 function jsonResponse(body) {

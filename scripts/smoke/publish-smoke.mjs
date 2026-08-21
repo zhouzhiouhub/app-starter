@@ -4,10 +4,7 @@ import { loginSmokeAdmin } from "./auth-smoke.mjs";
 import { assertFeatureFlagsDisabled } from "./feature-flags-smoke.mjs";
 import { assertJsonReachable } from "./http-json-smoke.mjs";
 import { assertMediaUploadTarget } from "./media-smoke.mjs";
-import {
-  assertPublishedResponse,
-  publishPage,
-} from "./publish-page-smoke.mjs";
+import { assertPublishedResponse, publishPage } from "./publish-page-smoke.mjs";
 import { runSmokeStep } from "./publish-smoke-step.mjs";
 import { assertPreviewFlow } from "./preview-smoke.mjs";
 import {
@@ -42,9 +39,7 @@ export {
   joinUrl,
   parseSitemapUrls,
 } from "./storefront-smoke.mjs";
-export {
-  formatPublishRevalidationFailure,
-} from "./publish-page-smoke.mjs";
+export { formatPublishRevalidationFailure } from "./publish-page-smoke.mjs";
 export { readErrorMessage } from "./smoke-error-message.mjs";
 export {
   normalizeAdminOrigin,
@@ -55,6 +50,7 @@ export {
   normalizeSmokePositiveInt,
   normalizeSmokeReportPath,
   normalizeSmokeSlug,
+  normalizeStorefrontHost,
   normalizeWebOrigin,
   printHelp,
   readConfig,
@@ -73,6 +69,7 @@ export async function runSmokeTest(input) {
   console.log(`Smoke page slug: ${input.slug}`);
   console.log(`API: ${input.apiBaseUrl}`);
   console.log(`Web: ${input.webUrl}`);
+  console.log(`Storefront host: ${input.storefrontHost ?? "(from WEB_URL)"}`);
   console.log(`Admin: ${input.adminUrl ?? "(not required)"}`);
 
   try {

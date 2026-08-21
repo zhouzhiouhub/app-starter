@@ -105,3 +105,44 @@ test("storefront page smoke failure keeps structured diagnostics", async () => {
     },
   );
 });
+
+test("storefront page smoke forwards the configured storefront host", async () => {
+  const calls = [];
+
+  await withFetch(
+    async (url, init = {}) => {
+      calls.push({ headers: init.headers ?? {}, method: init.method, url });
+
+      return new Response(
+        "<html><head><title>Published title</title></head><body>Published title</body></html>",
+        {
+          status: 200,
+          statusText: "OK",
+        },
+      );
+    },
+    async () => {
+      await assertStorefrontPage(
+        {
+          locale: "en-US",
+          retryAttempts: 1,
+          retryDelayMs: 1,
+          slug: "smoke-page",
+          storefrontHost: "store.brand-platform.com",
+          webUrl: "https://web.example.com",
+        },
+        "Published title",
+      );
+    },
+  );
+
+  assert.deepEqual(calls, [
+    {
+      headers: {
+        "x-storefront-host": "store.brand-platform.com",
+      },
+      method: "GET",
+      url: "https://web.example.com/en/smoke-page",
+    },
+  ]);
+});

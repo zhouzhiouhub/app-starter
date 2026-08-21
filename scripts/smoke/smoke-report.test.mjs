@@ -23,11 +23,13 @@ test("smoke report includes deployment diagnostics for effective smoke URLs", ()
     adminUrl: "https://admin.brand.com",
     apiBaseUrl: "https://api.brand.com/api/v1",
     requireAdminApp: true,
+    storefrontHost: "store.brand.com",
     webUrl: "https://store.brand.com",
   });
 
   assert.equal(report.config.adminUrl, "https://admin.brand.com");
   assert.equal(report.config.requireAdminApp, true);
+  assert.equal(report.config.storefrontHost, "store.brand.com");
   assert.equal(report.environment.deployment.admin.host, "admin.brand.com");
   assert.equal(report.environment.deployment.admin.productionReady, true);
   assert.equal(report.environment.deployment.api.host, "api.brand.com");

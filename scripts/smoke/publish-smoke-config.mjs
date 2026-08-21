@@ -18,6 +18,7 @@ import {
   normalizeSmokeMarket,
   normalizeSmokePositiveInt,
   normalizeSmokeSlug,
+  normalizeStorefrontHost,
   normalizeWebOrigin,
 } from "./publish-smoke-config-normalizers.mjs";
 import { normalizeSmokeReportPath } from "./smoke-report-path-config.mjs";
@@ -57,6 +58,7 @@ export function readConfig() {
     ),
     reportPath: readSmokeReportPathEnv("SMOKE_REPORT_PATH"),
     slug: normalizeSmokeSlug(readEnv("SMOKE_PAGE_SLUG", createSmokeSlug())),
+    storefrontHost: readOptionalStorefrontHostEnv("SMOKE_STOREFRONT_HOST"),
     tenantSlug: readEnv("SMOKE_TENANT_SLUG", defaultTenantSlug),
     webUrl: normalizeWebOrigin(readEnv("WEB_URL", defaultWebUrl)),
   };
@@ -115,4 +117,14 @@ function readSmokeReportPathEnv(name) {
   }
 
   return normalizeSmokeReportPath(value);
+}
+
+function readOptionalStorefrontHostEnv(name) {
+  const value = process.env[name]?.trim();
+
+  if (!value) {
+    return null;
+  }
+
+  return normalizeStorefrontHost(value);
 }

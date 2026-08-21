@@ -1,4 +1,5 @@
 import { redactSmokeSecrets } from "./smoke-secrets.mjs";
+import { createStorefrontSmokeRequestInit } from "./storefront-smoke-http.mjs";
 
 const fallbackProbeLocale = "de-DE";
 
@@ -55,6 +56,7 @@ async function fetchPublicPage(input, context) {
   });
   const response = await fetchJson(
     `${input.apiBaseUrl}/public/pages/${encodeURIComponent(input.slug)}?${params}`,
+    createStorefrontSmokeRequestInit(input),
   );
 
   if (!response.ok) {

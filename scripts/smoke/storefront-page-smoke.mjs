@@ -7,6 +7,7 @@ import {
 } from "./storefront-smoke-diagnostics.mjs";
 import {
   delayStorefrontSmoke,
+  fetchStorefrontText,
   readStorefrontSmokeErrorMessage,
 } from "./storefront-smoke-http.mjs";
 
@@ -20,21 +21,12 @@ export async function assertStorefrontPage(input, title) {
 
   for (let attempt = 1; attempt <= input.retryAttempts; attempt += 1) {
     try {
-      const response = await fetch(url, { method: "GET" });
-      const text = await response.text();
-      const pageAttempt = readStorefrontPageAttempt(
-        {
-          ok: response.ok,
-          status: response.status,
-          statusText: response.statusText,
-          text,
-        },
-        title,
-      );
+      const response = await fetchStorefrontText(url, input, { method: "GET" });
+      const pageAttempt = readStorefrontPageAttempt(response, title);
 
       if (pageAttempt.ok && pageAttempt.titlePresent) {
         console.log("Storefront page passed.");
-        return text;
+        return response.text;
       }
 
       lastError = formatStorefrontPageAttempt(pageAttempt);

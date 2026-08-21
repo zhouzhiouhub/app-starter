@@ -21,6 +21,7 @@ Environment:
   ADMIN_URL                       Admin app origin. Default: ${defaultAdminUrl}
   API_URL                         API origin or /api/v1 base. Default: ${defaultApiUrl}
   WEB_URL                         Storefront origin. Default: ${defaultWebUrl}
+  SMOKE_STOREFRONT_HOST           Optional public storefront host sent as x-storefront-host for multi-domain smoke.
   SMOKE_ADMIN_EMAIL               Admin email. Default: SEED_ADMIN_EMAIL or ${defaultEmail}
   SMOKE_ADMIN_PASSWORD            Admin password. Default: SEED_ADMIN_PASSWORD or ${defaultPassword}
   SMOKE_TENANT_SLUG               Tenant slug. Default: ${defaultTenantSlug}

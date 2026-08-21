@@ -16,7 +16,7 @@ import {
 
 export async function assertRobots(input) {
   const url = joinUrl(input.webUrl, "/robots.txt");
-  const response = await fetchStorefrontText(url);
+  const response = await fetchStorefrontText(url, input);
   const robotsAttempt = readRobotsAttempt(response, input.webUrl);
 
   if (!response.ok) {
@@ -67,7 +67,7 @@ export async function assertSitemap(input) {
 
   for (let attempt = 1; attempt <= input.retryAttempts; attempt += 1) {
     try {
-      const response = await fetchStorefrontText(url);
+      const response = await fetchStorefrontText(url, input);
       const sitemapAttempt = readSitemapAttempt(response, expectedUrl);
 
       if (
@@ -112,7 +112,7 @@ export async function assertSitemap(input) {
 export async function assertNotFoundPage(input) {
   const slug = `${input.slug}-missing-${Date.now().toString(36)}`;
   const url = joinUrl(input.webUrl, getStorefrontPath(input.locale, slug));
-  const response = await fetchStorefrontText(url);
+  const response = await fetchStorefrontText(url, input);
   const notFoundAttempt = readNotFoundAttempt(response);
 
   if (notFoundAttempt.status !== 404) {
