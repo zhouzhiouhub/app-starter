@@ -13,6 +13,7 @@ test("image gallery renders valid images lazily", () => {
   assert.equal(image.props.src, "https://cdn.example.com/product.jpg");
   assert.equal(image.props.decoding, "async");
   assert.equal(image.props.loading, "lazy");
+  assert.equal(image.props.referrerPolicy, "no-referrer");
 });
 
 test("image gallery keeps placeholders for unresolved media references", () => {

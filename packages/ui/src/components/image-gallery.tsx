@@ -33,6 +33,7 @@ export function ImageGallery(props: {
             decoding="async"
             key={`${index}-${src}`}
             loading="lazy"
+            referrerPolicy="no-referrer"
             src={src}
           />
         );
