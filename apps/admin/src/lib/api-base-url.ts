@@ -1,6 +1,9 @@
+import { isProductionHttpUrl } from "@app-starter/schema";
+
 type ViteEnv = {
   API_URL?: string;
   DEV?: boolean;
+  PROD?: boolean;
   VITE_API_URL?: string;
 };
 
@@ -8,14 +11,17 @@ export function resolveApiBaseUrl(input: {
   configured?: string;
   fallbackConfigured?: string;
   isDev?: boolean;
+  isProd?: boolean;
 }): string {
   if (input.isDev) {
     return "/api/v1";
   }
 
+  const requireProductionUrl = input.isProd === true;
+
   return (
-    readConfiguredApiBaseUrl(input.configured) ??
-    readConfiguredApiBaseUrl(input.fallbackConfigured) ??
+    readConfiguredApiBaseUrl(input.configured, requireProductionUrl) ??
+    readConfiguredApiBaseUrl(input.fallbackConfigured, requireProductionUrl) ??
     "/api/v1"
   );
 }
@@ -31,10 +37,14 @@ export function getApiBaseUrl(): string {
     configured: env?.VITE_API_URL,
     fallbackConfigured: env?.API_URL,
     isDev: env?.DEV,
+    isProd: env?.PROD,
   });
 }
 
-function readConfiguredApiBaseUrl(value: string | undefined): string | null {
+function readConfiguredApiBaseUrl(
+  value: string | undefined,
+  requireProductionUrl: boolean,
+): string | null {
   const trimmed = value?.trim();
 
   if (!trimmed) {
@@ -45,7 +55,7 @@ function readConfiguredApiBaseUrl(value: string | undefined): string | null {
     return readRelativeApiBaseUrl(trimmed);
   }
 
-  return readAbsoluteApiBaseUrl(trimmed);
+  return readAbsoluteApiBaseUrl(trimmed, requireProductionUrl);
 }
 
 function readRelativeApiBaseUrl(value: string): string | null {
@@ -56,7 +66,10 @@ function readRelativeApiBaseUrl(value: string): string | null {
   return normalizeApiBasePath(value);
 }
 
-function readAbsoluteApiBaseUrl(value: string): string | null {
+function readAbsoluteApiBaseUrl(
+  value: string,
+  requireProductionUrl: boolean,
+): string | null {
   try {
     const url = new URL(value);
 
@@ -65,7 +78,8 @@ function readAbsoluteApiBaseUrl(value: string): string | null {
       url.username ||
       url.password ||
       url.search ||
-      url.hash
+      url.hash ||
+      (requireProductionUrl && !isProductionHttpUrl(url))
     ) {
       return null;
     }

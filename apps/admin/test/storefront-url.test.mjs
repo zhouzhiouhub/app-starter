@@ -21,6 +21,16 @@ test("storefront URL helper accepts safe configured web origins", () => {
   );
 });
 
+test("storefront URL helper accepts production-safe web origins", () => {
+  assert.equal(
+    resolveWebOrigin({
+      configured: " https://store.brand-platform.com/ ",
+      isProd: true,
+    }),
+    "https://store.brand-platform.com",
+  );
+});
+
 test("storefront URL helper falls back to generic WEB_URL origins", () => {
   assert.equal(
     resolveWebOrigin({
@@ -83,6 +93,39 @@ test("storefront URL helper rejects unsafe configured web origins", () => {
     }),
     "https://admin.example.com:3000",
   );
+});
+
+test("storefront URL helper ignores unsafe production web origins", () => {
+  const windowLocation = {
+    hostname: "admin.brand-platform.com",
+    protocol: "https:",
+  };
+
+  assert.equal(
+    resolveWebOrigin({
+      configured: "http://store.brand-platform.com",
+      fallbackConfigured: "https://store.brand-platform.com/",
+      isProd: true,
+      windowLocation,
+    }),
+    "https://store.brand-platform.com",
+  );
+
+  for (const configured of [
+    "https://localhost:3000",
+    "https://store.example",
+    "https://192.0.2.10",
+  ]) {
+    assert.equal(
+      resolveWebOrigin({
+        configured,
+        fallbackConfigured: "https://store.example.com",
+        isProd: true,
+        windowLocation,
+      }),
+      "https://admin.brand-platform.com:3000",
+    );
+  }
 });
 
 test("storefront URL helper falls back to localhost without a browser origin", () => {

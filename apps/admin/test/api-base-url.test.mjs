@@ -33,6 +33,23 @@ test("API base URL resolver accepts safe configured bases", () => {
   );
 });
 
+test("API base URL resolver accepts production-safe bases", () => {
+  assert.equal(
+    resolveApiBaseUrl({
+      configured: " https://api.brand-platform.com/ ",
+      isProd: true,
+    }),
+    "https://api.brand-platform.com/api/v1",
+  );
+  assert.equal(
+    resolveApiBaseUrl({
+      configured: "/api/v1/",
+      isProd: true,
+    }),
+    "/api/v1",
+  );
+});
+
 test("API base URL resolver normalizes configured origins to the API v1 base", () => {
   assert.equal(
     resolveApiBaseUrl({
@@ -68,6 +85,32 @@ test("API base URL resolver rejects unsafe configured bases", () => {
       resolveApiBaseUrl({
         configured,
         fallbackConfigured: "https://api.example.com/api/v1?tenant=1",
+      }),
+      "/api/v1",
+    );
+  }
+});
+
+test("API base URL resolver ignores unsafe production absolute bases", () => {
+  assert.equal(
+    resolveApiBaseUrl({
+      configured: "http://api.brand-platform.com/api/v1",
+      fallbackConfigured: "https://api.brand-platform.com/",
+      isProd: true,
+    }),
+    "https://api.brand-platform.com/api/v1",
+  );
+
+  for (const configured of [
+    "https://localhost:4000/api/v1",
+    "https://api.example/api/v1",
+    "https://192.0.2.10/api/v1",
+  ]) {
+    assert.equal(
+      resolveApiBaseUrl({
+        configured,
+        fallbackConfigured: "https://api.example.com/api/v1",
+        isProd: true,
       }),
       "/api/v1",
     );

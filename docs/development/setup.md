@@ -142,7 +142,10 @@ login to the Vite server itself.
 For Admin production builds, set `VITE_API_URL` and `VITE_WEB_URL` when the
 Admin static origin cannot proxy `/api/v1` or infer the storefront origin. If
 they are empty, the build falls back to the shared `API_URL` and `WEB_URL`
-environment variables.
+environment variables. Production absolute Admin API and Web URL values must be
+HTTPS URLs outside local, private, Docker-local, or reserved placeholder hosts;
+the relative `/api/v1` base remains valid when the Admin origin proxies API
+requests.
 
 For Web production deployments, `VERCEL_ENV=production` or `APP_ENV=production`
 requires `API_URL` / `NEXT_PUBLIC_API_URL` and `WEB_URL` / `NEXT_PUBLIC_WEB_URL`

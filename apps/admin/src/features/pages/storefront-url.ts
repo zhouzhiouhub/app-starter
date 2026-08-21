@@ -1,4 +1,4 @@
-import { getStorefrontHref } from "@app-starter/schema";
+import { getStorefrontHref, isProductionHttpUrl } from "@app-starter/schema";
 
 const maxPreviewTokenLength = 2048;
 const previewTokenPattern = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]{43}$/;
@@ -23,11 +23,13 @@ export function getStorefrontPreviewUrl(token: string): string {
 export function resolveWebOrigin(input: {
   configured?: string;
   fallbackConfigured?: string;
+  isProd?: boolean;
   windowLocation?: Pick<Location, "hostname" | "protocol">;
 }): string {
+  const requireProductionUrl = input.isProd === true;
   const configured =
-    readHttpOrigin(input.configured) ??
-    readHttpOrigin(input.fallbackConfigured);
+    readHttpOrigin(input.configured, requireProductionUrl) ??
+    readHttpOrigin(input.fallbackConfigured, requireProductionUrl);
 
   if (configured) {
     return configured;
@@ -47,13 +49,14 @@ export function resolveWebOrigin(input: {
 function readWebOrigin(): string {
   const env = (
     import.meta as unknown as {
-      env?: { VITE_WEB_URL?: string; WEB_URL?: string };
+      env?: { PROD?: boolean; VITE_WEB_URL?: string; WEB_URL?: string };
     }
   ).env;
 
   return resolveWebOrigin({
     configured: env?.VITE_WEB_URL,
     fallbackConfigured: env?.WEB_URL,
+    isProd: env?.PROD,
     windowLocation:
       typeof window === "undefined"
         ? undefined
@@ -64,7 +67,10 @@ function readWebOrigin(): string {
   });
 }
 
-function readHttpOrigin(value: string | undefined): string | null {
+function readHttpOrigin(
+  value: string | undefined,
+  requireProductionUrl: boolean,
+): string | null {
   const trimmed = value?.trim();
 
   if (!trimmed) {
@@ -80,7 +86,8 @@ function readHttpOrigin(value: string | undefined): string | null {
       url.password ||
       trimTrailingSlashes(url.pathname) !== "/" ||
       url.search ||
-      url.hash
+      url.hash ||
+      (requireProductionUrl && !isProductionHttpUrl(url))
     ) {
       return null;
     }
