@@ -16,6 +16,10 @@ export type StorefrontRevalidationInput = {
   slug: string;
 };
 
+export type StorefrontRevalidator = (
+  input: StorefrontRevalidationInput,
+) => Promise<StorefrontRevalidationResult>;
+
 type Fetcher = (
   input: string | URL,
   init?: RequestInit,
@@ -76,6 +80,22 @@ export async function triggerStorefrontRevalidation(
     return { paths, reason, tags, triggered: false };
   } finally {
     clearTimeout(timeout);
+  }
+}
+
+export async function runStorefrontRevalidationSafely(
+  input: StorefrontRevalidationInput,
+  revalidator: StorefrontRevalidator = triggerStorefrontRevalidation,
+): Promise<StorefrontRevalidationResult> {
+  try {
+    return await revalidator(input);
+  } catch {
+    return {
+      paths: getPublishedPageRevalidationPaths(input),
+      reason: "request-failed",
+      tags: getPublishedPageCacheTags(input),
+      triggered: false,
+    };
   }
 }
 

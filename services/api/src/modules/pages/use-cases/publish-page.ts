@@ -6,18 +6,14 @@ import { runIdempotent } from "../pages.idempotency.js";
 import { assertPublishablePageImageSources } from "../pages.image-policy.js";
 import { assertPageLocaleCanPublish } from "../pages.locale-policy.js";
 import {
+  runStorefrontRevalidationSafely,
   triggerStorefrontRevalidation,
-  type StorefrontRevalidationInput,
-  type StorefrontRevalidationResult,
+  type StorefrontRevalidator,
 } from "../pages.revalidation.js";
 import { recordPagePublishedAudit } from "../pages.audit.js";
 import { getSiteForTenant } from "../pages.site.js";
 import { notFound, parseSchema, readSchema } from "../pages.validation.js";
 import { persistPublishedVersion } from "../pages.versions.js";
-
-type StorefrontRevalidator = (
-  input: StorefrontRevalidationInput,
-) => Promise<StorefrontRevalidationResult>;
 
 type MediaReferenceValidator = (
   schema: PageSchema,
@@ -105,11 +101,14 @@ export async function publishPage(
           siteId: site.id,
           market: schema.meta.market,
           locale: schema.meta.locale,
-          revalidation: await revalidator({
-            locale: schema.meta.locale,
-            market: schema.meta.market,
-            slug: schema.meta.slug,
-          }),
+          revalidation: await runStorefrontRevalidationSafely(
+            {
+              locale: schema.meta.locale,
+              market: schema.meta.market,
+              slug: schema.meta.slug,
+            },
+            revalidator,
+          ),
         },
       };
     },

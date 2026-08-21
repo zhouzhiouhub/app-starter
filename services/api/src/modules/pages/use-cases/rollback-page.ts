@@ -6,9 +6,9 @@ import type { PrismaService } from "../../prisma/prisma.service.js";
 import { runIdempotent } from "../pages.idempotency.js";
 import { assertPageLocaleCanPublish } from "../pages.locale-policy.js";
 import {
+  runStorefrontRevalidationSafely,
   triggerStorefrontRevalidation,
-  type StorefrontRevalidationInput,
-  type StorefrontRevalidationResult,
+  type StorefrontRevalidator,
 } from "../pages.revalidation.js";
 import { recordPageRollbackAudit } from "../pages.audit.js";
 import { getSiteForTenant } from "../pages.site.js";
@@ -18,10 +18,6 @@ import {
   readSchema,
 } from "../pages.validation.js";
 import { persistRollbackVersion } from "../pages.versions.js";
-
-type StorefrontRevalidator = (
-  input: StorefrontRevalidationInput,
-) => Promise<StorefrontRevalidationResult>;
 
 type MediaReferenceValidator = (
   schema: PageSchema,
@@ -122,11 +118,14 @@ export async function rollbackPage(
           siteId: site.id,
           market: schema.meta.market,
           locale: schema.meta.locale,
-          revalidation: await revalidator({
-            locale: schema.meta.locale,
-            market: schema.meta.market,
-            slug: schema.meta.slug,
-          }),
+          revalidation: await runStorefrontRevalidationSafely(
+            {
+              locale: schema.meta.locale,
+              market: schema.meta.market,
+              slug: schema.meta.slug,
+            },
+            revalidator,
+          ),
         },
       };
     },

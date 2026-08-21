@@ -97,6 +97,51 @@ test("rollbackPage publishes a new version using the selected version schema", a
   assert.equal(result.meta.revalidation.triggered, true);
 });
 
+test("rollbackPage reports revalidation failures without failing the rollback", async () => {
+  const schema = createInitialPageSchema({
+    slug: "home",
+    title: "Previous Home",
+  });
+  const calls = {
+    pageUpdate: null,
+  };
+  const prisma = createRollbackPrisma({
+    onCreateVersion: (input) =>
+      createPageVersionResult(input, { id: "version-rollback" }),
+    onUpdatePage: (input) => {
+      calls.pageUpdate = input.data;
+      return {};
+    },
+    target: {
+      id: "version-1",
+      pageId: "page-1",
+      schema,
+      status: "published",
+    },
+  });
+
+  const result = await rollbackPage(
+    prisma,
+    "page-1",
+    { versionId: "version-1" },
+    undefined,
+    createPageActor(),
+    async () => {
+      throw new Error("Unexpected revalidation failure.");
+    },
+  );
+
+  assert.equal(calls.pageUpdate.publishedVersionId, "version-rollback");
+  assert.equal(result.meta.revalidation.triggered, false);
+  assert.equal(result.meta.revalidation.reason, "request-failed");
+  assert.deepEqual(result.meta.revalidation.paths, ["/", "/en"]);
+  assert.deepEqual(result.meta.revalidation.tags, [
+    "published-page",
+    "published-page:us:en-US",
+    "published-page:us:en-US:home",
+  ]);
+});
+
 test("rollbackPage rejects draft target versions", async () => {
   const schema = createInitialPageSchema({
     slug: "home",

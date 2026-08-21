@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createInitialPageSchema } from "../dist/modules/pages/pages.mapper.js";
 import { publishPage } from "../dist/modules/pages/use-cases/publish-page.js";
+import { createPublishPrisma } from "./pages-publish-test-helpers.mjs";
 import {
   createPageActor,
   createPageVersionResult,
@@ -69,4 +70,41 @@ test("publishPage triggers storefront revalidation after publishing", async () =
     slug: "contact",
   });
   assert.equal(result.meta.revalidation.triggered, true);
+});
+
+test("publishPage reports revalidation failures without failing the publish", async () => {
+  const schema = createInitialPageSchema({
+    slug: "contact",
+    title: "Contact",
+  });
+  const calls = {};
+  const prisma = createPublishPrisma(calls, {
+    page: {
+      id: "page-1",
+      siteId: "site-1",
+      slug: "contact",
+      versions: [{ id: "version-1", status: "published", version: 2 }],
+    },
+  });
+
+  const result = await publishPage(
+    prisma,
+    "page-1",
+    schema,
+    undefined,
+    createPageActor(),
+    async () => {
+      throw new Error("Unexpected revalidation failure.");
+    },
+  );
+
+  assert.equal(calls.pageUpdate.publishedVersionId, "version-2");
+  assert.equal(result.meta.revalidation.triggered, false);
+  assert.equal(result.meta.revalidation.reason, "request-failed");
+  assert.deepEqual(result.meta.revalidation.paths, ["/en/contact"]);
+  assert.deepEqual(result.meta.revalidation.tags, [
+    "published-page",
+    "published-page:us:en-US",
+    "published-page:us:en-US:contact",
+  ]);
 });
