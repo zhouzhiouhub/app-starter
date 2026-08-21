@@ -6,6 +6,10 @@ import {
   createCorsOriginResolver,
   readConfiguredCorsOrigins,
 } from "./common/cors-origin.js";
+import {
+  requestIdHeaderMiddleware,
+  requestIdHeaderName,
+} from "./common/request-id.js";
 import { AppModule } from "./modules/app.module.js";
 import { AUTH_LOGIN_PATH } from "./modules/identity/identity.login-hint.js";
 
@@ -13,6 +17,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configuredOrigins = readConfiguredCorsOrigins();
 
+  app.use(requestIdHeaderMiddleware);
   app.setGlobalPrefix("api/v1");
   app.useGlobalPipes(
     new ValidationPipe({
@@ -27,8 +32,9 @@ async function bootstrap() {
       "Authorization",
       "Content-Type",
       "Idempotency-Key",
-      "X-Request-Id",
+      requestIdHeaderName,
     ],
+    exposedHeaders: [requestIdHeaderName],
     methods: ["GET", "HEAD", "POST", "PUT", "PATCH", "OPTIONS"],
     origin: createCorsOriginResolver({
       configuredOrigins,

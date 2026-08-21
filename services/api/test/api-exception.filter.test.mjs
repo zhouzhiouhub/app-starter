@@ -6,7 +6,11 @@ import {
 } from "@nestjs/common";
 import { apiErrorCodes } from "@app-starter/schema";
 import { ApiExceptionFilter } from "../dist/common/api-exception.filter.js";
-import { readRequestId } from "../dist/common/request-id.js";
+import {
+  createRequestIdHeaderMiddleware,
+  readRequestId,
+  requestIdHeaderName,
+} from "../dist/common/request-id.js";
 
 test("API exception filter hides internal server error messages", () => {
   const filter = new ApiExceptionFilter();
@@ -70,6 +74,51 @@ test("request id helper accepts only compact safe request identifiers", () => {
     readRequestId({ "x-request-id": "a".repeat(129) }),
     "local-dev",
   );
+  assert.equal(
+    readRequestId(
+      { "x-request-id": "request-1\nset-cookie: secret=1" },
+      "generated-request-1",
+    ),
+    "generated-request-1",
+  );
+});
+
+test("request id middleware sets a safe response header", () => {
+  const middleware = createRequestIdHeaderMiddleware(
+    () => "generated-request-1",
+  );
+  const request = {
+    headers: {
+      "x-request-id": " request-1 ",
+    },
+  };
+  const response = createHeaderResponse();
+  let nextCalled = false;
+
+  middleware(request, response, () => {
+    nextCalled = true;
+  });
+
+  assert.equal(nextCalled, true);
+  assert.equal(response.headers[requestIdHeaderName], "request-1");
+  assert.equal(request.headers["x-request-id"], "request-1");
+});
+
+test("request id middleware replaces unsafe request ids before downstream use", () => {
+  const middleware = createRequestIdHeaderMiddleware(
+    () => "generated-request-2",
+  );
+  const request = {
+    headers: {
+      "x-request-id": "request-1\nx-secret: leaked",
+    },
+  };
+  const response = createHeaderResponse();
+
+  middleware(request, response, () => undefined);
+
+  assert.equal(response.headers[requestIdHeaderName], "generated-request-2");
+  assert.equal(request.headers["x-request-id"], "generated-request-2");
 });
 
 test("API exception filter sanitizes unsafe request ids", () => {
@@ -108,5 +157,14 @@ function createHost(headers = {}) {
       },
     },
     response,
+  };
+}
+
+function createHeaderResponse() {
+  return {
+    headers: {},
+    setHeader(name, value) {
+      this.headers[name] = value;
+    },
   };
 }
