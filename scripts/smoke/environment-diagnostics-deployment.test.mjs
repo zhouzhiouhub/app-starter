@@ -55,6 +55,21 @@ test("smoke environment diagnostics reports unsafe deployment URLs", () => {
   assert.equal(diagnostics.deployment.web.productionReady, false);
 });
 
+test("smoke environment diagnostics rejects private and documentation IPv6 deployment hosts", () => {
+  const diagnostics = createSmokeEnvironmentDiagnostics({
+    ADMIN_URL: "https://[fd00::1]",
+    API_URL: "https://[fe80::1]/api/v1",
+    WEB_URL: "https://[2001:db8::1]",
+  });
+
+  assert.equal(diagnostics.deployment.admin.urlIssue, "local-host");
+  assert.equal(diagnostics.deployment.admin.productionReady, false);
+  assert.equal(diagnostics.deployment.api.urlIssue, "local-host");
+  assert.equal(diagnostics.deployment.api.productionReady, false);
+  assert.equal(diagnostics.deployment.web.urlIssue, "placeholder-host");
+  assert.equal(diagnostics.deployment.web.productionReady, false);
+});
+
 test("smoke environment diagnostics uses smoke input deployment URLs", () => {
   const diagnostics = createSmokeEnvironmentDiagnostics(
     {
