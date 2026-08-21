@@ -1,8 +1,10 @@
 import type { MetadataRoute } from "next";
-import { getWebOrigin } from "../lib/site-url";
+import { getStorefrontOrigin } from "../lib/site-url";
+import { readStorefrontRequestHost } from "../lib/storefront-request-host";
 
-export default function robots(): MetadataRoute.Robots {
-  const origin = getWebOrigin();
+export default async function robots(): Promise<MetadataRoute.Robots> {
+  const storefrontHost = await readStorefrontRequestHost();
+  const origin = getStorefrontOrigin({ storefrontHost });
 
   return {
     host: origin,
