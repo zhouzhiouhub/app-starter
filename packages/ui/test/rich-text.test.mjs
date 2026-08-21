@@ -72,4 +72,16 @@ test("rich text sanitizer reports markup that will be rewritten", () => {
     containsSanitizedRichTextMarkup('<a href="javascript:alert(1)">Bad</a>'),
     true,
   );
+  assert.equal(
+    containsSanitizedRichTextMarkup(
+      '<a href="/en/contact" data-track="footer">Contact</a>',
+    ),
+    true,
+  );
+  assert.equal(
+    containsSanitizedRichTextMarkup(
+      '<a href="/en/download" download>Download</a>',
+    ),
+    true,
+  );
 });

@@ -16,8 +16,8 @@ const removableContentTags =
   /<\s*(script|style|iframe|object|embed|svg|math)\b[\s\S]*?<\s*\/\s*\1\s*>/gi;
 const remainingBlockedTags =
   /<\s*\/?\s*(script|style|iframe|object|embed|svg|math|link|meta)\b[^>]*>/gi;
-const attributeNamePattern =
-  /(?:^|\s)([a-z0-9:-]+)\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>"']+)/gi;
+const attributeNamePattern = /(?:^|\s)([a-z0-9:_-]+)(?=\s*=|\s|$)/gi;
+const quotedAttributeValuePattern = /"[^"]*"|'[^']*'/g;
 const tagPattern = /<\/?[^>]+>/g;
 
 interface RichTextTag {
@@ -149,7 +149,12 @@ function hasSanitizedAnchorMarkup(rawAttributes: string): boolean {
 }
 
 function readAttributeNames(rawAttributes: string): string[] {
-  return Array.from(rawAttributes.matchAll(attributeNamePattern)).map(
+  const searchableAttributes = rawAttributes.replace(
+    quotedAttributeValuePattern,
+    " ",
+  );
+
+  return Array.from(searchableAttributes.matchAll(attributeNamePattern)).map(
     (match) => (match[1] ?? "").toLowerCase(),
   );
 }
