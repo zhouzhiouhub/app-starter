@@ -55,6 +55,19 @@ test("published page lookup forwards the safe storefront host", async () => {
     requests[0].init.headers["x-storefront-host"],
     "store.brand-platform.com",
   );
+  assert.equal(requests[0].init.next.tags.length, 3);
+  assert.match(
+    requests[0].init.next.tags[0],
+    /^published-page:site:[a-z0-9]+$/,
+  );
+  assert.equal(
+    requests[0].init.next.tags[1],
+    `${requests[0].init.next.tags[0]}:us:en-US`,
+  );
+  assert.equal(
+    requests[0].init.next.tags[2],
+    `${requests[0].init.next.tags[0]}:us:en-US:home`,
+  );
 });
 
 test("published page lookup does not forward unsafe storefront hosts", async () => {

@@ -61,6 +61,11 @@ test("rollbackPage publishes a new version using the selected version schema", a
       calls.pageUpdate = input.data;
       return {};
     },
+    site: {
+      domain: "store.brand-platform.com",
+      id: "site-1",
+      tenantId: "tenant-1",
+    },
     target: {
       id: "version-1",
       pageId: "page-1",
@@ -93,6 +98,7 @@ test("rollbackPage publishes a new version using the selected version schema", a
   assert.deepEqual(calls.revalidation, {
     locale: "en-US",
     market: "us",
+    siteHost: "store.brand-platform.com",
     slug: "home",
   });
   assert.equal(result.meta.revalidation.triggered, true);

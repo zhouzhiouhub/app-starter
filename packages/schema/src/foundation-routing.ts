@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { readSiteDomainHeader } from "./site-domain.js";
 
 export const localeCodeSchema = z
   .string()
@@ -25,32 +26,45 @@ export const publishedPagesCacheTag = "published-page";
 export const storefrontRevalidateSecretHeader =
   "x-storefront-revalidate-secret";
 
+export type PublishedPageCacheInput = {
+  fallbackLocale?: string;
+  fallbackMarket?: string;
+  locale: string;
+  market: string;
+  siteHost?: string | null;
+};
+
+export function getPublishedPagesCacheTags(
+  input: PublishedPageCacheInput,
+): string[] {
+  const root = readPublishedPageCacheTagRoot(input.siteHost);
+  const contexts = readCacheContexts(input);
+
+  return [
+    root,
+    ...contexts.map((context) => `${root}:${context.market}:${context.locale}`),
+  ].filter(uniqueTag);
+}
+
 export function getPublishedPageCacheTags(input: {
   fallbackLocale?: string;
   fallbackMarket?: string;
   locale: string;
   market: string;
+  siteHost?: string | null;
   slug: string;
 }): string[] {
   const slug = normalizePageSlugForCache(input.slug);
-  const contexts = [
-    {
-      locale: input.locale,
-      market: input.market,
-    },
-    {
-      locale: input.fallbackLocale ?? input.locale,
-      market: input.fallbackMarket ?? input.market,
-    },
-  ];
+  const root = readPublishedPageCacheTagRoot(input.siteHost);
+  const contexts = readCacheContexts(input);
 
   return [
-    publishedPagesCacheTag,
+    root,
     ...contexts.flatMap((context) => [
-      `published-page:${context.market}:${context.locale}`,
-      `published-page:${context.market}:${context.locale}:${slug}`,
+      `${root}:${context.market}:${context.locale}`,
+      `${root}:${context.market}:${context.locale}:${slug}`,
     ]),
-  ].filter((tag, index, tags) => tags.indexOf(tag) === index);
+  ].filter(uniqueTag);
 }
 
 export function getPublishedPageRevalidationPaths(input: {
@@ -87,8 +101,7 @@ export function resolveLocaleFromPath(
   }
 
   if (
-    toStorefrontPathPrefix(defaultLocale) ===
-    toStorefrontPathPrefix(pathLocale)
+    toStorefrontPathPrefix(defaultLocale) === toStorefrontPathPrefix(pathLocale)
   ) {
     return defaultLocale;
   }
@@ -99,4 +112,63 @@ export function resolveLocaleFromPath(
 function normalizePageSlugForCache(slug: string): string {
   const normalized = slug.replace(/^\/+|\/+$/g, "");
   return normalized || "home";
+}
+
+function readCacheContexts(input: PublishedPageCacheInput): {
+  locale: string;
+  market: string;
+}[] {
+  return [
+    {
+      locale: input.locale,
+      market: input.market,
+    },
+    {
+      locale: input.fallbackLocale ?? input.locale,
+      market: input.fallbackMarket ?? input.market,
+    },
+  ];
+}
+
+function readPublishedPageCacheTagRoot(siteHost?: string | null): string {
+  const host = readCacheSiteHost(siteHost);
+
+  if (!host) {
+    return publishedPagesCacheTag;
+  }
+
+  return `${publishedPagesCacheTag}:site:${createCacheHash(host)}`;
+}
+
+function readCacheSiteHost(siteHost?: string | null): string | null {
+  const host = readSiteDomainHeader(siteHost);
+
+  if (!host) {
+    return null;
+  }
+
+  if (host === "localhost" || host.startsWith("localhost:")) {
+    return "localhost";
+  }
+
+  return host;
+}
+
+function createCacheHash(value: string): string {
+  let first = 2166136261;
+  let second = 2166136261 ^ 0x9e3779b9;
+
+  for (const char of value) {
+    const code = char.charCodeAt(0);
+    first ^= code;
+    first = Math.imul(first, 16777619);
+    second ^= code;
+    second = Math.imul(second, 16777619);
+  }
+
+  return `${(first >>> 0).toString(36)}${(second >>> 0).toString(36)}`;
+}
+
+function uniqueTag(tag: string, index: number, tags: string[]): boolean {
+  return tags.indexOf(tag) === index;
 }

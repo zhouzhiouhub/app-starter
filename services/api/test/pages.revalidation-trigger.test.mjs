@@ -103,6 +103,32 @@ test("storefront revalidation posts the page payload with secret header", async 
   );
 });
 
+test("storefront revalidation posts safe site hosts for scoped tags", async () => {
+  await withEnv(
+    revalidationEnv({
+      STOREFRONT_REVALIDATE_URL: "",
+      WEB_URL: "https://web.example.com/",
+    }),
+    async () => {
+      const { calls, fetcher } = createRecordingFetch();
+      const result = await triggerStorefrontRevalidation(
+        pageInput({ siteHost: "store.brand-platform.com" }),
+        fetcher,
+      );
+
+      assert.equal(result.triggered, true);
+      assert.equal(result.tags.length, 3);
+      assert.match(result.tags[0], /^published-page:site:[a-z0-9]+$/);
+      assert.equal(result.tags[1], `${result.tags[0]}:us:en-US`);
+      assert.equal(result.tags[2], `${result.tags[0]}:us:en-US:contact`);
+      assert.deepEqual(JSON.parse(calls[0].init.body), {
+        ...pageInput(),
+        siteHost: "store.brand-platform.com",
+      });
+    },
+  );
+});
+
 test("storefront revalidation skips unsafe URLs without fetching", async () => {
   await withEnv(
     revalidationEnv({

@@ -42,6 +42,7 @@ test("publishPage triggers storefront revalidation after publishing", async () =
       }),
     site: {
       findFirst: async () => ({
+        domain: "store.brand-platform.com",
         id: "site-1",
         tenantId: "tenant-1",
       }),
@@ -68,6 +69,7 @@ test("publishPage triggers storefront revalidation after publishing", async () =
   assert.deepEqual(calls.revalidation, {
     locale: "en-US",
     market: "us",
+    siteHost: "store.brand-platform.com",
     slug: "contact",
   });
   assert.equal(result.meta.revalidation.triggered, true);

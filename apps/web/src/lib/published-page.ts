@@ -131,7 +131,13 @@ async function fetchPublishedSchema(input: {
         headers: createStorefrontHostHeaders(input.storefrontHost),
         next: {
           revalidate: publishedPageRevalidateSeconds,
-          tags: getPublishedPageCacheTags(input),
+          tags: getPublishedPageCacheTags({
+            fallbackLocale: input.fallbackLocale,
+            locale: input.locale,
+            market: input.market,
+            siteHost: input.storefrontHost,
+            slug: input.slug,
+          }),
         },
       },
     );

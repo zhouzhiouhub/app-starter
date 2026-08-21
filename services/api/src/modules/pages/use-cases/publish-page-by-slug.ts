@@ -29,7 +29,10 @@ export async function publishPageBySlug(
     scope: `admin/pages:${normalizedSlug}:publish`,
     site,
     replayResponse: (response) =>
-      refreshStorefrontRevalidationResponse(response, { requestId }),
+      refreshStorefrontRevalidationResponse(response, {
+        requestId,
+        siteHost: site.domain,
+      }),
     operation: async () => {
       const page = await prisma.page.findUnique({
         where: {

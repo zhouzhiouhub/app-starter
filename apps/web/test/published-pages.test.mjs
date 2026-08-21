@@ -87,6 +87,15 @@ test("published pages list forwards the safe storefront host", async () => {
     requests[0].init.headers["x-storefront-host"],
     "store.brand-platform.com",
   );
+  assert.equal(requests[0].init.next.tags.length, 2);
+  assert.match(
+    requests[0].init.next.tags[0],
+    /^published-page:site:[a-z0-9]+$/,
+  );
+  assert.equal(
+    requests[0].init.next.tags[1],
+    `${requests[0].init.next.tags[0]}:us:en-US`,
+  );
 });
 
 function jsonResponse(data) {

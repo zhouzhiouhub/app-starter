@@ -1,6 +1,6 @@
 import {
+  getPublishedPagesCacheTags,
   publishedPageRevalidateSeconds,
-  publishedPagesCacheTag,
 } from "@app-starter/schema";
 import {
   readWebRuntimeDefaults,
@@ -47,7 +47,11 @@ export async function listPublishedPages(input?: {
       headers: createStorefrontHostHeaders(input?.storefrontHost),
       next: {
         revalidate: publishedPageRevalidateSeconds,
-        tags: [publishedPagesCacheTag],
+        tags: getPublishedPagesCacheTags({
+          locale,
+          market,
+          siteHost: input?.storefrontHost,
+        }),
       },
     });
 

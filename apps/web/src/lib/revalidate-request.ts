@@ -4,12 +4,14 @@ import {
   localeCodeSchema,
   marketCodeSchema,
   pageSlugSchema,
+  readSiteDomainHeader,
 } from "@app-starter/schema";
 import { readWebRuntimeDefaults } from "./runtime-defaults.ts";
 
 export type RevalidateInput = {
   locale: string;
   market: string;
+  siteHost?: string;
   slug: string;
 };
 
@@ -77,6 +79,7 @@ export function parseRevalidatePayload(
   const slug = pageSlugSchema.safeParse(payload.slug);
   const locale = localeCodeSchema.safeParse(payload.locale ?? defaults.locale);
   const market = marketCodeSchema.safeParse(payload.market ?? defaults.market);
+  const siteHost = readRevalidateSiteHost(payload.siteHost);
   const invalidFields: string[] = [];
 
   if (!slug.success) {
@@ -102,11 +105,15 @@ export function parseRevalidatePayload(
     );
   }
 
-  const input = {
+  const input: RevalidateInput = {
     locale: locale.data,
     market: market.data,
     slug: slug.data,
   };
+
+  if (siteHost) {
+    input.siteHost = siteHost;
+  }
 
   return {
     input,
@@ -125,6 +132,10 @@ export function readRevalidateDefaults(
     locale: defaults.defaultLocale,
     market: defaults.defaultMarket,
   };
+}
+
+function readRevalidateSiteHost(value: unknown): string | null {
+  return typeof value === "string" ? readSiteDomainHeader(value) : null;
 }
 
 function validationError(

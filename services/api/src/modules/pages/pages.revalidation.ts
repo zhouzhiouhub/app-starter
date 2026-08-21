@@ -15,6 +15,7 @@ export type { StorefrontRevalidationResult };
 export type StorefrontRevalidationInput = {
   locale: string;
   market: string;
+  siteHost?: string | null;
   slug: string;
 };
 
@@ -117,6 +118,7 @@ export async function refreshStorefrontRevalidationResponse<
   input: {
     requestId: string;
     revalidator?: StorefrontRevalidator;
+    siteHost?: string | null;
   },
 ): Promise<TResponse> {
   const schema = response.data;
@@ -127,15 +129,28 @@ export async function refreshStorefrontRevalidationResponse<
       ...response.meta,
       requestId: input.requestId,
       revalidation: await runStorefrontRevalidationSafely(
-        {
-          locale: schema.meta.locale,
-          market: schema.meta.market,
-          slug: schema.meta.slug,
-        },
+        createStorefrontRevalidationInput(schema, input.siteHost),
         input.revalidator,
       ),
     },
   } as TResponse;
+}
+
+export function createStorefrontRevalidationInput(
+  schema: PageSchema,
+  siteHost?: string | null,
+): StorefrontRevalidationInput {
+  const input: StorefrontRevalidationInput = {
+    locale: schema.meta.locale,
+    market: schema.meta.market,
+    slug: schema.meta.slug,
+  };
+
+  if (siteHost) {
+    input.siteHost = siteHost;
+  }
+
+  return input;
 }
 
 export function resolveStorefrontRevalidateUrl(

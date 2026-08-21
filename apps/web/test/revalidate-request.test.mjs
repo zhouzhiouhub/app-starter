@@ -52,6 +52,54 @@ test("revalidate payload defaults locale and market", () => {
   assert.deepEqual(result.paths, ["/", "/en"]);
 });
 
+test("revalidate payload accepts safe site hosts for scoped tags", () => {
+  const result = parseRevalidatePayload(
+    {
+      locale: "en-US",
+      market: "us",
+      siteHost: "Store.Brand-Platform.com:443",
+      slug: "contact",
+    },
+    defaults,
+  );
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.input, {
+    locale: "en-US",
+    market: "us",
+    siteHost: "store.brand-platform.com",
+    slug: "contact",
+  });
+  assert.equal(result.tags.length, 3);
+  assert.match(result.tags[0], /^published-page:site:[a-z0-9]+$/);
+  assert.equal(result.tags[1], `${result.tags[0]}:us:en-US`);
+  assert.equal(result.tags[2], `${result.tags[0]}:us:en-US:contact`);
+});
+
+test("revalidate payload ignores unsafe site hosts", () => {
+  const result = parseRevalidatePayload(
+    {
+      locale: "en-US",
+      market: "us",
+      siteHost: "store.example.com",
+      slug: "contact",
+    },
+    defaults,
+  );
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.input, {
+    locale: "en-US",
+    market: "us",
+    slug: "contact",
+  });
+  assert.deepEqual(result.tags, [
+    "published-page",
+    "published-page:us:en-US",
+    "published-page:us:en-US:contact",
+  ]);
+});
+
 test("revalidate defaults ignore invalid environment values", () => {
   assert.deepEqual(
     readRevalidateDefaults({

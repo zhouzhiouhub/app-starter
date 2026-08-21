@@ -1,4 +1,8 @@
 export function createRollbackPrisma(options) {
+  const site = options.site ?? {
+    id: "site-1",
+    tenantId: "tenant-1",
+  };
   const target = options.target;
 
   return {
@@ -30,10 +34,7 @@ export function createRollbackPrisma(options) {
         },
       }),
     site: {
-      findFirst: async () => ({
-        id: "site-1",
-        tenantId: "tenant-1",
-      }),
+      findFirst: async () => site,
     },
   };
 }
