@@ -48,6 +48,15 @@ type JsonReadable = {
   json(): Promise<unknown>;
 };
 
+type RevalidateSiteHostResult =
+  | {
+      ok: true;
+      value: string | null;
+    }
+  | {
+      ok: false;
+    };
+
 export async function readRevalidatePayload(
   request: JsonReadable,
   defaults = readRevalidateDefaults(),
@@ -94,9 +103,13 @@ export function parseRevalidatePayload(
     invalidFields.push("market");
   }
 
-  if (!slug.success || !locale.success || !market.success) {
+  if (!siteHost.ok) {
+    invalidFields.push("siteHost");
+  }
+
+  if (!slug.success || !locale.success || !market.success || !siteHost.ok) {
     return validationError(
-      "Revalidation request must include valid slug, locale, and market.",
+      "Revalidation request must include valid slug, locale, market, and siteHost when provided.",
       {
         defaults,
         fields: invalidFields,
@@ -111,8 +124,8 @@ export function parseRevalidatePayload(
     slug: slug.data,
   };
 
-  if (siteHost) {
-    input.siteHost = siteHost;
+  if (siteHost.value) {
+    input.siteHost = siteHost.value;
   }
 
   return {
@@ -134,8 +147,18 @@ export function readRevalidateDefaults(
   };
 }
 
-function readRevalidateSiteHost(value: unknown): string | null {
-  return typeof value === "string" ? readSiteDomainHeader(value) : null;
+function readRevalidateSiteHost(value: unknown): RevalidateSiteHostResult {
+  if (value === undefined) {
+    return { ok: true, value: null };
+  }
+
+  if (typeof value !== "string") {
+    return { ok: false };
+  }
+
+  const host = readSiteDomainHeader(value);
+
+  return host ? { ok: true, value: host } : { ok: false };
 }
 
 function validationError(

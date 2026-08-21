@@ -76,7 +76,7 @@ test("revalidate payload accepts safe site hosts for scoped tags", () => {
   assert.equal(result.tags[2], `${result.tags[0]}:us:en-US:contact`);
 });
 
-test("revalidate payload ignores unsafe site hosts", () => {
+test("revalidate payload rejects unsafe site hosts", () => {
   const result = parseRevalidatePayload(
     {
       locale: "en-US",
@@ -87,17 +87,9 @@ test("revalidate payload ignores unsafe site hosts", () => {
     defaults,
   );
 
-  assert.equal(result.ok, true);
-  assert.deepEqual(result.input, {
-    locale: "en-US",
-    market: "us",
-    slug: "contact",
-  });
-  assert.deepEqual(result.tags, [
-    "published-page",
-    "published-page:us:en-US",
-    "published-page:us:en-US:contact",
-  ]);
+  assert.equal(result.ok, false);
+  assert.equal(result.error.details.reason, "invalid-fields");
+  assert.deepEqual(result.error.details.fields, ["siteHost"]);
 });
 
 test("revalidate defaults ignore invalid environment values", () => {
@@ -131,6 +123,7 @@ test("revalidate payload reports invalid fields", () => {
     {
       locale: "english",
       market: "US",
+      siteHost: {},
       slug: "Contact",
     },
     defaults,
@@ -138,7 +131,12 @@ test("revalidate payload reports invalid fields", () => {
 
   assert.equal(result.ok, false);
   assert.equal(result.error.details.reason, "invalid-fields");
-  assert.deepEqual(result.error.details.fields, ["slug", "locale", "market"]);
+  assert.deepEqual(result.error.details.fields, [
+    "slug",
+    "locale",
+    "market",
+    "siteHost",
+  ]);
   assert.deepEqual(result.error.details.defaults, defaults);
 });
 
