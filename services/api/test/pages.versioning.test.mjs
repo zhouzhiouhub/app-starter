@@ -4,7 +4,10 @@ import { createInitialPageSchema } from "../dist/modules/pages/pages.mapper.js";
 import { publishPage } from "../dist/modules/pages/use-cases/publish-page.js";
 import { rollbackPage } from "../dist/modules/pages/use-cases/rollback-page.js";
 import { persistRollbackVersion } from "../dist/modules/pages/pages.versions.js";
-import { createPageActor } from "./pages-test-helpers.mjs";
+import {
+  createPageActor,
+  createPageVersionResult,
+} from "./pages-test-helpers.mjs";
 
 test("persistRollbackVersion creates a published snapshot from target content", async () => {
   const schema = createInitialPageSchema({
@@ -22,13 +25,7 @@ test("persistRollbackVersion creates a published snapshot from target content", 
           assert.equal(input.data.version, 4);
           assert.ok(input.data.publishedAt instanceof Date);
 
-          return {
-            id: "version-rollback",
-            createdAt: new Date("2026-08-18T00:00:00.000Z"),
-            publishedAt: input.data.publishedAt,
-            status: input.data.status,
-            version: input.data.version,
-          };
+          return createPageVersionResult(input, { id: "version-rollback" });
         },
       },
     },
@@ -57,13 +54,7 @@ test("rollbackPage publishes a new version using the selected version schema", a
   const prisma = createRollbackPrisma({
     onCreateVersion: (input) => {
       calls.createdVersion = input.data;
-      return {
-        id: "version-rollback",
-        createdAt: new Date("2026-08-18T00:00:00.000Z"),
-        publishedAt: input.data.publishedAt,
-        status: input.data.status,
-        version: input.data.version,
-      };
+      return createPageVersionResult(input, { id: "version-rollback" });
     },
     onUpdatePage: (input) => {
       calls.pageUpdate = input.data;
@@ -134,13 +125,7 @@ test("publishPage triggers storefront revalidation after publishing", async () =
           },
         },
         pageVersion: {
-          create: async (input) => ({
-            id: "version-2",
-            createdAt: new Date("2026-08-18T00:00:00.000Z"),
-            publishedAt: input.data.publishedAt,
-            status: input.data.status,
-            version: input.data.version,
-          }),
+          create: async (input) => createPageVersionResult(input),
         },
       }),
     site: {

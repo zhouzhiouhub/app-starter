@@ -7,6 +7,7 @@ import { withEnv } from "./env-helper.mjs";
 import {
   assertApiConflictRejects,
   createPageActor,
+  createPageVersionResult,
   withPageLocale,
 } from "./pages-test-helpers.mjs";
 
@@ -140,14 +141,7 @@ function createRollbackPrisma(schema, calls) {
         pageVersion: {
           create: async (input) => {
             calls.rollbackCreate = input.data;
-
-            return {
-              id: "version-rollback",
-              createdAt: new Date("2026-08-18T00:00:00.000Z"),
-              publishedAt: input.data.publishedAt,
-              status: input.data.status,
-              version: input.data.version,
-            };
+            return createPageVersionResult(input, { id: "version-rollback" });
           },
           findFirst: async () => ({
             id: "version-1",

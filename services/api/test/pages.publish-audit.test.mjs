@@ -7,6 +7,7 @@ import { withEnv } from "./env-helper.mjs";
 import {
   assertApiConflictRejects,
   createPageActor,
+  createPageVersionResult,
   withPageLocale,
 } from "./pages-test-helpers.mjs";
 
@@ -196,14 +197,7 @@ function createPublishPrisma(calls) {
         pageVersion: {
           create: async (input) => {
             calls.versionCreate = input.data;
-
-            return {
-              id: "version-2",
-              createdAt: new Date("2026-08-18T00:00:00.000Z"),
-              publishedAt: input.data.publishedAt,
-              status: input.data.status,
-              version: input.data.version,
-            };
+            return createPageVersionResult(input);
           },
         },
         mediaAsset: {

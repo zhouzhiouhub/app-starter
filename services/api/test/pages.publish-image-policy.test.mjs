@@ -5,7 +5,10 @@ import {
   createFallbackPage,
 } from "../../../packages/schema/dist/index.js";
 import { publishPage } from "../dist/modules/pages/use-cases/publish-page.js";
-import { createPageActor } from "./pages-test-helpers.mjs";
+import {
+  createPageActor,
+  createPageVersionResult,
+} from "./pages-test-helpers.mjs";
 
 test("publishPage rejects HTTP image sources before creating a version", async () => {
   const schema = createFallbackPage({ slug: "launch", title: "Launch" });
@@ -78,14 +81,7 @@ function createPublishPrisma(calls) {
         pageVersion: {
           create: async (input) => {
             calls.versionCreate = input.data;
-
-            return {
-              id: "version-2",
-              createdAt: new Date("2026-08-18T00:00:00.000Z"),
-              publishedAt: input.data.publishedAt,
-              status: input.data.status,
-              version: input.data.version,
-            };
+            return createPageVersionResult(input);
           },
         },
         mediaAsset: {

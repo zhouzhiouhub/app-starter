@@ -8,6 +8,7 @@ import {
 import { createPreviewToken } from "../dist/modules/pages/use-cases/create-preview-token.js";
 import { getPreviewPageByToken } from "../dist/modules/pages/use-cases/get-preview-page-by-token.js";
 import { withEnv } from "./env-helper.mjs";
+import { createPageActor } from "./pages-test-helpers.mjs";
 
 test("createPreviewToken signs a tenant-scoped page token", async () => {
   await withEnv({ PREVIEW_TOKEN_SECRET: "preview-secret" }, async () => {
@@ -45,7 +46,7 @@ test("createPreviewToken signs a tenant-scoped page token", async () => {
       },
       "page-1",
       undefined,
-      actor(),
+      createPageActor({ name: "Admin", scopes: ["page:read"] }),
       "request-preview-1",
     );
 
@@ -133,7 +134,7 @@ test("createPreviewToken stores responses by idempotency key", async () => {
       },
       "page-1",
       key,
-      actor(),
+      createPageActor({ name: "Admin", scopes: ["page:read"] }),
     );
     const second = await createPreviewToken(
       prisma,
@@ -142,7 +143,7 @@ test("createPreviewToken stores responses by idempotency key", async () => {
       },
       "page-1",
       key,
-      actor(),
+      createPageActor({ name: "Admin", scopes: ["page:read"] }),
     );
 
     assert.equal(first.data.token, second.data.token);
@@ -226,13 +227,3 @@ test("getPreviewPageByToken rejects malformed tokens before database lookup", as
     /Preview token is invalid or expired/,
   );
 });
-
-function actor() {
-  return {
-    email: "admin@example.com",
-    id: "user-1",
-    name: "Admin",
-    scopes: ["page:read"],
-    tenantId: "tenant-1",
-  };
-}
