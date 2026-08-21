@@ -6,6 +6,10 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
   const diagnostics = createSmokeEnvironmentDiagnostics({
     ANALYTICS_CONSENT_GRANTED: "false",
     ANALYTICS_ENABLED: "false",
+    JWT_PRIVATE_KEY:
+      "-----BEGIN PRIVATE KEY-----\\nprivate-key-body\\n-----END PRIVATE KEY-----",
+    JWT_PUBLIC_KEY:
+      "-----BEGIN PUBLIC KEY-----\\npublic-key-body\\n-----END PUBLIC KEY-----",
     MEDIA_CDN_BASE_URL: "https://cdn.brand-assets.com/media",
     MEDIA_EXTERNAL_URL_HOSTS: "images.example.com, https://assets.example.org",
     COMMERCE_ENABLED: "false",
@@ -100,6 +104,22 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
       },
       productionReady: true,
     },
+    identity: {
+      jwt: {
+        configured: true,
+        privateKey: {
+          configured: true,
+          issue: null,
+          valid: true,
+        },
+        productionReady: true,
+        publicKey: {
+          configured: true,
+          issue: null,
+          valid: true,
+        },
+      },
+    },
     media: {
       cdnConfigured: true,
       cdnHost: "cdn.brand-assets.com",
@@ -137,6 +157,8 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
   assert.equal(serialized.includes("super-secret"), false);
   assert.equal(serialized.includes("super-preview-secret"), false);
   assert.equal(serialized.includes("super-revalidate-secret"), false);
+  assert.equal(serialized.includes("private-key-body"), false);
+  assert.equal(serialized.includes("public-key-body"), false);
   assert.equal(serialized.includes("bucket-name"), false);
   assert.equal(serialized.includes("account-id"), false);
   assert.equal(serialized.includes("access-key"), false);
@@ -161,6 +183,8 @@ test("smoke environment diagnostics reports missing R2 and CDN fallback", () => 
   assert.equal(diagnostics.analytics.productionReady, true);
   assert.equal(diagnostics.featureFlags.configured, false);
   assert.equal(diagnostics.featureFlags.productionReady, false);
+  assert.equal(diagnostics.identity.jwt.configured, false);
+  assert.equal(diagnostics.identity.jwt.productionReady, false);
   assert.deepEqual(diagnostics.preview, {
     configured: false,
     previousSecretConfigured: false,

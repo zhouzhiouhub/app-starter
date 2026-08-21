@@ -46,6 +46,15 @@ set to the Web origin only, the API normalizes it to `/api/revalidate`.
 `STOREFRONT_REVALIDATE_TIMEOUT_MS` accepts integer values from 1 to 30000. Empty,
 invalid, fractional, or longer values fall back to 5000 ms.
 
+Admin JWTs use an RS256 key pair. Local development can leave both values empty,
+which makes the API generate an ephemeral non-production key pair. Production
+must set both values to PEM strings:
+
+```bash
+JWT_PRIVATE_KEY=
+JWT_PUBLIC_KEY=
+```
+
 Preview links use a short-lived token. Local development can leave
 `PREVIEW_TOKEN_SECRET` empty, which uses a non-production fallback. Production
 must set an explicit secret:
@@ -172,8 +181,8 @@ The smoke admin account must include `audit:read`; rerun the seed after pulling
 role changes if the audit log check returns 403.
 Set `SMOKE_REPORT_PATH=tmp/smoke-report.json` to write a machine-readable report
 with the checked slug, page ID, storefront URL, analytics diagnostics, feature
-flag diagnostics, media environment diagnostics, revalidation environment
-diagnostics, and passed/failed check list. If the smoke
+flag diagnostics, identity diagnostics, media environment diagnostics,
+revalidation environment diagnostics, and passed/failed check list. If the smoke
 run fails, the report records the
 failed check name and error message so production R2 / CDN, ISR, and SEO
 failures can be triaged from the JSON artifact. Media check details include the
@@ -187,7 +196,8 @@ request failure, and network or timeout-style failures. Analytics diagnostics
 record whether the runtime gates are valid and whether an enabled analytics
 setup has consent plus at least one valid provider. Feature flag diagnostics
 record whether `COMMERCE_ENABLED` and `MULTI_LOCALE_ENABLED` are explicitly
-configured and disabled. Revalidation environment
+configured and disabled. Identity diagnostics record only whether JWT private
+and public keys are configured with PEM-shaped values. Revalidation environment
 diagnostics record only non-secret readiness metadata: whether a secret is
 configured, the URL source, endpoint host/path, URL safety, and whether the
 smoke run requires revalidation. Preview environment diagnostics record only

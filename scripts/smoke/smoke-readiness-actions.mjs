@@ -101,6 +101,21 @@ function readBlockerActions(blocker) {
     ];
   }
 
+  if (
+    blocker.area === "identity.jwt" ||
+    (typeof blocker.area === "string" &&
+      blocker.area.startsWith("identity.jwt."))
+  ) {
+    return [
+      createAction(
+        blocker.area,
+        blocker.variable
+          ? `Set ${blocker.variable} to a production PEM key in the API runtime.`
+          : "Set JWT_PRIVATE_KEY and JWT_PUBLIC_KEY to production PEM keys in the API runtime.",
+      ),
+    ];
+  }
+
   if (blocker.area === "revalidation") {
     return [
       createAction(

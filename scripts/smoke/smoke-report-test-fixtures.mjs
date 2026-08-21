@@ -51,6 +51,11 @@ export function createProductionReadyEnvironmentDiagnostics() {
     featureFlags: {
       productionReady: true,
     },
+    identity: {
+      jwt: {
+        productionReady: true,
+      },
+    },
     media: {
       cdnConfigured: true,
       cdnProductionReady: true,
