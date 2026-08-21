@@ -1,6 +1,6 @@
 import { pageSchema, type PageSchema } from "@app-starter/schema";
 import { adminRequest } from "../auth/api";
-import { readApiErrorMessage } from "../../lib/api-error";
+import { createApiRequestError } from "../../lib/api-error";
 import { createIdempotencyKey } from "../../lib/idempotency-key";
 import type {
   CreatePageInput,
@@ -189,7 +189,7 @@ async function readAdminJson<T>(
   const result = (await response.json()) as T & { error?: unknown };
 
   if (!response.ok) {
-    throw new Error(readApiErrorMessage(result, fallback));
+    throw createApiRequestError(result, fallback);
   }
 
   return result;
