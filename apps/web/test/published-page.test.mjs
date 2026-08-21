@@ -140,6 +140,36 @@ test("preview page lookup fetches only compact token candidates", async () => {
   assert.deepEqual(requests[0].init, { cache: "no-store" });
 });
 
+test("preview page lookup forwards the safe storefront host", async () => {
+  const requests = [];
+  const token = `payload.${"a".repeat(43)}`;
+
+  await withFetch(
+    async (url, init) => {
+      requests.push({ init, url: String(url) });
+      return jsonResponse({
+        data: createFallbackPage({ slug: "campaign", title: "Campaign" }),
+      });
+    },
+    async () => {
+      const page = await getPreviewPage(token, {
+        storefrontHost: "Store.Brand-Platform.com:443",
+      });
+
+      assert.equal(page?.meta.slug, "campaign");
+    },
+  );
+
+  assert.equal(requests.length, 1);
+  assert.match(requests[0].url, /\/public\/preview\/payload\.a{43}$/);
+  assert.deepEqual(requests[0].init, {
+    cache: "no-store",
+    headers: {
+      "x-storefront-host": "store.brand-platform.com",
+    },
+  });
+});
+
 function jsonResponse(data) {
   return {
     ok: true,

@@ -68,7 +68,14 @@ export class PagesService {
     actor: Actor,
     requestId: string,
   ) {
-    return savePageDraft(this.prisma, id, body, idempotencyKey, actor, requestId);
+    return savePageDraft(
+      this.prisma,
+      id,
+      body,
+      idempotencyKey,
+      actor,
+      requestId,
+    );
   }
 
   async publish(
@@ -143,20 +150,27 @@ export class PagesService {
   }
 
   async getPublishedBySlug(slug: string, context: PublishedPageContext) {
-    return getPublishedPageBySlug(this.prisma, slug, context, (
-      schema,
-      tenantId,
-    ) =>
-      this.media.resolveSchemaMediaReferences(schema, tenantId),
+    return getPublishedPageBySlug(
+      this.prisma,
+      slug,
+      context,
+      (schema, tenantId) =>
+        this.media.resolveSchemaMediaReferences(schema, tenantId),
     );
   }
 
-  async getPreviewByToken(token: string, requestId = "local-dev") {
-    return getPreviewPageByToken(this.prisma, token, requestId, (
-      schema,
-      tenantId,
-    ) =>
-      this.media.resolveSchemaMediaReferences(schema, tenantId),
+  async getPreviewByToken(
+    token: string,
+    requestId = "local-dev",
+    context?: { siteHost?: string | null },
+  ) {
+    return getPreviewPageByToken(
+      this.prisma,
+      token,
+      requestId,
+      (schema, tenantId) =>
+        this.media.resolveSchemaMediaReferences(schema, tenantId),
+      context,
     );
   }
 

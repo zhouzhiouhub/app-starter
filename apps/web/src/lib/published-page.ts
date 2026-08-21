@@ -79,16 +79,21 @@ export async function getNotFoundPage(input?: {
 
 export async function getPreviewPage(
   token: string,
+  input?: {
+    storefrontHost?: string | null;
+  },
 ): Promise<PageSchema | null> {
   if (!isPreviewTokenCandidate(token)) {
     return null;
   }
 
   try {
+    const headers = createStorefrontHostHeaders(input?.storefrontHost);
     const response = await fetch(
       `${apiBaseUrl}/public/preview/${encodeURIComponent(token)}`,
       {
         cache: "no-store",
+        ...(headers ? { headers } : {}),
       },
     );
 

@@ -77,8 +77,11 @@ export class PublicController {
   getPreview(
     @Param("token") token: string,
     @CurrentRequestId() requestId = "local-dev",
+    @Headers() headers?: PublicRequestHeaders,
   ) {
-    return this.pages.getPreviewByToken(token, requestId);
+    return this.pages.getPreviewByToken(token, requestId, {
+      siteHost: readPublicSiteHost(headers),
+    });
   }
 
   @Get("pages")

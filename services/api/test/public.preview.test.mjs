@@ -27,9 +27,10 @@ Module({
 
 test("public preview response carries the current request id", async () => {
   const controller = new PublicController({
-    getPreviewByToken(token, requestId) {
+    getPreviewByToken(token, requestId, context) {
       assert.equal(token, "preview-token");
       assert.equal(requestId, "request-public-preview-route");
+      assert.deepEqual(context, { siteHost: null });
 
       return Promise.resolve({
         data: { meta: { slug: "home" } },
@@ -41,6 +42,33 @@ test("public preview response carries the current request id", async () => {
   const response = await controller.getPreview(
     "preview-token",
     "request-public-preview-route",
+  );
+
+  assert.equal(response.meta.requestId, "request-public-preview-route");
+});
+
+test("public preview response carries the safe storefront host", async () => {
+  const controller = new PublicController({
+    getPreviewByToken(token, requestId, context) {
+      assert.equal(token, "preview-token");
+      assert.equal(requestId, "request-public-preview-route");
+      assert.deepEqual(context, {
+        siteHost: "store.brand-platform.com",
+      });
+
+      return Promise.resolve({
+        data: { meta: { slug: "home" } },
+        meta: { requestId },
+      });
+    },
+  });
+
+  const response = await controller.getPreview(
+    "preview-token",
+    "request-public-preview-route",
+    {
+      "x-forwarded-host": "Store.Brand-Platform.com:443",
+    },
   );
 
   assert.equal(response.meta.requestId, "request-public-preview-route");

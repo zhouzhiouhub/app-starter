@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getPreviewPage } from "../../lib/published-page";
 import { readPreviewTokenParam } from "../../lib/preview-token-param";
+import { readStorefrontRequestHost } from "../../lib/storefront-request-host";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +25,8 @@ export default async function PreviewPage(props: {
     notFound();
   }
 
-  const schema = await getPreviewPage(token);
+  const storefrontHost = await readStorefrontRequestHost();
+  const schema = await getPreviewPage(token, { storefrontHost });
 
   if (!schema) {
     notFound();
