@@ -30,6 +30,29 @@ test("admin API guard rejects missing access tokens", async () => {
   });
 });
 
+test("admin API guard rejects duplicated authorization headers", async () => {
+  const request = {
+    headers: {
+      authorization: ["Bearer valid-token", "Bearer shadow-token"],
+    },
+  };
+  const guard = createGuard(
+    {
+      readActorFromAuthorization: async (authorization) => {
+        assert.equal(authorization, undefined);
+        throw new UnauthorizedException({
+          message: "Access token is required.",
+        });
+      },
+    },
+    [],
+  );
+
+  await assert.rejects(() => guard.canActivate(createContext(request)), {
+    name: "UnauthorizedException",
+  });
+});
+
 test("admin API guard attaches the actor when scopes match", async () => {
   const request = { headers: { authorization: "Bearer token" } };
   const guard = createGuard(

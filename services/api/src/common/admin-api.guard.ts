@@ -49,5 +49,5 @@ export class AdminApiGuard implements CanActivate {
 }
 
 function readHeader(value: string | string[] | undefined): string | undefined {
-  return Array.isArray(value) ? value[0] : value;
+  return typeof value === "string" ? value : undefined;
 }
