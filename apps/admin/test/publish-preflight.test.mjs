@@ -13,6 +13,35 @@ test("publish preflight accepts the example landing page", () => {
   assert.equal(findBlockingPublishPreflightIssue(exampleLandingPage), null);
 });
 
+test("publish preflight blocks non-default locale while multi-locale is disabled", () => {
+  const schema = structuredClone(exampleLandingPage);
+  schema.meta.locale = "de-DE";
+
+  const issues = collectPublishPreflightIssues(schema);
+  const blocker = findBlockingPublishPreflightIssue(schema);
+
+  assert.deepEqual(
+    issues.map((issue) => [issue.field, issue.severity]),
+    [["meta.locale", "error"]],
+  );
+  assert.match(issues[0].message, /multi-locale is disabled/);
+  assert.equal(blocker?.field, "meta.locale");
+});
+
+test("publish preflight allows non-default locale when multi-locale is enabled", () => {
+  const schema = structuredClone(exampleLandingPage);
+  schema.meta.locale = "de-DE";
+
+  assert.deepEqual(
+    collectPublishPreflightIssues(schema, { multiLocaleEnabled: true }),
+    [],
+  );
+  assert.equal(
+    findBlockingPublishPreflightIssue(schema, { multiLocaleEnabled: true }),
+    null,
+  );
+});
+
 test("publish preflight blocks unsafe chrome links", () => {
   const schema = structuredClone(exampleLandingPage);
 

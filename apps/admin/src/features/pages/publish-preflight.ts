@@ -1,4 +1,7 @@
-import type { PageSchema } from "@app-starter/schema";
+import {
+  defaultRuntimeConfig,
+  type PageSchema,
+} from "@app-starter/schema";
 import {
   type PublishPreflightIssue,
   type PublishPreflightSeverity,
@@ -23,11 +26,18 @@ interface SeoCheck {
   value: string | undefined;
 }
 
+export interface PublishPreflightOptions {
+  defaultLocale?: string;
+  multiLocaleEnabled?: boolean;
+}
+
 export function collectPublishPreflightIssues(
   schema: PageSchema,
+  options: PublishPreflightOptions = {},
 ): PublishPreflightIssue[] {
   const issues: PublishPreflightIssue[] = [];
 
+  collectLocaleIssues(schema, issues, options);
   collectChromeIssues(schema, issues);
   collectSeoIssues(schema, issues);
   issues.push(...collectSectionPreflightIssues(schema));
@@ -37,12 +47,33 @@ export function collectPublishPreflightIssues(
 
 export function findBlockingPublishPreflightIssue(
   schema: PageSchema,
+  options: PublishPreflightOptions = {},
 ): PublishPreflightIssue | null {
   return (
-    collectPublishPreflightIssues(schema).find(
+    collectPublishPreflightIssues(schema, options).find(
       (issue) => issue.severity === "error",
     ) ?? null
   );
+}
+
+function collectLocaleIssues(
+  schema: PageSchema,
+  issues: PublishPreflightIssue[],
+  options: PublishPreflightOptions,
+): void {
+  const defaultLocale = options.defaultLocale ?? defaultRuntimeConfig.defaultLocale;
+  const multiLocaleEnabled =
+    options.multiLocaleEnabled ?? defaultRuntimeConfig.multiLocaleEnabled;
+
+  if (multiLocaleEnabled || schema.meta.locale === defaultLocale) {
+    return;
+  }
+
+  issues.push({
+    field: "meta.locale",
+    message: `Locale ${schema.meta.locale} cannot be published while multi-locale is disabled. Use ${defaultLocale} or enable multi-locale before publishing.`,
+    severity: "error",
+  });
 }
 
 function collectChromeIssues(
