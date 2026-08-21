@@ -13,6 +13,17 @@ test("CORS origin config uses local defaults when unset", () => {
   ]);
 });
 
+test("CORS origin config does not use local defaults in production", () => {
+  assert.deepEqual(readConfiguredCorsOrigins({ NODE_ENV: "production" }), []);
+  assert.deepEqual(
+    readConfiguredCorsOrigins({
+      NODE_ENV: "production",
+      WEB_URL: "https://web.example.com/",
+    }),
+    ["https://web.example.com"],
+  );
+});
+
 test("CORS origin config normalizes configured URL origins", () => {
   assert.deepEqual(
     readConfiguredCorsOrigins({

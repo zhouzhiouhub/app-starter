@@ -2,11 +2,20 @@ const defaultAdminOrigin = "http://localhost:5173";
 const defaultWebOrigin = "http://localhost:3000";
 
 export function readConfiguredCorsOrigins(
-  env: { ADMIN_URL?: string; WEB_URL?: string } = process.env,
+  env: { ADMIN_URL?: string; NODE_ENV?: string; WEB_URL?: string } =
+    process.env,
 ): string[] {
+  const useLocalDefaults = env.NODE_ENV !== "production";
+
   return uniqueOrigins([
-    readConfiguredHttpOrigin(env.WEB_URL, defaultWebOrigin),
-    readConfiguredHttpOrigin(env.ADMIN_URL, defaultAdminOrigin),
+    readConfiguredHttpOrigin(
+      env.WEB_URL,
+      useLocalDefaults ? defaultWebOrigin : undefined,
+    ),
+    readConfiguredHttpOrigin(
+      env.ADMIN_URL,
+      useLocalDefaults ? defaultAdminOrigin : undefined,
+    ),
   ]);
 }
 
@@ -50,10 +59,15 @@ export function isAllowedDevOrigin(origin: string): boolean {
 
 function readConfiguredHttpOrigin(
   value: string | undefined,
-  fallback: string,
+  fallback: string | undefined,
 ): string | null {
   const configured = value?.trim();
-  return readHttpOrigin(configured || fallback);
+
+  if (configured) {
+    return readHttpOrigin(configured);
+  }
+
+  return fallback ? readHttpOrigin(fallback) : null;
 }
 
 function readHttpOrigin(value: string): string | null {
