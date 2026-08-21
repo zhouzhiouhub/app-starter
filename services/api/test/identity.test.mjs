@@ -4,7 +4,12 @@ import {
   toAuthSessionResponse,
   toCurrentUserResponse,
 } from "../dist/modules/identity/identity.mapper.js";
-import { loginBodySchema } from "../dist/modules/identity/identity.validation.js";
+import { readBearerToken } from "../dist/modules/identity/identity.authorization.js";
+import {
+  loginBodySchema,
+  parseLoginBody,
+  parseRefreshBody,
+} from "../dist/modules/identity/identity.validation.js";
 import { hashPassword, verifyPassword } from "../dist/modules/identity/password.js";
 import { TokenService } from "../dist/modules/identity/token.service.js";
 import { resetJwtKeysForTests } from "../dist/modules/identity/jwt-keys.js";
@@ -18,6 +23,33 @@ test("login body lowercases email and requires a password", () => {
   assert.equal(parsed.email, "admin@example.com");
   assert.equal(parsed.tenantSlug, "default");
   assert.throws(() => loginBodySchema.parse({ email: "admin@example.com" }));
+});
+
+test("identity request parsers keep API validation errors structured", () => {
+  const parsedLogin = parseLoginBody({
+    email: "Admin@Example.com",
+    password: "ChangeMe123!",
+  });
+  const parsedRefresh = parseRefreshBody({
+    refreshToken: "refresh-token-value",
+  });
+
+  assert.equal(parsedLogin.email, "admin@example.com");
+  assert.equal(parsedRefresh.refreshToken, "refresh-token-value");
+  assert.throws(
+    () => parseLoginBody({ email: "admin@example.com" }),
+    (error) =>
+      error.getResponse?.().code === "VALIDATION_ERROR" &&
+      error.getStatus?.() === 400,
+  );
+});
+
+test("identity authorization reads bearer tokens defensively", () => {
+  assert.equal(readBearerToken("Bearer access-token"), "access-token");
+  assert.equal(readBearerToken("bearer access-token"), "access-token");
+  assert.equal(readBearerToken(undefined), undefined);
+  assert.equal(readBearerToken("Basic access-token"), undefined);
+  assert.equal(readBearerToken("Bearer"), undefined);
 });
 
 test("password hashing uses bcrypt and verifies the original value", async () => {

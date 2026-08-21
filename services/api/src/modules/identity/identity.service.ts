@@ -5,8 +5,8 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { apiErrorCodes } from "@app-starter/schema";
-import { ZodError } from "zod";
 import { PrismaService } from "../prisma/prisma.service.js";
+import { readBearerToken } from "./identity.authorization.js";
 import { ACTIVE_USER_STATUS } from "./identity.constants.js";
 import {
   toActorFromUser,
@@ -15,8 +15,8 @@ import {
 } from "./identity.mapper.js";
 import type { Actor } from "./identity.types.js";
 import {
-  loginBodySchema,
-  refreshBodySchema,
+  parseLoginBody,
+  parseRefreshBody,
 } from "./identity.validation.js";
 import { verifyPassword } from "./password.js";
 import { TokenService } from "./token.service.js";
@@ -37,7 +37,7 @@ export class IdentityService {
   ) {}
 
   async login(body: unknown, requestId = "local-dev") {
-    const input = this.parseLogin(body);
+    const input = parseLoginBody(body);
     const user = await this.findUserByEmail(input.tenantSlug, input.email);
 
     if (
@@ -52,7 +52,7 @@ export class IdentityService {
   }
 
   async refresh(body: unknown, requestId = "local-dev") {
-    const { refreshToken } = this.parseRefresh(body);
+    const { refreshToken } = parseRefreshBody(body);
     const tokenHash = this.tokens.hashRefreshToken(refreshToken);
     const current = await this.prisma.refreshToken.findUnique({
       where: { tokenHash },
@@ -86,7 +86,7 @@ export class IdentityService {
   }
 
   async logout(body: unknown, requestId = "local-dev") {
-    const { refreshToken } = this.parseRefresh(body);
+    const { refreshToken } = parseRefreshBody(body);
     const tokenHash = this.tokens.hashRefreshToken(refreshToken);
     await this.prisma.refreshToken.updateMany({
       where: { tokenHash, revokedAt: null },
@@ -186,30 +186,6 @@ export class IdentityService {
     });
   }
 
-  private parseLogin(body: unknown) {
-    return this.parseOrThrow(() => loginBodySchema.parse(body));
-  }
-
-  private parseRefresh(body: unknown) {
-    return this.parseOrThrow(() => refreshBodySchema.parse(body));
-  }
-
-  private parseOrThrow<T>(fn: () => T): T {
-    try {
-      return fn();
-    } catch (error) {
-      if (error instanceof ZodError) {
-        throw new BadRequestException({
-          code: apiErrorCodes.VALIDATION_ERROR,
-          details: error.flatten(),
-          message: error.issues[0]?.message ?? "Invalid request.",
-        });
-      }
-
-      throw error;
-    }
-  }
-
   private assertActive(status: string) {
     if (status !== ACTIVE_USER_STATUS) {
       throw new ForbiddenException({
@@ -234,18 +210,4 @@ export class IdentityService {
   }
 }
 
-export function readBearerToken(
-  authorization: string | undefined,
-): string | undefined {
-  if (!authorization) {
-    return undefined;
-  }
-
-  const [scheme, token] = authorization.split(" ");
-
-  if (scheme?.toLowerCase() !== "bearer" || !token) {
-    return undefined;
-  }
-
-  return token;
-}
+export { readBearerToken } from "./identity.authorization.js";
