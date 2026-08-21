@@ -5,6 +5,7 @@ import {
   resolveStorefrontRevalidateUrl,
   triggerStorefrontRevalidation,
 } from "../dist/modules/pages/pages.revalidation.js";
+import { withEnv } from "./env-helper.mjs";
 
 test("storefront revalidation skips when secret is missing", async () => {
   await withEnv(
@@ -236,25 +237,3 @@ test("storefront revalidation distinguishes timeouts from request failures", asy
     },
   );
 });
-
-async function withEnv(values, fn) {
-  const previous = Object.fromEntries(
-    Object.keys(values).map((key) => [key, process.env[key]]),
-  );
-
-  for (const [key, value] of Object.entries(values)) {
-    process.env[key] = value;
-  }
-
-  try {
-    await fn();
-  } finally {
-    for (const [key, value] of Object.entries(previous)) {
-      if (value === undefined) {
-        delete process.env[key];
-      } else {
-        process.env[key] = value;
-      }
-    }
-  }
-}

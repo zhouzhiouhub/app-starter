@@ -7,6 +7,7 @@ import {
 } from "../dist/modules/pages/pages.preview-token.js";
 import { createPreviewToken } from "../dist/modules/pages/use-cases/create-preview-token.js";
 import { getPreviewPageByToken } from "../dist/modules/pages/use-cases/get-preview-page-by-token.js";
+import { withEnv } from "./env-helper.mjs";
 
 test("createPreviewToken signs a tenant-scoped page token", async () => {
   await withEnv({ PREVIEW_TOKEN_SECRET: "preview-secret" }, async () => {
@@ -234,26 +235,4 @@ function actor() {
     scopes: ["page:read"],
     tenantId: "tenant-1",
   };
-}
-
-async function withEnv(values, fn) {
-  const previous = Object.fromEntries(
-    Object.keys(values).map((key) => [key, process.env[key]]),
-  );
-
-  for (const [key, value] of Object.entries(values)) {
-    process.env[key] = value;
-  }
-
-  try {
-    await fn();
-  } finally {
-    for (const [key, value] of Object.entries(previous)) {
-      if (value === undefined) {
-        delete process.env[key];
-      } else {
-        process.env[key] = value;
-      }
-    }
-  }
 }
