@@ -140,6 +140,7 @@ async function createPreviewToken(input, accessToken, pageId) {
     {
       headers: {
         Authorization: `Bearer ${accessToken}`,
+        "Idempotency-Key": randomUUID(),
       },
       method: "POST",
     },
