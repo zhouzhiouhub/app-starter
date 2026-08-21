@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   assertAllowedExternalMediaUrl,
   assertAllowedMediaUrl,
+  parseConfirmMediaInput,
   parseCreateUploadUrlInput,
   readAllowedMediaUrlHosts,
 } from "../dist/modules/media/media.validation.js";
@@ -24,6 +25,23 @@ test("parseCreateUploadUrlInput validates file metadata", () => {
       mimeType: "application/x-msdownload",
       size: 100,
     }),
+  );
+});
+
+test("parseConfirmMediaInput rejects reserved metadata fields", () => {
+  assert.throws(
+    () =>
+      parseConfirmMediaInput({
+        filename: "hero.webp",
+        metadata: {
+          altText: "Hero",
+          archivedAt: "2026-08-21T00:00:00.000Z",
+        },
+        mimeType: "image/webp",
+        r2Key: "tenant-1/imports/hero.webp",
+        size: 4096,
+      }),
+    /Media metadata field archivedAt is reserved/,
   );
 });
 

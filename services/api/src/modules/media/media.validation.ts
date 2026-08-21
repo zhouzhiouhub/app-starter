@@ -61,6 +61,22 @@ const mediaUrlSchema = z
   .refine((value) => /^https?:\/\//.test(value), {
     message: "Media URL must be http(s).",
   });
+const reservedMediaMetadataFields = new Set(["archivedAt", "archivedBy"]);
+const mediaMetadataSchema = z
+  .record(z.unknown())
+  .default({})
+  .superRefine((metadata, context) => {
+    const reservedField = Object.keys(metadata).find((field) =>
+      reservedMediaMetadataFields.has(field),
+    );
+
+    if (reservedField) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Media metadata field ${reservedField} is reserved.`,
+      });
+    }
+  });
 
 export const listMediaQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -78,7 +94,7 @@ export const createUploadUrlInputSchema = z.object({
 export const confirmMediaInputSchema = createUploadUrlInputSchema.extend({
   r2Key: r2KeySchema,
   url: mediaUrlSchema.optional(),
-  metadata: z.record(z.unknown()).default({}),
+  metadata: mediaMetadataSchema,
 });
 
 export type CreateUploadUrlInput = z.infer<typeof createUploadUrlInputSchema>;
