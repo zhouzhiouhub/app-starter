@@ -1,17 +1,11 @@
 import { Buffer } from "node:buffer";
-import { randomUUID } from "node:crypto";
-import { fetchJson, readHttpError } from "./http-json-smoke.mjs";
 import {
-  formatMediaListFilterDiagnostic,
-  isCdnUrlForR2Key,
-  isMediaListResponseContainingAsset,
-  isMediaReference,
-  isProductionCdnUrl,
-  isR2UploadUrl,
-  isR2UploadUrlForKey,
-  readMediaListFilterDiagnostic,
-} from "./media-smoke-diagnostics.mjs";
-import { redactSmokeSecrets } from "./smoke-secrets.mjs";
+  assertMediaAssetShape,
+  confirmSmokeImage,
+} from "./media-smoke-confirmation.mjs";
+import { assertMediaListFilters } from "./media-smoke-list-filter.mjs";
+import { uploadSmokeImage } from "./media-smoke-r2-upload.mjs";
+import { requestMediaUploadTarget } from "./media-smoke-upload-target.mjs";
 
 const smokeImage = {
   body: Buffer.from(
@@ -28,208 +22,20 @@ const smokeImage = {
 };
 
 export async function createSmokeMediaAsset(input, accessToken) {
-  const target = await requestMediaUploadTarget(input, accessToken);
+  const target = await requestMediaUploadTarget(input, accessToken, smokeImage);
 
   if (input.requireR2Upload) {
-    await uploadSmokeImage(target);
+    await uploadSmokeImage(target, smokeImage);
   }
 
-  const asset = await confirmSmokeImage(input, accessToken, target);
-  assertMediaAssetShape(asset, target, input.requireR2Upload);
+  const asset = await confirmSmokeImage(
+    input,
+    accessToken,
+    target,
+    smokeImage,
+  );
+  assertMediaAssetShape(asset, target, smokeImage, input.requireR2Upload);
   await assertMediaListFilters(input, accessToken, asset);
 
   return { asset, target };
-}
-
-async function requestMediaUploadTarget(input, accessToken) {
-  const response = await fetchJson(`${input.apiBaseUrl}/media/upload-url`, {
-    body: JSON.stringify({
-      filename: smokeImage.filename,
-      mimeType: smokeImage.mimeType,
-      size: smokeImage.body.byteLength,
-    }),
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-      "Idempotency-Key": randomUUID(),
-    },
-    method: "POST",
-  });
-
-  if (!response.ok) {
-    throw new Error(readHttpError(response, "Media upload target failed."));
-  }
-
-  const target = response.body?.data;
-  assertUploadTargetShape(target);
-
-  if (input.requireR2Upload && !isR2UploadUrl(target.uploadUrl)) {
-    throw new Error(
-      "Media upload target is not a secure Cloudflare R2 presigned URL.",
-    );
-  }
-
-  if (
-    input.requireR2Upload &&
-    !isR2UploadUrlForKey(target.uploadUrl, target.r2Key)
-  ) {
-    throw new Error(
-      "Media upload target URL does not match the returned R2 key.",
-    );
-  }
-
-  return target;
-}
-
-function assertUploadTargetShape(target) {
-  if (!target || typeof target !== "object") {
-    throw new Error("Media upload target did not return a data object.");
-  }
-
-  assertString(target.uploadUrl, "uploadUrl");
-  assertString(target.r2Key, "r2Key");
-  assertString(target.expiresAt, "expiresAt");
-
-  if (target.method !== "PUT") {
-    throw new Error(
-      `Media upload target method must be PUT, got ${target.method}.`,
-    );
-  }
-
-  if (target.type !== "image") {
-    throw new Error(
-      `Media upload target type must be image, got ${target.type}.`,
-    );
-  }
-
-  if (target.confirmPath !== "/api/v1/media/confirm") {
-    throw new Error("Media upload target returned an unexpected confirmPath.");
-  }
-
-  if (!Number.isInteger(target.maxSize) || target.maxSize < 128) {
-    throw new Error("Media upload target returned an invalid maxSize.");
-  }
-
-  if (Number.isNaN(Date.parse(target.expiresAt))) {
-    throw new Error("Media upload target returned an invalid expiresAt.");
-  }
-
-  if (target.headers?.["Content-Type"] !== smokeImage.mimeType) {
-    throw new Error("Media upload target did not preserve the content type.");
-  }
-}
-
-async function uploadSmokeImage(target) {
-  const response = await fetch(target.uploadUrl, {
-    body: smokeImage.body,
-    headers: target.headers,
-    method: target.method,
-  });
-
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(
-      redactSmokeSecrets(
-        `R2 object upload failed. ${response.status}: ${text.slice(0, 160)}`,
-      ),
-    );
-  }
-}
-
-async function confirmSmokeImage(input, accessToken, target) {
-  const response = await fetchJson(`${input.apiBaseUrl}/media/confirm`, {
-    body: JSON.stringify({
-      filename: smokeImage.filename,
-      metadata: smokeImage.metadata,
-      mimeType: smokeImage.mimeType,
-      r2Key: target.r2Key,
-      size: smokeImage.body.byteLength,
-    }),
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-      "Idempotency-Key": randomUUID(),
-    },
-    method: "POST",
-  });
-
-  if (!response.ok) {
-    throw new Error(readHttpError(response, "Media confirm failed."));
-  }
-
-  return response.body?.data;
-}
-
-async function assertMediaListFilters(input, accessToken, asset) {
-  const query = new URLSearchParams({
-    limit: "20",
-    page: "1",
-    status: "active",
-    type: "image",
-  });
-  const response = await fetchJson(`${input.apiBaseUrl}/media?${query}`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(readHttpError(response, "Media list filter check failed."));
-  }
-
-  if (!isMediaListResponseContainingAsset(response.body, asset)) {
-    const diagnostic = readMediaListFilterDiagnostic(response.body, asset);
-
-    throw new Error(
-      `Media list filter check did not return the confirmed image asset (${formatMediaListFilterDiagnostic(
-        diagnostic,
-      )}).`,
-    );
-  }
-}
-
-function assertMediaAssetShape(asset, target, requireProductionCdn) {
-  if (!asset || typeof asset !== "object") {
-    throw new Error("Media confirm did not return a data object.");
-  }
-
-  assertString(asset.id, "id");
-  assertString(asset.url, "url");
-  assertString(asset.reference, "reference");
-
-  if (asset.filename !== smokeImage.filename) {
-    throw new Error("Media confirm did not preserve the filename.");
-  }
-
-  if (asset.mimeType !== smokeImage.mimeType || asset.type !== "image") {
-    throw new Error("Media confirm returned an unexpected media type.");
-  }
-
-  if (asset.r2Key !== target.r2Key) {
-    throw new Error("Media confirm returned an unexpected R2 key.");
-  }
-
-  if (asset.size !== smokeImage.body.byteLength) {
-    throw new Error("Media confirm returned an unexpected file size.");
-  }
-
-  if (!isMediaReference(asset.reference)) {
-    throw new Error("Media confirm returned an invalid media:// reference.");
-  }
-
-  if (!isCdnUrlForR2Key(asset.url, target.r2Key)) {
-    throw new Error("Media confirm returned a CDN URL for the wrong object.");
-  }
-
-  if (requireProductionCdn && !isProductionCdnUrl(asset.url)) {
-    throw new Error(
-      "Media confirm did not return a production CDN URL; set MEDIA_CDN_BASE_URL to a real HTTPS CDN host.",
-    );
-  }
-}
-
-function assertString(value, field) {
-  if (typeof value !== "string" || !value) {
-    throw new Error(`Media upload target returned an invalid ${field}.`);
-  }
 }
