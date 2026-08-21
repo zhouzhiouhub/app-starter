@@ -34,12 +34,16 @@ analytics gates.
 
 MVP refresh-token replay protection is PostgreSQL-backed. Redis is not required
 for local login or session tests until cache, queue, or high-frequency session
-invalidations are enabled.
+invalidations are enabled. Production smoke readiness still records `REDIS_URL`
+because Redis is part of the production deployment topology for cache, queue,
+and future session invalidation work.
 
 In production, the API requires `DATABASE_URL` to be a PostgreSQL connection URL
 whose host is not local, loopback, Docker-local, or a reserved placeholder. Local
 development can still use `localhost`, but production startup fails before
 Prisma connects if the database URL is unsafe.
+Production smoke readiness also expects `REDIS_URL` to be a `rediss://` endpoint
+outside local, private, Docker-local, or reserved placeholder hosts.
 
 Media uploads use local fallback URLs only outside production. In production,
 the API requires the full R2 upload configuration and a safe explicit
@@ -219,8 +223,11 @@ setup has consent plus at least one valid provider. Feature flag diagnostics
 record whether `COMMERCE_ENABLED` and `MULTI_LOCALE_ENABLED` are explicitly
 configured and disabled. Database diagnostics record only non-secret
 `DATABASE_URL` readiness metadata: whether it is configured, the database host,
-URL safety, and whether it is production-ready. Identity diagnostics record only
-whether JWT private and public keys are configured with PEM-shaped values.
+URL safety, and whether it is production-ready. Redis diagnostics record only
+non-secret `REDIS_URL` readiness metadata: whether it is configured, the Redis
+host, TLS usage, URL safety, and whether it is production-ready. Identity
+diagnostics record only whether JWT private and public keys are configured with
+PEM-shaped values.
 Revalidation environment diagnostics record only non-secret readiness metadata:
 whether a secret is configured, the URL source, endpoint host/path, URL safety,
 and whether the smoke run requires revalidation. Preview environment diagnostics

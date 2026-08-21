@@ -5,6 +5,7 @@ import {
   appendUrlBlocker,
 } from "./smoke-readiness-blockers.mjs";
 import { collectDatabaseReadiness } from "./smoke-readiness-database.mjs";
+import { collectRedisReadiness } from "./smoke-readiness-redis.mjs";
 
 export function collectSmokeReadinessFindings(environment, config) {
   const blockers = [];
@@ -17,6 +18,7 @@ export function collectSmokeReadinessFindings(environment, config) {
   collectIdentityReadiness(blockers, environment.identity);
   collectMediaReadiness(blockers, environment.media, config);
   collectPreviewReadiness(blockers, environment.preview);
+  collectRedisReadiness(blockers, environment.redis);
   collectRevalidationReadiness(
     blockers,
     warnings,

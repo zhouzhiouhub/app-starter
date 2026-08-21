@@ -160,6 +160,38 @@ test("smoke readiness requires a production database URL", () => {
   ]);
 });
 
+test("smoke readiness requires a production Redis URL", () => {
+  const environment = createReadyEnvironment();
+  environment.redis = {
+    host: "localhost",
+    productionReady: false,
+    urlIssue: "local-host",
+    variable: "REDIS_URL",
+  };
+  const readiness = createSmokeProductionReadiness(
+    environment,
+    createReadyConfig(),
+  );
+
+  assert.deepEqual(readiness.blockers, [
+    {
+      area: "cache.redis",
+      host: "localhost",
+      issue: "local-host",
+      message: "REDIS_URL must point to a production TLS Redis endpoint.",
+      variable: "REDIS_URL",
+    },
+  ]);
+  assert.equal(readiness.productionReady, false);
+  assert.deepEqual(readiness.nextActions, [
+    {
+      action:
+        "Set REDIS_URL to a production rediss:// Redis endpoint outside local or placeholder hosts.",
+      area: "cache.redis",
+    },
+  ]);
+});
+
 test("smoke readiness requires production JWT keys", () => {
   const environment = createReadyEnvironment();
   environment.identity = {

@@ -356,6 +356,7 @@ CLARITY_PROJECT_ID=xxxxxxxxxx
 线上注意事项：
 
 - 不要把线上 `DATABASE_URL` 写成 `localhost`。
+- 不要把线上 `REDIS_URL` 写成 `localhost` 或未加密的 `redis://`；生产 smoke readiness 期望使用云端 `rediss://` Redis。
 - 不要把本机 PostgreSQL 密码用于生产环境。
 - 不要把生产数据库连接串提交到 Git。
 - Analytics 脚本只有在 `ANALYTICS_ENABLED=true` 且 `ANALYTICS_CONSENT_GRANTED=true` 时才会加载；未接入 Consent 机制前保持关闭。
@@ -565,7 +566,7 @@ Admin 静态页 smoke 还会校验入口 `type="module"` 脚本解析到同一�
 布尔 smoke 开关只接受 `true`/`false`、`1`/`0`、`yes`/`no`、`on`/`off`，拼写错误会直接失败。
 `SMOKE_RETRY_ATTEMPTS` 必须为 1-60，`SMOKE_RETRY_DELAY_MS` 必须为 1-60000 毫秒。
 `SMOKE_REPORT_PATH` 必须是 `tmp/`、`reports/`、`artifacts/` 或 `.tmp/` 下的相对 `.json` 路径，避免报告写到源码或系统目录；生产 readiness 必须设置该路径，确保验收报告可归档。
-Smoke 报告 details 与失败消息会在写入报告或打印到 CLI 前脱敏 Preview Token、敏感 query、JSON 凭据字段、R2 签名参数和 Bearer Token，非 `Error` 异常也会提取 `message` 或使用稳定兜底消息；报告顶层带有 `schemaVersion` 和 `summary`，当前结构版本为 `smoke-report.v2`，便于归档脚本识别结构版本、直接读取检查数量、失败项和生产就绪结论，失败数量按失败检查条目统计，缺失名称的失败项会使用稳定占位名，落盘前会校验关键字段完整性、检查条目状态白名单、通过/失败时间、失败错误消息和摘要新鲜度，CLI 也会打印这份摘要并区分 Smoke 检查是否通过与生产门禁是否满足；`environment.deployment` 会标记 API / Web / Admin URL 是否仍为本地、占位域名、非 HTTPS 或异常路径；`productionReadiness` 会汇总生产上线 blocker 和 `nextActions` 操作清单，只有 API / Web / Admin、DATABASE_URL、analytics config、MVP disabled feature flags、JWT key pair、R2 / CDN、Preview Token secret、ISR revalidation 和 `SMOKE_REPORT_PATH` 归档门禁都被证明时才会返回 `productionReady=true`，CLI 也会在 smoke 通过后直接打印 blocked / ready 结论。
+Smoke 报告 details 与失败消息会在写入报告或打印到 CLI 前脱敏 Preview Token、敏感 query、JSON 凭据字段、R2 签名参数和 Bearer Token，非 `Error` 异常也会提取 `message` 或使用稳定兜底消息；报告顶层带有 `schemaVersion` 和 `summary`，当前结构版本为 `smoke-report.v2`，便于归档脚本识别结构版本、直接读取检查数量、失败项和生产就绪结论，失败数量按失败检查条目统计，缺失名称的失败项会使用稳定占位名，落盘前会校验关键字段完整性、检查条目状态白名单、通过/失败时间、失败错误消息和摘要新鲜度，CLI 也会打印这份摘要并区分 Smoke 检查是否通过与生产门禁是否满足；`environment.deployment` 会标记 API / Web / Admin URL 是否仍为本地、占位域名、非 HTTPS 或异常路径；`productionReadiness` 会汇总生产上线 blocker 和 `nextActions` 操作清单，只有 API / Web / Admin、DATABASE_URL、REDIS_URL、analytics config、MVP disabled feature flags、JWT key pair、R2 / CDN、Preview Token secret、ISR revalidation 和 `SMOKE_REPORT_PATH` 归档门禁都被证明时才会返回 `productionReady=true`，CLI 也会在 smoke 通过后直接打印 blocked / ready 结论。
 
 ```powershell
 $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
@@ -646,7 +647,7 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 优先做上线前验收和生产化收口：
 
 1. 在真实 R2 / CDN 环境配置 `MEDIA_CDN_BASE_URL`、R2 凭据和 CDN 域名，确认不是 `example` / `test` / `invalid` / 本地 / 私网域名，执行 `pnpm smoke:publish` 并归档 `SMOKE_REPORT_PATH`。
-2. 补齐部署 Smoke Test：前台 Vercel、API 独立 Node 服务、Admin 静态托管、环境变量清单和回滚步骤。
+2. 补齐部署 Smoke Test：前台 Vercel、API 独立 Node 服务、Admin 静态托管、Redis 生产连接、环境变量清单和回滚步骤。
 3. 做 Page Builder 视觉验收：Desktop / Mobile 双端检查、核心区块与设计稿差异记录、媒体解析异常态。
 4. 补多语言运营后台前的最小闭环：只读 Locale / Translation 视图、非默认 Locale 关闭态提示与权限测试。
 5. 保持 Commerce 关闭态，只继续完善 Products / Orders 空列表和 `COMMERCE_DISABLED` 错误分支测试；不进入真实交易。

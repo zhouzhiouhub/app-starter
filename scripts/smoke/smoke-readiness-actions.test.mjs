@@ -39,3 +39,22 @@ test("smoke readiness next actions preserve the public helper export", () => {
     ],
   );
 });
+
+test("smoke readiness next actions explain Redis readiness blockers", () => {
+  assert.deepEqual(
+    createSmokeReadinessNextActions([
+      {
+        area: "cache.redis",
+        issue: "insecure-protocol",
+        message: "REDIS_URL must point to a production TLS Redis endpoint.",
+      },
+    ]),
+    [
+      {
+        action:
+          "Set REDIS_URL to a production rediss:// Redis endpoint outside local or placeholder hosts.",
+        area: "cache.redis",
+      },
+    ],
+  );
+});

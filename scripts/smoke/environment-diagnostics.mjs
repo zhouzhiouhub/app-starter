@@ -6,6 +6,7 @@ import { createIdentityDiagnostics } from "./environment-diagnostics-identity.mj
 import { createMediaDiagnostics } from "./environment-diagnostics-media.mjs";
 import { createPreviewDiagnostics } from "./environment-diagnostics-preview.mjs";
 import { createRevalidationDiagnostics } from "./environment-diagnostics-revalidation.mjs";
+import { createRedisDiagnostics } from "./environment-diagnostics-redis.mjs";
 
 export function createSmokeEnvironmentDiagnostics(
   env = process.env,
@@ -19,6 +20,7 @@ export function createSmokeEnvironmentDiagnostics(
     identity: createIdentityDiagnostics(env),
     media: createMediaDiagnostics(env),
     preview: createPreviewDiagnostics(env),
+    redis: createRedisDiagnostics(env),
     revalidation: createRevalidationDiagnostics(env, options),
   };
 }

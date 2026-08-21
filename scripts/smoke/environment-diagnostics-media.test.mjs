@@ -21,6 +21,7 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
     R2_BUCKET: "bucket-name",
     R2_REGION: "auto",
     R2_SECRET_ACCESS_KEY: "super-secret",
+    REDIS_URL: "rediss://cache-user:cache-secret@redis.brand-cache.com:6379/0",
     PREVIEW_TOKEN_SECRET: "super-preview-secret",
     STOREFRONT_REVALIDATE_SECRET: "super-revalidate-secret",
     STOREFRONT_REVALIDATE_URL: "https://web.example.com/",
@@ -149,6 +150,15 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
       previousSecretConfigured: false,
       secretConfigured: true,
     },
+    redis: {
+      configured: true,
+      host: "redis.brand-cache.com",
+      productionReady: true,
+      urlIssue: null,
+      urlSafe: true,
+      usesTls: true,
+      variable: "REDIS_URL",
+    },
     revalidation: {
       configured: true,
       endpointHost: "web.example.com",
@@ -174,6 +184,8 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
   assert.equal(serialized.includes("bucket-name"), false);
   assert.equal(serialized.includes("account-id"), false);
   assert.equal(serialized.includes("access-key"), false);
+  assert.equal(serialized.includes("cache-user"), false);
+  assert.equal(serialized.includes("cache-secret"), false);
 });
 
 test("smoke environment diagnostics reports missing R2 and CDN fallback", () => {
@@ -195,6 +207,9 @@ test("smoke environment diagnostics reports missing R2 and CDN fallback", () => 
   assert.equal(diagnostics.analytics.productionReady, true);
   assert.equal(diagnostics.database.configured, false);
   assert.equal(diagnostics.database.productionReady, false);
+  assert.equal(diagnostics.redis.configured, false);
+  assert.equal(diagnostics.redis.productionReady, false);
+  assert.equal(diagnostics.redis.urlIssue, "missing-url");
   assert.equal(diagnostics.featureFlags.configured, false);
   assert.equal(diagnostics.featureFlags.productionReady, false);
   assert.equal(diagnostics.identity.jwt.configured, false);

@@ -28,6 +28,15 @@ function readBlockerActions(blocker) {
     ];
   }
 
+  if (blocker.area === "cache.redis") {
+    return [
+      createAction(
+        blocker.area,
+        "Set REDIS_URL to a production rediss:// Redis endpoint outside local or placeholder hosts.",
+      ),
+    ];
+  }
+
   if (blocker.area === "deployment.web") {
     return [
       createAction(

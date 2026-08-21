@@ -67,6 +67,9 @@ export function createProductionReadyEnvironmentDiagnostics() {
     preview: {
       secretConfigured: true,
     },
+    redis: {
+      productionReady: true,
+    },
     revalidation: {
       secretConfigured: true,
       urlConfigured: true,

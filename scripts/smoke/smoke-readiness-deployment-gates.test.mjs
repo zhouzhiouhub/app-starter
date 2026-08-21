@@ -58,6 +58,9 @@ test("smoke readiness reports unsafe deployment and environment blockers", () =>
       preview: {
         secretConfigured: false,
       },
+      redis: {
+        productionReady: true,
+      },
       revalidation: {
         secretConfigured: false,
         urlConfigured: true,

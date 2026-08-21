@@ -45,6 +45,9 @@ export function createReadyEnvironment() {
     preview: {
       secretConfigured: true,
     },
+    redis: {
+      productionReady: true,
+    },
     revalidation: {
       secretConfigured: true,
       urlConfigured: true,
