@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createSmokeProductionReadiness } from "./smoke-readiness.mjs";
+import {
+  createSmokeProductionReadiness,
+  createSmokeReadinessNextActions,
+} from "./smoke-readiness.mjs";
 
 test("smoke readiness passes when every production gate is proven", () => {
   const readiness = createSmokeProductionReadiness(
@@ -154,6 +157,44 @@ test("smoke readiness warns when revalidation uses WEB_URL fallback", () => {
       area: "revalidation.url",
     },
   ]);
+});
+
+test("smoke readiness next actions preserve the public helper export", () => {
+  assert.deepEqual(
+    createSmokeReadinessNextActions(
+      [
+        {
+          area: "deployment.api",
+          issue: "placeholder-host",
+          message: "API_URL must be production ready.",
+        },
+        {
+          area: "deployment.api",
+          issue: "placeholder-host",
+          message: "API_URL must be production ready.",
+        },
+      ],
+      [
+        {
+          area: "revalidation.url",
+          issue: "uses-web-url-fallback",
+          message: "Uses WEB_URL fallback.",
+        },
+      ],
+    ),
+    [
+      {
+        action:
+          "Set API_URL to the deployed API HTTPS origin or exact /api/v1 base.",
+        area: "deployment.api",
+      },
+      {
+        action:
+          "Optionally set STOREFRONT_REVALIDATE_URL explicitly instead of relying on WEB_URL fallback.",
+        area: "revalidation.url",
+      },
+    ],
+  );
 });
 
 function createReadyConfig() {
