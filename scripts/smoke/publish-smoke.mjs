@@ -1,16 +1,14 @@
 import { assertAuditLogs } from "./audit-smoke.mjs";
 import { assertAdminApp } from "./admin-app-smoke.mjs";
+import { loginSmokeAdmin } from "./auth-smoke.mjs";
 import { assertFeatureFlagsDisabled } from "./feature-flags-smoke.mjs";
-import {
-  assertJsonReachable,
-  fetchJson,
-  readHttpError,
-} from "./http-json-smoke.mjs";
+import { assertJsonReachable } from "./http-json-smoke.mjs";
 import { assertMediaUploadTarget } from "./media-smoke.mjs";
 import {
   assertPublishedResponse,
   publishPage,
 } from "./publish-page-smoke.mjs";
+import { runSmokeStep } from "./publish-smoke-step.mjs";
 import { assertPreviewFlow } from "./preview-smoke.mjs";
 import {
   assertPublicApi,
@@ -20,16 +18,14 @@ import { assertRollbackFlow } from "./rollback-smoke.mjs";
 import { createRevalidationSmokeDetails } from "./revalidation-smoke.mjs";
 import { buildSmokePageSchema } from "./smoke-page-schema.mjs";
 import { printSmokeProductionReadiness } from "./smoke-readiness-cli.mjs";
-import { redactSmokeSecrets } from "./smoke-secrets.mjs";
 import {
   completeSmokeReport,
   createSmokeReport,
   failSmokeReport,
-  recordSmokeCheck,
-  recordSmokeCheckFailure,
   writeSmokeReportIfConfigured,
 } from "./smoke-report.mjs";
 import { printSmokeReportSummary } from "./smoke-report-cli.mjs";
+import { readErrorMessage } from "./smoke-error-message.mjs";
 import {
   assertIndexableStorefrontPage,
   assertNotFoundPage,
@@ -49,6 +45,7 @@ export {
 export {
   formatPublishRevalidationFailure,
 } from "./publish-page-smoke.mjs";
+export { readErrorMessage } from "./smoke-error-message.mjs";
 export {
   normalizeAdminOrigin,
   normalizeApiBaseUrl,
@@ -91,7 +88,7 @@ export async function runSmokeTest(input) {
       );
     }
     const accessToken = await runSmokeStep(report, "auth.login", () =>
-      login(input),
+      loginSmokeAdmin(input),
     );
     await runSmokeStep(report, "feature-flags.disabled", () =>
       assertFeatureFlagsDisabled(input, accessToken),
@@ -184,42 +181,6 @@ export async function runSmokeTest(input) {
   }
 }
 
-async function runSmokeStep(report, name, action, readDetails = () => ({})) {
-  try {
-    const result = await action();
-    recordSmokeCheck(report, name, readDetails(result));
-    return result;
-  } catch (error) {
-    recordSmokeCheckFailure(report, name, error);
-    throw error;
-  }
-}
-
-async function login(input) {
-  const response = await fetchJson(`${input.apiBaseUrl}/auth/login`, {
-    body: JSON.stringify({
-      email: input.email,
-      password: input.password,
-      tenantSlug: input.tenantSlug,
-    }),
-    headers: { "Content-Type": "application/json" },
-    method: "POST",
-  });
-
-  if (!response.ok) {
-    throw new Error(readHttpError(response, "Login request failed."));
-  }
-
-  const accessToken = response.body?.data?.accessToken;
-
-  if (typeof accessToken !== "string" || !accessToken) {
-    throw new Error("Login succeeded but did not return an access token.");
-  }
-
-  console.log("Login passed.");
-  return accessToken;
-}
-
 async function writeFailureReport(input, report) {
   try {
     await writeSmokeReportIfConfigured(input, report);
@@ -228,8 +189,4 @@ async function writeFailureReport(input, report) {
       `Smoke report could not be written: ${readErrorMessage(error)}`,
     );
   }
-}
-
-export function readErrorMessage(error) {
-  return redactSmokeSecrets(error instanceof Error ? error.message : error);
 }

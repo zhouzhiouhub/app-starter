@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { readErrorMessage } from "./publish-smoke.mjs";
+import { readErrorMessage } from "./smoke-error-message.mjs";
 import {
   redactSmokeReportValue,
   redactSmokeSecrets,
