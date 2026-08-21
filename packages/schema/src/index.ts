@@ -6,3 +6,4 @@ export * from "./page-chrome.js";
 export * from "./page-schema.js";
 export * from "./page-template.js";
 export * from "./production-url.js";
+export * from "./site-domain.js";

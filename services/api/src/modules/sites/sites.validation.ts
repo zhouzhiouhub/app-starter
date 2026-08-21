@@ -1,21 +1,24 @@
 import { BadRequestException } from "@nestjs/common";
-import { apiErrorCodes } from "@app-starter/schema";
+import {
+  apiErrorCodes,
+  normalizeSiteDomain,
+  readSiteDomainIssue,
+  readSiteDomainIssueMessage,
+} from "@app-starter/schema";
 import { z, ZodError } from "zod";
 
 const siteDomainSchema = z
   .string()
-  .trim()
-  .toLowerCase()
-  .min(1)
-  .max(255)
-  .refine((value) => !/^https?:\/\//.test(value), {
-    message: "Domain must not include a protocol.",
-  })
-  .refine((value) => !/[/?#\\\s]/.test(value), {
-    message: "Domain must not include paths, query strings, or spaces.",
-  })
-  .refine(isAllowedHost, {
-    message: "Domain must be a valid hostname.",
+  .transform(normalizeSiteDomain)
+  .superRefine((value, context) => {
+    const issue = readSiteDomainIssue(value);
+
+    if (issue) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: readSiteDomainIssueMessage(issue),
+      });
+    }
   });
 
 const updateSiteSettingsInputSchema = z
@@ -37,35 +40,6 @@ export function parseUpdateSiteSettingsInput(
   return parseOrThrow(() =>
     updateSiteSettingsInputSchema.parse(unwrapBodyData(body)),
   );
-}
-
-function isAllowedHost(value: string): boolean {
-  const [host, port, extra] = value.split(":");
-
-  if (!host || extra !== undefined) {
-    return false;
-  }
-
-  if (port !== undefined && !isValidPort(port)) {
-    return false;
-  }
-
-  return host === "localhost" || isValidHostname(host);
-}
-
-function isValidHostname(host: string): boolean {
-  if (host.length > 253 || host.startsWith(".") || host.endsWith(".")) {
-    return false;
-  }
-
-  return host.split(".").every((label) =>
-    /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(label),
-  );
-}
-
-function isValidPort(value: string): boolean {
-  const parsed = Number(value);
-  return Number.isInteger(parsed) && parsed > 0 && parsed <= 65535;
 }
 
 function unwrapBodyData(body: unknown): Record<string, unknown> {

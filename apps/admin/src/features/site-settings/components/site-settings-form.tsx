@@ -1,6 +1,10 @@
 import { Button, Descriptions, Form, Input, Space, Tag } from "antd";
 import { useEffect } from "react";
 import type { SiteSettings, UpdateSiteSettingsInput } from "../types";
+import {
+  normalizeSiteDomainInput,
+  validateSiteDomainFormValue,
+} from "../site-domain-validation";
 
 export function SiteSettingsForm(props: {
   isSaving: boolean;
@@ -16,12 +20,19 @@ export function SiteSettingsForm(props: {
     });
   }, [form, props.settings]);
 
+  function handleFinish(values: UpdateSiteSettingsInput) {
+    props.onSave({
+      ...values,
+      domain: normalizeSiteDomainInput(values.domain),
+    });
+  }
+
   return (
     <Space direction="vertical" size={24} style={{ width: "100%" }}>
       <Form
         form={form}
         layout="vertical"
-        onFinish={(values) => props.onSave(values)}
+        onFinish={handleFinish}
         requiredMark={false}
       >
         <Form.Item
@@ -38,15 +49,12 @@ export function SiteSettingsForm(props: {
           label="Domain"
           name="domain"
           rules={[
-            { required: true, message: "Domain is required." },
             {
-              message: "Enter a hostname without protocol or path.",
-              pattern:
-                /^(localhost|[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*)(?::[0-9]{1,5})?$/i,
+              validator: validateSiteDomainFormValue,
             },
           ]}
         >
-          <Input placeholder="example.com" />
+          <Input placeholder="store.brand-platform.com" />
         </Form.Item>
         <Button htmlType="submit" loading={props.isSaving} type="primary">
           Save settings
@@ -79,7 +87,9 @@ export function SiteSettingsForm(props: {
           {
             key: "commerce",
             label: "Commerce",
-            children: featureFlagTag(props.settings.featureFlags.commerceEnabled),
+            children: featureFlagTag(
+              props.settings.featureFlags.commerceEnabled,
+            ),
           },
           {
             key: "multiLocale",
@@ -101,7 +111,8 @@ export function SiteSettingsForm(props: {
           {
             key: "gtm",
             label: "GTM container",
-            children: props.settings.analytics.gtmContainerId ?? "not configured",
+            children:
+              props.settings.analytics.gtmContainerId ?? "not configured",
           },
           {
             key: "ga4",
@@ -123,5 +134,7 @@ export function SiteSettingsForm(props: {
 }
 
 function featureFlagTag(enabled: boolean) {
-  return <Tag color={enabled ? "green" : "default"}>{enabled ? "on" : "off"}</Tag>;
+  return (
+    <Tag color={enabled ? "green" : "default"}>{enabled ? "on" : "off"}</Tag>
+  );
 }

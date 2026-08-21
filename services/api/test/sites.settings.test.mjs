@@ -26,11 +26,11 @@ const actor = {
 test("site settings validation accepts hostnames and rejects URL paths", () => {
   assert.deepEqual(
     parseUpdateSiteSettingsInput({
-      domain: "Store.Example.com:8080",
+      domain: "Store.Brand-Platform.com:8080",
       name: "Storefront",
     }),
     {
-      domain: "store.example.com:8080",
+      domain: "store.brand-platform.com:8080",
       name: "Storefront",
     },
   );
@@ -38,6 +38,20 @@ test("site settings validation accepts hostnames and rejects URL paths", () => {
   assert.throws(() =>
     parseUpdateSiteSettingsInput({
       domain: "https://store.example.com/path",
+      name: "Storefront",
+    }),
+  );
+
+  assert.throws(() =>
+    parseUpdateSiteSettingsInput({
+      domain: "store.example.com",
+      name: "Storefront",
+    }),
+  );
+
+  assert.throws(() =>
+    parseUpdateSiteSettingsInput({
+      domain: "127.0.0.1",
       name: "Storefront",
     }),
   );
@@ -59,7 +73,7 @@ test("sites service updates the current tenant site", async () => {
   const service = new SitesService(prisma);
   const response = await service.updateCurrent(
     {
-      domain: "store.example.com",
+      domain: "store.brand-platform.com",
       name: "Storefront",
     },
     undefined,
@@ -68,7 +82,7 @@ test("sites service updates the current tenant site", async () => {
   );
 
   assert.equal(response.data.name, "Storefront");
-  assert.equal(response.data.domain, "store.example.com");
+  assert.equal(response.data.domain, "store.brand-platform.com");
   assert.equal(response.meta.siteId, "site-1");
   assert.equal(response.meta.requestId, "request-site-update");
 });
@@ -105,7 +119,11 @@ test("sites service maps duplicate domains to conflicts", async () => {
 
   await assert.rejects(
     () =>
-      service.updateCurrent({ domain: "used.example.com" }, undefined, actor),
+      service.updateCurrent(
+        { domain: "used.brand-platform.com" },
+        undefined,
+        actor,
+      ),
     (error) => error instanceof ConflictException,
   );
 });
@@ -135,7 +153,10 @@ test("sites service stores update responses by idempotency key", async () => {
       },
       update(options) {
         idempotencyCalls.push(["update", options.data.status]);
-        assert.equal(options.data.response.data.domain, "store.example.com");
+        assert.equal(
+          options.data.response.data.domain,
+          "store.brand-platform.com",
+        );
         storedRecord = {
           ...storedRecord,
           response: options.data.response,
@@ -163,7 +184,7 @@ test("sites service stores update responses by idempotency key", async () => {
   const service = new SitesService(prisma);
   const key = "b4f7a547-c365-42cf-9322-762f1d8f5834";
   const input = {
-    domain: "store.example.com",
+    domain: "store.brand-platform.com",
     name: "Storefront",
   };
 
