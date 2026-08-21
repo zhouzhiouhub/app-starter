@@ -32,6 +32,6 @@ Environment:
   SMOKE_REQUIRE_REVALIDATION      Require meta.revalidation.triggered. true/false. Default: true
   SMOKE_RETRY_ATTEMPTS            Storefront fetch attempts. 1-60. Default: 8
   SMOKE_RETRY_DELAY_MS            Delay between attempts in ms. 1-60000. Default: 1000
-  SMOKE_REPORT_PATH               Optional relative JSON report path under tmp/, reports/, artifacts/, or .tmp/.
+  SMOKE_REPORT_PATH               Optional for local runs; required for production readiness. Relative JSON path under tmp/, reports/, artifacts/, or .tmp/.
 `);
 }
