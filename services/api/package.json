@@ -16,7 +16,7 @@
     "start": "node dist/main.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "pretest": "pnpm run build",
-    "test": "node --test test/admin-api.guard.test.mjs test/api-exception.filter.test.mjs test/audit.service.test.mjs test/commerce.controller.test.mjs test/cors-origin.test.mjs test/feature-flag-parser.test.mjs test/idempotency-key.test.mjs test/identity.test.mjs test/identity-routes.test.mjs test/identity.service.test.mjs test/localization.feature-flags.test.mjs test/media.archive.test.mjs test/media.confirm.test.mjs test/media.idempotency.test.mjs test/media.list.test.mjs test/media.mapper.test.mjs test/media.publish-validation.test.mjs test/media.schema-references.test.mjs test/media.upload-target.test.mjs test/media.validation.test.mjs test/pages.management.test.mjs test/pages.mapper.test.mjs test/pages.preview-token-core.test.mjs test/pages.preview-token-create.test.mjs test/pages.preview-token-public.test.mjs test/pages.public-context.test.mjs test/pages.public-list.test.mjs test/pages.publish-audit.test.mjs test/pages.publish-image-policy.test.mjs test/pages.publish-locale-policy.test.mjs test/pages.publish-media-validation.test.mjs test/pages.revalidation-config.test.mjs test/pages.revalidation-trigger.test.mjs test/pages.rollback-audit.test.mjs test/pages.site-lookup.test.mjs test/pages.versioning-publish.test.mjs test/pages.versioning-rollback.test.mjs test/prisma.database-url.test.mjs test/prisma-error.test.mjs test/public.preview.test.mjs test/public.runtime-config.test.mjs test/sites.settings-response.test.mjs test/sites.settings.test.mjs"
+    "test": "node --test test/*.test.mjs"
   },
   "prisma": {
     "schema": "prisma/schema.prisma",
