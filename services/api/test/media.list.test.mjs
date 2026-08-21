@@ -1,14 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { MediaService } from "../dist/modules/media/media.service.js";
+import {
+  createMediaActor,
+  createMediaAsset,
+} from "./media-test-helpers.mjs";
 
-const actor = {
-  email: "admin@example.com",
-  id: "user-1",
-  name: "Admin",
-  scopes: ["media:read"],
-  tenantId: "tenant-1",
-};
+const actor = createMediaActor({ scopes: ["media:read"] });
 
 test("media service lists type and status filtered assets with pagination", async () => {
   const createdAt = new Date("2026-08-18T00:00:00.000Z");
@@ -48,6 +46,7 @@ test("media service lists type and status filtered assets with pagination", asyn
       type: "image",
     },
     actor,
+    "request-media-list",
   );
 
   assert.deepEqual(calls[0], {
@@ -57,6 +56,7 @@ test("media service lists type and status filtered assets with pagination", asyn
   assert.equal(result.meta.total, 2);
   assert.equal(result.meta.page, 2);
   assert.equal(result.meta.limit, 1);
+  assert.equal(result.meta.requestId, "request-media-list");
   assert.deepEqual(
     result.data.map((asset) => asset.id),
     ["asset-active-2"],
@@ -64,15 +64,5 @@ test("media service lists type and status filtered assets with pagination", asyn
 });
 
 function createTestAsset(input) {
-  return {
-    createdAt: new Date("2026-08-18T00:00:00.000Z"),
-    filename: input.filename,
-    id: input.id,
-    metadata: input.metadata ?? {},
-    mimeType: input.type === "image" ? "image/png" : "application/pdf",
-    r2Key: `tenant-1/${input.filename}`,
-    size: 2048n,
-    type: input.type,
-    url: `https://cdn.example.com/${input.filename}`,
-  };
+  return createMediaAsset(input);
 }
