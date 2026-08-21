@@ -112,14 +112,13 @@ export function usePageEditorActions(input: UsePageEditorActionsInput) {
       input.applySavedState(
         readPageEditorSavedState(await getPage(input.pageId), published.schema),
       );
-      input.setFeedback({
-        message: buildPublicationFeedback({
+      input.setFeedback(
+        buildPublicationFeedback({
           action: "publish",
           revalidation: published.meta?.revalidation,
           slug: published.schema.meta.slug,
         }),
-        type: "success",
-      });
+      );
     } catch (caught) {
       if (redirectWhenAuthRequired(caught)) {
         return;
@@ -182,14 +181,13 @@ export function usePageEditorActions(input: UsePageEditorActionsInput) {
             rolledBack.schema,
           ),
         );
-        input.setFeedback({
-          message: buildPublicationFeedback({
+        input.setFeedback(
+          buildPublicationFeedback({
             action: "rollback",
             revalidation: rolledBack.meta?.revalidation,
             slug: rolledBack.schema.meta.slug,
           }),
-          type: "success",
-        });
+        );
       } catch (caught) {
         if (redirectWhenAuthRequired(caught)) {
           return;

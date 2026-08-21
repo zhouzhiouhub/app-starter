@@ -52,7 +52,7 @@ export interface CreatePageInput {
 
 export interface EditorFeedback {
   message: string;
-  type: "success" | "error";
+  type: "success" | "warning" | "error";
 }
 
 export interface PagePreviewToken {

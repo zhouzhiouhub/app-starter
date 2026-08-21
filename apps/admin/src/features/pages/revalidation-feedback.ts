@@ -1,49 +1,82 @@
 import type { StorefrontRevalidationResult } from "@app-starter/schema";
 import { getStorefrontPageUrl } from "./storefront-url.ts";
+import type { EditorFeedback } from "./types.ts";
 
 export function buildPublicationFeedback(input: {
   action: "publish" | "rollback";
   revalidation?: StorefrontRevalidationResult;
   slug: string;
-}): string {
+}): EditorFeedback {
   const actionText = input.action === "publish" ? "Published" : "Rolled back";
   const reviewText = `Open ${getStorefrontPageUrl(input.slug)} to review the storefront.`;
+  const revalidationStatus = formatRevalidationStatus(input.revalidation);
 
-  return `${actionText}. ${formatRevalidationStatus(input.revalidation)} ${reviewText}`;
+  return {
+    message: `${actionText}. ${revalidationStatus.message} ${reviewText}`,
+    type: revalidationStatus.type,
+  };
 }
 
 function formatRevalidationStatus(
   revalidation: StorefrontRevalidationResult | undefined,
-): string {
+): EditorFeedback {
   if (!revalidation) {
-    return "Storefront revalidation status is unavailable.";
+    return {
+      message: "Storefront revalidation status is unavailable.",
+      type: "warning",
+    };
   }
 
   if (revalidation.triggered) {
-    return `Storefront revalidation triggered${formatPathCount(
-      revalidation.paths.length,
-    )}.`;
+    return {
+      message: `Storefront revalidation triggered${formatPathCount(
+        revalidation.paths.length,
+      )}${formatPathSummary(revalidation.paths)}.`,
+      type: "success",
+    };
   }
 
   if (revalidation.reason === "missing-secret") {
-    return "Storefront revalidation was skipped because the secret is not configured.";
+    return createWarningStatus(
+      "Storefront revalidation was skipped because the secret is not configured.",
+      revalidation.paths,
+    );
   }
 
   if (revalidation.reason === "missing-url") {
-    return "Storefront revalidation was skipped because the URL is not configured.";
+    return createWarningStatus(
+      "Storefront revalidation was skipped because the URL is not configured.",
+      revalidation.paths,
+    );
   }
 
   if (revalidation.reason === "request-timeout") {
-    return "Storefront revalidation timed out. Check the Web URL, revalidate route, and STOREFRONT_REVALIDATE_TIMEOUT_MS.";
+    return createWarningStatus(
+      "Storefront revalidation timed out. Check the Web URL, revalidate route, and STOREFRONT_REVALIDATE_TIMEOUT_MS.",
+      revalidation.paths,
+    );
   }
 
   if (revalidation.reason === "request-failed") {
-    return formatRequestFailedRevalidation(revalidation.status);
+    return createWarningStatus(
+      formatRequestFailedRevalidation(revalidation.status),
+      revalidation.paths,
+    );
   }
 
-  return `Storefront revalidation was not triggered${formatReason(
-    revalidation.reason,
-  )}.`;
+  return createWarningStatus(
+    `Storefront revalidation was not triggered${formatReason(
+      revalidation.reason,
+    )}.`,
+    revalidation.paths,
+  );
+}
+
+function createWarningStatus(message: string, paths: string[]): EditorFeedback {
+  return {
+    message: `${message}${formatPathCheck(paths)}`,
+    type: "warning",
+  };
 }
 
 function formatPathCount(count: number): string {
@@ -52,6 +85,24 @@ function formatPathCount(count: number): string {
   }
 
   return ` for ${count} ${count === 1 ? "path" : "paths"}`;
+}
+
+function formatPathSummary(paths: string[]): string {
+  const summary = formatPathList(paths);
+  return summary ? `: ${summary}` : "";
+}
+
+function formatPathCheck(paths: string[]): string {
+  const summary = formatPathList(paths);
+  return summary ? ` Check affected paths: ${summary}.` : "";
+}
+
+function formatPathList(paths: string[]): string {
+  const visible = paths.slice(0, 3);
+  const suffix =
+    paths.length > visible.length ? `, and ${paths.length - visible.length} more` : "";
+
+  return `${visible.join(", ")}${suffix}`;
 }
 
 function formatStatus(status: number | undefined): string {
