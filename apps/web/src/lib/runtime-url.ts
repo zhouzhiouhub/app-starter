@@ -1,4 +1,4 @@
-import { isProductionHttpUrl } from "./production-url-host.ts";
+import { isProductionHttpUrl } from "@app-starter/schema";
 
 const defaultApiBaseUrl = "http://localhost:4000/api/v1";
 const defaultWebOrigin = "http://localhost:3000";
