@@ -202,6 +202,38 @@ test("smoke readiness requires coherent analytics config when enabled", () => {
   ]);
 });
 
+test("smoke readiness requires a production database URL", () => {
+  const environment = createReadyEnvironment();
+  environment.database = {
+    host: "localhost",
+    productionReady: false,
+    urlIssue: "local-host",
+    variable: "DATABASE_URL",
+  };
+  const readiness = createSmokeProductionReadiness(
+    environment,
+    createReadyConfig(),
+  );
+
+  assert.deepEqual(readiness.blockers, [
+    {
+      area: "database.url",
+      host: "localhost",
+      issue: "local-host",
+      message: "DATABASE_URL must be a production PostgreSQL connection URL.",
+      variable: "DATABASE_URL",
+    },
+  ]);
+  assert.equal(readiness.productionReady, false);
+  assert.deepEqual(readiness.nextActions, [
+    {
+      action:
+        "Set DATABASE_URL to a production PostgreSQL connection URL outside local or placeholder hosts.",
+      area: "database.url",
+    },
+  ]);
+});
+
 test("smoke readiness requires production JWT keys", () => {
   const environment = createReadyEnvironment();
   environment.identity = {
@@ -251,6 +283,9 @@ test("smoke readiness reports unsafe deployment and environment blockers", () =>
   const readiness = createSmokeProductionReadiness(
     {
       analytics: {
+        productionReady: true,
+      },
+      database: {
         productionReady: true,
       },
       deployment: {

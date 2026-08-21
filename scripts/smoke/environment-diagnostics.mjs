@@ -1,4 +1,5 @@
 import { createAnalyticsDiagnostics } from "./environment-diagnostics-analytics.mjs";
+import { createDatabaseDiagnostics } from "./environment-diagnostics-database.mjs";
 import { createDeploymentDiagnostics } from "./deployment-diagnostics.mjs";
 import { createFeatureFlagDiagnostics } from "./environment-diagnostics-feature-flags.mjs";
 import { createIdentityDiagnostics } from "./environment-diagnostics-identity.mjs";
@@ -12,6 +13,7 @@ export function createSmokeEnvironmentDiagnostics(
 ) {
   return {
     analytics: createAnalyticsDiagnostics(env),
+    database: createDatabaseDiagnostics(env),
     deployment: createDeploymentDiagnostics(env, options),
     featureFlags: createFeatureFlagDiagnostics(env),
     identity: createIdentityDiagnostics(env),

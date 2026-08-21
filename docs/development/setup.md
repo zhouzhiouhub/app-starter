@@ -193,8 +193,8 @@ The smoke admin account must include `audit:read`; rerun the seed after pulling
 role changes if the audit log check returns 403.
 Set `SMOKE_REPORT_PATH=tmp/smoke-report.json` to write a machine-readable report
 with the checked slug, page ID, storefront URL, analytics diagnostics, feature
-flag diagnostics, identity diagnostics, media environment diagnostics,
-revalidation environment diagnostics, and passed/failed check list. If the smoke
+flag diagnostics, database diagnostics, identity diagnostics, media environment
+diagnostics, revalidation environment diagnostics, and passed/failed check list. If the smoke
 run fails, the report records the
 failed check name and error message so production R2 / CDN, ISR, and SEO
 failures can be triaged from the JSON artifact. Media check details include the
@@ -208,12 +208,14 @@ request failure, and network or timeout-style failures. Analytics diagnostics
 record whether the runtime gates are valid and whether an enabled analytics
 setup has consent plus at least one valid provider. Feature flag diagnostics
 record whether `COMMERCE_ENABLED` and `MULTI_LOCALE_ENABLED` are explicitly
-configured and disabled. Identity diagnostics record only whether JWT private
-and public keys are configured with PEM-shaped values. Revalidation environment
-diagnostics record only non-secret readiness metadata: whether a secret is
-configured, the URL source, endpoint host/path, URL safety, and whether the
-smoke run requires revalidation. Preview environment diagnostics record only
-whether `PREVIEW_TOKEN_SECRET` and a rotation secret are configured. Smoke
+configured and disabled. Database diagnostics record only non-secret
+`DATABASE_URL` readiness metadata: whether it is configured, the database host,
+URL safety, and whether it is production-ready. Identity diagnostics record only
+whether JWT private and public keys are configured with PEM-shaped values.
+Revalidation environment diagnostics record only non-secret readiness metadata:
+whether a secret is configured, the URL source, endpoint host/path, URL safety,
+and whether the smoke run requires revalidation. Preview environment diagnostics
+record only whether `PREVIEW_TOKEN_SECRET` and a rotation secret are configured. Smoke
 report details and failure messages
 redact preview token paths, sensitive query parameters, JSON credential fields,
 R2 signed URL parameters, and Bearer tokens before they are written to the

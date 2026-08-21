@@ -19,6 +19,15 @@ function readBlockerActions(blocker) {
     ];
   }
 
+  if (blocker.area === "database.url") {
+    return [
+      createAction(
+        blocker.area,
+        "Set DATABASE_URL to a production PostgreSQL connection URL outside local or placeholder hosts.",
+      ),
+    ];
+  }
+
   if (blocker.area === "deployment.web") {
     return [
       createAction(

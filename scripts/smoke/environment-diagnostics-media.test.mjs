@@ -6,6 +6,8 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
   const diagnostics = createSmokeEnvironmentDiagnostics({
     ANALYTICS_CONSENT_GRANTED: "false",
     ANALYTICS_ENABLED: "false",
+    DATABASE_URL:
+      "postgresql://db-user:db-secret@db.brand-platform.com:5432/app?sslmode=require",
     JWT_PRIVATE_KEY:
       "-----BEGIN PRIVATE KEY-----\\nprivate-key-body\\n-----END PRIVATE KEY-----",
     JWT_PUBLIC_KEY:
@@ -55,6 +57,14 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
           valid: false,
         },
       },
+    },
+    database: {
+      configured: true,
+      host: "db.brand-platform.com",
+      productionReady: true,
+      urlIssue: null,
+      urlSafe: true,
+      variable: "DATABASE_URL",
     },
     deployment: {
       admin: {
@@ -157,6 +167,8 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
   assert.equal(serialized.includes("super-secret"), false);
   assert.equal(serialized.includes("super-preview-secret"), false);
   assert.equal(serialized.includes("super-revalidate-secret"), false);
+  assert.equal(serialized.includes("db-user"), false);
+  assert.equal(serialized.includes("db-secret"), false);
   assert.equal(serialized.includes("private-key-body"), false);
   assert.equal(serialized.includes("public-key-body"), false);
   assert.equal(serialized.includes("bucket-name"), false);
@@ -181,6 +193,8 @@ test("smoke environment diagnostics reports missing R2 and CDN fallback", () => 
   assert.equal(diagnostics.media.cdnUrlSafe, false);
   assert.equal(diagnostics.media.cdnUsesLocalFallback, true);
   assert.equal(diagnostics.analytics.productionReady, true);
+  assert.equal(diagnostics.database.configured, false);
+  assert.equal(diagnostics.database.productionReady, false);
   assert.equal(diagnostics.featureFlags.configured, false);
   assert.equal(diagnostics.featureFlags.productionReady, false);
   assert.equal(diagnostics.identity.jwt.configured, false);

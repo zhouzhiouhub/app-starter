@@ -4,12 +4,14 @@ import {
   appendJwtKeyBlocker,
   appendUrlBlocker,
 } from "./smoke-readiness-blockers.mjs";
+import { collectDatabaseReadiness } from "./smoke-readiness-database.mjs";
 
 export function collectSmokeReadinessFindings(environment, config) {
   const blockers = [];
   const warnings = [];
 
   collectAnalyticsReadiness(blockers, environment.analytics);
+  collectDatabaseReadiness(blockers, environment.database);
   collectDeploymentReadiness(blockers, environment.deployment, config);
   collectFeatureFlagReadiness(blockers, environment.featureFlags);
   collectIdentityReadiness(blockers, environment.identity);

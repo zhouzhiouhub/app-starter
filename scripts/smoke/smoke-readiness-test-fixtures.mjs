@@ -12,6 +12,9 @@ export function createReadyEnvironment() {
     analytics: {
       productionReady: true,
     },
+    database: {
+      productionReady: true,
+    },
     deployment: {
       admin: {
         productionReady: true,

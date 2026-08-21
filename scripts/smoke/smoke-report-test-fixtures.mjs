@@ -43,6 +43,9 @@ export function createProductionReadyEnvironmentDiagnostics() {
     analytics: {
       productionReady: true,
     },
+    database: {
+      productionReady: true,
+    },
     deployment: {
       admin: { productionReady: true },
       api: { productionReady: true },
