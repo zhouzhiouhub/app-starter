@@ -11,6 +11,7 @@ import {
   readMediaListStatus,
   readMediaListType,
 } from "../../features/media/media-list-query";
+import { readMediaListPageAfterArchive } from "../../features/media/media-list-page-state";
 import { mediaTypeFilterOptions } from "../../features/media/constants";
 import type {
   MediaAsset,
@@ -75,7 +76,20 @@ export function MediaPage() {
 
     try {
       await archiveMediaAsset(assetId);
-      await load(meta.page);
+      const nextPage = readMediaListPageAfterArchive({
+        currentPage: meta.page,
+        pageSize: meta.limit,
+        status,
+        total: meta.total,
+      });
+
+      if (nextPage !== meta.page) {
+        setSearchParams(buildMediaListSearch({ page: nextPage, status, type }), {
+          replace: true,
+        });
+      } else {
+        await load(nextPage);
+      }
     } catch (caught) {
       setArchiveError(formatRequestError(caught));
     } finally {
