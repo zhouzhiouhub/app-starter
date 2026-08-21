@@ -5,6 +5,7 @@ import {
   createFallbackPage,
 } from "../../../packages/schema/dist/index.js";
 import { publishPage } from "../dist/modules/pages/use-cases/publish-page.js";
+import { createPageActor } from "./pages-test-helpers.mjs";
 
 test("publishPage rejects HTTP image sources before creating a version", async () => {
   const schema = createFallbackPage({ slug: "launch", title: "Launch" });
@@ -35,7 +36,7 @@ test("publishPage rejects HTTP image sources before creating a version", async (
         "page-1",
         schema,
         undefined,
-        createActor(),
+        createPageActor(),
       ),
     (error) => {
       assert.equal(error.getStatus(), 400);
@@ -54,15 +55,6 @@ test("publishPage rejects HTTP image sources before creating a version", async (
   assert.equal(calls.versionCreate, undefined);
   assert.equal(calls.audit, undefined);
 });
-
-function createActor() {
-  return {
-    email: "admin@example.com",
-    id: "user-1",
-    scopes: ["page:publish"],
-    tenantId: "tenant-1",
-  };
-}
 
 function createPublishPrisma(calls) {
   return {

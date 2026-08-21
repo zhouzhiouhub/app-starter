@@ -4,6 +4,11 @@ import { apiErrorCodes } from "../../../packages/schema/dist/index.js";
 import { createInitialPageSchema } from "../dist/modules/pages/pages.mapper.js";
 import { publishPage } from "../dist/modules/pages/use-cases/publish-page.js";
 import { withEnv } from "./env-helper.mjs";
+import {
+  assertApiConflictRejects,
+  createPageActor,
+  withPageLocale,
+} from "./pages-test-helpers.mjs";
 
 test("publishPage records a page published audit log", async () => {
   const schema = createInitialPageSchema({
@@ -18,7 +23,7 @@ test("publishPage records a page published audit log", async () => {
     "page-1",
     schema,
     undefined,
-    createActor(),
+    createPageActor(),
     async () => ({
       paths: ["/en/launch"],
       tags: ["published-page"],
@@ -50,7 +55,7 @@ test("publishPage rejects non-default locale while multi-locale is disabled", as
       MULTI_LOCALE_ENABLED: "false",
     },
     async () => {
-      const schema = withLocale(
+      const schema = withPageLocale(
         createInitialPageSchema({
           slug: "launch",
           title: "Launch",
@@ -61,7 +66,8 @@ test("publishPage rejects non-default locale while multi-locale is disabled", as
       const prisma = createPublishPrisma(calls);
 
       await assertApiConflictRejects(
-        () => publishPage(prisma, "page-1", schema, undefined, createActor()),
+        () =>
+          publishPage(prisma, "page-1", schema, undefined, createPageActor()),
         apiErrorCodes.MULTI_LOCALE_DISABLED,
       );
 
@@ -78,7 +84,7 @@ test("publishPage allows non-default locale when multi-locale flag is normalized
       MULTI_LOCALE_ENABLED: " TRUE ",
     },
     async () => {
-      const schema = withLocale(
+      const schema = withPageLocale(
         createInitialPageSchema({
           slug: "launch",
           title: "Launch",
@@ -88,7 +94,13 @@ test("publishPage allows non-default locale when multi-locale flag is normalized
       const calls = { audit: null };
       const prisma = createPublishPrisma(calls);
 
-      await publishPage(prisma, "page-1", schema, undefined, createActor());
+      await publishPage(
+        prisma,
+        "page-1",
+        schema,
+        undefined,
+        createPageActor(),
+      );
 
       assert.equal(calls.versionCreate.status, "published");
       assert.equal(calls.audit.metadata.locale, "de-DE");
@@ -110,7 +122,13 @@ test("publishPage ignores invalid default locale configuration", async () => {
       const calls = { audit: null };
       const prisma = createPublishPrisma(calls);
 
-      await publishPage(prisma, "page-1", schema, undefined, createActor());
+      await publishPage(
+        prisma,
+        "page-1",
+        schema,
+        undefined,
+        createPageActor(),
+      );
 
       assert.equal(calls.versionCreate.status, "published");
       assert.equal(calls.audit.action, "page.published");
@@ -136,7 +154,7 @@ test("publishPage validates media references before creating a version", async (
         "page-1",
         schema,
         undefined,
-        createActor(),
+        createPageActor(),
         undefined,
         async (validatedSchema, tenantId, client) => {
           assert.equal(validatedSchema.meta.slug, "launch");
@@ -155,15 +173,6 @@ test("publishPage validates media references before creating a version", async (
   assert.equal(calls.audit, null);
   assert.equal(calls.versionCreate, undefined);
 });
-
-function createActor() {
-  return {
-    email: "admin@example.com",
-    id: "user-1",
-    scopes: ["page:publish"],
-    tenantId: "tenant-1",
-  };
-}
 
 function createPublishPrisma(calls) {
   return {
@@ -206,26 +215,6 @@ function createPublishPrisma(calls) {
         id: "site-1",
         tenantId: "tenant-1",
       }),
-    },
-  };
-}
-
-async function assertApiConflictRejects(fn, expectedCode) {
-  await assert.rejects(
-    fn,
-    (error) =>
-      typeof error.getStatus === "function" &&
-      error.getStatus() === 409 &&
-      error.getResponse()?.code === expectedCode,
-  );
-}
-
-function withLocale(schema, locale) {
-  return {
-    ...schema,
-    meta: {
-      ...schema.meta,
-      locale,
     },
   };
 }

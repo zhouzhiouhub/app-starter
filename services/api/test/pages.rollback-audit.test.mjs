@@ -4,6 +4,11 @@ import { apiErrorCodes } from "../../../packages/schema/dist/index.js";
 import { createInitialPageSchema } from "../dist/modules/pages/pages.mapper.js";
 import { rollbackPage } from "../dist/modules/pages/use-cases/rollback-page.js";
 import { withEnv } from "./env-helper.mjs";
+import {
+  assertApiConflictRejects,
+  createPageActor,
+  withPageLocale,
+} from "./pages-test-helpers.mjs";
 
 test("rollbackPage records source and rollback version audit metadata", async () => {
   const schema = createInitialPageSchema({
@@ -18,7 +23,7 @@ test("rollbackPage records source and rollback version audit metadata", async ()
     "page-1",
     { versionId: "version-1" },
     undefined,
-    createActor(),
+    createPageActor(),
     async () => ({
       paths: ["/en"],
       tags: ["published-page"],
@@ -60,7 +65,7 @@ test("rollbackPage validates media references before creating a version", async 
         "page-1",
         { versionId: "version-1" },
         undefined,
-        createActor(),
+        createPageActor(),
         undefined,
         async (validatedSchema, tenantId, client) => {
           assert.equal(validatedSchema.meta.slug, "home");
@@ -83,7 +88,7 @@ test("rollbackPage rejects non-default locale while multi-locale is disabled", a
       MULTI_LOCALE_ENABLED: "false",
     },
     async () => {
-      const schema = withLocale(
+      const schema = withPageLocale(
         createInitialPageSchema({
           slug: "home",
           title: "Previous Home",
@@ -100,7 +105,7 @@ test("rollbackPage rejects non-default locale while multi-locale is disabled", a
             "page-1",
             { versionId: "version-1" },
             undefined,
-            createActor(),
+            createPageActor(),
           ),
         apiErrorCodes.MULTI_LOCALE_DISABLED,
       );
@@ -110,15 +115,6 @@ test("rollbackPage rejects non-default locale while multi-locale is disabled", a
     },
   );
 });
-
-function createActor() {
-  return {
-    email: "admin@example.com",
-    id: "user-1",
-    scopes: ["page:publish"],
-    tenantId: "tenant-1",
-  };
-}
 
 function createRollbackPrisma(schema, calls) {
   return {
@@ -169,26 +165,6 @@ function createRollbackPrisma(schema, calls) {
         id: "site-1",
         tenantId: "tenant-1",
       }),
-    },
-  };
-}
-
-async function assertApiConflictRejects(fn, expectedCode) {
-  await assert.rejects(
-    fn,
-    (error) =>
-      typeof error.getStatus === "function" &&
-      error.getStatus() === 409 &&
-      error.getResponse()?.code === expectedCode,
-  );
-}
-
-function withLocale(schema, locale) {
-  return {
-    ...schema,
-    meta: {
-      ...schema.meta,
-      locale,
     },
   };
 }

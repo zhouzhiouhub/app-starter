@@ -4,6 +4,7 @@ import { createInitialPageSchema } from "../dist/modules/pages/pages.mapper.js";
 import { publishPage } from "../dist/modules/pages/use-cases/publish-page.js";
 import { rollbackPage } from "../dist/modules/pages/use-cases/rollback-page.js";
 import { persistRollbackVersion } from "../dist/modules/pages/pages.versions.js";
+import { createPageActor } from "./pages-test-helpers.mjs";
 
 test("persistRollbackVersion creates a published snapshot from target content", async () => {
   const schema = createInitialPageSchema({
@@ -81,7 +82,7 @@ test("rollbackPage publishes a new version using the selected version schema", a
     "page-1",
     { versionId: "version-1" },
     undefined,
-    createActor(),
+    createPageActor(),
     async (input) => {
       calls.revalidation = input;
       return { paths: ["/", "/en"], tags: ["published-page"], triggered: true };
@@ -155,7 +156,7 @@ test("publishPage triggers storefront revalidation after publishing", async () =
     "page-1",
     schema,
     undefined,
-    createActor(),
+    createPageActor(),
     async (input) => {
       calls.revalidation = input;
       return {
@@ -196,7 +197,7 @@ test("rollbackPage rejects draft target versions", async () => {
         "page-1",
         { versionId: "version-draft" },
         undefined,
-        createActor(),
+        createPageActor(),
       ),
     (error) => {
       assert.equal(error.getStatus(), 400);
@@ -208,15 +209,6 @@ test("rollbackPage rejects draft target versions", async () => {
     },
   );
 });
-
-function createActor() {
-  return {
-    email: "admin@example.com",
-    id: "user-1",
-    scopes: ["page:publish"],
-    tenantId: "tenant-1",
-  };
-}
 
 function createRollbackPrisma(options) {
   const target = options.target;
