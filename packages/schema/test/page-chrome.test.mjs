@@ -29,6 +29,25 @@ test("page schema keeps default chrome for legacy pages", () => {
   assert.equal(parsed.chrome.footer.content.navigation.length, 3);
 });
 
+test("page chrome defaults are isolated across parses", () => {
+  const first = pageSchema.parse(minimalPage());
+  first.chrome.header.content.navigation.push({
+    id: "mutated",
+    label: { defaultValue: "Mutated" },
+    href: "/mutated",
+    openInNewTab: false,
+  });
+  first.chrome.footer.content.brand.label.defaultValue = "Changed";
+
+  const second = pageSchema.parse(minimalPage());
+
+  assert.equal(second.chrome.header.content.navigation.length, 3);
+  assert.equal(
+    second.chrome.footer.content.brand.label.defaultValue,
+    "App Starter",
+  );
+});
+
 test("landing blank template disables header and footer", () => {
   const chrome = getPageTemplateChrome("landing-blank");
 
