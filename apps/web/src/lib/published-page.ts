@@ -11,6 +11,7 @@ import {
   resolveWebLocale,
 } from "./runtime-defaults.ts";
 import { getApiBaseUrl } from "./runtime-url.ts";
+import { createStorefrontHostHeaders } from "./storefront-host-header.ts";
 
 const apiBaseUrl = getApiBaseUrl();
 const maxPreviewTokenLength = 2048;
@@ -19,6 +20,7 @@ const previewTokenPattern = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]{43}$/;
 export async function getPublishedPage(input: {
   locale: string;
   slug: string;
+  storefrontHost?: string | null;
 }): Promise<PageSchema | null> {
   const defaults = readWebRuntimeDefaults();
   const locale = resolveWebLocale(input.locale, defaults);
@@ -33,11 +35,13 @@ export async function getPublishedPage(input: {
     locale,
     market: defaults.defaultMarket,
     slug: slug.data,
+    storefrontHost: input.storefrontHost,
   });
 }
 
 export async function getNotFoundPage(input?: {
   locale?: string;
+  storefrontHost?: string | null;
 }): Promise<PageSchema> {
   const defaults = readWebRuntimeDefaults();
   const locale =
@@ -47,6 +51,7 @@ export async function getNotFoundPage(input?: {
     locale,
     market: defaults.defaultMarket,
     slug: "404",
+    storefrontHost: input?.storefrontHost,
   });
 
   if (published) {
@@ -58,6 +63,7 @@ export async function getNotFoundPage(input?: {
     locale,
     market: defaults.defaultMarket,
     slug: "home",
+    storefrontHost: input?.storefrontHost,
   });
 
   return createFallbackPage({
@@ -107,6 +113,7 @@ async function fetchPublishedSchema(input: {
   locale: string;
   market: string;
   slug: string;
+  storefrontHost?: string | null;
 }): Promise<PageSchema | null> {
   try {
     const searchParams = new URLSearchParams({
@@ -116,6 +123,7 @@ async function fetchPublishedSchema(input: {
     const response = await fetch(
       `${apiBaseUrl}/public/pages/${encodeURIComponent(input.slug)}?${searchParams}`,
       {
+        headers: createStorefrontHostHeaders(input.storefrontHost),
         next: {
           revalidate: publishedPageRevalidateSeconds,
           tags: getPublishedPageCacheTags(input),

@@ -128,6 +128,7 @@ test("public pages fall back when runtime defaults are invalid", async () => {
           assert.deepEqual(input, {
             locale: "en-US",
             market: "us",
+            siteHost: null,
           });
 
           return Promise.resolve({
@@ -137,6 +138,7 @@ test("public pages fall back when runtime defaults are invalid", async () => {
         },
       });
       const response = await controller.listPages(
+        undefined,
         undefined,
         undefined,
         "request-public-pages",
@@ -164,6 +166,7 @@ test("public page detail response carries the current request id", async () => {
           assert.deepEqual(context, {
             locale: "en-US",
             market: "us",
+            siteHost: null,
           });
 
           return Promise.resolve({ meta: { slug: "home" } });
@@ -174,6 +177,7 @@ test("public page detail response carries the current request id", async () => {
         "home",
         undefined,
         undefined,
+        undefined,
         "request-public-page",
       );
 
@@ -182,4 +186,58 @@ test("public page detail response carries the current request id", async () => {
       assert.equal(response.meta.market, "us");
     },
   );
+});
+
+test("public pages pass a safe storefront host into page lookups", async () => {
+  const controller = new PublicController({
+    listPublished(input) {
+      assert.deepEqual(input, {
+        locale: "en-US",
+        market: "us",
+        siteHost: "store.brand-platform.com",
+      });
+
+      return Promise.resolve({
+        data: [],
+        meta: { requestId: "local-dev" },
+      });
+    },
+  });
+
+  const response = await controller.listPages(
+    "en-US",
+    "us",
+    { "x-storefront-host": " Store.Brand-Platform.com:443 " },
+    "request-public-host",
+  );
+
+  assert.equal(response.meta.requestId, "request-public-host");
+});
+
+test("public page detail ignores unsafe storefront host headers", async () => {
+  const controller = new PublicController({
+    getPublishedBySlug(slug, context) {
+      assert.equal(slug, "home");
+      assert.deepEqual(context, {
+        locale: "en-US",
+        market: "us",
+        siteHost: "store.brand-platform.com",
+      });
+
+      return Promise.resolve({ meta: { slug: "home" } });
+    },
+  });
+
+  const response = await controller.getPage(
+    "home",
+    "en-US",
+    "us",
+    {
+      host: "store.brand-platform.com",
+      "x-storefront-host": "store.example.com",
+    },
+    "request-public-host-fallback",
+  );
+
+  assert.equal(response.meta.requestId, "request-public-host-fallback");
 });

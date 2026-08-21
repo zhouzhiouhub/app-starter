@@ -2,8 +2,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   normalizeSiteDomain,
+  readSiteDomainHeader,
   readSiteDomainIssue,
   readSiteDomainValidationError,
+  storefrontHostHeaderName,
 } from "../dist/index.js";
 
 test("site domain helper accepts localhost and public hostnames", () => {
@@ -67,4 +69,24 @@ test("site domain helper exposes stable validation messages", () => {
     /public hostname/,
   );
   assert.equal(readSiteDomainValidationError("store.brand-platform.com"), null);
+});
+
+test("site domain header helper reads one safe storefront host", () => {
+  assert.equal(storefrontHostHeaderName, "x-storefront-host");
+  assert.equal(
+    readSiteDomainHeader(" Store.Brand-Platform.com:443 "),
+    "store.brand-platform.com",
+  );
+  assert.equal(readSiteDomainHeader(["localhost:3000"]), "localhost:3000");
+
+  for (const value of [
+    "",
+    ["store.brand-platform.com", "other.brand-platform.com"],
+    "store.brand-platform.com, other.brand-platform.com",
+    "https://store.brand-platform.com",
+    "store.example.com",
+    "127.0.0.1",
+  ]) {
+    assert.equal(readSiteDomainHeader(value), null);
+  }
 });

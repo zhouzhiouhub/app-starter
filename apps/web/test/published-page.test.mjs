@@ -1,10 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createFallbackPage } from "@app-starter/schema";
-import {
-  getPreviewPage,
-  getPublishedPage,
-} from "../src/lib/published-page.ts";
+import { getPreviewPage, getPublishedPage } from "../src/lib/published-page.ts";
 
 test("published page lookup rejects invalid explicit locale before fetching", async () => {
   const requests = [];
@@ -31,6 +28,53 @@ test("published page lookup rejects invalid explicit locale before fetching", as
   );
 
   assert.deepEqual(requests, []);
+});
+
+test("published page lookup forwards the safe storefront host", async () => {
+  const requests = [];
+
+  await withFetch(
+    async (url, init) => {
+      requests.push({ init, url: String(url) });
+      return jsonResponse({ data: createFallbackPage({ slug: "home" }) });
+    },
+    async () => {
+      const page = await getPublishedPage({
+        locale: "en-US",
+        slug: "home",
+        storefrontHost: "Store.Brand-Platform.com:443",
+      });
+
+      assert.equal(page?.meta.slug, "home");
+    },
+  );
+
+  assert.equal(requests.length, 1);
+  assert.equal(
+    requests[0].init.headers["x-storefront-host"],
+    "store.brand-platform.com",
+  );
+});
+
+test("published page lookup does not forward unsafe storefront hosts", async () => {
+  const requests = [];
+
+  await withFetch(
+    async (url, init) => {
+      requests.push({ init, url: String(url) });
+      return jsonResponse({ data: createFallbackPage({ slug: "home" }) });
+    },
+    async () => {
+      await getPublishedPage({
+        locale: "en-US",
+        slug: "home",
+        storefrontHost: "store.example.com",
+      });
+    },
+  );
+
+  assert.equal(requests.length, 1);
+  assert.equal(requests[0].init.headers, undefined);
 });
 
 test("preview page lookup rejects malformed tokens before fetching", async () => {

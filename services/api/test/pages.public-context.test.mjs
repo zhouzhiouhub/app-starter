@@ -53,7 +53,10 @@ test("listPublishedPages filters summaries by published locale and market", asyn
     market: "us",
   });
 
-  assert.deepEqual(result.data.map((page) => page.slug), ["kampagne"]);
+  assert.deepEqual(
+    result.data.map((page) => page.slug),
+    ["kampagne"],
+  );
   assert.equal(result.meta.total, 1);
 });
 
@@ -91,4 +94,63 @@ test("getPublishedPageBySlug returns null when published schema context mismatch
   });
 
   assert.equal(result, null);
+});
+
+test("getPublishedPageBySlug returns null when the request host has no site", async () => {
+  const prisma = {
+    page: {
+      findUnique: async () => {
+        throw new Error("pages must not be queried without a matching site.");
+      },
+    },
+    site: {
+      findUnique: async (query) => {
+        assert.deepEqual(query.where, {
+          domain: "missing.brand-platform.com",
+        });
+        return null;
+      },
+    },
+  };
+
+  const result = await getPublishedPageBySlug(prisma, "home", {
+    locale: "en-US",
+    market: "us",
+    siteHost: "missing.brand-platform.com",
+  });
+
+  assert.equal(result, null);
+});
+
+test("listPublishedPages returns an empty result for unmatched request hosts", async () => {
+  const prisma = {
+    page: {
+      findMany: async () => {
+        throw new Error("pages must not be listed without a matching site.");
+      },
+    },
+    site: {
+      findUnique: async () => null,
+    },
+  };
+
+  const result = await listPublishedPages(
+    prisma,
+    {
+      locale: "en-US",
+      market: "us",
+      siteHost: "missing.brand-platform.com",
+    },
+    "request-public-unmatched-site",
+  );
+
+  assert.deepEqual(result, {
+    data: [],
+    meta: {
+      requestId: "request-public-unmatched-site",
+      tenantId: null,
+      siteId: null,
+      total: 0,
+    },
+  });
 });

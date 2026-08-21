@@ -4,7 +4,7 @@ import {
   matchesPublishedPageContext,
   type PublishedPageContext,
 } from "../pages.public-context.js";
-import { getPublicDefaultSite } from "../pages.site.js";
+import { getPublicSite } from "../pages.site.js";
 import { readSchema } from "../pages.validation.js";
 
 type PublishedPageRecord = {
@@ -24,7 +24,20 @@ export async function listPublishedPages(
   context: PublishedPageContext,
   requestId = "local-dev",
 ) {
-  const site = await getPublicDefaultSite(prisma);
+  const site = await getPublicSite(prisma, context.siteHost);
+
+  if (!site) {
+    return {
+      data: [],
+      meta: {
+        requestId,
+        tenantId: null,
+        siteId: null,
+        total: 0,
+      },
+    };
+  }
+
   const pages = await prisma.page.findMany({
     where: {
       siteId: site.id,

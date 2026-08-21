@@ -10,7 +10,11 @@ import {
   Query,
   UseGuards,
 } from "@nestjs/common";
-import { apiErrorCodes } from "@app-starter/schema";
+import {
+  apiErrorCodes,
+  readSiteDomainHeader,
+  storefrontHostHeaderName,
+} from "@app-starter/schema";
 import { AdminApiGuard } from "../../common/admin-api.guard.js";
 import { CurrentUser } from "../../common/current-user.decorator.js";
 import { RequireScopes } from "../../common/require-scopes.decorator.js";
@@ -23,6 +27,11 @@ import {
   resolvePublicLocale,
   resolvePublicMarket,
 } from "./public.runtime-config.js";
+
+type PublicRequestHeaders = Record<
+  string,
+  readonly string[] | string | undefined
+>;
 
 @Controller("public")
 export class PublicController {
@@ -76,6 +85,7 @@ export class PublicController {
   async listPages(
     @Query("locale") locale?: string,
     @Query("market") market?: string,
+    @Headers() headers?: PublicRequestHeaders,
     @CurrentRequestId() requestId = "local-dev",
   ) {
     const localeContext = resolvePublicLocale(locale);
@@ -84,6 +94,7 @@ export class PublicController {
       {
         locale: localeContext.locale,
         market: marketContext.market,
+        siteHost: readPublicSiteHost(headers),
       },
       requestId,
     );
@@ -106,6 +117,7 @@ export class PublicController {
     @Param("slug") slug: string,
     @Query("locale") locale?: string,
     @Query("market") market?: string,
+    @Headers() headers?: PublicRequestHeaders,
     @CurrentRequestId() requestId = "local-dev",
   ) {
     const localeContext = resolvePublicLocale(locale);
@@ -113,6 +125,7 @@ export class PublicController {
     const page = await this.pages.getPublishedBySlug(slug, {
       locale: localeContext.locale,
       market: marketContext.market,
+      siteHost: readPublicSiteHost(headers),
     });
 
     if (!page) {
@@ -133,6 +146,32 @@ export class PublicController {
       },
     };
   }
+}
+
+function readPublicSiteHost(headers: PublicRequestHeaders | undefined) {
+  return (
+    readHeaderDomain(headers, storefrontHostHeaderName) ??
+    readHeaderDomain(headers, "x-forwarded-host") ??
+    readHeaderDomain(headers, "host")
+  );
+}
+
+function readHeaderDomain(
+  headers: PublicRequestHeaders | undefined,
+  name: string,
+) {
+  return readSiteDomainHeader(
+    headers?.[name] ??
+      headers?.[name.toLowerCase()] ??
+      headers?.[toHeaderCase(name)],
+  );
+}
+
+function toHeaderCase(name: string) {
+  return name
+    .split("-")
+    .map((part) => `${part.slice(0, 1).toUpperCase()}${part.slice(1)}`)
+    .join("-");
 }
 
 @Controller("admin/pages")

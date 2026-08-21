@@ -8,6 +8,8 @@ export type SiteDomainIssue =
   | "invalid-host"
   | "unsafe-host";
 
+export const storefrontHostHeaderName = "x-storefront-host";
+
 const siteDomainIssueMessages: Record<SiteDomainIssue, string> = {
   empty: "Domain is required.",
   "invalid-host": "Domain must be a valid hostname.",
@@ -19,6 +21,19 @@ const siteDomainIssueMessages: Record<SiteDomainIssue, string> = {
 
 export function normalizeSiteDomain(value: string): string {
   return value.trim().toLowerCase();
+}
+
+export function readSiteDomainHeader(
+  value: readonly string[] | string | null | undefined,
+): string | null {
+  const raw = readSingleHeaderValue(value);
+
+  if (!raw || raw.includes(",")) {
+    return null;
+  }
+
+  const normalized = stripDefaultPort(normalizeSiteDomain(raw));
+  return readSiteDomainIssue(normalized) ? null : normalized;
 }
 
 export function readSiteDomainIssue(value: string): SiteDomainIssue | null {
@@ -87,4 +102,28 @@ function isValidSiteHostname(host: string): boolean {
 function isValidPort(value: string): boolean {
   const parsed = Number(value);
   return Number.isInteger(parsed) && parsed > 0 && parsed <= 65535;
+}
+
+function readSingleHeaderValue(
+  value: readonly string[] | string | null | undefined,
+): string | null {
+  if (Array.isArray(value)) {
+    return value.length === 1 ? value[0]?.trim() || null : null;
+  }
+
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  return value?.trim() || null;
+}
+
+function stripDefaultPort(value: string): string {
+  const [host, port, extra] = value.split(":");
+
+  if (!host || extra !== undefined) {
+    return value;
+  }
+
+  return port === "80" || port === "443" ? host : value;
 }

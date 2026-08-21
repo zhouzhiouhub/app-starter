@@ -51,6 +51,43 @@ test("published pages list rejects invalid explicit locale or market", async () 
   assert.deepEqual(requests, []);
 });
 
+test("published pages list forwards the safe storefront host", async () => {
+  const requests = [];
+
+  await withFetch(
+    async (url, init) => {
+      requests.push({ init, url: String(url) });
+      return jsonResponse({
+        data: [
+          {
+            slug: "home",
+            title: "Home",
+            updatedAt: "2026-08-19T00:00:00.000Z",
+          },
+        ],
+      });
+    },
+    async () => {
+      const pages = await listPublishedPages({
+        locale: "en-US",
+        market: "us",
+        storefrontHost: "Store.Brand-Platform.com",
+      });
+
+      assert.deepEqual(
+        pages.map((page) => page.slug),
+        ["home"],
+      );
+    },
+  );
+
+  assert.equal(requests.length, 1);
+  assert.equal(
+    requests[0].init.headers["x-storefront-host"],
+    "store.brand-platform.com",
+  );
+});
+
 function jsonResponse(data) {
   return {
     ok: true,

@@ -3,6 +3,7 @@ import type { PageSchema } from "@app-starter/schema";
 export interface PublishedPageContext {
   locale: string;
   market: string;
+  siteHost?: string | null;
 }
 
 export function matchesPublishedPageContext(

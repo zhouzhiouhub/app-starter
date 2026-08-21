@@ -4,7 +4,7 @@ import {
   matchesPublishedPageContext,
   type PublishedPageContext,
 } from "../pages.public-context.js";
-import { getPublicDefaultSite } from "../pages.site.js";
+import { getPublicSite } from "../pages.site.js";
 import { parseSlug, readSchema } from "../pages.validation.js";
 
 export async function getPublishedPageBySlug(
@@ -16,7 +16,12 @@ export async function getPublishedPageBySlug(
     tenantId: string,
   ) => Promise<PageSchema>,
 ): Promise<PageSchema | null> {
-  const site = await getPublicDefaultSite(prisma);
+  const site = await getPublicSite(prisma, context.siteHost);
+
+  if (!site) {
+    return null;
+  }
+
   const normalizedSlug = parseSlug(slug);
   const page = await prisma.page.findUnique({
     where: {

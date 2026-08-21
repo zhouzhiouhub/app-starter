@@ -1,6 +1,7 @@
 import { PageRenderer } from "@app-starter/renderer";
 import type { Metadata } from "next";
 import { getNotFoundPage } from "../lib/published-page";
+import { readStorefrontRequestHost } from "../lib/storefront-request-host";
 
 export const metadata: Metadata = {
   robots: {
@@ -11,8 +12,10 @@ export const metadata: Metadata = {
 };
 
 export default async function NotFoundPage() {
+  const storefrontHost = await readStorefrontRequestHost();
   const schema = await getNotFoundPage({
     locale: "en-US",
+    storefrontHost,
   });
 
   return <PageRenderer schema={schema} viewport="desktop" />;

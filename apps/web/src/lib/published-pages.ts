@@ -8,6 +8,7 @@ import {
   resolveWebMarket,
 } from "./runtime-defaults.ts";
 import { getApiBaseUrl } from "./runtime-url.ts";
+import { createStorefrontHostHeaders } from "./storefront-host-header.ts";
 
 const apiBaseUrl = getApiBaseUrl();
 
@@ -22,6 +23,7 @@ export type PublishedPageSummary = {
 export async function listPublishedPages(input?: {
   locale?: string;
   market?: string;
+  storefrontHost?: string | null;
 }): Promise<PublishedPageSummary[]> {
   try {
     const defaults = readWebRuntimeDefaults();
@@ -37,6 +39,7 @@ export async function listPublishedPages(input?: {
       market,
     });
     const response = await fetch(`${apiBaseUrl}/public/pages?${searchParams}`, {
+      headers: createStorefrontHostHeaders(input?.storefrontHost),
       next: {
         revalidate: publishedPageRevalidateSeconds,
         tags: [publishedPagesCacheTag],
