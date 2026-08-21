@@ -86,6 +86,15 @@ function readBlockerActions(blocker) {
     ];
   }
 
+  if (blocker.area === "report.path") {
+    return [
+      createAction(
+        blocker.area,
+        "Set SMOKE_REPORT_PATH to a relative JSON path under tmp/, reports/, artifacts/, or .tmp/.",
+      ),
+    ];
+  }
+
   return [createAction(blocker.area ?? "unknown", blocker.message)];
 }
 

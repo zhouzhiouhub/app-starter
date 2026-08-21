@@ -56,6 +56,30 @@ test("smoke readiness marks omitted production gates as blockers", () => {
   );
 });
 
+test("smoke readiness requires an archived report path", () => {
+  const readiness = createSmokeProductionReadiness(createReadyEnvironment(), {
+    ...createReadyConfig(),
+    reportPath: null,
+  });
+
+  assert.deepEqual(readiness.blockers, [
+    {
+      area: "report.path",
+      issue: "report-path-not-configured",
+      message:
+        "Set SMOKE_REPORT_PATH to archive a machine-readable production smoke report.",
+    },
+  ]);
+  assert.equal(readiness.productionReady, false);
+  assert.deepEqual(readiness.nextActions, [
+    {
+      action:
+        "Set SMOKE_REPORT_PATH to a relative JSON path under tmp/, reports/, artifacts/, or .tmp/.",
+      area: "report.path",
+    },
+  ]);
+});
+
 test("smoke readiness reports unsafe deployment and environment blockers", () => {
   const readiness = createSmokeProductionReadiness(
     {

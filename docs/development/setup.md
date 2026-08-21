@@ -151,6 +151,8 @@ Retry settings are also validated: `SMOKE_RETRY_ATTEMPTS` must be 1-60 and
 `SMOKE_RETRY_DELAY_MS` must be 1-60000 milliseconds.
 `SMOKE_REPORT_PATH` must be a relative `.json` path under `tmp/`, `reports/`,
 `artifacts/`, or `.tmp/` so report writes cannot target source or system paths.
+Production readiness requires this path so every production smoke run leaves a
+machine-readable artifact.
 
 The script logs in with `SMOKE_ADMIN_EMAIL` / `SMOKE_ADMIN_PASSWORD` (falling
 back to the seeded admin), verifies the MVP disabled feature flags

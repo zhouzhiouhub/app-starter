@@ -57,6 +57,7 @@ function createSmokeReportConfig(input) {
     apiBaseUrl: input.apiBaseUrl,
     locale: input.locale,
     market: input.market,
+    reportPath: input.reportPath ?? null,
     requireAdminApp: input.requireAdminApp === true,
     requireR2Upload: input.requireR2Upload,
     requireRevalidation: input.requireRevalidation,

@@ -1,5 +1,6 @@
 export function createReadyConfig() {
   return {
+    reportPath: "tmp/smoke-report.json",
     requireAdminApp: true,
     requireR2Upload: true,
     requireRevalidation: true,

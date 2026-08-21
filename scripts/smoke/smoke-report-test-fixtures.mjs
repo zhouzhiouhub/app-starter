@@ -30,6 +30,7 @@ export function createProductionReadySmokeReport(overrides = {}, options = {}) {
       environmentDiagnostics: createProductionReadyEnvironmentDiagnostics(),
       requireAdminApp: true,
       requireR2Upload: true,
+      reportPath: "tmp/smoke-report.json",
       webUrl: "https://store.brand.com",
       ...overrides,
     },

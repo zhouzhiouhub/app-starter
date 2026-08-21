@@ -14,6 +14,7 @@ export function createSmokeProductionReadiness(environment, config) {
     environment.revalidation,
     config,
   );
+  collectReportReadiness(blockers, config);
 
   return {
     blockers,
@@ -21,6 +22,19 @@ export function createSmokeProductionReadiness(environment, config) {
     productionReady: blockers.length === 0,
     warnings,
   };
+}
+
+function collectReportReadiness(blockers, config) {
+  if (typeof config.reportPath === "string" && config.reportPath.length > 0) {
+    return;
+  }
+
+  appendBlocker(
+    blockers,
+    "report.path",
+    "report-path-not-configured",
+    "Set SMOKE_REPORT_PATH to archive a machine-readable production smoke report.",
+  );
 }
 
 function collectDeploymentReadiness(blockers, deployment, config) {
