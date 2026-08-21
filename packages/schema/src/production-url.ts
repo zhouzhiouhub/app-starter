@@ -2,8 +2,24 @@ export function isProductionHttpUrl(url: URL): boolean {
   return url.protocol === "https:" && !isUnsafeProductionHostname(url.hostname);
 }
 
+export type ProductionHostnameIssue = "local-host" | "placeholder-host";
+
+export function readProductionHostnameIssue(
+  hostname: string,
+): ProductionHostnameIssue | null {
+  if (isLocalOrPrivateHostname(hostname)) {
+    return "local-host";
+  }
+
+  if (isPlaceholderHostname(hostname)) {
+    return "placeholder-host";
+  }
+
+  return null;
+}
+
 export function isUnsafeProductionHostname(hostname: string): boolean {
-  return isLocalOrPrivateHostname(hostname) || isPlaceholderHostname(hostname);
+  return readProductionHostnameIssue(hostname) !== null;
 }
 
 function isLocalOrPrivateHostname(hostname: string): boolean {
@@ -128,7 +144,9 @@ function isPlaceholderHostname(hostname: string): boolean {
     normalized.endsWith(".example.org") ||
     normalized === "example.net" ||
     normalized.endsWith(".example.net") ||
+    normalized === "invalid" ||
     normalized.endsWith(".invalid") ||
+    normalized === "test" ||
     normalized.endsWith(".test") ||
     normalized === "2001:db8" ||
     normalized.startsWith("2001:db8:") ||
