@@ -2,6 +2,7 @@ import {
   formatNotFoundAttempt,
   formatRobotsAttempt,
   formatSitemapAttempt,
+  getExpectedStorefrontOrigin,
   getStorefrontPath,
   joinUrl,
   readNotFoundAttempt,
@@ -16,8 +17,10 @@ import {
 
 export async function assertRobots(input) {
   const url = joinUrl(input.webUrl, "/robots.txt");
+  const expectedOrigin = getExpectedStorefrontOrigin(input);
+  const expectedSitemapUrl = joinUrl(expectedOrigin, "/sitemap.xml");
   const response = await fetchStorefrontText(url, input);
-  const robotsAttempt = readRobotsAttempt(response, input.webUrl);
+  const robotsAttempt = readRobotsAttempt(response, expectedOrigin);
 
   if (!response.ok) {
     throw createSeoSmokeFailure(
@@ -25,7 +28,7 @@ export async function assertRobots(input) {
       url,
       `robots.txt failed (${formatRobotsAttempt(robotsAttempt)}).`,
       robotsAttempt,
-      { expectedSitemapUrl: joinUrl(input.webUrl, "/sitemap.xml") },
+      { expectedSitemapUrl },
     );
   }
 
@@ -37,7 +40,7 @@ export async function assertRobots(input) {
         robotsAttempt,
       )}).`,
       robotsAttempt,
-      { expectedSitemapUrl: joinUrl(input.webUrl, "/sitemap.xml") },
+      { expectedSitemapUrl },
     );
   }
 
@@ -49,7 +52,7 @@ export async function assertRobots(input) {
         robotsAttempt,
       )}).`,
       robotsAttempt,
-      { expectedSitemapUrl: joinUrl(input.webUrl, "/sitemap.xml") },
+      { expectedSitemapUrl },
     );
   }
 
@@ -59,7 +62,7 @@ export async function assertRobots(input) {
 export async function assertSitemap(input) {
   const url = joinUrl(input.webUrl, "/sitemap.xml");
   const expectedUrl = joinUrl(
-    input.webUrl,
+    getExpectedStorefrontOrigin(input),
     getStorefrontPath(input.locale, input.slug),
   );
   let lastError = "";

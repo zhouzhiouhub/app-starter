@@ -12,6 +12,7 @@ export {
   formatRobotsAttempt,
   formatSitemapAttempt,
   formatStorefrontPageAttempt,
+  getExpectedStorefrontOrigin,
   getStorefrontPath,
   hasNoIndexRobots,
   joinUrl,

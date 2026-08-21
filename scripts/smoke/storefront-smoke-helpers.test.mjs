@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  getExpectedStorefrontOrigin,
   getStorefrontPath,
   hasNoIndexRobots,
   joinUrl,
@@ -25,6 +26,30 @@ test("storefront smoke helpers parse sitemap URLs", () => {
   <url><loc>https://web.example.com/en/campaign</loc></url>
 </urlset>`),
     ["https://web.example.com/en", "https://web.example.com/en/campaign"],
+  );
+});
+
+test("storefront smoke helpers resolve expected SEO origins", () => {
+  assert.equal(
+    getExpectedStorefrontOrigin({
+      storefrontHost: "store.brand-platform.com",
+      webUrl: "http://localhost:3000",
+    }),
+    "https://store.brand-platform.com",
+  );
+  assert.equal(
+    getExpectedStorefrontOrigin({
+      storefrontHost: "localhost:3000",
+      webUrl: "https://web.example.com",
+    }),
+    "http://localhost:3000",
+  );
+  assert.equal(
+    getExpectedStorefrontOrigin({
+      storefrontHost: null,
+      webUrl: "https://web.example.com",
+    }),
+    "https://web.example.com",
   );
 });
 

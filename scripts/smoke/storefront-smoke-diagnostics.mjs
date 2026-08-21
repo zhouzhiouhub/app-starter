@@ -107,6 +107,14 @@ export function getStorefrontPath(locale, slug) {
   return slug === "home" ? `/${prefix}` : `/${prefix}/${slug}`;
 }
 
+export function getExpectedStorefrontOrigin(input) {
+  if (input?.storefrontHost) {
+    return `${readStorefrontHostProtocol(input.storefrontHost)}://${input.storefrontHost}`;
+  }
+
+  return input.webUrl;
+}
+
 export function joinUrl(origin, path) {
   return `${origin}${path.startsWith("/") ? path : `/${path}`}`;
 }
@@ -163,4 +171,10 @@ function readStorefrontPageDiagnosis(response, titlePresent, documentTitle) {
 function isNotFoundSitemapUrl(url) {
   const normalized = url.replace(/\/+$/, "");
   return normalized.endsWith("/404");
+}
+
+function readStorefrontHostProtocol(host) {
+  return host === "localhost" || host.startsWith("localhost:")
+    ? "http"
+    : "https";
 }

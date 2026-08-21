@@ -127,7 +127,7 @@ test("SEO smoke forwards the configured storefront host", async () => {
 
       if (url === "https://web.example.com/robots.txt") {
         return new Response(
-          "User-agent: *\nSitemap: https://web.example.com/sitemap.xml\n",
+          "User-agent: *\nSitemap: https://store.brand-platform.com/sitemap.xml\n",
           {
             status: 200,
             statusText: "OK",
@@ -140,7 +140,7 @@ test("SEO smoke forwards the configured storefront host", async () => {
           [
             '<?xml version="1.0"?>',
             "<urlset>",
-            "  <url><loc>https://web.example.com/en/smoke-page</loc></url>",
+            "  <url><loc>https://store.brand-platform.com/en/smoke-page</loc></url>",
             "</urlset>",
           ].join("\n"),
           {
