@@ -185,7 +185,9 @@ include a `diagnosis` field for triggered, missing secret, missing URL, HTTP
 request failure, and network or timeout-style failures. Revalidation environment
 diagnostics record only non-secret readiness metadata: whether a secret is
 configured, the URL source, endpoint host/path, URL safety, and whether the
-smoke run requires revalidation. Smoke report details and failure messages
+smoke run requires revalidation. Preview environment diagnostics record only
+whether `PREVIEW_TOKEN_SECRET` and a rotation secret are configured. Smoke
+report details and failure messages
 redact preview token paths, sensitive query parameters, JSON credential fields,
 R2 signed URL parameters, and Bearer tokens before they are written to the
 report or printed by the CLI.

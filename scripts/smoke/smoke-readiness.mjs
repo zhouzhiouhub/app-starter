@@ -8,6 +8,7 @@ export function createSmokeProductionReadiness(environment, config) {
 
   collectDeploymentReadiness(blockers, environment.deployment, config);
   collectMediaReadiness(blockers, environment.media, config);
+  collectPreviewReadiness(blockers, environment.preview);
   collectRevalidationReadiness(
     blockers,
     warnings,
@@ -22,6 +23,19 @@ export function createSmokeProductionReadiness(environment, config) {
     productionReady: blockers.length === 0,
     warnings,
   };
+}
+
+function collectPreviewReadiness(blockers, preview) {
+  if (preview?.secretConfigured === true) {
+    return;
+  }
+
+  appendBlocker(
+    blockers,
+    "preview.secret",
+    "missing-secret",
+    "Configure PREVIEW_TOKEN_SECRET before production smoke.",
+  );
 }
 
 function collectReportReadiness(blockers, config) {

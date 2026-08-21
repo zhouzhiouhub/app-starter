@@ -80,6 +80,31 @@ test("smoke readiness requires an archived report path", () => {
   ]);
 });
 
+test("smoke readiness requires a production preview token secret", () => {
+  const environment = createReadyEnvironment();
+  environment.preview.secretConfigured = false;
+  const readiness = createSmokeProductionReadiness(
+    environment,
+    createReadyConfig(),
+  );
+
+  assert.deepEqual(readiness.blockers, [
+    {
+      area: "preview.secret",
+      issue: "missing-secret",
+      message: "Configure PREVIEW_TOKEN_SECRET before production smoke.",
+    },
+  ]);
+  assert.equal(readiness.productionReady, false);
+  assert.deepEqual(readiness.nextActions, [
+    {
+      action:
+        "Set PREVIEW_TOKEN_SECRET in the API runtime before production smoke.",
+      area: "preview.secret",
+    },
+  ]);
+});
+
 test("smoke readiness reports unsafe deployment and environment blockers", () => {
   const readiness = createSmokeProductionReadiness(
     {
@@ -115,6 +140,9 @@ test("smoke readiness reports unsafe deployment and environment blockers", () =>
           missingRequired: ["R2_SECRET_ACCESS_KEY"],
         },
       },
+      preview: {
+        secretConfigured: false,
+      },
       revalidation: {
         secretConfigured: false,
         urlConfigured: true,
@@ -133,6 +161,7 @@ test("smoke readiness reports unsafe deployment and environment blockers", () =>
       ["deployment.admin", "local-host"],
       ["media.r2", "missing-required-env"],
       ["media.cdn", "placeholder-host"],
+      ["preview.secret", "missing-secret"],
       ["revalidation.secret", "missing-secret"],
       ["revalidation.url", "embedded-credentials"],
     ],
@@ -147,6 +176,7 @@ test("smoke readiness reports unsafe deployment and environment blockers", () =>
       "deployment.admin",
       "media.r2",
       "media.cdn",
+      "preview.secret",
       "revalidation.secret",
       "revalidation.url",
     ],

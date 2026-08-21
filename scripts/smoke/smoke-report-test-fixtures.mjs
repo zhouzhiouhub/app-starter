@@ -50,6 +50,9 @@ export function createProductionReadyEnvironmentDiagnostics() {
       cdnProductionReady: true,
       r2: { configured: true, missingRequired: [] },
     },
+    preview: {
+      secretConfigured: true,
+    },
     revalidation: {
       secretConfigured: true,
       urlConfigured: true,

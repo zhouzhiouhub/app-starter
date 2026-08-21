@@ -68,6 +68,15 @@ function readBlockerActions(blocker) {
     ];
   }
 
+  if (blocker.area === "preview.secret") {
+    return [
+      createAction(
+        blocker.area,
+        "Set PREVIEW_TOKEN_SECRET in the API runtime before production smoke.",
+      ),
+    ];
+  }
+
   if (blocker.area === "revalidation.secret") {
     return [
       createAction(

@@ -28,6 +28,9 @@ export function createReadyEnvironment() {
         missingRequired: [],
       },
     },
+    preview: {
+      secretConfigured: true,
+    },
     revalidation: {
       secretConfigured: true,
       urlConfigured: true,

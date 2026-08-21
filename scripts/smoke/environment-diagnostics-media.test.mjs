@@ -11,6 +11,7 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
     R2_BUCKET: "bucket-name",
     R2_REGION: "auto",
     R2_SECRET_ACCESS_KEY: "super-secret",
+    PREVIEW_TOKEN_SECRET: "super-preview-secret",
     STOREFRONT_REVALIDATE_SECRET: "super-revalidate-secret",
     STOREFRONT_REVALIDATE_URL: "https://web.example.com/",
   });
@@ -59,6 +60,11 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
         region: "auto",
       },
     },
+    preview: {
+      configured: true,
+      previousSecretConfigured: false,
+      secretConfigured: true,
+    },
     revalidation: {
       configured: true,
       endpointHost: "web.example.com",
@@ -75,6 +81,7 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
 
   const serialized = JSON.stringify(diagnostics);
   assert.equal(serialized.includes("super-secret"), false);
+  assert.equal(serialized.includes("super-preview-secret"), false);
   assert.equal(serialized.includes("super-revalidate-secret"), false);
   assert.equal(serialized.includes("bucket-name"), false);
   assert.equal(serialized.includes("account-id"), false);
@@ -97,6 +104,11 @@ test("smoke environment diagnostics reports missing R2 and CDN fallback", () => 
   assert.equal(diagnostics.media.cdnUrlIssue, "local-host");
   assert.equal(diagnostics.media.cdnUrlSafe, false);
   assert.equal(diagnostics.media.cdnUsesLocalFallback, true);
+  assert.deepEqual(diagnostics.preview, {
+    configured: false,
+    previousSecretConfigured: false,
+    secretConfigured: false,
+  });
   assert.deepEqual(diagnostics.revalidation, {
     configured: false,
     endpointHost: null,
