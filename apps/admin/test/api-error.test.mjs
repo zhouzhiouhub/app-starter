@@ -68,3 +68,53 @@ test("API error message reader keeps legacy fallback behavior", () => {
     "Publish request failed.",
   );
 });
+
+test("API request errors summarize media archive usage details", () => {
+  const error = createApiRequestError(
+    {
+      error: {
+        code: "CONFLICT",
+        details: {
+          usage: [
+            {
+              pageSlug: "home",
+              pageTitle: "Home",
+              status: "published",
+              version: 4,
+            },
+            {
+              pageSlug: "/launch",
+              pageTitle: "Launch",
+              status: "draft",
+              version: 2,
+            },
+            {
+              pageSlug: "legal/privacy",
+              pageTitle: "Privacy Policy",
+              status: "published",
+              version: 7,
+            },
+            {
+              pageSlug: "extra",
+              pageTitle: "Extra",
+              status: "draft",
+              version: 1,
+            },
+          ],
+        },
+        message: "Media asset is still referenced by page versions.",
+        requestId: "req_archive_123",
+      },
+    },
+    "Media asset could not be archived.",
+  );
+
+  const formatted = formatRequestError(error);
+
+  assert.match(formatted, /^CONFLICT:/);
+  assert.match(
+    formatted,
+    /Referenced by page versions: Home \(\/home\) v4 published, Launch \(\/launch\) v2 draft, Privacy Policy \(\/legal\/privacy\) v7 published, and 1 more\./,
+  );
+  assert.match(formatted, /Request ID: req_archive_123\./);
+});

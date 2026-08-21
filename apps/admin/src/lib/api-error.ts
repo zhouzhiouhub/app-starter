@@ -12,6 +12,14 @@ interface ImageSourceIssue {
   reason?: unknown;
 }
 
+interface MediaUsageIssue {
+  pageId?: unknown;
+  pageSlug?: unknown;
+  pageTitle?: unknown;
+  status?: unknown;
+  version?: unknown;
+}
+
 export class ApiRequestError extends Error {
   code?: string;
   details?: unknown;
@@ -101,6 +109,7 @@ function formatApiErrorDetails(details: unknown): string | null {
     formatInvalidImageSources(record.invalidImageSources),
     formatReferenceList("Missing media references", record.missingReferences),
     formatReferenceList("Archived media references", record.archivedReferences),
+    formatMediaUsage(record.usage),
   ].filter((segment): segment is string => Boolean(segment));
 
   return segments.length ? segments.join(" ") : null;
@@ -140,6 +149,48 @@ function formatReferenceList(label: string, value: unknown): string | null {
     : null;
 }
 
+function formatMediaUsage(value: unknown): string | null {
+  if (!Array.isArray(value) || value.length === 0) {
+    return null;
+  }
+
+  const usage = value
+    .map((item: MediaUsageIssue) => formatMediaUsageEntry(item))
+    .filter((item): item is string => Boolean(item));
+  const visibleUsage = usage.slice(0, 3);
+  const remainingCount = usage.length - visibleUsage.length;
+
+  return visibleUsage.length
+    ? formatIssueList(
+        "Referenced by page versions",
+        visibleUsage,
+        remainingCount,
+      )
+    : null;
+}
+
+function formatMediaUsageEntry(usage: MediaUsageIssue): string | null {
+  const pageTitle =
+    readString(usage?.pageTitle) ??
+    readString(usage?.pageSlug) ??
+    readString(usage?.pageId);
+
+  if (!pageTitle) {
+    return null;
+  }
+
+  const slug = readString(usage.pageSlug);
+  const pageLabel = slug
+    ? `${pageTitle} (${formatStorefrontSlug(slug)})`
+    : pageTitle;
+  const metadata = [
+    readVersionLabel(usage.version),
+    readString(usage.status),
+  ].filter((item): item is string => Boolean(item));
+
+  return metadata.length ? `${pageLabel} ${metadata.join(" ")}` : pageLabel;
+}
+
 function formatIssueList(
   label: string,
   values: string[],
@@ -149,6 +200,19 @@ function formatIssueList(
     remainingCount > 0 ? `, and ${remainingCount} more` : "";
 
   return `${label}: ${values.join(", ")}${suffix}.`;
+}
+
+function formatStorefrontSlug(slug: string): string {
+  return slug.startsWith("/") ? slug : `/${slug}`;
+}
+
+function readVersionLabel(value: unknown): string | undefined {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return `v${value}`;
+  }
+
+  const text = readString(value);
+  return text ? `v${text}` : undefined;
 }
 
 function readString(value: unknown): string | undefined {
