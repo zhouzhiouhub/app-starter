@@ -1,16 +1,6 @@
 import type { Prisma } from "@prisma/client";
+import { sanitizeAuditMetadata } from "./audit.metadata.js";
 import type { AuditLogResponse } from "./audit.types.js";
-
-const redactedValue = "[redacted]";
-const sensitiveMetadataKeys = new Set([
-  "accesstoken",
-  "authorization",
-  "password",
-  "refreshtoken",
-  "schema",
-  "secret",
-  "token",
-]);
 
 export function toAuditLogResponse(log: {
   action: string;
@@ -32,34 +22,4 @@ export function toAuditLogResponse(log: {
     targetId: log.targetId,
     targetType: log.targetType,
   };
-}
-
-export function sanitizeAuditMetadata(value: Prisma.JsonValue): unknown {
-  if (Array.isArray(value)) {
-    return value.map((item) => sanitizeAuditMetadata(item));
-  }
-
-  if (!value || typeof value !== "object") {
-    return value ?? {};
-  }
-
-  return Object.fromEntries(
-    Object.entries(value).map(([key, child]) => [
-      key,
-      shouldRedactMetadataKey(key)
-        ? redactedValue
-        : sanitizeAuditMetadata(child ?? null),
-    ]),
-  );
-}
-
-function shouldRedactMetadataKey(key: string): boolean {
-  const normalized = key.replace(/[-_]/g, "").toLowerCase();
-
-  return (
-    sensitiveMetadataKeys.has(normalized) ||
-    normalized.endsWith("password") ||
-    normalized.endsWith("secret") ||
-    normalized.endsWith("token")
-  );
 }

@@ -19,7 +19,12 @@ test("audit service appends audit log records", async () => {
   await service.record({
     action: "preview_token.created",
     actorId: "user-1",
-    metadata: { slug: "campaign" },
+    metadata: {
+      apiToken: "api-token",
+      nested: { previewToken: "preview-token" },
+      schema: { sections: [] },
+      slug: "campaign",
+    },
     requestId: "request-1",
     targetId: "page-1",
     targetType: "page",
@@ -29,7 +34,12 @@ test("audit service appends audit log records", async () => {
   assert.deepEqual(calls[0].data, {
     action: "preview_token.created",
     actorId: "user-1",
-    metadata: { slug: "campaign" },
+    metadata: {
+      apiToken: "[redacted]",
+      nested: { previewToken: "[redacted]" },
+      schema: "[redacted]",
+      slug: "campaign",
+    },
     requestId: "request-1",
     targetId: "page-1",
     targetType: "page",

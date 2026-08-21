@@ -1,7 +1,8 @@
 import { Injectable } from "@nestjs/common";
-import type { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { toAuditLogResponse } from "./audit.mapper.js";
+import { sanitizeAuditMetadataForStorage } from "./audit.metadata.js";
 import type { AuditLogInput, ListAuditLogsQuery } from "./audit.types.js";
 import { parseListAuditLogsQuery } from "./audit.validation.js";
 
@@ -14,7 +15,7 @@ export class AuditService {
       data: {
         action: input.action,
         actorId: input.actorId ?? null,
-        metadata: (input.metadata ?? {}) as Prisma.InputJsonValue,
+        metadata: sanitizeAuditMetadataForStorage(input.metadata),
         requestId: input.requestId ?? null,
         targetId: input.targetId ?? null,
         targetType: input.targetType,
