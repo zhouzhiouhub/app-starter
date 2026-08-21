@@ -62,6 +62,10 @@ test("database runtime config rejects local production hosts", () => {
     "postgresql://postgres:secret@172.16.0.1:5432/app",
     "postgresql://postgres:secret@192.168.1.20:5432/app",
     "postgresql://postgres:secret@169.254.1.20:5432/app",
+    "postgresql://postgres:secret@100.64.0.10:5432/app",
+    "postgresql://postgres:secret@192.0.0.10:5432/app",
+    "postgresql://postgres:secret@198.18.0.10:5432/app",
+    "postgresql://postgres:secret@224.0.0.1:5432/app",
     "postgresql://postgres:secret@[::1]:5432/app",
     "postgresql://postgres:secret@[fd00::1]:5432/app",
     "postgresql://postgres:secret@[fe80::1]:5432/app",
@@ -90,6 +94,10 @@ test("database runtime config rejects placeholder production hosts", () => {
     "postgresql://postgres:secret@db.example.net:5432/app",
     "postgresql://postgres:secret@db.invalid:5432/app",
     "postgresql://postgres:secret@db.test:5432/app",
+    "postgresql://postgres:secret@192.0.2.10:5432/app",
+    "postgresql://postgres:secret@198.51.100.10:5432/app",
+    "postgresql://postgres:secret@203.0.113.10:5432/app",
+    "postgresql://postgres:secret@[::ffff:c000:020a]:5432/app",
     "postgresql://postgres:secret@[2001:db8::1]:5432/app",
   ];
 

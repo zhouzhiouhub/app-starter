@@ -255,8 +255,14 @@ test("smoke environment diagnostics reports unsafe CDN configuration", () => {
   const privateHost = createSmokeEnvironmentDiagnostics({
     MEDIA_CDN_BASE_URL: "https://10.0.0.1/media",
   });
+  const sharedAddressHost = createSmokeEnvironmentDiagnostics({
+    MEDIA_CDN_BASE_URL: "https://100.64.0.10/media",
+  });
   const privateIpv6Host = createSmokeEnvironmentDiagnostics({
     MEDIA_CDN_BASE_URL: "https://[fd00::1]/media",
+  });
+  const documentationIpv4Host = createSmokeEnvironmentDiagnostics({
+    MEDIA_CDN_BASE_URL: "https://198.51.100.10/media",
   });
   const documentationIpv6Host = createSmokeEnvironmentDiagnostics({
     MEDIA_CDN_BASE_URL: "https://[2001:db8::1]/media",
@@ -287,9 +293,13 @@ test("smoke environment diagnostics reports unsafe CDN configuration", () => {
   assert.equal(privateHost.media.cdnUrlIssue, "local-host");
   assert.equal(privateHost.media.cdnProductionReady, false);
   assert.equal(privateHost.media.cdnUsesLocalFallback, true);
+  assert.equal(sharedAddressHost.media.cdnUrlIssue, "local-host");
+  assert.equal(sharedAddressHost.media.cdnProductionReady, false);
   assert.equal(privateIpv6Host.media.cdnUrlIssue, "local-host");
   assert.equal(privateIpv6Host.media.cdnProductionReady, false);
   assert.equal(privateIpv6Host.media.cdnUsesLocalFallback, true);
+  assert.equal(documentationIpv4Host.media.cdnUrlIssue, "placeholder-host");
+  assert.equal(documentationIpv4Host.media.cdnProductionReady, false);
   assert.equal(documentationIpv6Host.media.cdnUrlIssue, "placeholder-host");
   assert.equal(documentationIpv6Host.media.cdnProductionReady, false);
   assert.equal(documentationIpv6Host.media.cdnUsesLocalFallback, false);

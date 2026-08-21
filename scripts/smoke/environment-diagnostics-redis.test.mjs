@@ -43,11 +43,20 @@ test("smoke environment diagnostics reports unsafe Redis URLs", () => {
   const privateIpv4 = createSmokeEnvironmentDiagnostics({
     REDIS_URL: "rediss://10.0.0.1:6379",
   });
+  const sharedAddress = createSmokeEnvironmentDiagnostics({
+    REDIS_URL: "rediss://100.64.0.10:6379",
+  });
+  const multicastAddress = createSmokeEnvironmentDiagnostics({
+    REDIS_URL: "rediss://224.0.0.1:6379",
+  });
   const privateIpv6 = createSmokeEnvironmentDiagnostics({
     REDIS_URL: "rediss://[fd00::1]:6379",
   });
   const placeholder = createSmokeEnvironmentDiagnostics({
     REDIS_URL: "rediss://redis.example.com:6379",
+  });
+  const documentationIpv4 = createSmokeEnvironmentDiagnostics({
+    REDIS_URL: "rediss://203.0.113.10:6379",
   });
 
   assert.equal(missing.redis.configured, false);
@@ -61,6 +70,9 @@ test("smoke environment diagnostics reports unsafe Redis URLs", () => {
   assert.equal(insecure.redis.usesTls, false);
   assert.equal(localhost.redis.urlIssue, "local-host");
   assert.equal(privateIpv4.redis.urlIssue, "local-host");
+  assert.equal(sharedAddress.redis.urlIssue, "local-host");
+  assert.equal(multicastAddress.redis.urlIssue, "local-host");
   assert.equal(privateIpv6.redis.urlIssue, "local-host");
   assert.equal(placeholder.redis.urlIssue, "placeholder-host");
+  assert.equal(documentationIpv4.redis.urlIssue, "placeholder-host");
 });

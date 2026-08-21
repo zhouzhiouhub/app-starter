@@ -41,6 +41,12 @@ test("smoke environment diagnostics reports unsafe database URLs", () => {
   const privateIpv4 = createSmokeEnvironmentDiagnostics({
     DATABASE_URL: "postgresql://postgres:secret@10.0.0.1:5432/app",
   });
+  const sharedAddress = createSmokeEnvironmentDiagnostics({
+    DATABASE_URL: "postgresql://postgres:secret@100.64.0.10:5432/app",
+  });
+  const benchmarkAddress = createSmokeEnvironmentDiagnostics({
+    DATABASE_URL: "postgresql://postgres:secret@198.18.0.10:5432/app",
+  });
   const privateIpv6 = createSmokeEnvironmentDiagnostics({
     DATABASE_URL: "postgresql://postgres:secret@[fd00::1]:5432/app",
   });
@@ -53,6 +59,12 @@ test("smoke environment diagnostics reports unsafe database URLs", () => {
   });
   const documentationIpv6 = createSmokeEnvironmentDiagnostics({
     DATABASE_URL: "postgresql://postgres:secret@[2001:db8::1]:5432/app",
+  });
+  const documentationIpv4 = createSmokeEnvironmentDiagnostics({
+    DATABASE_URL: "postgresql://postgres:secret@192.0.2.10:5432/app",
+  });
+  const mappedDocumentationIpv4 = createSmokeEnvironmentDiagnostics({
+    DATABASE_URL: "postgresql://postgres:secret@[::ffff:c000:020a]:5432/app",
   });
 
   assert.equal(missing.database.configured, false);
@@ -68,6 +80,10 @@ test("smoke environment diagnostics reports unsafe database URLs", () => {
   assert.equal(loopback.database.productionReady, false);
   assert.equal(privateIpv4.database.urlIssue, "local-host");
   assert.equal(privateIpv4.database.productionReady, false);
+  assert.equal(sharedAddress.database.urlIssue, "local-host");
+  assert.equal(sharedAddress.database.productionReady, false);
+  assert.equal(benchmarkAddress.database.urlIssue, "local-host");
+  assert.equal(benchmarkAddress.database.productionReady, false);
   assert.equal(privateIpv6.database.urlIssue, "local-host");
   assert.equal(privateIpv6.database.productionReady, false);
   assert.equal(dockerHost.database.urlIssue, "local-host");
@@ -76,4 +92,8 @@ test("smoke environment diagnostics reports unsafe database URLs", () => {
   assert.equal(placeholder.database.productionReady, false);
   assert.equal(documentationIpv6.database.urlIssue, "placeholder-host");
   assert.equal(documentationIpv6.database.productionReady, false);
+  assert.equal(documentationIpv4.database.urlIssue, "placeholder-host");
+  assert.equal(documentationIpv4.database.productionReady, false);
+  assert.equal(mappedDocumentationIpv4.database.urlIssue, "placeholder-host");
+  assert.equal(mappedDocumentationIpv4.database.productionReady, false);
 });

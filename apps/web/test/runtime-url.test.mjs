@@ -74,6 +74,16 @@ test("runtime URL resolver fails fast on production API URL fallback", () => {
       }),
     /API_URL or NEXT_PUBLIC_API_URL/,
   );
+  assert.throws(
+    () =>
+      resolveApiBaseUrl({
+        configuredUrl: "https://192.0.2.10/api/v1",
+        deploymentEnv: "production",
+        internalUrl: "https://100.64.0.10/api/v1",
+        publicUrl: "https://198.18.0.10/api/v1",
+      }),
+    /API_URL or NEXT_PUBLIC_API_URL/,
+  );
 });
 
 test("runtime URL resolver accepts production API URLs", () => {
@@ -109,6 +119,15 @@ test("runtime URL resolver fails fast on production Web URL fallback", () => {
         "WEB_URL or NEXT_PUBLIC_WEB_URL must be configured as a safe Web origin in production.",
       name: "WebRuntimeUrlConfigurationError",
     },
+  );
+  assert.throws(
+    () =>
+      resolveWebOrigin({
+        deploymentEnv: "production",
+        publicWebUrl: "https://203.0.113.10",
+        webUrl: "https://[::ffff:c000:020a]",
+      }),
+    /WEB_URL or NEXT_PUBLIC_WEB_URL/,
   );
 });
 

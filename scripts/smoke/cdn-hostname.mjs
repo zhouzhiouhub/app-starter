@@ -27,7 +27,9 @@ export function isPlaceholderHostname(hostname) {
   const normalized = normalizeHostname(hostname);
 
   return (
+    isDocumentationIpv4(normalized) ||
     isDocumentationIpv6(normalized) ||
+    isMappedDocumentationIpv4(normalized) ||
     placeholderHostSuffixes.some(
       (suffix) =>
         normalized === suffix.slice(1) || normalized.endsWith(suffix),
@@ -49,15 +51,20 @@ function isPrivateOrLocalIpv4(hostname) {
     return false;
   }
 
-  const [first, second] = parts;
+  const [first, second, third] = parts;
 
   return (
     first === 0 ||
     first === 10 ||
+    (first === 100 && second >= 64 && second <= 127) ||
     first === 127 ||
     (first === 169 && second === 254) ||
     (first === 172 && second >= 16 && second <= 31) ||
-    (first === 192 && second === 168)
+    (first === 192 && second === 0 && third === 0) ||
+    (first === 192 && second === 88 && third === 99) ||
+    (first === 192 && second === 168) ||
+    (first === 198 && (second === 18 || second === 19)) ||
+    first >= 224
   );
 }
 
@@ -127,4 +134,28 @@ function isDocumentationIpv6(hostname) {
     hostname.startsWith("2001:db8:") ||
     hostname.startsWith("2001:db8::")
   );
+}
+
+function isDocumentationIpv4(hostname) {
+  const parts = hostname.split(".").map((part) => Number(part));
+
+  if (
+    parts.length !== 4 ||
+    parts.some((part) => !Number.isInteger(part) || part < 0 || part > 255)
+  ) {
+    return false;
+  }
+
+  const [first, second, third] = parts;
+
+  return (
+    (first === 192 && second === 0 && third === 2) ||
+    (first === 198 && second === 51 && third === 100) ||
+    (first === 203 && second === 0 && third === 113)
+  );
+}
+
+function isMappedDocumentationIpv4(hostname) {
+  const mappedIpv4 = readMappedIpv4(hostname);
+  return mappedIpv4 ? isDocumentationIpv4(mappedIpv4) : false;
 }

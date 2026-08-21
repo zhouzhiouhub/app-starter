@@ -33,18 +33,24 @@ function isPrivateOrLocalIpv4(hostname: string): boolean {
 
   const first = parts[0];
   const second = parts[1];
+  const third = parts[2];
 
-  if (first === undefined || second === undefined) {
+  if (first === undefined || second === undefined || third === undefined) {
     return false;
   }
 
   return (
     first === 0 ||
     first === 10 ||
+    (first === 100 && second >= 64 && second <= 127) ||
     first === 127 ||
     (first === 169 && second === 254) ||
     (first === 172 && second >= 16 && second <= 31) ||
-    (first === 192 && second === 168)
+    (first === 192 && second === 0 && third === 0) ||
+    (first === 192 && second === 88 && third === 99) ||
+    (first === 192 && second === 168) ||
+    (first === 198 && (second === 18 || second === 19)) ||
+    first >= 224
   );
 }
 
@@ -117,6 +123,8 @@ function isPlaceholderHostname(hostname: string): boolean {
   const normalized = normalizeHostname(hostname);
 
   return (
+    isDocumentationIpv4(normalized) ||
+    isMappedDocumentationIpv4(normalized) ||
     normalized === "example.com" ||
     normalized.endsWith(".example.com") ||
     normalized === "example.org" ||
@@ -129,6 +137,32 @@ function isPlaceholderHostname(hostname: string): boolean {
     normalized.startsWith("2001:db8:") ||
     normalized.startsWith("2001:db8::")
   );
+}
+
+function isDocumentationIpv4(hostname: string): boolean {
+  const parts = hostname.split(".").map((part) => Number(part));
+
+  if (
+    parts.length !== 4 ||
+    parts.some((part) => !Number.isInteger(part) || part < 0 || part > 255)
+  ) {
+    return false;
+  }
+
+  const first = parts[0];
+  const second = parts[1];
+  const third = parts[2];
+
+  return (
+    (first === 192 && second === 0 && third === 2) ||
+    (first === 198 && second === 51 && third === 100) ||
+    (first === 203 && second === 0 && third === 113)
+  );
+}
+
+function isMappedDocumentationIpv4(hostname: string): boolean {
+  const mappedIpv4 = readMappedIpv4(hostname);
+  return mappedIpv4 ? isDocumentationIpv4(mappedIpv4) : false;
 }
 
 function normalizeHostname(hostname: string): string {

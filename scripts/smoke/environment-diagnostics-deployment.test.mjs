@@ -70,6 +70,21 @@ test("smoke environment diagnostics rejects private and documentation IPv6 deplo
   assert.equal(diagnostics.deployment.web.productionReady, false);
 });
 
+test("smoke environment diagnostics rejects special IPv4 deployment hosts", () => {
+  const diagnostics = createSmokeEnvironmentDiagnostics({
+    ADMIN_URL: "https://100.64.0.10",
+    API_URL: "https://198.18.0.10/api/v1",
+    WEB_URL: "https://192.0.2.10",
+  });
+
+  assert.equal(diagnostics.deployment.admin.urlIssue, "local-host");
+  assert.equal(diagnostics.deployment.admin.productionReady, false);
+  assert.equal(diagnostics.deployment.api.urlIssue, "local-host");
+  assert.equal(diagnostics.deployment.api.productionReady, false);
+  assert.equal(diagnostics.deployment.web.urlIssue, "placeholder-host");
+  assert.equal(diagnostics.deployment.web.productionReady, false);
+});
+
 test("smoke environment diagnostics uses smoke input deployment URLs", () => {
   const diagnostics = createSmokeEnvironmentDiagnostics(
     {
