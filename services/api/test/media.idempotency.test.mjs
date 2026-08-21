@@ -73,7 +73,7 @@ test("media service stores archive responses by idempotency key", async () => {
   ]);
 });
 
-test("media service stores upload URL responses by idempotency key", async () => {
+test("media service does not store signed upload URLs by idempotency key", async () => {
   const idempotencyCalls = [];
   let storedRecord = null;
   const service = new MediaService({
@@ -97,10 +97,10 @@ test("media service stores upload URL responses by idempotency key", async () =>
       },
       update(options) {
         idempotencyCalls.push(["update", options.data.status]);
-        assert.match(options.data.response.data.r2Key, /^tenant-1\//);
+        assert.equal("response" in options.data, false);
         storedRecord = {
           ...storedRecord,
-          response: options.data.response,
+          response: options.data.response ?? null,
           status: options.data.status,
         };
         return Promise.resolve(storedRecord);
@@ -123,10 +123,13 @@ test("media service stores upload URL responses by idempotency key", async () =>
     actor,
     "request-media-upload",
   );
-  const second = await service.createUploadUrl(input, key, actor);
 
-  assert.equal(first.data.r2Key, second.data.r2Key);
-  assert.equal(first.data.uploadUrl, second.data.uploadUrl);
+  assert.match(first.data.r2Key, /^tenant-1\//);
+  assert.equal(typeof first.data.uploadUrl, "string");
+  await assert.rejects(
+    () => service.createUploadUrl(input, key, actor),
+    /Response for this Idempotency-Key is not replayable/,
+  );
   assert.equal(first.meta.requestId, "request-media-upload");
   assert.deepEqual(idempotencyCalls, [
     ["findUnique", "media:upload-url"],

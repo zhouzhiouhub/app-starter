@@ -23,6 +23,7 @@ export function createMediaUploadUrl(
     body: input,
     key: idempotencyKey,
     scope: "media:upload-url",
+    storeResponse: false,
     tenantId: actor.tenantId,
     operation: () => {
       const r2Key = createMediaR2Key({
