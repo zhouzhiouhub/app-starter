@@ -5,10 +5,8 @@ import {
   createFallbackPage,
 } from "../../../packages/schema/dist/index.js";
 import { publishPage } from "../dist/modules/pages/use-cases/publish-page.js";
-import {
-  createPageActor,
-  createPageVersionResult,
-} from "./pages-test-helpers.mjs";
+import { createPublishPrisma } from "./pages-publish-test-helpers.mjs";
+import { createPageActor } from "./pages-test-helpers.mjs";
 
 test("publishPage rejects HTTP image sources before creating a version", async () => {
   const schema = createFallbackPage({ slug: "launch", title: "Launch" });
@@ -58,41 +56,3 @@ test("publishPage rejects HTTP image sources before creating a version", async (
   assert.equal(calls.versionCreate, undefined);
   assert.equal(calls.audit, undefined);
 });
-
-function createPublishPrisma(calls) {
-  return {
-    $transaction: async (fn) =>
-      fn({
-        auditLog: {
-          create: async (input) => {
-            calls.audit = input.data;
-            return {};
-          },
-        },
-        page: {
-          findFirst: async () => ({
-            id: "page-1",
-            siteId: "site-1",
-            slug: "launch",
-            versions: [{ id: "version-1", status: "published", version: 1 }],
-          }),
-          update: async () => ({}),
-        },
-        pageVersion: {
-          create: async (input) => {
-            calls.versionCreate = input.data;
-            return createPageVersionResult(input);
-          },
-        },
-        mediaAsset: {
-          findMany: async () => [],
-        },
-      }),
-    site: {
-      findFirst: async () => ({
-        id: "site-1",
-        tenantId: "tenant-1",
-      }),
-    },
-  };
-}

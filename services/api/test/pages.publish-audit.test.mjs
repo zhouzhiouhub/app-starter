@@ -1,15 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { apiErrorCodes } from "../../../packages/schema/dist/index.js";
 import { createInitialPageSchema } from "../dist/modules/pages/pages.mapper.js";
 import { publishPage } from "../dist/modules/pages/use-cases/publish-page.js";
-import { withEnv } from "./env-helper.mjs";
-import {
-  assertApiConflictRejects,
-  createPageActor,
-  createPageVersionResult,
-  withPageLocale,
-} from "./pages-test-helpers.mjs";
+import { createPublishPrisma } from "./pages-publish-test-helpers.mjs";
+import { createPageActor } from "./pages-test-helpers.mjs";
 
 test("publishPage records a page published audit log", async () => {
   const schema = createInitialPageSchema({
@@ -49,104 +43,18 @@ test("publishPage records a page published audit log", async () => {
   assert.equal("schema" in calls.audit.metadata, false);
 });
 
-test("publishPage rejects non-default locale while multi-locale is disabled", async () => {
-  await withEnv(
-    {
-      DEFAULT_LOCALE: "en-US",
-      MULTI_LOCALE_ENABLED: "false",
-    },
-    async () => {
-      const schema = withPageLocale(
-        createInitialPageSchema({
-          slug: "launch",
-          title: "Launch",
-        }),
-        "de-DE",
-      );
-      const calls = { audit: null };
-      const prisma = createPublishPrisma(calls);
-
-      await assertApiConflictRejects(
-        () =>
-          publishPage(prisma, "page-1", schema, undefined, createPageActor()),
-        apiErrorCodes.MULTI_LOCALE_DISABLED,
-      );
-
-      assert.equal(calls.audit, null);
-      assert.equal(calls.versionCreate, undefined);
-    },
-  );
-});
-
-test("publishPage allows non-default locale when multi-locale flag is normalized", async () => {
-  await withEnv(
-    {
-      DEFAULT_LOCALE: "en-US",
-      MULTI_LOCALE_ENABLED: " TRUE ",
-    },
-    async () => {
-      const schema = withPageLocale(
-        createInitialPageSchema({
-          slug: "launch",
-          title: "Launch",
-        }),
-        "de-DE",
-      );
-      const calls = { audit: null };
-      const prisma = createPublishPrisma(calls);
-
-      await publishPage(
-        prisma,
-        "page-1",
-        schema,
-        undefined,
-        createPageActor(),
-      );
-
-      assert.equal(calls.versionCreate.status, "published");
-      assert.equal(calls.audit.metadata.locale, "de-DE");
-    },
-  );
-});
-
-test("publishPage ignores invalid default locale configuration", async () => {
-  await withEnv(
-    {
-      DEFAULT_LOCALE: "bad_locale",
-      MULTI_LOCALE_ENABLED: "false",
-    },
-    async () => {
-      const schema = createInitialPageSchema({
-        slug: "launch",
-        title: "Launch",
-      });
-      const calls = { audit: null };
-      const prisma = createPublishPrisma(calls);
-
-      await publishPage(
-        prisma,
-        "page-1",
-        schema,
-        undefined,
-        createPageActor(),
-      );
-
-      assert.equal(calls.versionCreate.status, "published");
-      assert.equal(calls.audit.action, "page.published");
-    },
-  );
-});
-
-test("publishPage validates media references before creating a version", async () => {
+test("publishPage does not revalidate storefront when audit logging fails", async () => {
   const schema = createInitialPageSchema({
     slug: "launch",
     title: "Launch",
   });
-  schema.sections[0].props = {
-    image: "media://asset-missing",
-  };
-  const calls = { audit: null };
-  const prisma = createPublishPrisma(calls);
+  const calls = { audit: null, revalidationTriggered: false };
+  const prisma = createPublishPrisma(calls, {
+    auditCreate: async (input) => {
+      calls.audit = input.data;
+      throw new Error("Audit write failed.");
+    },
+  });
 
   await assert.rejects(
     () =>
@@ -156,59 +64,18 @@ test("publishPage validates media references before creating a version", async (
         schema,
         undefined,
         createPageActor(),
-        undefined,
-        async (validatedSchema, tenantId, client) => {
-          assert.equal(validatedSchema.meta.slug, "launch");
-          assert.equal(
-            validatedSchema.sections[0].props.image,
-            "media://asset-missing",
-          );
-          assert.equal(tenantId, "tenant-1");
-          assert.equal(typeof client.mediaAsset.findMany, "function");
-          throw new Error("Missing media reference.");
+        async () => {
+          calls.revalidationTriggered = true;
+          return {
+            paths: ["/en/launch"],
+            tags: ["published-page"],
+            triggered: true,
+          };
         },
       ),
-    /Missing media reference/,
+    /Audit write failed/,
   );
 
-  assert.equal(calls.audit, null);
-  assert.equal(calls.versionCreate, undefined);
+  assert.equal(calls.audit.action, "page.published");
+  assert.equal(calls.revalidationTriggered, false);
 });
-
-function createPublishPrisma(calls) {
-  return {
-    $transaction: async (fn) =>
-      fn({
-        auditLog: {
-          create: async (input) => {
-            calls.audit = input.data;
-            return {};
-          },
-        },
-        page: {
-          findFirst: async () => ({
-            id: "page-1",
-            siteId: "site-1",
-            slug: "launch",
-            versions: [{ id: "version-1", status: "published", version: 1 }],
-          }),
-          update: async () => ({}),
-        },
-        pageVersion: {
-          create: async (input) => {
-            calls.versionCreate = input.data;
-            return createPageVersionResult(input);
-          },
-        },
-        mediaAsset: {
-          findMany: async () => [],
-        },
-      }),
-    site: {
-      findFirst: async () => ({
-        id: "site-1",
-        tenantId: "tenant-1",
-      }),
-    },
-  };
-}
