@@ -32,6 +32,11 @@ Runtime boolean gates accept only `true`/`false`, `1`/`0`, `yes`/`no`, or
 `on`/`off`; misspelled values fail instead of silently changing feature or
 analytics gates.
 
+In production, the API requires `DATABASE_URL` to be a PostgreSQL connection URL
+whose host is not local, loopback, Docker-local, or a reserved placeholder. Local
+development can still use `localhost`, but production startup fails before
+Prisma connects if the database URL is unsafe.
+
 Media uploads use local fallback URLs only outside production. In production,
 the API requires the full R2 upload configuration and a safe explicit
 `MEDIA_CDN_BASE_URL`; otherwise upload target or managed CDN URL creation fails
