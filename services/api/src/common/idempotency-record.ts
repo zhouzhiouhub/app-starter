@@ -71,8 +71,11 @@ export async function runTenantIdempotent<TResponse>(
     throw error;
   }
 
+  let operationCompleted = false;
+
   try {
     const response = await options.operation();
+    operationCompleted = true;
 
     await prisma.idempotencyRecord.update({
       where: { id: record.id },
@@ -86,9 +89,11 @@ export async function runTenantIdempotent<TResponse>(
 
     return response;
   } catch (error) {
-    await prisma.idempotencyRecord.deleteMany({
-      where: { id: record.id, status: "pending" },
-    });
+    if (!operationCompleted) {
+      await prisma.idempotencyRecord.deleteMany({
+        where: { id: record.id, status: "pending" },
+      });
+    }
 
     throw error;
   }
