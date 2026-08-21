@@ -51,6 +51,41 @@ test("runtime URL resolver rejects unsafe API bases", () => {
   }
 });
 
+test("runtime URL resolver fails fast on production API URL fallback", () => {
+  assert.throws(
+    () =>
+      resolveApiBaseUrl({
+        configuredUrl: "https://api.example.com/api/v1",
+        deploymentEnv: "production",
+        internalUrl: "http://localhost:4000/api/v1",
+        publicUrl: "https://10.0.0.1/api/v1",
+      }),
+    {
+      message:
+        "API_URL or NEXT_PUBLIC_API_URL must be configured as a safe API URL in production.",
+      name: "WebRuntimeUrlConfigurationError",
+    },
+  );
+  assert.throws(
+    () =>
+      resolveApiBaseUrl({
+        deploymentEnv: "production",
+        internalUrl: "https://[::ffff:7f00:1]/api/v1",
+      }),
+    /API_URL or NEXT_PUBLIC_API_URL/,
+  );
+});
+
+test("runtime URL resolver accepts production API URLs", () => {
+  assert.equal(
+    resolveApiBaseUrl({
+      configuredUrl: "https://api.brand-platform.com/",
+      deploymentEnv: "production",
+    }),
+    "https://api.brand-platform.com/api/v1",
+  );
+});
+
 test("runtime URL resolver accepts safe web origins", () => {
   assert.equal(
     resolveWebOrigin({
@@ -58,6 +93,32 @@ test("runtime URL resolver accepts safe web origins", () => {
       webUrl: " https://web.example.com/ ",
     }),
     "https://web.example.com",
+  );
+});
+
+test("runtime URL resolver fails fast on production Web URL fallback", () => {
+  assert.throws(
+    () =>
+      resolveWebOrigin({
+        deploymentEnv: "production",
+        publicWebUrl: "https://[2001:db8::1]",
+        webUrl: "http://localhost:3000",
+      }),
+    {
+      message:
+        "WEB_URL or NEXT_PUBLIC_WEB_URL must be configured as a safe Web origin in production.",
+      name: "WebRuntimeUrlConfigurationError",
+    },
+  );
+});
+
+test("runtime URL resolver accepts production Web origins", () => {
+  assert.equal(
+    resolveWebOrigin({
+      deploymentEnv: "production",
+      webUrl: "https://store.brand-platform.com/",
+    }),
+    "https://store.brand-platform.com",
   );
 });
 

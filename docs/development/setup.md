@@ -134,6 +134,11 @@ Admin static origin cannot proxy `/api/v1` or infer the storefront origin. If
 they are empty, the build falls back to the shared `API_URL` and `WEB_URL`
 environment variables.
 
+For Web production deployments, `VERCEL_ENV=production` or `APP_ENV=production`
+requires `API_URL` / `NEXT_PUBLIC_API_URL` and `WEB_URL` / `NEXT_PUBLIC_WEB_URL`
+to resolve to production HTTPS URLs outside local, private, placeholder, or
+documentation hosts. Local development can still use localhost fallbacks.
+
 After sign-in, open `http://localhost:5173/pages` to list and create pages.
 The editor at `/pages/:id` loads the draft schema, can save a draft, and can
 publish to the storefront. The Preview action saves the draft, creates a

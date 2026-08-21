@@ -1,9 +1,19 @@
+import { isProductionHttpUrl } from "./production-url-host.ts";
+
 const defaultApiBaseUrl = "http://localhost:4000/api/v1";
 const defaultWebOrigin = "http://localhost:3000";
+
+export class WebRuntimeUrlConfigurationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "WebRuntimeUrlConfigurationError";
+  }
+}
 
 export function getApiBaseUrl(): string {
   return resolveApiBaseUrl({
     configuredUrl: process.env.API_URL,
+    deploymentEnv: readDeploymentEnv(),
     internalUrl: process.env.API_INTERNAL_URL,
     publicUrl: process.env.NEXT_PUBLIC_API_URL,
   });
@@ -11,30 +21,57 @@ export function getApiBaseUrl(): string {
 
 export function resolveApiBaseUrl(input: {
   configuredUrl?: string;
+  deploymentEnv?: string;
   internalUrl?: string;
   publicUrl?: string;
 }): string {
-  return (
-    readHttpBaseUrl(input.internalUrl) ??
-    readHttpBaseUrl(input.configuredUrl) ??
-    readHttpBaseUrl(input.publicUrl) ??
-    defaultApiBaseUrl
-  );
+  const requireProductionUrl = isProductionDeployment(input.deploymentEnv);
+  const resolved =
+    readHttpBaseUrl(input.internalUrl, requireProductionUrl) ??
+    readHttpBaseUrl(input.configuredUrl, requireProductionUrl) ??
+    readHttpBaseUrl(input.publicUrl, requireProductionUrl);
+
+  if (resolved) {
+    return resolved;
+  }
+
+  if (isProductionDeployment(input.deploymentEnv)) {
+    throw new WebRuntimeUrlConfigurationError(
+      "API_URL or NEXT_PUBLIC_API_URL must be configured as a safe API URL in production.",
+    );
+  }
+
+  return defaultApiBaseUrl;
 }
 
 export function resolveWebOrigin(input: {
+  deploymentEnv?: string;
   publicWebUrl?: string;
   webUrl?: string;
 }): string {
-  return (
-    readHttpOrigin(input.webUrl) ??
-    readHttpOrigin(input.publicWebUrl) ??
-    defaultWebOrigin
-  );
+  const requireProductionUrl = isProductionDeployment(input.deploymentEnv);
+  const resolved =
+    readHttpOrigin(input.webUrl, requireProductionUrl) ??
+    readHttpOrigin(input.publicWebUrl, requireProductionUrl);
+
+  if (resolved) {
+    return resolved;
+  }
+
+  if (isProductionDeployment(input.deploymentEnv)) {
+    throw new WebRuntimeUrlConfigurationError(
+      "WEB_URL or NEXT_PUBLIC_WEB_URL must be configured as a safe Web origin in production.",
+    );
+  }
+
+  return defaultWebOrigin;
 }
 
-function readHttpBaseUrl(value: string | undefined): string | null {
-  const url = readSafeHttpUrl(value);
+function readHttpBaseUrl(
+  value: string | undefined,
+  requireProductionUrl = false,
+): string | null {
+  const url = readSafeHttpUrl(value, requireProductionUrl);
 
   if (!url) {
     return null;
@@ -44,8 +81,11 @@ function readHttpBaseUrl(value: string | undefined): string | null {
   return pathname ? `${url.origin}${pathname}` : null;
 }
 
-function readHttpOrigin(value: string | undefined): string | null {
-  const url = readSafeHttpUrl(value);
+function readHttpOrigin(
+  value: string | undefined,
+  requireProductionUrl = false,
+): string | null {
+  const url = readSafeHttpUrl(value, requireProductionUrl);
 
   if (!url || trimTrailingSlashes(url.pathname) !== "/") {
     return null;
@@ -54,7 +94,10 @@ function readHttpOrigin(value: string | undefined): string | null {
   return url.origin;
 }
 
-function readSafeHttpUrl(value: string | undefined): URL | null {
+function readSafeHttpUrl(
+  value: string | undefined,
+  requireProductionUrl: boolean,
+): URL | null {
   const trimmed = value?.trim();
 
   if (!trimmed) {
@@ -69,7 +112,8 @@ function readSafeHttpUrl(value: string | undefined): URL | null {
       url.username ||
       url.password ||
       url.search ||
-      url.hash
+      url.hash ||
+      (requireProductionUrl && !isProductionHttpUrl(url))
     ) {
       return null;
     }
@@ -97,4 +141,12 @@ function normalizeApiBasePath(value: string): string | null {
 
 function isHttpProtocol(protocol: string): boolean {
   return protocol === "http:" || protocol === "https:";
+}
+
+function isProductionDeployment(value: string | undefined): boolean {
+  return value?.trim().toLowerCase() === "production";
+}
+
+function readDeploymentEnv(): string | undefined {
+  return process.env.VERCEL_ENV ?? process.env.APP_ENV;
 }
