@@ -1,4 +1,5 @@
 import { redactSmokeSecrets } from "./smoke-secrets.mjs";
+import { readSmokeStorefrontOrigin } from "./storefront-smoke-host.mjs";
 
 export function readStorefrontPageAttempt(response, title) {
   const documentTitle = readDocumentTitle(response.text);
@@ -108,11 +109,7 @@ export function getStorefrontPath(locale, slug) {
 }
 
 export function getExpectedStorefrontOrigin(input) {
-  if (input?.storefrontHost) {
-    return `${readStorefrontHostProtocol(input.storefrontHost)}://${input.storefrontHost}`;
-  }
-
-  return input.webUrl;
+  return readSmokeStorefrontOrigin(input);
 }
 
 export function joinUrl(origin, path) {
@@ -171,10 +168,4 @@ function readStorefrontPageDiagnosis(response, titlePresent, documentTitle) {
 function isNotFoundSitemapUrl(url) {
   const normalized = url.replace(/\/+$/, "");
   return normalized.endsWith("/404");
-}
-
-function readStorefrontHostProtocol(host) {
-  return host === "localhost" || host.startsWith("localhost:")
-    ? "http"
-    : "https";
 }

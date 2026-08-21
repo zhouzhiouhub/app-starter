@@ -23,7 +23,7 @@ test("smoke report includes deployment diagnostics for effective smoke URLs", ()
     adminUrl: "https://admin.brand.com",
     apiBaseUrl: "https://api.brand.com/api/v1",
     requireAdminApp: true,
-    storefrontHost: "store.brand.com",
+    storefrontHost: "Store.Brand.com:443",
     webUrl: "https://store.brand.com",
   });
 
@@ -37,6 +37,14 @@ test("smoke report includes deployment diagnostics for effective smoke URLs", ()
   assert.equal(report.environment.deployment.api.productionReady, true);
   assert.equal(report.environment.deployment.web.host, "store.brand.com");
   assert.equal(report.environment.deployment.web.productionReady, true);
+});
+
+test("smoke report ignores unsafe direct storefront host overrides", () => {
+  const report = createTestSmokeReport({
+    storefrontHost: "https://store.brand.com",
+  });
+
+  assert.equal(report.config.storefrontHost, null);
 });
 
 test("smoke report includes production readiness summary", () => {

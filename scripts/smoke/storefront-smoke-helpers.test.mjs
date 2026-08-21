@@ -32,7 +32,7 @@ test("storefront smoke helpers parse sitemap URLs", () => {
 test("storefront smoke helpers resolve expected SEO origins", () => {
   assert.equal(
     getExpectedStorefrontOrigin({
-      storefrontHost: "store.brand-platform.com",
+      storefrontHost: "Store.Brand-Platform.com:443",
       webUrl: "http://localhost:3000",
     }),
     "https://store.brand-platform.com",
@@ -47,6 +47,13 @@ test("storefront smoke helpers resolve expected SEO origins", () => {
   assert.equal(
     getExpectedStorefrontOrigin({
       storefrontHost: null,
+      webUrl: "https://web.example.com",
+    }),
+    "https://web.example.com",
+  );
+  assert.equal(
+    getExpectedStorefrontOrigin({
+      storefrontHost: "https://store.brand-platform.com",
       webUrl: "https://web.example.com",
     }),
     "https://web.example.com",
@@ -68,7 +75,7 @@ test("storefront smoke helpers detect noindex robots metadata", () => {
 test("storefront smoke request helper forwards storefront hosts", () => {
   assert.deepEqual(
     createStorefrontSmokeRequestInit(
-      { storefrontHost: "store.brand-platform.com" },
+      { storefrontHost: "Store.Brand-Platform.com:443" },
       {
         headers: {
           Accept: "text/html",
@@ -87,4 +94,13 @@ test("storefront smoke request helper forwards storefront hosts", () => {
   assert.deepEqual(createStorefrontSmokeRequestInit({}, { method: "GET" }), {
     method: "GET",
   });
+  assert.deepEqual(
+    createStorefrontSmokeRequestInit(
+      { storefrontHost: "https://store.brand-platform.com" },
+      { method: "GET" },
+    ),
+    {
+      method: "GET",
+    },
+  );
 });

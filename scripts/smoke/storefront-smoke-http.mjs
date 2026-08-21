@@ -1,4 +1,5 @@
 import { redactSmokeSecrets } from "./smoke-secrets.mjs";
+import { readSmokeStorefrontHost } from "./storefront-smoke-host.mjs";
 
 const storefrontHostHeaderName = "x-storefront-host";
 
@@ -19,7 +20,7 @@ export async function fetchStorefrontText(url, input, init) {
 }
 
 export function createStorefrontSmokeRequestInit(input, init = {}) {
-  const host = input?.storefrontHost;
+  const host = readSmokeStorefrontHost(input);
 
   if (!host) {
     return init;
