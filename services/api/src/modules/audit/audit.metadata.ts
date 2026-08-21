@@ -2,12 +2,21 @@ import type { Prisma } from "@prisma/client";
 
 const redactedValue = "[redacted]";
 const sensitiveMetadataKeys = new Set([
+  "accesskeyid",
   "accesstoken",
+  "apikey",
   "authorization",
+  "cookie",
+  "credential",
   "password",
   "refreshtoken",
   "schema",
   "secret",
+  "secretaccesskey",
+  "session",
+  "sessionid",
+  "setcookie",
+  "signature",
   "token",
 ]);
 
@@ -46,8 +55,16 @@ function shouldRedactMetadataKey(key: string): boolean {
 
   return (
     sensitiveMetadataKeys.has(normalized) ||
+    normalized.endsWith("accesskeyid") ||
+    normalized.endsWith("apikey") ||
+    normalized.endsWith("credential") ||
+    normalized.endsWith("cookie") ||
     normalized.endsWith("password") ||
     normalized.endsWith("secret") ||
+    normalized.endsWith("secretaccesskey") ||
+    normalized.endsWith("session") ||
+    normalized.endsWith("sessionid") ||
+    normalized.endsWith("signature") ||
     normalized.endsWith("token")
   );
 }
