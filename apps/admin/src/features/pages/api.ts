@@ -1,6 +1,6 @@
 import { pageSchema, type PageSchema } from "@app-starter/schema";
 import { adminRequest } from "../auth/api";
-import { createApiRequestError } from "../../lib/api-error";
+import { createApiRequestError } from "../../lib/api-error.ts";
 import { createIdempotencyKey } from "../../lib/idempotency-key";
 import type {
   CreatePageInput,

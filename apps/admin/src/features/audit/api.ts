@@ -1,5 +1,5 @@
 import { adminRequest } from "../auth/api";
-import { readApiErrorMessage } from "../../lib/api-error";
+import { createApiRequestError } from "../../lib/api-error.ts";
 import { DEFAULT_AUDIT_LOG_LIST_LIMIT } from "./constants";
 import type { AuditLog, AuditLogFilters, AuditLogListMeta } from "./types";
 
@@ -58,7 +58,7 @@ async function readAdminJson<T>(
   const result = (await response.json()) as T & { error?: unknown };
 
   if (!response.ok) {
-    throw new Error(readApiErrorMessage(result, fallback));
+    throw createApiRequestError(result, fallback);
   }
 
   return result;
