@@ -1,4 +1,4 @@
-import { isUnsafeProductionHostname } from "../../common/production-hostname.js";
+import { isUnsafeProductionHostname } from "@app-starter/schema";
 import { encodeMediaObjectKey } from "./media.object-key.js";
 
 export function createMediaObjectUrl(input: {

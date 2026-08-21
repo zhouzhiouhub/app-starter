@@ -1,11 +1,11 @@
 import {
   getPublishedPageCacheTags,
   getPublishedPageRevalidationPaths,
+  isUnsafeProductionHostname,
   type PageSchema,
   storefrontRevalidateSecretHeader,
   type StorefrontRevalidationResult,
 } from "@app-starter/schema";
-import { isUnsafeProductionHostname } from "../../common/production-hostname.js";
 
 const defaultTimeoutMs = 5000;
 const maxTimeoutMs = 30000;

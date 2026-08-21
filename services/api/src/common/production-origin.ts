@@ -1,11 +1,7 @@
-import { isUnsafeProductionHostname } from "./production-hostname.js";
+import { isProductionHttpUrl } from "@app-starter/schema";
 
 export function isProductionHttpOrigin(url: URL): boolean {
-  return (
-    url.protocol === "https:" &&
-    isOriginOnlyUrl(url) &&
-    !isUnsafeProductionHostname(url.hostname)
-  );
+  return isProductionHttpUrl(url) && isOriginOnlyUrl(url);
 }
 
 function isOriginOnlyUrl(url: URL): boolean {

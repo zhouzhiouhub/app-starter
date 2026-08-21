@@ -1,9 +1,9 @@
 export function isProductionHttpUrl(url: URL): boolean {
-  return (
-    url.protocol === "https:" &&
-    !isLocalOrPrivateHostname(url.hostname) &&
-    !isPlaceholderHostname(url.hostname)
-  );
+  return url.protocol === "https:" && !isUnsafeProductionHostname(url.hostname);
+}
+
+export function isUnsafeProductionHostname(hostname: string): boolean {
+  return isLocalOrPrivateHostname(hostname) || isPlaceholderHostname(hostname);
 }
 
 function isLocalOrPrivateHostname(hostname: string): boolean {

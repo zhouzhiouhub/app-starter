@@ -1,4 +1,4 @@
-import { isUnsafeProductionHostname } from "../../common/production-hostname.js";
+import { isUnsafeProductionHostname } from "@app-starter/schema";
 
 export interface DatabaseRuntimeEnv {
   DATABASE_URL?: string;

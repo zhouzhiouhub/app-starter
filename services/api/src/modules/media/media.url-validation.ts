@@ -1,6 +1,5 @@
 import { BadRequestException } from "@nestjs/common";
-import { apiErrorCodes } from "@app-starter/schema";
-import { isUnsafeProductionHostname } from "../../common/production-hostname.js";
+import { apiErrorCodes, isUnsafeProductionHostname } from "@app-starter/schema";
 import { DEFAULT_MEDIA_CDN_BASE_URL } from "./media.constants.js";
 
 export function assertAllowedMediaUrl(
