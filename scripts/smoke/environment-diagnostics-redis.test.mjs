@@ -31,6 +31,9 @@ test("smoke environment diagnostics reports unsafe Redis URLs", () => {
   const postgres = createSmokeEnvironmentDiagnostics({
     REDIS_URL: "postgresql://cache.example.com:5432/app",
   });
+  const hostless = createSmokeEnvironmentDiagnostics({
+    REDIS_URL: "rediss:///0",
+  });
   const insecure = createSmokeEnvironmentDiagnostics({
     REDIS_URL: "redis://redis.brand-cache.com:6379",
   });
@@ -52,6 +55,8 @@ test("smoke environment diagnostics reports unsafe Redis URLs", () => {
   assert.equal(missing.redis.productionReady, false);
   assert.equal(invalid.redis.urlIssue, "invalid-url");
   assert.equal(postgres.redis.urlIssue, "unsupported-protocol");
+  assert.equal(hostless.redis.urlIssue, "missing-host");
+  assert.equal(hostless.redis.productionReady, false);
   assert.equal(insecure.redis.urlIssue, "insecure-protocol");
   assert.equal(insecure.redis.usesTls, false);
   assert.equal(localhost.redis.urlIssue, "local-host");

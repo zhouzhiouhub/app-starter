@@ -33,6 +33,10 @@ function readRedisUrlIssue(input) {
     return "unsupported-protocol";
   }
 
+  if (!input.url.hostname) {
+    return "missing-host";
+  }
+
   if (isLocalHostname(input.url.hostname)) {
     return "local-host";
   }

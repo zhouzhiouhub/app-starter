@@ -29,6 +29,9 @@ test("smoke environment diagnostics reports unsafe database URLs", () => {
   const sqlite = createSmokeEnvironmentDiagnostics({
     DATABASE_URL: "file:./dev.db",
   });
+  const hostless = createSmokeEnvironmentDiagnostics({
+    DATABASE_URL: "postgresql:///app",
+  });
   const localhost = createSmokeEnvironmentDiagnostics({
     DATABASE_URL: "postgresql://postgres:secret@localhost:5432/app",
   });
@@ -57,6 +60,8 @@ test("smoke environment diagnostics reports unsafe database URLs", () => {
   assert.equal(missing.database.productionReady, false);
   assert.equal(sqlite.database.urlIssue, "unsupported-protocol");
   assert.equal(sqlite.database.productionReady, false);
+  assert.equal(hostless.database.urlIssue, "missing-host");
+  assert.equal(hostless.database.productionReady, false);
   assert.equal(localhost.database.urlIssue, "local-host");
   assert.equal(localhost.database.productionReady, false);
   assert.equal(loopback.database.urlIssue, "local-host");
