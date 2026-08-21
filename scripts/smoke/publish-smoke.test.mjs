@@ -9,6 +9,7 @@ import {
   normalizeWebOrigin,
   readConfig,
 } from "./publish-smoke.mjs";
+import { withEnv } from "./smoke-test-env.mjs";
 
 test("smoke helpers normalize API base URLs", () => {
   assert.equal(
@@ -120,25 +121,3 @@ test("readConfig uses seeded defaults and explicit smoke overrides", async () =>
     },
   );
 });
-
-async function withEnv(values, fn) {
-  const previous = Object.fromEntries(
-    Object.keys(values).map((key) => [key, process.env[key]]),
-  );
-
-  for (const [key, value] of Object.entries(values)) {
-    process.env[key] = value;
-  }
-
-  try {
-    await fn();
-  } finally {
-    for (const [key, value] of Object.entries(previous)) {
-      if (value === undefined) {
-        delete process.env[key];
-      } else {
-        process.env[key] = value;
-      }
-    }
-  }
-}

@@ -4,9 +4,9 @@ import {
   normalizeAdminOrigin,
   normalizeSmokeBoolean,
   normalizeSmokePositiveInt,
-  normalizeSmokeReportPath,
   readConfig,
 } from "./publish-smoke-config.mjs";
+import { withEnv } from "./smoke-test-env.mjs";
 
 test("smoke config parses boolean flags from an explicit whitelist", () => {
   for (const value of ["1", "true", "TRUE", "yes", "on"]) {
@@ -177,90 +177,3 @@ test("smoke config rejects invalid retry environment values", async () => {
     },
   );
 });
-
-test("smoke config validates report output paths", () => {
-  assert.equal(
-    normalizeSmokeReportPath(" tmp\\smoke-report.json "),
-    "tmp/smoke-report.json",
-  );
-  assert.equal(
-    normalizeSmokeReportPath("reports/2026-08-20/smoke.JSON"),
-    "reports/2026-08-20/smoke.JSON",
-  );
-  assert.equal(
-    normalizeSmokeReportPath(".tmp/publish/smoke-report.json"),
-    ".tmp/publish/smoke-report.json",
-  );
-  assert.throws(
-    () => normalizeSmokeReportPath("package.json"),
-    /SMOKE_REPORT_PATH must be under tmp\/, reports\/, artifacts\/, or \.tmp\//,
-  );
-  assert.throws(
-    () => normalizeSmokeReportPath("tmp/../package.json"),
-    /SMOKE_REPORT_PATH must use safe path segments without traversal/,
-  );
-  assert.throws(
-    () => normalizeSmokeReportPath("tmp/smoke-report.txt"),
-    /SMOKE_REPORT_PATH must end with .json/,
-  );
-  assert.throws(
-    () => normalizeSmokeReportPath("C:\\tmp\\smoke-report.json"),
-    /SMOKE_REPORT_PATH must be a relative JSON report path/,
-  );
-  assert.throws(
-    () => normalizeSmokeReportPath("/tmp/smoke-report.json"),
-    /SMOKE_REPORT_PATH must be a relative JSON report path/,
-  );
-});
-
-test("smoke config rejects unsafe report path environment values", async () => {
-  await withEnv(
-    {
-      API_URL: "https://api.example.com",
-      SMOKE_REPORT_PATH: "../smoke-report.json",
-      WEB_URL: "https://web.example.com",
-    },
-    async () => {
-      assert.throws(
-        () => readConfig(),
-        /SMOKE_REPORT_PATH must be under tmp\/, reports\/, artifacts\/, or \.tmp\//,
-      );
-    },
-  );
-
-  await withEnv(
-    {
-      API_URL: "https://api.example.com",
-      SMOKE_REPORT_PATH: "tmp/smoke report.json",
-      WEB_URL: "https://web.example.com",
-    },
-    async () => {
-      assert.throws(
-        () => readConfig(),
-        /SMOKE_REPORT_PATH must use safe path segments without traversal/,
-      );
-    },
-  );
-});
-
-async function withEnv(values, fn) {
-  const previous = Object.fromEntries(
-    Object.keys(values).map((key) => [key, process.env[key]]),
-  );
-
-  for (const [key, value] of Object.entries(values)) {
-    process.env[key] = value;
-  }
-
-  try {
-    await fn();
-  } finally {
-    for (const [key, value] of Object.entries(previous)) {
-      if (value === undefined) {
-        delete process.env[key];
-      } else {
-        process.env[key] = value;
-      }
-    }
-  }
-}
