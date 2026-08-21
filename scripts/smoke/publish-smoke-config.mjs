@@ -1,20 +1,30 @@
+import {
+  defaultAdminUrl,
+  defaultApiUrl,
+  defaultEmail,
+  defaultLocale,
+  defaultMarket,
+  defaultPassword,
+  defaultTenantSlug,
+  defaultWebUrl,
+  retryAttemptsRange,
+  retryDelayMsRange,
+} from "./publish-smoke-config-defaults.mjs";
+import {
+  normalizeAdminOrigin,
+  normalizeApiBaseUrl,
+  normalizeSmokeBoolean,
+  normalizeSmokeLocale,
+  normalizeSmokeMarket,
+  normalizeSmokePositiveInt,
+  normalizeSmokeSlug,
+  normalizeWebOrigin,
+} from "./publish-smoke-config-normalizers.mjs";
 import { normalizeSmokeReportPath } from "./smoke-report-path-config.mjs";
 
+export * from "./publish-smoke-config-normalizers.mjs";
+export { printHelp } from "./publish-smoke-help.mjs";
 export { normalizeSmokeReportPath } from "./smoke-report-path-config.mjs";
-
-const defaultApiUrl = "http://localhost:4000";
-const defaultAdminUrl = "http://localhost:5173";
-const defaultWebUrl = "http://localhost:3000";
-const defaultLocale = "en-US";
-const defaultMarket = "us";
-const defaultEmail = "admin@example.com";
-const defaultPassword = "ChangeMe123!";
-const defaultTenantSlug = "default";
-const retryAttemptsRange = { max: 60, min: 1 };
-const retryDelayMsRange = { max: 60000, min: 1 };
-const localeCodePattern = /^[a-z]{2}(?:-[A-Z]{2})?$/;
-const marketCodePattern = /^[a-z][a-z0-9-]{1,15}$/;
-const pageSlugPattern = /^[a-z0-9]+(?:[-/][a-z0-9]+)*$/;
 
 export function readConfig() {
   const requireAdminApp = readBooleanEnv("SMOKE_REQUIRE_ADMIN_APP", false);
@@ -50,157 +60,6 @@ export function readConfig() {
     tenantSlug: readEnv("SMOKE_TENANT_SLUG", defaultTenantSlug),
     webUrl: normalizeWebOrigin(readEnv("WEB_URL", defaultWebUrl)),
   };
-}
-
-export function normalizeApiBaseUrl(value) {
-  const url = readSmokeUrl(value, "API_URL");
-  const pathname = trimTrailingSlashes(url.pathname);
-
-  if (pathname && pathname !== "/api/v1") {
-    throw new Error("API_URL must be an origin URL or an /api/v1 base URL.");
-  }
-
-  return `${url.origin}/api/v1`;
-}
-
-export function normalizeWebOrigin(value) {
-  return normalizeOrigin(value, "WEB_URL", "storefront origin", "a");
-}
-
-export function normalizeAdminOrigin(value) {
-  return normalizeOrigin(value, "ADMIN_URL", "admin origin", "an");
-}
-
-function normalizeOrigin(value, name, label, article) {
-  const url = readSmokeUrl(value, name);
-  const pathname = trimTrailingSlashes(url.pathname);
-
-  if (pathname) {
-    throw new Error(`${name} must be ${article} ${label} without a path.`);
-  }
-
-  return url.origin;
-}
-
-export function normalizeSmokeLocale(value) {
-  const locale = value.trim();
-
-  if (!localeCodePattern.test(locale)) {
-    throw new Error("SMOKE_LOCALE must look like en-US.");
-  }
-
-  return locale;
-}
-
-export function normalizeSmokeMarket(value) {
-  const market = value.trim();
-
-  if (!marketCodePattern.test(market)) {
-    throw new Error("SMOKE_MARKET must be a lowercase market code.");
-  }
-
-  return market;
-}
-
-export function normalizeSmokeSlug(value) {
-  const slug = value.trim();
-
-  if (slug.length > 255 || !pageSlugPattern.test(slug)) {
-    throw new Error(
-      "SMOKE_PAGE_SLUG must use lowercase letters, numbers, hyphens, or slashes.",
-    );
-  }
-
-  return slug;
-}
-
-export function normalizeSmokeBoolean(value, name) {
-  const normalized = value.trim().toLowerCase();
-
-  if (["1", "true", "yes", "on"].includes(normalized)) {
-    return true;
-  }
-
-  if (["0", "false", "no", "off"].includes(normalized)) {
-    return false;
-  }
-
-  throw new Error(`${name} must be true or false.`);
-}
-
-export function normalizeSmokePositiveInt(value, name, range) {
-  const normalized = value.trim();
-
-  if (!/^\d+$/.test(normalized)) {
-    throw new Error(`${name} must be a positive integer.`);
-  }
-
-  const number = Number(normalized);
-
-  if (
-    !Number.isSafeInteger(number) ||
-    number < range.min ||
-    number > range.max
-  ) {
-    throw new Error(`${name} must be between ${range.min} and ${range.max}.`);
-  }
-
-  return number;
-}
-
-export function printHelp() {
-  console.log(`Usage: pnpm smoke:publish
-
-Publishes a unique smoke-test page through the Admin API, then verifies the
-page editor draft save, Preview Token, public preview API, Web preview page,
-publish API, rollback API, audit logs, public page API, media upload target,
-media list filters, storefront HTML, robots.txt, sitemap.xml, 404 behavior, and MVP disabled feature flags.
-
-Environment:
-  ADMIN_URL                       Admin app origin. Default: ${defaultAdminUrl}
-  API_URL                         API origin or /api/v1 base. Default: ${defaultApiUrl}
-  WEB_URL                         Storefront origin. Default: ${defaultWebUrl}
-  SMOKE_ADMIN_EMAIL               Admin email. Default: SEED_ADMIN_EMAIL or ${defaultEmail}
-  SMOKE_ADMIN_PASSWORD            Admin password. Default: SEED_ADMIN_PASSWORD or ${defaultPassword}
-  SMOKE_TENANT_SLUG               Tenant slug. Default: ${defaultTenantSlug}
-  SMOKE_PAGE_SLUG                 Optional fixed lowercase page slug.
-  SMOKE_LOCALE                    Locale code. Default: ${defaultLocale}
-  SMOKE_MARKET                    Market code. Default: ${defaultMarket}
-  SMOKE_REQUIRE_ADMIN_APP         Require Admin static app HTML at ADMIN_URL. true/false. Default: false
-  SMOKE_REQUIRE_R2_UPLOAD         Require R2 presigned URL, actual PUT upload, and production CDN URL. true/false. Default: false
-  SMOKE_REQUIRE_REVALIDATION      Require meta.revalidation.triggered. true/false. Default: true
-  SMOKE_RETRY_ATTEMPTS            Storefront fetch attempts. 1-60. Default: 8
-  SMOKE_RETRY_DELAY_MS            Delay between attempts in ms. 1-60000. Default: 1000
-  SMOKE_REPORT_PATH               Optional relative JSON report path under tmp/, reports/, artifacts/, or .tmp/.
-`);
-}
-
-function readSmokeUrl(value, name) {
-  let url;
-
-  try {
-    url = new URL(value.trim());
-  } catch {
-    throw new Error(`${name} must be an absolute http(s) URL.`);
-  }
-
-  if (!["http:", "https:"].includes(url.protocol)) {
-    throw new Error(`${name} must use http or https.`);
-  }
-
-  if (url.username || url.password) {
-    throw new Error(`${name} must not include embedded credentials.`);
-  }
-
-  if (url.search || url.hash) {
-    throw new Error(`${name} must not include query strings or fragments.`);
-  }
-
-  return url;
-}
-
-function trimTrailingSlashes(pathname) {
-  return pathname.replace(/\/+$/, "");
 }
 
 function createSmokeSlug() {
