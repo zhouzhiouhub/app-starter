@@ -1,4 +1,4 @@
-import { PageRenderer } from "@app-starter/renderer";
+import { ResponsivePageRenderer } from "@app-starter/renderer";
 import { notFound } from "next/navigation";
 import { buildPageMetadata } from "../lib/page-metadata";
 import { getPublishedPage } from "../lib/published-page";
@@ -32,5 +32,5 @@ export default async function HomePage() {
     notFound();
   }
 
-  return <PageRenderer schema={schema} viewport="desktop" />;
+  return <ResponsivePageRenderer schema={schema} />;
 }

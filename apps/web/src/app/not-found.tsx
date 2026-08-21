@@ -1,4 +1,4 @@
-import { PageRenderer } from "@app-starter/renderer";
+import { ResponsivePageRenderer } from "@app-starter/renderer";
 import type { Metadata } from "next";
 import { getNotFoundPage } from "../lib/published-page";
 import { readStorefrontRequestHost } from "../lib/storefront-request-host";
@@ -18,5 +18,5 @@ export default async function NotFoundPage() {
     storefrontHost,
   });
 
-  return <PageRenderer schema={schema} viewport="desktop" />;
+  return <ResponsivePageRenderer schema={schema} />;
 }
