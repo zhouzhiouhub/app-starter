@@ -6,6 +6,8 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
   const diagnostics = createSmokeEnvironmentDiagnostics({
     MEDIA_CDN_BASE_URL: "https://cdn.brand-assets.com/media",
     MEDIA_EXTERNAL_URL_HOSTS: "images.example.com, https://assets.example.org",
+    COMMERCE_ENABLED: "false",
+    MULTI_LOCALE_ENABLED: "false",
     R2_ACCESS_KEY_ID: "access-key",
     R2_ACCOUNT_ID: "account-id",
     R2_BUCKET: "bucket-name",
@@ -45,6 +47,25 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
         urlSafe: false,
         variable: "WEB_URL",
       },
+    },
+    featureFlags: {
+      configured: true,
+      disabled: true,
+      flags: {
+        COMMERCE_ENABLED: {
+          configured: true,
+          disabled: true,
+          issue: null,
+          productionReady: true,
+        },
+        MULTI_LOCALE_ENABLED: {
+          configured: true,
+          disabled: true,
+          issue: null,
+          productionReady: true,
+        },
+      },
+      productionReady: true,
     },
     media: {
       cdnConfigured: true,
@@ -104,6 +125,8 @@ test("smoke environment diagnostics reports missing R2 and CDN fallback", () => 
   assert.equal(diagnostics.media.cdnUrlIssue, "local-host");
   assert.equal(diagnostics.media.cdnUrlSafe, false);
   assert.equal(diagnostics.media.cdnUsesLocalFallback, true);
+  assert.equal(diagnostics.featureFlags.configured, false);
+  assert.equal(diagnostics.featureFlags.productionReady, false);
   assert.deepEqual(diagnostics.preview, {
     configured: false,
     previousSecretConfigured: false,

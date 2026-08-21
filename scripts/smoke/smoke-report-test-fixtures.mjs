@@ -45,6 +45,9 @@ export function createProductionReadyEnvironmentDiagnostics() {
       api: { productionReady: true },
       web: { productionReady: true },
     },
+    featureFlags: {
+      productionReady: true,
+    },
     media: {
       cdnConfigured: true,
       cdnProductionReady: true,

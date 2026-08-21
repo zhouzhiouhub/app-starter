@@ -105,6 +105,56 @@ test("smoke readiness requires a production preview token secret", () => {
   ]);
 });
 
+test("smoke readiness requires MVP feature flags explicitly disabled", () => {
+  const environment = createReadyEnvironment();
+  environment.featureFlags = {
+    flags: {
+      COMMERCE_ENABLED: {
+        issue: "enabled",
+        productionReady: false,
+      },
+      MULTI_LOCALE_ENABLED: {
+        issue: "missing-env",
+        productionReady: false,
+      },
+    },
+    productionReady: false,
+  };
+  const readiness = createSmokeProductionReadiness(
+    environment,
+    createReadyConfig(),
+  );
+
+  assert.deepEqual(
+    readiness.blockers.map((blocker) => [
+      blocker.area,
+      blocker.issue,
+      blocker.variable,
+    ]),
+    [
+      ["feature-flags.commerce", "enabled", "COMMERCE_ENABLED"],
+      [
+        "feature-flags.multi-locale",
+        "missing-env",
+        "MULTI_LOCALE_ENABLED",
+      ],
+    ],
+  );
+  assert.equal(readiness.productionReady, false);
+  assert.deepEqual(readiness.nextActions, [
+    {
+      action:
+        "Set COMMERCE_ENABLED=false in the API runtime before production smoke.",
+      area: "feature-flags.commerce",
+    },
+    {
+      action:
+        "Set MULTI_LOCALE_ENABLED=false in the API runtime before production smoke.",
+      area: "feature-flags.multi-locale",
+    },
+  ]);
+});
+
 test("smoke readiness reports unsafe deployment and environment blockers", () => {
   const readiness = createSmokeProductionReadiness(
     {
@@ -130,6 +180,9 @@ test("smoke readiness reports unsafe deployment and environment blockers", () =>
           urlIssue: null,
           variable: "WEB_URL",
         },
+      },
+      featureFlags: {
+        productionReady: true,
       },
       media: {
         cdnConfigured: true,

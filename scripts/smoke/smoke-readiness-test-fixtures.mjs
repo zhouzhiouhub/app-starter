@@ -20,6 +20,9 @@ export function createReadyEnvironment() {
         productionReady: true,
       },
     },
+    featureFlags: {
+      productionReady: true,
+    },
     media: {
       cdnConfigured: true,
       cdnProductionReady: true,

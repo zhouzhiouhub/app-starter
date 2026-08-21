@@ -7,6 +7,7 @@ export function createSmokeProductionReadiness(environment, config) {
   const warnings = [];
 
   collectDeploymentReadiness(blockers, environment.deployment, config);
+  collectFeatureFlagReadiness(blockers, environment.featureFlags);
   collectMediaReadiness(blockers, environment.media, config);
   collectPreviewReadiness(blockers, environment.preview);
   collectRevalidationReadiness(
@@ -23,6 +24,49 @@ export function createSmokeProductionReadiness(environment, config) {
     productionReady: blockers.length === 0,
     warnings,
   };
+}
+
+function collectFeatureFlagReadiness(blockers, featureFlags) {
+  if (featureFlags?.productionReady === true) {
+    return;
+  }
+
+  const flags = featureFlags?.flags;
+
+  if (!flags || typeof flags !== "object" || Array.isArray(flags)) {
+    appendBlocker(
+      blockers,
+      "feature-flags",
+      "missing-diagnostics",
+      "Collect MVP feature flag diagnostics before production smoke.",
+    );
+    return;
+  }
+
+  appendDisabledFeatureFlagBlocker(blockers, flags, {
+    area: "feature-flags.commerce",
+    name: "COMMERCE_ENABLED",
+  });
+  appendDisabledFeatureFlagBlocker(blockers, flags, {
+    area: "feature-flags.multi-locale",
+    name: "MULTI_LOCALE_ENABLED",
+  });
+}
+
+function appendDisabledFeatureFlagBlocker(blockers, flags, input) {
+  const flag = flags[input.name];
+
+  if (flag?.productionReady === true) {
+    return;
+  }
+
+  appendBlocker(
+    blockers,
+    input.area,
+    flag?.issue ?? "missing-env",
+    `${input.name} must be explicitly set to false before production smoke.`,
+    { variable: input.name },
+  );
 }
 
 function collectPreviewReadiness(blockers, preview) {

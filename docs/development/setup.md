@@ -171,8 +171,9 @@ URL on a non-local host without query strings or embedded credentials.
 The smoke admin account must include `audit:read`; rerun the seed after pulling
 role changes if the audit log check returns 403.
 Set `SMOKE_REPORT_PATH=tmp/smoke-report.json` to write a machine-readable report
-with the checked slug, page ID, storefront URL, media environment diagnostics,
-revalidation environment diagnostics, and passed/failed check list. If the smoke
+with the checked slug, page ID, storefront URL, feature flag diagnostics, media
+environment diagnostics, revalidation environment diagnostics, and passed/failed
+check list. If the smoke
 run fails, the report records the
 failed check name and error message so production R2 / CDN, ISR, and SEO
 failures can be triaged from the JSON artifact. Media check details include the
@@ -182,7 +183,9 @@ but never include the signed upload URL itself. Media environment diagnostics
 also record whether the CDN URL is HTTPS, production-ready, and free of query
 strings or embedded credentials. Publish revalidation details
 include a `diagnosis` field for triggered, missing secret, missing URL, HTTP
-request failure, and network or timeout-style failures. Revalidation environment
+request failure, and network or timeout-style failures. Feature flag diagnostics
+record whether `COMMERCE_ENABLED` and `MULTI_LOCALE_ENABLED` are explicitly
+configured and disabled. Revalidation environment
 diagnostics record only non-secret readiness metadata: whether a secret is
 configured, the URL source, endpoint host/path, URL safety, and whether the
 smoke run requires revalidation. Preview environment diagnostics record only

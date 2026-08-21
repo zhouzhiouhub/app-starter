@@ -59,6 +59,21 @@ function readBlockerActions(blocker) {
     ];
   }
 
+  if (
+    blocker.area === "feature-flags" ||
+    (typeof blocker.area === "string" &&
+      blocker.area.startsWith("feature-flags."))
+  ) {
+    return [
+      createAction(
+        blocker.area,
+        blocker.variable
+          ? `Set ${blocker.variable}=false in the API runtime before production smoke.`
+          : "Set COMMERCE_ENABLED=false and MULTI_LOCALE_ENABLED=false in the API runtime before production smoke.",
+      ),
+    ];
+  }
+
   if (blocker.area === "revalidation") {
     return [
       createAction(
