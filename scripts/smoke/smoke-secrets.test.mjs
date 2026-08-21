@@ -13,6 +13,7 @@ test("smoke secret redaction removes tokens from common failure shapes", () => {
       '"password":"ChangeMe456!"',
       '"accessToken":"header.payload.signature"',
       "Authorization Bearer header.payload.signature",
+      "Authorization: Bearer colon.header.payload",
       "refreshToken=refresh-token-value",
       "https://web.example.com/preview?preview_token=payload.signature&access_token=access-token-value&api_key=api-key-value",
       "https://uploads.example.com/object.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=credential-value&X-Amz-Date=20260820T000000Z&X-Amz-Expires=900&X-Amz-SignedHeaders=content-type%3Bhost&X-Amz-Signature=signature-value&X-Amz-Security-Token=security-token-value",
@@ -20,6 +21,7 @@ test("smoke secret redaction removes tokens from common failure shapes", () => {
   );
 
   assert.equal(message.includes("payload.signature"), false);
+  assert.equal(message.includes("colon.header.payload"), false);
   assert.equal(message.includes("access-token-value"), false);
   assert.equal(message.includes("api-key-value"), false);
   assert.equal(message.includes("ChangeMe456!"), false);
@@ -38,6 +40,7 @@ test("smoke secret redaction removes tokens from common failure shapes", () => {
   assert.match(message, /api_key=\[redacted\]/);
   assert.match(message, /"password":"\[redacted\]"/);
   assert.match(message, /Authorization Bearer \[redacted\]/);
+  assert.match(message, /Authorization: Bearer \[redacted\]/);
   assert.match(message, /refreshToken=\[redacted\]/);
   assert.match(message, /X-Amz-Algorithm=\[redacted\]/);
   assert.match(message, /X-Amz-Credential=\[redacted\]/);

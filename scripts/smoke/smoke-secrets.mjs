@@ -1,7 +1,6 @@
 const secretKeyPattern = [
   "access[-_]?token",
   "api[-_]?key",
-  "authorization",
   "cookie",
   "credential",
   "id[-_]?token",
@@ -45,6 +44,15 @@ export function redactSmokeSecrets(value) {
   return String(value)
     .replace(/(\/public\/preview\/)[^/?#\s)"']+/gi, "$1[redacted]")
     .replace(
+      /(\bAuthorization\s*[:=]?\s*Bearer\s+)[a-zA-Z0-9._-]+/gi,
+      "$1[redacted]",
+    )
+    .replace(
+      /(\bAuthorization\s*[=:]\s*)(?!Bearer\s+\[redacted\])[^&#\s)"'<]+/gi,
+      "$1[redacted]",
+    )
+    .replace(/(\bBearer\s+)[a-zA-Z0-9._-]+/gi, "$1[redacted]")
+    .replace(
       new RegExp(`([?&](?:${secretKeyPattern})=)[^&#\\s)"']+`, "gi"),
       "$1[redacted]",
     )
@@ -62,8 +70,6 @@ export function redactSmokeSecrets(value) {
       ),
       "$1[redacted]",
     )
-    .replace(/(\bAuthorization\s+Bearer\s+)[a-zA-Z0-9._-]+/gi, "$1[redacted]")
-    .replace(/(\bBearer\s+)[a-zA-Z0-9._-]+/gi, "$1[redacted]")
     .replace(
       /(\b(?:password|secret|token)\s+)((?:[a-zA-Z0-9_-]+\.)+[a-zA-Z0-9._-]+|[a-zA-Z0-9._-]{24,})/gi,
       "$1[redacted]",
