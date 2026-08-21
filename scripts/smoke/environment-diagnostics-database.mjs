@@ -1,4 +1,7 @@
-import { isPlaceholderHostname } from "./cdn-hostname.mjs";
+import {
+  isLocalHostname,
+  isPlaceholderHostname,
+} from "./cdn-hostname.mjs";
 
 export function createDatabaseDiagnostics(env = process.env) {
   const value = readEnv(env, "DATABASE_URL");
@@ -29,7 +32,7 @@ function readDatabaseUrlIssue(input) {
     return "unsupported-protocol";
   }
 
-  if (isLocalDatabaseHostname(input.url.hostname)) {
+  if (isLocalHostname(input.url.hostname)) {
     return "local-host";
   }
 
@@ -46,22 +49,6 @@ function readDatabaseUrl(value) {
   } catch {
     return null;
   }
-}
-
-function isLocalDatabaseHostname(hostname) {
-  const normalized = hostname.toLowerCase();
-
-  return (
-    !normalized ||
-    normalized === "localhost" ||
-    normalized.endsWith(".localhost") ||
-    normalized === "127.0.0.1" ||
-    normalized.startsWith("127.") ||
-    normalized === "0.0.0.0" ||
-    normalized === "::1" ||
-    normalized === "[::1]" ||
-    normalized === "host.docker.internal"
-  );
 }
 
 function readEnv(env, name) {

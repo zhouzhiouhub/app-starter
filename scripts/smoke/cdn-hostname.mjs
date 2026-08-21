@@ -15,6 +15,7 @@ export function isLocalHostname(hostname) {
     normalized.endsWith(".localhost") ||
     normalized.endsWith(".local") ||
     normalized.endsWith(".local.invalid") ||
+    normalized === "host.docker.internal" ||
     normalized === "::1" ||
     normalized === "[::1]" ||
     isPrivateOrLocalIpv4(normalized) ||

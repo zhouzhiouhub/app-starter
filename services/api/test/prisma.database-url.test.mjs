@@ -58,9 +58,17 @@ test("database runtime config rejects local production hosts", () => {
     "postgresql://postgres:secret@localhost:5432/app",
     "postgresql://postgres:secret@127.0.0.1:5432/app",
     "postgresql://postgres:secret@127.10.0.1:5432/app",
+    "postgresql://postgres:secret@10.0.0.1:5432/app",
+    "postgresql://postgres:secret@172.16.0.1:5432/app",
+    "postgresql://postgres:secret@192.168.1.20:5432/app",
+    "postgresql://postgres:secret@169.254.1.20:5432/app",
     "postgresql://postgres:secret@[::1]:5432/app",
+    "postgresql://postgres:secret@[fd00::1]:5432/app",
+    "postgresql://postgres:secret@[fe80::1]:5432/app",
+    "postgresql://postgres:secret@[::ffff:7f00:1]:5432/app",
     "postgresql://postgres:secret@host.docker.internal:5432/app",
     "postgresql://postgres:secret@db.localhost:5432/app",
+    "postgresql://postgres:secret@db.local:5432/app",
   ];
 
   for (const databaseUrl of localUrls) {
@@ -82,6 +90,7 @@ test("database runtime config rejects placeholder production hosts", () => {
     "postgresql://postgres:secret@db.example.net:5432/app",
     "postgresql://postgres:secret@db.invalid:5432/app",
     "postgresql://postgres:secret@db.test:5432/app",
+    "postgresql://postgres:secret@[2001:db8::1]:5432/app",
   ];
 
   for (const databaseUrl of placeholderUrls) {

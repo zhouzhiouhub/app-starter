@@ -35,8 +35,21 @@ test("smoke environment diagnostics reports unsafe database URLs", () => {
   const loopback = createSmokeEnvironmentDiagnostics({
     DATABASE_URL: "postgresql://postgres:secret@127.0.0.1:5432/app",
   });
+  const privateIpv4 = createSmokeEnvironmentDiagnostics({
+    DATABASE_URL: "postgresql://postgres:secret@10.0.0.1:5432/app",
+  });
+  const privateIpv6 = createSmokeEnvironmentDiagnostics({
+    DATABASE_URL: "postgresql://postgres:secret@[fd00::1]:5432/app",
+  });
+  const dockerHost = createSmokeEnvironmentDiagnostics({
+    DATABASE_URL:
+      "postgresql://postgres:secret@host.docker.internal:5432/app",
+  });
   const placeholder = createSmokeEnvironmentDiagnostics({
     DATABASE_URL: "postgresql://postgres:secret@db.example.com:5432/app",
+  });
+  const documentationIpv6 = createSmokeEnvironmentDiagnostics({
+    DATABASE_URL: "postgresql://postgres:secret@[2001:db8::1]:5432/app",
   });
 
   assert.equal(missing.database.configured, false);
@@ -48,6 +61,14 @@ test("smoke environment diagnostics reports unsafe database URLs", () => {
   assert.equal(localhost.database.productionReady, false);
   assert.equal(loopback.database.urlIssue, "local-host");
   assert.equal(loopback.database.productionReady, false);
+  assert.equal(privateIpv4.database.urlIssue, "local-host");
+  assert.equal(privateIpv4.database.productionReady, false);
+  assert.equal(privateIpv6.database.urlIssue, "local-host");
+  assert.equal(privateIpv6.database.productionReady, false);
+  assert.equal(dockerHost.database.urlIssue, "local-host");
+  assert.equal(dockerHost.database.productionReady, false);
   assert.equal(placeholder.database.urlIssue, "placeholder-host");
   assert.equal(placeholder.database.productionReady, false);
+  assert.equal(documentationIpv6.database.urlIssue, "placeholder-host");
+  assert.equal(documentationIpv6.database.productionReady, false);
 });
