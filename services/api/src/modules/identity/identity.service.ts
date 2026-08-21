@@ -13,6 +13,14 @@ import {
   toAuthSessionResponse,
   toCurrentUserResponse,
 } from "./identity.mapper.js";
+import {
+  createRefreshTokenRecord,
+  findRefreshTokenByHash,
+  replaceRefreshToken,
+  revokeActiveRefreshTokensForUser,
+  revokeRefreshTokenByHash,
+  userWithRoles,
+} from "./identity.persistence.js";
 import type { Actor } from "./identity.types.js";
 import {
   parseLoginBody,
@@ -20,14 +28,6 @@ import {
 } from "./identity.validation.js";
 import { verifyPassword } from "./password.js";
 import { TokenService } from "./token.service.js";
-
-const userWithRoles = {
-  roles: {
-    include: {
-      role: true,
-    },
-  },
-} as const;
 
 @Injectable()
 export class IdentityService {
@@ -54,24 +54,14 @@ export class IdentityService {
   async refresh(body: unknown, requestId = "local-dev") {
     const { refreshToken } = parseRefreshBody(body);
     const tokenHash = this.tokens.hashRefreshToken(refreshToken);
-    const current = await this.prisma.refreshToken.findUnique({
-      where: { tokenHash },
-      include: {
-        user: {
-          include: userWithRoles,
-        },
-      },
-    });
+    const current = await findRefreshTokenByHash(this.prisma, tokenHash);
 
     if (!current) {
       throw this.invalidCredentials("Refresh token is invalid.");
     }
 
     if (current.revokedAt) {
-      await this.prisma.refreshToken.updateMany({
-        where: { userId: current.userId, revokedAt: null },
-        data: { revokedAt: new Date() },
-      });
+      await revokeActiveRefreshTokensForUser(this.prisma, current.userId);
       throw this.invalidCredentials("Refresh token has already been used.");
     }
 
@@ -88,10 +78,7 @@ export class IdentityService {
   async logout(body: unknown, requestId = "local-dev") {
     const { refreshToken } = parseRefreshBody(body);
     const tokenHash = this.tokens.hashRefreshToken(refreshToken);
-    await this.prisma.refreshToken.updateMany({
-      where: { tokenHash, revokedAt: null },
-      data: { revokedAt: new Date() },
-    });
+    await revokeRefreshTokenByHash(this.prisma, tokenHash);
 
     return {
       data: { success: true },
@@ -143,23 +130,15 @@ export class IdentityService {
     requestId = "local-dev",
   ) {
     const tokens = await this.tokens.issueTokens(actor);
-    const created = await this.prisma.refreshToken.create({
-      data: {
-        expiresAt: this.tokens.refreshTokenExpiresAt(),
-        tokenHash: this.tokens.hashRefreshToken(tokens.refreshToken),
-        userId: actor.id,
-      },
-      select: { id: true },
-    });
+    const created = await createRefreshTokenRecord(
+      this.prisma,
+      this.tokens,
+      actor,
+      tokens,
+    );
 
     if (previousTokenId) {
-      await this.prisma.refreshToken.update({
-        where: { id: previousTokenId },
-        data: {
-          replacedById: created.id,
-          revokedAt: new Date(),
-        },
-      });
+      await replaceRefreshToken(this.prisma, previousTokenId, created.id);
     }
 
     return toAuthSessionResponse(actor, tokens, requestId);
