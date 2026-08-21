@@ -41,6 +41,7 @@ export function createSmokeReport(input, title, now = new Date()) {
     slug: input.slug,
     startedAt: now.toISOString(),
     status: "running",
+    storefrontRequestUrl: null,
     storefrontUrl: null,
     summary: null,
     title,
@@ -94,6 +95,7 @@ export function completeSmokeReport(report, input) {
   report.finishedAt = new Date().toISOString();
   report.pageId = input.pageId;
   report.status = "passed";
+  report.storefrontRequestUrl = input.storefrontRequestUrl ?? null;
   report.storefrontUrl = input.storefrontUrl;
   refreshSmokeReportSummary(report);
 }

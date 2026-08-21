@@ -51,9 +51,15 @@ test("smoke report summarizes completed pass status", () => {
   recordSmokeCheck(report, "page.publish");
   completeSmokeReport(report, {
     pageId: "page_1",
+    storefrontRequestUrl: "http://localhost:3000/en/smoke-page",
     storefrontUrl: "https://web.example.com/en/smoke-page",
   });
 
+  assert.equal(
+    report.storefrontRequestUrl,
+    "http://localhost:3000/en/smoke-page",
+  );
+  assert.equal(report.storefrontUrl, "https://web.example.com/en/smoke-page");
   assert.equal(report.summary.status, "passed");
   assert.equal(report.summary.checkCount, 1);
   assert.equal(report.summary.passedCheckCount, 1);

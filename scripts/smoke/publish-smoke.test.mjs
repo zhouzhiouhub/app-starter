@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  createSmokeStorefrontUrls,
   normalizeAdminOrigin,
   normalizeApiBaseUrl,
   normalizeSmokeLocale,
@@ -129,6 +130,33 @@ test("readConfig uses seeded defaults and explicit smoke overrides", async () =>
       assert.equal(config.storefrontHost, "store.brand-platform.com");
       assert.equal(config.tenantSlug, "default");
       assert.equal(config.webUrl, "https://web.example.com");
+    },
+  );
+});
+
+test("smoke helpers distinguish request and public storefront URLs", () => {
+  assert.deepEqual(
+    createSmokeStorefrontUrls({
+      locale: "en-US",
+      slug: "smoke-page",
+      webUrl: "https://web.example.com",
+    }),
+    {
+      storefrontRequestUrl: "https://web.example.com/en/smoke-page",
+      storefrontUrl: "https://web.example.com/en/smoke-page",
+    },
+  );
+
+  assert.deepEqual(
+    createSmokeStorefrontUrls({
+      locale: "en-US",
+      slug: "smoke-page",
+      storefrontHost: "store.brand-platform.com",
+      webUrl: "http://localhost:3000",
+    }),
+    {
+      storefrontRequestUrl: "http://localhost:3000/en/smoke-page",
+      storefrontUrl: "https://store.brand-platform.com/en/smoke-page",
     },
   );
 });

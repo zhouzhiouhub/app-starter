@@ -29,11 +29,13 @@ import {
   assertRobots,
   assertSitemap,
   assertStorefrontPage,
+  getExpectedStorefrontOrigin,
   getStorefrontPath,
   joinUrl,
 } from "./storefront-smoke.mjs";
 
 export {
+  getExpectedStorefrontOrigin,
   getStorefrontPath,
   hasNoIndexRobots,
   joinUrl,
@@ -160,22 +162,36 @@ export async function runSmokeTest(input) {
       assertNotFoundPage(input),
     );
 
-    const storefrontUrl = joinUrl(
-      input.webUrl,
-      getStorefrontPath(input.locale, input.slug),
-    );
-    completeSmokeReport(report, { pageId: page.id, storefrontUrl });
+    const { storefrontRequestUrl, storefrontUrl } =
+      createSmokeStorefrontUrls(input);
+    completeSmokeReport(report, {
+      pageId: page.id,
+      storefrontRequestUrl,
+      storefrontUrl,
+    });
     await writeSmokeReportIfConfigured(input, report);
     console.log("\nSmoke publish passed.");
     printSmokeReportSummary(report);
     printSmokeProductionReadiness(report.productionReadiness);
     console.log(`Storefront URL: ${storefrontUrl}`);
+    if (storefrontRequestUrl !== storefrontUrl) {
+      console.log(`Storefront request URL: ${storefrontRequestUrl}`);
+    }
   } catch (error) {
     failSmokeReport(report, error);
     await writeFailureReport(input, report);
     printSmokeReportSummary(report);
     throw error;
   }
+}
+
+export function createSmokeStorefrontUrls(input) {
+  const path = getStorefrontPath(input.locale, input.slug);
+
+  return {
+    storefrontRequestUrl: joinUrl(input.webUrl, path),
+    storefrontUrl: joinUrl(getExpectedStorefrontOrigin(input), path),
+  };
 }
 
 async function writeFailureReport(input, report) {
