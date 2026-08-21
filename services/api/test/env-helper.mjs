@@ -4,7 +4,7 @@ export function withEnv(values, fn) {
   );
 
   for (const [key, value] of Object.entries(values)) {
-    process.env[key] = value;
+    setEnvValue(key, value);
   }
 
   try {
@@ -24,10 +24,14 @@ export function withEnv(values, fn) {
 
 function restoreEnv(previous) {
   for (const [key, value] of Object.entries(previous)) {
-    if (value === undefined) {
-      delete process.env[key];
-    } else {
-      process.env[key] = value;
-    }
+    setEnvValue(key, value);
+  }
+}
+
+function setEnvValue(key, value) {
+  if (value === undefined) {
+    delete process.env[key];
+  } else {
+    process.env[key] = value;
   }
 }
