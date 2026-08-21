@@ -9,28 +9,21 @@ import {
 const actor = createMediaActor({ scopes: ["media:read"] });
 
 test("media service lists type and status filtered assets with pagination", async () => {
-  const createdAt = new Date("2026-08-18T00:00:00.000Z");
   const calls = [];
   const service = new MediaService({
     mediaAsset: {
+      count(options) {
+        calls.push({ method: "count", options });
+
+        return Promise.resolve(2);
+      },
       findMany(options) {
-        calls.push(options);
+        calls.push({ method: "findMany", options });
 
         return Promise.resolve([
           createTestAsset({
-            filename: "hero.png",
-            id: "asset-active-1",
-            type: "image",
-          }),
-          createTestAsset({
             filename: "gallery.png",
             id: "asset-active-2",
-            type: "image",
-          }),
-          createTestAsset({
-            filename: "old.png",
-            id: "asset-archived",
-            metadata: { archivedAt: createdAt.toISOString() },
             type: "image",
           }),
         ]);
@@ -49,10 +42,32 @@ test("media service lists type and status filtered assets with pagination", asyn
     "request-media-list",
   );
 
-  assert.deepEqual(calls[0], {
-    orderBy: { createdAt: "desc" },
-    where: { tenantId: "tenant-1", type: "image" },
-  });
+  const expectedWhere = {
+    NOT: {
+      metadata: {
+        path: ["archivedAt"],
+        string_contains: "",
+      },
+    },
+    tenantId: "tenant-1",
+    type: "image",
+  };
+
+  assert.deepEqual(calls, [
+    {
+      method: "count",
+      options: { where: expectedWhere },
+    },
+    {
+      method: "findMany",
+      options: {
+        orderBy: { createdAt: "desc" },
+        skip: 1,
+        take: 1,
+        where: expectedWhere,
+      },
+    },
+  ]);
   assert.equal(result.meta.total, 2);
   assert.equal(result.meta.page, 2);
   assert.equal(result.meta.limit, 1);
@@ -61,6 +76,66 @@ test("media service lists type and status filtered assets with pagination", asyn
     result.data.map((asset) => asset.id),
     ["asset-active-2"],
   );
+});
+
+test("media service filters archived assets in the database query", async () => {
+  const archivedAt = new Date("2026-08-18T00:00:00.000Z").toISOString();
+  const calls = [];
+  const service = new MediaService({
+    mediaAsset: {
+      count(options) {
+        calls.push({ method: "count", options });
+
+        return Promise.resolve(1);
+      },
+      findMany(options) {
+        calls.push({ method: "findMany", options });
+
+        return Promise.resolve([
+          createTestAsset({
+            filename: "old.png",
+            id: "asset-archived",
+            metadata: { archivedAt },
+            type: "image",
+          }),
+        ]);
+      },
+    },
+  });
+
+  const result = await service.list(
+    {
+      status: "archived",
+    },
+    actor,
+    "request-media-archived-list",
+  );
+
+  const expectedWhere = {
+    metadata: {
+      path: ["archivedAt"],
+      string_contains: "",
+    },
+    tenantId: "tenant-1",
+  };
+
+  assert.deepEqual(calls, [
+    {
+      method: "count",
+      options: { where: expectedWhere },
+    },
+    {
+      method: "findMany",
+      options: {
+        orderBy: { createdAt: "desc" },
+        skip: 0,
+        take: 20,
+        where: expectedWhere,
+      },
+    },
+  ]);
+  assert.equal(result.meta.total, 1);
+  assert.equal(result.data[0].status, "archived");
 });
 
 function createTestAsset(input) {
