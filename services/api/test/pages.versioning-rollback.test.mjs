@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createInitialPageSchema } from "../dist/modules/pages/pages.mapper.js";
-import { publishPage } from "../dist/modules/pages/use-cases/publish-page.js";
 import { rollbackPage } from "../dist/modules/pages/use-cases/rollback-page.js";
 import { persistRollbackVersion } from "../dist/modules/pages/pages.versions.js";
+import { createRollbackPrisma } from "./pages-versioning-test-helpers.mjs";
 import {
   createPageActor,
   createPageVersionResult,
@@ -97,76 +97,15 @@ test("rollbackPage publishes a new version using the selected version schema", a
   assert.equal(result.meta.revalidation.triggered, true);
 });
 
-test("publishPage triggers storefront revalidation after publishing", async () => {
-  const schema = createInitialPageSchema({
-    slug: "contact",
-    title: "Contact",
-  });
-  const calls = {
-    pageUpdate: null,
-    revalidation: null,
-  };
-  const prisma = {
-    $transaction: async (fn) =>
-      fn({
-        auditLog: {
-          create: async () => ({}),
-        },
-        page: {
-          findFirst: async () => ({
-            id: "page-1",
-            siteId: "site-1",
-            slug: "contact",
-            versions: [{ id: "version-1", status: "published", version: 2 }],
-          }),
-          update: async (input) => {
-            calls.pageUpdate = input.data;
-            return {};
-          },
-        },
-        pageVersion: {
-          create: async (input) => createPageVersionResult(input),
-        },
-      }),
-    site: {
-      findFirst: async () => ({
-        id: "site-1",
-        tenantId: "tenant-1",
-      }),
-    },
-  };
-
-  const result = await publishPage(
-    prisma,
-    "page-1",
-    schema,
-    undefined,
-    createPageActor(),
-    async (input) => {
-      calls.revalidation = input;
-      return {
-        paths: ["/en/contact"],
-        tags: ["published-page"],
-        triggered: true,
-      };
-    },
-  );
-
-  assert.equal(calls.pageUpdate.publishedVersionId, "version-2");
-  assert.deepEqual(calls.revalidation, {
-    locale: "en-US",
-    market: "us",
-    slug: "contact",
-  });
-  assert.equal(result.meta.revalidation.triggered, true);
-});
-
 test("rollbackPage rejects draft target versions", async () => {
   const schema = createInitialPageSchema({
     slug: "home",
     title: "Draft Home",
   });
   const prisma = createRollbackPrisma({
+    onCreateVersion: async () => {
+      throw new Error("create should not be called");
+    },
     target: {
       id: "version-draft",
       pageId: "page-1",
@@ -195,42 +134,39 @@ test("rollbackPage rejects draft target versions", async () => {
   );
 });
 
-function createRollbackPrisma(options) {
-  const target = options.target;
-
-  return {
-    $transaction: async (fn) =>
-      fn({
-        auditLog: {
-          create: async (input) => {
-            options.onAudit?.(input);
-            return {};
-          },
-        },
-        page: {
-          findFirst: async () => ({
-            id: "page-1",
-            siteId: "site-1",
-            slug: "home",
-            versions: [
-              { id: "version-latest", status: "published", version: 3 },
-            ],
-          }),
-          update: async (input) => {
-            options.onUpdatePage?.(input);
-            return {};
-          },
-        },
-        pageVersion: {
-          create: async (input) => options.onCreateVersion(input),
-          findFirst: async () => target,
-        },
-      }),
-    site: {
-      findFirst: async () => ({
-        id: "site-1",
-        tenantId: "tenant-1",
-      }),
-    },
+test("rollbackPage rejects target versions outside the current page", async () => {
+  const calls = {
+    createdVersion: false,
+    revalidation: false,
   };
-}
+  const prisma = createRollbackPrisma({
+    onCreateVersion: async () => {
+      calls.createdVersion = true;
+      throw new Error("create should not be called");
+    },
+    target: null,
+  });
+
+  await assert.rejects(
+    () =>
+      rollbackPage(
+        prisma,
+        "page-1",
+        { versionId: "other-page-version" },
+        undefined,
+        createPageActor(),
+        async () => {
+          calls.revalidation = true;
+          throw new Error("revalidation should not be called");
+        },
+      ),
+    (error) => {
+      assert.equal(error.getStatus(), 404);
+      assert.equal(error.getResponse().message, "Page version not found.");
+      return true;
+    },
+  );
+
+  assert.equal(calls.createdVersion, false);
+  assert.equal(calls.revalidation, false);
+});
