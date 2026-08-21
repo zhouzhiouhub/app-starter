@@ -1,4 +1,5 @@
 import { getApiBaseUrl } from "../../lib/api-base-url";
+import { readResponseBody } from "../../lib/api-response.ts";
 import {
   clearAuthSession,
   readAuthSession,
@@ -56,7 +57,7 @@ export async function restoreCurrentUser(): Promise<AuthUser | null> {
       return null;
     }
 
-    const result = (await response.json()) as { data?: AuthUser };
+    const result = (await readResponseBody(response)) as { data?: AuthUser };
     return result.data ?? session.user;
   } catch {
     clearAuthSession();
@@ -134,7 +135,7 @@ async function readSessionResponse(
   response: Response,
   fallback: string,
 ): Promise<AuthSession> {
-  const result = await readJsonBody(response);
+  const result = await readResponseBody(response);
   const payload = result as {
     data?: {
       accessToken?: string;
@@ -157,20 +158,6 @@ async function readSessionResponse(
     refreshToken: payload.data.refreshToken,
     user: payload.data.user,
   };
-}
-
-async function readJsonBody(response: Response): Promise<unknown> {
-  const text = await response.text();
-
-  if (!text) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(text) as unknown;
-  } catch {
-    throw new Error(text.trim().slice(0, 200) || `Request failed (${response.status}).`);
-  }
 }
 
 function readErrorMessage(result: unknown, fallback: string): string {

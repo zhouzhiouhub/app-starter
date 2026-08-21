@@ -1,5 +1,5 @@
 import { adminRequest } from "../auth/api";
-import { createApiRequestError } from "../../lib/api-error.ts";
+import { readApiResponseJson } from "../../lib/api-response.ts";
 import { createIdempotencyKey } from "../../lib/idempotency-key";
 import type { SiteSettings, UpdateSiteSettingsInput } from "./types";
 
@@ -50,11 +50,5 @@ async function readAdminJson<T>(
   fallback: string,
 ): Promise<T> {
   const response = await adminRequest(path, init);
-  const result = (await response.json()) as T & { error?: unknown };
-
-  if (!response.ok) {
-    throw createApiRequestError(result, fallback);
-  }
-
-  return result;
+  return readApiResponseJson<T>(response, fallback);
 }
