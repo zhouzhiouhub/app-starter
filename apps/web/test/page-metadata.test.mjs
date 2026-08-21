@@ -12,6 +12,20 @@ test("page metadata uses normalized canonical URLs", () => {
   assert.equal(metadata.alternates?.canonical, "/campaign");
 });
 
+test("page metadata resolves relative canonical URLs with the site origin", () => {
+  const schema = structuredClone(exampleLandingPage);
+  schema.seo.canonical = "  /campaign  ";
+
+  const metadata = buildPageMetadata(schema, {
+    origin: "https://store.brand-platform.com",
+  });
+
+  assert.equal(
+    metadata.alternates?.canonical,
+    "https://store.brand-platform.com/campaign",
+  );
+});
+
 test("page metadata omits unsafe canonical URLs", () => {
   const schema = structuredClone(exampleLandingPage);
   schema.seo.canonical = "javascript:alert(1)";
@@ -29,6 +43,19 @@ test("page metadata includes resolved Open Graph images", () => {
 
   assert.deepEqual(metadata.openGraph?.images, [
     "https://cdn.example.com/og.jpg",
+  ]);
+});
+
+test("page metadata resolves relative Open Graph images with the site origin", () => {
+  const schema = structuredClone(exampleLandingPage);
+  schema.seo.ogImage = "/og.jpg";
+
+  const metadata = buildPageMetadata(schema, {
+    origin: "https://store.brand-platform.com",
+  });
+
+  assert.deepEqual(metadata.openGraph?.images, [
+    "https://store.brand-platform.com/og.jpg",
   ]);
 });
 

@@ -6,7 +6,14 @@ import {
   type PageSchema,
 } from "@app-starter/schema";
 
-export function buildPageMetadata(schema: PageSchema | null): Metadata {
+export type PageMetadataOptions = {
+  origin?: string;
+};
+
+export function buildPageMetadata(
+  schema: PageSchema | null,
+  options: PageMetadataOptions = {},
+): Metadata {
   if (!schema) {
     return {
       robots: createRobots(true),
@@ -16,8 +23,9 @@ export function buildPageMetadata(schema: PageSchema | null): Metadata {
 
   const title = schema.seo.title || schema.meta.title;
   const description = schema.seo.description || undefined;
-  const canonical = readResolvedCanonical(schema.seo.canonical);
-  const ogImage = readResolvedSeoImage(schema.seo.ogImage);
+  const origin = readMetadataOrigin(options.origin);
+  const canonical = readResolvedCanonical(schema.seo.canonical, origin);
+  const ogImage = readResolvedSeoImage(schema.seo.ogImage, origin);
 
   return {
     alternates: canonical
@@ -36,20 +44,26 @@ export function buildPageMetadata(schema: PageSchema | null): Metadata {
   };
 }
 
-function readResolvedCanonical(value: string | undefined): string | undefined {
+function readResolvedCanonical(
+  value: string | undefined,
+  origin: string | undefined,
+): string | undefined {
   const canonical = seoUrlSchema.safeParse(value);
 
-  return canonical.success ? canonical.data : undefined;
+  return canonical.success ? resolveSeoUrl(canonical.data, origin) : undefined;
 }
 
-function readResolvedSeoImage(value: string | undefined): string | undefined {
+function readResolvedSeoImage(
+  value: string | undefined,
+  origin: string | undefined,
+): string | undefined {
   const src = value?.trim();
 
   if (!src || mediaAssetReferenceSchema.safeParse(src).success) {
     return undefined;
   }
 
-  return isPublishableImageSrc(src) ? src : undefined;
+  return isPublishableImageSrc(src) ? resolveSeoUrl(src, origin) : undefined;
 }
 
 function createRobots(noIndex: boolean): Metadata["robots"] {
@@ -71,4 +85,24 @@ function createRobots(noIndex: boolean): Metadata["robots"] {
     },
     index: true,
   };
+}
+
+function resolveSeoUrl(value: string, origin: string | undefined): string {
+  return origin && value.startsWith("/") ? `${origin}${value}` : value;
+}
+
+function readMetadataOrigin(value: string | undefined): string | undefined {
+  if (!value) {
+    return undefined;
+  }
+
+  try {
+    const url = new URL(value);
+
+    return url.protocol === "http:" || url.protocol === "https:"
+      ? url.origin
+      : undefined;
+  } catch {
+    return undefined;
+  }
 }

@@ -3,6 +3,7 @@ import { resolveLocaleFromPath } from "@app-starter/schema";
 import { notFound } from "next/navigation";
 import { buildPageMetadata } from "../../../lib/page-metadata";
 import { getPublishedPage } from "../../../lib/published-page";
+import { getStorefrontOrigin } from "../../../lib/site-url";
 import { readStorefrontRequestHost } from "../../../lib/storefront-request-host";
 
 export async function generateMetadata(props: {
@@ -17,6 +18,9 @@ export async function generateMetadata(props: {
       slug: params.slug?.join("/") ?? "home",
       storefrontHost,
     }),
+    {
+      origin: getStorefrontOrigin({ storefrontHost }),
+    },
   );
 }
 
