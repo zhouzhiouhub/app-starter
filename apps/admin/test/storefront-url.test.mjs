@@ -99,6 +99,8 @@ test("storefront URL helper falls back to localhost without a browser origin", (
 });
 
 test("storefront URL helper builds safe page and preview links", () => {
+  const token = `payload.${"a".repeat(43)}`;
+
   withWindow(
     {
       location: {
@@ -112,11 +114,27 @@ test("storefront URL helper builds safe page and preview links", () => {
         "https://admin.example.com:3000/en/campaign",
       );
       assert.equal(
-        getStorefrontPreviewUrl("a+b/c"),
-        "https://admin.example.com:3000/preview?token=a%2Bb%2Fc",
+        getStorefrontPreviewUrl(token),
+        `https://admin.example.com:3000/preview?token=${token}`,
       );
     },
   );
+});
+
+test("storefront URL helper rejects malformed preview tokens", () => {
+  for (const token of [
+    "",
+    "payload.signature.extra",
+    "payload.signature!",
+    " payload.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ",
+    `payload.${"a".repeat(42)}`,
+    `${"a".repeat(2049)}.${"b".repeat(43)}`,
+  ]) {
+    assert.throws(
+      () => getStorefrontPreviewUrl(token),
+      /Preview token is malformed/,
+    );
+  }
 });
 
 function withWindow(windowValue, callback) {

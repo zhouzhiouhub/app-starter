@@ -1,5 +1,8 @@
 import { getStorefrontHref } from "@app-starter/schema";
 
+const maxPreviewTokenLength = 2048;
+const previewTokenPattern = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]{43}$/;
+
 export function getStorefrontPagePath(slug: string, locale = "en-US"): string {
   return getStorefrontHref(locale, slug);
 }
@@ -9,6 +12,10 @@ export function getStorefrontPageUrl(slug: string, locale = "en-US"): string {
 }
 
 export function getStorefrontPreviewUrl(token: string): string {
+  if (!isPreviewTokenCandidate(token)) {
+    throw new Error("Preview token is malformed.");
+  }
+
   const searchParams = new URLSearchParams({ token });
   return `${readWebOrigin()}/preview?${searchParams.toString()}`;
 }
@@ -91,4 +98,12 @@ function isHttpProtocol(protocol: string): boolean {
 function trimTrailingSlashes(value: string): string {
   const trimmed = value.replace(/\/+$/, "");
   return trimmed || "/";
+}
+
+function isPreviewTokenCandidate(token: string): boolean {
+  return (
+    token.length <= maxPreviewTokenLength &&
+    token.trim() === token &&
+    previewTokenPattern.test(token)
+  );
 }
