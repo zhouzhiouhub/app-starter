@@ -16,6 +16,7 @@ export type R2UploadEnv = {
   CDN_BASE_URL?: string;
   MEDIA_CDN_BASE_URL?: string;
   MEDIA_UPLOAD_BASE_URL?: string;
+  NODE_ENV?: string;
   R2_ACCOUNT_ID?: string;
   R2_ACCESS_KEY_ID?: string;
   R2_BUCKET?: string;
@@ -55,6 +56,10 @@ export function createMediaUploadTarget(input: {
     };
   }
 
+  if (isProductionEnv(env)) {
+    throw new MediaUploadConfigurationError();
+  }
+
   return {
     uploadUrl: createMediaObjectUrl({
       baseUrls: [env.MEDIA_UPLOAD_BASE_URL],
@@ -72,11 +77,24 @@ export function createMediaCdnUrl(
   r2Key: string,
   env: R2UploadEnv = process.env,
 ) {
+  const baseUrls = isProductionEnv(env)
+    ? [env.MEDIA_CDN_BASE_URL]
+    : [env.MEDIA_CDN_BASE_URL, env.CDN_BASE_URL];
+
   return createMediaObjectUrl({
-    baseUrls: [env.MEDIA_CDN_BASE_URL, env.CDN_BASE_URL],
+    allowFallback: !isProductionEnv(env),
+    baseUrls,
     fallbackBaseUrl: DEFAULT_MEDIA_CDN_BASE_URL,
+    fallbackMessage:
+      "MEDIA_CDN_BASE_URL must be configured as a safe CDN URL in production.",
     objectKey: r2Key,
   });
+}
+
+export class MediaUploadConfigurationError extends Error {
+  constructor() {
+    super("R2 upload configuration is required in production.");
+  }
 }
 
 function hasR2UploadConfig(
@@ -107,4 +125,8 @@ function readMediaUploadTargetTtlSeconds(value: number | undefined): number {
   }
 
   return MEDIA_UPLOAD_URL_TTL_SECONDS;
+}
+
+function isProductionEnv(env: R2UploadEnv): boolean {
+  return env.NODE_ENV === "production";
 }

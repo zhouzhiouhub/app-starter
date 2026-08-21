@@ -1,14 +1,28 @@
 import { encodeMediaObjectKey } from "./media.object-key.js";
 
 export function createMediaObjectUrl(input: {
+  allowFallback?: boolean;
   baseUrls: Array<string | undefined>;
   fallbackBaseUrl: string;
+  fallbackMessage?: string;
   objectKey: string;
 }): string {
+  const baseUrl = readSafeMediaBaseUrl(input.baseUrls);
+
+  if (!baseUrl && input.allowFallback === false) {
+    throw new MediaRuntimeConfigurationError(input.fallbackMessage);
+  }
+
   return buildObjectUrl(
-    readSafeMediaBaseUrl(input.baseUrls, input.fallbackBaseUrl),
+    baseUrl ?? input.fallbackBaseUrl,
     input.objectKey,
   );
+}
+
+export class MediaRuntimeConfigurationError extends Error {
+  constructor(message = "Media runtime configuration is incomplete.") {
+    super(message);
+  }
 }
 
 function buildObjectUrl(baseUrl: string, objectKey: string): string {
@@ -18,8 +32,7 @@ function buildObjectUrl(baseUrl: string, objectKey: string): string {
 
 function readSafeMediaBaseUrl(
   values: Array<string | undefined>,
-  fallback: string,
-): string {
+): string | null {
   for (const value of values) {
     const url = readSafeHttpUrl(value);
 
@@ -28,7 +41,7 @@ function readSafeMediaBaseUrl(
     }
   }
 
-  return fallback;
+  return null;
 }
 
 function readSafeHttpUrl(value: string | undefined): URL | null {

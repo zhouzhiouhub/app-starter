@@ -204,6 +204,18 @@ test("smoke environment diagnostics reports missing R2 and CDN fallback", () => 
   });
 });
 
+test("smoke environment diagnostics requires MEDIA_CDN_BASE_URL for CDN readiness", () => {
+  const diagnostics = createSmokeEnvironmentDiagnostics({
+    CDN_BASE_URL: "https://legacy-cdn.brand-assets.com/media",
+  });
+
+  assert.equal(diagnostics.media.cdnConfigured, false);
+  assert.equal(diagnostics.media.cdnHost, "cdn.local.invalid");
+  assert.equal(diagnostics.media.cdnProductionReady, false);
+  assert.equal(diagnostics.media.cdnUrlIssue, "local-host");
+  assert.equal(diagnostics.media.cdnUsesLocalFallback, true);
+});
+
 test("smoke environment diagnostics reports unsafe CDN configuration", () => {
   const withQuery = createSmokeEnvironmentDiagnostics({
     MEDIA_CDN_BASE_URL: "https://cdn.example.com/media?token=1",

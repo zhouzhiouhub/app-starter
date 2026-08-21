@@ -13,10 +13,9 @@ const r2RequiredVariables = [
 
 export function createMediaDiagnostics(env = process.env) {
   const mediaCdnBaseUrl = readEnv(env, "MEDIA_CDN_BASE_URL");
-  const legacyCdnBaseUrl = readEnv(env, "CDN_BASE_URL");
-  const cdnConfigured = Boolean(mediaCdnBaseUrl ?? legacyCdnBaseUrl);
+  const cdnConfigured = Boolean(mediaCdnBaseUrl);
   const cdn = readCdnDiagnostics(
-    mediaCdnBaseUrl ?? legacyCdnBaseUrl ?? defaultMediaCdnBaseUrl,
+    mediaCdnBaseUrl ?? defaultMediaCdnBaseUrl,
   );
   const missingR2Variables = r2RequiredVariables.filter(
     (name) => !readEnv(env, name),

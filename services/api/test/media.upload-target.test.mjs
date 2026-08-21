@@ -88,6 +88,22 @@ test("createMediaUploadTarget falls back to configured upload base URLs", () => 
   );
 });
 
+test("createMediaUploadTarget requires R2 configuration in production", () => {
+  assert.throws(
+    () =>
+      createMediaUploadTarget({
+        mimeType: "image/png",
+        now: new Date("2026-08-18T00:00:00.000Z"),
+        r2Key: "tenant-1/folder/hero.png",
+        env: {
+          MEDIA_UPLOAD_BASE_URL: "https://uploads.example.com/",
+          NODE_ENV: "production",
+        },
+      }),
+    /R2 upload configuration is required in production/,
+  );
+});
+
 test("createMediaUploadTarget rejects unsafe upload base URLs", () => {
   const target = createMediaUploadTarget({
     mimeType: "image/png",
@@ -100,6 +116,29 @@ test("createMediaUploadTarget rejects unsafe upload base URLs", () => {
   assert.equal(
     target.uploadUrl,
     "https://uploads.local.invalid/tenant-1/folder/hero.png",
+  );
+});
+
+test("createMediaCdnUrl requires safe CDN base URLs in production", () => {
+  assert.throws(
+    () =>
+      createMediaCdnUrl("tenant-1/folder/hero.png", {
+        CDN_BASE_URL: "https://legacy.example.com/media?token=1",
+        MEDIA_CDN_BASE_URL: "ftp://cdn.example.com/media",
+        NODE_ENV: "production",
+      }),
+    /MEDIA_CDN_BASE_URL must be configured as a safe CDN URL in production/,
+  );
+});
+
+test("createMediaCdnUrl ignores legacy CDN base URLs in production", () => {
+  assert.throws(
+    () =>
+      createMediaCdnUrl("tenant-1/folder/hero.png", {
+        CDN_BASE_URL: "https://legacy.example.com/media",
+        NODE_ENV: "production",
+      }),
+    /MEDIA_CDN_BASE_URL must be configured as a safe CDN URL in production/,
   );
 });
 
