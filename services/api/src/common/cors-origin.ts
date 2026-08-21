@@ -1,3 +1,5 @@
+import { isProductionHttpOrigin } from "./production-origin.js";
+
 const defaultAdminOrigin = "http://localhost:5173";
 const defaultWebOrigin = "http://localhost:3000";
 const corsOriginDeniedMessage = "CORS origin denied.";
@@ -8,16 +10,19 @@ export function readConfiguredCorsOrigins(
   env: { ADMIN_URL?: string; NODE_ENV?: string; WEB_URL?: string } =
     process.env,
 ): string[] {
-  const useLocalDefaults = env.NODE_ENV !== "production";
+  const isProduction = env.NODE_ENV === "production";
+  const useLocalDefaults = !isProduction;
 
   return uniqueOrigins([
     readConfiguredHttpOrigin(
       env.WEB_URL,
       useLocalDefaults ? defaultWebOrigin : undefined,
+      isProduction,
     ),
     readConfiguredHttpOrigin(
       env.ADMIN_URL,
       useLocalDefaults ? defaultAdminOrigin : undefined,
+      isProduction,
     ),
   ]);
 }
@@ -82,21 +87,29 @@ export function isAllowedDevOrigin(origin: string): boolean {
 function readConfiguredHttpOrigin(
   value: string | undefined,
   fallback: string | undefined,
+  requireProductionOrigin: boolean,
 ): string | null {
   const configured = value?.trim();
 
   if (configured) {
-    return readHttpOrigin(configured);
+    return readHttpOrigin(configured, requireProductionOrigin);
   }
 
-  return fallback ? readHttpOrigin(fallback) : null;
+  return fallback ? readHttpOrigin(fallback, requireProductionOrigin) : null;
 }
 
-function readHttpOrigin(value: string): string | null {
+function readHttpOrigin(
+  value: string,
+  requireProductionOrigin = false,
+): string | null {
   try {
     const url = new URL(value);
 
     if (!isHttpProtocol(url.protocol) || url.username || url.password) {
+      return null;
+    }
+
+    if (requireProductionOrigin && !isProductionHttpOrigin(url)) {
       return null;
     }
 

@@ -44,6 +44,9 @@ development can still use `localhost`, but production startup fails before
 Prisma connects if the database URL is unsafe.
 Production smoke readiness also expects `REDIS_URL` to be a `rediss://` endpoint
 outside local, private, Docker-local, or reserved placeholder hosts.
+Production API CORS reads `WEB_URL` and `ADMIN_URL` as allowed browser origins;
+both must be HTTPS origins without paths, query strings, fragments, embedded
+credentials, local hosts, private hosts, or reserved placeholder hosts.
 
 Media uploads use local fallback URLs only outside production. In production,
 the API requires the full R2 upload configuration and a safe explicit

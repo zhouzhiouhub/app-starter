@@ -19,9 +19,9 @@ test("CORS origin config does not use local defaults in production", () => {
   assert.deepEqual(
     readConfiguredCorsOrigins({
       NODE_ENV: "production",
-      WEB_URL: "https://web.example.com/",
+      WEB_URL: "https://store.brand-platform.com/",
     }),
-    ["https://web.example.com"],
+    ["https://store.brand-platform.com"],
   );
 });
 
@@ -40,6 +40,33 @@ test("CORS origin config rejects unsafe configured origins", () => {
     readConfiguredCorsOrigins({
       ADMIN_URL: "javascript:alert(1)",
       WEB_URL: "https://user:password@web.example.com",
+    }),
+    [],
+  );
+});
+
+test("CORS origin config rejects unsafe production origins", () => {
+  assert.deepEqual(
+    readConfiguredCorsOrigins({
+      ADMIN_URL: "https://admin.brand-platform.com/settings",
+      NODE_ENV: "production",
+      WEB_URL: "http://store.brand-platform.com",
+    }),
+    [],
+  );
+  assert.deepEqual(
+    readConfiguredCorsOrigins({
+      ADMIN_URL: "https://192.0.2.10",
+      NODE_ENV: "production",
+      WEB_URL: "https://localhost:3000",
+    }),
+    [],
+  );
+  assert.deepEqual(
+    readConfiguredCorsOrigins({
+      ADMIN_URL: "https://admin.example.com",
+      NODE_ENV: "production",
+      WEB_URL: "https://[::ffff:c000:020a]",
     }),
     [],
   );
