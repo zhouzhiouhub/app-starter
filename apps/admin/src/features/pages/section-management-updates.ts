@@ -55,12 +55,16 @@ export function addSection(
 ): { schema: PageSchema; sectionId: string } {
   const sectionId = createUniqueSectionId(current.sections, templateId);
   const section = createSection(templateId, sectionId, current.sections);
+  let schema: PageSchema = {
+    ...current,
+    sections: [...current.sections, section],
+  };
+
+  schema = appendSectionToOrder(schema, sectionId, "desktop");
+  schema = appendSectionToOrder(schema, sectionId, "mobile");
 
   return {
-    schema: {
-      ...current,
-      sections: [...current.sections, section],
-    },
+    schema,
     sectionId,
   };
 }
@@ -147,6 +151,20 @@ function insertSectionAfter(
     sourceIndex >= 0 ? sourceIndex + 1 : sectionOrder.length;
 
   sectionOrder.splice(insertIndex, 0, insertedSectionId);
+
+  return setSectionOrderForViewport(current, viewport, sectionOrder);
+}
+
+function appendSectionToOrder(
+  current: PageSchema,
+  insertedSectionId: string,
+  viewport: Viewport,
+): PageSchema {
+  const sectionOrder = getOrderedSectionsForViewport(current, viewport)
+    .map((section) => section.id)
+    .filter((sectionId) => sectionId !== insertedSectionId);
+
+  sectionOrder.push(insertedSectionId);
 
   return setSectionOrderForViewport(current, viewport, sectionOrder);
 }
