@@ -2,6 +2,7 @@ import type { Actor } from "../../identity/identity.types.js";
 import type { PrismaService } from "../../prisma/prisma.service.js";
 import { runIdempotent } from "../pages.idempotency.js";
 import { resolvePageType } from "../pages.mapper.js";
+import { refreshStorefrontRevalidationResponse } from "../pages.revalidation.js";
 import { getSiteForTenant } from "../pages.site.js";
 import { parseSchema, parseSlug } from "../pages.validation.js";
 import { createPage } from "./create-page.js";
@@ -27,6 +28,8 @@ export async function publishPageBySlug(
     key: idempotencyKey,
     scope: `admin/pages:${normalizedSlug}:publish`,
     site,
+    replayResponse: (response) =>
+      refreshStorefrontRevalidationResponse(response, { requestId }),
     operation: async () => {
       const page = await prisma.page.findUnique({
         where: {

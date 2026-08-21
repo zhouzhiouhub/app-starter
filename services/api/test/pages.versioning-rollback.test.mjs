@@ -5,6 +5,7 @@ import { rollbackPage } from "../dist/modules/pages/use-cases/rollback-page.js";
 import { persistRollbackVersion } from "../dist/modules/pages/pages.versions.js";
 import { createRollbackPrisma } from "./pages-versioning-test-helpers.mjs";
 import {
+  createMemoryIdempotencyRecord,
   createPageActor,
   createPageVersionResult,
 } from "./pages-test-helpers.mjs";
@@ -139,6 +140,80 @@ test("rollbackPage reports revalidation failures without failing the rollback", 
     "published-page",
     "published-page:us:en-US",
     "published-page:us:en-US:home",
+  ]);
+});
+
+test("rollbackPage refreshes revalidation on idempotent replay", async () => {
+  const schema = createInitialPageSchema({
+    slug: "home",
+    title: "Previous Home",
+  });
+  const idempotencyCalls = [];
+  const calls = {
+    versionCreates: 0,
+  };
+  const prisma = {
+    ...createRollbackPrisma({
+      onCreateVersion: (input) => {
+        calls.versionCreates += 1;
+        return createPageVersionResult(input, { id: "version-rollback" });
+      },
+      target: {
+        id: "version-1",
+        pageId: "page-1",
+        schema,
+        status: "published",
+      },
+    }),
+    idempotencyRecord: createMemoryIdempotencyRecord(idempotencyCalls),
+  };
+  let revalidationAttempts = 0;
+  const key = "7f10f6d3-02d9-4f3d-a69d-49b26ec63132";
+  const revalidator = async () => {
+    revalidationAttempts += 1;
+
+    if (revalidationAttempts === 1) {
+      throw new Error("Transient revalidation failure.");
+    }
+
+    return {
+      paths: ["/", "/en"],
+      tags: ["published-page"],
+      triggered: true,
+    };
+  };
+
+  const first = await rollbackPage(
+    prisma,
+    "page-1",
+    { versionId: "version-1" },
+    key,
+    createPageActor(),
+    revalidator,
+    undefined,
+    "request-rollback-first",
+  );
+  const second = await rollbackPage(
+    prisma,
+    "page-1",
+    { versionId: "version-1" },
+    key,
+    createPageActor(),
+    revalidator,
+    undefined,
+    "request-rollback-retry",
+  );
+
+  assert.equal(first.meta.revalidation.triggered, false);
+  assert.equal(second.meta.requestId, "request-rollback-retry");
+  assert.equal(second.meta.revalidation.triggered, true);
+  assert.equal(calls.versionCreates, 1);
+  assert.equal(revalidationAttempts, 2);
+  assert.deepEqual(idempotencyCalls, [
+    ["findUnique", "pages:page-1:rollback"],
+    ["create", "pages:page-1:rollback"],
+    ["update", "completed"],
+    ["findUnique", "pages:page-1:rollback"],
   ]);
 });
 

@@ -6,6 +6,7 @@ import { runIdempotent } from "../pages.idempotency.js";
 import { assertPublishablePageImageSources } from "../pages.image-policy.js";
 import { assertPageLocaleCanPublish } from "../pages.locale-policy.js";
 import {
+  refreshStorefrontRevalidationResponse,
   runStorefrontRevalidationSafely,
   triggerStorefrontRevalidation,
   type StorefrontRevalidator,
@@ -38,6 +39,11 @@ export async function publishPage(
     key: idempotencyKey,
     scope: `pages:${id}:publish`,
     site,
+    replayResponse: (response) =>
+      refreshStorefrontRevalidationResponse(response, {
+        requestId,
+        revalidator,
+      }),
     operation: async () => {
       const schema = await prisma.$transaction(async (tx) => {
         const current = await tx.page.findFirst({

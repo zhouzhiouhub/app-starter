@@ -6,6 +6,7 @@ import type { PrismaService } from "../../prisma/prisma.service.js";
 import { runIdempotent } from "../pages.idempotency.js";
 import { assertPageLocaleCanPublish } from "../pages.locale-policy.js";
 import {
+  refreshStorefrontRevalidationResponse,
   runStorefrontRevalidationSafely,
   triggerStorefrontRevalidation,
   type StorefrontRevalidator,
@@ -43,6 +44,11 @@ export async function rollbackPage(
     key: idempotencyKey,
     scope: `pages:${id}:rollback`,
     site,
+    replayResponse: (response) =>
+      refreshStorefrontRevalidationResponse(response, {
+        requestId,
+        revalidator,
+      }),
     operation: async () => {
       const schema = await prisma.$transaction(async (tx) => {
         const page = await tx.page.findFirst({

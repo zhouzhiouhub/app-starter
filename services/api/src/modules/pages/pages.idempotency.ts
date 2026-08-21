@@ -12,6 +12,7 @@ export async function runIdempotent<TResponse>(
     body: unknown;
     key: string | undefined;
     operation: () => Promise<TResponse>;
+    replayResponse?: (response: TResponse) => Promise<TResponse> | TResponse;
     scope: string;
     site: IdempotencySite;
     storeResponse?: boolean;
@@ -21,6 +22,7 @@ export async function runIdempotent<TResponse>(
     body: options.body,
     key: options.key,
     operation: options.operation,
+    replayResponse: options.replayResponse,
     scope: options.scope,
     storeResponse: options.storeResponse,
     tenantId: options.site.tenantId,

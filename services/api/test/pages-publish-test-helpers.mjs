@@ -36,6 +36,10 @@ export function createPublishPrisma(calls, options = {}) {
         },
         pageVersion: {
           create: async (input) => {
+            if (options.onCreateVersion) {
+              return options.onCreateVersion(input);
+            }
+
             calls.versionCreate = input.data;
             return createPageVersionResult(input, options.versionResult);
           },

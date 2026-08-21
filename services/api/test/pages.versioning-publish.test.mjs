@@ -4,6 +4,7 @@ import { createInitialPageSchema } from "../dist/modules/pages/pages.mapper.js";
 import { publishPage } from "../dist/modules/pages/use-cases/publish-page.js";
 import { createPublishPrisma } from "./pages-publish-test-helpers.mjs";
 import {
+  createMemoryIdempotencyRecord,
   createPageActor,
   createPageVersionResult,
 } from "./pages-test-helpers.mjs";
@@ -106,5 +107,80 @@ test("publishPage reports revalidation failures without failing the publish", as
     "published-page",
     "published-page:us:en-US",
     "published-page:us:en-US:contact",
+  ]);
+});
+
+test("publishPage refreshes revalidation on idempotent replay", async () => {
+  const schema = createInitialPageSchema({
+    slug: "contact",
+    title: "Contact",
+  });
+  const idempotencyCalls = [];
+  const calls = {
+    versionCreates: 0,
+  };
+  const prisma = {
+    ...createPublishPrisma(calls, {
+      onCreateVersion: (input) => {
+        calls.versionCreates += 1;
+        calls.versionCreate = input.data;
+        return createPageVersionResult(input);
+      },
+      page: {
+        id: "page-1",
+        siteId: "site-1",
+        slug: "contact",
+        versions: [{ id: "version-1", status: "published", version: 2 }],
+      },
+    }),
+    idempotencyRecord: createMemoryIdempotencyRecord(idempotencyCalls),
+  };
+  let revalidationAttempts = 0;
+  const key = "7f10f6d3-02d9-4f3d-a69d-49b26ec63132";
+  const revalidator = async () => {
+    revalidationAttempts += 1;
+
+    if (revalidationAttempts === 1) {
+      throw new Error("Transient revalidation failure.");
+    }
+
+    return {
+      paths: ["/en/contact"],
+      tags: ["published-page"],
+      triggered: true,
+    };
+  };
+
+  const first = await publishPage(
+    prisma,
+    "page-1",
+    schema,
+    key,
+    createPageActor(),
+    revalidator,
+    undefined,
+    "request-publish-first",
+  );
+  const second = await publishPage(
+    prisma,
+    "page-1",
+    schema,
+    key,
+    createPageActor(),
+    revalidator,
+    undefined,
+    "request-publish-retry",
+  );
+
+  assert.equal(first.meta.revalidation.triggered, false);
+  assert.equal(second.meta.requestId, "request-publish-retry");
+  assert.equal(second.meta.revalidation.triggered, true);
+  assert.equal(calls.versionCreates, 1);
+  assert.equal(revalidationAttempts, 2);
+  assert.deepEqual(idempotencyCalls, [
+    ["findUnique", "pages:page-1:publish"],
+    ["create", "pages:page-1:publish"],
+    ["update", "completed"],
+    ["findUnique", "pages:page-1:publish"],
   ]);
 });

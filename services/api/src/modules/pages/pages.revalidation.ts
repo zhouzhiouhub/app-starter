@@ -1,6 +1,7 @@
 import {
   getPublishedPageCacheTags,
   getPublishedPageRevalidationPaths,
+  type PageSchema,
   storefrontRevalidateSecretHeader,
   type StorefrontRevalidationResult,
 } from "@app-starter/schema";
@@ -19,6 +20,15 @@ export type StorefrontRevalidationInput = {
 export type StorefrontRevalidator = (
   input: StorefrontRevalidationInput,
 ) => Promise<StorefrontRevalidationResult>;
+
+export type RevalidatablePageResponse = {
+  data: PageSchema;
+  meta: {
+    requestId: string;
+    revalidation?: StorefrontRevalidationResult;
+    [key: string]: unknown;
+  };
+};
 
 type Fetcher = (
   input: string | URL,
@@ -97,6 +107,34 @@ export async function runStorefrontRevalidationSafely(
       triggered: false,
     };
   }
+}
+
+export async function refreshStorefrontRevalidationResponse<
+  TResponse extends RevalidatablePageResponse,
+>(
+  response: TResponse,
+  input: {
+    requestId: string;
+    revalidator?: StorefrontRevalidator;
+  },
+): Promise<TResponse> {
+  const schema = response.data;
+
+  return {
+    ...response,
+    meta: {
+      ...response.meta,
+      requestId: input.requestId,
+      revalidation: await runStorefrontRevalidationSafely(
+        {
+          locale: schema.meta.locale,
+          market: schema.meta.market,
+          slug: schema.meta.slug,
+        },
+        input.revalidator,
+      ),
+    },
+  } as TResponse;
 }
 
 export function resolveStorefrontRevalidateUrl(

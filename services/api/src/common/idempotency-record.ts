@@ -10,6 +10,7 @@ export async function runTenantIdempotent<TResponse>(
     body: unknown;
     key: string | undefined;
     operation: () => Promise<TResponse>;
+    replayResponse?: (response: TResponse) => Promise<TResponse> | TResponse;
     scope: string;
     storeResponse?: boolean;
     tenantId: string;
@@ -32,7 +33,10 @@ export async function runTenantIdempotent<TResponse>(
   const existing = await prisma.idempotencyRecord.findUnique({ where });
 
   if (existing) {
-    return readIdempotencyResponse<TResponse>(existing, requestHash);
+    return replayIdempotencyResponse(
+      readIdempotencyResponse<TResponse>(existing, requestHash),
+      options.replayResponse,
+    );
   }
 
   let record: { id: string };
@@ -57,7 +61,10 @@ export async function runTenantIdempotent<TResponse>(
       const current = await prisma.idempotencyRecord.findUnique({ where });
 
       if (current) {
-        return readIdempotencyResponse<TResponse>(current, requestHash);
+        return replayIdempotencyResponse(
+          readIdempotencyResponse<TResponse>(current, requestHash),
+          options.replayResponse,
+        );
       }
     }
 
@@ -85,6 +92,14 @@ export async function runTenantIdempotent<TResponse>(
 
     throw error;
   }
+}
+
+function replayIdempotencyResponse<TResponse>(
+  response: TResponse,
+  replayResponse: ((response: TResponse) => Promise<TResponse> | TResponse) |
+    undefined,
+): Promise<TResponse> | TResponse {
+  return replayResponse ? replayResponse(response) : response;
 }
 
 function readIdempotencyResponse<TResponse>(
