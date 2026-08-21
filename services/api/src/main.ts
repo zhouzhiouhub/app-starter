@@ -3,7 +3,7 @@ import { Logger, ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { ApiExceptionFilter } from "./common/api-exception.filter.js";
 import {
-  isAllowedCorsOrigin,
+  createCorsOriginResolver,
   readConfiguredCorsOrigins,
 } from "./common/cors-origin.js";
 import { AppModule } from "./modules/app.module.js";
@@ -30,23 +30,10 @@ async function bootstrap() {
       "X-Request-Id",
     ],
     methods: ["GET", "HEAD", "POST", "PUT", "PATCH", "OPTIONS"],
-    origin: (
-      origin: string | undefined,
-      callback: (error: Error | null, allowed?: boolean) => void,
-    ) => {
-      if (
-        isAllowedCorsOrigin({
-          configuredOrigins,
-          isProduction: process.env.NODE_ENV === "production",
-          origin,
-        })
-      ) {
-        callback(null, true);
-        return;
-      }
-
-      callback(new Error(`CORS origin denied: ${origin}`));
-    },
+    origin: createCorsOriginResolver({
+      configuredOrigins,
+      isProduction: process.env.NODE_ENV === "production",
+    }),
   });
 
   const port = process.env.PORT ? Number(process.env.PORT) : 4000;

@@ -1,5 +1,8 @@
 const defaultAdminOrigin = "http://localhost:5173";
 const defaultWebOrigin = "http://localhost:3000";
+const corsOriginDeniedMessage = "CORS origin denied.";
+
+type CorsOriginCallback = (error: Error | null, allowed?: boolean) => void;
 
 export function readConfiguredCorsOrigins(
   env: { ADMIN_URL?: string; NODE_ENV?: string; WEB_URL?: string } =
@@ -32,6 +35,25 @@ export function isAllowedCorsOrigin(input: {
     input.configuredOrigins.includes(input.origin) ||
     (!input.isProduction && isAllowedDevOrigin(input.origin))
   );
+}
+
+export function createCorsOriginResolver(input: {
+  configuredOrigins: string[];
+  isProduction: boolean;
+}): (origin: string | undefined, callback: CorsOriginCallback) => void {
+  return (origin, callback) => {
+    if (
+      isAllowedCorsOrigin({
+        ...input,
+        origin,
+      })
+    ) {
+      callback(null, true);
+      return;
+    }
+
+    callback(new Error(corsOriginDeniedMessage));
+  };
 }
 
 export function isAllowedDevOrigin(origin: string): boolean {

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  createCorsOriginResolver,
   isAllowedCorsOrigin,
   isAllowedDevOrigin,
   readConfiguredCorsOrigins,
@@ -63,6 +64,22 @@ test("CORS origin matcher allows configured and server-side requests", () => {
     }),
     true,
   );
+});
+
+test("CORS origin resolver denies without echoing unsafe origins", () => {
+  const resolver = createCorsOriginResolver({
+    configuredOrigins: ["https://web.example.com"],
+    isProduction: true,
+  });
+  let deniedError = null;
+
+  resolver("https://attacker.example.com\r\nx-secret: leaked", (error) => {
+    deniedError = error;
+  });
+
+  assert.equal(deniedError?.message, "CORS origin denied.");
+  assert.equal(deniedError?.message.includes("attacker"), false);
+  assert.equal(deniedError?.message.includes("x-secret"), false);
 });
 
 test("CORS origin matcher limits dev-only private origins", () => {
