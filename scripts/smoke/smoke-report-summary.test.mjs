@@ -3,48 +3,18 @@ import test from "node:test";
 import {
   assertSmokeReportWritable,
   completeSmokeReport,
-  createSmokeReport,
   createSmokeReportSummary,
   failSmokeReport,
   recordSmokeCheck,
   recordSmokeCheckFailure,
 } from "./smoke-report.mjs";
+import {
+  createProductionReadySmokeReport,
+  createTestSmokeReport,
+} from "./smoke-report-test-fixtures.mjs";
 
 test("smoke report keeps top-level summary current", () => {
-  const report = createSmokeReport(
-    {
-      adminUrl: "https://admin.brand.com",
-      apiBaseUrl: "https://api.brand.com/api/v1",
-      environmentDiagnostics: {
-        deployment: {
-          admin: { productionReady: true },
-          api: { productionReady: true },
-          web: { productionReady: true },
-        },
-        media: {
-          cdnConfigured: true,
-          cdnProductionReady: true,
-          r2: { configured: true, missingRequired: [] },
-        },
-        revalidation: {
-          secretConfigured: true,
-          urlConfigured: true,
-          urlSafe: true,
-          usesWebUrlFallback: false,
-        },
-      },
-      locale: "en-US",
-      market: "us",
-      requireAdminApp: true,
-      requireR2Upload: true,
-      requireRevalidation: true,
-      slug: "smoke-page",
-      tenantSlug: "default",
-      webUrl: "https://store.brand.com",
-    },
-    "Smoke Page",
-    new Date("2026-08-20T00:00:00.000Z"),
-  );
+  const report = createProductionReadySmokeReport();
 
   assert.deepEqual(report.summary, {
     blockerCount: 0,
@@ -76,20 +46,7 @@ test("smoke report keeps top-level summary current", () => {
 });
 
 test("smoke report summarizes completed pass status", () => {
-  const report = createSmokeReport(
-    {
-      apiBaseUrl: "https://api.example.com/api/v1",
-      locale: "en-US",
-      market: "us",
-      requireR2Upload: false,
-      requireRevalidation: false,
-      slug: "smoke-page",
-      tenantSlug: "default",
-      webUrl: "https://web.example.com",
-    },
-    "Smoke Page",
-    new Date("2026-08-20T00:00:00.000Z"),
-  );
+  const report = createTestSmokeReport({ requireRevalidation: false });
 
   recordSmokeCheck(report, "page.publish");
   completeSmokeReport(report, {
@@ -103,20 +60,7 @@ test("smoke report summarizes completed pass status", () => {
 });
 
 test("smoke report counts failed checks even when names are missing", () => {
-  const report = createSmokeReport(
-    {
-      apiBaseUrl: "https://api.example.com/api/v1",
-      locale: "en-US",
-      market: "us",
-      requireR2Upload: false,
-      requireRevalidation: false,
-      slug: "smoke-page",
-      tenantSlug: "default",
-      webUrl: "https://web.example.com",
-    },
-    "Smoke Page",
-    new Date("2026-08-20T00:00:00.000Z"),
-  );
+  const report = createTestSmokeReport({ requireRevalidation: false });
 
   report.checks.push(
     {

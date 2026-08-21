@@ -4,7 +4,6 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import {
-  createSmokeReport,
   createSmokeReportSummary,
   failSmokeReport,
   recordSmokeCheck,
@@ -12,23 +11,10 @@ import {
   smokeReportSchemaVersion,
   writeSmokeReportIfConfigured,
 } from "./smoke-report.mjs";
+import { createTestSmokeReport } from "./smoke-report-test-fixtures.mjs";
 
 test("smoke report redacts secrets from failure messages", () => {
-  const report = createSmokeReport(
-    {
-      apiBaseUrl: "https://api.example.com/api/v1",
-      locale: "en-US",
-      market: "us",
-      requireR2Upload: false,
-      requireRevalidation: true,
-      slug: "smoke-page",
-      tenantSlug: "default",
-      webUrl: "https://web.example.com",
-    },
-    "Smoke Page",
-    new Date("2026-08-20T00:00:00.000Z"),
-  );
-
+  const report = createTestSmokeReport();
   const error = new Error(
     "Login failed with password=ChangeMe456! and Authorization Bearer header.payload.signature",
   );
@@ -49,20 +35,7 @@ test("smoke report redacts secrets from check details", async () => {
 
   try {
     const reportPath = join(directory, "report.json");
-    const report = createSmokeReport(
-      {
-        apiBaseUrl: "https://api.example.com/api/v1",
-        locale: "en-US",
-        market: "us",
-        requireR2Upload: true,
-        requireRevalidation: true,
-        slug: "smoke-page",
-        tenantSlug: "default",
-        webUrl: "https://web.example.com",
-      },
-      "Smoke Page",
-      new Date("2026-08-20T00:00:00.000Z"),
-    );
+    const report = createTestSmokeReport({ requireR2Upload: true });
 
     recordSmokeCheck(report, "media.upload-target", {
       attempts: [
@@ -131,19 +104,9 @@ test("smoke report helper writes JSON when configured", async () => {
 
   try {
     const reportPath = join(directory, "report.json");
-    const report = createSmokeReport(
-      {
-        apiBaseUrl: "https://api.example.com/api/v1",
-        locale: "en-US",
-        market: "us",
-        requireR2Upload: false,
-        requireRevalidation: true,
-        slug: "smoke-page",
-        tenantSlug: "default",
-        webUrl: "https://web.example.com",
-      },
-      "Smoke Page",
-      new Date("2026-08-19T00:00:00.000Z"),
+    const report = createTestSmokeReport(
+      {},
+      { now: "2026-08-19T00:00:00.000Z" },
     );
 
     await writeSmokeReportIfConfigured({ reportPath }, report);
@@ -158,20 +121,7 @@ test("smoke report helper writes JSON when configured", async () => {
 });
 
 test("smoke report keeps structured failure diagnostics from errors", () => {
-  const report = createSmokeReport(
-    {
-      apiBaseUrl: "https://api.example.com/api/v1",
-      locale: "en-US",
-      market: "us",
-      requireR2Upload: false,
-      requireRevalidation: true,
-      slug: "smoke-page",
-      tenantSlug: "default",
-      webUrl: "https://web.example.com",
-    },
-    "Smoke Page",
-    new Date("2026-08-20T00:00:00.000Z"),
-  );
+  const report = createTestSmokeReport();
   const error = new Error("Revalidation failed with token=payload.signature");
   error.smokeDetails = {
     revalidation: {
@@ -197,20 +147,7 @@ test("smoke report keeps structured failure diagnostics from errors", () => {
 });
 
 test("smoke report reads messages from object-shaped failures", () => {
-  const report = createSmokeReport(
-    {
-      apiBaseUrl: "https://api.example.com/api/v1",
-      locale: "en-US",
-      market: "us",
-      requireR2Upload: false,
-      requireRevalidation: true,
-      slug: "smoke-page",
-      tenantSlug: "default",
-      webUrl: "https://web.example.com",
-    },
-    "Smoke Page",
-    new Date("2026-08-20T00:00:00.000Z"),
-  );
+  const report = createTestSmokeReport();
   const failure = {
     message: "Fetch failed with token=payload.signature",
     smokeDetails: {
@@ -238,20 +175,7 @@ test("smoke report reads messages from object-shaped failures", () => {
 });
 
 test("smoke report uses a stable fallback for empty failures", () => {
-  const report = createSmokeReport(
-    {
-      apiBaseUrl: "https://api.example.com/api/v1",
-      locale: "en-US",
-      market: "us",
-      requireR2Upload: false,
-      requireRevalidation: true,
-      slug: "smoke-page",
-      tenantSlug: "default",
-      webUrl: "https://web.example.com",
-    },
-    "Smoke Page",
-    new Date("2026-08-20T00:00:00.000Z"),
-  );
+  const report = createTestSmokeReport();
 
   recordSmokeCheckFailure(report, "auth.login", "");
   failSmokeReport(report, null);

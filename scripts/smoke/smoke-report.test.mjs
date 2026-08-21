@@ -3,35 +3,28 @@ import test from "node:test";
 import {
   assertSmokeReportWritable,
   completeSmokeReport,
-  createSmokeReport,
   failSmokeReport,
   recordSmokeCheck,
   recordSmokeCheckFailure,
   smokeReportSchemaVersion,
 } from "./smoke-report.mjs";
 import { createSmokeEnvironmentDiagnostics } from "./environment-diagnostics.mjs";
+import {
+  createProductionReadySmokeReport,
+  createTestSmokeReport,
+} from "./smoke-report-test-fixtures.mjs";
 
 test("smoke report schema version marks the summary contract", () => {
   assert.equal(smokeReportSchemaVersion, "smoke-report.v2");
 });
 
 test("smoke report includes deployment diagnostics for effective smoke URLs", () => {
-  const report = createSmokeReport(
-    {
-      adminUrl: "https://admin.brand.com",
-      apiBaseUrl: "https://api.brand.com/api/v1",
-      locale: "en-US",
-      market: "us",
-      requireR2Upload: false,
-      requireRevalidation: true,
-      requireAdminApp: true,
-      slug: "smoke-page",
-      tenantSlug: "default",
-      webUrl: "https://store.brand.com",
-    },
-    "Smoke Page",
-    new Date("2026-08-20T00:00:00.000Z"),
-  );
+  const report = createTestSmokeReport({
+    adminUrl: "https://admin.brand.com",
+    apiBaseUrl: "https://api.brand.com/api/v1",
+    requireAdminApp: true,
+    webUrl: "https://store.brand.com",
+  });
 
   assert.equal(report.config.adminUrl, "https://admin.brand.com");
   assert.equal(report.config.requireAdminApp, true);
@@ -45,40 +38,7 @@ test("smoke report includes deployment diagnostics for effective smoke URLs", ()
 });
 
 test("smoke report includes production readiness summary", () => {
-  const report = createSmokeReport(
-    {
-      adminUrl: "https://admin.brand.com",
-      apiBaseUrl: "https://api.brand.com/api/v1",
-      environmentDiagnostics: {
-        deployment: {
-          admin: { productionReady: true },
-          api: { productionReady: true },
-          web: { productionReady: true },
-        },
-        media: {
-          cdnConfigured: true,
-          cdnProductionReady: true,
-          r2: { configured: true, missingRequired: [] },
-        },
-        revalidation: {
-          secretConfigured: true,
-          urlConfigured: true,
-          urlSafe: true,
-          usesWebUrlFallback: false,
-        },
-      },
-      locale: "en-US",
-      market: "us",
-      requireAdminApp: true,
-      requireR2Upload: true,
-      requireRevalidation: true,
-      slug: "smoke-page",
-      tenantSlug: "default",
-      webUrl: "https://store.brand.com",
-    },
-    "Smoke Page",
-    new Date("2026-08-20T00:00:00.000Z"),
-  );
+  const report = createProductionReadySmokeReport();
 
   assert.deepEqual(report.productionReadiness, {
     blockers: [],
@@ -89,21 +49,14 @@ test("smoke report includes production readiness summary", () => {
 });
 
 test("smoke report helpers capture pass and failure state without secrets", () => {
-  const report = createSmokeReport(
+  const report = createTestSmokeReport(
     {
-      apiBaseUrl: "https://api.example.com/api/v1",
       environmentDiagnostics: createSmokeEnvironmentDiagnostics({}),
-      locale: "en-US",
-      market: "us",
       password: "ChangeMe123!",
       requireR2Upload: true,
       requireRevalidation: false,
-      slug: "smoke-page",
-      tenantSlug: "default",
-      webUrl: "https://web.example.com",
     },
-    "Smoke Page",
-    new Date("2026-08-19T00:00:00.000Z"),
+    { now: "2026-08-19T00:00:00.000Z" },
   );
 
   recordSmokeCheck(report, "api.health");
@@ -133,20 +86,7 @@ test("smoke report helpers capture pass and failure state without secrets", () =
 });
 
 test("smoke report validates required fields before writing", () => {
-  const report = createSmokeReport(
-    {
-      apiBaseUrl: "https://api.example.com/api/v1",
-      locale: "en-US",
-      market: "us",
-      requireR2Upload: false,
-      requireRevalidation: true,
-      slug: "smoke-page",
-      tenantSlug: "default",
-      webUrl: "https://web.example.com",
-    },
-    "Smoke Page",
-    new Date("2026-08-20T00:00:00.000Z"),
-  );
+  const report = createTestSmokeReport();
 
   assert.doesNotThrow(() => assertSmokeReportWritable(report));
   assert.throws(
