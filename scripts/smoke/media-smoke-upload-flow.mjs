@@ -51,6 +51,7 @@ async function requestMediaUploadTarget(input, accessToken) {
     headers: {
       Authorization: `Bearer ${accessToken}`,
       "Content-Type": "application/json",
+      "Idempotency-Key": randomUUID(),
     },
     method: "POST",
   });
