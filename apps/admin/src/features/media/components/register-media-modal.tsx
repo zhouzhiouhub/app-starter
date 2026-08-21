@@ -1,26 +1,10 @@
 import { InboxOutlined, LinkOutlined, PlusOutlined } from "@ant-design/icons";
-import {
-  Alert,
-  Button,
-  Form,
-  Input,
-  InputNumber,
-  Modal,
-  Select,
-  Space,
-  Tabs,
-  Upload,
-} from "antd";
+import { Alert, Button, Form, Modal, Space, Tabs } from "antd";
 import { useState } from "react";
-import { mediaMimeTypeOptions } from "../constants";
-import { readExternalMediaUrlError } from "../external-media-url-validation";
 import { registerMediaAsset, uploadMediaFile } from "../api";
-import {
-  MEDIA_MAX_UPLOAD_BYTES,
-  mediaMaxUploadSizeLabel,
-  readMediaUploadFileError,
-} from "../media-upload-validation";
 import type { RegisterMediaInput } from "../types";
+import { ExternalMediaForm } from "./external-media-form";
+import { MediaUploadTab } from "./media-upload-tab";
 
 type MediaModalMode = "upload" | "external";
 
@@ -111,54 +95,13 @@ export function RegisterMediaModal(props: { onCreated: () => void }) {
             items={[
               {
                 children: (
-                  <Space direction="vertical" size={16} style={{ width: "100%" }}>
-                    <Upload.Dragger
-                      accept={mediaMimeTypeOptions
-                        .map((item) => item.value)
-                        .join(",")}
-                      beforeUpload={(file) => {
-                        const fileError = readMediaUploadFileError(file);
-
-                        if (fileError) {
-                          setSelectedFile(null);
-                          setError(fileError);
-                          return Upload.LIST_IGNORE;
-                        }
-
-                        setSelectedFile(file);
-                        setError(null);
-                        return false;
-                      }}
-                      fileList={
-                        selectedFile
-                          ? [
-                              {
-                                name: selectedFile.name,
-                                size: selectedFile.size,
-                                status: "done",
-                                type: selectedFile.type,
-                                uid: selectedFile.name,
-                              },
-                            ]
-                          : []
-                      }
-                      maxCount={1}
-                      onRemove={() => {
-                        setSelectedFile(null);
-                        return true;
-                      }}
-                    >
-                      <p className="ant-upload-drag-icon">
-                        <InboxOutlined />
-                      </p>
-                      <p className="ant-upload-text">Choose a media file</p>
-                    </Upload.Dragger>
-                    <Input
-                      onChange={(event) => setUploadAltText(event.target.value)}
-                      placeholder="Alt text"
-                      value={uploadAltText}
-                    />
-                  </Space>
+                  <MediaUploadTab
+                    altText={uploadAltText}
+                    onAltTextChange={setUploadAltText}
+                    onError={setError}
+                    onSelectedFileChange={setSelectedFile}
+                    selectedFile={selectedFile}
+                  />
                 ),
                 icon: <InboxOutlined />,
                 key: "upload",
@@ -166,69 +109,10 @@ export function RegisterMediaModal(props: { onCreated: () => void }) {
               },
               {
                 children: (
-                  <Form
+                  <ExternalMediaForm
                     form={form}
-                    layout="vertical"
-                    onFinish={(values) => void submitExternal(values)}
-                    preserve={false}
-                  >
-                    <Form.Item
-                      label="Asset URL"
-                      name="url"
-                      rules={[
-                        { required: true, message: "Enter an asset URL." },
-                        {
-                          validator: async (_rule, value: string | undefined) => {
-                            const urlError = readExternalMediaUrlError(value);
-
-                            if (urlError) {
-                              throw new Error(urlError);
-                            }
-                          },
-                        },
-                      ]}
-                    >
-                      <Input placeholder="https://cdn.example.com/hero.webp" />
-                    </Form.Item>
-                    <Form.Item
-                      label="Filename"
-                      name="filename"
-                      rules={[
-                        { required: true, message: "Enter a filename." },
-                      ]}
-                    >
-                      <Input placeholder="hero.webp" />
-                    </Form.Item>
-                    <Form.Item
-                      initialValue="image/webp"
-                      label="MIME type"
-                      name="mimeType"
-                      rules={[
-                        { required: true, message: "Select a MIME type." },
-                      ]}
-                    >
-                      <Select options={mediaMimeTypeOptions} />
-                    </Form.Item>
-                    <Form.Item
-                      initialValue={1}
-                      label="Size"
-                      name="size"
-                      extra={`Maximum ${mediaMaxUploadSizeLabel}.`}
-                      rules={[
-                        { required: true, message: "Enter the file size." },
-                      ]}
-                    >
-                      <InputNumber
-                        max={MEDIA_MAX_UPLOAD_BYTES}
-                        min={1}
-                        precision={0}
-                        style={{ width: "100%" }}
-                      />
-                    </Form.Item>
-                    <Form.Item label="Alt text" name="altText">
-                      <Input placeholder="Descriptive image text" />
-                    </Form.Item>
-                  </Form>
+                    onSubmit={(values) => void submitExternal(values)}
+                  />
                 ),
                 icon: <LinkOutlined />,
                 key: "external",
