@@ -16,6 +16,7 @@ export async function assertAdminApp(input) {
       moduleScriptStatus: null,
       moduleScriptStatusText: null,
       moduleScriptUrl: null,
+      moduleScriptUrlIssue: null,
       ok: false,
       status: null,
       statusText: null,
@@ -40,15 +41,15 @@ export async function readAdminAppAttempt(url) {
     const hasRootElement = hasAdminRootElement(text);
     const contentType = response.headers.get("content-type");
     const hasHtmlContentType = isHtmlContentType(contentType);
-    const moduleScriptUrl = readModuleScriptUrl(text, url);
-    const moduleScript = moduleScriptUrl
-      ? await readModuleScriptAttempt(moduleScriptUrl)
+    const moduleScriptReference = readModuleScriptReference(text, url);
+    const moduleScript = moduleScriptReference.url
+      ? await readModuleScriptAttempt(moduleScriptReference.url)
       : createMissingModuleScriptAttempt();
     const attempt = {
       bodySnippet: null,
       contentType,
       hasHtmlContentType,
-      hasModuleScript: Boolean(moduleScriptUrl),
+      hasModuleScript: moduleScriptReference.present,
       hasRootElement,
       moduleScriptContentType: moduleScript.contentType,
       moduleScriptErrorMessage: moduleScript.errorMessage,
@@ -57,7 +58,8 @@ export async function readAdminAppAttempt(url) {
       moduleScriptOk: moduleScript.ok,
       moduleScriptStatus: moduleScript.status,
       moduleScriptStatusText: moduleScript.statusText,
-      moduleScriptUrl,
+      moduleScriptUrl: moduleScriptReference.url,
+      moduleScriptUrlIssue: moduleScriptReference.issue,
       ok: response.ok,
       status: response.status,
       statusText: response.statusText,
@@ -85,6 +87,7 @@ export async function readAdminAppAttempt(url) {
       moduleScriptStatus: null,
       moduleScriptStatusText: null,
       moduleScriptUrl: null,
+      moduleScriptUrlIssue: null,
       ok: false,
       status: null,
       statusText: null,
@@ -109,10 +112,13 @@ export function formatAdminAppAttempt(attempt) {
   const moduleError = attempt.moduleScriptErrorMessage
     ? `, module script error: ${attempt.moduleScriptErrorMessage}`
     : "";
+  const moduleUrlIssue = attempt.moduleScriptUrlIssue
+    ? `, module script URL issue: ${attempt.moduleScriptUrlIssue}`
+    : "";
   const body = attempt.bodySnippet ? `, body: "${attempt.bodySnippet}"` : "";
   const error = attempt.errorMessage ? `, error: ${attempt.errorMessage}` : "";
 
-  return `${status}${content}, root element present: ${attempt.hasRootElement}${moduleScript}${moduleStatus}${moduleError}${body}${error}`;
+  return `${status}${content}, root element present: ${attempt.hasRootElement}${moduleScript}${moduleStatus}${moduleError}${moduleUrlIssue}${body}${error}`;
 }
 
 function createAdminAppFailure(attempt) {
@@ -134,6 +140,7 @@ function isAdminAppAttemptPassing(attempt) {
     attempt.hasHtmlContentType &&
     attempt.hasRootElement &&
     attempt.hasModuleScript &&
+    attempt.moduleScriptUrlIssue === null &&
     attempt.moduleScriptOk &&
     attempt.moduleScriptHasJavaScriptContentType
   );
@@ -175,28 +182,49 @@ function createMissingModuleScriptAttempt() {
   };
 }
 
-function readModuleScriptUrl(text, baseUrl) {
+function readModuleScriptReference(text, baseUrl) {
   const src = readModuleScriptSrc(text);
 
   if (!src) {
-    return null;
+    return {
+      issue: null,
+      present: false,
+      url: null,
+    };
   }
 
   try {
     const url = new URL(src, baseUrl);
+    const base = new URL(baseUrl);
 
-    if (
-      !["http:", "https:"].includes(url.protocol) ||
-      url.username ||
-      url.password
-    ) {
-      return null;
+    if (!["http:", "https:"].includes(url.protocol)) {
+      return createInvalidModuleScriptReference("unsupported-protocol");
     }
 
-    return url.toString();
+    if (url.username || url.password) {
+      return createInvalidModuleScriptReference("embedded-credentials");
+    }
+
+    if (url.origin !== base.origin) {
+      return createInvalidModuleScriptReference("cross-origin");
+    }
+
+    return {
+      issue: null,
+      present: true,
+      url: url.toString(),
+    };
   } catch {
-    return null;
+    return createInvalidModuleScriptReference("invalid-url");
   }
+}
+
+function createInvalidModuleScriptReference(issue) {
+  return {
+    issue,
+    present: true,
+    url: null,
+  };
 }
 
 function readModuleScriptSrc(text) {

@@ -48,6 +48,7 @@ test("admin app smoke accepts static Admin shell HTML", async () => {
         moduleScriptStatus: 200,
         moduleScriptStatusText: "OK",
         moduleScriptUrl: "https://admin.example.com/assets/admin.js",
+        moduleScriptUrlIssue: null,
         ok: true,
         status: 200,
         statusText: "OK",
@@ -55,6 +56,46 @@ test("admin app smoke accepts static Admin shell HTML", async () => {
       });
     },
   );
+});
+
+test("admin app smoke rejects cross-origin module assets", async () => {
+  const requestedUrls = [];
+
+  await withFetch(
+    async (url) => {
+      requestedUrls.push(url);
+
+      if (url === "https://admin.example.com") {
+        return new Response(
+          '<div id="root"></div><script type="module" src="https://cdn.example.com/admin.js"></script>',
+          {
+            headers: { "content-type": "text/html" },
+            status: 200,
+            statusText: "OK",
+          },
+        );
+      }
+
+      throw new Error(`Unexpected URL: ${url}`);
+    },
+    async () => {
+      await assert.rejects(
+        () => assertAdminApp({ adminUrl: "https://admin.example.com" }),
+        (error) => {
+          assert.equal(error.smokeDetails.adminApp.hasModuleScript, true);
+          assert.equal(error.smokeDetails.adminApp.moduleScriptUrl, null);
+          assert.equal(
+            error.smokeDetails.adminApp.moduleScriptUrlIssue,
+            "cross-origin",
+          );
+          assert.match(error.message, /module script URL issue: cross-origin/);
+          return true;
+        },
+      );
+    },
+  );
+
+  assert.deepEqual(requestedUrls, ["https://admin.example.com"]);
 });
 
 test("admin app smoke rejects shell HTML without a module asset", async () => {
