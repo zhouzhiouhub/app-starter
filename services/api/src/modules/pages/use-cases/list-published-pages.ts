@@ -10,9 +10,8 @@ import { readSchema } from "../pages.validation.js";
 type PublishedPageRecord = {
   publishedVersionId: string | null;
   slug: string;
-  title: string;
-  updatedAt: Date;
   versions: Array<{
+    createdAt: Date;
     id: string;
     publishedAt: Date | null;
     schema: Prisma.JsonValue;
@@ -49,10 +48,9 @@ export async function listPublishedPages(
     select: {
       publishedVersionId: true,
       slug: true,
-      title: true,
-      updatedAt: true,
       versions: {
         select: {
+          createdAt: true,
           id: true,
           publishedAt: true,
           schema: true,
@@ -97,9 +95,16 @@ function toPublishedPageSummary(
     {
       noIndex: schema.seo.noIndex,
       slug: page.slug,
-      title: page.title,
+      title: schema.meta.title,
       publishedAt: publishedVersion.publishedAt?.toISOString() ?? null,
-      updatedAt: page.updatedAt.toISOString(),
+      updatedAt: readPublishedVersionUpdatedAt(publishedVersion).toISOString(),
     },
   ];
+}
+
+function readPublishedVersionUpdatedAt(version: {
+  createdAt: Date;
+  publishedAt: Date | null;
+}): Date {
+  return version.publishedAt ?? version.createdAt;
 }

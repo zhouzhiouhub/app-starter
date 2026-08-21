@@ -7,8 +7,9 @@ import {
 } from "./pages-public-test-helpers.mjs";
 
 test("listPublishedPages returns public summaries for published pages", async () => {
-  const updatedAt = new Date("2026-08-19T00:00:00.000Z");
+  const draftUpdatedAt = new Date("2026-08-19T02:00:00.000Z");
   const publishedAt = new Date("2026-08-19T00:01:00.000Z");
+  const versionCreatedAt = new Date("2026-08-19T00:00:30.000Z");
   const prisma = {
     page: {
       findMany: async (query) => {
@@ -22,10 +23,11 @@ test("listPublishedPages returns public summaries for published pages", async ()
           {
             publishedVersionId: "version-1",
             slug: "home",
-            title: "Home",
-            updatedAt,
+            title: "Draft Home",
+            updatedAt: draftUpdatedAt,
             versions: [
               {
+                createdAt: versionCreatedAt,
                 id: "version-1",
                 publishedAt,
                 schema: createPublicPageSchema("home", "Home"),
@@ -35,15 +37,17 @@ test("listPublishedPages returns public summaries for published pages", async ()
           {
             publishedVersionId: "version-3",
             slug: "legal/terms",
-            title: "Terms",
-            updatedAt,
+            title: "Draft Terms",
+            updatedAt: draftUpdatedAt,
             versions: [
               {
+                createdAt: new Date("2026-08-18T00:00:00.000Z"),
                 id: "version-2",
                 publishedAt: new Date("2026-08-18T00:00:00.000Z"),
                 schema: createPublicPageSchema("legal/terms", "Terms"),
               },
               {
+                createdAt: new Date("2026-08-19T00:02:00.000Z"),
                 id: "version-3",
                 publishedAt: null,
                 schema: createPublicPageSchema("legal/terms", "Terms", {
@@ -56,9 +60,10 @@ test("listPublishedPages returns public summaries for published pages", async ()
             publishedVersionId: "version-4",
             slug: "de-kampagne",
             title: "German Campaign",
-            updatedAt,
+            updatedAt: draftUpdatedAt,
             versions: [
               {
+                createdAt: versionCreatedAt,
                 id: "version-4",
                 publishedAt,
                 schema: createPublicPageSchema(
@@ -73,7 +78,7 @@ test("listPublishedPages returns public summaries for published pages", async ()
             publishedVersionId: "missing-version",
             slug: "broken-page",
             title: "Broken",
-            updatedAt,
+            updatedAt: draftUpdatedAt,
             versions: [],
           },
         ];
@@ -99,14 +104,14 @@ test("listPublishedPages returns public summaries for published pages", async ()
       slug: "home",
       title: "Home",
       publishedAt: "2026-08-19T00:01:00.000Z",
-      updatedAt: "2026-08-19T00:00:00.000Z",
+      updatedAt: "2026-08-19T00:01:00.000Z",
     },
     {
       noIndex: true,
       slug: "legal/terms",
       title: "Terms",
       publishedAt: null,
-      updatedAt: "2026-08-19T00:00:00.000Z",
+      updatedAt: "2026-08-19T00:02:00.000Z",
     },
   ]);
   assert.equal(result.meta.total, 2);
@@ -115,18 +120,20 @@ test("listPublishedPages returns public summaries for published pages", async ()
 });
 
 test("listPublishedPages reads schema from the published version only", async () => {
-  const updatedAt = new Date("2026-08-19T00:00:00.000Z");
+  const updatedAt = new Date("2026-08-19T02:00:00.000Z");
   const publishedAt = new Date("2026-08-19T00:01:00.000Z");
+  const versionCreatedAt = new Date("2026-08-19T00:00:30.000Z");
   const prisma = {
     page: {
       findMany: async () => [
         {
           publishedVersionId: "version-published",
           slug: "campaign",
-          title: "Campaign",
+          title: "Draft Campaign",
           updatedAt,
           versions: [
             {
+              createdAt: new Date("2026-08-19T01:00:00.000Z"),
               id: "version-draft",
               publishedAt: null,
               schema: createPublicPageSchema("campaign", "Draft Campaign", {
@@ -134,6 +141,7 @@ test("listPublishedPages reads schema from the published version only", async ()
               }),
             },
             {
+              createdAt: versionCreatedAt,
               id: "version-published",
               publishedAt,
               schema: createPublicPageSchema("campaign", "Campaign"),
@@ -152,7 +160,12 @@ test("listPublishedPages reads schema from the published version only", async ()
     market: "us",
   });
 
-  assert.deepEqual(result.data.map((page) => page.slug), ["campaign"]);
+  assert.deepEqual(
+    result.data.map((page) => page.slug),
+    ["campaign"],
+  );
+  assert.equal(result.data[0].title, "Campaign");
   assert.equal(result.data[0].publishedAt, "2026-08-19T00:01:00.000Z");
+  assert.equal(result.data[0].updatedAt, "2026-08-19T00:01:00.000Z");
   assert.equal(result.meta.total, 1);
 });
