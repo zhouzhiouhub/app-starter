@@ -9,6 +9,9 @@ export function createReadyConfig() {
 
 export function createReadyEnvironment() {
   return {
+    analytics: {
+      productionReady: true,
+    },
     deployment: {
       admin: {
         productionReady: true,

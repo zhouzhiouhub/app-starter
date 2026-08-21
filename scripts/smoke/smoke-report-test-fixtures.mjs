@@ -40,6 +40,9 @@ export function createProductionReadySmokeReport(overrides = {}, options = {}) {
 
 export function createProductionReadyEnvironmentDiagnostics() {
   return {
+    analytics: {
+      productionReady: true,
+    },
     deployment: {
       admin: { productionReady: true },
       api: { productionReady: true },

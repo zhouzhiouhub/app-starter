@@ -155,9 +155,59 @@ test("smoke readiness requires MVP feature flags explicitly disabled", () => {
   ]);
 });
 
+test("smoke readiness requires coherent analytics config when enabled", () => {
+  const environment = createReadyEnvironment();
+  environment.analytics = {
+    consent: {
+      issue: null,
+      value: false,
+    },
+    enabled: {
+      issue: null,
+      value: true,
+    },
+    invalidProviders: ["GTM_CONTAINER_ID"],
+    productionReady: false,
+    providerConfigured: false,
+  };
+  const readiness = createSmokeProductionReadiness(
+    environment,
+    createReadyConfig(),
+  );
+
+  assert.deepEqual(
+    readiness.blockers.map((blocker) => [
+      blocker.area,
+      blocker.issue,
+      blocker.variable ?? null,
+    ]),
+    [
+      ["analytics.consent", "missing-consent", "ANALYTICS_CONSENT_GRANTED"],
+      ["analytics.provider", "missing-provider", null],
+      ["analytics.provider", "invalid-provider", "GTM_CONTAINER_ID"],
+    ],
+  );
+  assert.equal(readiness.productionReady, false);
+  assert.deepEqual(readiness.nextActions, [
+    {
+      action:
+        "Keep ANALYTICS_CONSENT_GRANTED=false until a consent mechanism or CMP grants analytics consent.",
+      area: "analytics.consent",
+    },
+    {
+      action:
+        "Set a valid GTM_CONTAINER_ID, GA4_MEASUREMENT_ID, or CLARITY_PROJECT_ID, or set ANALYTICS_ENABLED=false.",
+      area: "analytics.provider",
+    },
+  ]);
+});
+
 test("smoke readiness reports unsafe deployment and environment blockers", () => {
   const readiness = createSmokeProductionReadiness(
     {
+      analytics: {
+        productionReady: true,
+      },
       deployment: {
         admin: {
           host: "localhost",

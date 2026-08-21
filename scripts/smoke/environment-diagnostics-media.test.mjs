@@ -4,6 +4,8 @@ import { createSmokeEnvironmentDiagnostics } from "./environment-diagnostics.mjs
 
 test("smoke environment diagnostics reports media readiness without secrets", () => {
   const diagnostics = createSmokeEnvironmentDiagnostics({
+    ANALYTICS_CONSENT_GRANTED: "false",
+    ANALYTICS_ENABLED: "false",
     MEDIA_CDN_BASE_URL: "https://cdn.brand-assets.com/media",
     MEDIA_EXTERNAL_URL_HOSTS: "images.example.com, https://assets.example.org",
     COMMERCE_ENABLED: "false",
@@ -19,6 +21,37 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
   });
 
   assert.deepEqual(diagnostics, {
+    analytics: {
+      consent: {
+        configured: true,
+        issue: null,
+        productionReady: true,
+        value: false,
+      },
+      enabled: {
+        configured: true,
+        issue: null,
+        productionReady: true,
+        value: false,
+      },
+      invalidProviders: [],
+      productionReady: true,
+      providerConfigured: false,
+      providers: {
+        CLARITY_PROJECT_ID: {
+          configured: false,
+          valid: false,
+        },
+        GA4_MEASUREMENT_ID: {
+          configured: false,
+          valid: false,
+        },
+        GTM_CONTAINER_ID: {
+          configured: false,
+          valid: false,
+        },
+      },
+    },
     deployment: {
       admin: {
         configured: false,
@@ -125,6 +158,7 @@ test("smoke environment diagnostics reports missing R2 and CDN fallback", () => 
   assert.equal(diagnostics.media.cdnUrlIssue, "local-host");
   assert.equal(diagnostics.media.cdnUrlSafe, false);
   assert.equal(diagnostics.media.cdnUsesLocalFallback, true);
+  assert.equal(diagnostics.analytics.productionReady, true);
   assert.equal(diagnostics.featureFlags.configured, false);
   assert.equal(diagnostics.featureFlags.productionReady, false);
   assert.deepEqual(diagnostics.preview, {

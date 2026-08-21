@@ -59,6 +59,33 @@ function readBlockerActions(blocker) {
     ];
   }
 
+  if (blocker.area === "analytics.enabled") {
+    return [
+      createAction(
+        blocker.area,
+        "Set ANALYTICS_ENABLED to true or false.",
+      ),
+    ];
+  }
+
+  if (blocker.area === "analytics.consent") {
+    return [
+      createAction(
+        blocker.area,
+        "Keep ANALYTICS_CONSENT_GRANTED=false until a consent mechanism or CMP grants analytics consent.",
+      ),
+    ];
+  }
+
+  if (blocker.area === "analytics.provider") {
+    return [
+      createAction(
+        blocker.area,
+        "Set a valid GTM_CONTAINER_ID, GA4_MEASUREMENT_ID, or CLARITY_PROJECT_ID, or set ANALYTICS_ENABLED=false.",
+      ),
+    ];
+  }
+
   if (
     blocker.area === "feature-flags" ||
     (typeof blocker.area === "string" &&

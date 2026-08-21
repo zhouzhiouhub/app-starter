@@ -6,6 +6,7 @@ export function createSmokeProductionReadiness(environment, config) {
   const blockers = [];
   const warnings = [];
 
+  collectAnalyticsReadiness(blockers, environment.analytics);
   collectDeploymentReadiness(blockers, environment.deployment, config);
   collectFeatureFlagReadiness(blockers, environment.featureFlags);
   collectMediaReadiness(blockers, environment.media, config);
@@ -24,6 +25,75 @@ export function createSmokeProductionReadiness(environment, config) {
     productionReady: blockers.length === 0,
     warnings,
   };
+}
+
+function collectAnalyticsReadiness(blockers, analytics) {
+  if (analytics?.productionReady === true) {
+    return;
+  }
+
+  if (!analytics || typeof analytics !== "object" || Array.isArray(analytics)) {
+    appendBlocker(
+      blockers,
+      "analytics",
+      "missing-diagnostics",
+      "Collect analytics diagnostics before production smoke.",
+    );
+    return;
+  }
+
+  if (analytics.enabled?.issue) {
+    appendBlocker(
+      blockers,
+      "analytics.enabled",
+      analytics.enabled.issue,
+      "ANALYTICS_ENABLED must be true or false.",
+      { variable: "ANALYTICS_ENABLED" },
+    );
+  }
+
+  if (analytics.consent?.issue) {
+    appendBlocker(
+      blockers,
+      "analytics.consent",
+      analytics.consent.issue,
+      "ANALYTICS_CONSENT_GRANTED must be true or false.",
+      { variable: "ANALYTICS_CONSENT_GRANTED" },
+    );
+  }
+
+  if (analytics.enabled?.value !== true) {
+    return;
+  }
+
+  if (analytics.consent?.value !== true && !analytics.consent?.issue) {
+    appendBlocker(
+      blockers,
+      "analytics.consent",
+      "missing-consent",
+      "Analytics must stay disabled until consent is configured.",
+      { variable: "ANALYTICS_CONSENT_GRANTED" },
+    );
+  }
+
+  if (analytics.providerConfigured !== true) {
+    appendBlocker(
+      blockers,
+      "analytics.provider",
+      "missing-provider",
+      "Enable analytics only with at least one valid provider ID.",
+    );
+  }
+
+  for (const provider of analytics.invalidProviders ?? []) {
+    appendBlocker(
+      blockers,
+      "analytics.provider",
+      "invalid-provider",
+      `${provider} is not a valid analytics provider ID.`,
+      { variable: provider },
+    );
+  }
 }
 
 function collectFeatureFlagReadiness(blockers, featureFlags) {
