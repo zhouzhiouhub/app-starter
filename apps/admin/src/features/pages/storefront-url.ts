@@ -1,31 +1,61 @@
-import { getStorefrontHref, isProductionHttpUrl } from "@app-starter/schema";
+import {
+  getStorefrontHref,
+  isProductionHttpUrl,
+  readSiteDomainHeader,
+} from "@app-starter/schema";
 
 const maxPreviewTokenLength = 2048;
 const previewTokenPattern = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]{43}$/;
+
+interface WebOriginInput {
+  configured?: string;
+  fallbackConfigured?: string;
+  isProd?: boolean;
+  windowLocation?: Pick<Location, "hostname" | "protocol">;
+}
+
+interface StorefrontOriginInput extends WebOriginInput {
+  siteDomain?: string | null;
+}
 
 export function getStorefrontPagePath(slug: string, locale = "en-US"): string {
   return getStorefrontHref(locale, slug);
 }
 
-export function getStorefrontPageUrl(slug: string, locale = "en-US"): string {
-  return `${readWebOrigin()}${getStorefrontPagePath(slug, locale)}`;
+export function getStorefrontPageUrl(
+  slug: string,
+  locale = "en-US",
+  siteDomain?: string | null,
+): string {
+  return `${readStorefrontOrigin(siteDomain)}${getStorefrontPagePath(
+    slug,
+    locale,
+  )}`;
 }
 
-export function getStorefrontPreviewUrl(token: string): string {
+export function getStorefrontPreviewUrl(
+  token: string,
+  siteDomain?: string | null,
+): string {
   if (!isPreviewTokenCandidate(token)) {
     throw new Error("Preview token is malformed.");
   }
 
   const searchParams = new URLSearchParams({ token });
-  return `${readWebOrigin()}/preview?${searchParams.toString()}`;
+  return `${readStorefrontOrigin(siteDomain)}/preview?${searchParams.toString()}`;
 }
 
-export function resolveWebOrigin(input: {
-  configured?: string;
-  fallbackConfigured?: string;
-  isProd?: boolean;
-  windowLocation?: Pick<Location, "hostname" | "protocol">;
-}): string {
+export function resolveStorefrontOrigin(input: StorefrontOriginInput): string {
+  const domain = readSiteDomainHeader(input.siteDomain);
+
+  if (domain) {
+    return `${readSiteDomainProtocol(domain)}://${domain}`;
+  }
+
+  return resolveWebOrigin(input);
+}
+
+export function resolveWebOrigin(input: WebOriginInput): string {
   const requireProductionUrl = input.isProd === true;
   const configured =
     readHttpOrigin(input.configured, requireProductionUrl) ??
@@ -46,17 +76,18 @@ export function resolveWebOrigin(input: {
   return "http://localhost:3000";
 }
 
-function readWebOrigin(): string {
+function readStorefrontOrigin(siteDomain?: string | null): string {
   const env = (
     import.meta as unknown as {
       env?: { PROD?: boolean; VITE_WEB_URL?: string; WEB_URL?: string };
     }
   ).env;
 
-  return resolveWebOrigin({
+  return resolveStorefrontOrigin({
     configured: env?.VITE_WEB_URL,
     fallbackConfigured: env?.WEB_URL,
     isProd: env?.PROD,
+    siteDomain,
     windowLocation:
       typeof window === "undefined"
         ? undefined
@@ -65,6 +96,12 @@ function readWebOrigin(): string {
             protocol: window.location.protocol,
           },
   });
+}
+
+function readSiteDomainProtocol(domain: string): "http" | "https" {
+  return domain === "localhost" || domain.startsWith("localhost:")
+    ? "http"
+    : "https";
 }
 
 function readHttpOrigin(

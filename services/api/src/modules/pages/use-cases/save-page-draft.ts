@@ -68,7 +68,7 @@ export async function savePageDraft(
       });
 
       return {
-        data: toPageSummary(page),
+        data: toPageSummary(page, site),
         meta: {
           requestId,
           tenantId: site.tenantId,

@@ -34,6 +34,7 @@ interface UsePageEditorActionsInput {
   setIsPublishing: Dispatch<SetStateAction<boolean>>;
   setIsSaving: Dispatch<SetStateAction<boolean>>;
   setRollingBackVersionId: Dispatch<SetStateAction<string | null>>;
+  siteDomain?: string | null;
 }
 
 export function usePageEditorActions(input: UsePageEditorActionsInput) {
@@ -116,6 +117,7 @@ export function usePageEditorActions(input: UsePageEditorActionsInput) {
         buildPublicationFeedback({
           action: "publish",
           revalidation: published.meta?.revalidation,
+          siteDomain: input.siteDomain,
           slug: published.schema.meta.slug,
         }),
       );
@@ -147,7 +149,9 @@ export function usePageEditorActions(input: UsePageEditorActionsInput) {
         ),
       );
       const preview = await createPreviewToken(input.pageId);
-      openStorefrontPreviewWindow(getStorefrontPreviewUrl(preview.token));
+      openStorefrontPreviewWindow(
+        getStorefrontPreviewUrl(preview.token, input.siteDomain),
+      );
       input.setFeedback({
         message: `Preview opened. This link expires at ${preview.expiresAt}.`,
         type: "success",
@@ -185,6 +189,7 @@ export function usePageEditorActions(input: UsePageEditorActionsInput) {
           buildPublicationFeedback({
             action: "rollback",
             revalidation: rolledBack.meta?.revalidation,
+            siteDomain: input.siteDomain,
             slug: rolledBack.schema.meta.slug,
           }),
         );

@@ -26,6 +26,7 @@ export function PageEditorToolbar(props: {
   onUndo: () => void;
   pageId: string;
   published: boolean;
+  siteDomain: string;
   slug: string;
 }) {
   const navigate = useNavigate();
@@ -84,7 +85,7 @@ export function PageEditorToolbar(props: {
       </Button>
       <Button
         disabled={!props.published}
-        href={getStorefrontPageUrl(props.slug)}
+        href={getStorefrontPageUrl(props.slug, "en-US", props.siteDomain)}
         icon={<ExportOutlined />}
         rel="noreferrer"
         target="_blank"

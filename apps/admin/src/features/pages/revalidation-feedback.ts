@@ -5,10 +5,15 @@ import type { EditorFeedback } from "./types.ts";
 export function buildPublicationFeedback(input: {
   action: "publish" | "rollback";
   revalidation?: StorefrontRevalidationResult;
+  siteDomain?: string | null;
   slug: string;
 }): EditorFeedback {
   const actionText = input.action === "publish" ? "Published" : "Rolled back";
-  const reviewText = `Open ${getStorefrontPageUrl(input.slug)} to review the storefront.`;
+  const reviewText = `Open ${getStorefrontPageUrl(
+    input.slug,
+    "en-US",
+    input.siteDomain,
+  )} to review the storefront.`;
   const revalidationStatus = formatRevalidationStatus(input.revalidation);
 
   return {
@@ -100,7 +105,9 @@ function formatPathCheck(paths: string[]): string {
 function formatPathList(paths: string[]): string {
   const visible = paths.slice(0, 3);
   const suffix =
-    paths.length > visible.length ? `, and ${paths.length - visible.length} more` : "";
+    paths.length > visible.length
+      ? `, and ${paths.length - visible.length} more`
+      : "";
 
   return `${visible.join(", ")}${suffix}`;
 }

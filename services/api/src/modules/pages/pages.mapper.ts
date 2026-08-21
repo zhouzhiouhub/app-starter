@@ -94,20 +94,26 @@ export function nextVersionNumber(latestVersion: number | undefined): number {
   return (latestVersion ?? 0) + 1;
 }
 
-export function toPageSummary(page: {
-  id: string;
-  siteId: string;
-  slug: string;
-  title: string;
-  type: string;
-  status: string;
-  publishedVersionId: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-}) {
+export function toPageSummary(
+  page: {
+    id: string;
+    siteId: string;
+    slug: string;
+    title: string;
+    type: string;
+    status: string;
+    publishedVersionId: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  },
+  site: {
+    domain: string;
+  },
+) {
   return {
     id: page.id,
     siteId: page.siteId,
+    siteDomain: site.domain,
     slug: page.slug,
     title: page.title,
     type: page.type,

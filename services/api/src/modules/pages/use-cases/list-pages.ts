@@ -25,7 +25,7 @@ export async function listPages(
   ]);
 
   return {
-    data: pages.map(toPageSummary),
+    data: pages.map((page) => toPageSummary(page, site)),
     meta: {
       requestId,
       tenantId: site.tenantId,

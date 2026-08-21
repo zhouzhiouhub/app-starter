@@ -10,6 +10,7 @@ test("publication feedback summarizes triggered storefront revalidation", () => 
       tags: ["published-page"],
       triggered: true,
     },
+    siteDomain: "store.brand-platform.com",
     slug: "home",
   });
 
@@ -19,6 +20,7 @@ test("publication feedback summarizes triggered storefront revalidation", () => 
     feedback.message,
     /Storefront revalidation triggered for 2 paths: \/, \/en\./,
   );
+  assert.match(feedback.message, /https:\/\/store\.brand-platform\.com\/en/);
 });
 
 test("publication feedback explains missing revalidation configuration", () => {
@@ -44,15 +46,9 @@ test("publication feedback explains missing revalidation configuration", () => {
   });
 
   assert.equal(missingSecret.type, "warning");
-  assert.match(
-    missingSecret.message,
-    /secret is not configured/,
-  );
+  assert.match(missingSecret.message, /secret is not configured/);
   assert.equal(missingUrl.type, "warning");
-  assert.match(
-    missingUrl.message,
-    /URL is not configured/,
-  );
+  assert.match(missingUrl.message, /URL is not configured/);
 });
 
 test("publication feedback distinguishes HTTP failures from timeout style failures", () => {

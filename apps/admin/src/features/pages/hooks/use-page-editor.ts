@@ -82,8 +82,16 @@ export function usePageEditor(pageId: string | undefined) {
       setIsPublishing,
       setIsSaving,
       setRollingBackVersionId,
+      siteDomain: page?.siteDomain,
     }),
-    [applySavedState, draftSchema, mediaFeedback, pageId, resetSchema],
+    [
+      applySavedState,
+      draftSchema,
+      mediaFeedback,
+      page?.siteDomain,
+      pageId,
+      resetSchema,
+    ],
   );
   const { openPreview, publish, rollbackToVersion, saveDraft } =
     usePageEditorActions(actionInput);

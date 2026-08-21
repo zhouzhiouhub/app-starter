@@ -41,7 +41,7 @@ export async function getPageById(
 
   return {
     data: {
-      ...toPageSummary(page),
+      ...toPageSummary(page, site),
       draftSchema: latest ? readSchema(latest.schema, page.slug) : null,
       publishedSchema: published
         ? readSchema(published.schema, page.slug)

@@ -7,7 +7,7 @@ import {
   type Viewport,
 } from "@app-starter/schema";
 import type { MediaResolverState } from "../../media/hooks/use-media-resolver";
-import { getStorefrontPagePath } from "../storefront-url";
+import { getStorefrontPageUrl } from "../storefront-url";
 import type { EditorFeedback, PageSummary, PageVersionSummary } from "../types";
 import { ChromeSettingsPanel } from "./chrome-settings-panel";
 import { PageContentFields } from "./page-content-fields";
@@ -81,7 +81,11 @@ export function PageEditor(props: {
           <Typography.Paragraph>
             Storefront URL:{" "}
             <Typography.Text code>
-              {getStorefrontPagePath(props.page.slug)}
+              {getStorefrontPageUrl(
+                props.page.slug,
+                "en-US",
+                props.page.siteDomain,
+              )}
             </Typography.Text>
             . Home stays at <Typography.Text code>/en</Typography.Text>. Edit
             the page body below, then publish and open View on site.
@@ -101,6 +105,7 @@ export function PageEditor(props: {
           onUndo={props.onUndo}
           pageId={props.page.id}
           published={props.page.status === "published"}
+          siteDomain={props.page.siteDomain}
           slug={props.page.slug}
         />
       </div>

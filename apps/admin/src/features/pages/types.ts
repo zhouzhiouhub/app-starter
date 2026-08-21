@@ -8,6 +8,7 @@ export interface PageSummary {
   createdAt: string;
   id: string;
   publishedVersionId: string | null;
+  siteDomain: string;
   siteId: string;
   slug: string;
   status: string;

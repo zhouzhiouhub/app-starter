@@ -45,7 +45,9 @@ test("createInitialPageSchema applies the selected template", () => {
   assert.equal(schema.meta.slug, "campaign");
   assert.equal(schema.meta.title, "Campaign");
   assert.equal(schema.template.id, "landing-blank");
-  const hero = schema.sections.find((section) => section.component === "hero-banner");
+  const hero = schema.sections.find(
+    (section) => section.component === "hero-banner",
+  );
   assert.equal(
     hero &&
       typeof hero.props.title === "object" &&
@@ -98,20 +100,26 @@ test("nextVersionNumber increments from the latest version", () => {
 
 test("toPageSummary serializes timestamps", () => {
   const createdAt = new Date("2026-08-18T00:00:00.000Z");
-  const summary = toPageSummary({
-    id: "page-1",
-    siteId: "site-1",
-    slug: "home",
-    title: "Home",
-    type: "landing",
-    status: "published",
-    publishedVersionId: "version-1",
-    createdAt,
-    updatedAt: createdAt,
-  });
+  const summary = toPageSummary(
+    {
+      id: "page-1",
+      siteId: "site-1",
+      slug: "home",
+      title: "Home",
+      type: "landing",
+      status: "published",
+      publishedVersionId: "version-1",
+      createdAt,
+      updatedAt: createdAt,
+    },
+    {
+      domain: "store.brand-platform.com",
+    },
+  );
 
   assert.equal(summary.createdAt, "2026-08-18T00:00:00.000Z");
   assert.equal(summary.publishedVersionId, "version-1");
+  assert.equal(summary.siteDomain, "store.brand-platform.com");
 });
 
 test("toPageVersionSummary includes publish actor details", () => {

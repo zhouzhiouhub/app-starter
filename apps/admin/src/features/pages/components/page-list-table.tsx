@@ -51,10 +51,7 @@ export function PageListTable(props: {
           key: "actions",
           render: (_, page) => (
             <Space>
-              <Button
-                onClick={() => navigate(`/pages/${page.id}`)}
-                type="link"
-              >
+              <Button onClick={() => navigate(`/pages/${page.id}`)} type="link">
                 Edit
               </Button>
               <Tooltip title="Audit logs">
@@ -67,6 +64,7 @@ export function PageListTable(props: {
               </Tooltip>
               <ViewStorefrontLink
                 published={page.status === "published"}
+                siteDomain={page.siteDomain}
                 slug={page.slug}
               />
             </Space>

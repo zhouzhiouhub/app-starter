@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   getStorefrontPageUrl,
   getStorefrontPreviewUrl,
+  resolveStorefrontOrigin,
   resolveWebOrigin,
 } from "../src/features/pages/storefront-url.ts";
 
@@ -161,6 +162,26 @@ test("storefront URL helper builds safe page and preview links", () => {
         `https://admin.example.com:3000/preview?token=${token}`,
       );
     },
+  );
+});
+
+test("storefront URL helper prefers current site domains for public links", () => {
+  const token = `payload.${"a".repeat(43)}`;
+
+  assert.equal(
+    resolveStorefrontOrigin({
+      configured: "https://web.example.com",
+      siteDomain: "Store.Brand-Platform.com:443",
+    }),
+    "https://store.brand-platform.com",
+  );
+  assert.equal(
+    getStorefrontPageUrl("campaign", "en-US", "store.brand-platform.com"),
+    "https://store.brand-platform.com/en/campaign",
+  );
+  assert.equal(
+    getStorefrontPreviewUrl(token, "localhost:3000"),
+    `http://localhost:3000/preview?token=${token}`,
   );
 });
 
