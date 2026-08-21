@@ -7,6 +7,9 @@ test("identity service rotates refresh tokens on refresh", async () => {
   const updatedRecords = [];
   const service = new IdentityService(
     {
+      $transaction(callback) {
+        return callback(this);
+      },
       refreshToken: {
         create(options) {
           createdRecords.push(options.data);
@@ -24,9 +27,9 @@ test("identity service rotates refresh tokens on refresh", async () => {
             userId: "user-1",
           });
         },
-        update(options) {
+        updateMany(options) {
           updatedRecords.push(options);
-          return Promise.resolve(options.data);
+          return Promise.resolve({ count: 1 });
         },
       },
     },
@@ -49,7 +52,10 @@ test("identity service rotates refresh tokens on refresh", async () => {
     },
   ]);
   assert.equal(updatedRecords.length, 1);
-  assert.deepEqual(updatedRecords[0].where, { id: "refresh-token-1" });
+  assert.deepEqual(updatedRecords[0].where, {
+    id: "refresh-token-1",
+    revokedAt: null,
+  });
   assert.equal(updatedRecords[0].data.replacedById, "refresh-token-2");
   assert.equal(updatedRecords[0].data.revokedAt instanceof Date, true);
 });
@@ -91,6 +97,63 @@ test("identity service revokes active user tokens on refresh replay", async () =
     userId: "user-1",
   });
   assert.equal(revokedQueries[0].data.revokedAt instanceof Date, true);
+});
+
+test("identity service treats concurrent refresh rotation conflicts as replay", async () => {
+  const createdRecords = [];
+  const rotationQueries = [];
+  const revokedQueries = [];
+  const service = new IdentityService(
+    {
+      $transaction(callback) {
+        return callback(this);
+      },
+      refreshToken: {
+        create(options) {
+          createdRecords.push(options.data);
+          return Promise.resolve({ id: "refresh-token-conflict" });
+        },
+        findUnique() {
+          return Promise.resolve({
+            expiresAt: new Date(Date.now() + 60_000),
+            id: "refresh-token-1",
+            revokedAt: null,
+            user: createActiveUser(),
+            userId: "user-1",
+          });
+        },
+        updateMany(options) {
+          if (options.where?.id === "refresh-token-1") {
+            rotationQueries.push(options);
+            return Promise.resolve({ count: 0 });
+          }
+
+          revokedQueries.push(options);
+          return Promise.resolve({ count: 2 });
+        },
+      },
+    },
+    createTokenService(),
+  );
+
+  await assert.rejects(
+    () => service.refresh({ refreshToken: "refresh-token-1-value" }),
+    (error) =>
+      error.getStatus?.() === 401 &&
+      error.getResponse?.().message ===
+        "Refresh token has already been used.",
+  );
+
+  assert.equal(createdRecords.length, 1);
+  assert.deepEqual(rotationQueries[0].where, {
+    id: "refresh-token-1",
+    revokedAt: null,
+  });
+  assert.equal(rotationQueries[0].data.replacedById, "refresh-token-conflict");
+  assert.deepEqual(revokedQueries[0].where, {
+    revokedAt: null,
+    userId: "user-1",
+  });
 });
 
 function createActiveUser() {

@@ -45,6 +45,7 @@
 - 前台未知路径会返回 404，并优先渲染已发布的 `404` 系统页。
 - 现有后台 Publish 仍走 `POST /api/v1/admin/pages/:slug/publish`，底层已改为写入数据库。
 - Admin 登录：Email + Password + JWT（Access Token + Refresh Token 轮换）。
+- Refresh Token 以数据库哈希记录保存并原子轮换；检测到重放或并发轮换冲突时会撤销该用户仍有效的刷新令牌。
 - 后台管理接口校验 Bearer Token 与权限 Scope，并按登录租户隔离页面数据。
 - 种子数据会创建默认 Tenant Admin（`admin@example.com` / `ChangeMe123!`）。
 - 后台 Pages 列表、新建页面、按页面 ID 打开编辑器。
@@ -169,7 +170,7 @@ docs/development          # 开发补充文档
 - Node.js：`>=20.18.0`
 - pnpm：`>=9.0.0`
 - PostgreSQL：本地已使用 PostgreSQL 18
-- Redis：当前阶段未强制使用，后续队列/缓存启用时需要
+- Redis：当前阶段未强制使用；Refresh Token 重放防护已落在 PostgreSQL，后续队列/缓存启用时需要
 
 检查版本：
 

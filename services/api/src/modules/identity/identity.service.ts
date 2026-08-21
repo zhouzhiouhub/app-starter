@@ -16,9 +16,10 @@ import {
 import {
   createRefreshTokenRecord,
   findRefreshTokenByHash,
-  replaceRefreshToken,
+  RefreshTokenRotationConflictError,
   revokeActiveRefreshTokensForUser,
   revokeRefreshTokenByHash,
+  rotateRefreshToken,
   userWithRoles,
 } from "./identity.persistence.js";
 import type { Actor } from "./identity.types.js";
@@ -130,15 +131,33 @@ export class IdentityService {
     requestId = "local-dev",
   ) {
     const tokens = await this.tokens.issueTokens(actor);
-    const created = await createRefreshTokenRecord(
-      this.prisma,
-      this.tokens,
-      actor,
-      tokens,
-    );
 
     if (previousTokenId) {
-      await replaceRefreshToken(this.prisma, previousTokenId, created.id);
+      try {
+        await rotateRefreshToken(
+          this.prisma,
+          this.tokens,
+          actor,
+          tokens,
+          previousTokenId,
+        );
+      } catch (error) {
+        if (error instanceof RefreshTokenRotationConflictError) {
+          await revokeActiveRefreshTokensForUser(this.prisma, actor.id);
+          throw this.invalidCredentials(
+            "Refresh token has already been used.",
+          );
+        }
+
+        throw error;
+      }
+    } else {
+      await createRefreshTokenRecord(
+        this.prisma,
+        this.tokens,
+        actor,
+        tokens,
+      );
     }
 
     return toAuthSessionResponse(actor, tokens, requestId);

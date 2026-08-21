@@ -4,7 +4,7 @@
 
 - Node.js 20.18+
 - pnpm 9+
-- Docker for local PostgreSQL and Redis
+- Docker for local PostgreSQL; Redis is optional until queue/cache work is enabled
 
 ## Install
 
@@ -31,6 +31,10 @@ MULTI_LOCALE_ENABLED=false
 Runtime boolean gates accept only `true`/`false`, `1`/`0`, `yes`/`no`, or
 `on`/`off`; misspelled values fail instead of silently changing feature or
 analytics gates.
+
+MVP refresh-token replay protection is PostgreSQL-backed. Redis is not required
+for local login or session tests until cache, queue, or high-frequency session
+invalidations are enabled.
 
 In production, the API requires `DATABASE_URL` to be a PostgreSQL connection URL
 whose host is not local, loopback, Docker-local, or a reserved placeholder. Local

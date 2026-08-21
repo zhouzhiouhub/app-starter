@@ -2,6 +2,14 @@ import type { PrismaService } from "../prisma/prisma.service.js";
 import type { Actor, AuthTokens } from "./identity.types.js";
 import type { TokenService } from "./token.service.js";
 
+type RefreshTokenClient = Pick<PrismaService, "refreshToken">;
+
+export class RefreshTokenRotationConflictError extends Error {
+  constructor() {
+    super("Refresh token was already rotated.");
+  }
+}
+
 export const userWithRoles = {
   roles: {
     include: {
@@ -11,7 +19,7 @@ export const userWithRoles = {
 } as const;
 
 export function findRefreshTokenByHash(
-  prisma: PrismaService,
+  prisma: RefreshTokenClient,
   tokenHash: string,
 ) {
   return prisma.refreshToken.findUnique({
@@ -25,7 +33,7 @@ export function findRefreshTokenByHash(
 }
 
 export function revokeActiveRefreshTokensForUser(
-  prisma: PrismaService,
+  prisma: RefreshTokenClient,
   userId: string,
 ) {
   return prisma.refreshToken.updateMany({
@@ -35,7 +43,7 @@ export function revokeActiveRefreshTokensForUser(
 }
 
 export function revokeRefreshTokenByHash(
-  prisma: PrismaService,
+  prisma: RefreshTokenClient,
   tokenHash: string,
 ) {
   return prisma.refreshToken.updateMany({
@@ -45,7 +53,7 @@ export function revokeRefreshTokenByHash(
 }
 
 export function createRefreshTokenRecord(
-  prisma: PrismaService,
+  prisma: RefreshTokenClient,
   tokenService: Pick<
     TokenService,
     "hashRefreshToken" | "refreshTokenExpiresAt"
@@ -64,15 +72,46 @@ export function createRefreshTokenRecord(
 }
 
 export function replaceRefreshToken(
-  prisma: PrismaService,
+  prisma: RefreshTokenClient,
   previousTokenId: string,
   replacementTokenId: string,
 ) {
-  return prisma.refreshToken.update({
-    where: { id: previousTokenId },
+  return prisma.refreshToken.updateMany({
+    where: { id: previousTokenId, revokedAt: null },
     data: {
       replacedById: replacementTokenId,
       revokedAt: new Date(),
     },
+  });
+}
+
+export async function rotateRefreshToken(
+  prisma: PrismaService,
+  tokenService: Pick<
+    TokenService,
+    "hashRefreshToken" | "refreshTokenExpiresAt"
+  >,
+  actor: Actor,
+  tokens: AuthTokens,
+  previousTokenId: string,
+) {
+  return prisma.$transaction(async (client) => {
+    const created = await createRefreshTokenRecord(
+      client,
+      tokenService,
+      actor,
+      tokens,
+    );
+    const replaced = await replaceRefreshToken(
+      client,
+      previousTokenId,
+      created.id,
+    );
+
+    if (replaced.count !== 1) {
+      throw new RefreshTokenRotationConflictError();
+    }
+
+    return created;
   });
 }
