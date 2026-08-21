@@ -1,65 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { apiErrorCodes } from "../../../packages/schema/dist/index.js";
-import {
-  readApiFeatureFlags,
-  readBooleanEnv,
-} from "../dist/common/feature-flags.js";
-import { CommerceController } from "../dist/modules/commerce/commerce.controller.js";
 import { LocalizationController } from "../dist/modules/localization/localization.controller.js";
+import {
+  assertApiBadRequest,
+  assertApiConflict,
+} from "./api-error-test-assertions.mjs";
 import { withEnv } from "./env-helper.mjs";
 
 const idempotencyKey = "7f10f6d3-02d9-4f3d-a69d-49b26ec63132";
-
-test("API boolean environment flags parse explicit values only", () => {
-  for (const value of ["1", "true", "TRUE", "yes", "on"]) {
-    assert.equal(readBooleanEnv("COMMERCE_ENABLED", value), true);
-  }
-
-  for (const value of ["0", "false", "FALSE", "no", "off"]) {
-    assert.equal(readBooleanEnv("COMMERCE_ENABLED", value), false);
-  }
-
-  assert.equal(readBooleanEnv("COMMERCE_ENABLED", undefined), false);
-  assert.throws(
-    () => readBooleanEnv("COMMERCE_ENABLED", "treu"),
-    /COMMERCE_ENABLED must be true or false/,
-  );
-});
-
-test("API feature flags reject misspelled environment values", () => {
-  assert.throws(
-    () =>
-      readApiFeatureFlags({
-        COMMERCE_ENABLED: "flase",
-        MULTI_LOCALE_ENABLED: "false",
-      }),
-    /COMMERCE_ENABLED must be true or false/,
-  );
-  assert.throws(
-    () =>
-      readApiFeatureFlags({
-        COMMERCE_ENABLED: "false",
-        MULTI_LOCALE_ENABLED: "enabled",
-      }),
-    /MULTI_LOCALE_ENABLED must be true or false/,
-  );
-});
-
-test("commerce endpoints reject writes while commerce is disabled", () => {
-  withEnv({ COMMERCE_ENABLED: "false" }, () => {
-    const controller = new CommerceController();
-
-    assertApiConflict(
-      () => controller.addToCart(),
-      apiErrorCodes.COMMERCE_DISABLED,
-    );
-    assertApiConflict(
-      () => controller.checkout(),
-      apiErrorCodes.COMMERCE_DISABLED,
-    );
-  });
-});
 
 test("locale creation rejects writes while multi-locale is disabled", () => {
   withEnv({ MULTI_LOCALE_ENABLED: "false" }, () => {
@@ -204,23 +153,3 @@ test("admin translations reject invalid locale format", () => {
     apiErrorCodes.VALIDATION_ERROR,
   );
 });
-
-function assertApiBadRequest(fn, expectedCode) {
-  assert.throws(
-    fn,
-    (error) =>
-      typeof error.getStatus === "function" &&
-      error.getStatus() === 400 &&
-      error.getResponse()?.code === expectedCode,
-  );
-}
-
-function assertApiConflict(fn, expectedCode) {
-  assert.throws(
-    fn,
-    (error) =>
-      typeof error.getStatus === "function" &&
-      error.getStatus() === 409 &&
-      error.getResponse()?.code === expectedCode,
-  );
-}
