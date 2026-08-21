@@ -11,7 +11,10 @@ import {
   resolveWebLocale,
 } from "./runtime-defaults.ts";
 import { getApiBaseUrl } from "./runtime-url.ts";
-import { createStorefrontHostHeaders } from "./storefront-host-header.ts";
+import {
+  addStorefrontHostCacheParam,
+  createStorefrontHostHeaders,
+} from "./storefront-host-header.ts";
 
 const apiBaseUrl = getApiBaseUrl();
 const maxPreviewTokenLength = 2048;
@@ -120,6 +123,8 @@ async function fetchPublishedSchema(input: {
       locale: input.locale,
       market: input.market,
     });
+    addStorefrontHostCacheParam(searchParams, input.storefrontHost);
+
     const response = await fetch(
       `${apiBaseUrl}/public/pages/${encodeURIComponent(input.slug)}?${searchParams}`,
       {

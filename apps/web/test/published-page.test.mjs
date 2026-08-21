@@ -50,6 +50,7 @@ test("published page lookup forwards the safe storefront host", async () => {
   );
 
   assert.equal(requests.length, 1);
+  assert.match(requests[0].url, /storefrontHost=store\.brand-platform\.com/);
   assert.equal(
     requests[0].init.headers["x-storefront-host"],
     "store.brand-platform.com",
@@ -74,6 +75,7 @@ test("published page lookup does not forward unsafe storefront hosts", async () 
   );
 
   assert.equal(requests.length, 1);
+  assert.doesNotMatch(requests[0].url, /storefrontHost=/);
   assert.equal(requests[0].init.headers, undefined);
 });
 

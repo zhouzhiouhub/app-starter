@@ -82,6 +82,7 @@ test("published pages list forwards the safe storefront host", async () => {
   );
 
   assert.equal(requests.length, 1);
+  assert.match(requests[0].url, /storefrontHost=store\.brand-platform\.com/);
   assert.equal(
     requests[0].init.headers["x-storefront-host"],
     "store.brand-platform.com",
