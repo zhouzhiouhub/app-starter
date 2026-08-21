@@ -29,6 +29,26 @@ test("storefront revalidation URL resolver normalizes safe URLs", () => {
   );
 });
 
+test("storefront revalidation URL resolver accepts production HTTPS endpoints", () => {
+  assert.equal(
+    resolveStorefrontRevalidateUrl({
+      NODE_ENV: "production",
+      STOREFRONT_REVALIDATE_URL:
+        " https://store.brand-platform.com/api/revalidate/ ",
+      WEB_URL: "https://fallback.brand-platform.com/",
+    }),
+    "https://store.brand-platform.com/api/revalidate",
+  );
+  assert.equal(
+    resolveStorefrontRevalidateUrl({
+      NODE_ENV: "production",
+      STOREFRONT_REVALIDATE_URL: "",
+      WEB_URL: "https://store.brand-platform.com/",
+    }),
+    "https://store.brand-platform.com/api/revalidate",
+  );
+});
+
 test("storefront revalidation URL resolver rejects unsafe URLs", () => {
   for (const values of [
     {
@@ -52,6 +72,34 @@ test("storefront revalidation URL resolver rejects unsafe URLs", () => {
     {
       STOREFRONT_REVALIDATE_URL: "",
       WEB_URL: "https://user:pass@web.example.com",
+    },
+  ]) {
+    assert.equal(resolveStorefrontRevalidateUrl(values), null);
+  }
+});
+
+test("storefront revalidation URL resolver rejects unsafe production endpoints", () => {
+  for (const values of [
+    {
+      NODE_ENV: "production",
+      STOREFRONT_REVALIDATE_URL:
+        "http://store.brand-platform.com/api/revalidate",
+      WEB_URL: "",
+    },
+    {
+      NODE_ENV: "production",
+      STOREFRONT_REVALIDATE_URL: "https://localhost/api/revalidate",
+      WEB_URL: "",
+    },
+    {
+      NODE_ENV: "production",
+      STOREFRONT_REVALIDATE_URL: "https://store.example/api/revalidate",
+      WEB_URL: "",
+    },
+    {
+      NODE_ENV: "production",
+      STOREFRONT_REVALIDATE_URL: "",
+      WEB_URL: "https://192.0.2.10",
     },
   ]) {
     assert.equal(resolveStorefrontRevalidateUrl(values), null);

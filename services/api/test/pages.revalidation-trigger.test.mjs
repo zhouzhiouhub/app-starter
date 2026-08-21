@@ -81,10 +81,7 @@ test("storefront revalidation posts the page payload with secret header", async 
     }),
     async () => {
       const { calls, fetcher } = createRecordingFetch();
-      const result = await triggerStorefrontRevalidation(
-        pageInput(),
-        fetcher,
-      );
+      const result = await triggerStorefrontRevalidation(pageInput(), fetcher);
 
       assert.equal(result.triggered, true);
       assert.deepEqual(result.paths, ["/en/contact"]);
@@ -124,6 +121,26 @@ test("storefront revalidation skips unsafe URLs without fetching", async () => {
   );
 });
 
+test("storefront revalidation skips unsafe production URLs without fetching", async () => {
+  await withEnv(
+    revalidationEnv({
+      NODE_ENV: "production",
+      STOREFRONT_REVALIDATE_URL:
+        "http://store.brand-platform.com/api/revalidate",
+      WEB_URL: "",
+    }),
+    async () => {
+      const result = await triggerStorefrontRevalidation(
+        pageInput(),
+        rejectingFetch,
+      );
+
+      assert.equal(result.triggered, false);
+      assert.equal(result.reason, "missing-url");
+    },
+  );
+});
+
 test("storefront revalidation distinguishes timeouts from request failures", async () => {
   await withEnv(
     revalidationEnv({
@@ -135,9 +152,12 @@ test("storefront revalidation distinguishes timeouts from request failures", asy
         createAbortOnSignalFetch(),
       );
 
-      const failure = await triggerStorefrontRevalidation(pageInput(), async () => {
-        throw new Error("network failed");
-      });
+      const failure = await triggerStorefrontRevalidation(
+        pageInput(),
+        async () => {
+          throw new Error("network failed");
+        },
+      );
 
       assert.equal(timeout.triggered, false);
       assert.equal(timeout.reason, "request-timeout");

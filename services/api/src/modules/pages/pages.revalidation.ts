@@ -5,6 +5,7 @@ import {
   storefrontRevalidateSecretHeader,
   type StorefrontRevalidationResult,
 } from "@app-starter/schema";
+import { isUnsafeProductionHostname } from "../../common/production-hostname.js";
 
 const defaultTimeoutMs = 5000;
 const maxTimeoutMs = 30000;
@@ -139,12 +140,17 @@ export async function refreshStorefrontRevalidationResponse<
 
 export function resolveStorefrontRevalidateUrl(
   env: {
+    NODE_ENV?: string;
     STOREFRONT_REVALIDATE_URL?: string;
     WEB_URL?: string;
   } = process.env,
 ): string | null {
   const rawConfigured = env.STOREFRONT_REVALIDATE_URL?.trim();
-  const configured = readSafeHttpUrl(env.STOREFRONT_REVALIDATE_URL);
+  const requireProductionUrl = isProductionEnv(env);
+  const configured = readSafeHttpUrl(
+    env.STOREFRONT_REVALIDATE_URL,
+    requireProductionUrl,
+  );
 
   if (configured) {
     return createRevalidateEndpointUrl(configured);
@@ -154,7 +160,7 @@ export function resolveStorefrontRevalidateUrl(
     return null;
   }
 
-  const webUrl = readSafeHttpUrl(env.WEB_URL);
+  const webUrl = readSafeHttpUrl(env.WEB_URL, requireProductionUrl);
 
   if (!webUrl) {
     return null;
@@ -173,7 +179,10 @@ function createRevalidateEndpointUrl(url: URL): string {
   return `${url.origin}${pathname}`;
 }
 
-function readSafeHttpUrl(value: string | undefined): URL | null {
+function readSafeHttpUrl(
+  value: string | undefined,
+  requireProductionUrl: boolean,
+): URL | null {
   const trimmed = value?.trim();
 
   if (!trimmed) {
@@ -185,6 +194,8 @@ function readSafeHttpUrl(value: string | undefined): URL | null {
 
     if (
       !isHttpProtocol(url.protocol) ||
+      (requireProductionUrl && url.protocol !== "https:") ||
+      (requireProductionUrl && isUnsafeProductionHostname(url.hostname)) ||
       url.username ||
       url.password ||
       url.search ||
@@ -206,6 +217,10 @@ function trimTrailingSlashes(value: string): string {
 
 function isHttpProtocol(protocol: string): boolean {
   return protocol === "http:" || protocol === "https:";
+}
+
+function isProductionEnv(env: { NODE_ENV?: string }): boolean {
+  return env.NODE_ENV === "production";
 }
 
 export function readStorefrontRevalidationTimeoutMs(
