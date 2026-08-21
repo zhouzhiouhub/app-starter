@@ -3,6 +3,24 @@ import test from "node:test";
 import { exampleLandingPage } from "@app-starter/schema";
 import { buildPageMetadata } from "../src/lib/page-metadata.ts";
 
+test("page metadata uses normalized canonical URLs", () => {
+  const schema = structuredClone(exampleLandingPage);
+  schema.seo.canonical = "  /campaign  ";
+
+  const metadata = buildPageMetadata(schema);
+
+  assert.equal(metadata.alternates?.canonical, "/campaign");
+});
+
+test("page metadata omits unsafe canonical URLs", () => {
+  const schema = structuredClone(exampleLandingPage);
+  schema.seo.canonical = "javascript:alert(1)";
+
+  const metadata = buildPageMetadata(schema);
+
+  assert.equal(metadata.alternates, undefined);
+});
+
 test("page metadata includes resolved Open Graph images", () => {
   const schema = structuredClone(exampleLandingPage);
   schema.seo.ogImage = "https://cdn.example.com/og.jpg";

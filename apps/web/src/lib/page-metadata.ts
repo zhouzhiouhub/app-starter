@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import {
   isPublishableImageSrc,
   mediaAssetReferenceSchema,
+  seoUrlSchema,
   type PageSchema,
 } from "@app-starter/schema";
 
@@ -15,7 +16,7 @@ export function buildPageMetadata(schema: PageSchema | null): Metadata {
 
   const title = schema.seo.title || schema.meta.title;
   const description = schema.seo.description || undefined;
-  const canonical = schema.seo.canonical || undefined;
+  const canonical = readResolvedCanonical(schema.seo.canonical);
   const ogImage = readResolvedSeoImage(schema.seo.ogImage);
 
   return {
@@ -33,6 +34,12 @@ export function buildPageMetadata(schema: PageSchema | null): Metadata {
     robots: createRobots(schema.seo.noIndex),
     title,
   };
+}
+
+function readResolvedCanonical(value: string | undefined): string | undefined {
+  const canonical = seoUrlSchema.safeParse(value);
+
+  return canonical.success ? canonical.data : undefined;
 }
 
 function readResolvedSeoImage(value: string | undefined): string | undefined {
