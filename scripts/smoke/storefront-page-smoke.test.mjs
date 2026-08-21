@@ -5,6 +5,7 @@ import {
   formatStorefrontPageAttempt,
   readStorefrontPageAttempt,
 } from "./storefront-smoke.mjs";
+import { withFetch } from "./smoke-test-runtime.mjs";
 
 test("smoke helpers summarize storefront page attempts", () => {
   const failed = readStorefrontPageAttempt(
@@ -104,14 +105,3 @@ test("storefront page smoke failure keeps structured diagnostics", async () => {
     },
   );
 });
-
-async function withFetch(fetchImplementation, fn) {
-  const originalFetch = globalThis.fetch;
-  globalThis.fetch = fetchImplementation;
-
-  try {
-    await fn();
-  } finally {
-    globalThis.fetch = originalFetch;
-  }
-}
