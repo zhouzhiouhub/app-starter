@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { generateKeyPairSync } from "node:crypto";
 import test from "node:test";
 import {
   toAuthSessionResponse,
@@ -12,7 +13,10 @@ import {
 } from "../dist/modules/identity/identity.validation.js";
 import { hashPassword, verifyPassword } from "../dist/modules/identity/password.js";
 import { TokenService } from "../dist/modules/identity/token.service.js";
-import { resetJwtKeysForTests } from "../dist/modules/identity/jwt-keys.js";
+import {
+  loadJwtKeys,
+  resetJwtKeysForTests,
+} from "../dist/modules/identity/jwt-keys.js";
 
 test("login body lowercases email and requires a password", () => {
   const parsed = loginBodySchema.parse({
@@ -83,6 +87,65 @@ test("token service signs and verifies RS256 access tokens", async () => {
   assert.equal(tokens.hashRefreshToken(issued.refreshToken).length, 64);
 });
 
+test("JWT key loader accepts configured matching PEM key pairs", async () => {
+  const pair = createRsaPemPair();
+  const restoreEnv = withJwtKeyEnv({
+    JWT_PRIVATE_KEY: pair.privateKey.replaceAll("\n", "\\n"),
+    JWT_PUBLIC_KEY: pair.publicKey.replaceAll("\n", "\\n"),
+    NODE_ENV: "production",
+  });
+  resetJwtKeysForTests();
+
+  try {
+    const keys = await loadJwtKeys();
+    assert.equal(keys.generated, false);
+  } finally {
+    restoreEnv();
+    resetJwtKeysForTests();
+  }
+});
+
+test("JWT key loader rejects partial key pair configuration", async () => {
+  const pair = createRsaPemPair();
+  const restoreEnv = withJwtKeyEnv({
+    JWT_PRIVATE_KEY: pair.privateKey,
+    JWT_PUBLIC_KEY: undefined,
+    NODE_ENV: "development",
+  });
+  resetJwtKeysForTests();
+
+  try {
+    await assert.rejects(
+      () => loadJwtKeys(),
+      /JWT_PRIVATE_KEY and JWT_PUBLIC_KEY must be configured together/,
+    );
+  } finally {
+    restoreEnv();
+    resetJwtKeysForTests();
+  }
+});
+
+test("JWT key loader rejects mismatched configured key pairs", async () => {
+  const privatePair = createRsaPemPair();
+  const publicPair = createRsaPemPair();
+  const restoreEnv = withJwtKeyEnv({
+    JWT_PRIVATE_KEY: privatePair.privateKey,
+    JWT_PUBLIC_KEY: publicPair.publicKey,
+    NODE_ENV: "production",
+  });
+  resetJwtKeysForTests();
+
+  try {
+    await assert.rejects(
+      () => loadJwtKeys(),
+      /JWT_PRIVATE_KEY and JWT_PUBLIC_KEY must be a valid matching RS256 key pair/,
+    );
+  } finally {
+    restoreEnv();
+    resetJwtKeysForTests();
+  }
+});
+
 test("identity response mappers carry the current request id", () => {
   const actor = {
     email: "admin@example.com",
@@ -106,3 +169,42 @@ test("identity response mappers carry the current request id", () => {
   assert.equal(session.meta.requestId, "request-auth-session");
   assert.equal(currentUser.meta.requestId, "request-auth-me");
 });
+
+function createRsaPemPair() {
+  return generateKeyPairSync("rsa", {
+    modulusLength: 2048,
+    privateKeyEncoding: {
+      format: "pem",
+      type: "pkcs8",
+    },
+    publicKeyEncoding: {
+      format: "pem",
+      type: "spki",
+    },
+  });
+}
+
+function withJwtKeyEnv(values) {
+  const keys = ["JWT_PRIVATE_KEY", "JWT_PUBLIC_KEY", "NODE_ENV"];
+  const previous = Object.fromEntries(keys.map((key) => [key, process.env[key]]));
+
+  for (const [key, value] of Object.entries(values)) {
+    if (value === undefined) {
+      delete process.env[key];
+    } else {
+      process.env[key] = value;
+    }
+  }
+
+  return () => {
+    for (const key of keys) {
+      const value = previous[key];
+
+      if (value === undefined) {
+        delete process.env[key];
+      } else {
+        process.env[key] = value;
+      }
+    }
+  };
+}

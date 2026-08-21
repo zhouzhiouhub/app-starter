@@ -1,5 +1,5 @@
 import { generateKeyPairSync, type KeyObject } from "node:crypto";
-import { importPKCS8, importSPKI } from "jose";
+import { importPKCS8, importSPKI, jwtVerify, SignJWT } from "jose";
 import { JWT_ALGORITHM } from "./identity.constants.js";
 
 type JwtKey = KeyObject | CryptoKey;
@@ -20,12 +20,8 @@ export async function loadJwtKeys(): Promise<JwtKeyPair> {
   const privatePem = normalizePem(process.env.JWT_PRIVATE_KEY);
   const publicPem = normalizePem(process.env.JWT_PUBLIC_KEY);
 
-  if (privatePem && publicPem) {
-    cachedKeys = {
-      generated: false,
-      privateKey: await importPKCS8(privatePem, JWT_ALGORITHM),
-      publicKey: await importSPKI(publicPem, JWT_ALGORITHM),
-    };
+  if (privatePem || publicPem) {
+    cachedKeys = await loadConfiguredJwtKeys(privatePem, publicPem);
     return cachedKeys;
   }
 
@@ -42,6 +38,43 @@ export async function loadJwtKeys(): Promise<JwtKeyPair> {
     publicKey: pair.publicKey,
   };
   return cachedKeys;
+}
+
+async function loadConfiguredJwtKeys(
+  privatePem: string | undefined,
+  publicPem: string | undefined,
+): Promise<JwtKeyPair> {
+  if (!privatePem || !publicPem) {
+    throw new Error(
+      "JWT_PRIVATE_KEY and JWT_PUBLIC_KEY must be configured together.",
+    );
+  }
+
+  try {
+    const keys = {
+      generated: false,
+      privateKey: await importPKCS8(privatePem, JWT_ALGORITHM),
+      publicKey: await importSPKI(publicPem, JWT_ALGORITHM),
+    };
+    await assertMatchingJwtKeyPair(keys);
+    return keys;
+  } catch {
+    throw new Error(
+      "JWT_PRIVATE_KEY and JWT_PUBLIC_KEY must be a valid matching RS256 key pair.",
+    );
+  }
+}
+
+async function assertMatchingJwtKeyPair(keys: JwtKeyPair): Promise<void> {
+  const canaryToken = await new SignJWT({ purpose: "jwt-key-check" })
+    .setProtectedHeader({ alg: JWT_ALGORITHM, typ: "JWT" })
+    .setIssuedAt()
+    .setExpirationTime("1m")
+    .sign(keys.privateKey);
+
+  await jwtVerify(canaryToken, keys.publicKey, {
+    algorithms: [JWT_ALGORITHM],
+  });
 }
 
 export function resetJwtKeysForTests(): void {
