@@ -132,6 +132,7 @@ function parseRichTextTag(tag: string): RichTextTag | null {
 
 function hasSanitizedAnchorMarkup(rawAttributes: string): boolean {
   const href = readSafeHref(readAttribute(rawAttributes, "href"));
+  const attributeNames = readAttributeNames(rawAttributes);
 
   if (!href) {
     return true;
@@ -143,9 +144,17 @@ function hasSanitizedAnchorMarkup(rawAttributes: string): boolean {
     return true;
   }
 
-  return readAttributeNames(rawAttributes).some(
+  if (hasDuplicateAttributeNames(attributeNames)) {
+    return true;
+  }
+
+  return attributeNames.some(
     (name) => name !== "href" && name !== "target",
   );
+}
+
+function hasDuplicateAttributeNames(names: string[]): boolean {
+  return new Set(names).size !== names.length;
 }
 
 function readAttributeNames(rawAttributes: string): string[] {
