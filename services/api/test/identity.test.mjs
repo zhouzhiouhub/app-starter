@@ -47,9 +47,12 @@ test("identity request parsers keep API validation errors structured", () => {
 test("identity authorization reads bearer tokens defensively", () => {
   assert.equal(readBearerToken("Bearer access-token"), "access-token");
   assert.equal(readBearerToken("bearer access-token"), "access-token");
+  assert.equal(readBearerToken("  Bearer   access-token  "), "access-token");
   assert.equal(readBearerToken(undefined), undefined);
   assert.equal(readBearerToken("Basic access-token"), undefined);
   assert.equal(readBearerToken("Bearer"), undefined);
+  assert.equal(readBearerToken("Bearer "), undefined);
+  assert.equal(readBearerToken("Bearer access-token extra"), undefined);
 });
 
 test("password hashing uses bcrypt and verifies the original value", async () => {

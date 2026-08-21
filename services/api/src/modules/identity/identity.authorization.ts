@@ -5,9 +5,15 @@ export function readBearerToken(
     return undefined;
   }
 
-  const [scheme, token] = authorization.split(" ");
+  const parts = authorization.trim().split(/\s+/);
 
-  if (scheme?.toLowerCase() !== "bearer" || !token) {
+  if (parts.length !== 2) {
+    return undefined;
+  }
+
+  const [scheme, token] = parts;
+
+  if (!scheme || !token || scheme.toLowerCase() !== "bearer") {
     return undefined;
   }
 
