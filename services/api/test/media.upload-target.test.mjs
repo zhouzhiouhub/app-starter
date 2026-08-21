@@ -120,14 +120,32 @@ test("createMediaUploadTarget rejects unsafe upload base URLs", () => {
 });
 
 test("createMediaCdnUrl requires safe CDN base URLs in production", () => {
-  assert.throws(
-    () =>
-      createMediaCdnUrl("tenant-1/folder/hero.png", {
-        CDN_BASE_URL: "https://legacy.example.com/media?token=1",
-        MEDIA_CDN_BASE_URL: "ftp://cdn.example.com/media",
-        NODE_ENV: "production",
-      }),
-    /MEDIA_CDN_BASE_URL must be configured as a safe CDN URL in production/,
+  for (const MEDIA_CDN_BASE_URL of [
+    "ftp://cdn.brand-platform.com/media",
+    "http://cdn.brand-platform.com/media",
+    "https://localhost/media",
+    "https://cdn.local.invalid/media",
+    "https://cdn.example.com/media",
+  ]) {
+    assert.throws(
+      () =>
+        createMediaCdnUrl("tenant-1/folder/hero.png", {
+          CDN_BASE_URL: "https://legacy.brand-platform.com/media?token=1",
+          MEDIA_CDN_BASE_URL,
+          NODE_ENV: "production",
+        }),
+      /MEDIA_CDN_BASE_URL must be configured as a safe CDN URL in production/,
+    );
+  }
+});
+
+test("createMediaCdnUrl accepts production HTTPS CDN hosts", () => {
+  assert.equal(
+    createMediaCdnUrl("tenant-1/folder/hero image.png", {
+      MEDIA_CDN_BASE_URL: " https://media.brand-platform.com/assets/ ",
+      NODE_ENV: "production",
+    }),
+    "https://media.brand-platform.com/assets/tenant-1/folder/hero%20image.png",
   );
 });
 

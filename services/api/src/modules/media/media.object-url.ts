@@ -1,3 +1,4 @@
+import { isUnsafeProductionHostname } from "../../common/production-hostname.js";
 import { encodeMediaObjectKey } from "./media.object-key.js";
 
 export function createMediaObjectUrl(input: {
@@ -6,17 +7,17 @@ export function createMediaObjectUrl(input: {
   fallbackBaseUrl: string;
   fallbackMessage?: string;
   objectKey: string;
+  requireProductionSafeBaseUrl?: boolean;
 }): string {
-  const baseUrl = readSafeMediaBaseUrl(input.baseUrls);
+  const baseUrl = readSafeMediaBaseUrl(input.baseUrls, {
+    requireProductionSafeBaseUrl: input.requireProductionSafeBaseUrl,
+  });
 
   if (!baseUrl && input.allowFallback === false) {
     throw new MediaRuntimeConfigurationError(input.fallbackMessage);
   }
 
-  return buildObjectUrl(
-    baseUrl ?? input.fallbackBaseUrl,
-    input.objectKey,
-  );
+  return buildObjectUrl(baseUrl ?? input.fallbackBaseUrl, input.objectKey);
 }
 
 export class MediaRuntimeConfigurationError extends Error {
@@ -32,9 +33,10 @@ function buildObjectUrl(baseUrl: string, objectKey: string): string {
 
 function readSafeMediaBaseUrl(
   values: Array<string | undefined>,
+  options: { requireProductionSafeBaseUrl?: boolean },
 ): string | null {
   for (const value of values) {
-    const url = readSafeHttpUrl(value);
+    const url = readSafeHttpUrl(value, options);
 
     if (url) {
       return `${url.origin}${trimTrailingSlashes(url.pathname)}`;
@@ -44,7 +46,10 @@ function readSafeMediaBaseUrl(
   return null;
 }
 
-function readSafeHttpUrl(value: string | undefined): URL | null {
+function readSafeHttpUrl(
+  value: string | undefined,
+  options: { requireProductionSafeBaseUrl?: boolean },
+): URL | null {
   const trimmed = value?.trim();
 
   if (!trimmed) {
@@ -56,6 +61,9 @@ function readSafeHttpUrl(value: string | undefined): URL | null {
 
     if (
       !isHttpProtocol(url.protocol) ||
+      (options.requireProductionSafeBaseUrl && url.protocol !== "https:") ||
+      (options.requireProductionSafeBaseUrl &&
+        isUnsafeProductionHostname(url.hostname)) ||
       url.username ||
       url.password ||
       url.search ||

@@ -1,5 +1,6 @@
 import { BadRequestException } from "@nestjs/common";
 import { apiErrorCodes } from "@app-starter/schema";
+import { isUnsafeProductionHostname } from "../../common/production-hostname.js";
 import { DEFAULT_MEDIA_CDN_BASE_URL } from "./media.constants.js";
 
 export function assertAllowedMediaUrl(
@@ -64,42 +65,67 @@ export function readAllowedMediaUrlHosts(
 export function readExternalMediaUrlHosts(
   env: Record<string, string | undefined> = process.env,
 ): Set<string> {
-  return new Set(readHostsFromList(env.MEDIA_EXTERNAL_URL_HOSTS));
+  return new Set(
+    readHostsFromList(env.MEDIA_EXTERNAL_URL_HOSTS, {
+      rejectUnsafeProductionHost: isProductionEnv(env),
+    }),
+  );
 }
 
 export function readManagedMediaUrlHosts(
   env: Record<string, string | undefined> = process.env,
 ): Set<string> {
+  const rejectUnsafeProductionHost = isProductionEnv(env);
+  const urls = rejectUnsafeProductionHost
+    ? [env.MEDIA_CDN_BASE_URL]
+    : [env.MEDIA_CDN_BASE_URL, env.CDN_BASE_URL, DEFAULT_MEDIA_CDN_BASE_URL];
+
   return new Set(
-    [
-      readSafeHostFromHttpUrl(env.MEDIA_CDN_BASE_URL),
-      readSafeHostFromHttpUrl(env.CDN_BASE_URL),
-      readSafeHostFromHttpUrl(DEFAULT_MEDIA_CDN_BASE_URL),
-    ].filter((host): host is string => Boolean(host)),
+    urls
+      .map((url) =>
+        readSafeHostFromHttpUrl(url, {
+          rejectUnsafeProductionHost,
+          requireHttps: rejectUnsafeProductionHost,
+        }),
+      )
+      .filter((host): host is string => Boolean(host)),
   );
 }
 
-function readHostsFromList(value: string | undefined): string[] {
+function readHostsFromList(
+  value: string | undefined,
+  options: { rejectUnsafeProductionHost?: boolean },
+): string[] {
   if (!value) {
     return [];
   }
 
   return value
     .split(",")
-    .map((item) => readHostFromUrlOrHost(item.trim()))
+    .map((item) => readHostFromUrlOrHost(item.trim(), options))
     .filter((host): host is string => Boolean(host));
 }
 
-function readHostFromUrlOrHost(value: string): string | undefined {
+function readHostFromUrlOrHost(
+  value: string,
+  options: { rejectUnsafeProductionHost?: boolean },
+): string | undefined {
   if (!value) {
     return undefined;
   }
 
-  return readSafeHostFromHttpUrl(value) ?? readHostFromBareValue(value);
+  return (
+    readSafeHostFromHttpUrl(value, options) ??
+    readHostFromBareValue(value, options)
+  );
 }
 
 function readSafeHostFromHttpUrl(
   value: string | undefined,
+  options: {
+    rejectUnsafeProductionHost?: boolean;
+    requireHttps?: boolean;
+  },
 ): string | undefined {
   const trimmed = value?.trim();
 
@@ -112,6 +138,9 @@ function readSafeHostFromHttpUrl(
 
     if (
       !["http:", "https:"].includes(url.protocol) ||
+      (options.requireHttps && url.protocol !== "https:") ||
+      (options.rejectUnsafeProductionHost &&
+        isUnsafeProductionHostname(url.hostname)) ||
       url.username ||
       url.password ||
       url.search ||
@@ -126,16 +155,32 @@ function readSafeHostFromHttpUrl(
   }
 }
 
-function readHostFromBareValue(value: string): string | undefined {
+function readHostFromBareValue(
+  value: string,
+  options: { rejectUnsafeProductionHost?: boolean },
+): string | undefined {
   if (!value || /[/?#\\@]/.test(value)) {
     return undefined;
   }
 
   try {
-    return new URL(`https://${value}`).hostname.toLowerCase();
+    const url = new URL(`https://${value}`);
+
+    if (
+      options.rejectUnsafeProductionHost &&
+      isUnsafeProductionHostname(url.hostname)
+    ) {
+      return undefined;
+    }
+
+    return url.hostname.toLowerCase();
   } catch {
     return undefined;
   }
+}
+
+function isProductionEnv(env: Record<string, string | undefined>): boolean {
+  return env.NODE_ENV === "production";
 }
 
 function assertAllowedHost(

@@ -88,6 +88,7 @@ export function createMediaCdnUrl(
     fallbackMessage:
       "MEDIA_CDN_BASE_URL must be configured as a safe CDN URL in production.",
     objectKey: r2Key,
+    requireProductionSafeBaseUrl: isProductionEnv(env),
   });
 }
 
