@@ -1,3 +1,8 @@
+import {
+  hasDuplicateAttributeNames,
+  readAttribute,
+  readAttributeNames,
+} from "./rich-text-attributes.js";
 import { readSafeHref } from "./safe-href.js";
 
 const allowedTextTags = new Set([
@@ -16,8 +21,6 @@ const removableContentTags =
   /<\s*(script|style|iframe|object|embed|svg|math)\b[\s\S]*?<\s*\/\s*\1\s*>/gi;
 const remainingBlockedTags =
   /<\s*\/?\s*(script|style|iframe|object|embed|svg|math|link|meta)\b[^>]*>/gi;
-const attributeNamePattern = /(?:^|\s)([a-z0-9:_-]+)(?=\s*=|\s|$)/gi;
-const quotedAttributeValuePattern = /"[^"]*"|'[^']*'/g;
 const tagPattern = /<\/?[^>]+>/g;
 
 interface RichTextTag {
@@ -153,21 +156,6 @@ function hasSanitizedAnchorMarkup(rawAttributes: string): boolean {
   );
 }
 
-function hasDuplicateAttributeNames(names: string[]): boolean {
-  return new Set(names).size !== names.length;
-}
-
-function readAttributeNames(rawAttributes: string): string[] {
-  const searchableAttributes = rawAttributes.replace(
-    quotedAttributeValuePattern,
-    " ",
-  );
-
-  return Array.from(searchableAttributes.matchAll(attributeNamePattern)).map(
-    (match) => (match[1] ?? "").toLowerCase(),
-  );
-}
-
 function sanitizeAnchorTag(rawAttributes: string): SanitizedTag {
   const href = readSafeHref(readAttribute(rawAttributes, "href"));
 
@@ -186,18 +174,6 @@ function sanitizeAnchorTag(rawAttributes: string): SanitizedTag {
   return { html: `<a href="${escapeAttribute(href)}">` };
 }
 
-function readAttribute(rawAttributes: string, name: string): string | undefined {
-  const pattern = new RegExp(
-    `(?:^|\\s)${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s>"']+))`,
-    "i",
-  );
-  const match = pattern.exec(rawAttributes);
-
-  const value = match?.[1] ?? match?.[2] ?? match?.[3];
-
-  return value ? decodeAttributeValue(value) : undefined;
-}
-
 function escapeText(value: string | undefined): string {
   return (value ?? "")
     .replace(/&/g, "&amp;")
@@ -207,42 +183,4 @@ function escapeText(value: string | undefined): string {
 
 function escapeAttribute(value: string): string {
   return escapeText(value).replace(/"/g, "&quot;");
-}
-
-function decodeAttributeValue(value: string): string {
-  return value.replace(
-    /&(?:#(\d+)|#x([0-9a-f]+)|amp|lt|gt|quot|apos);/gi,
-    (entity, decimal: string | undefined, hexadecimal: string | undefined) => {
-      if (decimal) {
-        return readCodePoint(Number(decimal));
-      }
-
-      if (hexadecimal) {
-        return readCodePoint(Number.parseInt(hexadecimal, 16));
-      }
-
-      switch (entity.toLowerCase()) {
-        case "&amp;":
-          return "&";
-        case "&lt;":
-          return "<";
-        case "&gt;":
-          return ">";
-        case "&quot;":
-          return '"';
-        case "&apos;":
-          return "'";
-        default:
-          return entity;
-      }
-    },
-  );
-}
-
-function readCodePoint(value: number): string {
-  if (!Number.isInteger(value) || value < 0 || value > 0x10ffff) {
-    return "";
-  }
-
-  return String.fromCodePoint(value);
 }
