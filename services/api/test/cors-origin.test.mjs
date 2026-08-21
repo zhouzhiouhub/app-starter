@@ -70,6 +70,13 @@ test("CORS origin config rejects unsafe production origins", () => {
     }),
     [],
   );
+  assert.deepEqual(
+    readConfiguredCorsOrigins({
+      NODE_ENV: "production",
+      WEB_URL: "https://store.example",
+    }),
+    [],
+  );
 });
 
 test("CORS origin matcher allows configured and server-side requests", () => {

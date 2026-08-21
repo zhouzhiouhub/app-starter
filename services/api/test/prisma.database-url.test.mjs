@@ -89,6 +89,7 @@ test("database runtime config rejects local production hosts", () => {
 
 test("database runtime config rejects placeholder production hosts", () => {
   const placeholderUrls = [
+    "postgresql://postgres:secret@db.example:5432/app",
     "postgresql://postgres:secret@example.com:5432/app",
     "postgresql://postgres:secret@db.example.org:5432/app",
     "postgresql://postgres:secret@db.example.net:5432/app",

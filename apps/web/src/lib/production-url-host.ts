@@ -111,12 +111,7 @@ function readMappedIpv4(hostname: string): string | null {
     return null;
   }
 
-  return [
-    first >> 8,
-    first & 255,
-    second >> 8,
-    second & 255,
-  ].join(".");
+  return [first >> 8, first & 255, second >> 8, second & 255].join(".");
 }
 
 function isPlaceholderHostname(hostname: string): boolean {
@@ -125,6 +120,8 @@ function isPlaceholderHostname(hostname: string): boolean {
   return (
     isDocumentationIpv4(normalized) ||
     isMappedDocumentationIpv4(normalized) ||
+    normalized === "example" ||
+    normalized.endsWith(".example") ||
     normalized === "example.com" ||
     normalized.endsWith(".example.com") ||
     normalized === "example.org" ||

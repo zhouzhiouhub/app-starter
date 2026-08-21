@@ -69,12 +69,12 @@ test("media URL allowlist ignores unsafe configured CDN hosts", () => {
 test("media URL allowlist requires explicit safe managed CDN hosts in production", () => {
   const unsafeHosts = readAllowedMediaUrlHosts({
     CDN_BASE_URL: "https://legacy.brand-platform.com/assets",
-    MEDIA_CDN_BASE_URL: "https://cdn.local.invalid/media",
+    MEDIA_CDN_BASE_URL: "https://cdn.example/media",
     NODE_ENV: "production",
   });
 
   assert.equal(unsafeHosts.has("legacy.brand-platform.com"), false);
-  assert.equal(unsafeHosts.has("cdn.local.invalid"), false);
+  assert.equal(unsafeHosts.has("cdn.example"), false);
 
   const safeHosts = readAllowedMediaUrlHosts({
     CDN_BASE_URL: "https://legacy.brand-platform.com/assets",
@@ -88,7 +88,7 @@ test("media URL allowlist requires explicit safe managed CDN hosts in production
 test("media URL allowlist ignores unsafe external hosts in production", () => {
   const hosts = readAllowedMediaUrlHosts({
     MEDIA_EXTERNAL_URL_HOSTS:
-      "localhost, images.local.invalid, https://assets.brand-platform.com",
+      "localhost, images.local.invalid, https://assets.example, https://assets.brand-platform.com",
     NODE_ENV: "production",
   });
 

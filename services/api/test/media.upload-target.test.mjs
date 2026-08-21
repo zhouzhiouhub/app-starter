@@ -125,6 +125,7 @@ test("createMediaCdnUrl requires safe CDN base URLs in production", () => {
     "http://cdn.brand-platform.com/media",
     "https://localhost/media",
     "https://cdn.local.invalid/media",
+    "https://cdn.example/media",
     "https://cdn.example.com/media",
   ]) {
     assert.throws(

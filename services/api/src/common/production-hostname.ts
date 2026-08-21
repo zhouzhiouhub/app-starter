@@ -113,6 +113,8 @@ function isPlaceholderHostname(hostname: string): boolean {
   return (
     isDocumentationIpv4(hostname) ||
     isDocumentationIpv6(hostname) ||
+    hostname === "example" ||
+    hostname.endsWith(".example") ||
     hostname === "example.com" ||
     hostname.endsWith(".example.com") ||
     hostname === "example.org" ||
