@@ -26,6 +26,7 @@ export async function createPreviewToken(
     key: idempotencyKey,
     scope: `pages:${id}:preview-token`,
     site,
+    storeResponse: false,
     operation: async () => {
       const page = await prisma.page.findFirst({
         where: {

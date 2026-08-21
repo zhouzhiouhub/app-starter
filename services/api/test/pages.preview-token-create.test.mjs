@@ -64,7 +64,7 @@ test("createPreviewToken signs a tenant-scoped page token", async () => {
   });
 });
 
-test("createPreviewToken stores responses by idempotency key", async () => {
+test("createPreviewToken does not store preview tokens in idempotency records", async () => {
   await withEnv({ PREVIEW_TOKEN_SECRET: "preview-secret" }, async () => {
     const auditCalls = [];
     const idempotencyCalls = [];
@@ -91,10 +91,10 @@ test("createPreviewToken stores responses by idempotency key", async () => {
         },
         update(options) {
           idempotencyCalls.push(["update", options.data.status]);
-          assert.equal(options.data.response.data.slug, "campaign");
+          assert.equal("response" in options.data, false);
           storedRecord = {
             ...storedRecord,
-            response: options.data.response,
+            response: options.data.response ?? null,
             status: options.data.status,
           };
           return Promise.resolve(storedRecord);
@@ -131,17 +131,21 @@ test("createPreviewToken stores responses by idempotency key", async () => {
       key,
       createPageActor({ name: "Admin", scopes: ["page:read"] }),
     );
-    const second = await createPreviewToken(
-      prisma,
-      {
-        record: async (input) => auditCalls.push(input),
-      },
-      "page-1",
-      key,
-      createPageActor({ name: "Admin", scopes: ["page:read"] }),
-    );
 
-    assert.equal(first.data.token, second.data.token);
+    assert.equal(typeof first.data.token, "string");
+    await assert.rejects(
+      () =>
+        createPreviewToken(
+          prisma,
+          {
+            record: async (input) => auditCalls.push(input),
+          },
+          "page-1",
+          key,
+          createPageActor({ name: "Admin", scopes: ["page:read"] }),
+        ),
+      /Response for this Idempotency-Key is not replayable/,
+    );
     assert.equal(pageFinds, 1);
     assert.equal(auditCalls.length, 1);
     assert.deepEqual(idempotencyCalls, [

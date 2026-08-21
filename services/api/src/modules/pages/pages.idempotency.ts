@@ -14,6 +14,7 @@ export async function runIdempotent<TResponse>(
     operation: () => Promise<TResponse>;
     scope: string;
     site: IdempotencySite;
+    storeResponse?: boolean;
   },
 ): Promise<TResponse> {
   return runTenantIdempotent(prisma, {
@@ -21,6 +22,7 @@ export async function runIdempotent<TResponse>(
     key: options.key,
     operation: options.operation,
     scope: options.scope,
+    storeResponse: options.storeResponse,
     tenantId: options.site.tenantId,
   });
 }

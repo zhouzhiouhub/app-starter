@@ -11,6 +11,7 @@ export async function runTenantIdempotent<TResponse>(
     key: string | undefined;
     operation: () => Promise<TResponse>;
     scope: string;
+    storeResponse?: boolean;
     tenantId: string;
   },
 ): Promise<TResponse> {
@@ -70,7 +71,9 @@ export async function runTenantIdempotent<TResponse>(
       where: { id: record.id },
       data: {
         status: "completed",
-        response: response as Prisma.InputJsonValue,
+        ...(options.storeResponse === false
+          ? {}
+          : { response: response as Prisma.InputJsonValue }),
       },
     });
 
@@ -100,10 +103,18 @@ function readIdempotencyResponse<TResponse>(
     });
   }
 
-  if (record.status !== "completed" || record.response === null) {
+  if (record.status !== "completed") {
     throw new ConflictException({
       code: apiErrorCodes.CONFLICT,
       message: "A request with this Idempotency-Key is already in progress.",
+    });
+  }
+
+  if (record.response === null) {
+    throw new ConflictException({
+      code: apiErrorCodes.CONFLICT,
+      message:
+        "Response for this Idempotency-Key is not replayable. Retry with a new Idempotency-Key.",
     });
   }
 
