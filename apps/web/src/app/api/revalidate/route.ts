@@ -2,6 +2,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { NextResponse, type NextRequest } from "next/server";
 import { storefrontRevalidateSecretHeader } from "@app-starter/schema";
 import { readRevalidatePayload } from "../../../lib/revalidate-request";
+import { readRevalidateRequestId } from "../../../lib/revalidate-request-id";
 import { createRevalidateErrorBody } from "../../../lib/revalidate-response";
 import {
   hasValidRevalidateSecret,
@@ -75,7 +76,7 @@ export async function POST(request: NextRequest) {
 }
 
 function readRequestId(request: NextRequest): string {
-  return request.headers.get("x-request-id")?.trim() || "local-dev";
+  return readRevalidateRequestId(request.headers.get("x-request-id"));
 }
 
 function errorResponse(input: {
