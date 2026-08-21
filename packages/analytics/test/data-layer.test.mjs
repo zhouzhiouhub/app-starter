@@ -5,19 +5,25 @@ import { pushDataLayer, sanitizeAnalyticsPayload } from "../src/index.ts";
 test("analytics payload sanitizer removes reserved and sensitive fields", () => {
   assert.deepEqual(
     sanitizeAnalyticsPayload({
+      apiKey: "api-key-value",
+      authCookie: "session=abc",
       email: "buyer@example.com",
       event: "override",
       locale: "de-DE",
       nested: {
+        requestSignature: "signature-value",
+        sessionId: "session-id",
         phoneNumber: "+15551234567",
         plan: "pro",
       },
       orders: [
         {
+          r2AccessKeyId: "access-key",
           sku: "sku-1",
           token: "secret-token",
         },
       ],
+      paymentCredential: "credential-value",
       site_id: "other-site",
       value: 29,
     }),

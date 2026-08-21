@@ -16,11 +16,18 @@ const reservedDataLayerKeys = new Set([
 ]);
 
 const sensitivePayloadKeyFragments = [
+  "accesskey",
   "address",
+  "apikey",
+  "authorization",
+  "cookie",
+  "credential",
   "email",
   "password",
   "phone",
   "secret",
+  "session",
+  "signature",
   "token",
 ];
 
