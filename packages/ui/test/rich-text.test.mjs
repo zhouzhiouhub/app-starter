@@ -96,4 +96,10 @@ test("rich text sanitizer reports markup that will be rewritten", () => {
     ),
     true,
   );
+  assert.equal(
+    containsSanitizedRichTextMarkup(
+      '<a href="https://example.com" target="_blank">Visit</a>',
+    ),
+    true,
+  );
 });

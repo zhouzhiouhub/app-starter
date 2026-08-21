@@ -36,3 +36,12 @@ test("rich text feedback warns about unsafe links", () => {
     "warning",
   );
 });
+
+test("rich text feedback warns about new-tab links rewritten with rel", () => {
+  assert.equal(
+    readRichTextFeedback(
+      '<a href="https://example.com" target="_blank">Visit</a>',
+    ).status,
+    "warning",
+  );
+});

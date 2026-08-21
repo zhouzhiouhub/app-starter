@@ -151,6 +151,10 @@ function hasSanitizedAnchorMarkup(rawAttributes: string): boolean {
     return true;
   }
 
+  if (target === "_blank") {
+    return true;
+  }
+
   return attributeNames.some(
     (name) => name !== "href" && name !== "target",
   );
