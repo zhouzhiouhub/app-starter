@@ -1,27 +1,22 @@
-import { mkdir, writeFile } from "node:fs/promises";
-import { dirname } from "node:path";
 import { createSmokeEnvironmentDiagnostics } from "./environment-diagnostics.mjs";
 import {
   readSmokeErrorMessage,
   readSmokeFailureDetails,
 } from "./smoke-report-errors.mjs";
+import { smokeReportSchemaVersion } from "./smoke-report-contract.mjs";
+import { refreshSmokeReportSummary } from "./smoke-report-summary.mjs";
 import { createSmokeProductionReadiness } from "./smoke-readiness.mjs";
 import { redactSmokeReportValue } from "./smoke-secrets.mjs";
 
-export const smokeReportSchemaVersion = "smoke-report.v2";
-const smokeCheckStatuses = new Set(["failed", "passed"]);
-const writableReportFields = [
-  "checks",
-  "config",
-  "environment",
-  "productionReadiness",
-  "schemaVersion",
-  "slug",
-  "startedAt",
-  "status",
-  "summary",
-  "title",
-];
+export { smokeReportSchemaVersion } from "./smoke-report-contract.mjs";
+export {
+  createSmokeReportSummary,
+  refreshSmokeReportSummary,
+} from "./smoke-report-summary.mjs";
+export {
+  assertSmokeReportWritable,
+  writeSmokeReportIfConfigured,
+} from "./smoke-report-writer.mjs";
 
 export function createSmokeReport(input, title, now = new Date()) {
   const config = createSmokeReportConfig(input);
@@ -108,163 +103,4 @@ export function failSmokeReport(report, error) {
   report.finishedAt = new Date().toISOString();
   report.status = "failed";
   refreshSmokeReportSummary(report);
-}
-
-export function createSmokeReportSummary(report) {
-  const checks = Array.isArray(report?.checks) ? report.checks : [];
-  const failedCheckEntries = checks.filter(
-    (check) => check?.status === "failed",
-  );
-  const failedChecks = failedCheckEntries.map((check, index) =>
-    readCheckName(check, index),
-  );
-  const passedCheckCount = checks.filter(
-    (check) => check?.status === "passed",
-  ).length;
-  const readiness = readPlainRecord(report?.productionReadiness);
-
-  return {
-    blockerCount: readArrayLength(readiness.blockers),
-    checkCount: checks.length,
-    failedCheckCount: failedCheckEntries.length,
-    failedChecks,
-    passedCheckCount,
-    productionReady: readiness.productionReady === true,
-    status: typeof report?.status === "string" ? report.status : "unknown",
-    warningCount: readArrayLength(readiness.warnings),
-  };
-}
-
-function readCheckName(check, index) {
-  return typeof check?.name === "string" && check.name.length > 0
-    ? check.name
-    : `unnamed-check-${index + 1}`;
-}
-
-export function refreshSmokeReportSummary(report) {
-  report.summary = createSmokeReportSummary(report);
-  return report.summary;
-}
-
-function readArrayLength(value) {
-  return Array.isArray(value) ? value.length : 0;
-}
-
-function readPlainRecord(value) {
-  return value && typeof value === "object" && !Array.isArray(value)
-    ? value
-    : {};
-}
-
-export async function writeSmokeReportIfConfigured(input, report) {
-  if (!input.reportPath) {
-    return;
-  }
-
-  if (isPlainRecord(report)) {
-    refreshSmokeReportSummary(report);
-  }
-  assertSmokeReportWritable(report);
-  await mkdir(dirname(input.reportPath), { recursive: true });
-  await writeFile(
-    input.reportPath,
-    `${JSON.stringify(redactSmokeReportValue(report), null, 2)}\n`,
-    "utf8",
-  );
-  console.log(`Smoke report written: ${input.reportPath}`);
-}
-
-export function assertSmokeReportWritable(report) {
-  const missingFields = writableReportFields.filter(
-    (field) => !hasReportField(report, field),
-  );
-
-  if (report?.schemaVersion !== smokeReportSchemaVersion) {
-    missingFields.push("schemaVersion");
-  }
-
-  if (missingFields.length > 0) {
-    throw new Error(
-      `Smoke report is missing required fields: ${[
-        ...new Set(missingFields),
-      ].join(", ")}.`,
-    );
-  }
-
-  if (!Array.isArray(report.checks)) {
-    throw new Error("Smoke report checks must be an array.");
-  }
-  assertSmokeReportChecksWellFormed(report.checks);
-
-  if (!isPlainRecord(report.productionReadiness)) {
-    throw new Error("Smoke report productionReadiness must be an object.");
-  }
-
-  if (!isPlainRecord(report.summary)) {
-    throw new Error("Smoke report summary must be an object.");
-  }
-
-  assertSmokeReportSummaryCurrent(report);
-}
-
-function assertSmokeReportSummaryCurrent(report) {
-  const expectedSummary = createSmokeReportSummary(report);
-
-  if (JSON.stringify(report.summary) !== JSON.stringify(expectedSummary)) {
-    throw new Error("Smoke report summary is stale.");
-  }
-}
-
-function assertSmokeReportChecksWellFormed(checks) {
-  for (const [index, check] of checks.entries()) {
-    if (!isPlainRecord(check) || !smokeCheckStatuses.has(check.status)) {
-      throw new Error(
-        `Smoke report check at index ${index} must have status passed or failed.`,
-      );
-    }
-
-    if (check.status === "passed" && !isIsoDateString(check.passedAt)) {
-      throw new Error(
-        `Smoke report passed check at index ${index} must include passedAt.`,
-      );
-    }
-
-    if (check.status === "failed" && !isIsoDateString(check.failedAt)) {
-      throw new Error(
-        `Smoke report failed check at index ${index} must include failedAt.`,
-      );
-    }
-
-    if (check.status === "failed" && !isFailureErrorRecord(check.error)) {
-      throw new Error(
-        `Smoke report failed check at index ${index} must include an error message.`,
-      );
-    }
-  }
-}
-
-function isIsoDateString(value) {
-  if (typeof value !== "string") {
-    return false;
-  }
-
-  const date = new Date(value);
-
-  return !Number.isNaN(date.getTime()) && date.toISOString() === value;
-}
-
-function isFailureErrorRecord(value) {
-  return (
-    isPlainRecord(value) &&
-    typeof value.message === "string" &&
-    value.message.length > 0
-  );
-}
-
-function hasReportField(report, field) {
-  return report && typeof report === "object" && field in report;
-}
-
-function isPlainRecord(value) {
-  return value && typeof value === "object" && !Array.isArray(value);
 }
