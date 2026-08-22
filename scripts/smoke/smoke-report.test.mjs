@@ -105,7 +105,7 @@ test("smoke report validates required fields before writing", () => {
         checks: [],
         schemaVersion: smokeReportSchemaVersion,
       }),
-    /config, environment, productionReadiness, slug, startedAt, status, summary, title/,
+    /config, error, environment, finishedAt, pageId, productionReadiness, slug, startedAt, status, storefrontRequestUrl, storefrontUrl, summary, title/,
   );
   assert.throws(
     () =>
