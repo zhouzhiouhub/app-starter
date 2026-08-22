@@ -49,6 +49,11 @@ const SettingsPage = lazy(() =>
     default: module.SettingsPage,
   })),
 );
+const PlaceholderPage = lazy(() =>
+  import("./features/shell/placeholder-page").then((module) => ({
+    default: module.PlaceholderPage,
+  })),
+);
 
 function RouteLoadingFallback() {
   return (
@@ -83,10 +88,37 @@ export function AdminApp() {
               <Route element={<PagesListPage />} path="/pages" />
               <Route element={<PageEditorPage />} path="/pages/:pageId" />
               <Route
+                element={
+                  <PlaceholderPage
+                    description="Token governance is reserved while Page Builder uses the shared design-token package."
+                    title="Design System"
+                  />
+                }
+                path="/design-system"
+              />
+              <Route
                 element={<MediaPage />}
                 path="/media"
               />
               <Route element={<LocalizationPage />} path="/localization" />
+              <Route
+                element={
+                  <PlaceholderPage
+                    description="GTM, GA4, Clarity, and consent defaults are managed from Settings in this MVP slice."
+                    title="Analytics"
+                  />
+                }
+                path="/analytics"
+              />
+              <Route
+                element={
+                  <PlaceholderPage
+                    description="Authentication and RBAC are active; team management remains a controlled Phase 1 slice."
+                    title="Users"
+                  />
+                }
+                path="/users"
+              />
               <Route
                 element={<SettingsPage />}
                 path="/settings"

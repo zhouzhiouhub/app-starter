@@ -1,8 +1,11 @@
 export const adminMenuItems = [
   { key: "/", label: "Dashboard" },
   { key: "/pages", label: "Pages" },
+  { key: "/design-system", label: "Design System" },
   { key: "/media", label: "Media" },
   { key: "/localization", label: "Localization" },
+  { key: "/analytics", label: "Analytics" },
+  { key: "/users", label: "Users" },
   { key: "/settings", label: "Settings" },
   { key: "/audit-logs", label: "Audit Logs" },
 ] as const;

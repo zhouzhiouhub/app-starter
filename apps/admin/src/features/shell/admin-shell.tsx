@@ -1,10 +1,13 @@
 import {
   AuditOutlined,
   AppstoreOutlined,
+  BgColorsOutlined,
   FileTextOutlined,
   GlobalOutlined,
+  LineChartOutlined,
   PictureOutlined,
   SettingOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
 import { Layout, Menu, Typography } from "antd";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -19,11 +22,14 @@ const { Content, Header, Sider } = Layout;
 
 const menuIcons = {
   "/": <AppstoreOutlined />,
+  "/analytics": <LineChartOutlined />,
   "/audit-logs": <AuditOutlined />,
+  "/design-system": <BgColorsOutlined />,
   "/localization": <GlobalOutlined />,
   "/media": <PictureOutlined />,
   "/pages": <FileTextOutlined />,
   "/settings": <SettingOutlined />,
+  "/users": <UserOutlined />,
 } as const;
 
 export function AdminShell() {
