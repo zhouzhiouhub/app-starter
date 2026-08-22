@@ -19,3 +19,20 @@ test("publish smoke help explains report path production readiness", () => {
   assert.match(messages[0], /Optional for local runs/);
   assert.match(messages[0], /required for production readiness/);
 });
+
+test("publish smoke help does not print default local credentials", () => {
+  const originalLog = console.log;
+  const messages = [];
+
+  try {
+    console.log = (message) => messages.push(String(message));
+
+    printHelp();
+  } finally {
+    console.log = originalLog;
+  }
+
+  assert.equal(messages.length, 1);
+  assert.doesNotMatch(messages[0], /admin@example\.com/);
+  assert.doesNotMatch(messages[0], /ChangeMe123/);
+});

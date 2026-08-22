@@ -1,10 +1,8 @@
 import {
   defaultAdminUrl,
   defaultApiUrl,
-  defaultEmail,
   defaultLocale,
   defaultMarket,
-  defaultPassword,
   defaultTenantSlug,
   defaultWebUrl,
 } from "./publish-smoke-config-defaults.mjs";
@@ -22,8 +20,8 @@ Environment:
   API_URL                         API origin or /api/v1 base. Default: ${defaultApiUrl}
   WEB_URL                         Storefront origin. Default: ${defaultWebUrl}
   SMOKE_STOREFRONT_HOST           Optional public storefront host sent as x-storefront-host for multi-domain smoke.
-  SMOKE_ADMIN_EMAIL               Admin email. Default: SEED_ADMIN_EMAIL or ${defaultEmail}
-  SMOKE_ADMIN_PASSWORD            Admin password. Default: SEED_ADMIN_PASSWORD or ${defaultPassword}
+  SMOKE_ADMIN_EMAIL               Admin email. Default: SEED_ADMIN_EMAIL or the documented local seed account.
+  SMOKE_ADMIN_PASSWORD            Admin password. Default: SEED_ADMIN_PASSWORD or the documented local seed password.
   SMOKE_TENANT_SLUG               Tenant slug. Default: ${defaultTenantSlug}
   SMOKE_PAGE_SLUG                 Optional fixed lowercase page slug.
   SMOKE_LOCALE                    Locale code. Default: ${defaultLocale}
