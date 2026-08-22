@@ -24,6 +24,11 @@ const LoginPage = lazy(() =>
     default: module.LoginPage,
   })),
 );
+const LocalizationPage = lazy(() =>
+  import("./pages/localization/localization-page").then((module) => ({
+    default: module.LocalizationPage,
+  })),
+);
 const MediaPage = lazy(() =>
   import("./pages/media/media-page").then((module) => ({
     default: module.MediaPage,
@@ -42,11 +47,6 @@ const PagesListPage = lazy(() =>
 const SettingsPage = lazy(() =>
   import("./pages/settings/settings-page").then((module) => ({
     default: module.SettingsPage,
-  })),
-);
-const PlaceholderPage = lazy(() =>
-  import("./features/shell/placeholder-page").then((module) => ({
-    default: module.PlaceholderPage,
   })),
 );
 
@@ -86,15 +86,7 @@ export function AdminApp() {
                 element={<MediaPage />}
                 path="/media"
               />
-              <Route
-                element={
-                  <PlaceholderPage
-                    description="MVP keeps the default en-US locale. Market and translation admin comes later."
-                    title="Localization"
-                  />
-                }
-                path="/localization"
-              />
+              <Route element={<LocalizationPage />} path="/localization" />
               <Route
                 element={<SettingsPage />}
                 path="/settings"
