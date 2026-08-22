@@ -63,3 +63,15 @@ test("smoke environment diagnostics requires production revalidation URLs", () =
     assert.equal(diagnostics.revalidation.urlIssue, issue);
   }
 });
+
+test("smoke environment diagnostics rejects misspelled revalidation flags", () => {
+  assert.throws(
+    () =>
+      createSmokeEnvironmentDiagnostics({
+        SMOKE_REQUIRE_REVALIDATION: "flase",
+        STOREFRONT_REVALIDATE_SECRET: "secret-value",
+        STOREFRONT_REVALIDATE_URL: "https://web.brand.com/api/revalidate",
+      }),
+    /SMOKE_REQUIRE_REVALIDATION must be true or false/,
+  );
+});

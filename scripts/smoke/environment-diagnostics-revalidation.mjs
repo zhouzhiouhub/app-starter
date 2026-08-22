@@ -133,7 +133,15 @@ function readBooleanEnv(env, name, fallback) {
     return fallback;
   }
 
-  return ["1", "true", "yes", "on"].includes(value);
+  if (["1", "true", "yes", "on"].includes(value)) {
+    return true;
+  }
+
+  if (["0", "false", "no", "off"].includes(value)) {
+    return false;
+  }
+
+  throw new Error(`${name} must be true or false.`);
 }
 
 function readEnv(env, name) {
