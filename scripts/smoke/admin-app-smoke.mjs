@@ -205,6 +205,10 @@ function readModuleScriptReference(text, baseUrl) {
       return createInvalidModuleScriptReference("embedded-credentials");
     }
 
+    if (url.search || url.hash) {
+      return createInvalidModuleScriptReference("unsupported-url-parts");
+    }
+
     if (url.origin !== base.origin) {
       return createInvalidModuleScriptReference("cross-origin");
     }
