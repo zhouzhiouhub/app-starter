@@ -45,6 +45,40 @@ test("publish preflight allows non-default locale when multi-locale is enabled",
   );
 });
 
+test("publish preflight blocks empty pages", () => {
+  const schema = structuredClone(exampleLandingPage);
+  schema.sections = [];
+  schema.layout.desktop.sectionOrder = [];
+  schema.layout.mobile.sectionOrder = [];
+
+  const issues = collectPublishPreflightIssues(schema);
+  const blocker = findBlockingPublishPreflightIssue(schema);
+
+  assert.deepEqual(
+    issues.map((issue) => [issue.field, issue.severity]),
+    [["sections", "error"]],
+  );
+  assert.match(issues[0].message, /at least one section/);
+  assert.equal(blocker?.field, "sections");
+});
+
+test("publish preflight blocks duplicate section ids", () => {
+  const schema = structuredClone(exampleLandingPage);
+  schema.sections.push({
+    ...structuredClone(schema.sections[0]),
+  });
+
+  const issues = collectPublishPreflightIssues(schema);
+  const blocker = findBlockingPublishPreflightIssue(schema);
+
+  assert.deepEqual(
+    issues.map((issue) => [issue.field, issue.severity]),
+    [["sections[2].id", "error"]],
+  );
+  assert.match(issues[0].message, /duplicated/);
+  assert.equal(blocker?.field, "sections[2].id");
+});
+
 test("publish preflight blocks unsafe chrome links", () => {
   const schema = structuredClone(exampleLandingPage);
 

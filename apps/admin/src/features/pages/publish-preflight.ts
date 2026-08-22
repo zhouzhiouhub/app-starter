@@ -8,6 +8,7 @@ import {
 } from "./publish-preflight-types.ts";
 import { readSafeHrefFeedback } from "./safe-href-feedback.ts";
 import { readSeoFieldFeedback } from "./seo-feedback.ts";
+import { collectPageStructurePreflightIssues } from "./page-structure-publish-preflight.ts";
 import { collectSectionPreflightIssues } from "./section-publish-preflight.ts";
 import type { SeoField } from "./seo-updates";
 
@@ -45,6 +46,7 @@ export function collectPublishPreflightIssues(
   const issues: PublishPreflightIssue[] = [];
 
   collectLocaleIssues(schema, issues, options);
+  issues.push(...collectPageStructurePreflightIssues(schema));
   collectChromeIssues(schema, issues);
   collectSeoIssues(schema, issues);
   issues.push(...collectSectionPreflightIssues(schema));
