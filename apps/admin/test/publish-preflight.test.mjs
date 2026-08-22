@@ -5,6 +5,7 @@ import {
   collectPublishPreflightIssues,
   findBlockingPublishPreflightIssue,
   formatPublishPreflightWarningSummary,
+  summarizePublishPreflightIssues,
 } from "../src/features/pages/publish-preflight.ts";
 
 test("publish preflight accepts the example landing page", () => {
@@ -212,5 +213,52 @@ test("publish preflight summarizes non-blocking warnings", () => {
   assert.match(summary ?? "", /Open Graph image:/);
   assert.match(summary ?? "", /hero-banner CTA link:/);
   assert.match(summary ?? "", /Rich text section 2:/);
-  assert.match(summary ?? "", /1 more warning also need review\./);
+  assert.match(summary ?? "", /1 more warning also needs review\./);
+});
+
+test("publish preflight summarizes readiness counts", () => {
+  assert.deepEqual(summarizePublishPreflightIssues([]), {
+    errorCount: 0,
+    message: "Publish checks passed.",
+    status: "ready",
+    warningCount: 0,
+  });
+
+  assert.deepEqual(
+    summarizePublishPreflightIssues([
+      {
+        field: "seo.ogImage",
+        message: "Open Graph image needs review.",
+        severity: "warning",
+      },
+    ]),
+    {
+      errorCount: 0,
+      message: "Publish has 1 non-blocking warning.",
+      status: "warning",
+      warningCount: 1,
+    },
+  );
+});
+
+test("publish preflight marks readiness as blocked when errors exist", () => {
+  const summary = summarizePublishPreflightIssues([
+    {
+      field: "seo.canonical",
+      message: "Canonical URL is unsafe.",
+      severity: "error",
+    },
+    {
+      field: "seo.ogImage",
+      message: "Open Graph image needs review.",
+      severity: "warning",
+    },
+  ]);
+
+  assert.deepEqual(summary, {
+    errorCount: 1,
+    message: "Publish blocked by 1 error and 1 non-blocking warning.",
+    status: "blocked",
+    warningCount: 1,
+  });
 });

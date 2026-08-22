@@ -31,6 +31,13 @@ export interface PublishPreflightOptions {
   multiLocaleEnabled?: boolean;
 }
 
+export interface PublishPreflightIssueSummary {
+  errorCount: number;
+  message: string;
+  status: "blocked" | "ready" | "warning";
+  warningCount: number;
+}
+
 export function collectPublishPreflightIssues(
   schema: PageSchema,
   options: PublishPreflightOptions = {},
@@ -74,12 +81,64 @@ export function formatPublishPreflightWarningSummary(
   const warningLabel = warnings.length === 1 ? "warning" : "warnings";
   const remainingSuffix =
     remainingCount > 0
-      ? ` ${remainingCount} more ${remainingCount === 1 ? "warning" : "warnings"} also need review.`
+      ? ` ${remainingCount} more ${remainingCount === 1 ? "warning" : "warnings"} also ${
+          remainingCount === 1 ? "needs" : "need"
+        } review.`
       : "";
 
   return `Review ${warnings.length} non-blocking publish ${warningLabel}: ${visibleWarnings
     .map((issue) => issue.message)
     .join(" ")}${remainingSuffix}`;
+}
+
+export function summarizePublishPreflightIssues(
+  issues: PublishPreflightIssue[],
+): PublishPreflightIssueSummary {
+  const errorCount = issues.filter((issue) => issue.severity === "error").length;
+  const warningCount = issues.filter(
+    (issue) => issue.severity === "warning",
+  ).length;
+
+  if (errorCount > 0) {
+    return {
+      errorCount,
+      message: `Publish blocked by ${formatIssueCount(
+        errorCount,
+        "error",
+      )}${formatWarningCount(warningCount)}.`,
+      status: "blocked",
+      warningCount,
+    };
+  }
+
+  if (warningCount > 0) {
+    return {
+      errorCount,
+      message: `Publish has ${formatIssueCount(
+        warningCount,
+        "non-blocking warning",
+      )}.`,
+      status: "warning",
+      warningCount,
+    };
+  }
+
+  return {
+    errorCount,
+    message: "Publish checks passed.",
+    status: "ready",
+    warningCount,
+  };
+}
+
+function formatIssueCount(count: number, label: string): string {
+  return `${count} ${label}${count === 1 ? "" : "s"}`;
+}
+
+function formatWarningCount(count: number): string {
+  return count > 0
+    ? ` and ${formatIssueCount(count, "non-blocking warning")}`
+    : "";
 }
 
 function collectLocaleIssues(

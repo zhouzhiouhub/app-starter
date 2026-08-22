@@ -39,6 +39,7 @@ export function PageEditorPage() {
       isDraftDirty={editor.isDraftDirty}
       isPublishing={editor.isPublishing}
       isSaving={editor.isSaving}
+      mediaFeedback={editor.mediaFeedback}
       mediaReferences={editor.mediaReferences}
       mediaResolver={editor.mediaResolver}
       onFeedbackClose={() => editor.setFeedback(null)}

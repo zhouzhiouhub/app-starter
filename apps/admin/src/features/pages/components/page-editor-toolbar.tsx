@@ -25,11 +25,15 @@ export function PageEditorToolbar(props: {
   onSaveDraft: () => void;
   onUndo: () => void;
   pageId: string;
+  publishDisabled: boolean;
   published: boolean;
   siteDomain: string;
   slug: string;
 }) {
   const navigate = useNavigate();
+  const publishTitle = props.publishDisabled
+    ? "Resolve publish errors before publishing"
+    : "Publish";
 
   return (
     <Space>
@@ -69,14 +73,17 @@ export function PageEditorToolbar(props: {
       >
         Preview
       </Button>
-      <Button
-        icon={<UploadOutlined />}
-        loading={props.isPublishing}
-        onClick={props.onPublish}
-        type="primary"
-      >
-        Publish
-      </Button>
+      <Tooltip title={publishTitle}>
+        <Button
+          disabled={props.publishDisabled}
+          icon={<UploadOutlined />}
+          loading={props.isPublishing}
+          onClick={props.onPublish}
+          type="primary"
+        >
+          Publish
+        </Button>
+      </Tooltip>
       <Button
         icon={<AuditOutlined />}
         onClick={() => navigate(buildPageAuditLogPath(props.pageId))}

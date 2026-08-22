@@ -6,13 +6,20 @@ import {
   type PageSchema,
   type Viewport,
 } from "@app-starter/schema";
+import type { MediaResolverFeedback } from "../../media/media-resolver-feedback";
 import type { MediaResolverState } from "../../media/hooks/use-media-resolver";
+import { readMediaPublishPreflightIssue } from "../media-publish-preflight";
+import {
+  collectPublishPreflightIssues,
+  findBlockingPublishPreflightIssueFromIssues,
+} from "../publish-preflight";
 import { getStorefrontPageUrl } from "../storefront-url";
 import type { EditorFeedback, PageSummary, PageVersionSummary } from "../types";
 import { ChromeSettingsPanel } from "./chrome-settings-panel";
 import { PageContentFields } from "./page-content-fields";
 import { PageEditorToolbar } from "./page-editor-toolbar";
 import { PagePreviewPane } from "./page-preview-pane";
+import { PublishPreflightPanel } from "./publish-preflight-panel";
 import { PageSectionList } from "./page-section-list";
 import { PublicationHistoryPanel } from "./publication-history-panel";
 import { SectionLibraryPanel } from "./section-library-panel";
@@ -27,6 +34,7 @@ export function PageEditor(props: {
   isDraftDirty: boolean;
   isPublishing: boolean;
   isSaving: boolean;
+  mediaFeedback: MediaResolverFeedback | null;
   mediaReferences: MediaAssetReference[];
   mediaResolver: MediaResolverState;
   onFeedbackClose: () => void;
@@ -56,6 +64,15 @@ export function PageEditor(props: {
       orderedSections.find((section) => section.id === selectedSectionId) ??
       null,
     [orderedSections, selectedSectionId],
+  );
+  const publishPreflightIssues = useMemo(() => {
+    const issues = collectPublishPreflightIssues(props.schema);
+    const mediaIssue = readMediaPublishPreflightIssue(props.mediaFeedback);
+
+    return mediaIssue ? [...issues, mediaIssue] : issues;
+  }, [props.mediaFeedback, props.schema]);
+  const publishDisabled = Boolean(
+    findBlockingPublishPreflightIssueFromIssues(publishPreflightIssues),
   );
 
   useEffect(() => {
@@ -104,6 +121,7 @@ export function PageEditor(props: {
           onSaveDraft={props.onSaveDraft}
           onUndo={props.onUndo}
           pageId={props.page.id}
+          publishDisabled={publishDisabled}
           published={props.page.status === "published"}
           siteDomain={props.page.siteDomain}
           slug={props.page.slug}
@@ -119,6 +137,7 @@ export function PageEditor(props: {
           type={props.feedback.type}
         />
       ) : null}
+      <PublishPreflightPanel issues={publishPreflightIssues} />
       <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
         <Tag color={props.page.status === "published" ? "green" : "default"}>
           {props.page.status}
