@@ -76,6 +76,46 @@ test("parsePageSchema forces the stored slug", () => {
   assert.equal(schema.meta.slug, "home");
 });
 
+test("parsePageSchema normalizes desktop and mobile section order", () => {
+  const schema = parsePageSchema(
+    {
+      data: {
+        version: "1.0",
+        meta: { slug: "other", title: "Home" },
+        layout: {
+          desktop: { sectionOrder: ["copy", "missing", "hero", "copy"] },
+          mobile: { sectionOrder: ["missing", "hero"] },
+        },
+        sections: [
+          {
+            id: "hero",
+            component: "hero-banner",
+            props: {},
+            layout: {
+              desktop: { x: 0, y: 0, width: 1200 },
+              mobile: { x: 0, y: 0, width: 390 },
+            },
+          },
+          {
+            id: "copy",
+            component: "rich-text",
+            props: {},
+            layout: {
+              desktop: { x: 0, y: 600, width: 1200 },
+              mobile: { x: 0, y: 600, width: 390 },
+            },
+          },
+        ],
+        seo: { title: "Home" },
+      },
+    },
+    "home",
+  );
+
+  assert.deepEqual(schema.layout.desktop.sectionOrder, ["copy", "hero"]);
+  assert.deepEqual(schema.layout.mobile.sectionOrder, ["hero", "copy"]);
+});
+
 test("parsePageSchema rejects invalid stored slugs", () => {
   assert.throws(() =>
     parsePageSchema(

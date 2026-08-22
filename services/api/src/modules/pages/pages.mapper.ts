@@ -4,6 +4,7 @@ import {
   pageSchema,
   pageSlugSchema,
   pageTemplateIdSchema,
+  setSectionOrderForViewport,
   type PageSchema,
   type PageTemplateId,
 } from "@app-starter/schema";
@@ -53,13 +54,27 @@ export function parsePageSchema(input: unknown, slug: string): PageSchema {
       ? (payload.meta as Record<string, unknown>)
       : {};
 
-  return pageSchema.parse({
-    ...payload,
-    meta: {
-      ...candidateMeta,
-      slug,
-    },
-  });
+  return normalizePageSectionOrders(
+    pageSchema.parse({
+      ...payload,
+      meta: {
+        ...candidateMeta,
+        slug,
+      },
+    }),
+  );
+}
+
+function normalizePageSectionOrders(schema: PageSchema): PageSchema {
+  return setSectionOrderForViewport(
+    setSectionOrderForViewport(
+      schema,
+      "desktop",
+      schema.layout.desktop.sectionOrder ?? [],
+    ),
+    "mobile",
+    schema.layout.mobile.sectionOrder ?? [],
+  );
 }
 
 export function resolvePageType(
