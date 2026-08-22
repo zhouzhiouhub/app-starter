@@ -226,8 +226,8 @@ come from `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD`; set non-default
 admin account must include `audit:read`; rerun the seed after pulling role
 changes if the audit log check returns 403.
 Set `SMOKE_REPORT_PATH=tmp/smoke-report.json` to write a machine-readable report
-with the checked slug, page ID, storefront URL, analytics diagnostics, feature
-flag diagnostics, database diagnostics, identity diagnostics, media environment
+with the checked slug, page ID, storefront request URL, public storefront URL,
+analytics diagnostics, feature flag diagnostics, database diagnostics, identity diagnostics, media environment
 diagnostics, revalidation environment diagnostics, and passed/failed check list. If the smoke
 run fails, the report records the failed check name, error message, and
 structured failure details in `summary.failedCheckDetails` so production R2 /
