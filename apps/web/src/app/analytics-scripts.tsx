@@ -8,6 +8,7 @@ import {
   readAnalyticsRuntimeConfig,
   shouldLoadAnalyticsScripts,
 } from "../lib/analytics-config";
+import { shouldRenderGtmNoScriptFallback } from "../lib/analytics-noscript-policy";
 
 export function AnalyticsScripts() {
   const config = readAnalyticsRuntimeConfig();
@@ -23,18 +24,20 @@ export function AnalyticsScripts() {
           <Script id="gtm-loader" strategy="afterInteractive">
             {createGtmLoader(config.gtmContainerId)}
           </Script>
-          <noscript>
-            <iframe
-              height="0"
-              src={`https://www.googletagmanager.com/ns.html?id=${encodeURIComponent(
-                config.gtmContainerId,
-              )}`}
-              referrerPolicy="no-referrer"
-              style={{ display: "none", visibility: "hidden" }}
-              title="Google Tag Manager"
-              width="0"
-            />
-          </noscript>
+          {shouldRenderGtmNoScriptFallback() ? (
+            <noscript>
+              <iframe
+                height="0"
+                src={`https://www.googletagmanager.com/ns.html?id=${encodeURIComponent(
+                  config.gtmContainerId,
+                )}`}
+                referrerPolicy="no-referrer"
+                style={{ display: "none", visibility: "hidden" }}
+                title="Google Tag Manager"
+                width="0"
+              />
+            </noscript>
+          ) : null}
         </>
       ) : null}
       {config.ga4MeasurementId ? (
