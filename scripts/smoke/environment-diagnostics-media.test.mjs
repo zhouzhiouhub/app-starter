@@ -13,7 +13,8 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
     JWT_PUBLIC_KEY:
       "-----BEGIN PUBLIC KEY-----\\npublic-key-body\\n-----END PUBLIC KEY-----",
     MEDIA_CDN_BASE_URL: "https://cdn.brand-assets.com/media",
-    MEDIA_EXTERNAL_URL_HOSTS: "images.example.com, https://assets.example.org",
+    MEDIA_EXTERNAL_URL_HOSTS:
+      "images.brand-assets.com, https://assets.brand-assets.org",
     COMMERCE_ENABLED: "false",
     MULTI_LOCALE_ENABLED: "false",
     R2_ACCESS_KEY_ID: "access-key",
@@ -138,7 +139,9 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
       cdnUrlIssue: null,
       cdnUrlSafe: true,
       cdnUsesLocalFallback: false,
-      externalUrlHosts: ["images.example.com", "assets.example.org"],
+      externalUrlHostIssues: [],
+      externalUrlHosts: ["images.brand-assets.com", "assets.brand-assets.org"],
+      externalUrlHostsProductionReady: true,
       r2: {
         configured: true,
         missingRequired: [],
@@ -204,6 +207,9 @@ test("smoke environment diagnostics reports missing R2 and CDN fallback", () => 
   assert.equal(diagnostics.media.cdnUrlIssue, "local-host");
   assert.equal(diagnostics.media.cdnUrlSafe, false);
   assert.equal(diagnostics.media.cdnUsesLocalFallback, true);
+  assert.deepEqual(diagnostics.media.externalUrlHostIssues, []);
+  assert.deepEqual(diagnostics.media.externalUrlHosts, []);
+  assert.equal(diagnostics.media.externalUrlHostsProductionReady, true);
   assert.equal(diagnostics.analytics.productionReady, true);
   assert.equal(diagnostics.database.configured, false);
   assert.equal(diagnostics.database.productionReady, false);
@@ -307,4 +313,46 @@ test("smoke environment diagnostics reports unsafe CDN configuration", () => {
   assert.equal(placeholderHost.media.cdnProductionReady, false);
   assert.equal(placeholderHost.media.cdnUrlSafe, false);
   assert.equal(placeholderHost.media.cdnUsesLocalFallback, false);
+});
+
+test("smoke environment diagnostics reports unsafe external media hosts", () => {
+  const diagnostics = createSmokeEnvironmentDiagnostics({
+    MEDIA_EXTERNAL_URL_HOSTS:
+      "images.brand-assets.com, http://assets.brand-assets.com, https://user:secret@private.brand-assets.com, https://cdn.brand-assets.com/path?token=1, localhost, cdn.example.com, bad host",
+  });
+
+  assert.deepEqual(diagnostics.media.externalUrlHosts, [
+    "images.brand-assets.com",
+  ]);
+  assert.equal(diagnostics.media.externalUrlHostsProductionReady, false);
+  assert.deepEqual(diagnostics.media.externalUrlHostIssues, [
+    {
+      host: "assets.brand-assets.com",
+      issue: "unsupported-protocol",
+    },
+    {
+      host: "private.brand-assets.com",
+      issue: "embedded-credentials",
+    },
+    {
+      host: "cdn.brand-assets.com",
+      issue: "unsupported-url-parts",
+    },
+    {
+      host: "localhost",
+      issue: "local-host",
+    },
+    {
+      host: "cdn.example.com",
+      issue: "placeholder-host",
+    },
+    {
+      host: null,
+      issue: "invalid-host",
+    },
+  ]);
+
+  const serialized = JSON.stringify(diagnostics.media);
+  assert.equal(serialized.includes("secret"), false);
+  assert.equal(serialized.includes("token=1"), false);
 });

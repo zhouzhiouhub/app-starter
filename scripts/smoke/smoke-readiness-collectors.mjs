@@ -199,6 +199,16 @@ function collectDeploymentReadiness(blockers, deployment, config) {
 }
 
 function collectMediaReadiness(blockers, media, config) {
+  if (media?.externalUrlHostIssues?.length > 0) {
+    appendBlocker(
+      blockers,
+      "media.external-hosts",
+      "unsafe-hosts",
+      "MEDIA_EXTERNAL_URL_HOSTS must contain production-safe hostnames or HTTPS origins.",
+      { issues: media.externalUrlHostIssues },
+    );
+  }
+
   if (config.requireR2Upload !== true) {
     appendBlocker(
       blockers,

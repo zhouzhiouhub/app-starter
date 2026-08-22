@@ -192,6 +192,51 @@ test("smoke readiness requires a production Redis URL", () => {
   ]);
 });
 
+test("smoke readiness blocks unsafe external media host allowlists", () => {
+  const environment = createReadyEnvironment();
+  environment.media.externalUrlHostIssues = [
+    {
+      host: "localhost",
+      issue: "local-host",
+    },
+    {
+      host: "cdn.example.com",
+      issue: "placeholder-host",
+    },
+  ];
+  const readiness = createSmokeProductionReadiness(
+    environment,
+    createReadyConfig(),
+  );
+
+  assert.deepEqual(readiness.blockers, [
+    {
+      area: "media.external-hosts",
+      issue: "unsafe-hosts",
+      issues: [
+        {
+          host: "localhost",
+          issue: "local-host",
+        },
+        {
+          host: "cdn.example.com",
+          issue: "placeholder-host",
+        },
+      ],
+      message:
+        "MEDIA_EXTERNAL_URL_HOSTS must contain production-safe hostnames or HTTPS origins.",
+    },
+  ]);
+  assert.equal(readiness.productionReady, false);
+  assert.deepEqual(readiness.nextActions, [
+    {
+      action:
+        "Set MEDIA_EXTERNAL_URL_HOSTS to comma-separated production hostnames or HTTPS origins without paths, query strings, credentials, local hosts, or placeholder hosts.",
+      area: "media.external-hosts",
+    },
+  ]);
+});
+
 test("smoke readiness requires production JWT keys", () => {
   const environment = createReadyEnvironment();
   environment.identity = {

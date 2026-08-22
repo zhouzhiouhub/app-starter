@@ -77,6 +77,15 @@ function readBlockerActions(blocker) {
     ];
   }
 
+  if (blocker.area === "media.external-hosts") {
+    return [
+      createAction(
+        blocker.area,
+        "Set MEDIA_EXTERNAL_URL_HOSTS to comma-separated production hostnames or HTTPS origins without paths, query strings, credentials, local hosts, or placeholder hosts.",
+      ),
+    ];
+  }
+
   if (blocker.area === "analytics.enabled") {
     return [
       createAction(

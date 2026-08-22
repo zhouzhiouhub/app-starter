@@ -17,6 +17,9 @@ export function createMediaDiagnostics(env = process.env) {
   const cdn = readCdnDiagnostics(
     mediaCdnBaseUrl ?? defaultMediaCdnBaseUrl,
   );
+  const externalUrlHosts = readExternalUrlHostDiagnostics(
+    readEnv(env, "MEDIA_EXTERNAL_URL_HOSTS"),
+  );
   const missingR2Variables = r2RequiredVariables.filter(
     (name) => !readEnv(env, name),
   );
@@ -28,7 +31,15 @@ export function createMediaDiagnostics(env = process.env) {
     cdnUrlIssue: cdn.issue,
     cdnUrlSafe: cdn.safe,
     cdnUsesLocalFallback: cdn.localHost,
-    externalUrlHosts: readHostList(readEnv(env, "MEDIA_EXTERNAL_URL_HOSTS")),
+    externalUrlHostIssues: externalUrlHosts
+      .filter((host) => host.issue)
+      .map(({ host, issue }) => ({ host, issue })),
+    externalUrlHosts: externalUrlHosts
+      .filter((host) => !host.issue)
+      .map(({ host }) => host),
+    externalUrlHostsProductionReady: externalUrlHosts.every(
+      (host) => !host.issue,
+    ),
     r2: {
       configured: missingR2Variables.length === 0,
       missingRequired: missingR2Variables,
@@ -100,39 +111,91 @@ function readCdnDiagnostics(value) {
   };
 }
 
-function readHostList(value) {
+function readExternalUrlHostDiagnostics(value) {
   if (!value) {
     return [];
   }
 
   return value
     .split(",")
-    .map((item) => readHostFromUrlOrHostname(item.trim()))
+    .map((item) => readExternalUrlHost(item.trim()))
     .filter(Boolean);
 }
 
-function readHostFromUrlOrHostname(value) {
+function readExternalUrlHost(value) {
   if (!value) {
     return null;
   }
 
   if (value.includes("://")) {
-    return readUrlHost(value);
+    return readExternalUrlHostFromUrl(value);
   }
 
-  return value.toLowerCase();
+  return readExternalUrlHostFromHostname(value);
 }
 
-function readUrlHost(value) {
-  if (!value) {
-    return null;
+function readExternalUrlHostFromUrl(value) {
+  try {
+    const url = new URL(value);
+    const host = url.hostname.toLowerCase() || null;
+
+    if (url.protocol !== "https:") {
+      return { host, issue: "unsupported-protocol" };
+    }
+
+    if (url.username || url.password) {
+      return { host, issue: "embedded-credentials" };
+    }
+
+    if (url.pathname.replace(/\/+$/, "") || url.search || url.hash) {
+      return { host, issue: "unsupported-url-parts" };
+    }
+
+    return readProductionHostSafety(host);
+  } catch {
+    return { host: null, issue: "invalid-url" };
+  }
+}
+
+function readExternalUrlHostFromHostname(value) {
+  if (/[/?#\\@]/.test(value)) {
+    return readInvalidHostnameDiagnostic(value);
   }
 
   try {
-    return new URL(value).hostname;
+    const url = new URL(`https://${value}`);
+    return readProductionHostSafety(url.hostname.toLowerCase() || null);
   } catch {
-    return null;
+    return { host: null, issue: "invalid-host" };
   }
+}
+
+function readInvalidHostnameDiagnostic(value) {
+  try {
+    const url = new URL(`https://${value}`);
+    return {
+      host: url.hostname.toLowerCase() || null,
+      issue: "unsupported-url-parts",
+    };
+  } catch {
+    return { host: null, issue: "invalid-host" };
+  }
+}
+
+function readProductionHostSafety(host) {
+  if (!host) {
+    return { host: null, issue: "invalid-host" };
+  }
+
+  if (isLocalHostname(host)) {
+    return { host, issue: "local-host" };
+  }
+
+  if (isPlaceholderHostname(host)) {
+    return { host, issue: "placeholder-host" };
+  }
+
+  return { host, issue: null };
 }
 
 function readEnv(env, name) {
