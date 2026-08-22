@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { fetchJson, readHttpError } from "./http-json-smoke.mjs";
 import {
+  createMediaSmokeDetails,
   isCdnUrlForR2Key,
   isMediaReference,
   isProductionCdnUrl,
@@ -65,14 +66,30 @@ export function assertMediaAssetShape(
   }
 
   if (!isCdnUrlForR2Key(asset.url, target.r2Key)) {
-    throw new Error("Media confirm returned a CDN URL for the wrong object.");
+    throw createMediaShapeError(
+      "Media confirm returned a CDN URL for the wrong object.",
+      target,
+      asset,
+      requireProductionCdn,
+    );
   }
 
   if (requireProductionCdn && !isProductionCdnUrl(asset.url)) {
-    throw new Error(
+    throw createMediaShapeError(
       "Media confirm did not return a production CDN URL; set MEDIA_CDN_BASE_URL to a real HTTPS CDN host.",
+      target,
+      asset,
+      requireProductionCdn,
     );
   }
+}
+
+function createMediaShapeError(message, target, asset, requireProductionCdn) {
+  const error = new Error(message);
+  error.smokeDetails = {
+    media: createMediaSmokeDetails(target, asset, requireProductionCdn),
+  };
+  return error;
 }
 
 function assertString(value, field) {
