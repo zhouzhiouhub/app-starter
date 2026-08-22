@@ -41,3 +41,35 @@ test("page structure preflight blocks duplicate section ids", () => {
     ],
   );
 });
+
+test("page structure preflight warns about stale section orders", () => {
+  const schema = structuredClone(exampleLandingPage);
+  schema.layout.desktop.sectionOrder = ["hero", "missing", "hero"];
+  schema.layout.mobile.sectionOrder = ["copy"];
+
+  const issues = collectPageStructurePreflightIssues(schema);
+
+  assert.deepEqual(
+    issues.map((issue) => [issue.field, issue.severity]),
+    [
+      ["layout.desktop.sectionOrder", "warning"],
+      ["layout.mobile.sectionOrder", "warning"],
+    ],
+  );
+  assert.match(
+    issues[0].message,
+    /Desktop section order.*1 stale reference.*1 duplicate entry.*1 omitted section/,
+  );
+  assert.match(
+    issues[1].message,
+    /Mobile section order.*1 omitted section/,
+  );
+});
+
+test("page structure preflight accepts already normalized explicit section orders", () => {
+  const schema = structuredClone(exampleLandingPage);
+  schema.layout.desktop.sectionOrder = ["copy", "hero"];
+  schema.layout.mobile.sectionOrder = ["hero", "copy"];
+
+  assert.deepEqual(collectPageStructurePreflightIssues(schema), []);
+});

@@ -79,6 +79,21 @@ test("publish preflight blocks duplicate section ids", () => {
   assert.equal(blocker?.field, "sections[2].id");
 });
 
+test("publish preflight warns about stale section order data", () => {
+  const schema = structuredClone(exampleLandingPage);
+  schema.layout.desktop.sectionOrder = ["copy", "missing", "copy"];
+
+  const issues = collectPublishPreflightIssues(schema);
+  const blocker = findBlockingPublishPreflightIssue(schema);
+
+  assert.deepEqual(
+    issues.map((issue) => [issue.field, issue.severity]),
+    [["layout.desktop.sectionOrder", "warning"]],
+  );
+  assert.match(issues[0].message, /section order will be normalized/);
+  assert.equal(blocker, null);
+});
+
 test("publish preflight blocks unsafe chrome links", () => {
   const schema = structuredClone(exampleLandingPage);
 
