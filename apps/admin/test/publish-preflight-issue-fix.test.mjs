@@ -171,12 +171,12 @@ test("publish preflight issue fix clears optional SEO URL fields", () => {
     severity: "error",
   });
 
-  assert.equal(fixedCanonical?.seo.canonical, "");
+  assert.equal(fixedCanonical?.seo.canonical, undefined);
   assert.equal(fixedCanonical?.seo.ogImage, "http://cdn.example.com/og.jpg");
   assert.equal(fixedCanonical?.seo.title, "Search title");
   assert.equal(fixedCanonical?.seo.description, "Search description");
   assert.equal(fixedOgImage?.seo.canonical, "javascript:alert(1)");
-  assert.equal(fixedOgImage?.seo.ogImage, "");
+  assert.equal(fixedOgImage?.seo.ogImage, undefined);
   assert.equal(schema.seo.canonical, "javascript:alert(1)");
   assert.equal(schema.seo.ogImage, "http://cdn.example.com/og.jpg");
 });
