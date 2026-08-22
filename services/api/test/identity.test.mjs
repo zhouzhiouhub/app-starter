@@ -14,6 +14,7 @@ import {
 import { hashPassword, verifyPassword } from "../dist/modules/identity/password.js";
 import { TokenService } from "../dist/modules/identity/token.service.js";
 import {
+  isProductionJwtEnvironment,
   loadJwtKeys,
   resetJwtKeysForTests,
 } from "../dist/modules/identity/jwt-keys.js";
@@ -125,6 +126,30 @@ test("JWT key loader rejects partial key pair configuration", async () => {
   }
 });
 
+test("JWT key loader treats deployment production markers as production", async () => {
+  assert.equal(isProductionJwtEnvironment({ APP_ENV: " production " }), true);
+  assert.equal(isProductionJwtEnvironment({ VERCEL_ENV: "production" }), true);
+  assert.equal(isProductionJwtEnvironment({ NODE_ENV: "development" }), false);
+
+  for (const productionEnv of [
+    { APP_ENV: "production" },
+    { VERCEL_ENV: "production" },
+  ]) {
+    const restoreEnv = withJwtKeyEnv(productionEnv);
+    resetJwtKeysForTests();
+
+    try {
+      await assert.rejects(
+        () => loadJwtKeys(),
+        /JWT_PRIVATE_KEY and JWT_PUBLIC_KEY are required in production/,
+      );
+    } finally {
+      restoreEnv();
+      resetJwtKeysForTests();
+    }
+  }
+});
+
 test("JWT key loader rejects mismatched configured key pairs", async () => {
   const privatePair = createRsaPemPair();
   const publicPair = createRsaPemPair();
@@ -185,7 +210,13 @@ function createRsaPemPair() {
 }
 
 function withJwtKeyEnv(values) {
-  const keys = ["JWT_PRIVATE_KEY", "JWT_PUBLIC_KEY", "NODE_ENV"];
+  const keys = [
+    "APP_ENV",
+    "JWT_PRIVATE_KEY",
+    "JWT_PUBLIC_KEY",
+    "NODE_ENV",
+    "VERCEL_ENV",
+  ];
   const previous = Object.fromEntries(keys.map((key) => [key, process.env[key]]));
 
   for (const [key, value] of Object.entries(values)) {

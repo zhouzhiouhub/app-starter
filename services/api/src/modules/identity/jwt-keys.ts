@@ -25,7 +25,7 @@ export async function loadJwtKeys(): Promise<JwtKeyPair> {
     return cachedKeys;
   }
 
-  if ((process.env.NODE_ENV ?? "development") === "production") {
+  if (isProductionJwtEnvironment()) {
     throw new Error(
       "JWT_PRIVATE_KEY and JWT_PUBLIC_KEY are required in production.",
     );
@@ -79,6 +79,14 @@ async function assertMatchingJwtKeyPair(keys: JwtKeyPair): Promise<void> {
 
 export function resetJwtKeysForTests(): void {
   cachedKeys = undefined;
+}
+
+export function isProductionJwtEnvironment(
+  env: Record<string, string | undefined> = process.env,
+): boolean {
+  return [env.NODE_ENV, env.APP_ENV, env.VERCEL_ENV].some(
+    (value) => value?.trim().toLowerCase() === "production",
+  );
 }
 
 function normalizePem(value: string | undefined): string | undefined {

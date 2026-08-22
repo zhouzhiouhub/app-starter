@@ -72,9 +72,10 @@ invalid, fractional, or longer values fall back to 5000 ms.
 
 Admin JWTs use an RS256 key pair. Local development can leave both values empty,
 which makes the API generate an ephemeral non-production key pair. Production
-must set both values to a matching PEM key pair. Setting only one value, using
-invalid PEM, or combining keys from different pairs makes the API reject the
-configuration instead of silently issuing broken tokens:
+is detected from `NODE_ENV`, `APP_ENV`, or `VERCEL_ENV`, and must set both values
+to a matching PEM key pair. Setting only one value, using invalid PEM, or
+combining keys from different pairs makes the API reject the configuration
+instead of silently issuing broken tokens:
 
 ```bash
 JWT_PRIVATE_KEY=
