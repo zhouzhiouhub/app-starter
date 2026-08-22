@@ -28,12 +28,25 @@ test("publishPage rejects non-default locale while multi-locale is disabled", as
       const calls = { audit: null };
       const prisma = createPublishPrisma(calls);
 
-      await assertApiConflictRejects(
+      const error = await assertApiConflictRejects(
         () =>
-          publishPage(prisma, "page-1", schema, undefined, createPageActor()),
+          publishPage(
+            prisma,
+            "page-1",
+            schema,
+            undefined,
+            createPageActor(),
+            undefined,
+            undefined,
+            "request-publish-locale-disabled",
+          ),
         apiErrorCodes.MULTI_LOCALE_DISABLED,
       );
 
+      assert.equal(
+        error.getResponse()?.requestId,
+        "request-publish-locale-disabled",
+      );
       assert.equal(calls.audit, null);
       assert.equal(calls.versionCreate, undefined);
     },

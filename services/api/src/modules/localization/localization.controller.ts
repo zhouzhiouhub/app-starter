@@ -88,6 +88,7 @@ export class LocalizationController {
       throw new ConflictException({
         code: apiErrorCodes.MULTI_LOCALE_DISABLED,
         message: "Cannot create locales while multi-locale is disabled.",
+        requestId,
       });
     }
 

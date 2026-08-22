@@ -14,10 +14,17 @@ test("locale creation rejects writes while multi-locale is disabled", () => {
   withEnv({ MULTI_LOCALE_ENABLED: "false" }, () => {
     const controller = new LocalizationController();
 
-    assertApiConflict(
-      () => controller.createLocale({ code: "de-DE" }),
+    const error = assertApiConflict(
+      () =>
+        controller.createLocale(
+          { code: "de-DE" },
+          undefined,
+          "request-locale-disabled",
+        ),
       apiErrorCodes.MULTI_LOCALE_DISABLED,
     );
+
+    assert.equal(error.getResponse()?.requestId, "request-locale-disabled");
   });
 });
 

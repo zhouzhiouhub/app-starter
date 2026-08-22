@@ -69,7 +69,7 @@ export async function publishPage(
           throw notFound("Page has no schema to publish.");
         }
 
-        assertPageLocaleCanPublish(parsed);
+        assertPageLocaleCanPublish(parsed, requestId);
         assertPublishablePageImageSources(parsed);
         await validateMediaReferences(parsed, site.tenantId, tx);
 

@@ -99,7 +99,7 @@ test("rollbackPage rejects non-default locale while multi-locale is disabled", a
       const calls = { audit: null };
       const prisma = createRollbackPrisma(schema, calls);
 
-      await assertApiConflictRejects(
+      const error = await assertApiConflictRejects(
         () =>
           rollbackPage(
             prisma,
@@ -107,10 +107,17 @@ test("rollbackPage rejects non-default locale while multi-locale is disabled", a
             { versionId: "version-1" },
             undefined,
             createPageActor(),
+            undefined,
+            undefined,
+            "request-rollback-locale-disabled",
           ),
         apiErrorCodes.MULTI_LOCALE_DISABLED,
       );
 
+      assert.equal(
+        error.getResponse()?.requestId,
+        "request-rollback-locale-disabled",
+      );
       assert.equal(calls.audit, null);
       assert.equal(calls.rollbackCreate, undefined);
     },

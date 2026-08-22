@@ -55,13 +55,19 @@ export function createMemoryIdempotencyRecord(calls = []) {
 }
 
 export async function assertApiConflictRejects(fn, expectedCode) {
-  await assert.rejects(
-    fn,
-    (error) =>
+  let caught;
+
+  await assert.rejects(fn, (error) => {
+    caught = error;
+
+    return (
       typeof error.getStatus === "function" &&
       error.getStatus() === 409 &&
-      error.getResponse()?.code === expectedCode,
-  );
+      error.getResponse()?.code === expectedCode
+    );
+  });
+
+  return caught;
 }
 
 export function withPageLocale(schema, locale) {

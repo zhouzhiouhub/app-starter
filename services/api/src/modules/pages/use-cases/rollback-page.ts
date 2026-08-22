@@ -86,7 +86,7 @@ export async function rollbackPage(
         }
 
         const parsed = readSchema(target.schema, page.slug);
-        assertPageLocaleCanPublish(parsed);
+        assertPageLocaleCanPublish(parsed, requestId);
         await validateMediaReferences(parsed, site.tenantId, tx);
 
         const rollbackVersion = await persistRollbackVersion(tx, {
