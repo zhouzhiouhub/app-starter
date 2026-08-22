@@ -1,6 +1,7 @@
 import { BadRequestException } from "@nestjs/common";
 import { apiErrorCodes, isUnsafeProductionHostname } from "@app-starter/schema";
 import { DEFAULT_MEDIA_CDN_BASE_URL } from "./media.constants.js";
+import { isProductionMediaEnvironment } from "./media.production-env.js";
 
 export function assertAllowedMediaUrl(
   url: string,
@@ -66,7 +67,7 @@ export function readExternalMediaUrlHosts(
 ): Set<string> {
   return new Set(
     readHostsFromList(env.MEDIA_EXTERNAL_URL_HOSTS, {
-      rejectUnsafeProductionHost: isProductionEnv(env),
+      rejectUnsafeProductionHost: isProductionMediaEnvironment(env),
     }),
   );
 }
@@ -74,7 +75,7 @@ export function readExternalMediaUrlHosts(
 export function readManagedMediaUrlHosts(
   env: Record<string, string | undefined> = process.env,
 ): Set<string> {
-  const rejectUnsafeProductionHost = isProductionEnv(env);
+  const rejectUnsafeProductionHost = isProductionMediaEnvironment(env);
   const urls = rejectUnsafeProductionHost
     ? [env.MEDIA_CDN_BASE_URL]
     : [env.MEDIA_CDN_BASE_URL, env.CDN_BASE_URL, DEFAULT_MEDIA_CDN_BASE_URL];
@@ -176,10 +177,6 @@ function readHostFromBareValue(
   } catch {
     return undefined;
   }
-}
-
-function isProductionEnv(env: Record<string, string | undefined>): boolean {
-  return env.NODE_ENV === "production";
 }
 
 function assertAllowedHost(

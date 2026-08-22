@@ -52,7 +52,8 @@ production mode is detected from `NODE_ENV`, `APP_ENV`, or `VERCEL_ENV`.
 Media uploads use local fallback URLs only outside production. In production,
 the API requires the full R2 upload configuration and a safe explicit
 `MEDIA_CDN_BASE_URL`; otherwise upload target or managed CDN URL creation fails
-instead of returning `.local.invalid` placeholders.
+instead of returning `.local.invalid` placeholders. Media production mode is
+detected from `NODE_ENV`, `APP_ENV`, or `VERCEL_ENV`.
 
 For storefront ISR, set the same secret in the API and Web runtimes. The API
 uses `STOREFRONT_REVALIDATE_URL` to call the Web app after publish or rollback:

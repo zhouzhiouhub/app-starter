@@ -85,6 +85,24 @@ test("media URL allowlist requires explicit safe managed CDN hosts in production
   assert.deepEqual([...safeHosts], ["media.brand-platform.com"]);
 });
 
+test("media URL allowlist treats deployment production markers as production", () => {
+  const managedHosts = readAllowedMediaUrlHosts({
+    APP_ENV: "production",
+    CDN_BASE_URL: "https://legacy.brand-platform.com/assets",
+    MEDIA_CDN_BASE_URL: "https://media.brand-platform.com/assets",
+  });
+
+  assert.deepEqual([...managedHosts], ["media.brand-platform.com"]);
+
+  const externalHosts = readAllowedMediaUrlHosts({
+    MEDIA_EXTERNAL_URL_HOSTS:
+      "localhost, https://assets.example, https://assets.brand-platform.com",
+    VERCEL_ENV: "production",
+  });
+
+  assert.deepEqual([...externalHosts], ["assets.brand-platform.com"]);
+});
+
 test("media URL allowlist ignores unsafe external hosts in production", () => {
   const hosts = readAllowedMediaUrlHosts({
     MEDIA_EXTERNAL_URL_HOSTS:

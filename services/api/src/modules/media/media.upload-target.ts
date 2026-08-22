@@ -4,6 +4,10 @@ import {
   MEDIA_UPLOAD_URL_TTL_SECONDS,
 } from "./media.constants.js";
 import { createMediaObjectUrl } from "./media.object-url.js";
+import {
+  isProductionMediaEnvironment,
+  type MediaProductionEnvironment,
+} from "./media.production-env.js";
 import { createR2PresignedPutUrl } from "./media.r2-presign.js";
 
 export type MediaUploadTarget = {
@@ -12,11 +16,10 @@ export type MediaUploadTarget = {
   expiresAt: Date;
 };
 
-export type R2UploadEnv = {
+export type R2UploadEnv = MediaProductionEnvironment & {
   CDN_BASE_URL?: string;
   MEDIA_CDN_BASE_URL?: string;
   MEDIA_UPLOAD_BASE_URL?: string;
-  NODE_ENV?: string;
   R2_ACCOUNT_ID?: string;
   R2_ACCESS_KEY_ID?: string;
   R2_BUCKET?: string;
@@ -35,6 +38,7 @@ export function createMediaUploadTarget(input: {
   const ttlSeconds = readMediaUploadTargetTtlSeconds(input.ttlSeconds);
   const now = input.now ?? new Date();
   const expiresAt = new Date(now.getTime() + ttlSeconds * 1000);
+  const isProduction = isProductionMediaEnvironment(env);
 
   if (hasR2UploadConfig(env)) {
     return {
@@ -56,7 +60,7 @@ export function createMediaUploadTarget(input: {
     };
   }
 
-  if (isProductionEnv(env)) {
+  if (isProduction) {
     throw new MediaUploadConfigurationError();
   }
 
@@ -77,18 +81,19 @@ export function createMediaCdnUrl(
   r2Key: string,
   env: R2UploadEnv = process.env,
 ) {
-  const baseUrls = isProductionEnv(env)
+  const isProduction = isProductionMediaEnvironment(env);
+  const baseUrls = isProduction
     ? [env.MEDIA_CDN_BASE_URL]
     : [env.MEDIA_CDN_BASE_URL, env.CDN_BASE_URL];
 
   return createMediaObjectUrl({
-    allowFallback: !isProductionEnv(env),
+    allowFallback: !isProduction,
     baseUrls,
     fallbackBaseUrl: DEFAULT_MEDIA_CDN_BASE_URL,
     fallbackMessage:
       "MEDIA_CDN_BASE_URL must be configured as a safe CDN URL in production.",
     objectKey: r2Key,
-    requireProductionSafeBaseUrl: isProductionEnv(env),
+    requireProductionSafeBaseUrl: isProduction,
   });
 }
 
@@ -126,8 +131,4 @@ function readMediaUploadTargetTtlSeconds(value: number | undefined): number {
   }
 
   return MEDIA_UPLOAD_URL_TTL_SECONDS;
-}
-
-function isProductionEnv(env: R2UploadEnv): boolean {
-  return env.NODE_ENV === "production";
 }

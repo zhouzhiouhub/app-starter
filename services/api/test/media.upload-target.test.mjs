@@ -4,6 +4,9 @@ import {
   createMediaCdnUrl,
   createMediaUploadTarget,
 } from "../dist/modules/media/media.upload-target.js";
+import {
+  isProductionMediaEnvironment,
+} from "../dist/modules/media/media.production-env.js";
 
 test("createMediaUploadTarget returns R2 presigned PUT URLs when configured", () => {
   const target = createMediaUploadTarget({
@@ -89,6 +92,10 @@ test("createMediaUploadTarget falls back to configured upload base URLs", () => 
 });
 
 test("createMediaUploadTarget requires R2 configuration in production", () => {
+  assert.equal(isProductionMediaEnvironment({ APP_ENV: " production " }), true);
+  assert.equal(isProductionMediaEnvironment({ VERCEL_ENV: "production" }), true);
+  assert.equal(isProductionMediaEnvironment({ NODE_ENV: "development" }), false);
+
   assert.throws(
     () =>
       createMediaUploadTarget({
@@ -98,6 +105,19 @@ test("createMediaUploadTarget requires R2 configuration in production", () => {
         env: {
           MEDIA_UPLOAD_BASE_URL: "https://uploads.example.com/",
           NODE_ENV: "production",
+        },
+      }),
+    /R2 upload configuration is required in production/,
+  );
+  assert.throws(
+    () =>
+      createMediaUploadTarget({
+        mimeType: "image/png",
+        now: new Date("2026-08-18T00:00:00.000Z"),
+        r2Key: "tenant-1/folder/hero.png",
+        env: {
+          APP_ENV: "production",
+          MEDIA_UPLOAD_BASE_URL: "https://uploads.example.com/",
         },
       }),
     /R2 upload configuration is required in production/,
@@ -138,6 +158,15 @@ test("createMediaCdnUrl requires safe CDN base URLs in production", () => {
       /MEDIA_CDN_BASE_URL must be configured as a safe CDN URL in production/,
     );
   }
+
+  assert.throws(
+    () =>
+      createMediaCdnUrl("tenant-1/folder/hero.png", {
+        CDN_BASE_URL: "https://legacy.brand-platform.com/media",
+        VERCEL_ENV: "production",
+      }),
+    /MEDIA_CDN_BASE_URL must be configured as a safe CDN URL in production/,
+  );
 });
 
 test("createMediaCdnUrl accepts production HTTPS CDN hosts", () => {
