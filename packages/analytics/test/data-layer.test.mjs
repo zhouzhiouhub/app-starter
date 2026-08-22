@@ -41,6 +41,32 @@ test("analytics payload sanitizer removes reserved and sensitive fields", () => 
   );
 });
 
+test("analytics payload sanitizer redacts sensitive string values", () => {
+  assert.deepEqual(
+    sanitizeAnalyticsPayload({
+      contactLabel: "Primary buyer@example.com",
+      nested: {
+        owner: "Call +1 (555) 123-4567",
+        plan: "starter",
+      },
+      notes: [
+        "no pii here",
+        "backup admin@example.com",
+      ],
+      sku: "sku-123",
+    }),
+    {
+      contactLabel: "[redacted]",
+      nested: {
+        owner: "[redacted]",
+        plan: "starter",
+      },
+      notes: ["no pii here", "[redacted]"],
+      sku: "sku-123",
+    },
+  );
+});
+
 test("data layer events preserve trusted analytics context", () => {
   withWindow({}, (windowValue) => {
     pushDataLayer({

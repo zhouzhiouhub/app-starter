@@ -31,6 +31,11 @@ const sensitivePayloadKeyFragments = [
   "token",
 ];
 
+const redactedAnalyticsValue = "[redacted]";
+const emailValuePattern = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i;
+const phoneValuePattern =
+  /(?:^|[^\d])(?:\+?\d[\d\s().-]{6,}\d)(?:[^\d]|$)/;
+
 declare global {
   interface Window {
     dataLayer?: Array<Record<string, unknown>>;
@@ -79,6 +84,10 @@ function sanitizeAnalyticsValue(value: unknown): unknown {
     return sanitizeAnalyticsRecord(value, false);
   }
 
+  if (typeof value === "string" && containsSensitiveStringValue(value)) {
+    return redactedAnalyticsValue;
+  }
+
   return value;
 }
 
@@ -92,6 +101,10 @@ function isBlockedPayloadKey(key: string, dropReservedKeys: boolean): boolean {
   return sensitivePayloadKeyFragments.some((fragment) =>
     normalized.includes(fragment),
   );
+}
+
+function containsSensitiveStringValue(value: string): boolean {
+  return emailValuePattern.test(value) || phoneValuePattern.test(value);
 }
 
 function isPlainRecord(value: unknown): value is Record<string, unknown> {
