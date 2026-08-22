@@ -1,8 +1,10 @@
 import { Form, Input, Typography } from "antd";
 import type { PageSchema } from "@app-starter/schema";
+import { readPublishPreflightFieldProps } from "../publish-preflight-field-focus";
 import { updatePageMetaTitle } from "../section-content-updates";
 
 export function PageContentFields(props: {
+  highlightedField: string | null;
   onChange: (schema: PageSchema) => void;
   schema: PageSchema;
 }) {
@@ -22,16 +24,23 @@ export function PageContentFields(props: {
     >
       <Typography.Title level={4}>Page</Typography.Title>
       <Form layout="vertical">
-        <Form.Item label="Page title">
-          <Input
-            onChange={(event) =>
-              patch((current) =>
-                updatePageMetaTitle(current, event.target.value),
-              )
-            }
-            value={props.schema.meta.title}
-          />
-        </Form.Item>
+        <div
+          {...readPublishPreflightFieldProps(
+            "meta.title",
+            props.highlightedField,
+          )}
+        >
+          <Form.Item label="Page title">
+            <Input
+              onChange={(event) =>
+                patch((current) =>
+                  updatePageMetaTitle(current, event.target.value),
+                )
+              }
+              value={props.schema.meta.title}
+            />
+          </Form.Item>
+        </div>
       </Form>
     </section>
   );

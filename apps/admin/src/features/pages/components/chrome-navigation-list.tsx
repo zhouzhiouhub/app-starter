@@ -1,10 +1,13 @@
 import { Button, Form, Input, Space } from "antd";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import type { ChromeNavigationItem } from "@app-starter/schema";
+import { readPublishPreflightFieldProps } from "../publish-preflight-field-focus";
 import { readSafeHrefFeedback } from "../safe-href-feedback";
 
 export function ChromeNavigationList(props: {
   addLabel: string;
+  fieldPathPrefix: string;
+  highlightedField: string | null;
   hrefAriaLabel: string;
   items: ChromeNavigationItem[];
   labelAriaLabel: string;
@@ -17,6 +20,7 @@ export function ChromeNavigationList(props: {
     <Space direction="vertical" size={12} style={{ marginTop: 12, width: "100%" }}>
       {props.items.map((item, index) => {
         const hrefFeedback = readSafeHrefFeedback(item.href);
+        const hrefField = `${props.fieldPathPrefix}[${index}].href`;
 
         return (
           <div
@@ -35,19 +39,26 @@ export function ChromeNavigationList(props: {
               }
               value={item.label.defaultValue}
             />
-            <Form.Item
-              help={hrefFeedback.help}
-              style={{ marginBottom: 0 }}
-              validateStatus={hrefFeedback.status}
+            <div
+              {...readPublishPreflightFieldProps(
+                hrefField,
+                props.highlightedField,
+              )}
             >
-              <Input
-                aria-label={props.hrefAriaLabel}
-                onChange={(event) =>
-                  props.onChange(index, "href", event.target.value)
-                }
-                value={item.href}
-              />
-            </Form.Item>
+              <Form.Item
+                help={hrefFeedback.help}
+                style={{ marginBottom: 0 }}
+                validateStatus={hrefFeedback.status}
+              >
+                <Input
+                  aria-label={props.hrefAriaLabel}
+                  onChange={(event) =>
+                    props.onChange(index, "href", event.target.value)
+                  }
+                  value={item.href}
+                />
+              </Form.Item>
+            </div>
             <Button
               aria-label={props.removeAriaLabel}
               danger

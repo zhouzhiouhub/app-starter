@@ -9,6 +9,7 @@ export type PublishPreflightIssueTargetKind =
   | "seo";
 
 export interface PublishPreflightIssueTarget {
+  field: string;
   kind: PublishPreflightIssueTargetKind;
   label: string;
   sectionId?: string;
@@ -27,6 +28,7 @@ export function readPublishPreflightIssueTarget(
 
     return section
       ? {
+          field: issue.field,
           kind: "section",
           label: `Section ${sectionIndex + 1}: ${formatComponentLabel(
             section.component,
@@ -37,19 +39,19 @@ export function readPublishPreflightIssueTarget(
   }
 
   if (issue.field.startsWith("seo.")) {
-    return { kind: "seo", label: "SEO settings" };
+    return { field: issue.field, kind: "seo", label: "SEO settings" };
   }
 
   if (issue.field.startsWith("chrome.")) {
-    return { kind: "chrome", label: "Page settings" };
+    return { field: issue.field, kind: "chrome", label: "Page settings" };
   }
 
   if (issue.field.startsWith("media.")) {
-    return { kind: "media", label: "Preview media" };
+    return { field: issue.field, kind: "media", label: "Preview media" };
   }
 
   if (issue.field.startsWith("meta.")) {
-    return { kind: "page", label: "Page content" };
+    return { field: issue.field, kind: "page", label: "Page content" };
   }
 
   return null;

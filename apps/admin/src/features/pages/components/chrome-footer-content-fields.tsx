@@ -1,9 +1,11 @@
 import { Form, Input, Typography } from "antd";
 import type { PageSchema } from "@app-starter/schema";
+import { readPublishPreflightFieldProps } from "../publish-preflight-field-focus";
 import { readSafeHrefFeedback } from "../safe-href-feedback";
 import { ChromeNavigationList } from "./chrome-navigation-list";
 
 export function ChromeFooterContentFields(props: {
+  highlightedField: string | null;
   onAddNavigation: () => void;
   onBrandChange: (field: "label" | "href", value: string) => void;
   onCopyrightChange: (value: string) => void;
@@ -27,16 +29,23 @@ export function ChromeFooterContentFields(props: {
           value={footer.brand.label.defaultValue}
         />
       </Form.Item>
-      <Form.Item
-        help={brandHrefFeedback.help}
-        label="Brand link"
-        validateStatus={brandHrefFeedback.status}
+      <div
+        {...readPublishPreflightFieldProps(
+          "chrome.footer.content.brand.href",
+          props.highlightedField,
+        )}
       >
-        <Input
-          onChange={(event) => props.onBrandChange("href", event.target.value)}
-          value={footer.brand.href}
-        />
-      </Form.Item>
+        <Form.Item
+          help={brandHrefFeedback.help}
+          label="Brand link"
+          validateStatus={brandHrefFeedback.status}
+        >
+          <Input
+            onChange={(event) => props.onBrandChange("href", event.target.value)}
+            value={footer.brand.href}
+          />
+        </Form.Item>
+      </div>
       <Form.Item label="Copyright">
         <Input
           onChange={(event) => props.onCopyrightChange(event.target.value)}
@@ -46,6 +55,8 @@ export function ChromeFooterContentFields(props: {
       <Typography.Text strong>Footer links</Typography.Text>
       <ChromeNavigationList
         addLabel="Add footer link"
+        fieldPathPrefix="chrome.footer.content.navigation"
+        highlightedField={props.highlightedField}
         hrefAriaLabel="Footer link URL"
         items={footer.navigation}
         labelAriaLabel="Footer link label"

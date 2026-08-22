@@ -14,6 +14,7 @@ import {
   type PublishPreflightIssueTargetKind,
   type PublishPreflightIssueTarget,
 } from "../publish-preflight-target";
+import { readPublishPreflightFieldDomId } from "../publish-preflight-field-focus";
 
 const highlightDurationMs = 2000;
 
@@ -24,6 +25,7 @@ export function usePublishPreflightFocus(input: {
   const { schema, setSelectedSectionId } = input;
   const [highlightedArea, setHighlightedArea] =
     useState<PublishPreflightIssueTargetKind | null>(null);
+  const [highlightedField, setHighlightedField] = useState<string | null>(null);
   const chromeSettingsRef = useRef<HTMLDivElement>(null);
   const highlightTimerRef = useRef<number | null>(null);
   const pageContentRef = useRef<HTMLDivElement>(null);
@@ -37,33 +39,26 @@ export function usePublishPreflightFocus(input: {
   );
   const handleTargetSelect = useCallback(
     (target: PublishPreflightIssueTarget) => {
-      refreshHighlightedArea(target.kind, {
+      refreshHighlightedTarget(target, {
         setHighlightedArea,
+        setHighlightedField,
         timerRef: highlightTimerRef,
+      });
+      const fallbackElement = readFallbackElement(target.kind, {
+        chromeSettingsRef,
+        pageContentRef,
+        previewRef,
+        sectionPropertiesRef,
+        seoSettingsRef,
       });
 
       if (target.kind === "section" && target.sectionId) {
         setSelectedSectionId(target.sectionId);
-        scrollToEditorArea(sectionPropertiesRef.current);
+        scrollToPublishField(target.field, fallbackElement);
         return;
       }
 
-      if (target.kind === "seo") {
-        scrollToEditorArea(seoSettingsRef.current);
-        return;
-      }
-
-      if (target.kind === "chrome") {
-        scrollToEditorArea(chromeSettingsRef.current);
-        return;
-      }
-
-      if (target.kind === "media") {
-        scrollToEditorArea(previewRef.current);
-        return;
-      }
-
-      scrollToEditorArea(pageContentRef.current);
+      scrollToPublishField(target.field, fallbackElement);
     },
     [setSelectedSectionId],
   );
@@ -79,6 +74,7 @@ export function usePublishPreflightFocus(input: {
     chromeSettingsRef,
     handleTargetSelect,
     highlightedArea,
+    highlightedField,
     pageContentRef,
     previewRef,
     readIssueTarget,
@@ -87,21 +83,72 @@ export function usePublishPreflightFocus(input: {
   };
 }
 
-function refreshHighlightedArea(
-  area: PublishPreflightIssueTargetKind,
+function refreshHighlightedTarget(
+  target: PublishPreflightIssueTarget,
   input: {
     setHighlightedArea: Dispatch<
       SetStateAction<PublishPreflightIssueTargetKind | null>
     >;
+    setHighlightedField: Dispatch<SetStateAction<string | null>>;
     timerRef: MutableRefObject<number | null>;
   },
 ): void {
   clearHighlightTimer(input.timerRef);
-  input.setHighlightedArea(area);
-  input.timerRef.current = window.setTimeout(
-    () => input.setHighlightedArea(null),
-    highlightDurationMs,
-  );
+  input.setHighlightedArea(target.kind);
+  input.setHighlightedField(target.field);
+  input.timerRef.current = window.setTimeout(() => {
+    input.setHighlightedArea(null);
+    input.setHighlightedField(null);
+  }, highlightDurationMs);
+}
+
+function readFallbackElement(
+  kind: PublishPreflightIssueTargetKind,
+  refs: {
+    chromeSettingsRef: MutableRefObject<HTMLDivElement | null>;
+    pageContentRef: MutableRefObject<HTMLDivElement | null>;
+    previewRef: MutableRefObject<HTMLDivElement | null>;
+    sectionPropertiesRef: MutableRefObject<HTMLDivElement | null>;
+    seoSettingsRef: MutableRefObject<HTMLDivElement | null>;
+  },
+): HTMLElement | null {
+  if (kind === "section") {
+    return refs.sectionPropertiesRef.current;
+  }
+
+  if (kind === "seo") {
+    return refs.seoSettingsRef.current;
+  }
+
+  if (kind === "chrome") {
+    return refs.chromeSettingsRef.current;
+  }
+
+  if (kind === "media") {
+    return refs.previewRef.current;
+  }
+
+  return refs.pageContentRef.current;
+}
+
+function scrollToPublishField(
+  field: string,
+  fallbackElement: HTMLElement | null,
+): void {
+  const scroll = () => {
+    const fieldElement = document.getElementById(
+      readPublishPreflightFieldDomId(field),
+    );
+
+    scrollToEditorArea(fieldElement ?? fallbackElement);
+  };
+
+  if (typeof requestAnimationFrame === "function") {
+    requestAnimationFrame(() => requestAnimationFrame(scroll));
+    return;
+  }
+
+  window.setTimeout(scroll, 0);
 }
 
 function clearHighlightTimer(
@@ -120,16 +167,8 @@ function scrollToEditorArea(element: HTMLElement | null): void {
     return;
   }
 
-  const scroll = () =>
-    element.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
-
-  if (typeof requestAnimationFrame === "function") {
-    requestAnimationFrame(scroll);
-    return;
-  }
-
-  window.setTimeout(scroll, 0);
+  element.scrollIntoView({
+    behavior: "smooth",
+    block: "start",
+  });
 }

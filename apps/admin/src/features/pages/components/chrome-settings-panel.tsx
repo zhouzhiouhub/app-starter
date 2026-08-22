@@ -28,6 +28,7 @@ import { ChromeLocaleSwitcherFields } from "./chrome-locale-switcher-fields";
 import { ChromeRegionToggles } from "./chrome-region-toggles";
 
 export function ChromeSettingsPanel(props: {
+  highlightedField: string | null;
   onChange: (schema: PageSchema) => void;
   schema: PageSchema;
 }) {
@@ -75,6 +76,7 @@ export function ChromeSettingsPanel(props: {
         />
         <Divider />
         <ChromeHeaderContentFields
+          highlightedField={props.highlightedField}
           onAddNavigation={() =>
             patch((current) => addNavigationItem(current, "header"))
           }
@@ -93,6 +95,7 @@ export function ChromeSettingsPanel(props: {
         />
         <Divider />
         <ChromeLocaleSwitcherFields
+          highlightedField={props.highlightedField}
           onAdd={() => patch(addHeaderLocaleOption)}
           onEnabledChange={(enabled) =>
             patch((current) =>
@@ -120,6 +123,7 @@ export function ChromeSettingsPanel(props: {
         />
         <Divider />
         <ChromeFooterContentFields
+          highlightedField={props.highlightedField}
           onAddNavigation={() =>
             patch((current) => addNavigationItem(current, "footer"))
           }

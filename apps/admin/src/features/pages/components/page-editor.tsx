@@ -187,6 +187,7 @@ export function PageEditor(props: {
             style={readFocusStyle("section")}
           >
             <SectionPropertiesPanel
+              highlightedField={preflightFocus.highlightedField}
               onChange={props.onSchemaChange}
               schema={props.schema}
               section={selectedSection}
@@ -198,6 +199,7 @@ export function PageEditor(props: {
             style={readFocusStyle("page")}
           >
             <PageContentFields
+              highlightedField={preflightFocus.highlightedField}
               onChange={props.onSchemaChange}
               schema={props.schema}
             />
@@ -207,6 +209,7 @@ export function PageEditor(props: {
             style={readFocusStyle("seo")}
           >
             <SeoSettingsPanel
+              highlightedField={preflightFocus.highlightedField}
               onChange={props.onSchemaChange}
               schema={props.schema}
             />
@@ -216,6 +219,7 @@ export function PageEditor(props: {
             style={readFocusStyle("chrome")}
           >
             <ChromeSettingsPanel
+              highlightedField={preflightFocus.highlightedField}
               onChange={props.onSchemaChange}
               schema={props.schema}
             />

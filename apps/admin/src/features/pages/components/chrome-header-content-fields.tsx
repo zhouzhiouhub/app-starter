@@ -1,9 +1,11 @@
 import { Form, Input, Typography } from "antd";
 import type { PageSchema } from "@app-starter/schema";
+import { readPublishPreflightFieldProps } from "../publish-preflight-field-focus";
 import { readSafeHrefFeedback } from "../safe-href-feedback";
 import { ChromeNavigationList } from "./chrome-navigation-list";
 
 export function ChromeHeaderContentFields(props: {
+  highlightedField: string | null;
   onAddNavigation: () => void;
   onBrandChange: (field: "label" | "href", value: string) => void;
   onNavigationChange: (
@@ -26,19 +28,28 @@ export function ChromeHeaderContentFields(props: {
           value={header.brand.label.defaultValue}
         />
       </Form.Item>
-      <Form.Item
-        help={brandHrefFeedback.help}
-        label="Brand link"
-        validateStatus={brandHrefFeedback.status}
+      <div
+        {...readPublishPreflightFieldProps(
+          "chrome.header.content.brand.href",
+          props.highlightedField,
+        )}
       >
-        <Input
-          onChange={(event) => props.onBrandChange("href", event.target.value)}
-          value={header.brand.href}
-        />
-      </Form.Item>
+        <Form.Item
+          help={brandHrefFeedback.help}
+          label="Brand link"
+          validateStatus={brandHrefFeedback.status}
+        >
+          <Input
+            onChange={(event) => props.onBrandChange("href", event.target.value)}
+            value={header.brand.href}
+          />
+        </Form.Item>
+      </div>
       <Typography.Text strong>Menu items</Typography.Text>
       <ChromeNavigationList
         addLabel="Add menu item"
+        fieldPathPrefix="chrome.header.content.navigation"
+        highlightedField={props.highlightedField}
         hrefAriaLabel="Header menu link"
         items={header.navigation}
         labelAriaLabel="Header menu label"

@@ -14,6 +14,7 @@ test("publish preflight target maps section fields to section ids", () => {
   );
 
   assert.deepEqual(target, {
+    field: "sections[1].props.content",
     kind: "section",
     label: "Section 2: rich text",
     sectionId: exampleLandingPage.sections[1].id,
@@ -30,7 +31,7 @@ test("publish preflight target maps global fields to editor panels", () => {
       },
       exampleLandingPage,
     ),
-    { kind: "seo", label: "SEO settings" },
+    { field: "seo.ogImage", kind: "seo", label: "SEO settings" },
   );
 
   assert.deepEqual(
@@ -42,7 +43,11 @@ test("publish preflight target maps global fields to editor panels", () => {
       },
       exampleLandingPage,
     ),
-    { kind: "chrome", label: "Page settings" },
+    {
+      field: "chrome.header.content.navigation[0].href",
+      kind: "chrome",
+      label: "Page settings",
+    },
   );
 
   assert.deepEqual(
@@ -54,7 +59,7 @@ test("publish preflight target maps global fields to editor panels", () => {
       },
       exampleLandingPage,
     ),
-    { kind: "media", label: "Preview media" },
+    { field: "media.references", kind: "media", label: "Preview media" },
   );
 
   assert.deepEqual(
@@ -66,7 +71,7 @@ test("publish preflight target maps global fields to editor panels", () => {
       },
       exampleLandingPage,
     ),
-    { kind: "page", label: "Page content" },
+    { field: "meta.locale", kind: "page", label: "Page content" },
   );
 });
 

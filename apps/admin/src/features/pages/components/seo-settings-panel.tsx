@@ -4,6 +4,7 @@ import {
   type PageSchema,
 } from "@app-starter/schema";
 import { MediaAssetSelect } from "../../media/components/media-asset-select";
+import { readPublishPreflightFieldProps } from "../publish-preflight-field-focus";
 import { readSeoFieldFeedback } from "../seo-feedback";
 import {
   updateSeoField,
@@ -41,6 +42,7 @@ const seoFields: Array<{
 ];
 
 export function SeoSettingsPanel(props: {
+  highlightedField: string | null;
   onChange: (schema: PageSchema) => void;
   schema: PageSchema;
 }) {
@@ -75,54 +77,62 @@ export function SeoSettingsPanel(props: {
         {seoFields.map((item) => {
           const value = props.schema.seo[item.field] ?? "";
           const feedback = readSeoFieldFeedback(item.field, value);
+          const publishField = `seo.${item.field}`;
 
           return (
-            <Form.Item
-              help={feedback.help}
+            <div
               key={item.field}
-              label={item.label}
-              validateStatus={feedback.status}
+              {...readPublishPreflightFieldProps(
+                publishField,
+                props.highlightedField,
+              )}
             >
-              {item.rows ? (
-                <Input.TextArea
-                  onChange={(event) =>
-                    handleChange(item.field, event.target.value)
-                  }
-                  placeholder={item.placeholder}
-                  rows={item.rows}
-                  value={value}
-                />
-              ) : item.field === "ogImage" ? (
-                <>
+              <Form.Item
+                help={feedback.help}
+                label={item.label}
+                validateStatus={feedback.status}
+              >
+                {item.rows ? (
+                  <Input.TextArea
+                    onChange={(event) =>
+                      handleChange(item.field, event.target.value)
+                    }
+                    placeholder={item.placeholder}
+                    rows={item.rows}
+                    value={value}
+                  />
+                ) : item.field === "ogImage" ? (
+                  <>
+                    <Input
+                      onChange={(event) =>
+                        handleChange(item.field, event.target.value)
+                      }
+                      placeholder={item.placeholder}
+                      style={{ marginBottom: 8 }}
+                      value={value}
+                    />
+                    <MediaAssetSelect
+                      onSelect={(asset) =>
+                        handleChange(item.field, asset.reference)
+                      }
+                      value={
+                        isMediaAssetReference(value)
+                          ? props.schema.seo[item.field]
+                          : undefined
+                      }
+                    />
+                  </>
+                ) : (
                   <Input
                     onChange={(event) =>
                       handleChange(item.field, event.target.value)
                     }
                     placeholder={item.placeholder}
-                    style={{ marginBottom: 8 }}
                     value={value}
                   />
-                  <MediaAssetSelect
-                    onSelect={(asset) =>
-                      handleChange(item.field, asset.reference)
-                    }
-                    value={
-                      isMediaAssetReference(value)
-                        ? props.schema.seo[item.field]
-                        : undefined
-                    }
-                  />
-                </>
-              ) : (
-                <Input
-                  onChange={(event) =>
-                    handleChange(item.field, event.target.value)
-                  }
-                  placeholder={item.placeholder}
-                  value={value}
-                />
-              )}
-            </Form.Item>
+                )}
+              </Form.Item>
+            </div>
           );
         })}
       </Form>

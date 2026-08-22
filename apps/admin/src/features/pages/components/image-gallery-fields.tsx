@@ -9,6 +9,7 @@ import { MediaAssetSelect } from "../../media/components/media-asset-select";
 import { readImageAltFeedback } from "../image-alt-feedback";
 import type { ImageSrcFeedback } from "../image-src-feedback";
 import { readImageSrcFeedback } from "../image-src-feedback";
+import { readPublishPreflightFieldProps } from "../publish-preflight-field-focus";
 import {
   addImage,
   readImages,
@@ -17,11 +18,15 @@ import {
 } from "../section-list-prop-updates";
 
 export function ImageGalleryFields(props: {
+  highlightedField: string | null;
   onChange: (schema: PageSchema) => void;
   schema: PageSchema;
   section: SectionNode;
 }) {
   const images = readImages(props.section);
+  const sectionIndex = props.schema.sections.findIndex(
+    (section) => section.id === props.section.id,
+  );
 
   return (
     <Form.Item label="Images">
@@ -30,6 +35,8 @@ export function ImageGalleryFields(props: {
         {images.map((image, index) => {
           const altFeedback = readImageAltFeedback(image.alt);
           const srcFeedback = readImageSrcFeedback(image.src);
+          const altField = readImageFieldPath(sectionIndex, index, "alt");
+          const srcField = readImageFieldPath(sectionIndex, index, "src");
 
           return (
             <Space
@@ -39,6 +46,10 @@ export function ImageGalleryFields(props: {
             >
               <Space.Compact block>
                 <Input
+                  {...readPublishPreflightFieldProps(
+                    srcField,
+                    props.highlightedField,
+                  )}
                   onChange={(event) =>
                     props.onChange(
                       updateImage(
@@ -55,6 +66,10 @@ export function ImageGalleryFields(props: {
                   value={image.src}
                 />
                 <Input
+                  {...readPublishPreflightFieldProps(
+                    altField,
+                    props.highlightedField,
+                  )}
                   onChange={(event) =>
                     props.onChange(
                       updateImage(
@@ -116,6 +131,14 @@ export function ImageGalleryFields(props: {
       </Space>
     </Form.Item>
   );
+}
+
+function readImageFieldPath(
+  sectionIndex: number,
+  imageIndex: number,
+  field: "alt" | "src",
+): string {
+  return `sections[${sectionIndex}].props.images[${imageIndex}].${field}`;
 }
 
 function renderImageFeedback(

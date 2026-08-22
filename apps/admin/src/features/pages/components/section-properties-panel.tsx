@@ -9,6 +9,7 @@ import {
   readRichTextFeedback,
   type RichTextFeedback,
 } from "../rich-text-feedback";
+import { readPublishPreflightFieldProps } from "../publish-preflight-field-focus";
 import {
   readSectionText,
   updateSectionTextField,
@@ -71,6 +72,7 @@ const sectionPropertyFields: Record<string, SectionPropertyField[]> = {
 };
 
 export function SectionPropertiesPanel(props: {
+  highlightedField: string | null;
   onChange: (schema: PageSchema) => void;
   schema: PageSchema;
   section: SectionNode | null;
@@ -78,6 +80,9 @@ export function SectionPropertiesPanel(props: {
 }) {
   const section = props.section;
   const fields = section ? (sectionPropertyFields[section.component] ?? []) : [];
+  const sectionIndex = section
+    ? props.schema.sections.findIndex((item) => item.id === section.id)
+    : -1;
 
   return (
     <section
@@ -97,47 +102,55 @@ export function SectionPropertiesPanel(props: {
           {fields.map((field) => {
             const value = readSectionText(section.props[field.name]);
             const feedback = readSectionPropertyFeedback(section, field, value);
+            const publishField = readSectionFieldPath(sectionIndex, field.name);
 
             return (
-              <Form.Item
-                help={feedback.help}
+              <div
                 key={field.name}
-                label={field.label}
-                validateStatus={feedback.status}
-              >
-                {field.control === "textarea" ? (
-                  <Input.TextArea
-                    onChange={(event) =>
-                      props.onChange(
-                        updateSectionTextField(
-                          props.schema,
-                          section.id,
-                          field.name,
-                          event.target.value,
-                          field.valueKind,
-                        ),
-                      )
-                    }
-                    rows={4}
-                    value={value}
-                  />
-                ) : (
-                  <Input
-                    onChange={(event) =>
-                      props.onChange(
-                        updateSectionTextField(
-                          props.schema,
-                          section.id,
-                          field.name,
-                          event.target.value,
-                          field.valueKind,
-                        ),
-                      )
-                    }
-                    value={value}
-                  />
+                {...readPublishPreflightFieldProps(
+                  publishField,
+                  props.highlightedField,
                 )}
-              </Form.Item>
+              >
+                <Form.Item
+                  help={feedback.help}
+                  label={field.label}
+                  validateStatus={feedback.status}
+                >
+                  {field.control === "textarea" ? (
+                    <Input.TextArea
+                      onChange={(event) =>
+                        props.onChange(
+                          updateSectionTextField(
+                            props.schema,
+                            section.id,
+                            field.name,
+                            event.target.value,
+                            field.valueKind,
+                          ),
+                        )
+                      }
+                      rows={4}
+                      value={value}
+                    />
+                  ) : (
+                    <Input
+                      onChange={(event) =>
+                        props.onChange(
+                          updateSectionTextField(
+                            props.schema,
+                            section.id,
+                            field.name,
+                            event.target.value,
+                            field.valueKind,
+                          ),
+                        )
+                      }
+                      value={value}
+                    />
+                  )}
+                </Form.Item>
+              </div>
             );
           })}
           {section.component === "faq" ? (
@@ -149,6 +162,7 @@ export function SectionPropertiesPanel(props: {
           ) : null}
           {section.component === "image-gallery" ? (
             <ImageGalleryFields
+              highlightedField={props.highlightedField}
               onChange={props.onChange}
               schema={props.schema}
               section={section}
@@ -171,6 +185,10 @@ export function SectionPropertiesPanel(props: {
       )}
     </section>
   );
+}
+
+function readSectionFieldPath(sectionIndex: number, fieldName: string): string {
+  return `sections[${sectionIndex}].props.${fieldName}`;
 }
 
 function readSectionPropertyFeedback(
