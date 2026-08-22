@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { assertDatabaseRuntimeConfig } from "../dist/modules/prisma/database-url.js";
+import {
+  assertDatabaseRuntimeConfig,
+  isProductionDatabaseEnvironment,
+} from "../dist/modules/prisma/database-url.js";
 
 test("database runtime config allows local URLs outside production", () => {
   assert.doesNotThrow(() =>
@@ -39,6 +42,34 @@ test("database runtime config rejects missing production URLs", () => {
       message: "DATABASE_URL is required in production.",
       name: "DatabaseRuntimeConfigurationError",
     },
+  );
+});
+
+test("database runtime config treats deployment production markers as production", () => {
+  assert.equal(
+    isProductionDatabaseEnvironment({ APP_ENV: " production " }),
+    true,
+  );
+  assert.equal(
+    isProductionDatabaseEnvironment({ VERCEL_ENV: "production" }),
+    true,
+  );
+  assert.equal(
+    isProductionDatabaseEnvironment({ NODE_ENV: "development" }),
+    false,
+  );
+  assert.throws(
+    () => assertDatabaseRuntimeConfig({ APP_ENV: "production" }),
+    /DATABASE_URL is required in production/,
+  );
+  assert.throws(
+    () =>
+      assertDatabaseRuntimeConfig({
+        DATABASE_URL:
+          "postgresql://postgres:secret@localhost:5432/app_starter",
+        VERCEL_ENV: "production",
+      }),
+    /DATABASE_URL must not use local or placeholder hosts in production/,
   );
 });
 

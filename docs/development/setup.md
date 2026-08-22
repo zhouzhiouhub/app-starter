@@ -41,7 +41,8 @@ and future session invalidation work.
 In production, the API requires `DATABASE_URL` to be a PostgreSQL connection URL
 whose host is not local, loopback, Docker-local, or a reserved placeholder. Local
 development can still use `localhost`, but production startup fails before
-Prisma connects if the database URL is unsafe.
+Prisma connects if the database URL is unsafe. Database production mode is
+detected from `NODE_ENV`, `APP_ENV`, or `VERCEL_ENV`.
 Production smoke readiness also expects `REDIS_URL` to be a `rediss://` endpoint
 outside local, private, Docker-local, or reserved placeholder hosts.
 Production API CORS reads `WEB_URL` and `ADMIN_URL` as allowed browser origins;

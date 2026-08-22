@@ -1,8 +1,10 @@
 import { isUnsafeProductionHostname } from "@app-starter/schema";
 
 export interface DatabaseRuntimeEnv {
+  APP_ENV?: string;
   DATABASE_URL?: string;
   NODE_ENV?: string;
+  VERCEL_ENV?: string;
 }
 
 export class DatabaseRuntimeConfigurationError extends Error {
@@ -15,7 +17,7 @@ export class DatabaseRuntimeConfigurationError extends Error {
 export function assertDatabaseRuntimeConfig(
   env: DatabaseRuntimeEnv = process.env,
 ): void {
-  if (env.NODE_ENV !== "production") {
+  if (!isProductionDatabaseEnvironment(env)) {
     return;
   }
 
@@ -52,4 +54,12 @@ function readDatabaseUrl(value: string): URL | null {
 
 function isPostgresProtocol(protocol: string): boolean {
   return protocol === "postgres:" || protocol === "postgresql:";
+}
+
+export function isProductionDatabaseEnvironment(
+  env: DatabaseRuntimeEnv = process.env,
+): boolean {
+  return [env.NODE_ENV, env.APP_ENV, env.VERCEL_ENV].some(
+    (value) => value?.trim().toLowerCase() === "production",
+  );
 }
