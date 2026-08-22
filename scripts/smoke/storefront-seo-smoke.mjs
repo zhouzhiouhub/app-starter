@@ -18,6 +18,7 @@ import {
 export async function assertRobots(input) {
   const url = joinUrl(input.webUrl, "/robots.txt");
   const expectedOrigin = getExpectedStorefrontOrigin(input);
+  const expectedHostUrl = expectedOrigin;
   const expectedSitemapUrl = joinUrl(expectedOrigin, "/sitemap.xml");
   const response = await fetchStorefrontText(url, input);
   const robotsAttempt = readRobotsAttempt(response, expectedOrigin);
@@ -28,19 +29,35 @@ export async function assertRobots(input) {
       url,
       `robots.txt failed (${formatRobotsAttempt(robotsAttempt)}).`,
       robotsAttempt,
-      { expectedSitemapUrl },
+      { expectedHostUrl, expectedSitemapUrl },
     );
   }
 
-  if (!robotsAttempt.hasUserAgent || !robotsAttempt.hasSitemapLine) {
+  if (
+    !robotsAttempt.hasUserAgent ||
+    !robotsAttempt.hasHostLine ||
+    !robotsAttempt.hasSitemapLine
+  ) {
     throw createSeoSmokeFailure(
       "robots",
       url,
-      `robots.txt did not include user-agent and sitemap lines (${formatRobotsAttempt(
+      `robots.txt did not include user-agent, host, and sitemap lines (${formatRobotsAttempt(
         robotsAttempt,
       )}).`,
       robotsAttempt,
-      { expectedSitemapUrl },
+      { expectedHostUrl, expectedSitemapUrl },
+    );
+  }
+
+  if (!robotsAttempt.pointsToHost) {
+    throw createSeoSmokeFailure(
+      "robots",
+      url,
+      `robots.txt did not point to the storefront host (${formatRobotsAttempt(
+        robotsAttempt,
+      )}).`,
+      robotsAttempt,
+      { expectedHostUrl, expectedSitemapUrl },
     );
   }
 
@@ -52,7 +69,7 @@ export async function assertRobots(input) {
         robotsAttempt,
       )}).`,
       robotsAttempt,
-      { expectedSitemapUrl },
+      { expectedHostUrl, expectedSitemapUrl },
     );
   }
 

@@ -47,16 +47,18 @@ test("smoke helpers summarize robots, sitemap, and 404 attempts", () => {
 
   assert.deepEqual(robots, {
     bodySnippet: null,
+    hasHostLine: false,
     hasSitemapLine: false,
     hasUserAgent: true,
     ok: true,
+    pointsToHost: false,
     pointsToSitemap: false,
     status: 200,
     statusText: "OK",
   });
   assert.equal(
     formatRobotsAttempt(robots),
-    "status 200 OK, user-agent: true, sitemap line: false, sitemap URL: false",
+    "status 200 OK, user-agent: true, host line: false, host URL: false, sitemap line: false, sitemap URL: false",
   );
   assert.deepEqual(sitemap, {
     bodySnippet: null,

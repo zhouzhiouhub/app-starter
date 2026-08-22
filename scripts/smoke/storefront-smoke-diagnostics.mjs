@@ -35,13 +35,16 @@ export function formatStorefrontPageAttempt(attempt) {
 
 export function readRobotsAttempt(response, webUrl) {
   const text = response.text.toLowerCase();
+  const hostUrl = webUrl.toLowerCase();
   const sitemapUrl = joinUrl(webUrl, "/sitemap.xml").toLowerCase();
 
   return {
     bodySnippet: response.ok ? null : readBodySnippet(response.text),
+    hasHostLine: hasRobotsDirective(text, "host"),
     hasSitemapLine: text.includes("sitemap:"),
     hasUserAgent: text.includes("user-agent"),
     ok: response.ok,
+    pointsToHost: hasRobotsDirectiveValue(text, "host", hostUrl),
     pointsToSitemap: text.includes(sitemapUrl),
     status: response.status,
     statusText: response.statusText || "",
@@ -54,7 +57,7 @@ export function formatRobotsAttempt(attempt) {
     ? `, body: ${JSON.stringify(attempt.bodySnippet)}`
     : "";
 
-  return `status ${attempt.status}${statusText}, user-agent: ${attempt.hasUserAgent}, sitemap line: ${attempt.hasSitemapLine}, sitemap URL: ${attempt.pointsToSitemap}${body}`;
+  return `status ${attempt.status}${statusText}, user-agent: ${attempt.hasUserAgent}, host line: ${attempt.hasHostLine}, host URL: ${attempt.pointsToHost}, sitemap line: ${attempt.hasSitemapLine}, sitemap URL: ${attempt.pointsToSitemap}${body}`;
 }
 
 export function readSitemapAttempt(response, expectedUrl) {
@@ -206,4 +209,23 @@ function readStorefrontPageDiagnosis(response, titlePresent, documentTitle) {
 function isNotFoundSitemapUrl(url) {
   const normalized = url.replace(/\/+$/, "");
   return normalized.endsWith("/404");
+}
+
+function hasRobotsDirective(text, directive) {
+  const pattern = new RegExp(`^\\s*${directive}\\s*:`, "im");
+
+  return pattern.test(text);
+}
+
+function hasRobotsDirectiveValue(text, directive, expectedValue) {
+  const pattern = new RegExp(
+    `^\\s*${directive}\\s*:\\s*${escapeRegExp(expectedValue)}\\s*$`,
+    "im",
+  );
+
+  return pattern.test(text);
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

@@ -20,10 +20,13 @@ test("SEO smoke failures keep structured diagnostics", async () => {
         (error) => {
           assert.deepEqual(error.smokeDetails.robots, {
             bodySnippet: null,
+            expectedHostUrl: "https://web.example.com",
             expectedSitemapUrl: "https://web.example.com/sitemap.xml",
+            hasHostLine: false,
             hasSitemapLine: false,
             hasUserAgent: true,
             ok: true,
+            pointsToHost: false,
             pointsToSitemap: false,
             status: 200,
             statusText: "OK",
@@ -32,6 +35,72 @@ test("SEO smoke failures keep structured diagnostics", async () => {
 
           return true;
         },
+      );
+    },
+  );
+
+  await withFetch(
+    async () =>
+      new Response(
+        [
+          "User-agent: *",
+          "Host: https://web.example.com",
+          "Sitemap: https://store.brand-platform.com/sitemap.xml",
+        ].join("\n"),
+        {
+          status: 200,
+          statusText: "OK",
+        },
+      ),
+    async () => {
+      await assert.rejects(
+        () =>
+          assertRobots({
+            storefrontHost: "store.brand-platform.com",
+            webUrl: "https://web.example.com",
+          }),
+        (error) => {
+          assert.deepEqual(error.smokeDetails.robots, {
+            bodySnippet: null,
+            expectedHostUrl: "https://store.brand-platform.com",
+            expectedSitemapUrl:
+              "https://store.brand-platform.com/sitemap.xml",
+            hasHostLine: true,
+            hasSitemapLine: true,
+            hasUserAgent: true,
+            ok: true,
+            pointsToHost: false,
+            pointsToSitemap: true,
+            status: 200,
+            statusText: "OK",
+            url: "https://web.example.com/robots.txt",
+          });
+
+          return true;
+        },
+      );
+    },
+  );
+
+  await withFetch(
+    async () =>
+      new Response(
+        [
+          "User-agent: *",
+          "Host: https://store.brand-platform.com",
+          "Sitemap: https://store.brand-platform.com/sitemap.xml",
+        ].join("\n"),
+        {
+          status: 200,
+          statusText: "OK",
+        },
+      ),
+    async () => {
+      await assert.doesNotReject(() =>
+        assertRobots({
+          storefrontHost: "store.brand-platform.com",
+          webUrl: "https://web.example.com",
+        }),
       );
     },
   );
@@ -127,7 +196,11 @@ test("SEO smoke forwards the configured storefront host", async () => {
 
       if (url === "https://web.example.com/robots.txt") {
         return new Response(
-          "User-agent: *\nSitemap: https://store.brand-platform.com/sitemap.xml\n",
+          [
+            "User-agent: *",
+            "Host: https://store.brand-platform.com",
+            "Sitemap: https://store.brand-platform.com/sitemap.xml",
+          ].join("\n"),
           {
             status: 200,
             statusText: "OK",
