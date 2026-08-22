@@ -216,10 +216,7 @@ function collectMediaReadiness(blockers, media, config) {
       "r2-upload-smoke-not-required",
       "Set SMOKE_REQUIRE_R2_UPLOAD=true to prove R2 upload and CDN delivery.",
     );
-    return;
-  }
-
-  if (media?.r2?.configured !== true) {
+  } else if (media?.r2?.configured !== true) {
     appendBlocker(
       blockers,
       "media.r2",

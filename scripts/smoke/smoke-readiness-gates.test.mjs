@@ -56,6 +56,39 @@ test("smoke readiness marks omitted production gates as blockers", () => {
   );
 });
 
+test("smoke readiness reports CDN blockers even when R2 upload smoke is omitted", () => {
+  const environment = createReadyEnvironment();
+  environment.media.cdnProductionReady = false;
+  environment.media.cdnUrlIssue = "placeholder-host";
+
+  const readiness = createSmokeProductionReadiness(environment, {
+    ...createReadyConfig(),
+    requireR2Upload: false,
+  });
+
+  assert.deepEqual(
+    readiness.blockers.map((blocker) => [blocker.area, blocker.issue]),
+    [
+      ["media.r2", "r2-upload-smoke-not-required"],
+      ["media.cdn", "placeholder-host"],
+    ],
+  );
+  assert.equal(readiness.productionReady, false);
+  assert.deepEqual(
+    readiness.nextActions.map((item) => [item.area, item.action]),
+    [
+      [
+        "media.r2",
+        "Configure R2 credentials and set SMOKE_REQUIRE_R2_UPLOAD=true.",
+      ],
+      [
+        "media.cdn",
+        "Set MEDIA_CDN_BASE_URL to a production HTTPS CDN origin.",
+      ],
+    ],
+  );
+});
+
 test("smoke readiness requires an archived report path", () => {
   const readiness = createSmokeProductionReadiness(createReadyEnvironment(), {
     ...createReadyConfig(),
