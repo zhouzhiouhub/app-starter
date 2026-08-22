@@ -15,6 +15,9 @@ test("smoke secret redaction removes tokens from common failure shapes", () => {
       "Authorization Bearer header.payload.signature",
       "Authorization: Bearer colon.header.payload",
       "refreshToken=refresh-token-value",
+      "postgresql://db-user:db-secret@db.example.com:5432/app",
+      "redis://cache-user:cache-secret@redis.example.com:6379/0",
+      "https://admin-user:admin-secret@admin.example.com",
       "https://web.example.com/preview?preview_token=payload.signature&access_token=access-token-value&api_key=api-key-value",
       "https://uploads.example.com/object.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=credential-value&X-Amz-Date=20260820T000000Z&X-Amz-Expires=900&X-Amz-SignedHeaders=content-type%3Bhost&X-Amz-Signature=signature-value&X-Amz-Security-Token=security-token-value",
     ].join(" "),
@@ -27,6 +30,12 @@ test("smoke secret redaction removes tokens from common failure shapes", () => {
   assert.equal(message.includes("ChangeMe456!"), false);
   assert.equal(message.includes("shared"), false);
   assert.equal(message.includes("refresh-token-value"), false);
+  assert.equal(message.includes("db-user"), false);
+  assert.equal(message.includes("db-secret"), false);
+  assert.equal(message.includes("cache-user"), false);
+  assert.equal(message.includes("cache-secret"), false);
+  assert.equal(message.includes("admin-user"), false);
+  assert.equal(message.includes("admin-secret"), false);
   assert.equal(message.includes("AWS4-HMAC-SHA256"), false);
   assert.equal(message.includes("credential-value"), false);
   assert.equal(message.includes("20260820T000000Z"), false);
@@ -42,6 +51,9 @@ test("smoke secret redaction removes tokens from common failure shapes", () => {
   assert.match(message, /Authorization Bearer \[redacted\]/);
   assert.match(message, /Authorization: Bearer \[redacted\]/);
   assert.match(message, /refreshToken=\[redacted\]/);
+  assert.match(message, /postgresql:\/\/\[redacted\]@db\.example\.com:5432\/app/);
+  assert.match(message, /redis:\/\/\[redacted\]@redis\.example\.com:6379\/0/);
+  assert.match(message, /https:\/\/\[redacted\]@admin\.example\.com/);
   assert.match(message, /X-Amz-Algorithm=\[redacted\]/);
   assert.match(message, /X-Amz-Credential=\[redacted\]/);
   assert.match(message, /X-Amz-Date=\[redacted\]/);

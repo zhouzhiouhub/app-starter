@@ -42,6 +42,10 @@ const sensitiveKeyNames = new Set([
 
 export function redactSmokeSecrets(value) {
   return String(value)
+    .replace(
+      /\b([a-z][a-z0-9+.-]*:\/\/)([^/?#\s)"'<@]+)(?::([^/?#\s)"'<@]*))?@/gi,
+      "$1[redacted]@",
+    )
     .replace(/(\/public\/preview\/)[^/?#\s)"']+/gi, "$1[redacted]")
     .replace(
       /(\bAuthorization\s*[:=]?\s*Bearer\s+)[a-zA-Z0-9._-]+/gi,
