@@ -273,7 +273,7 @@ function collectRevalidationReadiness(
       blockers,
       "revalidation.url",
       revalidation?.urlIssue ?? "unsafe-url",
-      "Storefront revalidation URL must be a safe HTTP(S) endpoint.",
+      "Storefront revalidation URL must be a production HTTPS endpoint.",
     );
   }
 

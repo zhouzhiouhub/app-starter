@@ -32,3 +32,30 @@ test("smoke readiness warns when revalidation uses WEB_URL fallback", () => {
     },
   ]);
 });
+
+test("smoke readiness blocks non-production revalidation URLs", () => {
+  const environment = createReadyEnvironment();
+  environment.revalidation.urlSafe = false;
+  environment.revalidation.urlIssue = "local-host";
+
+  const readiness = createSmokeProductionReadiness(
+    environment,
+    createReadyConfig(),
+  );
+
+  assert.deepEqual(readiness.blockers, [
+    {
+      area: "revalidation.url",
+      issue: "local-host",
+      message: "Storefront revalidation URL must be a production HTTPS endpoint.",
+    },
+  ]);
+  assert.equal(readiness.productionReady, false);
+  assert.deepEqual(readiness.nextActions, [
+    {
+      action:
+        "Set STOREFRONT_REVALIDATE_URL to the deployed storefront /api/revalidate endpoint.",
+      area: "revalidation.url",
+    },
+  ]);
+});

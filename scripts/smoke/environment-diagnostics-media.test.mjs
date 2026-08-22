@@ -24,7 +24,7 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
     REDIS_URL: "rediss://cache-user:cache-secret@redis.brand-cache.com:6379/0",
     PREVIEW_TOKEN_SECRET: "super-preview-secret",
     STOREFRONT_REVALIDATE_SECRET: "super-revalidate-secret",
-    STOREFRONT_REVALIDATE_URL: "https://web.example.com/",
+    STOREFRONT_REVALIDATE_URL: "https://web.brand-platform.com/",
   });
 
   assert.deepEqual(diagnostics, {
@@ -161,7 +161,7 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
     },
     revalidation: {
       configured: true,
-      endpointHost: "web.example.com",
+      endpointHost: "web.brand-platform.com",
       endpointPath: "/api/revalidate",
       requireRevalidation: true,
       secretConfigured: true,

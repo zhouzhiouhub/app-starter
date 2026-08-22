@@ -1,3 +1,8 @@
+import {
+  isLocalHostname,
+  isPlaceholderHostname,
+} from "./cdn-hostname.mjs";
+
 const defaultRevalidatePath = "/api/revalidate";
 
 export function createRevalidationDiagnostics(env = process.env, options = {}) {
@@ -72,6 +77,33 @@ function readRevalidationEndpoint(value, source) {
     return {
       host: url.hostname,
       issue: "unsupported-url-parts",
+      path: null,
+      safe: false,
+    };
+  }
+
+  if (isLocalHostname(url.hostname)) {
+    return {
+      host: url.hostname,
+      issue: "local-host",
+      path: null,
+      safe: false,
+    };
+  }
+
+  if (isPlaceholderHostname(url.hostname)) {
+    return {
+      host: url.hostname,
+      issue: "placeholder-host",
+      path: null,
+      safe: false,
+    };
+  }
+
+  if (url.protocol !== "https:") {
+    return {
+      host: url.hostname,
+      issue: "insecure-protocol",
       path: null,
       safe: false,
     };
