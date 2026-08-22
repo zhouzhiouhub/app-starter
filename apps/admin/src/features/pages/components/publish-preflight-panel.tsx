@@ -1,11 +1,17 @@
-import { Alert, List, Space, Tag, Typography } from "antd";
+import { AimOutlined } from "@ant-design/icons";
+import { Alert, Button, List, Space, Tag, Typography } from "antd";
 import {
   summarizePublishPreflightIssues,
   type PublishPreflightIssue,
 } from "../publish-preflight";
+import type { PublishPreflightIssueTarget } from "../publish-preflight-target";
 
 export function PublishPreflightPanel(props: {
   issues: PublishPreflightIssue[];
+  onTargetSelect?: (target: PublishPreflightIssueTarget) => void;
+  readIssueTarget?: (
+    issue: PublishPreflightIssue,
+  ) => PublishPreflightIssueTarget | null;
 }) {
   if (props.issues.length === 0) {
     return null;
@@ -18,19 +24,34 @@ export function PublishPreflightPanel(props: {
       description={
         <List
           dataSource={props.issues}
-          renderItem={(issue, index) => (
-            <List.Item key={`${issue.field}-${index}`}>
-              <Space align="start" size={8}>
-                <Tag color={issue.severity === "error" ? "red" : "gold"}>
-                  {issue.severity}
-                </Tag>
-                <span>
-                  <Typography.Text strong>{issue.field}</Typography.Text>
-                  <Typography.Text>: {issue.message}</Typography.Text>
-                </span>
-              </Space>
-            </List.Item>
-          )}
+          renderItem={(issue, index) => {
+            const target = props.readIssueTarget?.(issue) ?? null;
+
+            return (
+              <List.Item key={`${issue.field}-${index}`}>
+                <Space align="start" size={8}>
+                  <Tag color={issue.severity === "error" ? "red" : "gold"}>
+                    {issue.severity}
+                  </Tag>
+                  <span>
+                    <Typography.Text strong>{issue.field}</Typography.Text>
+                    <Typography.Text>: {issue.message}</Typography.Text>
+                  </span>
+                  {target && props.onTargetSelect ? (
+                    <Button
+                      aria-label={`Focus ${target.label}`}
+                      icon={<AimOutlined />}
+                      onClick={() => props.onTargetSelect?.(target)}
+                      size="small"
+                      type="link"
+                    >
+                      Focus
+                    </Button>
+                  ) : null}
+                </Space>
+              </List.Item>
+            );
+          }}
           size="small"
           split={false}
         />

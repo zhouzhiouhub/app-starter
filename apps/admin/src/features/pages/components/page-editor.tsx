@@ -13,6 +13,7 @@ import {
   collectPublishPreflightIssues,
   findBlockingPublishPreflightIssueFromIssues,
 } from "../publish-preflight";
+import { usePublishPreflightFocus } from "../hooks/use-publish-preflight-focus";
 import { getStorefrontPageUrl } from "../storefront-url";
 import type { EditorFeedback, PageSummary, PageVersionSummary } from "../types";
 import { ChromeSettingsPanel } from "./chrome-settings-panel";
@@ -55,6 +56,10 @@ export function PageEditor(props: {
   const [selectedSectionId, setSelectedSectionId] = useState(
     props.schema.sections[0]?.id ?? null,
   );
+  const preflightFocus = usePublishPreflightFocus({
+    schema: props.schema,
+    setSelectedSectionId,
+  });
   const orderedSections = useMemo(
     () => getOrderedSectionsForViewport(props.schema, props.viewport),
     [props.schema, props.viewport],
@@ -137,7 +142,11 @@ export function PageEditor(props: {
           type={props.feedback.type}
         />
       ) : null}
-      <PublishPreflightPanel issues={publishPreflightIssues} />
+      <PublishPreflightPanel
+        issues={publishPreflightIssues}
+        onTargetSelect={preflightFocus.handleTargetSelect}
+        readIssueTarget={preflightFocus.readIssueTarget}
+      />
       <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
         <Tag color={props.page.status === "published" ? "green" : "default"}>
           {props.page.status}
@@ -169,24 +178,32 @@ export function PageEditor(props: {
             schema={props.schema}
             viewport={props.viewport}
           />
-          <SectionPropertiesPanel
-            onChange={props.onSchemaChange}
-            schema={props.schema}
-            section={selectedSection}
-            viewport={props.viewport}
-          />
-          <PageContentFields
-            onChange={props.onSchemaChange}
-            schema={props.schema}
-          />
-          <SeoSettingsPanel
-            onChange={props.onSchemaChange}
-            schema={props.schema}
-          />
-          <ChromeSettingsPanel
-            onChange={props.onSchemaChange}
-            schema={props.schema}
-          />
+          <div ref={preflightFocus.sectionPropertiesRef}>
+            <SectionPropertiesPanel
+              onChange={props.onSchemaChange}
+              schema={props.schema}
+              section={selectedSection}
+              viewport={props.viewport}
+            />
+          </div>
+          <div ref={preflightFocus.pageContentRef}>
+            <PageContentFields
+              onChange={props.onSchemaChange}
+              schema={props.schema}
+            />
+          </div>
+          <div ref={preflightFocus.seoSettingsRef}>
+            <SeoSettingsPanel
+              onChange={props.onSchemaChange}
+              schema={props.schema}
+            />
+          </div>
+          <div ref={preflightFocus.chromeSettingsRef}>
+            <ChromeSettingsPanel
+              onChange={props.onSchemaChange}
+              schema={props.schema}
+            />
+          </div>
           <PublicationHistoryPanel
             onRollbackVersion={props.onRollbackVersion}
             publishedVersionId={props.page.publishedVersionId}
@@ -194,13 +211,15 @@ export function PageEditor(props: {
             versions={props.versions}
           />
         </div>
-        <PagePreviewPane
-          mediaReferences={props.mediaReferences}
-          mediaResolver={props.mediaResolver}
-          onViewportChange={props.onViewportChange}
-          schema={props.schema}
-          viewport={props.viewport}
-        />
+        <div ref={preflightFocus.previewRef}>
+          <PagePreviewPane
+            mediaReferences={props.mediaReferences}
+            mediaResolver={props.mediaResolver}
+            onViewportChange={props.onViewportChange}
+            schema={props.schema}
+            viewport={props.viewport}
+          />
+        </div>
       </div>
     </div>
   );
