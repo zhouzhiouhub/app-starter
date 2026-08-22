@@ -5,11 +5,14 @@ import {
   readSectionText,
   updateSectionTextField,
 } from "./section-content-updates.ts";
+import { readImages, removeImage } from "./section-list-prop-updates.ts";
 import { normalizeSectionOrder } from "./section-order-updates.ts";
 
 const sectionOrderIssuePattern = /^layout\.(desktop|mobile)\.sectionOrder$/;
 const richTextContentIssuePattern = /^sections\[(\d+)\]\.props\.content$/;
 const ctaPairIssuePattern = /^sections\[(\d+)\]\.props\.(ctaHref|ctaLabel)$/;
+const blankImageSrcIssuePattern =
+  /^sections\[(\d+)\]\.props\.images\[(\d+)\]\.src$/;
 
 export function readPublishPreflightIssueFixLabel(
   issue: PublishPreflightIssue,
@@ -24,6 +27,10 @@ export function readPublishPreflightIssueFixLabel(
     return "Clear CTA fields";
   }
 
+  if (isBlankImageSrcIssueCandidate(issue)) {
+    return "Remove blank image";
+  }
+
   return isRichTextContentIssueCandidate(issue) ? "Sanitize rich text" : null;
 }
 
@@ -33,6 +40,7 @@ export function applyPublishPreflightIssueFix(
 ): PageSchema | null {
   const viewport = readSectionOrderIssueViewport(issue);
   const ctaSectionId = readIncompleteCtaIssueSectionId(issue, schema);
+  const blankImageTarget = readBlankImageSrcIssueTarget(issue, schema);
   const richTextSectionId = readRichTextContentIssueSectionId(issue, schema);
 
   if (viewport) {
@@ -41,6 +49,14 @@ export function applyPublishPreflightIssueFix(
 
   if (ctaSectionId) {
     return clearCtaFields(schema, ctaSectionId);
+  }
+
+  if (blankImageTarget) {
+    return removeImage(
+      schema,
+      blankImageTarget.sectionId,
+      blankImageTarget.imageIndex,
+    );
   }
 
   if (richTextSectionId) {
@@ -100,6 +116,30 @@ function readIncompleteCtaIssueSectionId(
   return hasCtaHref !== hasCtaLabel ? section.id : null;
 }
 
+function readBlankImageSrcIssueTarget(
+  issue: PublishPreflightIssue,
+  schema: PageSchema,
+): { imageIndex: number; sectionId: string } | null {
+  if (!isBlankImageSrcIssueCandidate(issue)) {
+    return null;
+  }
+
+  const match = blankImageSrcIssuePattern.exec(issue.field);
+  const sectionIndex = match?.[1] ? Number.parseInt(match[1], 10) : -1;
+  const imageIndex = match?.[2] ? Number.parseInt(match[2], 10) : -1;
+  const section = schema.sections[sectionIndex];
+
+  if (section?.component !== "image-gallery") {
+    return null;
+  }
+
+  const image = readImages(section)[imageIndex];
+
+  return image && !image.src.trim()
+    ? { imageIndex, sectionId: section.id }
+    : null;
+}
+
 function clearCtaFields(schema: PageSchema, sectionId: string): PageSchema {
   const withoutLabel = updateSectionTextField(
     schema,
@@ -142,4 +182,10 @@ function isRichTextContentIssueCandidate(issue: PublishPreflightIssue): boolean 
 
 function isCtaPairIssueCandidate(issue: PublishPreflightIssue): boolean {
   return issue.severity === "warning" && ctaPairIssuePattern.test(issue.field);
+}
+
+function isBlankImageSrcIssueCandidate(issue: PublishPreflightIssue): boolean {
+  return (
+    issue.severity === "warning" && blankImageSrcIssuePattern.test(issue.field)
+  );
 }

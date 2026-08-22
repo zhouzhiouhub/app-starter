@@ -25,6 +25,14 @@ test("publish preflight issue fix labels section order warnings", () => {
   );
   assert.equal(
     readPublishPreflightIssueFixLabel({
+      field: "sections[2].props.images[1].src",
+      message: "Image source is blank.",
+      severity: "warning",
+    }),
+    "Remove blank image",
+  );
+  assert.equal(
+    readPublishPreflightIssueFixLabel({
       field: "sections[1].props.content",
       message: "Rich text markup will be sanitized.",
       severity: "warning",
@@ -129,6 +137,48 @@ test("publish preflight issue fix ignores complete or blocked CTA fields", () =>
   assert.equal(blocked, null);
 });
 
+test("publish preflight issue fix removes blank gallery image rows", () => {
+  const schema = createGallerySchema();
+  schema.sections[2].props.images = [
+    { alt: "Product A", src: "/images/a.jpg" },
+    { alt: "Blank row", src: "  " },
+    { alt: "Product B", src: "/images/b.jpg" },
+  ];
+
+  const fixed = applyPublishPreflightIssueFix(schema, {
+    field: "sections[2].props.images[1].src",
+    message: "Image gallery image 2: Add an image source.",
+    severity: "warning",
+  });
+
+  assert.deepEqual(fixed?.sections[2].props.images, [
+    { alt: "Product A", src: "/images/a.jpg" },
+    { alt: "Product B", src: "/images/b.jpg" },
+  ]);
+  assert.deepEqual(schema.sections[2].props.images, [
+    { alt: "Product A", src: "/images/a.jpg" },
+    { alt: "Blank row", src: "  " },
+    { alt: "Product B", src: "/images/b.jpg" },
+  ]);
+});
+
+test("publish preflight issue fix ignores nonblank or blocked image sources", () => {
+  const schema = createGallerySchema();
+  const nonblank = applyPublishPreflightIssueFix(schema, {
+    field: "sections[2].props.images[0].src",
+    message: "Image source needs review.",
+    severity: "warning",
+  });
+  const blocked = applyPublishPreflightIssueFix(schema, {
+    field: "sections[2].props.images[0].src",
+    message: "Image source is unsafe.",
+    severity: "error",
+  });
+
+  assert.equal(nonblank, null);
+  assert.equal(blocked, null);
+});
+
 test("publish preflight issue fix ignores non-rich-text content fields", () => {
   const fixed = applyPublishPreflightIssueFix(exampleLandingPage, {
     field: "sections[0].props.content",
@@ -138,6 +188,22 @@ test("publish preflight issue fix ignores non-rich-text content fields", () => {
 
   assert.equal(fixed, null);
 });
+
+function createGallerySchema() {
+  const schema = structuredClone(exampleLandingPage);
+  schema.sections.push({
+    component: "image-gallery",
+    id: "gallery",
+    layout: {
+      desktop: { width: 1200, x: 0, y: 760 },
+      mobile: { width: 390, x: 0, y: 820 },
+    },
+    props: {
+      images: [{ alt: "Product", src: "/images/product.jpg" }],
+    },
+  });
+  return schema;
+}
 
 test("publish preflight issue fix ignores unsupported issues", () => {
   const fixed = applyPublishPreflightIssueFix(exampleLandingPage, {
