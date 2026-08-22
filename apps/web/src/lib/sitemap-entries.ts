@@ -1,4 +1,4 @@
-import { getStorefrontHref } from "@app-starter/schema";
+import { getStorefrontHref, pageSlugSchema } from "@app-starter/schema";
 import type { PublishedPageSummary } from "./published-pages.ts";
 
 export type PublishedPageSitemapEntry = {
@@ -18,7 +18,11 @@ export function buildPublishedPageSitemapEntries(input: {
   return input.pages.flatMap((page) => {
     const slug = normalizeSitemapSlug(page.slug);
 
-    if (page.noIndex || isSystemPageSlug(slug)) {
+    if (
+      page.noIndex ||
+      !pageSlugSchema.safeParse(slug).success ||
+      isSystemPageSlug(slug)
+    ) {
       return [];
     }
 

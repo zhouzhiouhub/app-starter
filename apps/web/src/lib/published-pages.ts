@@ -1,5 +1,6 @@
 import {
   getPublishedPagesCacheTags,
+  pageSlugSchema,
   publishedPageRevalidateSeconds,
 } from "@app-starter/schema";
 import {
@@ -78,8 +79,10 @@ function readPublishedPageSummary(value: unknown): PublishedPageSummary[] {
 
   const record = value as Record<string, unknown>;
 
+  const slug = pageSlugSchema.safeParse(record.slug);
+
   if (
-    typeof record.slug !== "string" ||
+    !slug.success ||
     typeof record.title !== "string" ||
     typeof record.updatedAt !== "string"
   ) {
@@ -91,7 +94,7 @@ function readPublishedPageSummary(value: unknown): PublishedPageSummary[] {
       noIndex: record.noIndex === true,
       publishedAt:
         typeof record.publishedAt === "string" ? record.publishedAt : null,
-      slug: record.slug,
+      slug: slug.data,
       title: record.title,
       updatedAt: record.updatedAt,
     },

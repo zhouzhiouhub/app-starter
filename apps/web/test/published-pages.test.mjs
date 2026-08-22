@@ -98,6 +98,42 @@ test("published pages list forwards the safe storefront host", async () => {
   );
 });
 
+test("published pages list drops unsafe summary slugs", async () => {
+  await withFetch(
+    async () =>
+      jsonResponse({
+        data: [
+          {
+            slug: "home",
+            title: "Home",
+            updatedAt: "2026-08-21T00:00:00.000Z",
+          },
+          {
+            slug: "../admin",
+            title: "Bad",
+            updatedAt: "2026-08-21T00:00:00.000Z",
+          },
+          {
+            slug: "campaign<script>",
+            title: "Bad",
+            updatedAt: "2026-08-21T00:00:00.000Z",
+          },
+        ],
+      }),
+    async () => {
+      const pages = await listPublishedPages({
+        locale: "en-US",
+        market: "us",
+      });
+
+      assert.deepEqual(
+        pages.map((page) => page.slug),
+        ["home"],
+      );
+    },
+  );
+});
+
 function jsonResponse(data) {
   return {
     ok: true,

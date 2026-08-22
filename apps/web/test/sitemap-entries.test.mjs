@@ -56,3 +56,20 @@ test("sitemap entries exclude noindex and system 404 pages", () => {
     "https://web.example.com/en/legal/terms",
   ]);
 });
+
+test("sitemap entries skip invalid page slugs", () => {
+  const entries = buildPublishedPageSitemapEntries({
+    locale: "en-US",
+    origin: "https://web.example.com",
+    pages: [
+      { ...basePage, slug: "home" },
+      { ...basePage, slug: "../admin" },
+      { ...basePage, slug: "bad slug" },
+      { ...basePage, slug: "campaign<script>" },
+    ],
+  });
+
+  assert.deepEqual(entries.map((entry) => entry.url), [
+    "https://web.example.com/en",
+  ]);
+});
