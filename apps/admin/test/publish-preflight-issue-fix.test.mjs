@@ -17,6 +17,14 @@ test("publish preflight issue fix labels section order warnings", () => {
   );
   assert.equal(
     readPublishPreflightIssueFixLabel({
+      field: "sections[1].props.content",
+      message: "Rich text markup will be sanitized.",
+      severity: "warning",
+    }),
+    "Sanitize rich text",
+  );
+  assert.equal(
+    readPublishPreflightIssueFixLabel({
       field: "seo.ogImage",
       message: "Open Graph image needs review.",
       severity: "warning",
@@ -43,6 +51,41 @@ test("publish preflight issue fix normalizes only the matching viewport order", 
     "missing",
     "copy",
   ]);
+});
+
+test("publish preflight issue fix sanitizes rich text content", () => {
+  const schema = structuredClone(exampleLandingPage);
+  schema.sections[1].props.content = {
+    defaultValue:
+      '<p onclick="alert(1)">Safe</p><script>alert(2)</script><a href="javascript:alert(3)">Bad</a>',
+    i18nKey: "sections.copy.content",
+  };
+
+  const fixed = applyPublishPreflightIssueFix(schema, {
+    field: "sections[1].props.content",
+    message: "Rich text section 2: unsupported markup will be removed.",
+    severity: "warning",
+  });
+
+  assert.deepEqual(fixed?.sections[1].props.content, {
+    defaultValue: "<p>Safe</p>Bad",
+    i18nKey: "sections.copy.content",
+  });
+  assert.deepEqual(schema.sections[1].props.content, {
+    defaultValue:
+      '<p onclick="alert(1)">Safe</p><script>alert(2)</script><a href="javascript:alert(3)">Bad</a>',
+    i18nKey: "sections.copy.content",
+  });
+});
+
+test("publish preflight issue fix ignores non-rich-text content fields", () => {
+  const fixed = applyPublishPreflightIssueFix(exampleLandingPage, {
+    field: "sections[0].props.content",
+    message: "Content needs review.",
+    severity: "warning",
+  });
+
+  assert.equal(fixed, null);
 });
 
 test("publish preflight issue fix ignores unsupported issues", () => {
