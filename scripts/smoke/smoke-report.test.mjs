@@ -15,7 +15,7 @@ import {
 } from "./smoke-report-test-fixtures.mjs";
 
 test("smoke report schema version marks the summary contract", () => {
-  assert.equal(smokeReportSchemaVersion, "smoke-report.v2");
+  assert.equal(smokeReportSchemaVersion, "smoke-report.v3");
 });
 
 test("smoke report includes deployment diagnostics for effective smoke URLs", () => {

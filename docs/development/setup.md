@@ -229,12 +229,13 @@ Set `SMOKE_REPORT_PATH=tmp/smoke-report.json` to write a machine-readable report
 with the checked slug, page ID, storefront URL, analytics diagnostics, feature
 flag diagnostics, database diagnostics, identity diagnostics, media environment
 diagnostics, revalidation environment diagnostics, and passed/failed check list. If the smoke
-run fails, the report records the
-failed check name and error message so production R2 / CDN, ISR, and SEO
-failures can be triaged from the JSON artifact. Media check details include the
-presigned URL host, CDN host, upload URL/R2 key match status, CDN/R2 key match
-status, upload target metadata, and whether a real object upload was required,
-but never include the signed upload URL itself. Media environment diagnostics
+run fails, the report records the failed check name, error message, and
+structured failure details in `summary.failedCheckDetails` so production R2 /
+CDN, ISR, and SEO failures can be triaged from the JSON artifact. Media check
+details include the presigned URL host, CDN host, upload URL/R2 key match
+status, CDN/R2 key match status, upload target metadata, and whether a real
+object upload was required, but never include the signed upload URL itself.
+Media environment diagnostics
 also record whether the CDN URL is HTTPS, production-ready, and free of query
 strings or embedded credentials. Publish revalidation details
 include a `diagnosis` field for triggered, missing secret, missing URL, HTTP

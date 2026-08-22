@@ -146,6 +146,32 @@ test("smoke report keeps structured failure diagnostics from errors", () => {
   );
 });
 
+test("smoke report summary includes structured failure diagnostics", () => {
+  const report = createTestSmokeReport();
+  const error = new Error("Storefront canonical mismatch.");
+  error.smokeDetails = {
+    storefrontSeo: {
+      canonicalHref: "https://web.example.com/en/smoke-page",
+      expectedCanonicalUrl: "https://store.brand.com/en/smoke-page",
+    },
+  };
+
+  recordSmokeCheckFailure(report, "storefront.page", error);
+
+  assert.deepEqual(report.summary.failedCheckDetails, [
+    {
+      details: {
+        storefrontSeo: {
+          canonicalHref: "https://web.example.com/en/smoke-page",
+          expectedCanonicalUrl: "https://store.brand.com/en/smoke-page",
+        },
+      },
+      message: "Storefront canonical mismatch.",
+      name: "storefront.page",
+    },
+  ]);
+});
+
 test("smoke report reads messages from object-shaped failures", () => {
   const report = createTestSmokeReport();
   const failure = {

@@ -20,6 +20,7 @@ test("smoke report keeps top-level summary current", () => {
     blockerCount: 0,
     checkCount: 0,
     failedCheckCount: 0,
+    failedCheckDetails: [],
     failedChecks: [],
     passedCheckCount: 0,
     productionReady: true,
@@ -35,6 +36,13 @@ test("smoke report keeps top-level summary current", () => {
 
   recordSmokeCheckFailure(report, "page.publish", new Error("failed"));
 
+  assert.deepEqual(report.summary.failedCheckDetails, [
+    {
+      details: {},
+      message: "failed",
+      name: "page.publish",
+    },
+  ]);
   assert.deepEqual(report.summary.failedChecks, ["page.publish"]);
   assert.equal(report.summary.checkCount, 2);
   assert.equal(report.summary.failedCheckCount, 1);
@@ -84,6 +92,18 @@ test("smoke report counts failed checks even when names are missing", () => {
   report.summary = createSmokeReportSummary(report);
 
   assert.equal(report.summary.failedCheckCount, 2);
+  assert.deepEqual(report.summary.failedCheckDetails, [
+    {
+      details: {},
+      message: "Unnamed check failed.",
+      name: "unnamed-check-1",
+    },
+    {
+      details: {},
+      message: "Media confirm failed.",
+      name: "media.confirm",
+    },
+  ]);
   assert.deepEqual(report.summary.failedChecks, [
     "unnamed-check-1",
     "media.confirm",

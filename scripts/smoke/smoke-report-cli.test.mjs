@@ -8,7 +8,7 @@ import {
 test("smoke report CLI formats a ready summary", () => {
   assert.deepEqual(
     formatSmokeReportSummary({
-      schemaVersion: "smoke-report.v2",
+      schemaVersion: "smoke-report.v3",
       summary: {
         blockerCount: 0,
         checkCount: 12,
@@ -21,7 +21,7 @@ test("smoke report CLI formats a ready summary", () => {
       },
     }),
     [
-      "\nSmoke report summary (smoke-report.v2):",
+      "\nSmoke report summary (smoke-report.v3):",
       "  Status: passed",
       "  Checks: 12/12 passed, 0 failed",
       "  Smoke passed: yes",
@@ -32,7 +32,7 @@ test("smoke report CLI formats a ready summary", () => {
 
 test("smoke report CLI formats blockers and redacts failed checks", () => {
   const lines = formatSmokeReportSummary({
-    schemaVersion: "smoke-report.v2",
+    schemaVersion: "smoke-report.v3",
     summary: {
       blockerCount: 2,
       checkCount: 7,
@@ -46,7 +46,7 @@ test("smoke report CLI formats blockers and redacts failed checks", () => {
   });
 
   assert.deepEqual(lines, [
-    "\nSmoke report summary (smoke-report.v2):",
+    "\nSmoke report summary (smoke-report.v3):",
     "  Status: failed",
     "  Checks: 6/7 passed, 1 failed",
     "  Smoke passed: no",
@@ -59,7 +59,7 @@ test("smoke report CLI formats blockers and redacts failed checks", () => {
 test("smoke report CLI separates smoke failures from production gates", () => {
   assert.deepEqual(
     formatSmokeReportSummary({
-      schemaVersion: "smoke-report.v2",
+      schemaVersion: "smoke-report.v3",
       summary: {
         blockerCount: 0,
         checkCount: 3,
@@ -72,7 +72,7 @@ test("smoke report CLI separates smoke failures from production gates", () => {
       },
     }),
     [
-      "\nSmoke report summary (smoke-report.v2):",
+      "\nSmoke report summary (smoke-report.v3):",
       "  Status: failed",
       "  Checks: 2/3 passed, 1 failed",
       "  Smoke passed: no",
@@ -88,7 +88,7 @@ test("smoke report CLI writes failed summaries to warning output", () => {
 
   printSmokeReportSummary(
     {
-      schemaVersion: "smoke-report.v2",
+      schemaVersion: "smoke-report.v3",
       summary: {
         checkCount: 1,
         failedCheckCount: 1,
@@ -105,7 +105,7 @@ test("smoke report CLI writes failed summaries to warning output", () => {
   );
 
   assert.equal(logLines.length, 0);
-  assert.equal(warnLines[0], "\nSmoke report summary (smoke-report.v2):");
+  assert.equal(warnLines[0], "\nSmoke report summary (smoke-report.v3):");
 });
 
 test("smoke report CLI writes blocked production gates to warning output", () => {
@@ -114,7 +114,7 @@ test("smoke report CLI writes blocked production gates to warning output", () =>
 
   printSmokeReportSummary(
     {
-      schemaVersion: "smoke-report.v2",
+      schemaVersion: "smoke-report.v3",
       summary: {
         blockerCount: 1,
         checkCount: 3,
@@ -132,5 +132,5 @@ test("smoke report CLI writes blocked production gates to warning output", () =>
   );
 
   assert.equal(logLines.length, 0);
-  assert.equal(warnLines[0], "\nSmoke report summary (smoke-report.v2):");
+  assert.equal(warnLines[0], "\nSmoke report summary (smoke-report.v3):");
 });

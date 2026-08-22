@@ -1,4 +1,4 @@
-export const smokeReportSchemaVersion = "smoke-report.v2";
+export const smokeReportSchemaVersion = "smoke-report.v3";
 
 export const smokeCheckStatuses = new Set(["failed", "passed"]);
 
