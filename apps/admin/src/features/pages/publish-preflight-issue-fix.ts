@@ -7,12 +7,14 @@ import {
 } from "./section-content-updates.ts";
 import { readImages, removeImage } from "./section-list-prop-updates.ts";
 import { normalizeSectionOrder } from "./section-order-updates.ts";
+import { updateSeoField, type SeoField } from "./seo-updates.ts";
 
 const sectionOrderIssuePattern = /^layout\.(desktop|mobile)\.sectionOrder$/;
 const richTextContentIssuePattern = /^sections\[(\d+)\]\.props\.content$/;
 const ctaPairIssuePattern = /^sections\[(\d+)\]\.props\.(ctaHref|ctaLabel)$/;
 const blankImageSrcIssuePattern =
   /^sections\[(\d+)\]\.props\.images\[(\d+)\]\.src$/;
+const optionalSeoUrlIssuePattern = /^seo\.(canonical|ogImage)$/;
 
 export function readPublishPreflightIssueFixLabel(
   issue: PublishPreflightIssue,
@@ -31,6 +33,10 @@ export function readPublishPreflightIssueFixLabel(
     return "Remove blank image";
   }
 
+  if (isOptionalSeoUrlIssueCandidate(issue)) {
+    return "Clear SEO URL";
+  }
+
   return isRichTextContentIssueCandidate(issue) ? "Sanitize rich text" : null;
 }
 
@@ -41,6 +47,7 @@ export function applyPublishPreflightIssueFix(
   const viewport = readSectionOrderIssueViewport(issue);
   const ctaSectionId = readIncompleteCtaIssueSectionId(issue, schema);
   const blankImageTarget = readBlankImageSrcIssueTarget(issue, schema);
+  const seoField = readOptionalSeoUrlIssueField(issue);
   const richTextSectionId = readRichTextContentIssueSectionId(issue, schema);
 
   if (viewport) {
@@ -57,6 +64,10 @@ export function applyPublishPreflightIssueFix(
       blankImageTarget.sectionId,
       blankImageTarget.imageIndex,
     );
+  }
+
+  if (seoField) {
+    return updateSeoField(schema, seoField, "");
   }
 
   if (richTextSectionId) {
@@ -140,6 +151,20 @@ function readBlankImageSrcIssueTarget(
     : null;
 }
 
+function readOptionalSeoUrlIssueField(
+  issue: PublishPreflightIssue,
+): SeoField | null {
+  if (!isOptionalSeoUrlIssueCandidate(issue)) {
+    return null;
+  }
+
+  const match = optionalSeoUrlIssuePattern.exec(issue.field);
+
+  return match?.[1] === "canonical" || match?.[1] === "ogImage"
+    ? match[1]
+    : null;
+}
+
 function clearCtaFields(schema: PageSchema, sectionId: string): PageSchema {
   const withoutLabel = updateSectionTextField(
     schema,
@@ -187,5 +212,11 @@ function isCtaPairIssueCandidate(issue: PublishPreflightIssue): boolean {
 function isBlankImageSrcIssueCandidate(issue: PublishPreflightIssue): boolean {
   return (
     issue.severity === "warning" && blankImageSrcIssuePattern.test(issue.field)
+  );
+}
+
+function isOptionalSeoUrlIssueCandidate(issue: PublishPreflightIssue): boolean {
+  return (
+    issue.severity === "error" && optionalSeoUrlIssuePattern.test(issue.field)
   );
 }

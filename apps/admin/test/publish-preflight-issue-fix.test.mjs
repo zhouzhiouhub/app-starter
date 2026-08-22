@@ -33,6 +33,14 @@ test("publish preflight issue fix labels section order warnings", () => {
   );
   assert.equal(
     readPublishPreflightIssueFixLabel({
+      field: "seo.canonical",
+      message: "Canonical URL is invalid.",
+      severity: "error",
+    }),
+    "Clear SEO URL",
+  );
+  assert.equal(
+    readPublishPreflightIssueFixLabel({
       field: "sections[1].props.content",
       message: "Rich text markup will be sanitized.",
       severity: "warning",
@@ -135,6 +143,44 @@ test("publish preflight issue fix ignores complete or blocked CTA fields", () =>
 
   assert.equal(complete, null);
   assert.equal(blocked, null);
+});
+
+test("publish preflight issue fix clears optional SEO URL fields", () => {
+  const schema = structuredClone(exampleLandingPage);
+  schema.seo.canonical = "javascript:alert(1)";
+  schema.seo.description = "Search description";
+  schema.seo.ogImage = "http://cdn.example.com/og.jpg";
+  schema.seo.title = "Search title";
+
+  const fixedCanonical = applyPublishPreflightIssueFix(schema, {
+    field: "seo.canonical",
+    message: "Canonical URL is invalid.",
+    severity: "error",
+  });
+  const fixedOgImage = applyPublishPreflightIssueFix(schema, {
+    field: "seo.ogImage",
+    message: "Open Graph image is invalid.",
+    severity: "error",
+  });
+
+  assert.equal(fixedCanonical?.seo.canonical, "");
+  assert.equal(fixedCanonical?.seo.ogImage, "http://cdn.example.com/og.jpg");
+  assert.equal(fixedCanonical?.seo.title, "Search title");
+  assert.equal(fixedCanonical?.seo.description, "Search description");
+  assert.equal(fixedOgImage?.seo.canonical, "javascript:alert(1)");
+  assert.equal(fixedOgImage?.seo.ogImage, "");
+  assert.equal(schema.seo.canonical, "javascript:alert(1)");
+  assert.equal(schema.seo.ogImage, "http://cdn.example.com/og.jpg");
+});
+
+test("publish preflight issue fix ignores nonblocking SEO image references", () => {
+  const fixed = applyPublishPreflightIssueFix(exampleLandingPage, {
+    field: "seo.ogImage",
+    message: "Open Graph image uses a media reference.",
+    severity: "warning",
+  });
+
+  assert.equal(fixed, null);
 });
 
 test("publish preflight issue fix removes blank gallery image rows", () => {
