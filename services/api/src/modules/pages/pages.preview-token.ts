@@ -107,11 +107,19 @@ function readPreviewTokenSecret(env = process.env): string {
     return configured;
   }
 
-  if (env.NODE_ENV === "production") {
+  if (isProductionPreviewTokenEnvironment(env)) {
     throw new PreviewTokenConfigurationError();
   }
 
   return localPreviewTokenSecret;
+}
+
+export function isProductionPreviewTokenEnvironment(
+  env: Record<string, string | undefined> = process.env,
+): boolean {
+  return [env.NODE_ENV, env.APP_ENV, env.VERCEL_ENV].some(
+    (value) => value?.trim().toLowerCase() === "production",
+  );
 }
 
 function readPreviousPreviewTokenSecret(

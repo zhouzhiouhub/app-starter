@@ -85,7 +85,8 @@ JWT_PUBLIC_KEY=
 
 Preview links use a short-lived token. Local development can leave
 `PREVIEW_TOKEN_SECRET` empty, which uses a non-production fallback. Production
-must set an explicit secret:
+is detected from `NODE_ENV`, `APP_ENV`, or `VERCEL_ENV`, and must set an
+explicit secret:
 
 ```bash
 PREVIEW_TOKEN_SECRET=

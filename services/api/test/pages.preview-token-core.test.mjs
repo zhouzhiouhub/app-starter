@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   createPagePreviewToken,
+  isProductionPreviewTokenEnvironment,
   verifyPagePreviewToken,
 } from "../dist/modules/pages/pages.preview-token.js";
 
@@ -54,6 +55,38 @@ test("preview token verification rejects malformed token shapes early", () => {
     `${"a".repeat(2049)}.${"b".repeat(43)}`,
   ]) {
     assert.equal(verifyPagePreviewToken(token, { env: productionEnv }), null);
+  }
+});
+
+test("preview token secret is required for deployment production markers", () => {
+  assert.equal(
+    isProductionPreviewTokenEnvironment({ APP_ENV: " production " }),
+    true,
+  );
+  assert.equal(
+    isProductionPreviewTokenEnvironment({ VERCEL_ENV: "production" }),
+    true,
+  );
+  assert.equal(
+    isProductionPreviewTokenEnvironment({ NODE_ENV: "development" }),
+    false,
+  );
+
+  for (const env of [
+    { APP_ENV: "production" },
+    { VERCEL_ENV: "production" },
+  ]) {
+    assert.throws(
+      () =>
+        createPagePreviewToken({
+          env,
+          now: new Date("2026-08-19T00:00:00.000Z"),
+          pageId: "page-1",
+          slug: "campaign",
+          tenantId: "tenant-1",
+        }),
+      /PREVIEW_TOKEN_SECRET is required in production/,
+    );
   }
 });
 
