@@ -152,6 +152,8 @@ environment variables. Production absolute Admin API and Web URL values must be
 HTTPS URLs outside local, private, Docker-local, or reserved placeholder hosts;
 the relative `/api/v1` base remains valid when the Admin origin proxies API
 requests.
+When `SMOKE_REQUIRE_ADMIN_APP=true`, production smoke also verifies the Admin
+shell, module script, and declared stylesheet assets from the same Admin origin.
 
 For Web production deployments, `VERCEL_ENV=production` or `APP_ENV=production`
 requires `API_URL` / `NEXT_PUBLIC_API_URL` and `WEB_URL` / `NEXT_PUBLIC_WEB_URL`

@@ -16,6 +16,7 @@ test("publish smoke help explains report path production readiness", () => {
 
   assert.equal(messages.length, 1);
   assert.match(messages[0], /SMOKE_REPORT_PATH/);
+  assert.match(messages[0], /stylesheet assets/);
   assert.match(messages[0], /Optional for local runs/);
   assert.match(messages[0], /required for production readiness/);
 });

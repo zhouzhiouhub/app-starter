@@ -26,7 +26,7 @@ Environment:
   SMOKE_PAGE_SLUG                 Optional fixed lowercase page slug.
   SMOKE_LOCALE                    Locale code. Default: ${defaultLocale}
   SMOKE_MARKET                    Market code. Default: ${defaultMarket}
-  SMOKE_REQUIRE_ADMIN_APP         Require Admin static app HTML at ADMIN_URL. true/false. Default: false
+  SMOKE_REQUIRE_ADMIN_APP         Require Admin static HTML, module script, and stylesheet assets at ADMIN_URL. true/false. Default: false
   SMOKE_REQUIRE_R2_UPLOAD         Require R2 presigned URL, actual PUT upload, and production CDN URL. true/false. Default: false
   SMOKE_REQUIRE_REVALIDATION      Require meta.revalidation.triggered. true/false. Default: true
   SMOKE_RETRY_ATTEMPTS            Storefront fetch attempts. 1-60. Default: 8
