@@ -68,6 +68,8 @@ export function readExternalMediaUrlHosts(
   return new Set(
     readHostsFromList(env.MEDIA_EXTERNAL_URL_HOSTS, {
       rejectUnsafeProductionHost: isProductionMediaEnvironment(env),
+      rejectUrlParts: true,
+      requireHttps: true,
     }),
   );
 }
@@ -94,7 +96,11 @@ export function readManagedMediaUrlHosts(
 
 function readHostsFromList(
   value: string | undefined,
-  options: { rejectUnsafeProductionHost?: boolean },
+  options: {
+    rejectUnsafeProductionHost?: boolean;
+    rejectUrlParts?: boolean;
+    requireHttps?: boolean;
+  },
 ): string[] {
   if (!value) {
     return [];
@@ -108,7 +114,11 @@ function readHostsFromList(
 
 function readHostFromUrlOrHost(
   value: string,
-  options: { rejectUnsafeProductionHost?: boolean },
+  options: {
+    rejectUnsafeProductionHost?: boolean;
+    rejectUrlParts?: boolean;
+    requireHttps?: boolean;
+  },
 ): string | undefined {
   if (!value) {
     return undefined;
@@ -124,6 +134,7 @@ function readSafeHostFromHttpUrl(
   value: string | undefined,
   options: {
     rejectUnsafeProductionHost?: boolean;
+    rejectUrlParts?: boolean;
     requireHttps?: boolean;
   },
 ): string | undefined {
@@ -143,6 +154,7 @@ function readSafeHostFromHttpUrl(
         isUnsafeProductionHostname(url.hostname)) ||
       url.username ||
       url.password ||
+      (options.rejectUrlParts && trimTrailingSlashes(url.pathname)) ||
       url.search ||
       url.hash
     ) {
@@ -195,4 +207,8 @@ function assertAllowedHost(
       host: hostname,
     },
   });
+}
+
+function trimTrailingSlashes(pathname: string): string {
+  return pathname.replace(/\/+$/, "");
 }

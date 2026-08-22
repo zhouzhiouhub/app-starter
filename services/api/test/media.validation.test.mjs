@@ -6,6 +6,7 @@ import {
   parseConfirmMediaInput,
   parseCreateUploadUrlInput,
   readAllowedMediaUrlHosts,
+  readExternalMediaUrlHosts,
 } from "../dist/modules/media/media.validation.js";
 
 test("parseCreateUploadUrlInput validates file metadata", () => {
@@ -111,6 +112,15 @@ test("media URL allowlist ignores unsafe external hosts in production", () => {
   });
 
   assert.deepEqual([...hosts], ["assets.brand-platform.com"]);
+});
+
+test("external media allowlist ignores URL parts and non-HTTPS origins", () => {
+  const hosts = readExternalMediaUrlHosts({
+    MEDIA_EXTERNAL_URL_HOSTS:
+      "images.brand-platform.com, http://assets.brand-platform.com, https://assets.brand-platform.com/path, https://user:secret@private.brand-platform.com, https://query.brand-platform.com?token=1",
+  });
+
+  assert.deepEqual([...hosts], ["images.brand-platform.com"]);
 });
 
 test("media URL allowlist accepts explicit external hosts", () => {
