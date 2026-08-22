@@ -1,3 +1,11 @@
+import {
+  createMissingModuleScriptAttempt,
+  formatStylesheetIssue,
+  readModuleScriptAttempt,
+  readModuleScriptReference,
+  readStylesheetReferences,
+  readStylesheetSummary,
+} from "./admin-app-assets.mjs";
 import { redactSmokeSecrets } from "./smoke-secrets.mjs";
 
 export async function assertAdminApp(input) {
@@ -20,6 +28,11 @@ export async function assertAdminApp(input) {
       ok: false,
       status: null,
       statusText: null,
+      stylesheetCount: 0,
+      stylesheetFailures: [],
+      stylesheetOk: false,
+      stylesheetUrlIssues: [],
+      stylesheetUrls: [],
       url: null,
     });
   }
@@ -45,6 +58,9 @@ export async function readAdminAppAttempt(url) {
     const moduleScript = moduleScriptReference.url
       ? await readModuleScriptAttempt(moduleScriptReference.url)
       : createMissingModuleScriptAttempt();
+    const stylesheet = await readStylesheetSummary(
+      readStylesheetReferences(text, url),
+    );
     const attempt = {
       bodySnippet: null,
       contentType,
@@ -63,6 +79,11 @@ export async function readAdminAppAttempt(url) {
       ok: response.ok,
       status: response.status,
       statusText: response.statusText,
+      stylesheetCount: stylesheet.count,
+      stylesheetFailures: stylesheet.failures,
+      stylesheetOk: stylesheet.ok,
+      stylesheetUrlIssues: stylesheet.urlIssues,
+      stylesheetUrls: stylesheet.urls,
       url,
     };
 
@@ -91,6 +112,11 @@ export async function readAdminAppAttempt(url) {
       ok: false,
       status: null,
       statusText: null,
+      stylesheetCount: 0,
+      stylesheetFailures: [],
+      stylesheetOk: false,
+      stylesheetUrlIssues: [],
+      stylesheetUrls: [],
       url,
     };
   }
@@ -117,8 +143,12 @@ export function formatAdminAppAttempt(attempt) {
     : "";
   const body = attempt.bodySnippet ? `, body: "${attempt.bodySnippet}"` : "";
   const error = attempt.errorMessage ? `, error: ${attempt.errorMessage}` : "";
+  const stylesheets =
+    `, stylesheet count: ${attempt.stylesheetCount}` +
+    `, stylesheets ok: ${attempt.stylesheetOk}`;
+  const stylesheetIssue = formatStylesheetIssue(attempt);
 
-  return `${status}${content}, root element present: ${attempt.hasRootElement}${moduleScript}${moduleStatus}${moduleError}${moduleUrlIssue}${body}${error}`;
+  return `${status}${content}, root element present: ${attempt.hasRootElement}${moduleScript}${moduleStatus}${moduleError}${moduleUrlIssue}${stylesheets}${stylesheetIssue}${body}${error}`;
 }
 
 function createAdminAppFailure(attempt) {
@@ -142,130 +172,13 @@ function isAdminAppAttemptPassing(attempt) {
     attempt.hasModuleScript &&
     attempt.moduleScriptUrlIssue === null &&
     attempt.moduleScriptOk &&
-    attempt.moduleScriptHasJavaScriptContentType
+    attempt.moduleScriptHasJavaScriptContentType &&
+    attempt.stylesheetOk
   );
-}
-
-async function readModuleScriptAttempt(url) {
-  try {
-    const response = await fetch(url);
-    const contentType = response.headers.get("content-type");
-
-    return {
-      contentType,
-      errorMessage: null,
-      hasJavaScriptContentType: isJavaScriptContentType(contentType),
-      ok: response.ok,
-      status: response.status,
-      statusText: response.statusText,
-    };
-  } catch (error) {
-    return {
-      contentType: null,
-      errorMessage: readErrorMessage(error),
-      hasJavaScriptContentType: false,
-      ok: false,
-      status: null,
-      statusText: null,
-    };
-  }
-}
-
-function createMissingModuleScriptAttempt() {
-  return {
-    contentType: null,
-    errorMessage: null,
-    hasJavaScriptContentType: false,
-    ok: false,
-    status: null,
-    statusText: null,
-  };
-}
-
-function readModuleScriptReference(text, baseUrl) {
-  const src = readModuleScriptSrc(text);
-
-  if (!src) {
-    return {
-      issue: null,
-      present: false,
-      url: null,
-    };
-  }
-
-  try {
-    const url = new URL(src, baseUrl);
-    const base = new URL(baseUrl);
-
-    if (!["http:", "https:"].includes(url.protocol)) {
-      return createInvalidModuleScriptReference("unsupported-protocol");
-    }
-
-    if (url.username || url.password) {
-      return createInvalidModuleScriptReference("embedded-credentials");
-    }
-
-    if (url.search || url.hash) {
-      return createInvalidModuleScriptReference("unsupported-url-parts");
-    }
-
-    if (url.origin !== base.origin) {
-      return createInvalidModuleScriptReference("cross-origin");
-    }
-
-    return {
-      issue: null,
-      present: true,
-      url: url.toString(),
-    };
-  } catch {
-    return createInvalidModuleScriptReference("invalid-url");
-  }
-}
-
-function createInvalidModuleScriptReference(issue) {
-  return {
-    issue,
-    present: true,
-    url: null,
-  };
-}
-
-function readModuleScriptSrc(text) {
-  for (const match of text.matchAll(/<script\b[^>]*>/gi)) {
-    const tag = match[0];
-
-    if (readAttribute(tag, "type")?.toLowerCase() === "module") {
-      const src = readAttribute(tag, "src");
-
-      if (src) {
-        return src;
-      }
-    }
-  }
-
-  return null;
-}
-
-function readAttribute(tag, name) {
-  const match = tag.match(
-    new RegExp(`\\s${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s>]+))`, "i"),
-  );
-
-  return match?.[1] ?? match?.[2] ?? match?.[3] ?? null;
 }
 
 function isHtmlContentType(value) {
   return typeof value === "string" && /\btext\/html\b/i.test(value);
-}
-
-function isJavaScriptContentType(value) {
-  return (
-    typeof value === "string" &&
-    /\b(?:application|text)\/(?:javascript|x-javascript|ecmascript)\b/i.test(
-      value,
-    )
-  );
 }
 
 function readBodySnippet(text) {

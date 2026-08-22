@@ -11,7 +11,11 @@ test("admin app smoke accepts static Admin shell HTML", async () => {
     async (url) => {
       if (url === "https://admin.example.com") {
         return new Response(
-          '<div id="root"></div><script type="module" src="/assets/admin.js"></script>',
+          [
+            '<div id="root"></div>',
+            '<link rel="stylesheet" href="/assets/admin.css">',
+            '<script type="module" src="/assets/admin.js"></script>',
+          ].join(""),
           {
             headers: { "content-type": "text/html; charset=utf-8" },
             status: 200,
@@ -23,6 +27,14 @@ test("admin app smoke accepts static Admin shell HTML", async () => {
       if (url === "https://admin.example.com/assets/admin.js") {
         return new Response("console.log('admin')", {
           headers: { "content-type": "text/javascript; charset=utf-8" },
+          status: 200,
+          statusText: "OK",
+        });
+      }
+
+      if (url === "https://admin.example.com/assets/admin.css") {
+        return new Response("body{margin:0}", {
+          headers: { "content-type": "text/css; charset=utf-8" },
           status: 200,
           statusText: "OK",
         });
@@ -52,6 +64,11 @@ test("admin app smoke accepts static Admin shell HTML", async () => {
         ok: true,
         status: 200,
         statusText: "OK",
+        stylesheetCount: 1,
+        stylesheetFailures: [],
+        stylesheetOk: true,
+        stylesheetUrlIssues: [],
+        stylesheetUrls: ["https://admin.example.com/assets/admin.css"],
         url: "https://admin.example.com",
       });
     },
@@ -251,7 +268,7 @@ test("admin app smoke summarizes request attempts", async () => {
       assert.equal(attempt.errorMessage.includes("payload.signature"), false);
       assert.equal(
         formatAdminAppAttempt(attempt),
-        "request failed, html content: false, root element present: false, module script present: false, module script reachable: false, module script JavaScript: false, error: network failed with token=[redacted]",
+        "request failed, html content: false, root element present: false, module script present: false, module script reachable: false, module script JavaScript: false, stylesheet count: 0, stylesheets ok: false, error: network failed with token=[redacted]",
       );
     },
   );
