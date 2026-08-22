@@ -41,6 +41,14 @@ test("publish preflight issue fix labels section order warnings", () => {
   );
   assert.equal(
     readPublishPreflightIssueFixLabel({
+      field: "chrome.header.content.localeSwitcher.locales[0].href",
+      message: "Locale switcher link is invalid.",
+      severity: "error",
+    }),
+    "Clear locale link",
+  );
+  assert.equal(
+    readPublishPreflightIssueFixLabel({
       field: "sections[1].props.content",
       message: "Rich text markup will be sanitized.",
       severity: "warning",
@@ -178,6 +186,40 @@ test("publish preflight issue fix ignores nonblocking SEO image references", () 
     field: "seo.ogImage",
     message: "Open Graph image uses a media reference.",
     severity: "warning",
+  });
+
+  assert.equal(fixed, null);
+});
+
+test("publish preflight issue fix clears optional locale switcher hrefs", () => {
+  const schema = structuredClone(exampleLandingPage);
+  schema.chrome.header.content.localeSwitcher.locales[0] = {
+    code: "en-US",
+    href: "javascript:alert(1)",
+    label: { defaultValue: "English" },
+  };
+
+  const fixed = applyPublishPreflightIssueFix(schema, {
+    field: "chrome.header.content.localeSwitcher.locales[0].href",
+    message: "Locale switcher link is invalid.",
+    severity: "error",
+  });
+
+  assert.deepEqual(fixed?.chrome.header.content.localeSwitcher.locales[0], {
+    code: "en-US",
+    label: { defaultValue: "English" },
+  });
+  assert.equal(
+    schema.chrome.header.content.localeSwitcher.locales[0].href,
+    "javascript:alert(1)",
+  );
+});
+
+test("publish preflight issue fix ignores required chrome links", () => {
+  const fixed = applyPublishPreflightIssueFix(exampleLandingPage, {
+    field: "chrome.header.content.navigation[0].href",
+    message: "Header navigation link is invalid.",
+    severity: "error",
   });
 
   assert.equal(fixed, null);

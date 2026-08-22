@@ -15,6 +15,8 @@ const ctaPairIssuePattern = /^sections\[(\d+)\]\.props\.(ctaHref|ctaLabel)$/;
 const blankImageSrcIssuePattern =
   /^sections\[(\d+)\]\.props\.images\[(\d+)\]\.src$/;
 const optionalSeoUrlIssuePattern = /^seo\.(canonical|ogImage)$/;
+const localeHrefIssuePattern =
+  /^chrome\.header\.content\.localeSwitcher\.locales\[(\d+)\]\.href$/;
 
 export function readPublishPreflightIssueFixLabel(
   issue: PublishPreflightIssue,
@@ -37,6 +39,10 @@ export function readPublishPreflightIssueFixLabel(
     return "Clear SEO URL";
   }
 
+  if (isLocaleHrefIssueCandidate(issue)) {
+    return "Clear locale link";
+  }
+
   return isRichTextContentIssueCandidate(issue) ? "Sanitize rich text" : null;
 }
 
@@ -48,6 +54,7 @@ export function applyPublishPreflightIssueFix(
   const ctaSectionId = readIncompleteCtaIssueSectionId(issue, schema);
   const blankImageTarget = readBlankImageSrcIssueTarget(issue, schema);
   const seoField = readOptionalSeoUrlIssueField(issue);
+  const localeHrefIndex = readLocaleHrefIssueIndex(issue, schema);
   const richTextSectionId = readRichTextContentIssueSectionId(issue, schema);
 
   if (viewport) {
@@ -68,6 +75,10 @@ export function applyPublishPreflightIssueFix(
 
   if (seoField) {
     return updateSeoField(schema, seoField, "");
+  }
+
+  if (localeHrefIndex !== null) {
+    return clearLocaleHref(schema, localeHrefIndex);
   }
 
   if (richTextSectionId) {
@@ -165,6 +176,51 @@ function readOptionalSeoUrlIssueField(
     : null;
 }
 
+function readLocaleHrefIssueIndex(
+  issue: PublishPreflightIssue,
+  schema: PageSchema,
+): number | null {
+  if (!isLocaleHrefIssueCandidate(issue)) {
+    return null;
+  }
+
+  const match = localeHrefIssuePattern.exec(issue.field);
+  const localeIndex = match?.[1] ? Number.parseInt(match[1], 10) : -1;
+  const locale =
+    schema.chrome.header.content.localeSwitcher.locales[localeIndex];
+
+  return locale?.href?.trim() ? localeIndex : null;
+}
+
+function clearLocaleHref(schema: PageSchema, localeIndex: number): PageSchema {
+  const headerContent = schema.chrome.header.content;
+
+  return {
+    ...schema,
+    chrome: {
+      ...schema.chrome,
+      header: {
+        ...schema.chrome.header,
+        content: {
+          ...headerContent,
+          localeSwitcher: {
+            ...headerContent.localeSwitcher,
+            locales: headerContent.localeSwitcher.locales.map(
+              (locale, index) =>
+                index === localeIndex
+                  ? {
+                      code: locale.code,
+                      label: locale.label,
+                    }
+                  : locale,
+            ),
+          },
+        },
+      },
+    },
+  };
+}
+
 function clearCtaFields(schema: PageSchema, sectionId: string): PageSchema {
   const withoutLabel = updateSectionTextField(
     schema,
@@ -219,4 +275,8 @@ function isOptionalSeoUrlIssueCandidate(issue: PublishPreflightIssue): boolean {
   return (
     issue.severity === "error" && optionalSeoUrlIssuePattern.test(issue.field)
   );
+}
+
+function isLocaleHrefIssueCandidate(issue: PublishPreflightIssue): boolean {
+  return issue.severity === "error" && localeHrefIssuePattern.test(issue.field);
 }
