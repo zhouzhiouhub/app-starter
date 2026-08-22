@@ -211,8 +211,11 @@ behavior. Set `SMOKE_REQUIRE_R2_UPLOAD=true` in production if the deployment
 must fail unless the upload target is a Cloudflare R2 presigned URL, the test
 object can be uploaded with PUT, and `MEDIA_CDN_BASE_URL` produces an HTTPS CDN
 URL on a non-local host without query strings or embedded credentials.
-The smoke admin account must include `audit:read`; rerun the seed after pulling
-role changes if the audit log check returns 403.
+The production seed refuses the documented local admin defaults, so set
+non-default `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` before running
+`pnpm --filter @app-starter/api prisma:seed` against production. The smoke admin
+account must include `audit:read`; rerun the seed after pulling role changes if
+the audit log check returns 403.
 Set `SMOKE_REPORT_PATH=tmp/smoke-report.json` to write a machine-readable report
 with the checked slug, page ID, storefront URL, analytics diagnostics, feature
 flag diagnostics, database diagnostics, identity diagnostics, media environment
