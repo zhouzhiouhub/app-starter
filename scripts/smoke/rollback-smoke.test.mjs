@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  createRollbackRevalidationFailure,
   formatRollbackRevalidationFailure,
   isRollbackResponse,
   readPublishedVersionIdFromDetail,
@@ -64,12 +65,40 @@ test("smoke helpers explain rollback revalidation failures", () => {
       },
       { requireRevalidation: true },
     ),
-    "Rollback revalidation was not triggered (diagnosis: revalidation-secret-mismatch, reason: request-failed, status: 401, paths: 1).",
+    "Rollback revalidation was not triggered (diagnosis: revalidation-secret-mismatch, reason: request-failed, status: 401, paths: 1, tags: 0).",
   );
   assert.equal(
     formatRollbackRevalidationFailure(undefined, {
       requireRevalidation: true,
     }),
-    "Rollback revalidation was not triggered (diagnosis: missing-revalidation-meta, reason: unknown, status: none, paths: 0).",
+    "Rollback revalidation was not triggered (diagnosis: missing-revalidation-meta, reason: unknown, status: none, paths: 0, tags: 0).",
   );
+});
+
+test("smoke helpers keep rollback revalidation diagnostics on failures", () => {
+  const error = createRollbackRevalidationFailure(
+    {
+      paths: ["/en/contact"],
+      reason: "request-failed",
+      status: 401,
+      tags: ["published-page"],
+      triggered: false,
+    },
+    { requireRevalidation: true },
+  );
+
+  assert.match(error.message, /revalidation-secret-mismatch/);
+  assert.deepEqual(error.smokeDetails, {
+    revalidation: {
+      diagnosis: "revalidation-secret-mismatch",
+      pathCount: 1,
+      paths: ["/en/contact"],
+      reason: "request-failed",
+      required: true,
+      status: 401,
+      tagCount: 1,
+      tags: ["published-page"],
+      triggered: false,
+    },
+  });
 });

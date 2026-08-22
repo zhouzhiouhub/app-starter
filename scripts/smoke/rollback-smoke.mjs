@@ -156,14 +156,26 @@ function writeHeaders(accessToken) {
 
 function assertRollbackRevalidation(revalidation, input) {
   if (input.requireRevalidation && revalidation?.triggered !== true) {
-    throw new Error(formatRollbackRevalidationFailure(revalidation, input));
+    throw createRollbackRevalidationFailure(revalidation, input);
   }
+}
+
+export function createRollbackRevalidationFailure(revalidation, input) {
+  const details = createRevalidationSmokeDetails(revalidation, input);
+  const error = new Error(formatRollbackRevalidationDetails(details));
+  error.smokeDetails = { revalidation: details };
+
+  return error;
 }
 
 export function formatRollbackRevalidationFailure(revalidation, input) {
   const details = createRevalidationSmokeDetails(revalidation, input);
 
-  return `Rollback revalidation was not triggered (diagnosis: ${details.diagnosis}, reason: ${details.reason ?? "unknown"}, status: ${details.status ?? "none"}, paths: ${details.pathCount}).`;
+  return formatRollbackRevalidationDetails(details);
+}
+
+function formatRollbackRevalidationDetails(details) {
+  return `Rollback revalidation was not triggered (diagnosis: ${details.diagnosis}, reason: ${details.reason ?? "unknown"}, status: ${details.status ?? "none"}, paths: ${details.pathCount}, tags: ${details.tagCount}).`;
 }
 
 async function fetchJson(url, init) {
