@@ -63,10 +63,22 @@ test("image gallery blocks image sources with control characters", () => {
 
   assert.equal(placeholder.type, "div");
   assert.equal(placeholder.props["data-gallery-image-missing"], "unsafe-src");
-  assert.equal(
-    placeholder.props["data-media-reference"],
-    "https://example.com/image.jpg\njavascript:alert(1)",
-  );
+  assert.equal(placeholder.props["data-media-reference"], undefined);
+});
+
+test("image gallery does not expose unsafe image sources in placeholder data", () => {
+  const gallery = ImageGallery({
+    images: [
+      { alt: "HTTP", src: "http://cdn.example.com/product.jpg" },
+      { alt: "Credentials", src: "https://user:pass@example.com/image.jpg" },
+    ],
+  });
+
+  for (const placeholder of gallery.props.children) {
+    assert.equal(placeholder.type, "div");
+    assert.equal(placeholder.props["data-gallery-image-missing"], "unsafe-src");
+    assert.equal(placeholder.props["data-media-reference"], undefined);
+  }
 });
 
 test("image gallery keeps placeholders for non-string image values", () => {

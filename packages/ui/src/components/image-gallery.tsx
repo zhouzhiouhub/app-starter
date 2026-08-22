@@ -12,14 +12,17 @@ export function ImageGallery(props: {
         const rawSrc = typeof image.src === "string" ? image.src.trim() : "";
         const src = readSafeImageSrc(rawSrc);
         const alt = typeof image.alt === "string" ? image.alt : "";
+        const missingReason = readMissingImageReason(rawSrc);
 
         if (!src) {
           return (
             <div
               aria-label={alt.trim() || "Missing gallery image"}
               className="aspect-[4/3] w-full rounded-md border border-dashed border-gray-300 bg-gray-100"
-              data-gallery-image-missing={readMissingImageReason(rawSrc)}
-              data-media-reference={rawSrc || undefined}
+              data-gallery-image-missing={missingReason}
+              data-media-reference={
+                missingReason === "unresolved-media" ? rawSrc : undefined
+              }
               key={`missing-${index}-${rawSrc}`}
               role="img"
             />
