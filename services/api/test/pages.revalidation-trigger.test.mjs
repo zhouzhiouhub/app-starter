@@ -150,7 +150,7 @@ test("storefront revalidation skips unsafe URLs without fetching", async () => {
 test("storefront revalidation skips unsafe production URLs without fetching", async () => {
   await withEnv(
     revalidationEnv({
-      NODE_ENV: "production",
+      APP_ENV: "production",
       STOREFRONT_REVALIDATE_URL:
         "http://store.brand-platform.com/api/revalidate",
       WEB_URL: "",

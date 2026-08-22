@@ -155,13 +155,15 @@ export function createStorefrontRevalidationInput(
 
 export function resolveStorefrontRevalidateUrl(
   env: {
+    APP_ENV?: string;
     NODE_ENV?: string;
     STOREFRONT_REVALIDATE_URL?: string;
+    VERCEL_ENV?: string;
     WEB_URL?: string;
   } = process.env,
 ): string | null {
   const rawConfigured = env.STOREFRONT_REVALIDATE_URL?.trim();
-  const requireProductionUrl = isProductionEnv(env);
+  const requireProductionUrl = isProductionRevalidationEnvironment(env);
   const configured = readSafeHttpUrl(
     env.STOREFRONT_REVALIDATE_URL,
     requireProductionUrl,
@@ -234,10 +236,6 @@ function isHttpProtocol(protocol: string): boolean {
   return protocol === "http:" || protocol === "https:";
 }
 
-function isProductionEnv(env: { NODE_ENV?: string }): boolean {
-  return env.NODE_ENV === "production";
-}
-
 export function readStorefrontRevalidationTimeoutMs(
   env: Record<string, string | undefined> = process.env,
 ): number {
@@ -254,6 +252,14 @@ export function readStorefrontRevalidationTimeoutMs(
   }
 
   return defaultTimeoutMs;
+}
+
+export function isProductionRevalidationEnvironment(
+  env: Record<string, string | undefined> = process.env,
+): boolean {
+  return [env.NODE_ENV, env.APP_ENV, env.VERCEL_ENV].some(
+    (value) => value?.trim().toLowerCase() === "production",
+  );
 }
 
 function isAbortError(error: unknown): boolean {

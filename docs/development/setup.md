@@ -68,7 +68,8 @@ STOREFRONT_REVALIDATE_TIMEOUT_MS=5000
 set to the Web origin only, the API normalizes it to `/api/revalidate`.
 In production, both the explicit revalidation URL and the `WEB_URL` fallback
 must resolve to an HTTPS endpoint outside local, private, Docker-local, or
-reserved placeholder hosts.
+reserved placeholder hosts. Revalidation production mode is detected from
+`NODE_ENV`, `APP_ENV`, or `VERCEL_ENV`.
 `STOREFRONT_REVALIDATE_TIMEOUT_MS` accepts integer values from 1 to 30000. Empty,
 invalid, fractional, or longer values fall back to 5000 ms.
 

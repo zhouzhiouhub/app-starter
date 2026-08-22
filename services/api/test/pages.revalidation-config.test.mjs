@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  isProductionRevalidationEnvironment,
   readStorefrontRevalidationTimeoutMs,
   resolveStorefrontRevalidateUrl,
 } from "../dist/modules/pages/pages.revalidation.js";
@@ -43,6 +44,38 @@ test("storefront revalidation URL resolver accepts production HTTPS endpoints", 
     resolveStorefrontRevalidateUrl({
       NODE_ENV: "production",
       STOREFRONT_REVALIDATE_URL: "",
+      WEB_URL: "https://store.brand-platform.com/",
+    }),
+    "https://store.brand-platform.com/api/revalidate",
+  );
+});
+
+test("storefront revalidation URL resolver treats deployment production markers as production", () => {
+  assert.equal(
+    isProductionRevalidationEnvironment({ APP_ENV: " production " }),
+    true,
+  );
+  assert.equal(
+    isProductionRevalidationEnvironment({ VERCEL_ENV: "production" }),
+    true,
+  );
+  assert.equal(
+    isProductionRevalidationEnvironment({ NODE_ENV: "development" }),
+    false,
+  );
+  assert.equal(
+    resolveStorefrontRevalidateUrl({
+      APP_ENV: "production",
+      STOREFRONT_REVALIDATE_URL:
+        "http://store.brand-platform.com/api/revalidate",
+      WEB_URL: "",
+    }),
+    null,
+  );
+  assert.equal(
+    resolveStorefrontRevalidateUrl({
+      STOREFRONT_REVALIDATE_URL: "",
+      VERCEL_ENV: "production",
       WEB_URL: "https://store.brand-platform.com/",
     }),
     "https://store.brand-platform.com/api/revalidate",
