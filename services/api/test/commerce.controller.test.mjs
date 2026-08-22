@@ -20,13 +20,19 @@ test("commerce endpoints reject writes while commerce is disabled", () => {
   withEnv({ COMMERCE_ENABLED: "false" }, () => {
     const controller = new CommerceController();
 
-    assertApiConflict(
-      () => controller.addToCart(),
+    const cartError = assertApiConflict(
+      () => controller.addToCart("request-cart-disabled"),
       apiErrorCodes.COMMERCE_DISABLED,
     );
-    assertApiConflict(
-      () => controller.checkout(),
+    const checkoutError = assertApiConflict(
+      () => controller.checkout("request-checkout-disabled"),
       apiErrorCodes.COMMERCE_DISABLED,
+    );
+
+    assert.equal(cartError.getResponse()?.requestId, "request-cart-disabled");
+    assert.equal(
+      checkoutError.getResponse()?.requestId,
+      "request-checkout-disabled",
     );
   });
 });

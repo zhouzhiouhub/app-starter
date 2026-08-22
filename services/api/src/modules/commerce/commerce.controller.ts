@@ -33,19 +33,20 @@ export class CommerceController {
   }
 
   @Post("public/cart")
-  addToCart() {
-    return this.disabled();
+  addToCart(@CurrentRequestId() requestId = "local-dev") {
+    return this.disabled(requestId);
   }
 
   @Post("public/checkout")
-  checkout() {
-    return this.disabled();
+  checkout(@CurrentRequestId() requestId = "local-dev") {
+    return this.disabled(requestId);
   }
 
-  private disabled() {
+  private disabled(requestId: string) {
     throw new ConflictException({
       code: apiErrorCodes.COMMERCE_DISABLED,
       message: "Commerce is reserved in MVP and disabled by default.",
+      requestId,
     });
   }
 }

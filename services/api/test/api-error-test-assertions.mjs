@@ -1,11 +1,22 @@
 import assert from "node:assert/strict";
 
 export function assertApiBadRequest(fn, expectedCode) {
-  assert.throws(fn, hasApiError(400, expectedCode));
+  return assertApiError(fn, 400, expectedCode);
 }
 
 export function assertApiConflict(fn, expectedCode) {
-  assert.throws(fn, hasApiError(409, expectedCode));
+  return assertApiError(fn, 409, expectedCode);
+}
+
+function assertApiError(fn, status, expectedCode) {
+  let caught;
+
+  assert.throws(fn, (error) => {
+    caught = error;
+    return hasApiError(status, expectedCode)(error);
+  });
+
+  return caught;
 }
 
 function hasApiError(status, expectedCode) {
