@@ -237,7 +237,7 @@ status, CDN/R2 key match status, upload target metadata, and whether a real
 object upload was required, but never include the signed upload URL itself.
 Media environment diagnostics
 also record whether the CDN URL is HTTPS, production-ready, and free of query
-strings or embedded credentials. Publish revalidation details
+strings or embedded credentials. Publish and rollback revalidation details
 include a `diagnosis` field for triggered, missing secret, missing URL, HTTP
 request failure, and network or timeout-style failures. Analytics diagnostics
 record whether the runtime gates are valid and whether an enabled analytics
