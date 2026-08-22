@@ -16,6 +16,16 @@ export function copyDesktopSectionOrderToMobile(
   return setSectionOrderForViewport(current, "mobile", desktopSectionOrder);
 }
 
+export function normalizeSectionOrder(
+  current: PageSchema,
+  viewport: Viewport,
+): PageSchema {
+  const normalizedSectionOrder = getOrderedSectionsForViewport(current, viewport)
+    .map((section) => section.id);
+
+  return setSectionOrderForViewport(current, viewport, normalizedSectionOrder);
+}
+
 export function moveSection(
   current: PageSchema,
   sectionId: string,

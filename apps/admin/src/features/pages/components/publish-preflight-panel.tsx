@@ -1,4 +1,4 @@
-import { AimOutlined } from "@ant-design/icons";
+import { AimOutlined, CheckOutlined } from "@ant-design/icons";
 import { Alert, Button, List, Space, Tag, Typography } from "antd";
 import {
   summarizePublishPreflightIssues,
@@ -8,7 +8,9 @@ import type { PublishPreflightIssueTarget } from "../publish-preflight-target";
 
 export function PublishPreflightPanel(props: {
   issues: PublishPreflightIssue[];
+  onIssueFix?: (issue: PublishPreflightIssue) => void;
   onTargetSelect?: (target: PublishPreflightIssueTarget) => void;
+  readIssueFixLabel?: (issue: PublishPreflightIssue) => string | null;
   readIssueTarget?: (
     issue: PublishPreflightIssue,
   ) => PublishPreflightIssueTarget | null;
@@ -25,6 +27,7 @@ export function PublishPreflightPanel(props: {
         <List
           dataSource={props.issues}
           renderItem={(issue, index) => {
+            const fixLabel = props.readIssueFixLabel?.(issue) ?? null;
             const target = props.readIssueTarget?.(issue) ?? null;
 
             return (
@@ -46,6 +49,17 @@ export function PublishPreflightPanel(props: {
                       type="link"
                     >
                       Focus
+                    </Button>
+                  ) : null}
+                  {fixLabel && props.onIssueFix ? (
+                    <Button
+                      aria-label={fixLabel}
+                      icon={<CheckOutlined />}
+                      onClick={() => props.onIssueFix?.(issue)}
+                      size="small"
+                      type="link"
+                    >
+                      Fix
                     </Button>
                   ) : null}
                 </Space>

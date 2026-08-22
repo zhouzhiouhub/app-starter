@@ -7,6 +7,7 @@ import {
 import {
   copyDesktopSectionOrderToMobile,
   moveSection,
+  normalizeSectionOrder,
 } from "../src/features/pages/section-order-updates.ts";
 
 test("mobile section moves do not change desktop section order", () => {
@@ -44,6 +45,22 @@ test("desktop order copy replaces only the mobile section order", () => {
   assert.deepEqual(updated.layout.desktop.sectionOrder, ["copy", "hero"]);
   assert.deepEqual(updated.layout.mobile.sectionOrder, ["copy", "hero"]);
   assert.deepEqual(schema.layout.mobile.sectionOrder, ["hero", "copy"]);
+});
+
+test("section order normalization removes stale and duplicate entries", () => {
+  const schema = structuredClone(exampleLandingPage);
+  schema.layout.desktop.sectionOrder = ["copy", "missing", "copy"];
+  schema.layout.mobile.sectionOrder = ["hero", "copy"];
+
+  const updated = normalizeSectionOrder(schema, "desktop");
+
+  assert.deepEqual(updated.layout.desktop.sectionOrder, ["copy", "hero"]);
+  assert.deepEqual(updated.layout.mobile.sectionOrder, ["hero", "copy"]);
+  assert.deepEqual(schema.layout.desktop.sectionOrder, [
+    "copy",
+    "missing",
+    "copy",
+  ]);
 });
 
 function createDifferentlyOrderedSchema() {

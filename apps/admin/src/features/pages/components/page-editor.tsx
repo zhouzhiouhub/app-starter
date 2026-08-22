@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Alert, Tag, Typography } from "antd";
+import { Alert, Typography } from "antd";
 import {
   getOrderedSectionsForViewport,
   type MediaAssetReference,
@@ -14,11 +14,13 @@ import {
   findBlockingPublishPreflightIssueFromIssues,
 } from "../publish-preflight";
 import { readPublishPreflightFocusStyle } from "../publish-preflight-focus-style";
+import { usePublishPreflightFix } from "../hooks/use-publish-preflight-fix";
 import { usePublishPreflightFocus } from "../hooks/use-publish-preflight-focus";
 import { getStorefrontPageUrl } from "../storefront-url";
 import type { EditorFeedback, PageSummary, PageVersionSummary } from "../types";
 import { ChromeSettingsPanel } from "./chrome-settings-panel";
 import { PageContentFields } from "./page-content-fields";
+import { PageEditorStatusTags } from "./page-editor-status-tags";
 import { PageEditorToolbar } from "./page-editor-toolbar";
 import { PagePreviewPane } from "./page-preview-pane";
 import { PublishPreflightPanel } from "./publish-preflight-panel";
@@ -60,6 +62,10 @@ export function PageEditor(props: {
   const preflightFocus = usePublishPreflightFocus({
     schema: props.schema,
     setSelectedSectionId,
+  });
+  const preflightFix = usePublishPreflightFix({
+    onChange: props.onSchemaChange,
+    schema: props.schema,
   });
   const readFocusStyle = (
     area: Parameters<typeof readPublishPreflightFocusStyle>[0],
@@ -148,20 +154,15 @@ export function PageEditor(props: {
       ) : null}
       <PublishPreflightPanel
         issues={publishPreflightIssues}
+        onIssueFix={preflightFix.handleIssueFix}
         onTargetSelect={preflightFocus.handleTargetSelect}
+        readIssueFixLabel={preflightFix.readIssueFixLabel}
         readIssueTarget={preflightFocus.readIssueTarget}
       />
-      <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
-        <Tag color={props.page.status === "published" ? "green" : "default"}>
-          {props.page.status}
-        </Tag>
-        <Tag color={props.isDraftDirty ? "orange" : "default"}>
-          {props.isDraftDirty ? "Unsaved draft" : "Draft saved"}
-        </Tag>
-        <Tag color="blue">DEFAULT_LOCALE=en-US</Tag>
-        <Tag color="default">COMMERCE_ENABLED=false</Tag>
-        <Tag color="default">MULTI_LOCALE_ENABLED=false</Tag>
-      </div>
+      <PageEditorStatusTags
+        isDraftDirty={props.isDraftDirty}
+        pageStatus={props.page.status}
+      />
       <div
         style={{
           display: "grid",
