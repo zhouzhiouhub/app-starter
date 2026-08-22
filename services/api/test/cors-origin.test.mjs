@@ -4,6 +4,7 @@ import {
   createCorsOriginResolver,
   isAllowedCorsOrigin,
   isAllowedDevOrigin,
+  isProductionCorsEnvironment,
   readConfiguredCorsOrigins,
 } from "../dist/common/cors-origin.js";
 
@@ -20,6 +21,21 @@ test("CORS origin config does not use local defaults in production", () => {
     readConfiguredCorsOrigins({
       NODE_ENV: "production",
       WEB_URL: "https://store.brand-platform.com/",
+    }),
+    ["https://store.brand-platform.com"],
+  );
+});
+
+test("CORS origin config treats deployment production markers as production", () => {
+  assert.equal(isProductionCorsEnvironment({ APP_ENV: " production " }), true);
+  assert.equal(isProductionCorsEnvironment({ VERCEL_ENV: "production" }), true);
+  assert.equal(isProductionCorsEnvironment({ NODE_ENV: "development" }), false);
+  assert.deepEqual(readConfiguredCorsOrigins({ APP_ENV: "production" }), []);
+  assert.deepEqual(
+    readConfiguredCorsOrigins({
+      ADMIN_URL: "http://localhost:5173",
+      APP_ENV: "production",
+      WEB_URL: "https://store.brand-platform.com",
     }),
     ["https://store.brand-platform.com"],
   );

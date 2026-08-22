@@ -4,6 +4,7 @@ import { NestFactory } from "@nestjs/core";
 import { ApiExceptionFilter } from "./common/api-exception.filter.js";
 import {
   createCorsOriginResolver,
+  isProductionCorsEnvironment,
   readConfiguredCorsOrigins,
 } from "./common/cors-origin.js";
 import {
@@ -38,7 +39,7 @@ async function bootstrap() {
     methods: ["GET", "HEAD", "POST", "PUT", "PATCH", "OPTIONS"],
     origin: createCorsOriginResolver({
       configuredOrigins,
-      isProduction: process.env.NODE_ENV === "production",
+      isProduction: isProductionCorsEnvironment(process.env),
     }),
   });
 

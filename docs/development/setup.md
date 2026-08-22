@@ -46,7 +46,8 @@ Production smoke readiness also expects `REDIS_URL` to be a `rediss://` endpoint
 outside local, private, Docker-local, or reserved placeholder hosts.
 Production API CORS reads `WEB_URL` and `ADMIN_URL` as allowed browser origins;
 both must be HTTPS origins without paths, query strings, fragments, embedded
-credentials, local hosts, private hosts, or reserved placeholder hosts.
+credentials, local hosts, private hosts, or reserved placeholder hosts. CORS
+production mode is detected from `NODE_ENV`, `APP_ENV`, or `VERCEL_ENV`.
 
 Media uploads use local fallback URLs only outside production. In production,
 the API requires the full R2 upload configuration and a safe explicit

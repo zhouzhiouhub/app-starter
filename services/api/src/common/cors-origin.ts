@@ -7,10 +7,9 @@ const corsOriginDeniedMessage = "CORS origin denied.";
 type CorsOriginCallback = (error: Error | null, allowed?: boolean) => void;
 
 export function readConfiguredCorsOrigins(
-  env: { ADMIN_URL?: string; NODE_ENV?: string; WEB_URL?: string } =
-    process.env,
+  env: CorsEnvironment = process.env,
 ): string[] {
-  const isProduction = env.NODE_ENV === "production";
+  const isProduction = isProductionCorsEnvironment(env);
   const useLocalDefaults = !isProduction;
 
   return uniqueOrigins([
@@ -59,6 +58,20 @@ export function createCorsOriginResolver(input: {
 
     callback(new Error(corsOriginDeniedMessage));
   };
+}
+
+export type CorsEnvironment = {
+  ADMIN_URL?: string;
+  APP_ENV?: string;
+  NODE_ENV?: string;
+  VERCEL_ENV?: string;
+  WEB_URL?: string;
+};
+
+export function isProductionCorsEnvironment(env: CorsEnvironment): boolean {
+  return [env.NODE_ENV, env.APP_ENV, env.VERCEL_ENV].some(
+    (value) => value?.trim().toLowerCase() === "production",
+  );
 }
 
 export function isAllowedDevOrigin(origin: string): boolean {
