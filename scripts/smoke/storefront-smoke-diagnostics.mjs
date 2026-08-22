@@ -132,12 +132,50 @@ export function hasNoIndexRobots(html) {
   });
 }
 
+export function readCanonicalHref(html) {
+  for (const match of html.matchAll(/<link\b[^>]*>/gi)) {
+    const tag = match[0];
+    const rel = readHtmlAttribute(tag, "rel");
+
+    if (
+      !rel
+        ?.split(/\s+/)
+        .some((value) => value.toLowerCase() === "canonical")
+    ) {
+      continue;
+    }
+
+    return readHtmlAttribute(tag, "href");
+  }
+
+  return null;
+}
+
+export function readExpectedCanonicalUrl(input) {
+  return joinUrl(
+    getExpectedStorefrontOrigin(input),
+    getStorefrontPath(input.locale, input.slug),
+  );
+}
+
 function readBodySnippet(text) {
   const snippet = redactSmokeSecrets(text)
     .replace(/\s+/g, " ")
     .trim()
     .slice(0, 160);
   return snippet || null;
+}
+
+function readHtmlAttribute(tag, name) {
+  const pattern = new RegExp(
+    `\\b${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s>]+))`,
+    "i",
+  );
+  const match = pattern.exec(tag);
+  const value = match?.[1] ?? match?.[2] ?? match?.[3];
+  const normalized = value?.replace(/\s+/g, " ").trim();
+
+  return normalized || null;
 }
 
 function readDocumentTitle(html) {

@@ -1,6 +1,8 @@
 import {
   formatStorefrontPageAttempt,
   getStorefrontPath,
+  readCanonicalHref,
+  readExpectedCanonicalUrl,
   hasNoIndexRobots,
   joinUrl,
   readStorefrontPageAttempt,
@@ -58,9 +60,13 @@ export async function assertStorefrontPage(input, title) {
   );
 }
 
-export function assertIndexableStorefrontPage(html) {
+export function assertIndexableStorefrontPage(html, input) {
   if (hasNoIndexRobots(html)) {
     throw new Error("Storefront page rendered noindex robots metadata.");
+  }
+
+  if (input) {
+    assertStorefrontCanonical(html, input);
   }
 
   console.log("Storefront page SEO metadata passed.");
@@ -77,4 +83,26 @@ function createStorefrontPageFailure(url, expectedTitle, message, attempt) {
   };
 
   return error;
+}
+
+function assertStorefrontCanonical(html, input) {
+  const canonicalHref = readCanonicalHref(html);
+  const expectedCanonicalUrl = readExpectedCanonicalUrl(input);
+
+  if (canonicalHref === expectedCanonicalUrl) {
+    return;
+  }
+
+  const error = new Error(
+    `Storefront page canonical URL mismatch: expected ${expectedCanonicalUrl}, received ${canonicalHref ?? "none"}.`,
+  );
+  error.smokeDetails = {
+    storefrontSeo: {
+      canonicalHref,
+      expectedCanonicalUrl,
+      url: joinUrl(input.webUrl, getStorefrontPath(input.locale, input.slug)),
+    },
+  };
+
+  throw error;
 }

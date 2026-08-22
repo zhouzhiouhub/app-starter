@@ -6,6 +6,8 @@ import {
   hasNoIndexRobots,
   joinUrl,
   parseSitemapUrls,
+  readCanonicalHref,
+  readExpectedCanonicalUrl,
 } from "./storefront-smoke.mjs";
 import { createStorefrontSmokeRequestInit } from "./storefront-smoke-http.mjs";
 
@@ -70,6 +72,35 @@ test("storefront smoke helpers detect noindex robots metadata", () => {
     false,
   );
   assert.equal(hasNoIndexRobots("<title>noindex copy</title>"), false);
+});
+
+test("storefront smoke helpers read canonical links", () => {
+  assert.equal(
+    readCanonicalHref(
+      '<link href="https://web.example.com/en" rel="alternate canonical" />',
+    ),
+    "https://web.example.com/en",
+  );
+  assert.equal(
+    readCanonicalHref("<link REL='canonical' HREF='/en/legal/terms'>"),
+    "/en/legal/terms",
+  );
+  assert.equal(
+    readCanonicalHref('<link rel="stylesheet" href="/app.css" />'),
+    null,
+  );
+});
+
+test("storefront smoke helpers build the expected canonical URL", () => {
+  assert.equal(
+    readExpectedCanonicalUrl({
+      locale: "en-US",
+      slug: "legal/terms",
+      storefrontHost: "Store.Brand-Platform.com:443",
+      webUrl: "http://localhost:3000",
+    }),
+    "https://store.brand-platform.com/en/legal/terms",
+  );
 });
 
 test("storefront smoke request helper forwards storefront hosts", () => {

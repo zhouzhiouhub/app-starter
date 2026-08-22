@@ -154,7 +154,7 @@ export async function runSmokeTest(input) {
     );
     await runSmokeStep(report, "storefront.page", async () => {
       const storefrontHtml = await assertStorefrontPage(input, title);
-      assertIndexableStorefrontPage(storefrontHtml);
+      assertIndexableStorefrontPage(storefrontHtml, input);
     });
     await runSmokeStep(report, "seo.robots", () => assertRobots(input));
     await runSmokeStep(report, "seo.sitemap", () => assertSitemap(input));

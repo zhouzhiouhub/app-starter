@@ -17,6 +17,8 @@ export {
   hasNoIndexRobots,
   joinUrl,
   parseSitemapUrls,
+  readCanonicalHref,
+  readExpectedCanonicalUrl,
   readNotFoundAttempt,
   readRobotsAttempt,
   readSitemapAttempt,
