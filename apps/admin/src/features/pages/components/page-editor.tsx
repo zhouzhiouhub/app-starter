@@ -13,6 +13,7 @@ import {
   collectPublishPreflightIssues,
   findBlockingPublishPreflightIssueFromIssues,
 } from "../publish-preflight";
+import { readPublishPreflightFocusStyle } from "../publish-preflight-focus-style";
 import { usePublishPreflightFocus } from "../hooks/use-publish-preflight-focus";
 import { getStorefrontPageUrl } from "../storefront-url";
 import type { EditorFeedback, PageSummary, PageVersionSummary } from "../types";
@@ -60,6 +61,9 @@ export function PageEditor(props: {
     schema: props.schema,
     setSelectedSectionId,
   });
+  const readFocusStyle = (
+    area: Parameters<typeof readPublishPreflightFocusStyle>[0],
+  ) => readPublishPreflightFocusStyle(area, preflightFocus.highlightedArea);
   const orderedSections = useMemo(
     () => getOrderedSectionsForViewport(props.schema, props.viewport),
     [props.schema, props.viewport],
@@ -178,7 +182,10 @@ export function PageEditor(props: {
             schema={props.schema}
             viewport={props.viewport}
           />
-          <div ref={preflightFocus.sectionPropertiesRef}>
+          <div
+            ref={preflightFocus.sectionPropertiesRef}
+            style={readFocusStyle("section")}
+          >
             <SectionPropertiesPanel
               onChange={props.onSchemaChange}
               schema={props.schema}
@@ -186,19 +193,28 @@ export function PageEditor(props: {
               viewport={props.viewport}
             />
           </div>
-          <div ref={preflightFocus.pageContentRef}>
+          <div
+            ref={preflightFocus.pageContentRef}
+            style={readFocusStyle("page")}
+          >
             <PageContentFields
               onChange={props.onSchemaChange}
               schema={props.schema}
             />
           </div>
-          <div ref={preflightFocus.seoSettingsRef}>
+          <div
+            ref={preflightFocus.seoSettingsRef}
+            style={readFocusStyle("seo")}
+          >
             <SeoSettingsPanel
               onChange={props.onSchemaChange}
               schema={props.schema}
             />
           </div>
-          <div ref={preflightFocus.chromeSettingsRef}>
+          <div
+            ref={preflightFocus.chromeSettingsRef}
+            style={readFocusStyle("chrome")}
+          >
             <ChromeSettingsPanel
               onChange={props.onSchemaChange}
               schema={props.schema}
@@ -211,7 +227,10 @@ export function PageEditor(props: {
             versions={props.versions}
           />
         </div>
-        <div ref={preflightFocus.previewRef}>
+        <div
+          ref={preflightFocus.previewRef}
+          style={readFocusStyle("media")}
+        >
           <PagePreviewPane
             mediaReferences={props.mediaReferences}
             mediaResolver={props.mediaResolver}
