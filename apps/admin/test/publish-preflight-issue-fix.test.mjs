@@ -17,6 +17,14 @@ test("publish preflight issue fix labels section order warnings", () => {
   );
   assert.equal(
     readPublishPreflightIssueFixLabel({
+      field: "sections[0].props.ctaHref",
+      message: "CTA link is missing.",
+      severity: "warning",
+    }),
+    "Clear CTA fields",
+  );
+  assert.equal(
+    readPublishPreflightIssueFixLabel({
       field: "sections[1].props.content",
       message: "Rich text markup will be sanitized.",
       severity: "warning",
@@ -78,6 +86,49 @@ test("publish preflight issue fix sanitizes rich text content", () => {
   });
 });
 
+test("publish preflight issue fix clears incomplete CTA fields", () => {
+  const schema = structuredClone(exampleLandingPage);
+  schema.sections[0].props.ctaHref = "";
+  schema.sections[0].props.ctaLabel = "Start";
+  const linkOnlySchema = structuredClone(exampleLandingPage);
+  linkOnlySchema.sections[0].props.ctaHref = "/en/contact";
+  linkOnlySchema.sections[0].props.ctaLabel = "";
+
+  const fixed = applyPublishPreflightIssueFix(schema, {
+    field: "sections[0].props.ctaHref",
+    message: "hero-banner CTA link is missing.",
+    severity: "warning",
+  });
+  const fixedLinkOnly = applyPublishPreflightIssueFix(linkOnlySchema, {
+    field: "sections[0].props.ctaLabel",
+    message: "hero-banner CTA label is missing.",
+    severity: "warning",
+  });
+
+  assert.equal(fixed?.sections[0].props.ctaHref, "");
+  assert.equal(fixed?.sections[0].props.ctaLabel, "");
+  assert.equal(fixedLinkOnly?.sections[0].props.ctaHref, "");
+  assert.equal(fixedLinkOnly?.sections[0].props.ctaLabel, "");
+  assert.equal(schema.sections[0].props.ctaLabel, "Start");
+  assert.equal(linkOnlySchema.sections[0].props.ctaHref, "/en/contact");
+});
+
+test("publish preflight issue fix ignores complete or blocked CTA fields", () => {
+  const complete = applyPublishPreflightIssueFix(exampleLandingPage, {
+    field: "sections[0].props.ctaHref",
+    message: "CTA link needs review.",
+    severity: "warning",
+  });
+  const blocked = applyPublishPreflightIssueFix(exampleLandingPage, {
+    field: "sections[0].props.ctaHref",
+    message: "CTA link is unsafe.",
+    severity: "error",
+  });
+
+  assert.equal(complete, null);
+  assert.equal(blocked, null);
+});
+
 test("publish preflight issue fix ignores non-rich-text content fields", () => {
   const fixed = applyPublishPreflightIssueFix(exampleLandingPage, {
     field: "sections[0].props.content",
@@ -90,8 +141,8 @@ test("publish preflight issue fix ignores non-rich-text content fields", () => {
 
 test("publish preflight issue fix ignores unsupported issues", () => {
   const fixed = applyPublishPreflightIssueFix(exampleLandingPage, {
-    field: "sections[0].props.ctaHref",
-    message: "CTA link needs review.",
+    field: "seo.ogImage",
+    message: "Open Graph image needs review.",
     severity: "warning",
   });
 
