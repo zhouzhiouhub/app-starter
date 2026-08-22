@@ -33,25 +33,33 @@ export async function assertWebPreview(input, token, title) {
   const url = joinUrl(input.webUrl, getPreviewPath(token));
   let lastError = "";
 
-  for (let attempt = 1; attempt <= input.retryAttempts; attempt += 1) {
+  for (
+    let attemptNumber = 1;
+    attemptNumber <= input.retryAttempts;
+    attemptNumber += 1
+  ) {
     try {
       const response = await fetchText(
         url,
         createStorefrontSmokeRequestInit(input),
       );
-      const attempt = readWebPreviewAttempt(response, title);
+      const previewAttempt = readWebPreviewAttempt(response, title);
 
-      if (attempt.ok && attempt.titlePresent && attempt.noIndex) {
+      if (
+        previewAttempt.ok &&
+        previewAttempt.titlePresent &&
+        previewAttempt.noIndex
+      ) {
         console.log("Web preview page passed.");
         return;
       }
 
-      lastError = formatWebPreviewAttempt(attempt);
+      lastError = formatWebPreviewAttempt(previewAttempt);
     } catch (error) {
       lastError = readErrorMessage(error);
     }
 
-    if (attempt < input.retryAttempts) {
+    if (attemptNumber < input.retryAttempts) {
       await delay(input.retryDelayMs);
     }
   }

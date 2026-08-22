@@ -7,6 +7,7 @@ import {
   isPreviewTokenShape,
   readWebPreviewAttempt,
 } from "./preview-smoke.mjs";
+import { assertWebPreview } from "./preview-smoke-render-checks.mjs";
 import { withFetch } from "./smoke-test-runtime.mjs";
 
 const uuidPattern =
@@ -89,6 +90,52 @@ test("preview smoke helpers summarize web preview attempts", () => {
     formatWebPreviewAttempt(failed),
     'status 500 Internal Server Error, title present: false, noindex: false, body: "<html> <body>Preview crashed while loading draft</body> </html>"',
   );
+});
+
+test("web preview smoke retries until the draft is rendered", async () => {
+  const calls = [];
+  const title = "Draft preview title";
+
+  await withFetch(
+    async (url) => {
+      calls.push(url);
+
+      if (url !== "https://web.example.com/preview?token=payload.signature") {
+        throw new Error(`Unexpected fetch URL: ${url}`);
+      }
+
+      if (calls.length === 1) {
+        return new Response("<html><body>Stale page</body></html>", {
+          status: 200,
+          statusText: "OK",
+        });
+      }
+
+      return new Response(
+        `<html><head><meta name="robots" content="noindex" /></head><body>${title}</body></html>`,
+        {
+          status: 200,
+          statusText: "OK",
+        },
+      );
+    },
+    async () => {
+      await assertWebPreview(
+        {
+          retryAttempts: 2,
+          retryDelayMs: 1,
+          webUrl: "https://web.example.com",
+        },
+        "payload.signature",
+        title,
+      );
+    },
+  );
+
+  assert.deepEqual(calls, [
+    "https://web.example.com/preview?token=payload.signature",
+    "https://web.example.com/preview?token=payload.signature",
+  ]);
 });
 
 test("preview smoke flow sends idempotency keys for write requests", async () => {
