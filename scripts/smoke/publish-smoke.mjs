@@ -19,6 +19,7 @@ import {
   completeSmokeReport,
   createSmokeReport,
   failSmokeReport,
+  recordSmokeStorefrontUrls,
   writeSmokeReportIfConfigured,
 } from "./smoke-report.mjs";
 import { printSmokeReportSummary } from "./smoke-report-cli.mjs";
@@ -61,12 +62,14 @@ export {
 export async function runSmokeTest(input) {
   const title = `Smoke Publish ${new Date().toISOString()}`;
   const report = createSmokeReport(input, title);
+  const storefrontUrls = createSmokeStorefrontUrls(input);
   const schema = buildSmokePageSchema({
     locale: input.locale,
     market: input.market,
     slug: input.slug,
     title,
   });
+  recordSmokeStorefrontUrls(report, storefrontUrls);
 
   console.log(`Smoke page slug: ${input.slug}`);
   console.log(`API: ${input.apiBaseUrl}`);
@@ -162,20 +165,19 @@ export async function runSmokeTest(input) {
       assertNotFoundPage(input),
     );
 
-    const { storefrontRequestUrl, storefrontUrl } =
-      createSmokeStorefrontUrls(input);
     completeSmokeReport(report, {
       pageId: page.id,
-      storefrontRequestUrl,
-      storefrontUrl,
+      ...storefrontUrls,
     });
     await writeSmokeReportIfConfigured(input, report);
     console.log("\nSmoke publish passed.");
     printSmokeReportSummary(report);
     printSmokeProductionReadiness(report.productionReadiness);
-    console.log(`Storefront URL: ${storefrontUrl}`);
-    if (storefrontRequestUrl !== storefrontUrl) {
-      console.log(`Storefront request URL: ${storefrontRequestUrl}`);
+    console.log(`Storefront URL: ${storefrontUrls.storefrontUrl}`);
+    if (storefrontUrls.storefrontRequestUrl !== storefrontUrls.storefrontUrl) {
+      console.log(
+        `Storefront request URL: ${storefrontUrls.storefrontRequestUrl}`,
+      );
     }
   } catch (error) {
     failSmokeReport(report, error);

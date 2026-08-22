@@ -96,9 +96,13 @@ export function completeSmokeReport(report, input) {
   report.finishedAt = new Date().toISOString();
   report.pageId = input.pageId;
   report.status = "passed";
-  report.storefrontRequestUrl = input.storefrontRequestUrl ?? null;
-  report.storefrontUrl = input.storefrontUrl;
+  recordSmokeStorefrontUrls(report, input);
   refreshSmokeReportSummary(report);
+}
+
+export function recordSmokeStorefrontUrls(report, input) {
+  report.storefrontRequestUrl = input.storefrontRequestUrl ?? null;
+  report.storefrontUrl = input.storefrontUrl ?? null;
 }
 
 export function failSmokeReport(report, error) {

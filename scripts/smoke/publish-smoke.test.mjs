@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import test from "node:test";
 import {
   createSmokeStorefrontUrls,
@@ -10,6 +13,7 @@ import {
   normalizeStorefrontHost,
   normalizeWebOrigin,
   readConfig,
+  runSmokeTest,
 } from "./publish-smoke.mjs";
 import { withEnv } from "./smoke-test-env.mjs";
 
@@ -159,4 +163,54 @@ test("smoke helpers distinguish request and public storefront URLs", () => {
       storefrontUrl: "https://store.brand-platform.com/en/smoke-page",
     },
   );
+});
+
+test("failed publish smoke reports include storefront URLs", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "app-smoke-publish-"));
+  const previousFetch = globalThis.fetch;
+
+  try {
+    const reportPath = join(directory, "report.json");
+    globalThis.fetch = async () =>
+      new Response(
+        JSON.stringify({ error: { message: "API temporarily unavailable" } }),
+        {
+          status: 503,
+          statusText: "Service Unavailable",
+        },
+      );
+
+    await assert.rejects(
+      () =>
+        runSmokeTest({
+          apiBaseUrl: "https://api.example.com/api/v1",
+          locale: "en-US",
+          market: "us",
+          reportPath,
+          requireAdminApp: false,
+          requireR2Upload: false,
+          requireRevalidation: false,
+          slug: "smoke-page",
+          storefrontHost: "store.brand-platform.com",
+          tenantSlug: "default",
+          webUrl: "http://localhost:3000",
+        }),
+      /API health failed/,
+    );
+
+    const report = JSON.parse(await readFile(reportPath, "utf8"));
+    assert.equal(report.status, "failed");
+    assert.equal(
+      report.storefrontRequestUrl,
+      "http://localhost:3000/en/smoke-page",
+    );
+    assert.equal(
+      report.storefrontUrl,
+      "https://store.brand-platform.com/en/smoke-page",
+    );
+    assert.equal(report.summary.failedChecks[0], "api.health");
+  } finally {
+    globalThis.fetch = previousFetch;
+    await rm(directory, { force: true, recursive: true });
+  }
 });
