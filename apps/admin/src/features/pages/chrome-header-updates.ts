@@ -1,5 +1,5 @@
 import type { ChromeLocaleOption, PageSchema } from "@app-starter/schema";
-import { replaceHeaderContent } from "./chrome-region";
+import { replaceHeaderContent } from "./chrome-region.ts";
 
 export function updateHeaderBrand(
   current: PageSchema,
