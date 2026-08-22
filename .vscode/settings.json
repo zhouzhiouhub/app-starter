@@ -1,0 +1,22 @@
+{
+  "github.copilot.chat.commitMessageGeneration.instructions": [
+    {
+      "text": "Generate commit messages in Simplified Chinese based only on staged changes."
+    },
+    {
+      "text": "Use Conventional Commits format: <type>(optional scope): <short Chinese summary>."
+    },
+    {
+      "text": "Choose the type from feat, fix, docs, refactor, test, chore, build, ci, style, or perf."
+    },
+    {
+      "text": "Keep the subject concise and within 72 characters. Add a short Chinese body only when it materially improves clarity."
+    },
+    {
+      "text": "Do not exaggerate the scope of the change. For documentation-only changes such as AGENTS.md, README.md, or design docs, prefer docs."
+    },
+    {
+      "text": "Never include secrets, tokens, account information, private keys, or sensitive internal values."
+    }
+  ]
+}

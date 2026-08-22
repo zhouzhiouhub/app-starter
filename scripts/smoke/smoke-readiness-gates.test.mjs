@@ -1,0 +1,81 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import { createSmokeProductionReadiness } from "./smoke-readiness.mjs";
+import {
+  createReadyConfig,
+  createReadyEnvironment,
+} from "./smoke-readiness-test-fixtures.mjs";
+
+test("smoke readiness passes when every production gate is proven", () => {
+  const readiness = createSmokeProductionReadiness(
+    createReadyEnvironment(),
+    createReadyConfig(),
+  );
+
+  assert.deepEqual(readiness, {
+    blockers: [],
+    nextActions: [],
+    productionReady: true,
+    warnings: [],
+  });
+});
+
+test("smoke readiness marks omitted production gates as blockers", () => {
+  const readiness = createSmokeProductionReadiness(createReadyEnvironment(), {
+    ...createReadyConfig(),
+    requireAdminApp: false,
+    requireR2Upload: false,
+    requireRevalidation: false,
+  });
+
+  assert.deepEqual(
+    readiness.blockers.map((blocker) => [blocker.area, blocker.issue]),
+    [
+      ["deployment.admin", "admin-smoke-not-required"],
+      ["media.r2", "r2-upload-smoke-not-required"],
+      ["revalidation", "revalidation-smoke-not-required"],
+    ],
+  );
+  assert.equal(readiness.productionReady, false);
+  assert.deepEqual(
+    readiness.nextActions.map((item) => [item.area, item.action]),
+    [
+      [
+        "deployment.admin",
+        "Set ADMIN_URL to the deployed Admin origin and SMOKE_REQUIRE_ADMIN_APP=true.",
+      ],
+      [
+        "media.r2",
+        "Configure R2 credentials and set SMOKE_REQUIRE_R2_UPLOAD=true.",
+      ],
+      [
+        "revalidation",
+        "Keep SMOKE_REQUIRE_REVALIDATION=true and configure storefront revalidation.",
+      ],
+    ],
+  );
+});
+
+test("smoke readiness requires an archived report path", () => {
+  const readiness = createSmokeProductionReadiness(createReadyEnvironment(), {
+    ...createReadyConfig(),
+    reportPath: null,
+  });
+
+  assert.deepEqual(readiness.blockers, [
+    {
+      area: "report.path",
+      issue: "report-path-not-configured",
+      message:
+        "Set SMOKE_REPORT_PATH to archive a machine-readable production smoke report.",
+    },
+  ]);
+  assert.equal(readiness.productionReady, false);
+  assert.deepEqual(readiness.nextActions, [
+    {
+      action:
+        "Set SMOKE_REPORT_PATH to a relative JSON path under tmp/, reports/, artifacts/, or .tmp/.",
+      area: "report.path",
+    },
+  ]);
+});

@@ -1,0 +1,188 @@
+import type { PageSchema, Viewport } from "@app-starter/schema";
+import type { PublishPreflightIssue } from "./publish-preflight-types";
+
+const orderedViewports: Viewport[] = ["desktop", "mobile"];
+
+export function collectPageStructurePreflightIssues(
+  schema: PageSchema,
+): PublishPreflightIssue[] {
+  return [
+    ...collectEmptyPageIssues(schema),
+    ...collectDuplicateSectionIdIssues(schema),
+    ...collectSectionOrderIssues(schema),
+  ];
+}
+
+function collectEmptyPageIssues(schema: PageSchema): PublishPreflightIssue[] {
+  if (schema.sections.length > 0) {
+    return [];
+  }
+
+  return [
+    {
+      field: "sections",
+      message: "Page must include at least one section before publishing.",
+      severity: "error",
+    },
+  ];
+}
+
+function collectDuplicateSectionIdIssues(
+  schema: PageSchema,
+): PublishPreflightIssue[] {
+  const seenSectionIds = new Set<string>();
+  const issues: PublishPreflightIssue[] = [];
+
+  schema.sections.forEach((section, index) => {
+    if (!seenSectionIds.has(section.id)) {
+      seenSectionIds.add(section.id);
+      return;
+    }
+
+    issues.push({
+      field: `sections[${index}].id`,
+      message: `Section id "${section.id}" is duplicated. Each section needs a unique id before publishing.`,
+      severity: "error",
+    });
+  });
+
+  return issues;
+}
+
+function collectSectionOrderIssues(schema: PageSchema): PublishPreflightIssue[] {
+  if (schema.sections.length === 0) {
+    return [];
+  }
+
+  return orderedViewports.flatMap((viewport) =>
+    collectViewportSectionOrderIssues(schema, viewport),
+  );
+}
+
+function collectViewportSectionOrderIssues(
+  schema: PageSchema,
+  viewport: Viewport,
+): PublishPreflightIssue[] {
+  const rawSectionOrder = schema.layout[viewport].sectionOrder ?? [];
+
+  if (rawSectionOrder.length === 0) {
+    return [];
+  }
+
+  const sectionIds = schema.sections.map((section) => section.id);
+  const normalizedSectionOrder = normalizeSectionOrderIds(
+    sectionIds,
+    rawSectionOrder,
+  );
+
+  if (areStringListsEqual(rawSectionOrder, normalizedSectionOrder)) {
+    return [];
+  }
+
+  return [
+    {
+      field: `layout.${viewport}.sectionOrder`,
+      message: `${formatViewportLabel(
+        viewport,
+      )} section order will be normalized before rendering because it ${formatSectionOrderDrift(
+        sectionIds,
+        rawSectionOrder,
+      )}. Save the draft or use section reorder controls to normalize it before publishing.`,
+      severity: "warning",
+    },
+  ];
+}
+
+function normalizeSectionOrderIds(
+  sectionIds: string[],
+  rawSectionOrder: string[],
+): string[] {
+  const validSectionIds = new Set(sectionIds);
+  const seenSectionIds = new Set<string>();
+  const normalizedSectionOrder: string[] = [];
+
+  for (const sectionId of rawSectionOrder) {
+    if (!validSectionIds.has(sectionId) || seenSectionIds.has(sectionId)) {
+      continue;
+    }
+
+    seenSectionIds.add(sectionId);
+    normalizedSectionOrder.push(sectionId);
+  }
+
+  for (const sectionId of sectionIds) {
+    if (!seenSectionIds.has(sectionId)) {
+      normalizedSectionOrder.push(sectionId);
+    }
+  }
+
+  return normalizedSectionOrder;
+}
+
+function formatSectionOrderDrift(
+  sectionIds: string[],
+  rawSectionOrder: string[],
+): string {
+  const validSectionIds = new Set(sectionIds);
+  const seenRawIds = new Set<string>();
+  const includedValidIds = new Set<string>();
+  let duplicateCount = 0;
+  let missingCount = 0;
+
+  for (const sectionId of rawSectionOrder) {
+    if (!validSectionIds.has(sectionId)) {
+      missingCount += 1;
+      continue;
+    }
+
+    if (seenRawIds.has(sectionId)) {
+      duplicateCount += 1;
+      continue;
+    }
+
+    seenRawIds.add(sectionId);
+    includedValidIds.add(sectionId);
+  }
+
+  const omittedCount = sectionIds.filter(
+    (sectionId) => !includedValidIds.has(sectionId),
+  ).length;
+  const reasons = [
+    formatCount(missingCount, "stale reference"),
+    formatCount(duplicateCount, "duplicate entry"),
+    formatCount(omittedCount, "omitted section"),
+  ].filter(isPresent);
+
+  return formatList(reasons);
+}
+
+function isPresent(value: string | null): value is string {
+  return value !== null;
+}
+
+function formatCount(count: number, label: string): string | null {
+  return count > 0 ? `${count} ${label}${count === 1 ? "" : "s"}` : null;
+}
+
+function formatList(items: string[]): string {
+  if (items.length <= 1) {
+    return items[0] ?? "does not match the current sections";
+  }
+
+  if (items.length === 2) {
+    return `${items[0]} and ${items[1]}`;
+  }
+
+  return `${items.slice(0, -1).join(", ")}, and ${items.at(-1)}`;
+}
+
+function areStringListsEqual(first: string[], second: string[]): boolean {
+  return (
+    first.length === second.length &&
+    first.every((value, index) => value === second[index])
+  );
+}
+
+function formatViewportLabel(viewport: Viewport): string {
+  return viewport === "desktop" ? "Desktop" : "Mobile";
+}

@@ -1,0 +1,167 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id                 String              @id @default(uuid())
+  name               String
+  slug               String              @unique
+  createdAt          DateTime            @default(now())
+  sites              Site[]
+  users              User[]
+  roles              Role[]
+  idempotencyRecords IdempotencyRecord[]
+  auditLogs          AuditLog[]
+}
+
+model Site {
+  id        String   @id @default(uuid())
+  tenantId  String
+  name      String
+  domain    String   @unique
+  createdAt DateTime @default(now())
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  pages     Page[]
+}
+
+model Page {
+  id                 String        @id @default(uuid())
+  siteId             String
+  slug               String
+  title              String
+  type               String
+  status             String        @default("draft")
+  publishedVersionId String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  site               Site          @relation(fields: [siteId], references: [id])
+  versions           PageVersion[]
+
+  @@unique([siteId, slug])
+}
+
+model PageVersion {
+  id          String    @id @default(uuid())
+  pageId      String
+  version     Int
+  schema      Json
+  status      String    @default("draft")
+  authorId    String
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  page        Page      @relation(fields: [pageId], references: [id])
+
+  @@unique([pageId, version])
+}
+
+model Translation {
+  id        String   @id @default(uuid())
+  tenantId  String
+  key       String
+  locale    String
+  value     String
+  context   String?
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, key, locale])
+}
+
+model MediaAsset {
+  id        String   @id @default(uuid())
+  tenantId  String
+  type      String
+  filename  String
+  url       String
+  r2Key     String
+  size      BigInt
+  mimeType  String
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now())
+}
+
+model User {
+  id            String         @id @default(uuid())
+  tenantId      String
+  email         String
+  passwordHash  String
+  name          String?
+  status        String         @default("active")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  tenant        Tenant         @relation(fields: [tenantId], references: [id])
+  roles         UserRole[]
+  refreshTokens RefreshToken[]
+
+  @@unique([tenantId, email])
+  @@index([tenantId, status])
+}
+
+model Role {
+  id          String     @id @default(uuid())
+  tenantId    String
+  name        String
+  permissions Json       @default("[]")
+  createdAt   DateTime   @default(now())
+  tenant      Tenant     @relation(fields: [tenantId], references: [id])
+  users       UserRole[]
+
+  @@unique([tenantId, name])
+}
+
+model UserRole {
+  userId String
+  roleId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+}
+
+model RefreshToken {
+  id           String    @id @default(uuid())
+  userId       String
+  tokenHash    String    @unique
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  replacedById String?
+  createdAt    DateTime  @default(now())
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model IdempotencyRecord {
+  id          String   @id @default(uuid())
+  tenantId    String
+  scope       String
+  key         String
+  requestHash String
+  status      String   @default("pending")
+  response    Json?
+  createdAt   DateTime @default(now())
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, scope, key])
+  @@index([tenantId, createdAt])
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  tenantId   String
+  actorId    String?
+  action     String
+  targetType String
+  targetId   String?
+  requestId  String?
+  metadata   Json     @default("{}")
+  createdAt  DateTime @default(now())
+  tenant     Tenant   @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId, createdAt])
+  @@index([tenantId, action])
+}
