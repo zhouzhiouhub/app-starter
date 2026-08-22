@@ -26,13 +26,47 @@ test("page metadata resolves relative canonical URLs with the site origin", () =
   );
 });
 
-test("page metadata omits unsafe canonical URLs", () => {
+test("page metadata falls back to the storefront canonical path", () => {
+  const schema = structuredClone(exampleLandingPage);
+  delete schema.seo.canonical;
+
+  const metadata = buildPageMetadata(schema, {
+    origin: "https://store.brand-platform.com",
+  });
+
+  assert.equal(
+    metadata.alternates?.canonical,
+    "https://store.brand-platform.com/en",
+  );
+});
+
+test("page metadata uses the storefront canonical path for non-home pages", () => {
+  const schema = structuredClone(exampleLandingPage);
+  delete schema.seo.canonical;
+  schema.meta.slug = "launch/summer";
+
+  const metadata = buildPageMetadata(schema, {
+    origin: "https://store.brand-platform.com",
+  });
+
+  assert.equal(
+    metadata.alternates?.canonical,
+    "https://store.brand-platform.com/en/launch/summer",
+  );
+});
+
+test("page metadata replaces unsafe canonical URLs with the storefront path", () => {
   const schema = structuredClone(exampleLandingPage);
   schema.seo.canonical = "javascript:alert(1)";
 
-  const metadata = buildPageMetadata(schema);
+  const metadata = buildPageMetadata(schema, {
+    origin: "https://store.brand-platform.com",
+  });
 
-  assert.equal(metadata.alternates, undefined);
+  assert.equal(
+    metadata.alternates?.canonical,
+    "https://store.brand-platform.com/en",
+  );
 });
 
 test("page metadata includes resolved Open Graph images", () => {

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import {
+  getStorefrontHref,
   isPublishableImageSrc,
   mediaAssetReferenceSchema,
   seoUrlSchema,
@@ -24,7 +25,7 @@ export function buildPageMetadata(
   const title = schema.seo.title || schema.meta.title;
   const description = schema.seo.description || undefined;
   const origin = readMetadataOrigin(options.origin);
-  const canonical = readResolvedCanonical(schema.seo.canonical, origin);
+  const canonical = readResolvedCanonical(schema, origin);
   const ogImage = readResolvedSeoImage(schema.seo.ogImage, origin);
 
   return {
@@ -45,12 +46,17 @@ export function buildPageMetadata(
 }
 
 function readResolvedCanonical(
-  value: string | undefined,
+  schema: PageSchema,
   origin: string | undefined,
 ): string | undefined {
-  const canonical = seoUrlSchema.safeParse(value);
+  const canonical = seoUrlSchema.safeParse(schema.seo.canonical);
 
-  return canonical.success ? resolveSeoUrl(canonical.data, origin) : undefined;
+  return resolveSeoUrl(
+    canonical.success
+      ? canonical.data
+      : getStorefrontHref(schema.meta.locale, schema.meta.slug),
+    origin,
+  );
 }
 
 function readResolvedSeoImage(
