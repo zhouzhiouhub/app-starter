@@ -3,7 +3,7 @@ import { LockOutlined, MailOutlined } from "@ant-design/icons";
 import { Alert, Button, Card, Form, Input, Typography } from "antd";
 import { useLocation, useNavigate } from "react-router-dom";
 import { loginWithPassword } from "../../features/auth/api";
-import { DEFAULT_ADMIN_EMAIL } from "../../features/auth/constants";
+import { readAdminLoginHint } from "../../features/auth/login-hint";
 
 interface LoginFormValues {
   email: string;
@@ -23,6 +23,7 @@ export function LoginPage() {
   const location = useLocation();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const loginHint = readAdminLoginHint(import.meta.env);
   const from =
     (location.state as { from?: string } | null)?.from &&
     (location.state as { from?: string }).from !== "/login"
@@ -62,10 +63,7 @@ export function LoginPage() {
           Admin sign in
         </Typography.Title>
         <Typography.Paragraph type="secondary">
-          Use the seeded tenant admin to manage pages. Default local account is{" "}
-          {DEFAULT_ADMIN_EMAIL}. Sign in on this Admin page (port 5173). Do not
-          open <Typography.Text code>/api/v1/auth/login</Typography.Text> in the
-          browser — that path only accepts POST.
+          {loginHint.description}
         </Typography.Paragraph>
         {error ? (
           <Alert
@@ -76,7 +74,6 @@ export function LoginPage() {
           />
         ) : null}
         <Form<LoginFormValues>
-          initialValues={{ email: DEFAULT_ADMIN_EMAIL }}
           layout="vertical"
           onFinish={(values) => void submit(values)}
           onSubmitCapture={(event) => {
@@ -100,12 +97,7 @@ export function LoginPage() {
               prefix={<LockOutlined />}
             />
           </Form.Item>
-          <Button
-            block
-            htmlType="submit"
-            loading={isSubmitting}
-            type="primary"
-          >
+          <Button block htmlType="submit" loading={isSubmitting} type="primary">
             Sign in
           </Button>
         </Form>
