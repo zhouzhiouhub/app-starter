@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  isProductionSmokeEnvironment,
   normalizeAdminOrigin,
   normalizeSmokeBoolean,
   normalizeSmokePositiveInt,
@@ -110,6 +111,54 @@ test("smoke config treats Admin URL as optional unless Admin smoke is required",
 
       assert.equal(config.adminUrl, null);
       assert.equal(config.requireAdminApp, false);
+    },
+  );
+});
+
+test("smoke config rejects documented local admin credentials in production", async () => {
+  assert.equal(isProductionSmokeEnvironment({ APP_ENV: " production " }), true);
+  assert.equal(
+    isProductionSmokeEnvironment({ VERCEL_ENV: "production" }),
+    true,
+  );
+  assert.equal(
+    isProductionSmokeEnvironment({ NODE_ENV: "development" }),
+    false,
+  );
+
+  await withEnv(
+    {
+      APP_ENV: "production",
+      NODE_ENV: "",
+      SEED_ADMIN_EMAIL: "",
+      SEED_ADMIN_PASSWORD: "",
+      SMOKE_ADMIN_EMAIL: "",
+      SMOKE_ADMIN_PASSWORD: "",
+      VERCEL_ENV: "",
+    },
+    async () => {
+      assert.throws(
+        () => readConfig(),
+        /SMOKE_ADMIN_EMAIL must not use the documented local default/,
+      );
+    },
+  );
+
+  await withEnv(
+    {
+      APP_ENV: "",
+      NODE_ENV: "production",
+      SEED_ADMIN_EMAIL: "owner@example.com",
+      SEED_ADMIN_PASSWORD: "ChangeMe123!",
+      SMOKE_ADMIN_EMAIL: "",
+      SMOKE_ADMIN_PASSWORD: "",
+      VERCEL_ENV: "",
+    },
+    async () => {
+      assert.throws(
+        () => readConfig(),
+        /SMOKE_ADMIN_PASSWORD must not use the documented local default/,
+      );
     },
   );
 });

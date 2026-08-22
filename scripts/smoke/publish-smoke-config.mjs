@@ -29,20 +29,24 @@ export { normalizeSmokeReportPath } from "./smoke-report-path-config.mjs";
 
 export function readConfig() {
   const requireAdminApp = readBooleanEnv("SMOKE_REQUIRE_ADMIN_APP", false);
+  const email = readEnv(
+    "SMOKE_ADMIN_EMAIL",
+    readEnv("SEED_ADMIN_EMAIL", defaultEmail),
+  );
+  const password = readEnv(
+    "SMOKE_ADMIN_PASSWORD",
+    readEnv("SEED_ADMIN_PASSWORD", defaultPassword),
+  );
+
+  assertProductionSmokeCredentials({ email, password });
 
   return {
     adminUrl: readAdminUrlConfig(requireAdminApp),
     apiBaseUrl: normalizeApiBaseUrl(readEnv("API_URL", defaultApiUrl)),
-    email: readEnv(
-      "SMOKE_ADMIN_EMAIL",
-      readEnv("SEED_ADMIN_EMAIL", defaultEmail),
-    ),
+    email,
     locale: normalizeSmokeLocale(readEnv("SMOKE_LOCALE", defaultLocale)),
     market: normalizeSmokeMarket(readEnv("SMOKE_MARKET", defaultMarket)),
-    password: readEnv(
-      "SMOKE_ADMIN_PASSWORD",
-      readEnv("SEED_ADMIN_PASSWORD", defaultPassword),
-    ),
+    password,
     requireAdminApp,
     requireR2Upload: readBooleanEnv("SMOKE_REQUIRE_R2_UPLOAD", false),
     requireRevalidation: readBooleanEnv("SMOKE_REQUIRE_REVALIDATION", true),
@@ -62,6 +66,30 @@ export function readConfig() {
     tenantSlug: readEnv("SMOKE_TENANT_SLUG", defaultTenantSlug),
     webUrl: normalizeWebOrigin(readEnv("WEB_URL", defaultWebUrl)),
   };
+}
+
+export function isProductionSmokeEnvironment(env = process.env) {
+  return [env.NODE_ENV, env.APP_ENV, env.VERCEL_ENV].some(
+    (value) => value?.trim().toLowerCase() === "production",
+  );
+}
+
+function assertProductionSmokeCredentials({ email, password }) {
+  if (!isProductionSmokeEnvironment()) {
+    return;
+  }
+
+  if (email.trim().toLowerCase() === defaultEmail) {
+    throw new Error(
+      "SMOKE_ADMIN_EMAIL must not use the documented local default in production smoke.",
+    );
+  }
+
+  if (password === defaultPassword) {
+    throw new Error(
+      "SMOKE_ADMIN_PASSWORD must not use the documented local default in production smoke.",
+    );
+  }
 }
 
 function createSmokeSlug() {

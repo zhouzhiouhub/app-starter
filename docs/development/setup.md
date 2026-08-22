@@ -219,9 +219,12 @@ object can be uploaded with PUT, and `MEDIA_CDN_BASE_URL` produces an HTTPS CDN
 URL on a non-local host without query strings or embedded credentials.
 The production seed refuses the documented local admin defaults, so set
 non-default `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` before running
-`pnpm --filter @app-starter/api prisma:seed` against production. The smoke admin
-account must include `audit:read`; rerun the seed after pulling role changes if
-the audit log check returns 403.
+`pnpm --filter @app-starter/api prisma:seed` against production. Production
+smoke also rejects the documented local admin email or password, even when they
+come from `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD`; set non-default
+`SMOKE_ADMIN_EMAIL` and `SMOKE_ADMIN_PASSWORD` for production runs. The smoke
+admin account must include `audit:read`; rerun the seed after pulling role
+changes if the audit log check returns 403.
 Set `SMOKE_REPORT_PATH=tmp/smoke-report.json` to write a machine-readable report
 with the checked slug, page ID, storefront URL, analytics diagnostics, feature
 flag diagnostics, database diagnostics, identity diagnostics, media environment
