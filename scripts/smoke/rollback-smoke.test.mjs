@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  assertRollbackFlow,
   createRollbackRevalidationFailure,
   formatRollbackRevalidationFailure,
   isRollbackResponse,
@@ -102,3 +103,114 @@ test("smoke helpers keep rollback revalidation diagnostics on failures", () => {
     },
   });
 });
+
+test("rollback smoke flow returns revalidation diagnostics for reports", async () => {
+  const calls = [];
+
+  await withFetch(async (url, init = {}) => {
+    calls.push({ method: init.method ?? "GET", url });
+
+    if (url === "https://api.example.com/api/v1/pages/page-1") {
+      return jsonResponse({
+        data: {
+          publishedVersionId: calls.length === 1 ? "version-1" : "version-2",
+        },
+      });
+    }
+
+    if (url === "https://api.example.com/api/v1/pages/page-1/publish") {
+      return jsonResponse({
+        data: {
+          meta: {
+            slug: "smoke-page",
+            title: "Smoke Page rollback candidate",
+          },
+        },
+      });
+    }
+
+    if (url === "https://api.example.com/api/v1/pages/page-1/rollback") {
+      return jsonResponse({
+        data: {
+          meta: {
+            slug: "smoke-page",
+            title: "Smoke Page",
+          },
+        },
+        meta: {
+          revalidation: {
+            paths: ["/en/smoke-page"],
+            tags: [
+              "published-page",
+              "published-page:us:en-US",
+              "published-page:us:en-US:smoke-page",
+            ],
+            triggered: true,
+          },
+        },
+      });
+    }
+
+    throw new Error(`Unexpected fetch URL: ${url}`);
+  }, async () => {
+    const result = await assertRollbackFlow(
+      {
+        apiBaseUrl: "https://api.example.com/api/v1",
+        locale: "en-US",
+        market: "us",
+        requireRevalidation: true,
+        slug: "smoke-page",
+      },
+      "access-token",
+      {
+        pageId: "page-1",
+        title: "Smoke Page",
+      },
+    );
+
+    assert.deepEqual(result, {
+      revalidation: {
+        diagnosis: "triggered",
+        pathCount: 1,
+        paths: ["/en/smoke-page"],
+        reason: null,
+        required: true,
+        status: null,
+        tagCount: 3,
+        tags: [
+          "published-page",
+          "published-page:us:en-US",
+          "published-page:us:en-US:smoke-page",
+        ],
+        triggered: true,
+      },
+      rollbackVersionId: "version-2",
+      targetVersionId: "version-1",
+      title: "Smoke Page",
+    });
+  });
+
+  assert.deepEqual(
+    calls.map((call) => call.method),
+    ["GET", "POST", "POST", "GET"],
+  );
+});
+
+async function withFetch(fetchImpl, fn) {
+  const previous = globalThis.fetch;
+  globalThis.fetch = fetchImpl;
+
+  try {
+    await fn();
+  } finally {
+    globalThis.fetch = previous;
+  }
+}
+
+function jsonResponse(body) {
+  return new Response(JSON.stringify(body), {
+    headers: { "Content-Type": "application/json" },
+    status: 200,
+    statusText: "OK",
+  });
+}

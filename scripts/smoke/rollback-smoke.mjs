@@ -45,6 +45,10 @@ export async function assertRollbackFlow(input, accessToken, options) {
   console.log("Rollback API passed.");
 
   return {
+    revalidation: createRevalidationSmokeDetails(
+      rollback?.meta?.revalidation,
+      input,
+    ),
     rollbackVersionId,
     targetVersionId: firstPublishedVersionId,
     title: rollback?.data?.meta?.title,
