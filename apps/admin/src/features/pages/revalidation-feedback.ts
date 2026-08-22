@@ -4,6 +4,7 @@ import type { EditorFeedback } from "./types.ts";
 
 export function buildPublicationFeedback(input: {
   action: "publish" | "rollback";
+  preflightWarningSummary?: string | null;
   revalidation?: StorefrontRevalidationResult;
   siteDomain?: string | null;
   slug: string;
@@ -14,11 +15,18 @@ export function buildPublicationFeedback(input: {
     "en-US",
     input.siteDomain,
   )} to review the storefront.`;
+  const preflightWarningSummary = input.preflightWarningSummary?.trim();
   const revalidationStatus = formatRevalidationStatus(input.revalidation);
+  const message = [
+    `${actionText}. ${revalidationStatus.message} ${reviewText}`,
+    preflightWarningSummary,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return {
-    message: `${actionText}. ${revalidationStatus.message} ${reviewText}`,
-    type: revalidationStatus.type,
+    message,
+    type: preflightWarningSummary ? "warning" : revalidationStatus.type,
   };
 }
 

@@ -49,11 +49,37 @@ export function findBlockingPublishPreflightIssue(
   schema: PageSchema,
   options: PublishPreflightOptions = {},
 ): PublishPreflightIssue | null {
-  return (
-    collectPublishPreflightIssues(schema, options).find(
-      (issue) => issue.severity === "error",
-    ) ?? null
+  return findBlockingPublishPreflightIssueFromIssues(
+    collectPublishPreflightIssues(schema, options),
   );
+}
+
+export function findBlockingPublishPreflightIssueFromIssues(
+  issues: PublishPreflightIssue[],
+): PublishPreflightIssue | null {
+  return issues.find((issue) => issue.severity === "error") ?? null;
+}
+
+export function formatPublishPreflightWarningSummary(
+  issues: PublishPreflightIssue[],
+): string | null {
+  const warnings = issues.filter((issue) => issue.severity === "warning");
+
+  if (warnings.length === 0) {
+    return null;
+  }
+
+  const visibleWarnings = warnings.slice(0, 3);
+  const remainingCount = warnings.length - visibleWarnings.length;
+  const warningLabel = warnings.length === 1 ? "warning" : "warnings";
+  const remainingSuffix =
+    remainingCount > 0
+      ? ` ${remainingCount} more ${remainingCount === 1 ? "warning" : "warnings"} also need review.`
+      : "";
+
+  return `Review ${warnings.length} non-blocking publish ${warningLabel}: ${visibleWarnings
+    .map((issue) => issue.message)
+    .join(" ")}${remainingSuffix}`;
 }
 
 function collectLocaleIssues(

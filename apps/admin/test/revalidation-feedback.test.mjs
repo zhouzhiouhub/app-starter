@@ -23,6 +23,40 @@ test("publication feedback summarizes triggered storefront revalidation", () => 
   assert.match(feedback.message, /https:\/\/store\.brand-platform\.com\/en/);
 });
 
+test("publication feedback keeps successful publish visible when preflight warnings exist", () => {
+  const feedback = buildPublicationFeedback({
+    action: "publish",
+    preflightWarningSummary:
+      "Review 1 non-blocking publish warning: Open Graph image needs review.",
+    revalidation: {
+      paths: ["/en"],
+      tags: ["published-page"],
+      triggered: true,
+    },
+    slug: "home",
+  });
+
+  assert.equal(feedback.type, "warning");
+  assert.match(feedback.message, /^Published\./);
+  assert.match(feedback.message, /Storefront revalidation triggered/);
+  assert.match(feedback.message, /Open Graph image needs review/);
+});
+
+test("publication feedback ignores blank preflight warning summaries", () => {
+  const feedback = buildPublicationFeedback({
+    action: "publish",
+    preflightWarningSummary: "   ",
+    revalidation: {
+      paths: ["/en"],
+      tags: ["published-page"],
+      triggered: true,
+    },
+    slug: "home",
+  });
+
+  assert.equal(feedback.type, "success");
+});
+
 test("publication feedback explains missing revalidation configuration", () => {
   const missingSecret = buildPublicationFeedback({
     action: "rollback",

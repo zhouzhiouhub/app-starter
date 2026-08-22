@@ -4,6 +4,7 @@ import { exampleLandingPage } from "@app-starter/schema";
 import {
   collectPublishPreflightIssues,
   findBlockingPublishPreflightIssue,
+  formatPublishPreflightWarningSummary,
 } from "../src/features/pages/publish-preflight.ts";
 
 test("publish preflight accepts the example landing page", () => {
@@ -11,6 +12,7 @@ test("publish preflight accepts the example landing page", () => {
 
   assert.deepEqual(issues, []);
   assert.equal(findBlockingPublishPreflightIssue(exampleLandingPage), null);
+  assert.equal(formatPublishPreflightWarningSummary(issues), null);
 });
 
 test("publish preflight blocks non-default locale while multi-locale is disabled", () => {
@@ -181,4 +183,34 @@ test("publish preflight warns about sanitized rich text content", () => {
     [["sections[1].props.content", "warning"]],
   );
   assert.equal(blocker, null);
+});
+
+test("publish preflight summarizes non-blocking warnings", () => {
+  const schema = structuredClone(exampleLandingPage);
+
+  schema.seo.ogImage = "media://asset-1";
+  schema.sections[0].props.ctaHref = "";
+  schema.sections[1].props.content = {
+    defaultValue: '<p onclick="alert(1)">Safe</p>',
+  };
+  schema.sections.push({
+    id: "gallery",
+    component: "image-gallery",
+    props: {
+      images: [{ alt: "", src: "/images/gallery.jpg" }],
+    },
+    layout: {
+      desktop: { x: 0, y: 900, width: 1200 },
+      mobile: { x: 0, y: 900, width: 390 },
+    },
+  });
+
+  const issues = collectPublishPreflightIssues(schema);
+  const summary = formatPublishPreflightWarningSummary(issues);
+
+  assert.match(summary ?? "", /^Review 4 non-blocking publish warnings:/);
+  assert.match(summary ?? "", /Open Graph image:/);
+  assert.match(summary ?? "", /hero-banner CTA link:/);
+  assert.match(summary ?? "", /Rich text section 2:/);
+  assert.match(summary ?? "", /1 more warning also need review\./);
 });

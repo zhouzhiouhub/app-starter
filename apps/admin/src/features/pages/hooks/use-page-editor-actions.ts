@@ -13,7 +13,11 @@ import { readMediaPublishPreflightIssue } from "../media-publish-preflight";
 import type { MediaResolverFeedback } from "../../media/media-resolver-feedback";
 import type { PageEditorSavedState } from "../page-editor-detail-state";
 import { readPageEditorSavedState } from "../page-editor-detail-state";
-import { findBlockingPublishPreflightIssue } from "../publish-preflight";
+import {
+  collectPublishPreflightIssues,
+  findBlockingPublishPreflightIssueFromIssues,
+  formatPublishPreflightWarningSummary,
+} from "../publish-preflight";
 import { buildPublicationFeedback } from "../revalidation-feedback";
 import { openStorefrontPreviewWindow } from "../preview-window";
 import { getStorefrontPreviewUrl } from "../storefront-url";
@@ -84,7 +88,9 @@ export function usePageEditorActions(input: UsePageEditorActionsInput) {
       return;
     }
 
-    const blockingIssue = findBlockingPublishPreflightIssue(input.draftSchema);
+    const preflightIssues = collectPublishPreflightIssues(input.draftSchema);
+    const blockingIssue =
+      findBlockingPublishPreflightIssueFromIssues(preflightIssues);
 
     if (blockingIssue) {
       input.setFeedback({
@@ -104,6 +110,9 @@ export function usePageEditorActions(input: UsePageEditorActionsInput) {
       return;
     }
 
+    const preflightWarningSummary =
+      formatPublishPreflightWarningSummary(preflightIssues);
+
     input.setIsPublishing(true);
     input.setFeedback(null);
 
@@ -117,6 +126,7 @@ export function usePageEditorActions(input: UsePageEditorActionsInput) {
         buildPublicationFeedback({
           action: "publish",
           revalidation: published.meta?.revalidation,
+          preflightWarningSummary,
           siteDomain: input.siteDomain,
           slug: published.schema.meta.slug,
         }),
