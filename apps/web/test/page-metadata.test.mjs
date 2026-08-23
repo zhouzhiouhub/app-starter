@@ -26,6 +26,34 @@ test("page metadata resolves relative canonical URLs with the site origin", () =
   );
 });
 
+test("page metadata ignores non-local HTTP origins", () => {
+  const schema = structuredClone(exampleLandingPage);
+  schema.seo.canonical = "  /campaign  ";
+  schema.seo.ogImage = "/og.jpg";
+
+  const metadata = buildPageMetadata(schema, {
+    origin: "http://store.brand-platform.com",
+  });
+
+  assert.equal(metadata.alternates?.canonical, "/campaign");
+  assert.deepEqual(metadata.openGraph?.images, ["/og.jpg"]);
+});
+
+test("page metadata keeps localhost HTTP origins for local development", () => {
+  const schema = structuredClone(exampleLandingPage);
+  schema.seo.canonical = "  /campaign  ";
+  schema.seo.ogImage = "/og.jpg";
+
+  const metadata = buildPageMetadata(schema, {
+    origin: "http://localhost:3000",
+  });
+
+  assert.equal(metadata.alternates?.canonical, "http://localhost:3000/campaign");
+  assert.deepEqual(metadata.openGraph?.images, [
+    "http://localhost:3000/og.jpg",
+  ]);
+});
+
 test("page metadata falls back to the storefront canonical path", () => {
   const schema = structuredClone(exampleLandingPage);
   delete schema.seo.canonical;

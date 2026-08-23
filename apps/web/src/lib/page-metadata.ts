@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import {
   getStorefrontHref,
+  isProductionHttpUrl,
   isPublishableImageSrc,
   mediaAssetReferenceSchema,
   seoUrlSchema,
@@ -105,10 +106,14 @@ function readMetadataOrigin(value: string | undefined): string | undefined {
   try {
     const url = new URL(value);
 
-    return url.protocol === "http:" || url.protocol === "https:"
+    return isProductionHttpUrl(url) || isLocalhostHttpOrigin(url)
       ? url.origin
       : undefined;
   } catch {
     return undefined;
   }
+}
+
+function isLocalhostHttpOrigin(url: URL): boolean {
+  return url.protocol === "http:" && url.hostname === "localhost";
 }
