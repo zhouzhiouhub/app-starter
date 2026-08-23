@@ -4,6 +4,7 @@ import { readResponseBody } from "../../lib/api-response.ts";
 import {
   clearAuthSession,
   readAuthSession,
+  readValidAuthSession,
   writeAuthSession,
 } from "./auth-session.ts";
 import type { AuthSession, AuthUser } from "./types.ts";
@@ -137,28 +138,16 @@ async function readSessionResponse(
   fallback: string,
 ): Promise<AuthSession> {
   const result = await readResponseBody(response);
-  const payload = result as {
-    data?: {
-      accessToken?: string;
-      refreshToken?: string;
-      user?: AuthUser;
-    };
-  };
+  const payload = result && typeof result === "object" ? result : {};
+  const session = readValidAuthSession(
+    (payload as Record<string, unknown>).data,
+  );
 
-  if (
-    !response.ok ||
-    !payload.data?.accessToken ||
-    !payload.data.refreshToken ||
-    !payload.data.user
-  ) {
+  if (!response.ok || !session) {
     throw new Error(readAuthApiErrorMessage(result, fallback));
   }
 
-  return {
-    accessToken: payload.data.accessToken,
-    refreshToken: payload.data.refreshToken,
-    user: payload.data.user,
-  };
+  return session;
 }
 
 export function readAuthApiErrorMessage(

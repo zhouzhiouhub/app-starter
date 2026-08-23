@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   clearAuthSession,
   readAuthSession,
+  readValidAuthSession,
   writeAuthSession,
 } from "../src/features/auth/auth-session.ts";
 import { AUTH_SESSION_STORAGE_KEY } from "../src/features/auth/constants.ts";
@@ -35,6 +36,42 @@ test("auth session storage ignores malformed sessions", () => {
       JSON.stringify({
         accessToken: "access-token",
         user: { id: "user-1" },
+      }),
+    );
+
+    assert.equal(readAuthSession(), null);
+  });
+});
+
+test("auth session validation rejects unsafe tokens and malformed users", () => {
+  for (const session of [
+    { ...authSession, accessToken: "access-token\nx-header: leaked" },
+    { ...authSession, accessToken: "a".repeat(4097) },
+    { ...authSession, refreshToken: "refresh token" },
+    {
+      ...authSession,
+      user: { ...authSession.user, email: " admin@example.com " },
+    },
+    {
+      ...authSession,
+      user: { ...authSession.user, roles: ["admin", "bad\nrole"] },
+    },
+    {
+      ...authSession,
+      user: { ...authSession.user, scopes: new Array(65).fill("page:read") },
+    },
+  ]) {
+    assert.equal(readValidAuthSession(session), null);
+  }
+});
+
+test("auth session storage ignores persisted unsafe token values", () => {
+  withLocalStorage(createMemoryStorage(), (storage) => {
+    storage.setItem(
+      AUTH_SESSION_STORAGE_KEY,
+      JSON.stringify({
+        ...authSession,
+        accessToken: "access-token\nx-header: leaked",
       }),
     );
 
