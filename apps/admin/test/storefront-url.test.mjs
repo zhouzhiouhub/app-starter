@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  AdminStorefrontUrlConfigurationError,
   getStorefrontPageUrl,
   getStorefrontPreviewUrl,
   resolveStorefrontOrigin,
@@ -117,16 +118,37 @@ test("storefront URL helper ignores unsafe production web origins", () => {
     "https://store.example",
     "https://192.0.2.10",
   ]) {
-    assert.equal(
-      resolveWebOrigin({
-        configured,
-        fallbackConfigured: "https://store.example.com",
-        isProd: true,
-        windowLocation,
-      }),
-      "https://admin.brand-platform.com:3000",
+    assert.throws(
+      () =>
+        resolveWebOrigin({
+          configured,
+          fallbackConfigured: "https://store.example.com",
+          isProd: true,
+          windowLocation,
+        }),
+      {
+        message:
+          "VITE_WEB_URL or WEB_URL must be configured as a safe storefront origin in production.",
+        name: "AdminStorefrontUrlConfigurationError",
+      },
     );
   }
+});
+
+test("storefront URL helper fails fast without a safe production web origin", () => {
+  assert.throws(
+    () =>
+      resolveWebOrigin({
+        configured: "",
+        fallbackConfigured: "",
+        isProd: true,
+        windowLocation: {
+          hostname: "admin.brand-platform.com",
+          protocol: "https:",
+        },
+      }),
+    AdminStorefrontUrlConfigurationError,
+  );
 });
 
 test("storefront URL helper falls back to localhost without a browser origin", () => {
@@ -171,6 +193,15 @@ test("storefront URL helper prefers current site domains for public links", () =
   assert.equal(
     resolveStorefrontOrigin({
       configured: "https://web.example.com",
+      siteDomain: "Store.Brand-Platform.com:443",
+    }),
+    "https://store.brand-platform.com",
+  );
+  assert.equal(
+    resolveStorefrontOrigin({
+      configured: "http://localhost:3000",
+      fallbackConfigured: "https://store.example.com",
+      isProd: true,
       siteDomain: "Store.Brand-Platform.com:443",
     }),
     "https://store.brand-platform.com",

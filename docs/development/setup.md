@@ -152,6 +152,9 @@ environment variables. Production absolute Admin API and Web URL values must be
 HTTPS URLs outside local, private, Docker-local, or reserved placeholder hosts;
 the relative `/api/v1` base remains valid when the Admin origin proxies API
 requests.
+Admin production builds do not synthesize storefront links from the current
+Admin browser hostname; configure a safe `VITE_WEB_URL` / `WEB_URL` or a safe
+site domain before using Preview or View on site links.
 When `SMOKE_REQUIRE_ADMIN_APP=true`, production smoke also verifies the Admin
 shell, module script, and declared stylesheet assets from the same Admin origin.
 

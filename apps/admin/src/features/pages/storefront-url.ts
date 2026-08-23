@@ -7,6 +7,15 @@ import {
 const maxPreviewTokenLength = 2048;
 const previewTokenPattern = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]{43}$/;
 
+export class AdminStorefrontUrlConfigurationError extends Error {
+  constructor() {
+    super(
+      "VITE_WEB_URL or WEB_URL must be configured as a safe storefront origin in production.",
+    );
+    this.name = "AdminStorefrontUrlConfigurationError";
+  }
+}
+
 interface WebOriginInput {
   configured?: string;
   fallbackConfigured?: string;
@@ -63,6 +72,10 @@ export function resolveWebOrigin(input: WebOriginInput): string {
 
   if (configured) {
     return configured;
+  }
+
+  if (requireProductionUrl) {
+    throw new AdminStorefrontUrlConfigurationError();
   }
 
   if (
