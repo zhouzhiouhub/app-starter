@@ -3,6 +3,7 @@ import {
   getStorefrontHref,
   isPublishableImageSrc,
   mediaAssetReferenceSchema,
+  seoImageUrlSchema,
   seoUrlSchema,
   type PageSchema,
 } from "@app-starter/schema";
@@ -73,7 +74,9 @@ function readResolvedSeoImage(
     return undefined;
   }
 
-  return isPublishableImageSrc(src) ? resolveSeoUrl(src, origin) : undefined;
+  return seoImageUrlSchema.safeParse(src).success && isPublishableImageSrc(src)
+    ? resolveSeoUrl(src, origin)
+    : undefined;
 }
 
 function createRobots(noIndex: boolean): Metadata["robots"] {

@@ -119,7 +119,11 @@ function readSingleHeaderValue(
 }
 
 function hasUnsafeHeaderValueCharacter(value: string): boolean {
-  return /[\u0000-\u001f\u007f,]/.test(value);
+  return Array.from(value).some((character) => {
+    const codePoint = character.codePointAt(0) ?? 0;
+
+    return codePoint <= 0x1f || codePoint === 0x7f || character === ",";
+  });
 }
 
 function stripDefaultPort(value: string): string {

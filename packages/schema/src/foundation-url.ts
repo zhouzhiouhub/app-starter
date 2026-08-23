@@ -2,6 +2,32 @@ import { z } from "zod";
 import { mediaAssetReferenceSchema } from "./media-reference.js";
 
 const unsafeHrefCharacters = new Set(["<", ">", '"', "'", "`", "\\"]);
+const sensitiveSeoQueryKeySuffixes = [
+  "accesstoken",
+  "apikey",
+  "clientsecret",
+  "credential",
+  "cookie",
+  "databaseurl",
+  "dsn",
+  "idtoken",
+  "jwt",
+  "keypairid",
+  "password",
+  "previewtoken",
+  "privatekey",
+  "refreshtoken",
+  "secret",
+  "session",
+  "sessionid",
+  "signature",
+  "token",
+];
+const sensitiveSeoQueryKeys = new Set([
+  "policy",
+  "sig",
+  ...sensitiveSeoQueryKeySuffixes,
+]);
 
 export function isSafeHref(value: string): boolean {
   const href = value.trim();
@@ -71,7 +97,10 @@ export function isSeoUrl(value: string): boolean {
   }
 
   if (url.startsWith("/")) {
-    return !url.startsWith("//");
+    return (
+      !url.startsWith("//") &&
+      !hasSensitiveRelativeSeoQueryParameters(url)
+    );
   }
 
   if (url.startsWith("http://") || url.startsWith("https://")) {
@@ -81,7 +110,8 @@ export function isSeoUrl(value: string): boolean {
         (parsed.protocol === "http:" || parsed.protocol === "https:") &&
         Boolean(parsed.hostname) &&
         !parsed.username &&
-        !parsed.password
+        !parsed.password &&
+        !hasSensitiveSeoQueryParameters(parsed)
       );
     } catch {
       return false;
@@ -101,4 +131,27 @@ function hasUnsafeHrefCharacter(href: string): boolean {
       unsafeHrefCharacters.has(character)
     );
   });
+}
+
+function hasSensitiveSeoQueryParameters(url: URL): boolean {
+  return Array.from(url.searchParams.keys()).some(isSensitiveSeoQueryKey);
+}
+
+function hasSensitiveRelativeSeoQueryParameters(value: string): boolean {
+  try {
+    return hasSensitiveSeoQueryParameters(
+      new URL(value, "https://example.invalid"),
+    );
+  } catch {
+    return true;
+  }
+}
+
+function isSensitiveSeoQueryKey(key: string): boolean {
+  const normalized = key.replace(/[-_\s]/g, "").toLowerCase();
+  return (
+    normalized.startsWith("xamz") ||
+    sensitiveSeoQueryKeys.has(normalized) ||
+    sensitiveSeoQueryKeySuffixes.some((suffix) => normalized.endsWith(suffix))
+  );
 }

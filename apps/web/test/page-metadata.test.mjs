@@ -115,6 +115,21 @@ test("page metadata replaces unsafe canonical URLs with the storefront path", ()
   );
 });
 
+test("page metadata drops canonical URLs with sensitive query parameters", () => {
+  const schema = structuredClone(exampleLandingPage);
+  schema.seo.canonical =
+    "https://canonical.brand-platform.com/campaign?token=secret";
+
+  const metadata = buildPageMetadata(schema, {
+    origin: "https://store.brand-platform.com",
+  });
+
+  assert.equal(
+    metadata.alternates?.canonical,
+    "https://store.brand-platform.com/en",
+  );
+});
+
 test("page metadata replaces unsafe absolute canonical origins", () => {
   const schema = structuredClone(exampleLandingPage);
 
@@ -187,6 +202,16 @@ test("page metadata omits unresolved media references from Open Graph images", (
 test("page metadata omits unsafe Open Graph image URLs", () => {
   const schema = structuredClone(exampleLandingPage);
   schema.seo.ogImage = "http://cdn.example.com/og.jpg";
+
+  const metadata = buildPageMetadata(schema);
+
+  assert.equal(metadata.openGraph?.images, undefined);
+});
+
+test("page metadata omits Open Graph images with sensitive query parameters", () => {
+  const schema = structuredClone(exampleLandingPage);
+  schema.seo.ogImage =
+    "https://cdn.example.com/og.jpg?X-Amz-Signature=signed-value";
 
   const metadata = buildPageMetadata(schema);
 

@@ -26,6 +26,11 @@ test("SEO feedback validates canonical URLs", () => {
     readSeoFieldFeedback("canonical", "https://user:pass@example.com").status,
     "error",
   );
+  assert.equal(
+    readSeoFieldFeedback("canonical", "https://example.com/page?token=secret")
+      .status,
+    "error",
+  );
 });
 
 test("SEO feedback validates Open Graph image URLs and media references", () => {
@@ -44,6 +49,13 @@ test("SEO feedback validates Open Graph image URLs and media references", () => 
     readSeoFieldFeedback(
       "ogImage",
       "https://example.com\njavascript:alert(1)",
+    ).status,
+    "error",
+  );
+  assert.equal(
+    readSeoFieldFeedback(
+      "ogImage",
+      "https://cdn.example.com/og.jpg?X-Amz-Signature=secret",
     ).status,
     "error",
   );
