@@ -230,6 +230,64 @@ test("admin refresh does not restore sessions changed while refresh is in flight
   assert.equal(storage.getItem(AUTH_SESSION_STORAGE_KEY), null);
 });
 
+test("admin refresh failures clear stale sessions", async () => {
+  for (const createRefreshResponse of [
+    async () => {
+      throw new Error("network failed");
+    },
+    async () =>
+      jsonResponse({
+        data: {
+          accessToken: "fresh access token",
+          refreshToken: "refresh-token-2",
+          user: {
+            email: "admin@example.com",
+            id: "user-1",
+            name: "Admin",
+            roles: ["admin"],
+            scopes: ["page:read"],
+            tenantId: "tenant-1",
+          },
+        },
+      }),
+  ]) {
+    const storage = createMemoryStorage();
+
+    storage.setItem(
+      AUTH_SESSION_STORAGE_KEY,
+      JSON.stringify({
+        accessToken: "expired-access-token",
+        refreshToken: "refresh-token-1",
+        user: {
+          email: "admin@example.com",
+          id: "user-1",
+          name: "Admin",
+          roles: ["admin"],
+          scopes: ["page:read"],
+          tenantId: "tenant-1",
+        },
+      }),
+    );
+
+    await withLocalStorage(storage, async () => {
+      await withFetch(async (url) => {
+        if (String(url).endsWith("/auth/refresh")) {
+          return createRefreshResponse();
+        }
+
+        return new Response("", { status: 401 });
+      }, async () => {
+        await assert.rejects(
+          () => adminRequest("/pages"),
+          /Authentication is required/,
+        );
+      });
+    });
+
+    assert.equal(storage.getItem(AUTH_SESSION_STORAGE_KEY), null);
+  }
+});
+
 function createMemoryStorage() {
   const values = new Map();
 

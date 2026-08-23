@@ -111,17 +111,30 @@ async function refreshAuthSessionOnce(): Promise<AuthSession | null> {
     return null;
   }
 
-  const response = await fetch(`${getApiBaseUrl()}/auth/refresh`, {
-    body: JSON.stringify({ refreshToken: session.refreshToken }),
-    headers: { "Content-Type": "application/json" },
-    method: "POST",
-  });
+  let response: Response;
+
+  try {
+    response = await fetch(`${getApiBaseUrl()}/auth/refresh`, {
+      body: JSON.stringify({ refreshToken: session.refreshToken }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    });
+  } catch {
+    return null;
+  }
 
   if (!response.ok) {
     return null;
   }
 
-  const next = await readSessionResponse(response, "Refresh failed.");
+  let next: AuthSession;
+
+  try {
+    next = await readSessionResponse(response, "Refresh failed.");
+  } catch {
+    return null;
+  }
+
   const current = readAuthSession();
 
   if (current?.refreshToken !== session.refreshToken) {
