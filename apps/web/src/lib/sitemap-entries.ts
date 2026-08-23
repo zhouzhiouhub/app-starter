@@ -26,9 +26,10 @@ export function buildPublishedPageSitemapEntries(input: {
       return [];
     }
 
+    const lastModified = readSitemapLastModified(page);
     const url = `${input.origin}${getStorefrontHref(input.locale, slug)}`;
 
-    if (seenUrls.has(url)) {
+    if (!lastModified || seenUrls.has(url)) {
       return [];
     }
 
@@ -37,7 +38,7 @@ export function buildPublishedPageSitemapEntries(input: {
     return [
       {
         changeFrequency: slug === "home" ? "daily" : "weekly",
-        lastModified: page.publishedAt ?? page.updatedAt,
+        lastModified,
         priority: slug === "home" ? 1 : 0.7,
         url,
       },
@@ -53,4 +54,20 @@ function normalizeSitemapSlug(slug: string): string {
 function isSystemPageSlug(slug: string): boolean {
   const leafSlug = slug.split("/").filter(Boolean).pop()?.toLowerCase();
   return leafSlug === "404";
+}
+
+function readSitemapLastModified(page: PublishedPageSummary): string | null {
+  return (
+    readIsoDateString(page.publishedAt) ?? readIsoDateString(page.updatedAt)
+  );
+}
+
+function readIsoDateString(value: string | null): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const date = new Date(value);
+
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }

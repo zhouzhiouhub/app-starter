@@ -78,13 +78,13 @@ function readPublishedPageSummary(value: unknown): PublishedPageSummary[] {
   }
 
   const record = value as Record<string, unknown>;
-
   const slug = pageSlugSchema.safeParse(record.slug);
+  const updatedAt = readIsoDateString(record.updatedAt);
 
   if (
     !slug.success ||
     typeof record.title !== "string" ||
-    typeof record.updatedAt !== "string"
+    !updatedAt
   ) {
     return [];
   }
@@ -92,11 +92,20 @@ function readPublishedPageSummary(value: unknown): PublishedPageSummary[] {
   return [
     {
       noIndex: record.noIndex === true,
-      publishedAt:
-        typeof record.publishedAt === "string" ? record.publishedAt : null,
+      publishedAt: readIsoDateString(record.publishedAt),
       slug: slug.data,
       title: record.title,
-      updatedAt: record.updatedAt,
+      updatedAt,
     },
   ];
+}
+
+function readIsoDateString(value: unknown): string | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const date = new Date(value);
+
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }

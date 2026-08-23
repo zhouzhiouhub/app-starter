@@ -134,6 +134,56 @@ test("published pages list drops unsafe summary slugs", async () => {
   );
 });
 
+test("published pages list drops invalid summary timestamps", async () => {
+  await withFetch(
+    async () =>
+      jsonResponse({
+        data: [
+          {
+            publishedAt: "2026-08-20T00:00:00Z",
+            slug: "home",
+            title: "Home",
+            updatedAt: "2026-08-21T00:00:00Z",
+          },
+          {
+            slug: "bad-date",
+            title: "Bad date",
+            updatedAt: "not-a-date",
+          },
+          {
+            publishedAt: "also-not-a-date",
+            slug: "invalid-published-date",
+            title: "No published date",
+            updatedAt: "2026-08-22T00:00:00Z",
+          },
+        ],
+      }),
+    async () => {
+      const pages = await listPublishedPages({
+        locale: "en-US",
+        market: "us",
+      });
+
+      assert.deepEqual(pages, [
+        {
+          noIndex: false,
+          publishedAt: "2026-08-20T00:00:00.000Z",
+          slug: "home",
+          title: "Home",
+          updatedAt: "2026-08-21T00:00:00.000Z",
+        },
+        {
+          noIndex: false,
+          publishedAt: null,
+          slug: "invalid-published-date",
+          title: "No published date",
+          updatedAt: "2026-08-22T00:00:00.000Z",
+        },
+      ]);
+    },
+  );
+});
+
 function jsonResponse(data) {
   return {
     ok: true,

@@ -73,3 +73,45 @@ test("sitemap entries skip invalid page slugs", () => {
     "https://web.example.com/en",
   ]);
 });
+
+test("sitemap entries require valid last modified timestamps", () => {
+  const entries = buildPublishedPageSitemapEntries({
+    locale: "en-US",
+    origin: "https://web.example.com",
+    pages: [
+      {
+        ...basePage,
+        publishedAt: "2026-08-20T00:00:00Z",
+        slug: "home",
+        updatedAt: "2026-08-21T00:00:00Z",
+      },
+      {
+        ...basePage,
+        publishedAt: "bad-date",
+        slug: "contact",
+        updatedAt: "2026-08-22T00:00:00Z",
+      },
+      {
+        ...basePage,
+        publishedAt: "bad-date",
+        slug: "broken",
+        updatedAt: "also-bad",
+      },
+    ],
+  });
+
+  assert.deepEqual(entries, [
+    {
+      changeFrequency: "daily",
+      lastModified: "2026-08-20T00:00:00.000Z",
+      priority: 1,
+      url: "https://web.example.com/en",
+    },
+    {
+      changeFrequency: "weekly",
+      lastModified: "2026-08-22T00:00:00.000Z",
+      priority: 0.7,
+      url: "https://web.example.com/en/contact",
+    },
+  ]);
+});
