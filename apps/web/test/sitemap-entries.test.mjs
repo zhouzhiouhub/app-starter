@@ -74,6 +74,18 @@ test("sitemap entries skip invalid page slugs", () => {
   ]);
 });
 
+test("sitemap entries reject invalid locales before building URLs", () => {
+  for (const locale of ["bad_locale", "EN-us", "../en", "en-US<script>"]) {
+    const entries = buildPublishedPageSitemapEntries({
+      locale,
+      origin: "https://web.brand-platform.com",
+      pages: [{ ...basePage, slug: "home" }],
+    });
+
+    assert.deepEqual(entries, []);
+  }
+});
+
 test("sitemap entries require valid last modified timestamps", () => {
   const entries = buildPublishedPageSitemapEntries({
     locale: "en-US",

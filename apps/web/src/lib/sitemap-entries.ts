@@ -1,4 +1,8 @@
-import { getStorefrontHref, pageSlugSchema } from "@app-starter/schema";
+import {
+  getStorefrontHref,
+  localeCodeSchema,
+  pageSlugSchema,
+} from "@app-starter/schema";
 import type { PublishedPageSummary } from "./published-pages.ts";
 import { readSafePublicOrigin } from "./safe-public-origin.ts";
 
@@ -16,8 +20,9 @@ export function buildPublishedPageSitemapEntries(input: {
 }): PublishedPageSitemapEntry[] {
   const seenUrls = new Set<string>();
   const origin = readSafePublicOrigin(input.origin);
+  const locale = localeCodeSchema.safeParse(input.locale);
 
-  if (!origin) {
+  if (!origin || !locale.success) {
     return [];
   }
 
@@ -33,7 +38,7 @@ export function buildPublishedPageSitemapEntries(input: {
     }
 
     const lastModified = readSitemapLastModified(page);
-    const url = `${origin}${getStorefrontHref(input.locale, slug)}`;
+    const url = `${origin}${getStorefrontHref(locale.data, slug)}`;
 
     if (!lastModified || seenUrls.has(url)) {
       return [];
