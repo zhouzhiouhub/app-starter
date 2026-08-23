@@ -30,7 +30,8 @@ test("media service archives assets that are not referenced", async () => {
       },
     },
     pageVersion: {
-      findMany() {
+      findMany(options) {
+        assertUsageScanQuery(options);
         return Promise.resolve([]);
       },
     },
@@ -88,7 +89,8 @@ test("media service blocks archive when page versions reference the asset", asyn
       },
     },
     pageVersion: {
-      findMany() {
+      findMany(options) {
+        assertUsageScanQuery(options);
         return Promise.resolve([
           {
             id: "version-1",
@@ -119,3 +121,31 @@ test("media service blocks archive when page versions reference the asset", asyn
     /Media asset is still referenced/,
   );
 });
+
+function assertUsageScanQuery(options) {
+  assert.deepEqual(options, {
+    where: {
+      page: {
+        site: {
+          tenantId: "tenant-1",
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    select: {
+      id: true,
+      page: {
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+        },
+      },
+      schema: true,
+      status: true,
+      version: true,
+    },
+  });
+}

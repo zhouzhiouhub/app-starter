@@ -26,11 +26,21 @@ export async function findMediaUsage(
         },
       },
     },
-    include: {
-      page: true,
-    },
     orderBy: {
       createdAt: "desc",
+    },
+    select: {
+      id: true,
+      page: {
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+        },
+      },
+      schema: true,
+      status: true,
+      version: true,
     },
   });
 
