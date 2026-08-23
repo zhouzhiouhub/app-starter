@@ -153,41 +153,48 @@ export class PublicController {
 }
 
 function readPublicSiteHost(headers: PublicRequestHeaders | undefined) {
-  return (
-    readHeaderDomain(headers, storefrontHostHeaderName) ??
-    readHeaderDomain(headers, "x-forwarded-host") ??
-    readHeaderDomain(headers, "host") ??
-    readExplicitHeaderValue(headers, storefrontHostHeaderName) ??
-    readExplicitHeaderValue(headers, "x-forwarded-host") ??
-    readExplicitHeaderValue(headers, "host")
-  );
+  for (const name of [
+    storefrontHostHeaderName,
+    "x-forwarded-host",
+    "host",
+  ]) {
+    const header = readSiteHostHeader(headers, name);
+
+    if (header.found) {
+      return readSiteDomainHeader(header.value) ?? header.value;
+    }
+  }
+
+  return null;
 }
 
-function readHeaderDomain(
-  headers: PublicRequestHeaders | undefined,
-  name: string,
-) {
-  return readSiteDomainHeader(
-    headers?.[name] ??
-      headers?.[name.toLowerCase()] ??
-      headers?.[toHeaderCase(name)],
-  );
-}
+type SiteHostHeaderResult =
+  | { found: false }
+  | {
+      found: true;
+      value: string;
+    };
 
-function readExplicitHeaderValue(
+function readSiteHostHeader(
   headers: PublicRequestHeaders | undefined,
   name: string,
-): string | null {
+): SiteHostHeaderResult {
   const value =
     headers?.[name] ??
     headers?.[name.toLowerCase()] ??
     headers?.[toHeaderCase(name)];
 
   if (Array.isArray(value)) {
-    return value.length === 1 ? value[0]?.trim() || null : null;
+    const rawValue = value.map((item) => item.trim()).filter(Boolean).join(",");
+    return rawValue ? { found: true, value: rawValue } : { found: false };
   }
 
-  return typeof value === "string" ? value.trim() || null : null;
+  if (typeof value !== "string") {
+    return { found: false };
+  }
+
+  const rawValue = value.trim();
+  return rawValue ? { found: true, value: rawValue } : { found: false };
 }
 
 function toHeaderCase(name: string) {

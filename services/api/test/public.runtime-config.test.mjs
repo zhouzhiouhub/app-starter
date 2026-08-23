@@ -239,14 +239,14 @@ test("public pages pass a safe storefront host into page lookups", async () => {
   assert.equal(response.meta.requestId, "request-public-host");
 });
 
-test("public page detail ignores unsafe storefront host headers", async () => {
+test("public page detail preserves unsafe high-priority storefront host headers", async () => {
   const controller = new PublicController({
     getPublishedBySlug(slug, context) {
       assert.equal(slug, "home");
       assert.deepEqual(context, {
         locale: "en-US",
         market: "us",
-        siteHost: "store.brand-platform.com",
+        siteHost: "store.example.com",
       });
 
       return Promise.resolve({ meta: { slug: "home" } });
@@ -265,6 +265,38 @@ test("public page detail ignores unsafe storefront host headers", async () => {
   );
 
   assert.equal(response.meta.requestId, "request-public-host-fallback");
+});
+
+test("public pages preserve duplicate storefront host headers for lookup rejection", async () => {
+  const controller = new PublicController({
+    listPublished(input) {
+      assert.deepEqual(input, {
+        locale: "en-US",
+        market: "us",
+        siteHost: "store-a.brand-platform.com,store-b.brand-platform.com",
+      });
+
+      return Promise.resolve({
+        data: [],
+        meta: { requestId: "local-dev" },
+      });
+    },
+  });
+
+  const response = await controller.listPages(
+    "en-US",
+    "us",
+    {
+      host: "store.brand-platform.com",
+      "x-storefront-host": [
+        "store-a.brand-platform.com",
+        "store-b.brand-platform.com",
+      ],
+    },
+    "request-public-duplicate-host",
+  );
+
+  assert.equal(response.meta.requestId, "request-public-duplicate-host");
 });
 
 test("public pages preserve unsafe request hosts for lookup rejection", async () => {
