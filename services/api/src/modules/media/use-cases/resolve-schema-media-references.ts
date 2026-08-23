@@ -7,6 +7,7 @@ import {
   type PageSchema,
 } from "@app-starter/schema";
 import { readArchivedAt } from "../media.metadata.js";
+import { assertAllowedMediaUrl } from "../media.url-validation.js";
 
 type MediaAssetClient = Pick<Prisma.TransactionClient, "mediaAsset">;
 
@@ -35,10 +36,17 @@ export async function resolveSchemaMediaReferences(
       url: true,
     },
   });
-  const urlsByReference = new Map(
-    assets
-      .filter((asset) => !readArchivedAt(asset.metadata))
-      .map((asset) => [`media://${asset.id}`, asset.url]),
+  const urlsByReference = new Map<string, string>(
+    assets.flatMap((asset): Array<[string, string]> => {
+      if (
+        readArchivedAt(asset.metadata) ||
+        !isAllowedResolvedMediaUrl(asset.url)
+      ) {
+        return [];
+      }
+
+      return [[`media://${asset.id}`, asset.url]];
+    }),
   );
 
   return pageSchema.parse(
@@ -47,4 +55,13 @@ export async function resolveSchemaMediaReferences(
       (reference) => urlsByReference.get(reference) ?? reference,
     ),
   );
+}
+
+function isAllowedResolvedMediaUrl(url: string): boolean {
+  try {
+    assertAllowedMediaUrl(url);
+    return true;
+  } catch {
+    return false;
+  }
 }
