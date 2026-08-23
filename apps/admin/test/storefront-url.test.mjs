@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  AdminStorefrontSiteDomainError,
   AdminStorefrontUrlConfigurationError,
   getStorefrontPageUrl,
   getStorefrontPreviewUrl,
@@ -195,6 +196,34 @@ test("storefront URL helper rejects invalid page URLs before resolving origins",
   );
 });
 
+test("storefront URL helper rejects invalid explicit site domains", () => {
+  const runtime = {
+    configured: "https://web.brand-platform.com",
+  };
+
+  assert.throws(
+    () =>
+      resolveStorefrontOrigin({
+        ...runtime,
+        siteDomain: "store.example.com",
+      }),
+    AdminStorefrontSiteDomainError,
+  );
+  assert.deepEqual(
+    readStorefrontPageUrl({
+      locale: "en-US",
+      runtime,
+      siteDomain: "store.example.com",
+      slug: "campaign",
+    }),
+    {
+      message:
+        "Current site domain is invalid. Update site settings before opening storefront links.",
+      ok: false,
+    },
+  );
+});
+
 test("storefront URL helper checks preview link availability before token creation", () => {
   const runtime = {
     configured: "http://localhost:3000",
@@ -217,6 +246,17 @@ test("storefront URL helper checks preview link availability before token creati
       siteDomain: "Store.Brand-Platform.com:443",
     }),
     { ok: true },
+  );
+  assert.deepEqual(
+    readStorefrontLinkAvailability({
+      runtime,
+      siteDomain: "store.example.com",
+    }),
+    {
+      message:
+        "Current site domain is invalid. Update site settings before opening storefront links.",
+      ok: false,
+    },
   );
 });
 

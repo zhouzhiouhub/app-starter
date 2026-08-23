@@ -10,8 +10,17 @@ import {
 
 const maxPreviewTokenLength = 2048;
 const previewTokenPattern = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]{43}$/;
+const storefrontSiteDomainUnavailableMessage =
+  "Current site domain is invalid. Update site settings before opening storefront links.";
 const storefrontLinkUnavailableMessage =
   "Configure VITE_WEB_URL or WEB_URL with a safe storefront origin before opening storefront links.";
+
+export class AdminStorefrontSiteDomainError extends Error {
+  constructor() {
+    super(storefrontSiteDomainUnavailableMessage);
+    this.name = "AdminStorefrontSiteDomainError";
+  }
+}
 
 export class AdminStorefrontUrlConfigurationError extends Error {
   constructor() {
@@ -93,6 +102,13 @@ export function readStorefrontPageUrl(input: {
       };
     }
 
+    if (error instanceof AdminStorefrontSiteDomainError) {
+      return {
+        message: storefrontSiteDomainUnavailableMessage,
+        ok: false,
+      };
+    }
+
     throw error;
   }
 }
@@ -108,6 +124,13 @@ export function readStorefrontLinkAvailability(input?: {
     if (error instanceof AdminStorefrontUrlConfigurationError) {
       return {
         message: storefrontLinkUnavailableMessage,
+        ok: false,
+      };
+    }
+
+    if (error instanceof AdminStorefrontSiteDomainError) {
+      return {
+        message: storefrontSiteDomainUnavailableMessage,
         ok: false,
       };
     }
@@ -134,6 +157,10 @@ export function resolveStorefrontOrigin(input: StorefrontOriginInput): string {
 
   if (domain) {
     return `${readSiteDomainProtocol(domain)}://${domain}`;
+  }
+
+  if (hasExplicitSiteDomain(input.siteDomain)) {
+    throw new AdminStorefrontSiteDomainError();
   }
 
   return resolveWebOrigin(input);
@@ -204,6 +231,10 @@ function readSiteDomainProtocol(domain: string): "http" | "https" {
   return domain === "localhost" || domain.startsWith("localhost:")
     ? "http"
     : "https";
+}
+
+function hasExplicitSiteDomain(siteDomain: string | null | undefined): boolean {
+  return typeof siteDomain === "string" && siteDomain.trim().length > 0;
 }
 
 function readHttpOrigin(
