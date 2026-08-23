@@ -2,7 +2,18 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readStorefrontHostFromHeaders } from "../src/lib/storefront-request-headers.ts";
 
-test("storefront request host prefers forwarded hosts over raw hosts", () => {
+test("storefront request host prefers safe raw hosts", () => {
+  const host = readStorefrontHostFromHeaders(
+    headers({
+      host: "Store.Brand-Platform.com:443",
+      "x-forwarded-host": "other.brand-platform.com",
+    }),
+  );
+
+  assert.equal(host, "store.brand-platform.com");
+});
+
+test("storefront request host falls back to forwarded hosts", () => {
   const host = readStorefrontHostFromHeaders(
     headers({
       host: "internal.localhost",
@@ -13,7 +24,7 @@ test("storefront request host prefers forwarded hosts over raw hosts", () => {
   assert.equal(host, "store.brand-platform.com");
 });
 
-test("storefront request host prefers explicit storefront hosts", () => {
+test("storefront request host ignores external storefront host headers", () => {
   const host = readStorefrontHostFromHeaders(
     headers({
       host: "store-a.brand-platform.com",
@@ -22,7 +33,7 @@ test("storefront request host prefers explicit storefront hosts", () => {
     }),
   );
 
-  assert.equal(host, "store-c.brand-platform.com");
+  assert.equal(host, "store-a.brand-platform.com");
 });
 
 test("storefront request host skips unsafe forwarded hosts", () => {
