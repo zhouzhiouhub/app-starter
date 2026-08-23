@@ -92,6 +92,66 @@ test("published page lookup does not forward unsafe storefront hosts", async () 
   assert.equal(requests[0].init.headers, undefined);
 });
 
+test("published page lookup rejects schema context mismatches", async () => {
+  const mismatchedPages = [
+    createFallbackPage({ slug: "campaign" }),
+    createFallbackPage({ locale: "de-DE", slug: "home" }),
+    createFallbackPage({ market: "ca", slug: "home" }),
+  ];
+  const requests = [];
+
+  for (const data of mismatchedPages) {
+    await withFetch(
+      async (url) => {
+        requests.push(String(url));
+        return jsonResponse({ data });
+      },
+      async () => {
+        assert.equal(
+          await getPublishedPage({
+            locale: "en-US",
+            slug: "home",
+          }),
+          null,
+        );
+      },
+    );
+  }
+
+  assert.equal(requests.length, 3);
+});
+
+test("published page lookup accepts declared locale fallback responses", async () => {
+  const requests = [];
+
+  await withFetch(
+    async (url) => {
+      requests.push(String(url));
+      return jsonResponse({
+        data: createFallbackPage({ locale: "en-US", slug: "home" }),
+        meta: {
+          fallbackLocale: "en-US",
+          isFallback: true,
+          locale: "en-US",
+          market: "us",
+        },
+      });
+    },
+    async () => {
+      const page = await getPublishedPage({
+        locale: "de-DE",
+        slug: "home",
+      });
+
+      assert.equal(page?.meta.locale, "en-US");
+      assert.equal(page?.meta.slug, "home");
+    },
+  );
+
+  assert.equal(requests.length, 1);
+  assert.match(requests[0], /locale=de-DE/);
+});
+
 test("preview page lookup rejects malformed tokens before fetching", async () => {
   const requests = [];
 

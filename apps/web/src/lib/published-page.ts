@@ -33,6 +33,7 @@ export async function getPublishedPage(input: {
   }
 
   return fetchPublishedSchema({
+    defaultLocale: defaults.defaultLocale,
     fallbackLocale: defaults.fallbackLocale,
     locale,
     market: defaults.defaultMarket,
@@ -49,6 +50,7 @@ export async function getNotFoundPage(input?: {
   const locale =
     resolveWebLocale(input?.locale, defaults) ?? defaults.defaultLocale;
   const published = await fetchPublishedSchema({
+    defaultLocale: defaults.defaultLocale,
     fallbackLocale: defaults.fallbackLocale,
     locale,
     market: defaults.defaultMarket,
@@ -61,6 +63,7 @@ export async function getNotFoundPage(input?: {
   }
 
   const home = await fetchPublishedSchema({
+    defaultLocale: defaults.defaultLocale,
     fallbackLocale: defaults.fallbackLocale,
     locale,
     market: defaults.defaultMarket,
@@ -108,6 +111,7 @@ export async function getPreviewPage(
 }
 
 async function fetchPublishedSchema(input: {
+  defaultLocale: string;
   fallbackLocale: string;
   locale: string;
   market: string;
@@ -143,8 +147,54 @@ async function fetchPublishedSchema(input: {
     }
 
     const result = (await response.json()) as { data?: unknown };
-    return pageSchema.parse(result.data);
+    return readMatchingPublishedSchema(result, input);
   } catch {
     return null;
   }
+}
+
+function readMatchingPublishedSchema(
+  result: { data?: unknown; meta?: unknown },
+  input: {
+    defaultLocale: string;
+    locale: string;
+    market: string;
+    slug: string;
+  },
+): PageSchema | null {
+  const parsed = pageSchema.safeParse(result.data);
+
+  if (!parsed.success) {
+    return null;
+  }
+
+  const schema = parsed.data;
+  if (schema.meta.slug !== input.slug || schema.meta.market !== input.market) {
+    return null;
+  }
+
+  if (schema.meta.locale === input.locale) {
+    return schema;
+  }
+
+  if (
+    schema.meta.locale === input.defaultLocale &&
+    isDeclaredLocaleFallback(result.meta, input.defaultLocale)
+  ) {
+    return schema;
+  }
+
+  return null;
+}
+
+function isDeclaredLocaleFallback(
+  meta: unknown,
+  defaultLocale: string,
+): boolean {
+  if (!meta || typeof meta !== "object" || Array.isArray(meta)) {
+    return false;
+  }
+
+  const record = meta as Record<string, unknown>;
+  return record.isFallback === true && record.locale === defaultLocale;
 }
