@@ -1,5 +1,6 @@
 import { getStorefrontHref, pageSlugSchema } from "@app-starter/schema";
 import type { PublishedPageSummary } from "./published-pages.ts";
+import { readSafePublicOrigin } from "./safe-public-origin.ts";
 
 export type PublishedPageSitemapEntry = {
   changeFrequency: "daily" | "weekly";
@@ -14,6 +15,11 @@ export function buildPublishedPageSitemapEntries(input: {
   pages: PublishedPageSummary[];
 }): PublishedPageSitemapEntry[] {
   const seenUrls = new Set<string>();
+  const origin = readSafePublicOrigin(input.origin);
+
+  if (!origin) {
+    return [];
+  }
 
   return input.pages.flatMap((page) => {
     const slug = normalizeSitemapSlug(page.slug);
@@ -27,7 +33,7 @@ export function buildPublishedPageSitemapEntries(input: {
     }
 
     const lastModified = readSitemapLastModified(page);
-    const url = `${input.origin}${getStorefrontHref(input.locale, slug)}`;
+    const url = `${origin}${getStorefrontHref(input.locale, slug)}`;
 
     if (!lastModified || seenUrls.has(url)) {
       return [];

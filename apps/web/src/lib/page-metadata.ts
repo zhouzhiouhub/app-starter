@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import {
   getStorefrontHref,
-  isProductionHttpUrl,
   isPublishableImageSrc,
   mediaAssetReferenceSchema,
   seoUrlSchema,
   type PageSchema,
 } from "@app-starter/schema";
+import { readSafePublicOrigin } from "./safe-public-origin.ts";
 
 export type PageMetadataOptions = {
   origin?: string;
@@ -99,21 +99,5 @@ function resolveSeoUrl(value: string, origin: string | undefined): string {
 }
 
 function readMetadataOrigin(value: string | undefined): string | undefined {
-  if (!value) {
-    return undefined;
-  }
-
-  try {
-    const url = new URL(value);
-
-    return isProductionHttpUrl(url) || isLocalhostHttpOrigin(url)
-      ? url.origin
-      : undefined;
-  } catch {
-    return undefined;
-  }
-}
-
-function isLocalhostHttpOrigin(url: URL): boolean {
-  return url.protocol === "http:" && url.hostname === "localhost";
+  return readSafePublicOrigin(value) ?? undefined;
 }

@@ -12,7 +12,7 @@ const basePage = {
 test("sitemap entries include published indexable pages once", () => {
   const entries = buildPublishedPageSitemapEntries({
     locale: "en-US",
-    origin: "https://web.example.com",
+    origin: "https://web.brand-platform.com",
     pages: [
       {
         ...basePage,
@@ -29,13 +29,13 @@ test("sitemap entries include published indexable pages once", () => {
       changeFrequency: "daily",
       lastModified: "2026-08-20T00:00:00.000Z",
       priority: 1,
-      url: "https://web.example.com/en",
+      url: "https://web.brand-platform.com/en",
     },
     {
       changeFrequency: "weekly",
       lastModified: "2026-08-21T00:00:00.000Z",
       priority: 0.7,
-      url: "https://web.example.com/en/contact",
+      url: "https://web.brand-platform.com/en/contact",
     },
   ]);
 });
@@ -43,7 +43,7 @@ test("sitemap entries include published indexable pages once", () => {
 test("sitemap entries exclude noindex and system 404 pages", () => {
   const entries = buildPublishedPageSitemapEntries({
     locale: "en-US",
-    origin: "https://web.example.com",
+    origin: "https://web.brand-platform.com",
     pages: [
       { ...basePage, noIndex: true, slug: "legal/privacy" },
       { ...basePage, slug: "404" },
@@ -53,14 +53,14 @@ test("sitemap entries exclude noindex and system 404 pages", () => {
   });
 
   assert.deepEqual(entries.map((entry) => entry.url), [
-    "https://web.example.com/en/legal/terms",
+    "https://web.brand-platform.com/en/legal/terms",
   ]);
 });
 
 test("sitemap entries skip invalid page slugs", () => {
   const entries = buildPublishedPageSitemapEntries({
     locale: "en-US",
-    origin: "https://web.example.com",
+    origin: "https://web.brand-platform.com",
     pages: [
       { ...basePage, slug: "home" },
       { ...basePage, slug: "../admin" },
@@ -70,14 +70,14 @@ test("sitemap entries skip invalid page slugs", () => {
   });
 
   assert.deepEqual(entries.map((entry) => entry.url), [
-    "https://web.example.com/en",
+    "https://web.brand-platform.com/en",
   ]);
 });
 
 test("sitemap entries require valid last modified timestamps", () => {
   const entries = buildPublishedPageSitemapEntries({
     locale: "en-US",
-    origin: "https://web.example.com",
+    origin: "https://web.brand-platform.com",
     pages: [
       {
         ...basePage,
@@ -105,13 +105,33 @@ test("sitemap entries require valid last modified timestamps", () => {
       changeFrequency: "daily",
       lastModified: "2026-08-20T00:00:00.000Z",
       priority: 1,
-      url: "https://web.example.com/en",
+      url: "https://web.brand-platform.com/en",
     },
     {
       changeFrequency: "weekly",
       lastModified: "2026-08-22T00:00:00.000Z",
       priority: 0.7,
-      url: "https://web.example.com/en/contact",
+      url: "https://web.brand-platform.com/en/contact",
     },
   ]);
+});
+
+test("sitemap entries ignore unsafe public origins", () => {
+  const entries = buildPublishedPageSitemapEntries({
+    locale: "en-US",
+    origin: "http://web.brand-platform.com",
+    pages: [{ ...basePage, slug: "home" }],
+  });
+
+  assert.deepEqual(entries, []);
+});
+
+test("sitemap entries allow localhost HTTP origins for local development", () => {
+  const entries = buildPublishedPageSitemapEntries({
+    locale: "en-US",
+    origin: "http://localhost:3000",
+    pages: [{ ...basePage, slug: "home" }],
+  });
+
+  assert.equal(entries[0]?.url, "http://localhost:3000/en");
 });
