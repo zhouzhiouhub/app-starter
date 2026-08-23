@@ -12,9 +12,15 @@ test("smoke secret redaction removes tokens from common failure shapes", () => {
       "GET /public/preview/payload.signature?token=payload.signature&secret=shared",
       '"password":"ChangeMe456!"',
       '"accessToken":"header.payload.signature"',
+      '"clientSecret":"oauth-client-secret"',
       "Authorization Bearer header.payload.signature",
       "Authorization: Bearer colon.header.payload",
+      "client_secret=oauth-client-secret-query",
+      "databaseUrl=postgresql://db-user:db-secret@db.example.com:5432/app",
+      "jwt=header.payload.signature",
+      "privateKeyPem=private-key-value",
       "refreshToken=refresh-token-value",
+      "sentryDsn=https://public:dsn-secret@sentry.example.com/1",
       "postgresql://db-user:db-secret@db.example.com:5432/app",
       "redis://cache-user:cache-secret@redis.example.com:6379/0",
       "https://admin-user:admin-secret@admin.example.com",
@@ -28,7 +34,11 @@ test("smoke secret redaction removes tokens from common failure shapes", () => {
   assert.equal(message.includes("access-token-value"), false);
   assert.equal(message.includes("api-key-value"), false);
   assert.equal(message.includes("ChangeMe456!"), false);
+  assert.equal(message.includes("oauth-client-secret"), false);
+  assert.equal(message.includes("oauth-client-secret-query"), false);
+  assert.equal(message.includes("private-key-value"), false);
   assert.equal(message.includes("shared"), false);
+  assert.equal(message.includes("dsn-secret"), false);
   assert.equal(message.includes("refresh-token-value"), false);
   assert.equal(message.includes("db-user"), false);
   assert.equal(message.includes("db-secret"), false);
@@ -47,6 +57,12 @@ test("smoke secret redaction removes tokens from common failure shapes", () => {
   assert.match(message, /preview_token=\[redacted\]/);
   assert.match(message, /access_token=\[redacted\]/);
   assert.match(message, /api_key=\[redacted\]/);
+  assert.match(message, /"clientSecret":"\[redacted\]"/);
+  assert.match(message, /client_secret=\[redacted\]/);
+  assert.match(message, /databaseUrl=\[redacted\]/);
+  assert.match(message, /jwt=\[redacted\]/);
+  assert.match(message, /privateKeyPem=\[redacted\]/);
+  assert.match(message, /sentryDsn=\[redacted\]/);
   assert.match(message, /"password":"\[redacted\]"/);
   assert.match(message, /Authorization Bearer \[redacted\]/);
   assert.match(message, /Authorization: Bearer \[redacted\]/);
@@ -76,7 +92,11 @@ test("smoke report value redaction sanitizes nested details", () => {
       attempts: [
         {
           authorization: "Bearer header.payload.signature",
+          clientSecret: "oauth-client-secret",
           cookie: "preview_token=payload.signature",
+          databaseUrl: "postgresql://db-user:db-secret@db.example.com/app",
+          privateKeyPem: "private-key-value",
+          sentryDsn: "https://public:dsn-secret@sentry.example.com/1",
           uploadUrl:
             "https://uploads.example.com/object.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Signature=signature-value",
         },
@@ -90,7 +110,11 @@ test("smoke report value redaction sanitizes nested details", () => {
       attempts: [
         {
           authorization: "[redacted]",
+          clientSecret: "[redacted]",
           cookie: "[redacted]",
+          databaseUrl: "[redacted]",
+          privateKeyPem: "[redacted]",
+          sentryDsn: "[redacted]",
           uploadUrl:
             "https://uploads.example.com/object.png?X-Amz-Algorithm=[redacted]&X-Amz-Signature=[redacted]",
         },

@@ -1,11 +1,20 @@
 const secretKeyPattern = [
   "access[-_]?token",
   "api[-_]?key",
+  "client[-_]?secret",
+  "connection[-_]?string",
   "cookie",
   "credential",
+  "database[-_]?url",
+  "dsn",
+  "[a-z0-9]+[-_]?dsn",
   "id[-_]?token",
+  "jwt",
   "password",
+  "passphrase",
+  "pem",
   "preview[-_]?token",
+  "private[-_]?key(?:[-_]?pem)?",
   "refresh[-_]?token",
   "secret",
   "session[-_]?id",
@@ -19,11 +28,20 @@ const sensitiveKeyNames = new Set([
   "accesstoken",
   "apikey",
   "authorization",
+  "clientsecret",
+  "connectionstring",
   "cookie",
   "credential",
+  "databaseurl",
+  "dsn",
   "idtoken",
+  "jwt",
   "password",
+  "passphrase",
+  "pem",
   "previewtoken",
+  "privatekey",
+  "privatekeypem",
   "refreshtoken",
   "secret",
   "session",
@@ -106,8 +124,16 @@ function isSensitiveSmokeKey(key) {
 
   return (
     sensitiveKeyNames.has(normalized) ||
+    normalized.endsWith("clientsecret") ||
+    normalized.endsWith("connectionstring") ||
     normalized.endsWith("credential") ||
+    normalized.endsWith("databaseurl") ||
+    normalized.endsWith("dsn") ||
+    normalized.endsWith("jwt") ||
     normalized.endsWith("password") ||
+    normalized.endsWith("passphrase") ||
+    normalized.endsWith("pem") ||
+    normalized.endsWith("privatekey") ||
     normalized.endsWith("secret") ||
     normalized.endsWith("signature") ||
     normalized.endsWith("token")
