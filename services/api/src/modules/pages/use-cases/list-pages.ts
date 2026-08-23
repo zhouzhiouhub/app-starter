@@ -65,19 +65,33 @@ async function readSummaryVersionsByPageId(
     return new Map();
   }
 
-  const latestVersions = await Promise.all(
-    pages.map((page) =>
-      prisma.pageVersion.findFirst({
-        where: { pageId: page.id },
-        orderBy: { version: "desc" },
-        select: {
-          id: true,
-          pageId: true,
-          schema: true,
-        },
-      }),
-    ),
+  const pageIds = pages.map((page) => page.id);
+  const latestVersionNumbers = await prisma.pageVersion.groupBy({
+    by: ["pageId"],
+    where: { pageId: { in: pageIds } },
+    _max: { version: true },
+  });
+  const latestVersionFilters = latestVersionNumbers.flatMap((version) =>
+    version._max.version === null
+      ? []
+      : [
+          {
+            pageId: version.pageId,
+            version: version._max.version,
+          },
+        ],
   );
+  const latestVersions =
+    latestVersionFilters.length > 0
+      ? await prisma.pageVersion.findMany({
+          where: { OR: latestVersionFilters },
+          select: {
+            id: true,
+            pageId: true,
+            schema: true,
+          },
+        })
+      : [];
   const publishedVersionIds = pages.flatMap((page) =>
     page.publishedVersionId ? [page.publishedVersionId] : [],
   );
@@ -92,22 +106,7 @@ async function readSummaryVersionsByPageId(
           },
         })
       : [];
-  const existingLatestVersions = latestVersions.flatMap((version) =>
-    version
-      ? [
-          {
-            id: version.id,
-            pageId: version.pageId,
-            schema: version.schema,
-          },
-        ]
-      : [],
-  );
-
-  return groupSummaryVersions([
-    ...publishedVersions,
-    ...existingLatestVersions,
-  ]);
+  return groupSummaryVersions([...publishedVersions, ...latestVersions]);
 }
 
 function groupSummaryVersions(

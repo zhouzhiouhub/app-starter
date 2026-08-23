@@ -84,15 +84,30 @@ function createPrisma() {
       findMany: async () => [page],
     },
     pageVersion: {
-      findFirst: async () => ({
-        id: "version-1",
-        pageId: page.id,
-        schema: createInitialPageSchema({
-          slug: "campaign",
-          title: "Campaign",
-        }),
-      }),
-      findMany: async () => [],
+      findFirst: async () => {
+        throw new Error("listPages should batch latest version lookup.");
+      },
+      findMany: async (input) =>
+        input.where.OR
+          ? [
+              {
+                id: "version-1",
+                pageId: page.id,
+                schema: createInitialPageSchema({
+                  slug: "campaign",
+                  title: "Campaign",
+                }),
+              },
+            ]
+          : [],
+      groupBy: async () => [
+        {
+          _max: {
+            version: 1,
+          },
+          pageId: page.id,
+        },
+      ],
     },
     site: {
       findFirst: async () => ({
