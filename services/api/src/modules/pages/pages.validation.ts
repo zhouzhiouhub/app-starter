@@ -48,10 +48,11 @@ export function toJson(schema: PageSchema): Prisma.InputJsonValue {
   return schema as unknown as Prisma.InputJsonValue;
 }
 
-export function notFound(message: string) {
+export function notFound(message: string, requestId?: string) {
   return new NotFoundException({
     code: apiErrorCodes.NOT_FOUND,
     message,
+    ...(requestId ? { requestId } : {}),
   });
 }
 

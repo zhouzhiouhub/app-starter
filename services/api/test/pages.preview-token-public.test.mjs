@@ -252,13 +252,19 @@ test("getPreviewPageByToken rejects corrupt latest draft schemas", async () => {
     };
 
     await assert.rejects(
-      () => getPreviewPageByToken(prisma, token),
+      () =>
+        getPreviewPageByToken(
+          prisma,
+          token,
+          "request-public-preview-corrupt",
+        ),
       (error) =>
         typeof error.getStatus === "function" &&
         error.getStatus() === 404 &&
         error.getResponse()?.code === apiErrorCodes.NOT_FOUND &&
-        error.getResponse()?.message ===
-          "Preview token is invalid or expired.",
+        (error.getResponse()?.message ===
+          "Preview token is invalid or expired.") &&
+        error.getResponse()?.requestId === "request-public-preview-corrupt",
     );
   });
 });

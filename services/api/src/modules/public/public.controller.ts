@@ -135,6 +135,7 @@ export class PublicController {
       throw new NotFoundException({
         code: apiErrorCodes.NOT_FOUND,
         message: "Published page not found.",
+        requestId,
       });
     }
 

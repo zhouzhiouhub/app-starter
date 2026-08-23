@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { apiErrorCodes } from "../../../packages/schema/dist/index.js";
 import { PublicController } from "../dist/modules/public/public.controller.js";
 import { withEnv } from "./env-helper.mjs";
 
@@ -185,6 +186,30 @@ test("public page detail response carries the current request id", async () => {
       assert.equal(response.meta.locale, "en-US");
       assert.equal(response.meta.market, "us");
     },
+  );
+});
+
+test("public page detail not found response carries the current request id", async () => {
+  const controller = new PublicController({
+    getPublishedBySlug() {
+      return Promise.resolve(null);
+    },
+  });
+
+  await assert.rejects(
+    () =>
+      controller.getPage(
+        "missing",
+        "en-US",
+        "us",
+        undefined,
+        "request-public-page-missing",
+      ),
+    (error) =>
+      typeof error.getStatus === "function" &&
+      error.getStatus() === 404 &&
+      error.getResponse()?.code === apiErrorCodes.NOT_FOUND &&
+      error.getResponse()?.requestId === "request-public-page-missing",
   );
 });
 

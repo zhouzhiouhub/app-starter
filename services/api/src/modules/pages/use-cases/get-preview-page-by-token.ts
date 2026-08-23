@@ -23,10 +23,11 @@ export async function getPreviewPageByToken(
   ) => Promise<PageSchema>,
   context: PreviewPageContext = {},
 ) {
-  const payload = verifyTokenOrThrow(token);
+  const payload = verifyTokenOrThrow(token, requestId);
   const requestedSite = await readRequestedPreviewSite(
     prisma,
     context.siteHost,
+    requestId,
   );
   const page = await prisma.page.findFirst({
     where: {
@@ -46,18 +47,18 @@ export async function getPreviewPageByToken(
   });
 
   if (!page || page.slug !== payload.slug) {
-    throw notFound("Preview token is invalid or expired.");
+    throw notFound("Preview token is invalid or expired.", requestId);
   }
 
   const latestVersion = page.versions[0];
 
   if (!latestVersion) {
-    throw notFound("Preview page has no draft schema.");
+    throw notFound("Preview page has no draft schema.", requestId);
   }
 
   const schema = readPublicPageSchemaSafely(latestVersion.schema, page.slug);
   if (!schema) {
-    throw notFound("Preview token is invalid or expired.");
+    throw notFound("Preview token is invalid or expired.", requestId);
   }
 
   const resolved = resolveMediaReferences
@@ -80,6 +81,7 @@ export async function getPreviewPageByToken(
 async function readRequestedPreviewSite(
   prisma: PrismaService,
   siteHost: string | null | undefined,
+  requestId: string,
 ) {
   if (!siteHost) {
     return null;
@@ -88,18 +90,18 @@ async function readRequestedPreviewSite(
   const site = await getPublicSite(prisma, siteHost);
 
   if (!site) {
-    throw notFound("Preview token is invalid or expired.");
+    throw notFound("Preview token is invalid or expired.", requestId);
   }
 
   return site;
 }
 
-function verifyTokenOrThrow(token: string) {
+function verifyTokenOrThrow(token: string, requestId: string) {
   try {
     const payload = verifyPagePreviewToken(token);
 
     if (!payload) {
-      throw notFound("Preview token is invalid or expired.");
+      throw notFound("Preview token is invalid or expired.", requestId);
     }
 
     return payload;
