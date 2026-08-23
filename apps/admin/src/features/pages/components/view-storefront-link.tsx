@@ -1,6 +1,6 @@
 import { Button } from "antd";
 import { ExportOutlined } from "@ant-design/icons";
-import { getStorefrontPageUrl } from "../storefront-url";
+import { readStorefrontPageUrl } from "../storefront-url";
 
 export function ViewStorefrontLink(props: {
   locale: string;
@@ -8,13 +8,21 @@ export function ViewStorefrontLink(props: {
   siteDomain: string;
   slug: string;
 }) {
+  const storefrontUrl = readStorefrontPageUrl({
+    locale: props.locale,
+    siteDomain: props.siteDomain,
+    slug: props.slug,
+  });
+  const disabled = !props.published || !storefrontUrl.ok;
+
   return (
     <Button
-      disabled={!props.published}
-      href={getStorefrontPageUrl(props.slug, props.locale, props.siteDomain)}
+      disabled={disabled}
+      href={storefrontUrl.ok ? storefrontUrl.href : undefined}
       icon={<ExportOutlined />}
       rel="noreferrer"
       target="_blank"
+      title={storefrontUrl.ok ? "View on site" : storefrontUrl.message}
       type="link"
     >
       View

@@ -16,7 +16,7 @@ export class AdminStorefrontUrlConfigurationError extends Error {
   }
 }
 
-interface WebOriginInput {
+export interface WebOriginInput {
   configured?: string;
   fallbackConfigured?: string;
   isProd?: boolean;
@@ -27,6 +27,16 @@ interface StorefrontOriginInput extends WebOriginInput {
   siteDomain?: string | null;
 }
 
+export type StorefrontPageUrlResult =
+  | {
+      href: string;
+      ok: true;
+    }
+  | {
+      message: string;
+      ok: false;
+    };
+
 export function getStorefrontPagePath(slug: string, locale = "en-US"): string {
   return getStorefrontHref(locale, slug);
 }
@@ -35,23 +45,54 @@ export function getStorefrontPageUrl(
   slug: string,
   locale = "en-US",
   siteDomain?: string | null,
+  runtime?: WebOriginInput,
 ): string {
-  return `${readStorefrontOrigin(siteDomain)}${getStorefrontPagePath(
+  return `${readStorefrontOrigin(siteDomain, runtime)}${getStorefrontPagePath(
     slug,
     locale,
   )}`;
 }
 
+export function readStorefrontPageUrl(input: {
+  locale?: string;
+  runtime?: WebOriginInput;
+  siteDomain?: string | null;
+  slug: string;
+}): StorefrontPageUrlResult {
+  try {
+    return {
+      href: getStorefrontPageUrl(
+        input.slug,
+        input.locale,
+        input.siteDomain,
+        input.runtime,
+      ),
+      ok: true,
+    };
+  } catch (error) {
+    if (error instanceof AdminStorefrontUrlConfigurationError) {
+      return {
+        message:
+          "Configure VITE_WEB_URL or WEB_URL with a safe storefront origin before opening storefront links.",
+        ok: false,
+      };
+    }
+
+    throw error;
+  }
+}
+
 export function getStorefrontPreviewUrl(
   token: string,
   siteDomain?: string | null,
+  runtime?: WebOriginInput,
 ): string {
   if (!isPreviewTokenCandidate(token)) {
     throw new Error("Preview token is malformed.");
   }
 
   const searchParams = new URLSearchParams({ token });
-  return `${readStorefrontOrigin(siteDomain)}/preview?${searchParams.toString()}`;
+  return `${readStorefrontOrigin(siteDomain, runtime)}/preview?${searchParams.toString()}`;
 }
 
 export function resolveStorefrontOrigin(input: StorefrontOriginInput): string {
@@ -89,18 +130,32 @@ export function resolveWebOrigin(input: WebOriginInput): string {
   return "http://localhost:3000";
 }
 
-function readStorefrontOrigin(siteDomain?: string | null): string {
+function readStorefrontOrigin(
+  siteDomain?: string | null,
+  runtime?: WebOriginInput,
+): string {
+  const defaults = readDefaultWebOriginInput();
+
+  return resolveStorefrontOrigin({
+    configured: runtime?.configured ?? defaults.configured,
+    fallbackConfigured: runtime?.fallbackConfigured ?? defaults.fallbackConfigured,
+    isProd: runtime?.isProd ?? defaults.isProd,
+    siteDomain,
+    windowLocation: runtime?.windowLocation ?? defaults.windowLocation,
+  });
+}
+
+function readDefaultWebOriginInput(): WebOriginInput {
   const env = (
     import.meta as unknown as {
       env?: { PROD?: boolean; VITE_WEB_URL?: string; WEB_URL?: string };
     }
   ).env;
 
-  return resolveStorefrontOrigin({
+  return {
     configured: env?.VITE_WEB_URL,
     fallbackConfigured: env?.WEB_URL,
     isProd: env?.PROD,
-    siteDomain,
     windowLocation:
       typeof window === "undefined"
         ? undefined
@@ -108,7 +163,7 @@ function readStorefrontOrigin(siteDomain?: string | null): string {
             hostname: window.location.hostname,
             protocol: window.location.protocol,
           },
-  });
+  };
 }
 
 function readSiteDomainProtocol(domain: string): "http" | "https" {

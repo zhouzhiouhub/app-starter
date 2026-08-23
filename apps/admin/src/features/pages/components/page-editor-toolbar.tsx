@@ -10,7 +10,7 @@ import {
 import { Button, Space, Tooltip } from "antd";
 import { useNavigate } from "react-router-dom";
 import { buildPageAuditLogPath } from "../audit-log-link";
-import { getStorefrontPageUrl } from "../storefront-url";
+import { readStorefrontPageUrl } from "../storefront-url";
 
 export function PageEditorToolbar(props: {
   canRedo: boolean;
@@ -35,6 +35,17 @@ export function PageEditorToolbar(props: {
   const publishTitle = props.publishDisabled
     ? "Resolve publish errors before publishing"
     : "Publish";
+  const storefrontUrl = readStorefrontPageUrl({
+    locale: props.locale,
+    siteDomain: props.siteDomain,
+    slug: props.slug,
+  });
+  const viewDisabled = !props.published || !storefrontUrl.ok;
+  const viewTitle = !props.published
+    ? "Publish this page before viewing it on the storefront"
+    : storefrontUrl.ok
+      ? "View on site"
+      : storefrontUrl.message;
 
   return (
     <Space>
@@ -92,11 +103,12 @@ export function PageEditorToolbar(props: {
         Audit logs
       </Button>
       <Button
-        disabled={!props.published}
-        href={getStorefrontPageUrl(props.slug, props.locale, props.siteDomain)}
+        disabled={viewDisabled}
+        href={storefrontUrl.ok ? storefrontUrl.href : undefined}
         icon={<ExportOutlined />}
         rel="noreferrer"
         target="_blank"
+        title={viewTitle}
       >
         View on site
       </Button>

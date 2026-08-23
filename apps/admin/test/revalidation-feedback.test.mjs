@@ -80,6 +80,34 @@ test("publication feedback ignores blank preflight warning summaries", () => {
   assert.equal(feedback.type, "success");
 });
 
+test("publication feedback preserves success when the review link is unavailable", () => {
+  const feedback = buildPublicationFeedback({
+    action: "publish",
+    locale: "en-US",
+    revalidation: {
+      paths: ["/en"],
+      tags: ["published-page"],
+      triggered: true,
+    },
+    slug: "home",
+    storefrontRuntime: {
+      configured: "http://localhost:3000",
+      fallbackConfigured: "https://store.example.com",
+      isProd: true,
+      windowLocation: {
+        hostname: "admin.brand-platform.com",
+        protocol: "https:",
+      },
+    },
+  });
+
+  assert.equal(feedback.type, "warning");
+  assert.match(feedback.message, /^Published\./);
+  assert.match(feedback.message, /Storefront revalidation triggered/);
+  assert.match(feedback.message, /review link is unavailable/);
+  assert.doesNotMatch(feedback.message, /admin\.brand-platform\.com:3000/);
+});
+
 test("publication feedback explains missing revalidation configuration", () => {
   const missingSecret = buildPublicationFeedback({
     action: "rollback",

@@ -4,6 +4,7 @@ import {
   AdminStorefrontUrlConfigurationError,
   getStorefrontPageUrl,
   getStorefrontPreviewUrl,
+  readStorefrontPageUrl,
   resolveStorefrontOrigin,
   resolveWebOrigin,
 } from "../src/features/pages/storefront-url.ts";
@@ -148,6 +149,30 @@ test("storefront URL helper fails fast without a safe production web origin", ()
         },
       }),
     AdminStorefrontUrlConfigurationError,
+  );
+});
+
+test("storefront URL helper returns a display-safe unavailable result", () => {
+  assert.deepEqual(
+    readStorefrontPageUrl({
+      locale: "en-US",
+      runtime: {
+        configured: "http://localhost:3000",
+        fallbackConfigured: "https://store.example.com",
+        isProd: true,
+        windowLocation: {
+          hostname: "admin.brand-platform.com",
+          protocol: "https:",
+        },
+      },
+      siteDomain: null,
+      slug: "campaign",
+    }),
+    {
+      message:
+        "Configure VITE_WEB_URL or WEB_URL with a safe storefront origin before opening storefront links.",
+      ok: false,
+    },
   );
 });
 

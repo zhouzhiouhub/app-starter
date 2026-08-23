@@ -1,17 +1,25 @@
 import { Typography } from "antd";
-import { getStorefrontPagePath, getStorefrontPageUrl } from "../storefront-url";
+import { getStorefrontPagePath, readStorefrontPageUrl } from "../storefront-url";
 
 export function PageStorefrontUrlSummary(props: {
   locale: string;
   siteDomain: string;
   slug: string;
 }) {
+  const storefrontUrl = readStorefrontPageUrl({
+    locale: props.locale,
+    siteDomain: props.siteDomain,
+    slug: props.slug,
+  });
+
   return (
     <Typography.Paragraph>
       Storefront URL:{" "}
-      <Typography.Text code>
-        {getStorefrontPageUrl(props.slug, props.locale, props.siteDomain)}
-      </Typography.Text>
+      {storefrontUrl.ok ? (
+        <Typography.Text code>{storefrontUrl.href}</Typography.Text>
+      ) : (
+        <Typography.Text type="warning">{storefrontUrl.message}</Typography.Text>
+      )}
       . Home stays at{" "}
       <Typography.Text code>
         {getStorefrontPagePath("home", props.locale)}

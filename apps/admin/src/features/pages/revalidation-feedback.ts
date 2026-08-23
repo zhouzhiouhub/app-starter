@@ -1,5 +1,8 @@
 import type { StorefrontRevalidationResult } from "@app-starter/schema";
-import { getStorefrontPageUrl } from "./storefront-url.ts";
+import {
+  readStorefrontPageUrl,
+  type WebOriginInput,
+} from "./storefront-url.ts";
 import type { EditorFeedback } from "./types.ts";
 
 export function buildPublicationFeedback(input: {
@@ -9,13 +12,18 @@ export function buildPublicationFeedback(input: {
   revalidation?: StorefrontRevalidationResult;
   siteDomain?: string | null;
   slug: string;
+  storefrontRuntime?: WebOriginInput;
 }): EditorFeedback {
   const actionText = input.action === "publish" ? "Published" : "Rolled back";
-  const reviewText = `Open ${getStorefrontPageUrl(
-    input.slug,
-    input.locale,
-    input.siteDomain,
-  )} to review the storefront.`;
+  const storefrontUrl = readStorefrontPageUrl({
+    locale: input.locale,
+    runtime: input.storefrontRuntime,
+    siteDomain: input.siteDomain,
+    slug: input.slug,
+  });
+  const reviewText = storefrontUrl.ok
+    ? `Open ${storefrontUrl.href} to review the storefront.`
+    : `Storefront review link is unavailable. ${storefrontUrl.message}`;
   const preflightWarningSummary = input.preflightWarningSummary?.trim();
   const revalidationStatus = formatRevalidationStatus(input.revalidation);
   const message = [
@@ -27,7 +35,10 @@ export function buildPublicationFeedback(input: {
 
   return {
     message,
-    type: preflightWarningSummary ? "warning" : revalidationStatus.type,
+    type:
+      preflightWarningSummary || !storefrontUrl.ok
+        ? "warning"
+        : revalidationStatus.type,
   };
 }
 
