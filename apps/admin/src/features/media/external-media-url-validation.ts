@@ -1,3 +1,5 @@
+import { isProductionHttpUrl } from "@app-starter/schema";
+
 export function readExternalMediaUrlError(
   value: string | undefined,
 ): string | null {
@@ -21,6 +23,10 @@ export function readExternalMediaUrlError(
 
   if (parsed.username || parsed.password) {
     return "Media URL must not include username or password.";
+  }
+
+  if (!isProductionHttpUrl(parsed)) {
+    return "Use a public production media URL.";
   }
 
   return null;

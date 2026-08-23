@@ -35,7 +35,7 @@ export function ExternalMediaForm(props: {
           },
         ]}
       >
-        <Input placeholder="https://cdn.example.com/hero.webp" />
+        <Input placeholder="https://assets.brand-platform.com/hero.webp" />
       </Form.Item>
       <Form.Item
         label="Filename"
