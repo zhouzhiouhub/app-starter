@@ -6,6 +6,7 @@ import {
   resolveMediaReferences,
   type PageSchema,
 } from "@app-starter/schema";
+import { readArchivedAt } from "../media.metadata.js";
 
 type MediaAssetClient = Pick<Prisma.TransactionClient, "mediaAsset">;
 
@@ -30,11 +31,14 @@ export async function resolveSchemaMediaReferences(
     },
     select: {
       id: true,
+      metadata: true,
       url: true,
     },
   });
   const urlsByReference = new Map(
-    assets.map((asset) => [`media://${asset.id}`, asset.url]),
+    assets
+      .filter((asset) => !readArchivedAt(asset.metadata))
+      .map((asset) => [`media://${asset.id}`, asset.url]),
   );
 
   return pageSchema.parse(

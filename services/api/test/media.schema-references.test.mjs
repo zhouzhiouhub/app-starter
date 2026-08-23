@@ -15,6 +15,7 @@ test("media service resolves media references in page schemas", async () => {
         return Promise.resolve([
           {
             id: "asset-1",
+            metadata: {},
             url: "https://cdn.example.com/hero.webp",
           },
         ]);
@@ -47,5 +48,77 @@ test("media service resolves media references in page schemas", async () => {
   assert.equal(
     resolved.sections[0].props.images[0].src,
     "https://cdn.example.com/hero.webp",
+  );
+});
+
+test("media service leaves archived media references unresolved", async () => {
+  const service = new MediaService({
+    mediaAsset: {
+      findMany(options) {
+        assert.deepEqual(options.where, {
+          id: { in: ["asset-active", "asset-archived", "asset-missing"] },
+          tenantId: "tenant-1",
+        });
+        assert.deepEqual(options.select, {
+          id: true,
+          metadata: true,
+          url: true,
+        });
+
+        return Promise.resolve([
+          {
+            id: "asset-active",
+            metadata: {},
+            url: "https://cdn.example.com/active.webp",
+          },
+          {
+            id: "asset-archived",
+            metadata: {
+              archivedAt: "2026-08-23T00:00:00.000Z",
+            },
+            url: "https://cdn.example.com/archived.webp",
+          },
+        ]);
+      },
+    },
+  });
+  const schema = createFallbackPage({ slug: "gallery" });
+  const resolved = await service.resolveSchemaMediaReferences(
+    {
+      ...schema,
+      sections: [
+        {
+          id: "gallery",
+          component: "image-gallery",
+          props: {
+            images: [
+              { alt: "Active", src: "media://asset-active" },
+              { alt: "Archived", src: "media://asset-archived" },
+              { alt: "Missing", src: "media://asset-missing" },
+            ],
+          },
+          layout: {},
+        },
+      ],
+      seo: {
+        ...schema.seo,
+        ogImage: "media://asset-archived",
+      },
+    },
+    "tenant-1",
+  );
+
+  assert.equal(resolved.seo.ogImage, "media://asset-archived");
+  assert.equal(
+    resolved.sections[0].props.images[0].src,
+    "https://cdn.example.com/active.webp",
+  );
+  assert.equal(
+    resolved.sections[0].props.images[1].src,
+    "media://asset-archived",
+  );
+  assert.equal(
+    resolved.sections[0].props.images[2].src,
+    "media://asset-missing",
   );
 });
