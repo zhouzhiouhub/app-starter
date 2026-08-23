@@ -5,8 +5,9 @@ import {
   PreviewTokenConfigurationError,
   verifyPagePreviewToken,
 } from "../pages.preview-token.js";
+import { readPublicPageSchemaSafely } from "../pages.public-schema.js";
 import { getPublicSite } from "../pages.site.js";
-import { notFound, readSchema } from "../pages.validation.js";
+import { notFound } from "../pages.validation.js";
 
 type PreviewPageContext = {
   siteHost?: string | null;
@@ -54,7 +55,11 @@ export async function getPreviewPageByToken(
     throw notFound("Preview page has no draft schema.");
   }
 
-  const schema = readSchema(latestVersion.schema, page.slug);
+  const schema = readPublicPageSchemaSafely(latestVersion.schema, page.slug);
+  if (!schema) {
+    throw notFound("Preview token is invalid or expired.");
+  }
+
   const resolved = resolveMediaReferences
     ? await resolveMediaReferences(schema, payload.tenantId)
     : schema;

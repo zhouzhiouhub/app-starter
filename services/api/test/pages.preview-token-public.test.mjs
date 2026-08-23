@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createFallbackPage } from "@app-starter/schema";
+import { apiErrorCodes, createFallbackPage } from "@app-starter/schema";
 import { createPagePreviewToken } from "../dist/modules/pages/pages.preview-token.js";
 import { getPreviewPageByToken } from "../dist/modules/pages/use-cases/get-preview-page-by-token.js";
 import { withEnv } from "./env-helper.mjs";
@@ -213,6 +213,52 @@ test("getPreviewPageByToken rejects tokens whose slug no longer matches", async 
     await assert.rejects(
       () => getPreviewPageByToken(prisma, token),
       /Preview token is invalid or expired/,
+    );
+  });
+});
+
+test("getPreviewPageByToken rejects corrupt latest draft schemas", async () => {
+  await withEnv({ PREVIEW_TOKEN_SECRET: "preview-secret" }, async () => {
+    const { token } = createPagePreviewToken({
+      pageId: "page-1",
+      slug: "campaign",
+      tenantId: "tenant-1",
+      env: process.env,
+    });
+    const prisma = {
+      page: {
+        findFirst() {
+          return Promise.resolve({
+            id: "page-1",
+            slug: "campaign",
+            site: {
+              id: "site-1",
+              tenantId: "tenant-1",
+            },
+            versions: [
+              {
+                id: "version-2",
+                schema: {
+                  meta: {
+                    slug: "campaign",
+                  },
+                },
+                version: 2,
+              },
+            ],
+          });
+        },
+      },
+    };
+
+    await assert.rejects(
+      () => getPreviewPageByToken(prisma, token),
+      (error) =>
+        typeof error.getStatus === "function" &&
+        error.getStatus() === 404 &&
+        error.getResponse()?.code === apiErrorCodes.NOT_FOUND &&
+        error.getResponse()?.message ===
+          "Preview token is invalid or expired.",
     );
   });
 });

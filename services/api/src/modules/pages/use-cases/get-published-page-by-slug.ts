@@ -4,7 +4,7 @@ import {
   matchesPublishedPageContext,
   type PublishedPageContext,
 } from "../pages.public-context.js";
-import { readPublishedSchemaSafely } from "../pages.public-schema.js";
+import { readPublicPageSchemaSafely } from "../pages.public-schema.js";
 import { getPublicSite } from "../pages.site.js";
 import { parseSlug } from "../pages.validation.js";
 
@@ -48,7 +48,7 @@ export async function getPublishedPageBySlug(
     return null;
   }
 
-  const schema = readPublishedSchemaSafely(published.schema, page.slug);
+  const schema = readPublicPageSchemaSafely(published.schema, page.slug);
   if (!schema) {
     return null;
   }
