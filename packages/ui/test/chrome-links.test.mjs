@@ -23,7 +23,7 @@ test("storefront header blocks unsafe chrome hrefs", () => {
   assert.equal(
     blocked.some(
       (node) =>
-        node.props["data-chrome-brand-href-blocked"] === "javascript:alert(1)",
+        node.props["data-chrome-brand-href-blocked"] === "unsafe",
     ),
     true,
   );
@@ -31,7 +31,7 @@ test("storefront header blocks unsafe chrome hrefs", () => {
     blocked.some(
       (node) =>
         node.props["data-chrome-navigation-href-blocked"] ===
-        "javascript:alert(2)",
+        "unsafe",
     ),
     true,
   );
@@ -78,7 +78,7 @@ test("storefront footer blocks unsafe chrome hrefs", () => {
   assert.equal(
     blocked.some(
       (node) =>
-        node.props["data-chrome-brand-href-blocked"] === "javascript:alert(1)",
+        node.props["data-chrome-brand-href-blocked"] === "unsafe",
     ),
     true,
   );
@@ -86,9 +86,45 @@ test("storefront footer blocks unsafe chrome hrefs", () => {
     blocked.some(
       (node) =>
         node.props["data-chrome-navigation-href-blocked"] ===
-        "javascript:alert(2)",
+        "unsafe",
     ),
     true,
+  );
+});
+
+test("storefront chrome links do not expose blocked href values", () => {
+  const header = StorefrontHeader({
+    content: {
+      navigation: [
+        {
+          href: "https://user:password@example.com/private?token=secret",
+          label: "Private",
+        },
+      ],
+    },
+  });
+  const blocked = findElements(header, "span");
+  const links = findElements(header, "a");
+
+  assert.equal(links.length, 1);
+  assert.equal(
+    blocked.some(
+      (node) =>
+        node.props["data-chrome-navigation-href-blocked"] === "unsafe",
+    ),
+    true,
+  );
+  assert.equal(
+    links.some((node) => String(node.props.href).includes("password")),
+    false,
+  );
+  assert.equal(
+    blocked.some((node) => JSON.stringify(node.props).includes("password")),
+    false,
+  );
+  assert.equal(
+    blocked.some((node) => JSON.stringify(node.props).includes("token=secret")),
+    false,
   );
 });
 

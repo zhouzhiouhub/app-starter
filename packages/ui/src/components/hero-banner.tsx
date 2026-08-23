@@ -37,7 +37,9 @@ export function HeroBanner(props: {
           ) : (
             <span
               className="inline-flex rounded-md bg-gray-950 px-5 py-3 text-sm font-semibold text-white"
-              data-cta-href-blocked={props.ctaHref?.trim() || undefined}
+              data-cta-href-blocked={
+                props.ctaHref?.trim() ? "unsafe" : undefined
+              }
             >
               {props.ctaLabel}
             </span>

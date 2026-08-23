@@ -27,7 +27,9 @@ export function CtaBar(props: {
           ) : (
             <span
               className="inline-flex rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white"
-              data-cta-href-blocked={props.ctaHref?.trim() || undefined}
+              data-cta-href-blocked={
+                props.ctaHref?.trim() ? "unsafe" : undefined
+              }
             >
               {props.ctaLabel}
             </span>

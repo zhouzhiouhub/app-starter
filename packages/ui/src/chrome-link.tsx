@@ -16,7 +16,7 @@ export function ChromeLink(props: {
     return (
       <span
         className={props.className}
-        {...{ [props.blockedDataName]: rawHref?.trim() || "empty" }}
+        {...{ [props.blockedDataName]: rawHref?.trim() ? "unsafe" : "empty" }}
       >
         {props.children}
       </span>
