@@ -22,9 +22,14 @@ test("audit service appends audit log records", async () => {
     metadata: {
       apiToken: "api-token",
       authCookie: "session=abc",
+      oauthClientSecret: "client-secret",
+      privateKeyPem: "private-key",
       r2AccessKeyId: "access-key",
       nested: {
         apiKey: "api-key",
+        databaseUrl: "postgresql://user:secret@db.example.com/app",
+        idToken: "header.payload.signature",
+        sentryDsn: "https://public:secret@sentry.example.com/1",
         previewToken: "preview-token",
         requestSignature: "signature-value",
         sessionId: "session-id",
@@ -45,9 +50,14 @@ test("audit service appends audit log records", async () => {
     metadata: {
       apiToken: "[redacted]",
       authCookie: "[redacted]",
+      oauthClientSecret: "[redacted]",
+      privateKeyPem: "[redacted]",
       r2AccessKeyId: "[redacted]",
       nested: {
         apiKey: "[redacted]",
+        databaseUrl: "[redacted]",
+        idToken: "[redacted]",
+        sentryDsn: "[redacted]",
         previewToken: "[redacted]",
         requestSignature: "[redacted]",
         sessionId: "[redacted]",
