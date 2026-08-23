@@ -51,13 +51,16 @@ function readResolvedCanonical(
   origin: string | undefined,
 ): string | undefined {
   const canonical = seoUrlSchema.safeParse(schema.seo.canonical);
-
-  return resolveSeoUrl(
-    canonical.success
-      ? canonical.data
-      : getStorefrontHref(schema.meta.locale, schema.meta.slug),
+  const fallback = resolveSeoUrl(
+    getStorefrontHref(schema.meta.locale, schema.meta.slug),
     origin,
   );
+
+  if (!canonical.success) {
+    return fallback;
+  }
+
+  return resolveCanonicalUrl(canonical.data, origin) ?? fallback;
 }
 
 function readResolvedSeoImage(
@@ -96,6 +99,26 @@ function createRobots(noIndex: boolean): Metadata["robots"] {
 
 function resolveSeoUrl(value: string, origin: string | undefined): string {
   return origin && value.startsWith("/") ? `${origin}${value}` : value;
+}
+
+function resolveCanonicalUrl(
+  value: string,
+  origin: string | undefined,
+): string | undefined {
+  if (value.startsWith("/")) {
+    return resolveSeoUrl(value, origin);
+  }
+
+  return hasSafeAbsoluteOrigin(value) ? value : undefined;
+}
+
+function hasSafeAbsoluteOrigin(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return readSafePublicOrigin(url.origin) !== null;
+  } catch {
+    return false;
+  }
 }
 
 function readMetadataOrigin(value: string | undefined): string | undefined {

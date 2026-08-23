@@ -115,6 +115,42 @@ test("page metadata replaces unsafe canonical URLs with the storefront path", ()
   );
 });
 
+test("page metadata replaces unsafe absolute canonical origins", () => {
+  const schema = structuredClone(exampleLandingPage);
+
+  for (const canonical of [
+    "https://example.com/campaign",
+    "https://localhost/campaign",
+    "http://store.brand-platform.com/campaign",
+    "https://192.0.2.10/campaign",
+  ]) {
+    schema.seo.canonical = canonical;
+
+    const metadata = buildPageMetadata(schema, {
+      origin: "https://store.brand-platform.com",
+    });
+
+    assert.equal(
+      metadata.alternates?.canonical,
+      "https://store.brand-platform.com/en",
+    );
+  }
+});
+
+test("page metadata keeps safe absolute canonical URLs", () => {
+  const schema = structuredClone(exampleLandingPage);
+  schema.seo.canonical = "https://canonical.brand-platform.com/campaign";
+
+  const metadata = buildPageMetadata(schema, {
+    origin: "https://store.brand-platform.com",
+  });
+
+  assert.equal(
+    metadata.alternates?.canonical,
+    "https://canonical.brand-platform.com/campaign",
+  );
+});
+
 test("page metadata includes resolved Open Graph images", () => {
   const schema = structuredClone(exampleLandingPage);
   schema.seo.ogImage = "https://cdn.example.com/og.jpg";
