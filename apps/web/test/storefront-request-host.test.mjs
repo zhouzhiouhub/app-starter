@@ -24,6 +24,17 @@ test("storefront request host falls back to forwarded hosts", () => {
   assert.equal(host, "store.brand-platform.com");
 });
 
+test("storefront request host preserves placeholder hosts for lookup rejection", () => {
+  const host = readStorefrontHostFromHeaders(
+    headers({
+      host: "Store.Example.com:443",
+      "x-forwarded-host": "store.brand-platform.com",
+    }),
+  );
+
+  assert.equal(host, "store.example.com");
+});
+
 test("storefront request host ignores external storefront host headers", () => {
   const host = readStorefrontHostFromHeaders(
     headers({

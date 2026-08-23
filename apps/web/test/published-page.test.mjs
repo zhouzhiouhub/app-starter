@@ -70,7 +70,7 @@ test("published page lookup forwards the safe storefront host", async () => {
   );
 });
 
-test("published page lookup does not forward unsafe storefront hosts", async () => {
+test("published page lookup forwards placeholder storefront hosts for rejection", async () => {
   const requests = [];
 
   await withFetch(
@@ -83,6 +83,28 @@ test("published page lookup does not forward unsafe storefront hosts", async () 
         locale: "en-US",
         slug: "home",
         storefrontHost: "store.example.com",
+      });
+    },
+  );
+
+  assert.equal(requests.length, 1);
+  assert.match(requests[0].url, /storefrontHost=store\.example\.com/);
+  assert.equal(requests[0].init.headers["x-storefront-host"], "store.example.com");
+});
+
+test("published page lookup does not forward local storefront hosts", async () => {
+  const requests = [];
+
+  await withFetch(
+    async (url, init) => {
+      requests.push({ init, url: String(url) });
+      return jsonResponse({ data: createFallbackPage({ slug: "home" }) });
+    },
+    async () => {
+      await getPublishedPage({
+        locale: "en-US",
+        slug: "home",
+        storefrontHost: "internal.localhost",
       });
     },
   );

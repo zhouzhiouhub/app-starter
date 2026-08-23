@@ -1,4 +1,4 @@
-import { readSiteDomainHeader } from "@app-starter/schema";
+import { readForwardableStorefrontHost } from "./storefront-host-header.ts";
 
 type RequestHeaders = {
   get(name: string): string | null;
@@ -8,7 +8,7 @@ export function readStorefrontHostFromHeaders(
   requestHeaders: RequestHeaders,
 ): string | null {
   return (
-    readSiteDomainHeader(requestHeaders.get("host")) ??
-    readSiteDomainHeader(requestHeaders.get("x-forwarded-host"))
+    readForwardableStorefrontHost(requestHeaders.get("host")) ??
+    readForwardableStorefrontHost(requestHeaders.get("x-forwarded-host"))
   );
 }
