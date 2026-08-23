@@ -1,11 +1,11 @@
-import { getApiBaseUrl } from "../../lib/api-base-url";
+import { getApiBaseUrl } from "../../lib/api-base-url.ts";
 import { readResponseBody } from "../../lib/api-response.ts";
 import {
   clearAuthSession,
   readAuthSession,
   writeAuthSession,
-} from "./auth-session";
-import type { AuthSession, AuthUser } from "./types";
+} from "./auth-session.ts";
+import type { AuthSession, AuthUser } from "./types.ts";
 
 export class AuthRequiredError extends Error {
   constructor() {

@@ -1,7 +1,11 @@
-import { pageSchema, type PageSchema } from "@app-starter/schema";
-import { adminRequest } from "../auth/api";
+import {
+  pageSchema,
+  pageSlugSchema,
+  type PageSchema,
+} from "@app-starter/schema";
+import { adminRequest } from "../auth/api.ts";
 import { readApiResponseJson } from "../../lib/api-response.ts";
-import { createIdempotencyKey } from "../../lib/idempotency-key";
+import { createIdempotencyKey } from "../../lib/idempotency-key.ts";
 import type {
   CreatePageInput,
   PageDetail,
@@ -9,7 +13,10 @@ import type {
   PageMutationResult,
   PagePreviewToken,
   PageSummary,
-} from "./types";
+} from "./types.ts";
+
+const maxPreviewTokenLength = 2048;
+const previewTokenPattern = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]{43}$/;
 
 export async function listPages(
   page = 1,
@@ -69,7 +76,7 @@ export async function getPage(pageId: string): Promise<PageDetail> {
 export async function createPreviewToken(
   pageId: string,
 ): Promise<PagePreviewToken> {
-  const result = await readAdminJson<{ data?: PagePreviewToken }>(
+  const result = await readAdminJson<{ data?: unknown }>(
     `/pages/${encodeURIComponent(pageId)}/preview-token`,
     {
       headers: idempotencyHeaders(),
@@ -78,11 +85,7 @@ export async function createPreviewToken(
     "Preview token could not be created.",
   );
 
-  if (!result.data?.token) {
-    throw new Error("Preview token could not be created.");
-  }
-
-  return result.data;
+  return readPreviewTokenResponse(result.data);
 }
 
 export async function savePageDraft(
@@ -165,6 +168,46 @@ function requireValidSchema(schema: PageSchema): PageSchema {
   }
 
   return parsed.data;
+}
+
+function readPreviewTokenResponse(value: unknown): PagePreviewToken {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("Preview token could not be created.");
+  }
+
+  const record = value as Record<string, unknown>;
+  const slug = pageSlugSchema.safeParse(record.slug);
+
+  if (
+    !isPreviewTokenCandidate(record.token) ||
+    !isValidTimestamp(record.expiresAt) ||
+    !slug.success
+  ) {
+    throw new Error("Preview token could not be created.");
+  }
+
+  return {
+    expiresAt: record.expiresAt,
+    slug: slug.data,
+    token: record.token,
+  };
+}
+
+function isPreviewTokenCandidate(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    value.length <= maxPreviewTokenLength &&
+    value.trim() === value &&
+    previewTokenPattern.test(value)
+  );
+}
+
+function isValidTimestamp(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    value.trim() === value &&
+    Number.isFinite(Date.parse(value))
+  );
 }
 
 function jsonHeaders(): HeadersInit {
