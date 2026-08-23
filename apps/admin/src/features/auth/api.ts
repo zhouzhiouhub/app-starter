@@ -1,4 +1,5 @@
 import { getApiBaseUrl } from "../../lib/api-base-url.ts";
+import { redactApiMessageSecrets } from "../../lib/api-message-redaction.ts";
 import { readResponseBody } from "../../lib/api-response.ts";
 import {
   clearAuthSession,
@@ -150,7 +151,7 @@ async function readSessionResponse(
     !payload.data.refreshToken ||
     !payload.data.user
   ) {
-    throw new Error(readErrorMessage(result, fallback));
+    throw new Error(readAuthApiErrorMessage(result, fallback));
   }
 
   return {
@@ -160,7 +161,17 @@ async function readSessionResponse(
   };
 }
 
-function readErrorMessage(result: unknown, fallback: string): string {
+export function readAuthApiErrorMessage(
+  result: unknown,
+  fallback: string,
+): string {
+  return redactApiMessageSecrets(readAuthApiErrorMessageValue(result, fallback));
+}
+
+function readAuthApiErrorMessageValue(
+  result: unknown,
+  fallback: string,
+): string {
   if (!result || typeof result !== "object") {
     return fallback;
   }
@@ -170,7 +181,11 @@ function readErrorMessage(result: unknown, fallback: string): string {
     message?: unknown;
   };
 
-  if (typeof record.error === "object" && typeof record.error.message === "string") {
+  if (
+    record.error &&
+    typeof record.error === "object" &&
+    typeof record.error.message === "string"
+  ) {
     return record.error.message;
   }
 
