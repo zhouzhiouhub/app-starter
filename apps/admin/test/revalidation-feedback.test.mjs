@@ -138,6 +138,24 @@ test("publication feedback explains missing revalidation configuration", () => {
   assert.match(missingUrl.message, /URL is not configured/);
 });
 
+test("publication feedback explains invalid site host revalidation skips", () => {
+  const feedback = buildPublicationFeedback({
+    action: "publish",
+    locale: "en-US",
+    revalidation: {
+      paths: ["/en/contact"],
+      reason: "invalid-site-host",
+      tags: [],
+      triggered: false,
+    },
+    slug: "contact",
+  });
+
+  assert.equal(feedback.type, "warning");
+  assert.match(feedback.message, /site domain is invalid/);
+  assert.match(feedback.message, /Check affected paths: \/en\/contact/);
+});
+
 test("publication feedback distinguishes HTTP failures from timeout style failures", () => {
   assert.match(
     buildPublicationFeedback({

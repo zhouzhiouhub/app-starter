@@ -75,6 +75,13 @@ function formatRevalidationStatus(
     );
   }
 
+  if (revalidation.reason === "invalid-site-host") {
+    return createWarningStatus(
+      "Storefront revalidation was skipped because the site domain is invalid.",
+      revalidation.paths,
+    );
+  }
+
   if (revalidation.reason === "request-timeout") {
     return createWarningStatus(
       "Storefront revalidation timed out. Check the Web URL, revalidate route, and STOREFRONT_REVALIDATE_TIMEOUT_MS.",

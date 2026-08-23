@@ -116,7 +116,7 @@ test("storefront revalidation posts safe site hosts for scoped tags", async () =
     async () => {
       const { calls, fetcher } = createRecordingFetch();
       const result = await triggerStorefrontRevalidation(
-        pageInput({ siteHost: "store.brand-platform.com" }),
+        pageInput({ siteHost: "Store.Brand-Platform.com:443" }),
         fetcher,
       );
 
@@ -129,6 +129,26 @@ test("storefront revalidation posts safe site hosts for scoped tags", async () =
         ...pageInput(),
         siteHost: "store.brand-platform.com",
       });
+    },
+  );
+});
+
+test("storefront revalidation skips invalid site hosts before fetching", async () => {
+  await withEnv(
+    revalidationEnv({
+      STOREFRONT_REVALIDATE_URL: "",
+      WEB_URL: "https://web.example.com/",
+    }),
+    async () => {
+      const result = await triggerStorefrontRevalidation(
+        pageInput({ siteHost: "store.example.com" }),
+        rejectingFetch,
+      );
+
+      assert.equal(result.triggered, false);
+      assert.equal(result.reason, "invalid-site-host");
+      assert.deepEqual(result.paths, ["/en/contact"]);
+      assert.deepEqual(result.tags, []);
     },
   );
 });
