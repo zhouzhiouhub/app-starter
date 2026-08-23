@@ -31,8 +31,10 @@ export async function getPublishedPageBySlug(
         slug: normalizedSlug,
       },
     },
-    include: {
-      versions: true,
+    select: {
+      id: true,
+      publishedVersionId: true,
+      slug: true,
     },
   });
 
@@ -40,9 +42,15 @@ export async function getPublishedPageBySlug(
     return null;
   }
 
-  const published = page.versions.find(
-    (version) => version.id === page.publishedVersionId,
-  );
+  const published = await prisma.pageVersion.findFirst({
+    where: {
+      id: page.publishedVersionId,
+      pageId: page.id,
+    },
+    select: {
+      schema: true,
+    },
+  });
 
   if (!published) {
     return null;

@@ -7,7 +7,6 @@ import {
 } from "./pages-public-test-helpers.mjs";
 
 test("listPublishedPages returns public summaries for published pages", async () => {
-  const draftUpdatedAt = new Date("2026-08-19T02:00:00.000Z");
   const publishedAt = new Date("2026-08-19T00:01:00.000Z");
   const versionCreatedAt = new Date("2026-08-19T00:00:30.000Z");
   const prisma = {
@@ -18,68 +17,74 @@ test("listPublishedPages returns public summaries for published pages", async ()
           publishedVersionId: { not: null },
         });
         assert.deepEqual(query.orderBy, { slug: "asc" });
+        assert.deepEqual(query.select, {
+          id: true,
+          publishedVersionId: true,
+          slug: true,
+        });
 
         return [
           {
+            id: "page-home",
             publishedVersionId: "version-1",
             slug: "home",
-            title: "Draft Home",
-            updatedAt: draftUpdatedAt,
-            versions: [
-              {
-                createdAt: versionCreatedAt,
-                id: "version-1",
-                publishedAt,
-                schema: createPublicPageSchema("home", "Home"),
-              },
-            ],
           },
           {
+            id: "page-terms",
             publishedVersionId: "version-3",
             slug: "legal/terms",
-            title: "Draft Terms",
-            updatedAt: draftUpdatedAt,
-            versions: [
-              {
-                createdAt: new Date("2026-08-18T00:00:00.000Z"),
-                id: "version-2",
-                publishedAt: new Date("2026-08-18T00:00:00.000Z"),
-                schema: createPublicPageSchema("legal/terms", "Terms"),
-              },
-              {
-                createdAt: new Date("2026-08-19T00:02:00.000Z"),
-                id: "version-3",
-                publishedAt: null,
-                schema: createPublicPageSchema("legal/terms", "Terms", {
-                  noIndex: true,
-                }),
-              },
-            ],
           },
           {
+            id: "page-german",
             publishedVersionId: "version-4",
             slug: "de-kampagne",
-            title: "German Campaign",
-            updatedAt: draftUpdatedAt,
-            versions: [
-              {
-                createdAt: versionCreatedAt,
-                id: "version-4",
-                publishedAt,
-                schema: createPublicPageSchema(
-                  "de-kampagne",
-                  "German Campaign",
-                  { locale: "de-DE" },
-                ),
-              },
-            ],
           },
           {
+            id: "page-broken",
             publishedVersionId: "missing-version",
             slug: "broken-page",
-            title: "Broken",
-            updatedAt: draftUpdatedAt,
-            versions: [],
+          },
+        ];
+      },
+    },
+    pageVersion: {
+      findMany: async (query) => {
+        assert.deepEqual(query.where, {
+          id: {
+            in: ["version-1", "version-3", "version-4", "missing-version"],
+          },
+          pageId: {
+            in: ["page-home", "page-terms", "page-german", "page-broken"],
+          },
+        });
+
+        return [
+          {
+            createdAt: versionCreatedAt,
+            id: "version-1",
+            pageId: "page-home",
+            publishedAt,
+            schema: createPublicPageSchema("home", "Home"),
+          },
+          {
+            createdAt: new Date("2026-08-19T00:02:00.000Z"),
+            id: "version-3",
+            pageId: "page-terms",
+            publishedAt: null,
+            schema: createPublicPageSchema("legal/terms", "Terms", {
+              noIndex: true,
+            }),
+          },
+          {
+            createdAt: versionCreatedAt,
+            id: "version-4",
+            pageId: "page-german",
+            publishedAt,
+            schema: createPublicPageSchema(
+              "de-kampagne",
+              "German Campaign",
+              { locale: "de-DE" },
+            ),
           },
         ];
       },
@@ -120,35 +125,32 @@ test("listPublishedPages returns public summaries for published pages", async ()
 });
 
 test("listPublishedPages reads schema from the published version only", async () => {
-  const updatedAt = new Date("2026-08-19T02:00:00.000Z");
   const publishedAt = new Date("2026-08-19T00:01:00.000Z");
   const versionCreatedAt = new Date("2026-08-19T00:00:30.000Z");
   const prisma = {
     page: {
       findMany: async () => [
         {
+          id: "page-campaign",
           publishedVersionId: "version-published",
           slug: "campaign",
-          title: "Draft Campaign",
-          updatedAt,
-          versions: [
-            {
-              createdAt: new Date("2026-08-19T01:00:00.000Z"),
-              id: "version-draft",
-              publishedAt: null,
-              schema: createPublicPageSchema("campaign", "Draft Campaign", {
-                locale: "de-DE",
-              }),
-            },
-            {
-              createdAt: versionCreatedAt,
-              id: "version-published",
-              publishedAt,
-              schema: createPublicPageSchema("campaign", "Campaign"),
-            },
-          ],
         },
       ],
+    },
+    pageVersion: {
+      findMany: async (query) => {
+        assert.deepEqual(query.where.id, { in: ["version-published"] });
+
+        return [
+          {
+            createdAt: versionCreatedAt,
+            id: "version-published",
+            pageId: "page-campaign",
+            publishedAt,
+            schema: createPublicPageSchema("campaign", "Campaign"),
+          },
+        ];
+      },
     },
     site: {
       findUnique: async () => createPublicSite(),
@@ -176,32 +178,36 @@ test("listPublishedPages skips corrupt published schemas", async () => {
     page: {
       findMany: async () => [
         {
+          id: "page-broken",
           publishedVersionId: "version-broken",
           slug: "broken",
-          versions: [
-            {
-              createdAt: new Date("2026-08-19T00:00:00.000Z"),
-              id: "version-broken",
-              publishedAt,
-              schema: {
-                meta: {
-                  slug: "broken",
-                },
-              },
-            },
-          ],
         },
         {
+          id: "page-home",
           publishedVersionId: "version-valid",
           slug: "home",
-          versions: [
-            {
-              createdAt: new Date("2026-08-19T00:00:00.000Z"),
-              id: "version-valid",
-              publishedAt,
-              schema: createPublicPageSchema("home", "Home"),
+        },
+      ],
+    },
+    pageVersion: {
+      findMany: async () => [
+        {
+          createdAt: new Date("2026-08-19T00:00:00.000Z"),
+          id: "version-broken",
+          pageId: "page-broken",
+          publishedAt,
+          schema: {
+            meta: {
+              slug: "broken",
             },
-          ],
+          },
+        },
+        {
+          createdAt: new Date("2026-08-19T00:00:00.000Z"),
+          id: "version-valid",
+          pageId: "page-home",
+          publishedAt,
+          schema: createPublicPageSchema("home", "Home"),
         },
       ],
     },

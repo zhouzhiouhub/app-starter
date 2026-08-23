@@ -14,32 +14,34 @@ test("listPublishedPages filters summaries by published locale and market", asyn
     page: {
       findMany: async () => [
         {
+          id: "page-home",
           publishedVersionId: "version-1",
           slug: "home",
-          title: "Home",
-          updatedAt,
-          versions: [
-            {
-              id: "version-1",
-              publishedAt,
-              schema: createPublicPageSchema("home", "Home"),
-            },
-          ],
         },
         {
+          id: "page-kampagne",
           publishedVersionId: "version-2",
           slug: "kampagne",
-          title: "Kampagne",
-          updatedAt,
-          versions: [
-            {
-              id: "version-2",
-              publishedAt,
-              schema: createPublicPageSchema("kampagne", "Kampagne", {
-                locale: "de-DE",
-              }),
-            },
-          ],
+        },
+      ],
+    },
+    pageVersion: {
+      findMany: async () => [
+        {
+          createdAt: updatedAt,
+          id: "version-1",
+          pageId: "page-home",
+          publishedAt,
+          schema: createPublicPageSchema("home", "Home"),
+        },
+        {
+          createdAt: updatedAt,
+          id: "version-2",
+          pageId: "page-kampagne",
+          publishedAt,
+          schema: createPublicPageSchema("kampagne", "Kampagne", {
+            locale: "de-DE",
+          }),
         },
       ],
     },
@@ -72,14 +74,21 @@ test("getPublishedPageBySlug returns null when published schema context mismatch
         });
 
         return {
+          id: "page-home",
           publishedVersionId: "version-1",
           slug: "home",
-          versions: [
-            {
-              id: "version-1",
-              schema: createPublicPageSchema("home", "Home"),
-            },
-          ],
+        };
+      },
+    },
+    pageVersion: {
+      findFirst: async (query) => {
+        assert.deepEqual(query.where, {
+          id: "version-1",
+          pageId: "page-home",
+        });
+
+        return {
+          schema: createPublicPageSchema("home", "Home"),
         };
       },
     },
@@ -100,18 +109,18 @@ test("getPublishedPageBySlug returns null for corrupt published schemas", async 
   const prisma = {
     page: {
       findUnique: async () => ({
+        id: "page-home",
         publishedVersionId: "version-1",
         slug: "home",
-        versions: [
-          {
-            id: "version-1",
-            schema: {
-              meta: {
-                slug: "home",
-              },
-            },
+      }),
+    },
+    pageVersion: {
+      findFirst: async () => ({
+        schema: {
+          meta: {
+            slug: "home",
           },
-        ],
+        },
       }),
     },
     site: {

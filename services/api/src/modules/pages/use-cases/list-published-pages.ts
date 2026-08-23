@@ -8,14 +8,9 @@ import { readPublicPageSchemaSafely } from "../pages.public-schema.js";
 import { getPublicSite } from "../pages.site.js";
 
 type PublishedPageRecord = {
+  id: string;
   publishedVersionId: string | null;
   slug: string;
-  versions: Array<{
-    createdAt: Date;
-    id: string;
-    publishedAt: Date | null;
-    schema: Prisma.JsonValue;
-  }>;
 };
 
 export async function listPublishedPages(
@@ -46,21 +41,18 @@ export async function listPublishedPages(
       slug: "asc",
     },
     select: {
+      id: true,
       publishedVersionId: true,
       slug: true,
-      versions: {
-        select: {
-          createdAt: true,
-          id: true,
-          publishedAt: true,
-          schema: true,
-        },
-      },
     },
   });
+  const versionsByPageAndId = await readPublishedVersionsByPageAndId(
+    prisma,
+    pages,
+  );
 
   const summaries = pages.flatMap((page) =>
-    toPublishedPageSummary(page, context),
+    toPublishedPageSummary(page, context, versionsByPageAndId),
   );
 
   return {
@@ -74,13 +66,59 @@ export async function listPublishedPages(
   };
 }
 
+type PublishedVersionRecord = {
+  createdAt: Date;
+  id: string;
+  pageId: string;
+  publishedAt: Date | null;
+  schema: Prisma.JsonValue;
+};
+
+async function readPublishedVersionsByPageAndId(
+  prisma: PrismaService,
+  pages: PublishedPageRecord[],
+): Promise<Map<string, PublishedVersionRecord>> {
+  const versionIds = pages.flatMap((page) =>
+    page.publishedVersionId ? [page.publishedVersionId] : [],
+  );
+  const pageIds = pages.map((page) => page.id);
+
+  if (versionIds.length === 0 || pageIds.length === 0) {
+    return new Map();
+  }
+
+  const versions = await prisma.pageVersion.findMany({
+    where: {
+      id: { in: versionIds },
+      pageId: { in: pageIds },
+    },
+    select: {
+      createdAt: true,
+      id: true,
+      pageId: true,
+      publishedAt: true,
+      schema: true,
+    },
+  });
+
+  return new Map(
+    versions.map((version) => [
+      createPublishedVersionKey(version.pageId, version.id),
+      version,
+    ]),
+  );
+}
+
 function toPublishedPageSummary(
   page: PublishedPageRecord,
   context: PublishedPageContext,
+  versionsByPageAndId: Map<string, PublishedVersionRecord>,
 ) {
-  const publishedVersion = page.versions.find(
-    (version) => version.id === page.publishedVersionId,
-  );
+  const publishedVersion = page.publishedVersionId
+    ? versionsByPageAndId.get(
+        createPublishedVersionKey(page.id, page.publishedVersionId),
+      )
+    : null;
 
   if (!publishedVersion) {
     return [];
@@ -111,4 +149,8 @@ function readPublishedVersionUpdatedAt(version: {
   publishedAt: Date | null;
 }): Date {
   return version.publishedAt ?? version.createdAt;
+}
+
+function createPublishedVersionKey(pageId: string, versionId: string): string {
+  return `${pageId}:${versionId}`;
 }
