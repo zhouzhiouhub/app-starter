@@ -2,6 +2,7 @@ import { Form, Input, InputNumber, Select } from "antd";
 import type { FormInstance } from "antd";
 import { mediaMimeTypeOptions } from "../constants";
 import { readExternalMediaUrlError } from "../external-media-url-validation";
+import { readMediaFilenameError } from "../media-filename-validation";
 import {
   MEDIA_MAX_UPLOAD_BYTES,
   mediaMaxUploadSizeLabel,
@@ -40,7 +41,18 @@ export function ExternalMediaForm(props: {
       <Form.Item
         label="Filename"
         name="filename"
-        rules={[{ required: true, message: "Enter a filename." }]}
+        rules={[
+          { required: true, message: "Enter a filename." },
+          {
+            validator: async (_rule, value: string | undefined) => {
+              const filenameError = readMediaFilenameError(value);
+
+              if (filenameError) {
+                throw new Error(filenameError);
+              }
+            },
+          },
+        ]}
       >
         <Input placeholder="hero.webp" />
       </Form.Item>

@@ -27,6 +27,17 @@ test("media upload validation rejects unsupported file types", () => {
   );
 });
 
+test("media upload validation rejects unsafe filenames", () => {
+  assert.match(
+    readMediaUploadFileError({
+      name: "nested/hero.webp",
+      size: 1024,
+      type: "image/webp",
+    }) ?? "",
+    /slashes/,
+  );
+});
+
 test("media upload validation rejects empty and oversized files", () => {
   assert.match(
     readMediaUploadFileError({
