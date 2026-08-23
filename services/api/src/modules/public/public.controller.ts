@@ -156,7 +156,10 @@ function readPublicSiteHost(headers: PublicRequestHeaders | undefined) {
   return (
     readHeaderDomain(headers, storefrontHostHeaderName) ??
     readHeaderDomain(headers, "x-forwarded-host") ??
-    readHeaderDomain(headers, "host")
+    readHeaderDomain(headers, "host") ??
+    readExplicitHeaderValue(headers, storefrontHostHeaderName) ??
+    readExplicitHeaderValue(headers, "x-forwarded-host") ??
+    readExplicitHeaderValue(headers, "host")
   );
 }
 
@@ -169,6 +172,22 @@ function readHeaderDomain(
       headers?.[name.toLowerCase()] ??
       headers?.[toHeaderCase(name)],
   );
+}
+
+function readExplicitHeaderValue(
+  headers: PublicRequestHeaders | undefined,
+  name: string,
+): string | null {
+  const value =
+    headers?.[name] ??
+    headers?.[name.toLowerCase()] ??
+    headers?.[toHeaderCase(name)];
+
+  if (Array.isArray(value)) {
+    return value.length === 1 ? value[0]?.trim() || null : null;
+  }
+
+  return typeof value === "string" ? value.trim() || null : null;
 }
 
 function toHeaderCase(name: string) {

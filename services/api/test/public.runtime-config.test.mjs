@@ -266,3 +266,29 @@ test("public page detail ignores unsafe storefront host headers", async () => {
 
   assert.equal(response.meta.requestId, "request-public-host-fallback");
 });
+
+test("public pages preserve unsafe request hosts for lookup rejection", async () => {
+  const controller = new PublicController({
+    listPublished(input) {
+      assert.deepEqual(input, {
+        locale: "en-US",
+        market: "us",
+        siteHost: "store.example.com",
+      });
+
+      return Promise.resolve({
+        data: [],
+        meta: { requestId: "local-dev" },
+      });
+    },
+  });
+
+  const response = await controller.listPages(
+    "en-US",
+    "us",
+    { host: "store.example.com" },
+    "request-public-unsafe-host",
+  );
+
+  assert.equal(response.meta.requestId, "request-public-unsafe-host");
+});

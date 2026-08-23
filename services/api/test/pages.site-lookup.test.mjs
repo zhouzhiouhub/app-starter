@@ -103,6 +103,21 @@ test("public site lookup does not leak the first site for unmatched public hosts
   assert.equal(await getPublicSite(prisma, "missing.brand-platform.com"), null);
 });
 
+test("public site lookup rejects explicit unsafe hosts before fallback", async () => {
+  const prisma = {
+    site: {
+      findFirst: async () => {
+        throw new Error("unsafe hosts must not use default fallback.");
+      },
+      findUnique: async () => {
+        throw new Error("unsafe hosts must not query sites by domain.");
+      },
+    },
+  };
+
+  assert.equal(await getPublicSite(prisma, "store.example.com"), null);
+});
+
 test("public site lookup keeps local development fallback", async () => {
   const prisma = {
     site: {

@@ -53,6 +53,10 @@ export async function getPublicSite(
 ) {
   const domain = readSiteDomainHeader(siteHost);
 
+  if (!domain && hasExplicitSiteHost(siteHost)) {
+    return null;
+  }
+
   if (domain) {
     const site = await prisma.site.findUnique({
       where: { domain },
@@ -68,6 +72,10 @@ export async function getPublicSite(
   }
 
   return getPublicDefaultSite(prisma);
+}
+
+function hasExplicitSiteHost(siteHost: string | null | undefined): boolean {
+  return typeof siteHost === "string" && siteHost.trim().length > 0;
 }
 
 function missingDefaultSite() {
