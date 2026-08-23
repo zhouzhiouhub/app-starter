@@ -31,10 +31,40 @@ const sensitivePayloadKeyFragments = [
   "token",
 ];
 
+const sensitiveStringQueryKeySuffixes = [
+  "accesskeyid",
+  "accesstoken",
+  "apikey",
+  "clientsecret",
+  "credential",
+  "cookie",
+  "idtoken",
+  "keypairid",
+  "password",
+  "previewtoken",
+  "refreshtoken",
+  "secret",
+  "session",
+  "signature",
+  "token",
+];
+
+const sensitiveStringQueryKeys = new Set([
+  "policy",
+  "sig",
+  ...sensitiveStringQueryKeySuffixes,
+]);
+
 const redactedAnalyticsValue = "[redacted]";
 const emailValuePattern = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i;
 const phoneValuePattern =
   /(?:^|[^\d])(?:\+?\d[\d\s().-]{6,}\d)(?:[^\d]|$)/;
+const authorizationValuePattern =
+  /\bAuthorization\s*[:=]?\s*(?:Bearer\s+)?[a-zA-Z0-9._-]+/i;
+const bearerValuePattern = /\bBearer\s+[a-zA-Z0-9._-]+/i;
+const credentialedUrlValuePattern =
+  /\b[a-z][a-z0-9+.-]*:\/\/[^/?#\s)"'<@]+:[^/?#\s)"'<@]*@/i;
+const queryParameterValuePattern = /(?:^|[\s?&#;])([^=\s&#;]+)=/g;
 
 declare global {
   interface Window {
@@ -104,7 +134,14 @@ function isBlockedPayloadKey(key: string, dropReservedKeys: boolean): boolean {
 }
 
 function containsSensitiveStringValue(value: string): boolean {
-  return emailValuePattern.test(value) || phoneValuePattern.test(value);
+  return (
+    emailValuePattern.test(value) ||
+    phoneValuePattern.test(value) ||
+    authorizationValuePattern.test(value) ||
+    bearerValuePattern.test(value) ||
+    credentialedUrlValuePattern.test(value) ||
+    hasSensitiveStringQueryParameter(value)
+  );
 }
 
 function isPlainRecord(value: unknown): value is Record<string, unknown> {
@@ -114,4 +151,21 @@ function isPlainRecord(value: unknown): value is Record<string, unknown> {
 
   const prototype = Object.getPrototypeOf(value);
   return prototype === Object.prototype || prototype === null;
+}
+
+function hasSensitiveStringQueryParameter(value: string): boolean {
+  return Array.from(value.matchAll(queryParameterValuePattern)).some((match) =>
+    isSensitiveStringQueryKey(match[1] ?? ""),
+  );
+}
+
+function isSensitiveStringQueryKey(key: string): boolean {
+  const normalized = key.replace(/[-_\s]/g, "").toLowerCase();
+  return (
+    normalized.startsWith("xamz") ||
+    sensitiveStringQueryKeys.has(normalized) ||
+    sensitiveStringQueryKeySuffixes.some((suffix) =>
+      normalized.endsWith(suffix),
+    )
+  );
 }

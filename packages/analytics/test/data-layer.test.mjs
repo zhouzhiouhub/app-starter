@@ -67,6 +67,39 @@ test("analytics payload sanitizer redacts sensitive string values", () => {
   );
 });
 
+test("analytics payload sanitizer redacts URLs with sensitive credentials", () => {
+  assert.deepEqual(
+    sanitizeAnalyticsPayload({
+      callback:
+        "Webhook failed with Authorization: Bearer header.payload.signature",
+      imageUrl:
+        "https://cdn.example.com/hero.jpg?X-Amz-Signature=signed-value",
+      nested: {
+        previewUrl: "https://store.example.com/preview?preview_token=secret",
+        publicUrl: "https://store.example.com/page?variant=summer",
+      },
+      redirects: [
+        "/checkout?token=secret",
+        "https://store.example.com/page?utm_source=newsletter",
+      ],
+      signedUrl: "https://user:password@example.com/download",
+    }),
+    {
+      callback: "[redacted]",
+      imageUrl: "[redacted]",
+      nested: {
+        previewUrl: "[redacted]",
+        publicUrl: "https://store.example.com/page?variant=summer",
+      },
+      redirects: [
+        "[redacted]",
+        "https://store.example.com/page?utm_source=newsletter",
+      ],
+      signedUrl: "[redacted]",
+    },
+  );
+});
+
 test("data layer events preserve trusted analytics context", () => {
   withWindow({}, (windowValue) => {
     pushDataLayer({
