@@ -5,6 +5,7 @@ import { buildPublicationFeedback } from "../src/features/pages/revalidation-fee
 test("publication feedback summarizes triggered storefront revalidation", () => {
   const feedback = buildPublicationFeedback({
     action: "publish",
+    locale: "en-US",
     revalidation: {
       paths: ["/", "/en"],
       tags: ["published-page"],
@@ -26,6 +27,7 @@ test("publication feedback summarizes triggered storefront revalidation", () => 
 test("publication feedback keeps successful publish visible when preflight warnings exist", () => {
   const feedback = buildPublicationFeedback({
     action: "publish",
+    locale: "en-US",
     preflightWarningSummary:
       "Review 1 non-blocking publish warning: Open Graph image needs review.",
     revalidation: {
@@ -42,9 +44,30 @@ test("publication feedback keeps successful publish visible when preflight warni
   assert.match(feedback.message, /Open Graph image needs review/);
 });
 
+test("publication feedback uses the published locale in review links", () => {
+  const feedback = buildPublicationFeedback({
+    action: "publish",
+    locale: "de-DE",
+    revalidation: {
+      paths: ["/de/kampagne"],
+      tags: ["published-page"],
+      triggered: true,
+    },
+    siteDomain: "store.brand-platform.com",
+    slug: "kampagne",
+  });
+
+  assert.match(
+    feedback.message,
+    /https:\/\/store\.brand-platform\.com\/de\/kampagne/,
+  );
+  assert.doesNotMatch(feedback.message, /\/en\/kampagne/);
+});
+
 test("publication feedback ignores blank preflight warning summaries", () => {
   const feedback = buildPublicationFeedback({
     action: "publish",
+    locale: "en-US",
     preflightWarningSummary: "   ",
     revalidation: {
       paths: ["/en"],
@@ -60,6 +83,7 @@ test("publication feedback ignores blank preflight warning summaries", () => {
 test("publication feedback explains missing revalidation configuration", () => {
   const missingSecret = buildPublicationFeedback({
     action: "rollback",
+    locale: "en-US",
     revalidation: {
       paths: ["/en/contact"],
       reason: "missing-secret",
@@ -70,6 +94,7 @@ test("publication feedback explains missing revalidation configuration", () => {
   });
   const missingUrl = buildPublicationFeedback({
     action: "publish",
+    locale: "en-US",
     revalidation: {
       paths: ["/en/contact"],
       reason: "missing-url",
@@ -89,6 +114,7 @@ test("publication feedback distinguishes HTTP failures from timeout style failur
   assert.match(
     buildPublicationFeedback({
       action: "publish",
+      locale: "en-US",
       revalidation: {
         paths: ["/en/contact"],
         reason: "request-failed",
@@ -103,6 +129,7 @@ test("publication feedback distinguishes HTTP failures from timeout style failur
   assert.match(
     buildPublicationFeedback({
       action: "publish",
+      locale: "en-US",
       revalidation: {
         paths: ["/en/contact"],
         reason: "request-timeout",
@@ -119,6 +146,7 @@ test("publication feedback explains actionable revalidation HTTP statuses", () =
   assert.match(
     buildPublicationFeedback({
       action: "publish",
+      locale: "en-US",
       revalidation: {
         paths: ["/en/contact"],
         reason: "request-failed",
@@ -133,6 +161,7 @@ test("publication feedback explains actionable revalidation HTTP statuses", () =
   assert.match(
     buildPublicationFeedback({
       action: "publish",
+      locale: "en-US",
       revalidation: {
         paths: ["/en/contact"],
         reason: "request-failed",
@@ -147,6 +176,7 @@ test("publication feedback explains actionable revalidation HTTP statuses", () =
   assert.match(
     buildPublicationFeedback({
       action: "publish",
+      locale: "en-US",
       revalidation: {
         paths: ["/en/contact"],
         reason: "request-failed",
@@ -163,6 +193,7 @@ test("publication feedback explains actionable revalidation HTTP statuses", () =
 test("publication feedback marks failed revalidation as warning with affected paths", () => {
   const feedback = buildPublicationFeedback({
     action: "publish",
+    locale: "en-US",
     revalidation: {
       paths: ["/en/contact", "/en/support", "/en/about", "/en/legal"],
       reason: "request-failed",

@@ -4,6 +4,7 @@ import type { EditorFeedback } from "./types.ts";
 
 export function buildPublicationFeedback(input: {
   action: "publish" | "rollback";
+  locale: string;
   preflightWarningSummary?: string | null;
   revalidation?: StorefrontRevalidationResult;
   siteDomain?: string | null;
@@ -12,7 +13,7 @@ export function buildPublicationFeedback(input: {
   const actionText = input.action === "publish" ? "Published" : "Rolled back";
   const reviewText = `Open ${getStorefrontPageUrl(
     input.slug,
-    "en-US",
+    input.locale,
     input.siteDomain,
   )} to review the storefront.`;
   const preflightWarningSummary = input.preflightWarningSummary?.trim();

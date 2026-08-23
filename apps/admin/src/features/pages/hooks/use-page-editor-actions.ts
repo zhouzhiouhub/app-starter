@@ -125,6 +125,7 @@ export function usePageEditorActions(input: UsePageEditorActionsInput) {
       input.setFeedback(
         buildPublicationFeedback({
           action: "publish",
+          locale: published.schema.meta.locale,
           revalidation: published.meta?.revalidation,
           preflightWarningSummary,
           siteDomain: input.siteDomain,
@@ -198,6 +199,7 @@ export function usePageEditorActions(input: UsePageEditorActionsInput) {
         input.setFeedback(
           buildPublicationFeedback({
             action: "rollback",
+            locale: rolledBack.schema.meta.locale,
             revalidation: rolledBack.meta?.revalidation,
             siteDomain: input.siteDomain,
             slug: rolledBack.schema.meta.slug,

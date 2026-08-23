@@ -19,6 +19,7 @@ export function PageEditorToolbar(props: {
   isPublishing: boolean;
   isCreatingPreview: boolean;
   isSaving: boolean;
+  locale: string;
   onOpenPreview: () => void;
   onPublish: () => void;
   onRedo: () => void;
@@ -92,7 +93,7 @@ export function PageEditorToolbar(props: {
       </Button>
       <Button
         disabled={!props.published}
-        href={getStorefrontPageUrl(props.slug, "en-US", props.siteDomain)}
+        href={getStorefrontPageUrl(props.slug, props.locale, props.siteDomain)}
         icon={<ExportOutlined />}
         rel="noreferrer"
         target="_blank"

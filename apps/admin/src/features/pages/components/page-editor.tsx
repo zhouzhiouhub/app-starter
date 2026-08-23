@@ -16,13 +16,13 @@ import {
 import { readPublishPreflightFocusStyle } from "../publish-preflight-focus-style";
 import { usePublishPreflightFix } from "../hooks/use-publish-preflight-fix";
 import { usePublishPreflightFocus } from "../hooks/use-publish-preflight-focus";
-import { getStorefrontPageUrl } from "../storefront-url";
 import type { EditorFeedback, PageSummary, PageVersionSummary } from "../types";
 import { ChromeSettingsPanel } from "./chrome-settings-panel";
 import { PageContentFields } from "./page-content-fields";
 import { PageEditorStatusTags } from "./page-editor-status-tags";
 import { PageEditorToolbar } from "./page-editor-toolbar";
 import { PagePreviewPane } from "./page-preview-pane";
+import { PageStorefrontUrlSummary } from "./page-storefront-url-summary";
 import { PublishPreflightPanel } from "./publish-preflight-panel";
 import { PageSectionList } from "./page-section-list";
 import { PublicationHistoryPanel } from "./publication-history-panel";
@@ -110,18 +110,11 @@ export function PageEditor(props: {
       >
         <div>
           <Typography.Title level={3}>{props.page.title}</Typography.Title>
-          <Typography.Paragraph>
-            Storefront URL:{" "}
-            <Typography.Text code>
-              {getStorefrontPageUrl(
-                props.page.slug,
-                "en-US",
-                props.page.siteDomain,
-              )}
-            </Typography.Text>
-            . Home stays at <Typography.Text code>/en</Typography.Text>. Edit
-            the page body below, then publish and open View on site.
-          </Typography.Paragraph>
+          <PageStorefrontUrlSummary
+            locale={props.schema.meta.locale}
+            siteDomain={props.page.siteDomain}
+            slug={props.page.slug}
+          />
         </div>
         <PageEditorToolbar
           canRedo={props.canRedo}
@@ -130,6 +123,7 @@ export function PageEditor(props: {
           isCreatingPreview={props.isCreatingPreview}
           isPublishing={props.isPublishing}
           isSaving={props.isSaving}
+          locale={props.schema.meta.locale}
           onOpenPreview={props.onOpenPreview}
           onPublish={props.onPublish}
           onRedo={props.onRedo}
