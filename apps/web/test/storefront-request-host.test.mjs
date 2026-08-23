@@ -47,6 +47,17 @@ test("storefront request host skips unsafe forwarded hosts", () => {
   assert.equal(host, "store.brand-platform.com");
 });
 
+test("storefront request host skips header values with control characters", () => {
+  const host = readStorefrontHostFromHeaders(
+    headers({
+      host: "Store.Brand-Platform.com\nx-forwarded-host: bad.example.com",
+      "x-forwarded-host": "safe.brand-platform.com",
+    }),
+  );
+
+  assert.equal(host, "safe.brand-platform.com");
+});
+
 function headers(values) {
   return {
     get(name) {

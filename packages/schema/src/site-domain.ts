@@ -28,7 +28,7 @@ export function readSiteDomainHeader(
 ): string | null {
   const raw = readSingleHeaderValue(value);
 
-  if (!raw || raw.includes(",")) {
+  if (!raw || hasUnsafeHeaderValueCharacter(raw)) {
     return null;
   }
 
@@ -116,6 +116,10 @@ function readSingleHeaderValue(
   }
 
   return value?.trim() || null;
+}
+
+function hasUnsafeHeaderValueCharacter(value: string): boolean {
+  return /[\u0000-\u001f\u007f,]/.test(value);
 }
 
 function stripDefaultPort(value: string): string {
