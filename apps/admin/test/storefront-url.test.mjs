@@ -177,6 +177,24 @@ test("storefront URL helper returns a display-safe unavailable result", () => {
   );
 });
 
+test("storefront URL helper rejects invalid page URLs before resolving origins", () => {
+  assert.deepEqual(
+    readStorefrontPageUrl({
+      locale: "en-US",
+      runtime: {
+        configured: "https://store.brand-platform.com",
+      },
+      siteDomain: "store.brand-platform.com",
+      slug: "campaign?token=secret",
+    }),
+    {
+      message:
+        "Page slug or locale is invalid, so the storefront link cannot be built.",
+      ok: false,
+    },
+  );
+});
+
 test("storefront URL helper checks preview link availability before token creation", () => {
   const runtime = {
     configured: "http://localhost:3000",

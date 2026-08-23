@@ -2,7 +2,7 @@ import { AuditOutlined } from "@ant-design/icons";
 import { Button, Space, Table, Tag, Tooltip, Typography } from "antd";
 import { useNavigate } from "react-router-dom";
 import { buildPageAuditLogPath } from "../audit-log-link";
-import { getStorefrontPagePath } from "../storefront-url";
+import { readStorefrontPagePath } from "../storefront-path";
 import type { PageSummary } from "../types";
 import { ViewStorefrontLink } from "./view-storefront-link";
 
@@ -23,11 +23,18 @@ export function PageListTable(props: {
         { dataIndex: "slug", key: "slug", title: "Slug" },
         {
           key: "path",
-          render: (_, page) => (
-            <Typography.Text code>
-              {getStorefrontPagePath(page.slug, page.locale)}
-            </Typography.Text>
-          ),
+          render: (_, page) => {
+            const path = readStorefrontPagePath({
+              locale: page.locale,
+              slug: page.slug,
+            });
+
+            return path.ok ? (
+              <Typography.Text code>{path.href}</Typography.Text>
+            ) : (
+              <Typography.Text type="warning">{path.message}</Typography.Text>
+            );
+          },
           title: "Storefront",
         },
         { dataIndex: "type", key: "type", title: "Type" },

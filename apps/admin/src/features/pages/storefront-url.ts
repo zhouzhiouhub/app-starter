@@ -1,8 +1,12 @@
 import {
-  getStorefrontHref,
   isProductionHttpUrl,
   readSiteDomainHeader,
 } from "@app-starter/schema";
+import {
+  AdminStorefrontPathError,
+  getStorefrontPagePath,
+  storefrontPathUnavailableMessage,
+} from "./storefront-path.ts";
 
 const maxPreviewTokenLength = 2048;
 const previewTokenPattern = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]{43}$/;
@@ -48,20 +52,14 @@ export type StorefrontLinkAvailability =
       ok: false;
     };
 
-export function getStorefrontPagePath(slug: string, locale = "en-US"): string {
-  return getStorefrontHref(locale, slug);
-}
-
 export function getStorefrontPageUrl(
   slug: string,
   locale = "en-US",
   siteDomain?: string | null,
   runtime?: WebOriginInput,
 ): string {
-  return `${readStorefrontOrigin(siteDomain, runtime)}${getStorefrontPagePath(
-    slug,
-    locale,
-  )}`;
+  const path = getStorefrontPagePath(slug, locale);
+  return `${readStorefrontOrigin(siteDomain, runtime)}${path}`;
 }
 
 export function readStorefrontPageUrl(input: {
@@ -84,6 +82,13 @@ export function readStorefrontPageUrl(input: {
     if (error instanceof AdminStorefrontUrlConfigurationError) {
       return {
         message: storefrontLinkUnavailableMessage,
+        ok: false,
+      };
+    }
+
+    if (error instanceof AdminStorefrontPathError) {
+      return {
+        message: storefrontPathUnavailableMessage,
         ok: false,
       };
     }
