@@ -36,6 +36,42 @@ test("API exception filter hides internal server error messages", () => {
   });
 });
 
+test("API exception filter redacts secrets from internal error logs", () => {
+  const filter = new ApiExceptionFilter();
+  const { host, response } = createHost({
+    "x-request-id": "request-logs",
+  });
+  let logged = "";
+  filter.logger.error = (message) => {
+    logged = String(message);
+  };
+  const error = new Error(
+    [
+      "Upstream failed Authorization: Bearer header.payload.signature",
+      "databaseUrl=postgresql://db-user:db-secret@db.example.com/app",
+      '"accessToken":"json-token-value"',
+      "https://uploads.example.com/object?X-Amz-Signature=signed-value#access_token=fragment-token",
+    ].join(" "),
+  );
+  error.stack = `Error: ${error.message}\n    at handler (C:\\internal\\api.ts:1:1)`;
+
+  filter.catch(error, host);
+
+  assert.equal(response.statusCode, 500);
+  assert.equal(response.body.error.message, "Internal server error.");
+  assert.equal(logged.includes("header.payload.signature"), false);
+  assert.equal(logged.includes("db-user"), false);
+  assert.equal(logged.includes("db-secret"), false);
+  assert.equal(logged.includes("json-token-value"), false);
+  assert.equal(logged.includes("signed-value"), false);
+  assert.equal(logged.includes("fragment-token"), false);
+  assert.match(logged, /Authorization: Bearer \[redacted\]/);
+  assert.match(logged, /databaseUrl=\[redacted\]/);
+  assert.match(logged, /"accessToken":"\[redacted\]"/);
+  assert.match(logged, /X-Amz-Signature=\[redacted\]/);
+  assert.match(logged, /#access_token=\[redacted\]/);
+});
+
 test("API exception filter keeps client validation details", () => {
   const filter = new ApiExceptionFilter();
   const { host, response } = createHost();

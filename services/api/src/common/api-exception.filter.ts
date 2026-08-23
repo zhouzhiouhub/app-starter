@@ -7,6 +7,7 @@ import {
   Logger,
 } from "@nestjs/common";
 import { apiErrorCodes } from "@app-starter/schema";
+import { redactLogSecrets } from "./log-redaction.js";
 import { mapPrismaException } from "./prisma-error.js";
 import { readRequestId, type RequestHeadersLike } from "./request-id.js";
 
@@ -44,9 +45,7 @@ export class ApiExceptionFilter implements ExceptionFilter {
     const normalized = normalizeError(body, statusCode);
 
     if (statusCode >= HttpStatus.INTERNAL_SERVER_ERROR) {
-      this.logger.error(
-        mapped instanceof Error ? mapped.stack : String(mapped),
-      );
+      this.logger.error(redactLogSecrets(readLogError(mapped)));
     }
 
     response.status(statusCode).json({
@@ -56,6 +55,14 @@ export class ApiExceptionFilter implements ExceptionFilter {
       },
     });
   }
+}
+
+function readLogError(error: unknown): unknown {
+  if (error instanceof Error) {
+    return error.stack ?? error.message;
+  }
+
+  return error;
 }
 
 function normalizeError(body: unknown, statusCode: number): NormalizedError {
