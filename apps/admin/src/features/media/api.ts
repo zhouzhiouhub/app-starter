@@ -1,6 +1,6 @@
-import { adminRequest } from "../auth/api";
+import { adminRequest } from "../auth/api.ts";
 import { readApiResponseJson } from "../../lib/api-response.ts";
-import { createIdempotencyKey } from "../../lib/idempotency-key";
+import { createIdempotencyKey } from "../../lib/idempotency-key.ts";
 import type {
   MediaAsset,
   MediaAssetListStatus,
@@ -10,7 +10,8 @@ import type {
   RegisterMediaInput,
   UploadMediaFileInput,
 } from "./types";
-import { listAllMediaAssetPages } from "./media-list-pagination";
+import { listAllMediaAssetPages } from "./media-list-pagination.ts";
+import { readMediaUploadTargetResponse } from "./media-upload-target.ts";
 
 const mediaResolverPageLimit = 100;
 
@@ -158,11 +159,7 @@ export async function createMediaUploadUrl(input: {
     "Upload URL could not be prepared.",
   );
 
-  if (!result.data?.r2Key || !result.data.uploadUrl) {
-    throw new Error("Upload URL could not be prepared.");
-  }
-
-  return result.data;
+  return readMediaUploadTargetResponse(result.data);
 }
 
 async function putMediaFile(
