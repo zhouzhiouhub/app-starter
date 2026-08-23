@@ -39,6 +39,24 @@ test("page metadata ignores non-local HTTP origins", () => {
   assert.deepEqual(metadata.openGraph?.images, ["/og.jpg"]);
 });
 
+test("page metadata ignores origins with credentials or paths", () => {
+  const schema = structuredClone(exampleLandingPage);
+  schema.seo.canonical = "  /campaign  ";
+  schema.seo.ogImage = "/og.jpg";
+
+  for (const origin of [
+    "https://user:pass@store.brand-platform.com",
+    "https://store.brand-platform.com/path",
+    "https://store.brand-platform.com?token=secret",
+    "https://store.brand-platform.com#fragment",
+  ]) {
+    const metadata = buildPageMetadata(schema, { origin });
+
+    assert.equal(metadata.alternates?.canonical, "/campaign");
+    assert.deepEqual(metadata.openGraph?.images, ["/og.jpg"]);
+  }
+});
+
 test("page metadata keeps localhost HTTP origins for local development", () => {
   const schema = structuredClone(exampleLandingPage);
   schema.seo.canonical = "  /campaign  ";

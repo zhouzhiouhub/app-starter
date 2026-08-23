@@ -126,6 +126,23 @@ test("sitemap entries ignore unsafe public origins", () => {
   assert.deepEqual(entries, []);
 });
 
+test("sitemap entries ignore origins with credentials or paths", () => {
+  for (const origin of [
+    "https://user:pass@web.brand-platform.com",
+    "https://web.brand-platform.com/path",
+    "https://web.brand-platform.com?token=secret",
+    "https://web.brand-platform.com#fragment",
+  ]) {
+    const entries = buildPublishedPageSitemapEntries({
+      locale: "en-US",
+      origin,
+      pages: [{ ...basePage, slug: "home" }],
+    });
+
+    assert.deepEqual(entries, []);
+  }
+});
+
 test("sitemap entries allow localhost HTTP origins for local development", () => {
   const entries = buildPublishedPageSitemapEntries({
     locale: "en-US",
