@@ -96,6 +96,37 @@ test("getPublishedPageBySlug returns null when published schema context mismatch
   assert.equal(result, null);
 });
 
+test("getPublishedPageBySlug returns null for corrupt published schemas", async () => {
+  const prisma = {
+    page: {
+      findUnique: async () => ({
+        publishedVersionId: "version-1",
+        slug: "home",
+        versions: [
+          {
+            id: "version-1",
+            schema: {
+              meta: {
+                slug: "home",
+              },
+            },
+          },
+        ],
+      }),
+    },
+    site: {
+      findUnique: async () => createPublicSite(),
+    },
+  };
+
+  const result = await getPublishedPageBySlug(prisma, "home", {
+    locale: "en-US",
+    market: "us",
+  });
+
+  assert.equal(result, null);
+});
+
 test("getPublishedPageBySlug returns null when the request host has no site", async () => {
   const prisma = {
     page: {

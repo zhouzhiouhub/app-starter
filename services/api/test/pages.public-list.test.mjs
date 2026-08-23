@@ -169,3 +169,55 @@ test("listPublishedPages reads schema from the published version only", async ()
   assert.equal(result.data[0].updatedAt, "2026-08-19T00:01:00.000Z");
   assert.equal(result.meta.total, 1);
 });
+
+test("listPublishedPages skips corrupt published schemas", async () => {
+  const publishedAt = new Date("2026-08-19T00:01:00.000Z");
+  const prisma = {
+    page: {
+      findMany: async () => [
+        {
+          publishedVersionId: "version-broken",
+          slug: "broken",
+          versions: [
+            {
+              createdAt: new Date("2026-08-19T00:00:00.000Z"),
+              id: "version-broken",
+              publishedAt,
+              schema: {
+                meta: {
+                  slug: "broken",
+                },
+              },
+            },
+          ],
+        },
+        {
+          publishedVersionId: "version-valid",
+          slug: "home",
+          versions: [
+            {
+              createdAt: new Date("2026-08-19T00:00:00.000Z"),
+              id: "version-valid",
+              publishedAt,
+              schema: createPublicPageSchema("home", "Home"),
+            },
+          ],
+        },
+      ],
+    },
+    site: {
+      findUnique: async () => createPublicSite(),
+    },
+  };
+
+  const result = await listPublishedPages(prisma, {
+    locale: "en-US",
+    market: "us",
+  });
+
+  assert.deepEqual(
+    result.data.map((page) => page.slug),
+    ["home"],
+  );
+  assert.equal(result.meta.total, 1);
+});

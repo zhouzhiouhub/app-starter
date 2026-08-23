@@ -4,8 +4,9 @@ import {
   matchesPublishedPageContext,
   type PublishedPageContext,
 } from "../pages.public-context.js";
+import { readPublishedSchemaSafely } from "../pages.public-schema.js";
 import { getPublicSite } from "../pages.site.js";
-import { parseSlug, readSchema } from "../pages.validation.js";
+import { parseSlug } from "../pages.validation.js";
 
 export async function getPublishedPageBySlug(
   prisma: PrismaService,
@@ -47,7 +48,11 @@ export async function getPublishedPageBySlug(
     return null;
   }
 
-  const schema = readSchema(published.schema, page.slug);
+  const schema = readPublishedSchemaSafely(published.schema, page.slug);
+  if (!schema) {
+    return null;
+  }
+
   if (!matchesPublishedPageContext(schema, context)) {
     return null;
   }

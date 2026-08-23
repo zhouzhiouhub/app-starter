@@ -4,8 +4,8 @@ import {
   matchesPublishedPageContext,
   type PublishedPageContext,
 } from "../pages.public-context.js";
+import { readPublishedSchemaSafely } from "../pages.public-schema.js";
 import { getPublicSite } from "../pages.site.js";
-import { readSchema } from "../pages.validation.js";
 
 type PublishedPageRecord = {
   publishedVersionId: string | null;
@@ -86,7 +86,11 @@ function toPublishedPageSummary(
     return [];
   }
 
-  const schema = readSchema(publishedVersion.schema, page.slug);
+  const schema = readPublishedSchemaSafely(publishedVersion.schema, page.slug);
+  if (!schema) {
+    return [];
+  }
+
   if (!matchesPublishedPageContext(schema, context)) {
     return [];
   }
