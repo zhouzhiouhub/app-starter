@@ -25,7 +25,7 @@ export function PageListTable(props: {
           key: "path",
           render: (_, page) => (
             <Typography.Text code>
-              {getStorefrontPagePath(page.slug)}
+              {getStorefrontPagePath(page.slug, page.locale)}
             </Typography.Text>
           ),
           title: "Storefront",
@@ -63,6 +63,7 @@ export function PageListTable(props: {
                 />
               </Tooltip>
               <ViewStorefrontLink
+                locale={page.locale}
                 published={page.status === "published"}
                 siteDomain={page.siteDomain}
                 slug={page.slug}

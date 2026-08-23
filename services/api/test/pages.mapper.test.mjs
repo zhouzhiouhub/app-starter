@@ -140,6 +140,11 @@ test("nextVersionNumber increments from the latest version", () => {
 
 test("toPageSummary serializes timestamps", () => {
   const createdAt = new Date("2026-08-18T00:00:00.000Z");
+  const schema = createInitialPageSchema({
+    slug: "home",
+    title: "Home",
+  });
+  schema.meta.locale = "de-DE";
   const summary = toPageSummary(
     {
       id: "page-1",
@@ -155,11 +160,73 @@ test("toPageSummary serializes timestamps", () => {
     {
       domain: "store.brand-platform.com",
     },
+    schema,
   );
 
   assert.equal(summary.createdAt, "2026-08-18T00:00:00.000Z");
+  assert.equal(summary.locale, "de-DE");
   assert.equal(summary.publishedVersionId, "version-1");
   assert.equal(summary.siteDomain, "store.brand-platform.com");
+});
+
+test("toPageSummary reads published locale before latest draft locale", () => {
+  const createdAt = new Date("2026-08-18T00:00:00.000Z");
+  const publishedSchema = createInitialPageSchema({
+    slug: "home",
+    title: "Home",
+  });
+  const draftSchema = createInitialPageSchema({
+    slug: "home",
+    title: "Home Draft",
+  });
+  publishedSchema.meta.locale = "de-DE";
+  draftSchema.meta.locale = "fr-FR";
+
+  const summary = toPageSummary(
+    {
+      id: "page-1",
+      siteId: "site-1",
+      slug: "home",
+      title: "Home",
+      type: "landing",
+      status: "published",
+      publishedVersionId: "version-published",
+      createdAt,
+      updatedAt: createdAt,
+      versions: [
+        { id: "version-draft", schema: draftSchema },
+        { id: "version-published", schema: publishedSchema },
+      ],
+    },
+    {
+      domain: "store.brand-platform.com",
+    },
+  );
+
+  assert.equal(summary.locale, "de-DE");
+});
+
+test("toPageSummary falls back from missing version locale", () => {
+  const createdAt = new Date("2026-08-18T00:00:00.000Z");
+  const summary = toPageSummary(
+    {
+      id: "page-1",
+      siteId: "site-1",
+      slug: "home",
+      title: "Home",
+      type: "landing",
+      status: "draft",
+      publishedVersionId: null,
+      createdAt,
+      updatedAt: createdAt,
+      versions: [{ id: "version-draft", schema: { meta: {} } }],
+    },
+    {
+      domain: "store.brand-platform.com",
+    },
+  );
+
+  assert.equal(summary.locale, "en-US");
 });
 
 test("toPageVersionSummary includes publish actor details", () => {

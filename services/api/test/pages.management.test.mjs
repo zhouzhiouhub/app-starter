@@ -51,6 +51,7 @@ test("page management use cases carry the current request id", async () => {
 
   assert.equal(created.meta.requestId, "request-page-create");
   assert.equal(listed.meta.requestId, "request-page-list");
+  assert.equal(listed.data[0].locale, "en-US");
   assert.equal(detail.meta.requestId, "request-page-detail");
   assert.equal(saved.meta.requestId, "request-page-save");
 });
@@ -81,6 +82,17 @@ function createPrisma() {
         versions: [],
       }),
       findMany: async () => [page],
+    },
+    pageVersion: {
+      findFirst: async () => ({
+        id: "version-1",
+        pageId: page.id,
+        schema: createInitialPageSchema({
+          slug: "campaign",
+          title: "Campaign",
+        }),
+      }),
+      findMany: async () => [],
     },
     site: {
       findFirst: async () => ({

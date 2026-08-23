@@ -1,6 +1,8 @@
 import {
   createFallbackPage,
+  defaultRuntimeConfig,
   getFallbackPageTemplateId,
+  localeCodeSchema,
   pageSchema,
   pageSlugSchema,
   pageTemplateIdSchema,
@@ -120,15 +122,18 @@ export function toPageSummary(
     publishedVersionId: string | null;
     createdAt: Date;
     updatedAt: Date;
+    versions?: PageSummaryVersion[];
   },
   site: {
     domain: string;
   },
+  schema?: PageSchema | null,
 ) {
   return {
     id: page.id,
     siteId: page.siteId,
     siteDomain: site.domain,
+    locale: readPageSummaryLocale(page, schema),
     slug: page.slug,
     title: page.title,
     type: page.type,
@@ -137,4 +142,54 @@ export function toPageSummary(
     createdAt: page.createdAt.toISOString(),
     updatedAt: page.updatedAt.toISOString(),
   };
+}
+
+type PageSummaryVersion = {
+  id: string;
+  schema: unknown;
+};
+
+function readPageSummaryLocale(
+  page: {
+    publishedVersionId: string | null;
+    versions?: PageSummaryVersion[];
+  },
+  schema?: PageSchema | null,
+): string {
+  return (
+    readSchemaLocale(schema) ??
+    readSchemaLocale(readPublishedVersionSchema(page)) ??
+    readSchemaLocale(page.versions?.[0]?.schema) ??
+    defaultRuntimeConfig.defaultLocale
+  );
+}
+
+function readPublishedVersionSchema(page: {
+  publishedVersionId: string | null;
+  versions?: PageSummaryVersion[];
+}): unknown {
+  if (!page.publishedVersionId) {
+    return undefined;
+  }
+
+  return page.versions?.find((version) => version.id === page.publishedVersionId)
+    ?.schema;
+}
+
+function readSchemaLocale(schema: unknown): string | null {
+  if (!schema || typeof schema !== "object" || Array.isArray(schema)) {
+    return null;
+  }
+
+  const meta = (schema as Record<string, unknown>).meta;
+
+  if (!meta || typeof meta !== "object" || Array.isArray(meta)) {
+    return null;
+  }
+
+  const parsed = localeCodeSchema.safeParse(
+    (meta as Record<string, unknown>).locale,
+  );
+
+  return parsed.success ? parsed.data : null;
 }

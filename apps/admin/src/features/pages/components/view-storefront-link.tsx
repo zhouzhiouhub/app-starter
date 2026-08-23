@@ -3,6 +3,7 @@ import { ExportOutlined } from "@ant-design/icons";
 import { getStorefrontPageUrl } from "../storefront-url";
 
 export function ViewStorefrontLink(props: {
+  locale: string;
   published: boolean;
   siteDomain: string;
   slug: string;
@@ -10,7 +11,7 @@ export function ViewStorefrontLink(props: {
   return (
     <Button
       disabled={!props.published}
-      href={getStorefrontPageUrl(props.slug, "en-US", props.siteDomain)}
+      href={getStorefrontPageUrl(props.slug, props.locale, props.siteDomain)}
       icon={<ExportOutlined />}
       rel="noreferrer"
       target="_blank"

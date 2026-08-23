@@ -21,7 +21,7 @@ export async function savePageDraft(
     scope: `pages:${id}:save-draft`,
     site,
     operation: async () => {
-      const page = await prisma.$transaction(async (tx) => {
+      const { page, schema } = await prisma.$transaction(async (tx) => {
         const current = await tx.page.findFirst({
           where: { id, siteId: site.id },
           include: {
@@ -59,16 +59,19 @@ export async function savePageDraft(
           });
         }
 
-        return tx.page.update({
-          where: { id: current.id },
-          data: {
-            title: schema.meta.title,
-          },
-        });
+        return {
+          page: await tx.page.update({
+            where: { id: current.id },
+            data: {
+              title: schema.meta.title,
+            },
+          }),
+          schema,
+        };
       });
 
       return {
-        data: toPageSummary(page, site),
+        data: toPageSummary(page, site, schema),
         meta: {
           requestId,
           tenantId: site.tenantId,

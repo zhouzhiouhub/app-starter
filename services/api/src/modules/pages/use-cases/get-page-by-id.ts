@@ -38,14 +38,16 @@ export async function getPageById(
         (version) => version.id === page.publishedVersionId,
       ) ?? null)
     : null;
+  const draftSchema = latest ? readSchema(latest.schema, page.slug) : null;
+  const publishedSchema = published
+    ? readSchema(published.schema, page.slug)
+    : null;
 
   return {
     data: {
-      ...toPageSummary(page, site),
-      draftSchema: latest ? readSchema(latest.schema, page.slug) : null,
-      publishedSchema: published
-        ? readSchema(published.schema, page.slug)
-        : null,
+      ...toPageSummary(page, site, draftSchema ?? publishedSchema),
+      draftSchema,
+      publishedSchema,
       versions: page.versions.map((version) =>
         toPageVersionSummary(version, authorsById.get(version.authorId)),
       ),

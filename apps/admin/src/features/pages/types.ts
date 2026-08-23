@@ -7,6 +7,7 @@ import type {
 export interface PageSummary {
   createdAt: string;
   id: string;
+  locale: string;
   publishedVersionId: string | null;
   siteDomain: string;
   siteId: string;

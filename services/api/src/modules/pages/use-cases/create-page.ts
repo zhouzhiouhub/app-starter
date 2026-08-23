@@ -50,7 +50,7 @@ export async function createPage(
         });
 
         return {
-          data: toPageSummary(page, site),
+          data: toPageSummary(page, site, schema),
           meta: {
             requestId,
             tenantId: site.tenantId,
