@@ -3,7 +3,10 @@ import { NextResponse, type NextRequest } from "next/server";
 import { storefrontRevalidateSecretHeader } from "@app-starter/schema";
 import { readRevalidatePayload } from "../../../lib/revalidate-request";
 import { readRevalidateRequestId } from "../../../lib/revalidate-request-id";
-import { createRevalidateErrorBody } from "../../../lib/revalidate-response";
+import {
+  createRevalidateErrorBody,
+  createRevalidateResponseInit,
+} from "../../../lib/revalidate-response";
 import {
   hasValidRevalidateSecret,
   readConfiguredRevalidateSecret,
@@ -61,18 +64,21 @@ export async function POST(request: NextRequest) {
     revalidatePath(path);
   }
 
-  return NextResponse.json({
-    data: {
-      paths,
-      tags,
-      revalidated: true,
+  return NextResponse.json(
+    {
+      data: {
+        paths,
+        tags,
+        revalidated: true,
+      },
+      meta: {
+        requestId,
+        locale: input.locale,
+        market: input.market,
+      },
     },
-    meta: {
-      requestId,
-      locale: input.locale,
-      market: input.market,
-    },
-  });
+    createRevalidateResponseInit(),
+  );
 }
 
 function readRequestId(request: NextRequest): string {
@@ -88,6 +94,6 @@ function errorResponse(input: {
 }) {
   return NextResponse.json(
     createRevalidateErrorBody(input),
-    { status: input.status },
+    createRevalidateResponseInit({ status: input.status }),
   );
 }

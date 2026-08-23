@@ -1,6 +1,23 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createRevalidateErrorBody } from "../src/lib/revalidate-response.ts";
+import {
+  createRevalidateErrorBody,
+  createRevalidateResponseInit,
+  revalidateResponseHeaders,
+} from "../src/lib/revalidate-response.ts";
+
+test("revalidate responses are marked non-cacheable", () => {
+  assert.deepEqual(revalidateResponseHeaders, {
+    "Cache-Control": "no-store",
+  });
+  assert.deepEqual(createRevalidateResponseInit(), {
+    headers: revalidateResponseHeaders,
+  });
+  assert.deepEqual(createRevalidateResponseInit({ status: 503 }), {
+    headers: revalidateResponseHeaders,
+    status: 503,
+  });
+});
 
 test("revalidate error response omits details when none are provided", () => {
   const body = createRevalidateErrorBody({
