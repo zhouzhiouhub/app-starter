@@ -69,6 +69,25 @@ test("API error message reader keeps legacy fallback behavior", () => {
   );
 });
 
+test("API request errors redact secrets from server messages", () => {
+  const error = createApiRequestError(
+    {
+      error: {
+        message:
+          "Webhook failed with Authorization: Bearer header.payload.signature and callback=https://auth.example.com/callback#access_token=fragment-token",
+      },
+    },
+    "Request failed.",
+  );
+
+  const formatted = formatRequestError(error);
+
+  assert.equal(formatted.includes("header.payload.signature"), false);
+  assert.equal(formatted.includes("fragment-token"), false);
+  assert.match(formatted, /Authorization: Bearer \[redacted\]/);
+  assert.match(formatted, /#access_token=\[redacted\]/);
+});
+
 test("API request errors summarize media archive usage details", () => {
   const error = createApiRequestError(
     {

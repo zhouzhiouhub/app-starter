@@ -39,6 +39,26 @@ test("API response reader preserves plain text error bodies", async () => {
   );
 });
 
+test("API response reader redacts secrets from plain text errors", async () => {
+  await assert.rejects(
+    readApiResponseJson(
+      new Response(
+        "Proxy failed Authorization: Bearer header.payload.signature https://uploads.example.com/object?X-Amz-Signature=signed-value#access_token=fragment-token",
+        { status: 502 },
+      ),
+      "Request failed.",
+    ),
+    (error) =>
+      error instanceof ApiRequestError &&
+      error.message.includes("header.payload.signature") === false &&
+      error.message.includes("signed-value") === false &&
+      error.message.includes("fragment-token") === false &&
+      error.message.includes("Authorization: Bearer [redacted]") &&
+      error.message.includes("X-Amz-Signature=[redacted]") &&
+      Boolean(error.message.includes("#access_token=[redacted]")),
+  );
+});
+
 test("response body reader avoids surfacing HTML error documents", async () => {
   const result = await readResponseBody(
     new Response("<html><body>Gateway error</body></html>", { status: 502 }),

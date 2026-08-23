@@ -1,4 +1,5 @@
 import { createApiRequestError } from "./api-error.ts";
+import { redactApiMessageSecrets } from "./api-message-redaction.ts";
 
 export async function readApiResponseJson<T>(
   response: Response,
@@ -34,5 +35,5 @@ function readPlainTextResponseMessage(text: string, status: number): string {
     return `Request failed (${status}).`;
   }
 
-  return normalized.slice(0, 200);
+  return redactApiMessageSecrets(normalized).slice(0, 200);
 }

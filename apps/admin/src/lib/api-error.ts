@@ -1,4 +1,5 @@
 import { getApiBaseUrl } from "./api-base-url.ts";
+import { redactApiMessageSecrets } from "./api-message-redaction.ts";
 
 interface ApiErrorPayload {
   code?: string;
@@ -26,7 +27,7 @@ export class ApiRequestError extends Error {
   requestId?: string;
 
   constructor(payload: ApiErrorPayload, fallback: string) {
-    super(payload.message ?? fallback);
+    super(redactApiMessageSecrets(payload.message ?? fallback));
     this.name = "ApiRequestError";
     this.code = payload.code;
     this.details = payload.details;
