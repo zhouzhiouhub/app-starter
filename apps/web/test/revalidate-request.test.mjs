@@ -7,6 +7,7 @@ import {
 } from "../src/lib/revalidate-request.ts";
 
 const defaults = {
+  fallbackLocale: "en-US",
   locale: "en-US",
   market: "us",
 };
@@ -50,6 +51,27 @@ test("revalidate payload defaults locale and market", () => {
     slug: "home",
   });
   assert.deepEqual(result.paths, ["/", "/en"]);
+});
+
+test("revalidate payload includes fallback locale cache tags", () => {
+  const result = parseRevalidatePayload(
+    {
+      locale: "de-DE",
+      market: "us",
+      slug: "contact",
+    },
+    defaults,
+  );
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.paths, ["/de/contact"]);
+  assert.deepEqual(result.tags, [
+    "published-page",
+    "published-page:us:de-DE",
+    "published-page:us:de-DE:contact",
+    "published-page:us:en-US",
+    "published-page:us:en-US:contact",
+  ]);
 });
 
 test("revalidate payload accepts safe site hosts for scoped tags", () => {
@@ -96,6 +118,7 @@ test("revalidate defaults ignore invalid environment values", () => {
   assert.deepEqual(
     readRevalidateDefaults({
       DEFAULT_LOCALE: "bad_locale",
+      FALLBACK_LOCALE: "bad_fallback",
       DEFAULT_MARKET: "US",
     }),
     defaults,

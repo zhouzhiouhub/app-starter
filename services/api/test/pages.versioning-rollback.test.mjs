@@ -98,6 +98,7 @@ test("rollbackPage publishes a new version using the selected version schema", a
   assert.equal(calls.pageUpdate.status, "published");
   assert.equal(calls.pageUpdate.title, "Previous Home");
   assert.deepEqual(calls.revalidation, {
+    fallbackLocale: "en-US",
     locale: "en-US",
     market: "us",
     requestId: "request-rollback-main",

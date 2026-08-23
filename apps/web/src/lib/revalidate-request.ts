@@ -40,6 +40,7 @@ export type RevalidatePayloadResult =
     };
 
 export type RevalidateDefaults = {
+  fallbackLocale: string;
   locale: string;
   market: string;
 };
@@ -132,7 +133,10 @@ export function parseRevalidatePayload(
     input,
     ok: true,
     paths: getPublishedPageRevalidationPaths(input),
-    tags: getPublishedPageCacheTags(input),
+    tags: getPublishedPageCacheTags({
+      ...input,
+      fallbackLocale: defaults.fallbackLocale,
+    }),
   };
 }
 
@@ -142,6 +146,7 @@ export function readRevalidateDefaults(
   const defaults = readWebRuntimeDefaults(env);
 
   return {
+    fallbackLocale: defaults.fallbackLocale,
     locale: defaults.defaultLocale,
     market: defaults.defaultMarket,
   };

@@ -5,6 +5,7 @@ import {
   type PageSchema,
   type StorefrontRevalidationResult,
 } from "@app-starter/schema";
+import { readApiRuntimeDefaults } from "../../common/runtime-defaults.js";
 import {
   createStorefrontRevalidationHeaders,
   createStorefrontRevalidationPayload,
@@ -16,6 +17,7 @@ const maxTimeoutMs = 30000;
 export type { StorefrontRevalidationResult };
 
 export type StorefrontRevalidationInput = {
+  fallbackLocale?: string;
   locale: string;
   market: string;
   requestId?: string;
@@ -46,7 +48,7 @@ export async function triggerStorefrontRevalidation(
   fetcher: Fetcher = fetch,
 ): Promise<StorefrontRevalidationResult> {
   const paths = getPublishedPageRevalidationPaths(input);
-  const tags = getPublishedPageCacheTags(input);
+  const tags = readStorefrontRevalidationTags(input);
   const secret = process.env.STOREFRONT_REVALIDATE_SECRET?.trim();
 
   if (!secret) {
@@ -106,7 +108,7 @@ export async function runStorefrontRevalidationSafely(
     return {
       paths: getPublishedPageRevalidationPaths(input),
       reason: "request-failed",
-      tags: getPublishedPageCacheTags(input),
+      tags: readStorefrontRevalidationTags(input),
       triggered: false,
     };
   }
@@ -147,6 +149,7 @@ export function createStorefrontRevalidationInput(
   requestId?: string,
 ): StorefrontRevalidationInput {
   const input: StorefrontRevalidationInput = {
+    fallbackLocale: readApiRuntimeDefaults().fallbackLocale,
     locale: schema.meta.locale,
     market: schema.meta.market,
     slug: schema.meta.slug,
@@ -161,6 +164,18 @@ export function createStorefrontRevalidationInput(
   }
 
   return input;
+}
+
+function readStorefrontRevalidationTags(
+  input: StorefrontRevalidationInput,
+): string[] {
+  return getPublishedPageCacheTags({
+    fallbackLocale: input.fallbackLocale,
+    locale: input.locale,
+    market: input.market,
+    siteHost: input.siteHost,
+    slug: input.slug,
+  });
 }
 
 export function resolveStorefrontRevalidateUrl(

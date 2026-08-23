@@ -133,6 +133,37 @@ test("storefront revalidation posts safe site hosts for scoped tags", async () =
   );
 });
 
+test("storefront revalidation reports fallback locale cache tags without posting them", async () => {
+  await withEnv(
+    revalidationEnv({
+      STOREFRONT_REVALIDATE_URL: "",
+      WEB_URL: "https://web.example.com/",
+    }),
+    async () => {
+      const { calls, fetcher } = createRecordingFetch();
+      const result = await triggerStorefrontRevalidation(
+        pageInput({ fallbackLocale: "en-US", locale: "de-DE" }),
+        fetcher,
+      );
+
+      assert.equal(result.triggered, true);
+      assert.deepEqual(result.paths, ["/de/contact"]);
+      assert.deepEqual(result.tags, [
+        "published-page",
+        "published-page:us:de-DE",
+        "published-page:us:de-DE:contact",
+        "published-page:us:en-US",
+        "published-page:us:en-US:contact",
+      ]);
+      assert.deepEqual(JSON.parse(calls[0].init.body), {
+        locale: "de-DE",
+        market: "us",
+        slug: "contact",
+      });
+    },
+  );
+});
+
 test("storefront revalidation skips unsafe URLs without fetching", async () => {
   await withEnv(
     revalidationEnv({

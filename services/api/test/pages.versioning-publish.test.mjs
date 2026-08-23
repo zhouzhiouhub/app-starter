@@ -69,6 +69,7 @@ test("publishPage triggers storefront revalidation after publishing", async () =
 
   assert.equal(calls.pageUpdate.publishedVersionId, "version-2");
   assert.deepEqual(calls.revalidation, {
+    fallbackLocale: "en-US",
     locale: "en-US",
     market: "us",
     requestId: "request-publish-main",
