@@ -7,7 +7,10 @@ import {
   Logger,
 } from "@nestjs/common";
 import { apiErrorCodes } from "@app-starter/schema";
-import { redactLogSecrets } from "./log-redaction.js";
+import {
+  redactLogSecrets,
+  redactStructuredSecrets,
+} from "./log-redaction.js";
 import { mapPrismaException } from "./prisma-error.js";
 import { readRequestId, type RequestHeadersLike } from "./request-id.js";
 
@@ -81,7 +84,7 @@ function normalizeError(body: unknown, statusCode: number): NormalizedError {
   if (typeof body === "string") {
     return {
       ...fallback,
-      message: body,
+      message: redactLogSecrets(body),
     };
   }
 
@@ -90,8 +93,13 @@ function normalizeError(body: unknown, statusCode: number): NormalizedError {
   }
 
   const record = body as Record<string, unknown>;
-  const details = record.details;
-  const message = readMessage(record.message, record.error, fallback.message);
+  const details =
+    record.details === undefined
+      ? undefined
+      : redactStructuredSecrets(record.details);
+  const message = redactLogSecrets(
+    readMessage(record.message, record.error, fallback.message),
+  );
 
   return {
     code: typeof record.code === "string" ? record.code : fallback.code,

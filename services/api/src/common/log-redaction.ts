@@ -25,6 +25,48 @@ const logSecretKeyPattern = [
   "x-amz-[a-z0-9-]+",
 ].join("|");
 
+const sensitiveLogKeySuffixes = [
+  "accesskeyid",
+  "accesstoken",
+  "apikey",
+  "clientsecret",
+  "connectionstring",
+  "credential",
+  "cookie",
+  "databaseurl",
+  "dsn",
+  "idtoken",
+  "jwt",
+  "password",
+  "passphrase",
+  "pem",
+  "previewtoken",
+  "privatekey",
+  "privatekeypem",
+  "refreshtoken",
+  "secret",
+  "secretaccesskey",
+  "session",
+  "sessionid",
+  "signature",
+  "token",
+];
+
+const sensitiveLogKeys = new Set([
+  "authorization",
+  "setcookie",
+  "xamzalgorithm",
+  "xamzcredential",
+  "xamzdate",
+  "xamzexpires",
+  "xamzsecuritytoken",
+  "xamzsignature",
+  "xamzsignedheaders",
+  ...sensitiveLogKeySuffixes,
+]);
+
+const redactedValue = "[redacted]";
+
 export function redactLogSecrets(value: unknown): string {
   return String(value)
     .replace(
@@ -60,6 +102,44 @@ export function redactLogSecrets(value: unknown): string {
         `(\\b(?:${logSecretKeyPattern})\\b\\s*[=:]\\s*)[^&#\\s)"'<;,]+`,
         "gi",
       ),
-      "$1[redacted]",
+      `$1${redactedValue}`,
     );
+}
+
+export function redactStructuredSecrets(value: unknown): unknown {
+  if (typeof value === "string") {
+    return redactLogSecrets(value);
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => redactStructuredSecrets(item));
+  }
+
+  if (!isPlainRecord(value)) {
+    return value;
+  }
+
+  return Object.fromEntries(
+    Object.entries(value).map(([key, item]) => [
+      key,
+      isSensitiveLogKey(key) ? redactedValue : redactStructuredSecrets(item),
+    ]),
+  );
+}
+
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const prototype = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
+}
+
+function isSensitiveLogKey(key: string): boolean {
+  const normalized = key.replace(/[-_\s]/g, "").toLowerCase();
+  return (
+    sensitiveLogKeys.has(normalized) ||
+    sensitiveLogKeySuffixes.some((suffix) => normalized.endsWith(suffix))
+  );
 }

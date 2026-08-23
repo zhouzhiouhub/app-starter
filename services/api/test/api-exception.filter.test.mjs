@@ -96,6 +96,62 @@ test("API exception filter keeps client validation details", () => {
   });
 });
 
+test("API exception filter redacts secrets from client error responses", () => {
+  const filter = new ApiExceptionFilter();
+  const { host, response } = createHost();
+
+  filter.catch(
+    new BadRequestException({
+      code: apiErrorCodes.VALIDATION_ERROR,
+      details: {
+        attempts: [
+          "Authorization: Bearer header.payload.signature",
+          { secretAccessKey: "r2-secret" },
+        ],
+        callbackUrl:
+          "https://auth.example.com/callback#access_token=fragment-token",
+        nested: {
+          databaseUrl: "postgresql://db-user:db-secret@db.example.com/app",
+        },
+        token: "detail-token",
+      },
+      message: "Invalid callback token=message-secret",
+    }),
+    host,
+  );
+
+  assert.equal(response.statusCode, 400);
+  assert.equal(
+    response.body.error.message,
+    "Invalid callback token=[redacted]",
+  );
+  assert.equal(response.body.error.details.token, "[redacted]");
+  assert.equal(
+    response.body.error.details.callbackUrl,
+    "https://auth.example.com/callback#access_token=[redacted]",
+  );
+  assert.equal(
+    response.body.error.details.nested.databaseUrl,
+    "[redacted]",
+  );
+  assert.equal(
+    response.body.error.details.attempts[0],
+    "Authorization: Bearer [redacted]",
+  );
+  assert.equal(
+    response.body.error.details.attempts[1].secretAccessKey,
+    "[redacted]",
+  );
+  const serialized = JSON.stringify(response.body);
+  assert.equal(serialized.includes("message-secret"), false);
+  assert.equal(serialized.includes("detail-token"), false);
+  assert.equal(serialized.includes("db-user"), false);
+  assert.equal(serialized.includes("db-secret"), false);
+  assert.equal(serialized.includes("fragment-token"), false);
+  assert.equal(serialized.includes("header.payload.signature"), false);
+  assert.equal(serialized.includes("r2-secret"), false);
+});
+
 test("request id helper accepts only compact safe request identifiers", () => {
   assert.equal(
     readRequestId({ "x-request-id": " request-1.alpha:beta_2 " }),
