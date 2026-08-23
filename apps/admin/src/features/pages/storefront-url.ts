@@ -6,6 +6,8 @@ import {
 
 const maxPreviewTokenLength = 2048;
 const previewTokenPattern = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]{43}$/;
+const storefrontLinkUnavailableMessage =
+  "Configure VITE_WEB_URL or WEB_URL with a safe storefront origin before opening storefront links.";
 
 export class AdminStorefrontUrlConfigurationError extends Error {
   constructor() {
@@ -30,6 +32,15 @@ interface StorefrontOriginInput extends WebOriginInput {
 export type StorefrontPageUrlResult =
   | {
       href: string;
+      ok: true;
+    }
+  | {
+      message: string;
+      ok: false;
+    };
+
+export type StorefrontLinkAvailability =
+  | {
       ok: true;
     }
   | {
@@ -72,8 +83,26 @@ export function readStorefrontPageUrl(input: {
   } catch (error) {
     if (error instanceof AdminStorefrontUrlConfigurationError) {
       return {
-        message:
-          "Configure VITE_WEB_URL or WEB_URL with a safe storefront origin before opening storefront links.",
+        message: storefrontLinkUnavailableMessage,
+        ok: false,
+      };
+    }
+
+    throw error;
+  }
+}
+
+export function readStorefrontLinkAvailability(input?: {
+  runtime?: WebOriginInput;
+  siteDomain?: string | null;
+}): StorefrontLinkAvailability {
+  try {
+    readStorefrontOrigin(input?.siteDomain, input?.runtime);
+    return { ok: true };
+  } catch (error) {
+    if (error instanceof AdminStorefrontUrlConfigurationError) {
+      return {
+        message: storefrontLinkUnavailableMessage,
         ok: false,
       };
     }

@@ -4,6 +4,7 @@ import {
   AdminStorefrontUrlConfigurationError,
   getStorefrontPageUrl,
   getStorefrontPreviewUrl,
+  readStorefrontLinkAvailability,
   readStorefrontPageUrl,
   resolveStorefrontOrigin,
   resolveWebOrigin,
@@ -173,6 +174,31 @@ test("storefront URL helper returns a display-safe unavailable result", () => {
         "Configure VITE_WEB_URL or WEB_URL with a safe storefront origin before opening storefront links.",
       ok: false,
     },
+  );
+});
+
+test("storefront URL helper checks preview link availability before token creation", () => {
+  const runtime = {
+    configured: "http://localhost:3000",
+    fallbackConfigured: "https://store.example.com",
+    isProd: true,
+    windowLocation: {
+      hostname: "admin.brand-platform.com",
+      protocol: "https:",
+    },
+  };
+
+  assert.deepEqual(readStorefrontLinkAvailability({ runtime }), {
+    message:
+      "Configure VITE_WEB_URL or WEB_URL with a safe storefront origin before opening storefront links.",
+    ok: false,
+  });
+  assert.deepEqual(
+    readStorefrontLinkAvailability({
+      runtime,
+      siteDomain: "Store.Brand-Platform.com:443",
+    }),
+    { ok: true },
   );
 });
 

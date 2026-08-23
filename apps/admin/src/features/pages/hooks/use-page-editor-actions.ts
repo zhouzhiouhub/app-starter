@@ -20,7 +20,10 @@ import {
 } from "../publish-preflight";
 import { buildPublicationFeedback } from "../revalidation-feedback";
 import { openStorefrontPreviewWindow } from "../preview-window";
-import { getStorefrontPreviewUrl } from "../storefront-url";
+import {
+  getStorefrontPreviewUrl,
+  readStorefrontLinkAvailability,
+} from "../storefront-url";
 import type { EditorFeedback } from "../types";
 
 interface SaveDraftOptions {
@@ -145,6 +148,18 @@ export function usePageEditorActions(input: UsePageEditorActionsInput) {
 
   const openPreview = useCallback(async () => {
     if (!input.pageId || !input.draftSchema) {
+      return;
+    }
+
+    const storefrontLinkAvailability = readStorefrontLinkAvailability({
+      siteDomain: input.siteDomain,
+    });
+
+    if (!storefrontLinkAvailability.ok) {
+      input.setFeedback({
+        message: `Preview is unavailable. ${storefrontLinkAvailability.message}`,
+        type: "warning",
+      });
       return;
     }
 
