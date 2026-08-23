@@ -158,7 +158,7 @@ test("preview page lookup rejects malformed tokens before fetching", async () =>
   await withFetch(
     async (url) => {
       requests.push(String(url));
-      return jsonResponse({ data: createFallbackPage({ slug: "home" }) });
+      return previewJsonResponse(createFallbackPage({ slug: "home" }));
     },
     async () => {
       for (const token of [
@@ -184,9 +184,9 @@ test("preview page lookup fetches only compact token candidates", async () => {
   await withFetch(
     async (url, init) => {
       requests.push({ init, url: String(url) });
-      return jsonResponse({
-        data: createFallbackPage({ slug: "campaign", title: "Campaign" }),
-      });
+      return previewJsonResponse(
+        createFallbackPage({ slug: "campaign", title: "Campaign" }),
+      );
     },
     async () => {
       const page = await getPreviewPage(token);
@@ -200,6 +200,46 @@ test("preview page lookup fetches only compact token candidates", async () => {
   assert.deepEqual(requests[0].init, { cache: "no-store" });
 });
 
+test("preview page lookup rejects non-preview responses", async () => {
+  const requests = [];
+  const token = `payload.${"a".repeat(43)}`;
+
+  await withFetch(
+    async (url) => {
+      requests.push(String(url));
+      return jsonResponse({
+        data: createFallbackPage({ slug: "campaign" }),
+        meta: { slug: "campaign" },
+      });
+    },
+    async () => {
+      assert.equal(await getPreviewPage(token), null);
+    },
+  );
+
+  assert.equal(requests.length, 1);
+});
+
+test("preview page lookup rejects schema and response slug mismatches", async () => {
+  const requests = [];
+  const token = `payload.${"a".repeat(43)}`;
+
+  await withFetch(
+    async (url) => {
+      requests.push(String(url));
+      return jsonResponse({
+        data: createFallbackPage({ slug: "campaign" }),
+        meta: { preview: true, slug: "home" },
+      });
+    },
+    async () => {
+      assert.equal(await getPreviewPage(token), null);
+    },
+  );
+
+  assert.equal(requests.length, 1);
+});
+
 test("preview page lookup forwards the safe storefront host", async () => {
   const requests = [];
   const token = `payload.${"a".repeat(43)}`;
@@ -207,9 +247,9 @@ test("preview page lookup forwards the safe storefront host", async () => {
   await withFetch(
     async (url, init) => {
       requests.push({ init, url: String(url) });
-      return jsonResponse({
-        data: createFallbackPage({ slug: "campaign", title: "Campaign" }),
-      });
+      return previewJsonResponse(
+        createFallbackPage({ slug: "campaign", title: "Campaign" }),
+      );
     },
     async () => {
       const page = await getPreviewPage(token, {
@@ -237,6 +277,16 @@ function jsonResponse(data) {
       return data;
     },
   };
+}
+
+function previewJsonResponse(data) {
+  return jsonResponse({
+    data,
+    meta: {
+      preview: true,
+      slug: data.meta.slug,
+    },
+  });
 }
 
 async function withFetch(fetchImplementation, fn) {

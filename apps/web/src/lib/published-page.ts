@@ -104,10 +104,32 @@ export async function getPreviewPage(
     }
 
     const result = (await response.json()) as { data?: unknown };
-    return pageSchema.parse(result.data);
+    return readPreviewSchema(result);
   } catch {
     return null;
   }
+}
+
+function readPreviewSchema(result: {
+  data?: unknown;
+  meta?: unknown;
+}): PageSchema | null {
+  const parsed = pageSchema.safeParse(result.data);
+
+  if (!parsed.success || !isMatchingPreviewMeta(result.meta, parsed.data)) {
+    return null;
+  }
+
+  return parsed.data;
+}
+
+function isMatchingPreviewMeta(meta: unknown, schema: PageSchema): boolean {
+  if (!meta || typeof meta !== "object" || Array.isArray(meta)) {
+    return false;
+  }
+
+  const record = meta as Record<string, unknown>;
+  return record.preview === true && record.slug === schema.meta.slug;
 }
 
 async function fetchPublishedSchema(input: {
