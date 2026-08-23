@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  adminRequest,
   loginWithPassword,
   readAuthApiErrorMessage,
 } from "../src/features/auth/api.ts";
@@ -81,6 +82,154 @@ test("auth API rejects malformed session responses before storage", async () => 
   assert.equal(storage.getItem(AUTH_SESSION_STORAGE_KEY), null);
 });
 
+test("admin requests share one refresh when access tokens expire together", async () => {
+  const storage = createMemoryStorage();
+  const calls = [];
+
+  storage.setItem(
+    AUTH_SESSION_STORAGE_KEY,
+    JSON.stringify({
+      accessToken: "expired-access-token",
+      refreshToken: "refresh-token-1",
+      user: {
+        email: "admin@example.com",
+        id: "user-1",
+        name: "Admin",
+        roles: ["admin"],
+        scopes: ["page:read"],
+        tenantId: "tenant-1",
+      },
+    }),
+  );
+
+  await withLocalStorage(storage, async () => {
+    await withFetch(async (url, init) => {
+      calls.push({
+        authorization: new Headers(init?.headers).get("Authorization"),
+        body: init?.body,
+        url: String(url),
+      });
+
+      if (String(url).endsWith("/auth/refresh")) {
+        return jsonResponse({
+          data: {
+            accessToken: "fresh-access-token",
+            refreshToken: "refresh-token-2",
+            user: {
+              email: "admin@example.com",
+              id: "user-1",
+              name: "Admin",
+              roles: ["admin"],
+              scopes: ["page:read"],
+              tenantId: "tenant-1",
+            },
+          },
+        });
+      }
+
+      if (
+        new Headers(init?.headers).get("Authorization") ===
+        "Bearer fresh-access-token"
+      ) {
+        return jsonResponse({ data: { ok: true } });
+      }
+
+      return new Response("", { status: 401 });
+    }, async () => {
+      const responses = await Promise.all([
+        adminRequest("/pages"),
+        adminRequest("/media"),
+      ]);
+
+      assert.equal(responses[0].ok, true);
+      assert.equal(responses[1].ok, true);
+    });
+  });
+
+  assert.equal(
+    calls.filter((call) => call.url.endsWith("/auth/refresh")).length,
+    1,
+  );
+  assert.equal(
+    calls.filter((call) => call.authorization === "Bearer expired-access-token")
+      .length,
+    2,
+  );
+  assert.equal(
+    calls.filter((call) => call.authorization === "Bearer fresh-access-token")
+      .length,
+    2,
+  );
+  assert.match(
+    String(calls.find((call) => call.url.endsWith("/auth/refresh"))?.body),
+    /refresh-token-1/,
+  );
+});
+
+test("admin refresh does not restore sessions changed while refresh is in flight", async () => {
+  const storage = createMemoryStorage();
+  let markRefreshStarted;
+  let resolveRefresh;
+  const refreshStarted = new Promise((resolve) => {
+    markRefreshStarted = resolve;
+  });
+
+  storage.setItem(
+    AUTH_SESSION_STORAGE_KEY,
+    JSON.stringify({
+      accessToken: "expired-access-token",
+      refreshToken: "refresh-token-1",
+      user: {
+        email: "admin@example.com",
+        id: "user-1",
+        name: "Admin",
+        roles: ["admin"],
+        scopes: ["page:read"],
+        tenantId: "tenant-1",
+      },
+    }),
+  );
+
+  await withLocalStorage(storage, async () => {
+    await withFetch(async (url) => {
+      if (String(url).endsWith("/auth/refresh")) {
+        storage.removeItem(AUTH_SESSION_STORAGE_KEY);
+        markRefreshStarted();
+
+        return new Promise((resolve) => {
+          resolveRefresh = () =>
+            resolve(
+              jsonResponse({
+                data: {
+                  accessToken: "fresh-access-token",
+                  refreshToken: "refresh-token-2",
+                  user: {
+                    email: "admin@example.com",
+                    id: "user-1",
+                    name: "Admin",
+                    roles: ["admin"],
+                    scopes: ["page:read"],
+                    tenantId: "tenant-1",
+                  },
+                },
+              }),
+            );
+        });
+      }
+
+      return new Response("", { status: 401 });
+    }, async () => {
+      const request = adminRequest("/pages");
+      await refreshStarted;
+      resolveRefresh();
+
+      await assert.rejects(request, /Authentication is required/);
+    });
+  });
+
+  assert.equal(storage.getItem(AUTH_SESSION_STORAGE_KEY), null);
+});
+
 function createMemoryStorage() {
   const values = new Map();
 
@@ -95,6 +244,10 @@ function createMemoryStorage() {
       values.set(key, value);
     },
   };
+}
+
+function jsonResponse(body) {
+  return new Response(JSON.stringify(body), { status: 200 });
 }
 
 async function withFetch(fetchImplementation, callback) {

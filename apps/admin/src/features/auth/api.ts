@@ -16,6 +16,8 @@ export class AuthRequiredError extends Error {
   }
 }
 
+let refreshAuthSessionPromise: Promise<AuthSession | null> | null = null;
+
 export async function loginWithPassword(input: {
   email: string;
   password: string;
@@ -94,7 +96,15 @@ export async function adminRequest(
   return retried;
 }
 
-async function refreshAuthSession(): Promise<AuthSession | null> {
+function refreshAuthSession(): Promise<AuthSession | null> {
+  refreshAuthSessionPromise ??= refreshAuthSessionOnce().finally(() => {
+    refreshAuthSessionPromise = null;
+  });
+
+  return refreshAuthSessionPromise;
+}
+
+async function refreshAuthSessionOnce(): Promise<AuthSession | null> {
   const session = readAuthSession();
 
   if (!session?.refreshToken) {
@@ -112,6 +122,12 @@ async function refreshAuthSession(): Promise<AuthSession | null> {
   }
 
   const next = await readSessionResponse(response, "Refresh failed.");
+  const current = readAuthSession();
+
+  if (current?.refreshToken !== session.refreshToken) {
+    return null;
+  }
+
   writeAuthSession(next);
   return next;
 }
