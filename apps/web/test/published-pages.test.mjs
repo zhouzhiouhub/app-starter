@@ -60,6 +60,7 @@ test("published pages list forwards the safe storefront host", async () => {
       return jsonResponse({
         data: [
           {
+            noIndex: false,
             slug: "home",
             title: "Home",
             updatedAt: "2026-08-19T00:00:00.000Z",
@@ -104,16 +105,19 @@ test("published pages list drops unsafe summary slugs", async () => {
       jsonResponse({
         data: [
           {
+            noIndex: false,
             slug: "home",
             title: "Home",
             updatedAt: "2026-08-21T00:00:00.000Z",
           },
           {
+            noIndex: false,
             slug: "../admin",
             title: "Bad",
             updatedAt: "2026-08-21T00:00:00.000Z",
           },
           {
+            noIndex: false,
             slug: "campaign<script>",
             title: "Bad",
             updatedAt: "2026-08-21T00:00:00.000Z",
@@ -140,17 +144,20 @@ test("published pages list drops invalid summary timestamps", async () => {
       jsonResponse({
         data: [
           {
+            noIndex: false,
             publishedAt: "2026-08-20T00:00:00Z",
             slug: "home",
             title: "Home",
             updatedAt: "2026-08-21T00:00:00Z",
           },
           {
+            noIndex: false,
             slug: "bad-date",
             title: "Bad date",
             updatedAt: "not-a-date",
           },
           {
+            noIndex: false,
             publishedAt: "also-not-a-date",
             slug: "invalid-published-date",
             title: "No published date",
@@ -180,6 +187,44 @@ test("published pages list drops invalid summary timestamps", async () => {
           updatedAt: "2026-08-22T00:00:00.000Z",
         },
       ]);
+    },
+  );
+});
+
+test("published pages list drops summaries with malformed noIndex flags", async () => {
+  await withFetch(
+    async () =>
+      jsonResponse({
+        data: [
+          {
+            noIndex: true,
+            slug: "hidden",
+            title: "Hidden",
+            updatedAt: "2026-08-21T00:00:00.000Z",
+          },
+          {
+            noIndex: "true",
+            slug: "string-noindex",
+            title: "Malformed noIndex",
+            updatedAt: "2026-08-21T00:00:00.000Z",
+          },
+          {
+            slug: "missing-noindex",
+            title: "Missing noIndex",
+            updatedAt: "2026-08-21T00:00:00.000Z",
+          },
+        ],
+      }),
+    async () => {
+      const pages = await listPublishedPages({
+        locale: "en-US",
+        market: "us",
+      });
+
+      assert.deepEqual(
+        pages.map((page) => ({ noIndex: page.noIndex, slug: page.slug })),
+        [{ noIndex: true, slug: "hidden" }],
+      );
     },
   );
 });

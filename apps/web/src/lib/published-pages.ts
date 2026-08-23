@@ -83,6 +83,7 @@ function readPublishedPageSummary(value: unknown): PublishedPageSummary[] {
 
   if (
     !slug.success ||
+    typeof record.noIndex !== "boolean" ||
     typeof record.title !== "string" ||
     !updatedAt
   ) {
@@ -91,7 +92,7 @@ function readPublishedPageSummary(value: unknown): PublishedPageSummary[] {
 
   return [
     {
-      noIndex: record.noIndex === true,
+      noIndex: record.noIndex,
       publishedAt: readIsoDateString(record.publishedAt),
       slug: slug.data,
       title: record.title,
