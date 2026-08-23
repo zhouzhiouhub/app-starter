@@ -29,8 +29,14 @@ test("audit service appends audit log records", async () => {
         apiKey: "api-key",
         databaseUrl: "postgresql://user:secret@db.example.com/app",
         idToken: "header.payload.signature",
+        note: "Authorization: Bearer header.payload.signature",
+        previewApiUrl:
+          "https://api.example.com/api/v1/public/preview/payload.signature",
         sentryDsn: "https://public:secret@sentry.example.com/1",
+        uploadUrl:
+          "https://uploads.example.com/object?X-Amz-Signature=signed-value#access_token=fragment-token",
         previewToken: "preview-token",
+        publicUrl: "https://store.example.com/page?utm_source=newsletter",
         requestSignature: "signature-value",
         sessionId: "session-id",
       },
@@ -57,8 +63,14 @@ test("audit service appends audit log records", async () => {
         apiKey: "[redacted]",
         databaseUrl: "[redacted]",
         idToken: "[redacted]",
+        note: "Authorization: Bearer [redacted]",
+        previewApiUrl:
+          "https://api.example.com/api/v1/public/preview/[redacted]",
         sentryDsn: "[redacted]",
+        uploadUrl:
+          "https://uploads.example.com/object?X-Amz-Signature=[redacted]#access_token=[redacted]",
         previewToken: "[redacted]",
+        publicUrl: "https://store.example.com/page?utm_source=newsletter",
         requestSignature: "[redacted]",
         sessionId: "[redacted]",
       },
@@ -120,6 +132,8 @@ test("audit service lists tenant-scoped logs with filters and pagination", async
             createdAt,
             metadata: {
               apiToken: "api-token",
+              detail:
+                "Preview URL /api/v1/public/preview/payload.signature",
               nested: { previewToken: "preview-token" },
               schema: { sections: [] },
               siteId: "site-1",
@@ -165,6 +179,10 @@ test("audit service lists tenant-scoped logs with filters and pagination", async
   assert.equal(response.data[0].createdAt, "2026-08-19T00:00:00.000Z");
   assert.equal(response.data[0].metadata.slug, "home");
   assert.equal(response.data[0].metadata.apiToken, "[redacted]");
+  assert.equal(
+    response.data[0].metadata.detail,
+    "Preview URL /api/v1/public/preview/[redacted]",
+  );
   assert.equal(response.data[0].metadata.nested.previewToken, "[redacted]");
   assert.equal(response.data[0].metadata.schema, "[redacted]");
   assert.equal(response.data[0].metadata.token, "[redacted]");

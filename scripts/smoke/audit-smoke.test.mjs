@@ -63,6 +63,31 @@ test("smoke helpers validate safe page audit logs", () => {
     true,
   );
   assert.equal(
+    hasUnsafeAuditMetadata({
+      nested: {
+        detail: "Authorization: Bearer header.payload.signature",
+      },
+    }),
+    true,
+  );
+  assert.equal(
+    hasUnsafeAuditMetadata({
+      nested: {
+        previewApiUrl:
+          "https://api.example.com/api/v1/public/preview/payload.signature",
+      },
+    }),
+    true,
+  );
+  assert.equal(
+    hasUnsafeAuditMetadata({
+      nested: {
+        publicUrl: "https://store.example.com/page?utm_source=newsletter",
+      },
+    }),
+    false,
+  );
+  assert.equal(
     isPageAuditLog(
       {
         action: "page.rolled_back",

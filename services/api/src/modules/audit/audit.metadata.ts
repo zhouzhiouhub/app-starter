@@ -1,4 +1,5 @@
 import type { Prisma } from "@prisma/client";
+import { redactLogSecrets } from "../../common/log-redaction.js";
 
 const redactedValue = "[redacted]";
 const sensitiveMetadataKeys = new Set([
@@ -46,7 +47,7 @@ function sanitizeAuditMetadataValue(value: unknown): unknown {
   }
 
   if (!value || typeof value !== "object") {
-    return isJsonPrimitive(value) ? value : null;
+    return isJsonPrimitive(value) ? sanitizeAuditMetadataPrimitive(value) : null;
   }
 
   return Object.fromEntries(
@@ -93,4 +94,10 @@ function isJsonPrimitive(value: unknown): value is string | number | boolean {
     (typeof value === "number" && Number.isFinite(value)) ||
     typeof value === "boolean"
   );
+}
+
+function sanitizeAuditMetadataPrimitive(
+  value: string | number | boolean,
+): string | number | boolean {
+  return typeof value === "string" ? redactLogSecrets(value) : value;
 }

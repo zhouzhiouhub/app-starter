@@ -34,6 +34,10 @@ export function isPageAuditLog(log, options) {
 }
 
 export function hasUnsafeAuditMetadata(value) {
+  if (typeof value === "string") {
+    return redactSmokeSecrets(value) !== value;
+  }
+
   if (Array.isArray(value)) {
     return value.some((item) => hasUnsafeAuditMetadata(item));
   }

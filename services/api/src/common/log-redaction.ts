@@ -73,6 +73,7 @@ export function redactLogSecrets(value: unknown): string {
       /\b([a-z][a-z0-9+.-]*:\/\/)([^/?#\s)"'<@]+)(?::([^/?#\s)"'<@]*))?@/gi,
       "$1[redacted]@",
     )
+    .replace(/(\/public\/preview\/)[^/?#\s)"']+/gi, "$1[redacted]")
     .replace(
       /(\bAuthorization\s*[:=]?\s*Bearer\s+)[a-zA-Z0-9._-]+/gi,
       "$1[redacted]",
