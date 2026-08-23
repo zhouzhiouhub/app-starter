@@ -110,7 +110,11 @@ export async function publishPage(
           market: schema.meta.market,
           locale: schema.meta.locale,
           revalidation: await runStorefrontRevalidationSafely(
-            createStorefrontRevalidationInput(schema, site.domain),
+            createStorefrontRevalidationInput(
+              schema,
+              site.domain,
+              requestId,
+            ),
             revalidator,
           ),
         },

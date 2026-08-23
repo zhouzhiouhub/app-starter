@@ -81,7 +81,10 @@ test("storefront revalidation posts the page payload with secret header", async 
     }),
     async () => {
       const { calls, fetcher } = createRecordingFetch();
-      const result = await triggerStorefrontRevalidation(pageInput(), fetcher);
+      const result = await triggerStorefrontRevalidation(
+        pageInput({ requestId: "request-publish-1" }),
+        fetcher,
+      );
 
       assert.equal(result.triggered, true);
       assert.deepEqual(result.paths, ["/en/contact"]);
@@ -98,6 +101,7 @@ test("storefront revalidation posts the page payload with secret header", async 
         calls[0].init.headers["x-storefront-revalidate-secret"],
         "secret-1",
       );
+      assert.equal(calls[0].init.headers["X-Request-Id"], "request-publish-1");
       assert.deepEqual(JSON.parse(calls[0].init.body), pageInput());
     },
   );

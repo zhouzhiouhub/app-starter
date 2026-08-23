@@ -63,12 +63,15 @@ test("publishPage triggers storefront revalidation after publishing", async () =
         triggered: true,
       };
     },
+    undefined,
+    "request-publish-main",
   );
 
   assert.equal(calls.pageUpdate.publishedVersionId, "version-2");
   assert.deepEqual(calls.revalidation, {
     locale: "en-US",
     market: "us",
+    requestId: "request-publish-main",
     siteHost: "store.brand-platform.com",
     slug: "contact",
   });
@@ -138,8 +141,10 @@ test("publishPage refreshes revalidation on idempotent replay", async () => {
     idempotencyRecord: createMemoryIdempotencyRecord(idempotencyCalls),
   };
   let revalidationAttempts = 0;
+  const revalidationInputs = [];
   const key = "7f10f6d3-02d9-4f3d-a69d-49b26ec63132";
-  const revalidator = async () => {
+  const revalidator = async (input) => {
+    revalidationInputs.push(input);
     revalidationAttempts += 1;
 
     if (revalidationAttempts === 1) {
@@ -179,6 +184,8 @@ test("publishPage refreshes revalidation on idempotent replay", async () => {
   assert.equal(second.meta.revalidation.triggered, true);
   assert.equal(calls.versionCreates, 1);
   assert.equal(revalidationAttempts, 2);
+  assert.equal(revalidationInputs[0].requestId, "request-publish-first");
+  assert.equal(revalidationInputs[1].requestId, "request-publish-retry");
   assert.deepEqual(idempotencyCalls, [
     ["findUnique", "pages:page-1:publish"],
     ["create", "pages:page-1:publish"],

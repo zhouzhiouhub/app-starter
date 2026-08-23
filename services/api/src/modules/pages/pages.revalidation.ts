@@ -3,9 +3,12 @@ import {
   getPublishedPageRevalidationPaths,
   isUnsafeProductionHostname,
   type PageSchema,
-  storefrontRevalidateSecretHeader,
   type StorefrontRevalidationResult,
 } from "@app-starter/schema";
+import {
+  createStorefrontRevalidationHeaders,
+  createStorefrontRevalidationPayload,
+} from "./pages.revalidation-request.js";
 
 const defaultTimeoutMs = 5000;
 const maxTimeoutMs = 30000;
@@ -15,6 +18,7 @@ export type { StorefrontRevalidationResult };
 export type StorefrontRevalidationInput = {
   locale: string;
   market: string;
+  requestId?: string;
   siteHost?: string | null;
   slug: string;
 };
@@ -63,11 +67,8 @@ export async function triggerStorefrontRevalidation(
 
   try {
     const response = await fetcher(url, {
-      body: JSON.stringify(input),
-      headers: {
-        "Content-Type": "application/json",
-        [storefrontRevalidateSecretHeader]: secret,
-      },
+      body: JSON.stringify(createStorefrontRevalidationPayload(input)),
+      headers: createStorefrontRevalidationHeaders(secret, input.requestId),
       method: "POST",
       signal: controller.signal,
     });
@@ -129,7 +130,11 @@ export async function refreshStorefrontRevalidationResponse<
       ...response.meta,
       requestId: input.requestId,
       revalidation: await runStorefrontRevalidationSafely(
-        createStorefrontRevalidationInput(schema, input.siteHost),
+        createStorefrontRevalidationInput(
+          schema,
+          input.siteHost,
+          input.requestId,
+        ),
         input.revalidator,
       ),
     },
@@ -139,12 +144,17 @@ export async function refreshStorefrontRevalidationResponse<
 export function createStorefrontRevalidationInput(
   schema: PageSchema,
   siteHost?: string | null,
+  requestId?: string,
 ): StorefrontRevalidationInput {
   const input: StorefrontRevalidationInput = {
     locale: schema.meta.locale,
     market: schema.meta.market,
     slug: schema.meta.slug,
   };
+
+  if (requestId) {
+    input.requestId = requestId;
+  }
 
   if (siteHost) {
     input.siteHost = siteHost;

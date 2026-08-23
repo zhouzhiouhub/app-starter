@@ -84,6 +84,8 @@ test("rollbackPage publishes a new version using the selected version schema", a
       calls.revalidation = input;
       return { paths: ["/", "/en"], tags: ["published-page"], triggered: true };
     },
+    undefined,
+    "request-rollback-main",
   );
 
   assert.equal(result.data.meta.slug, "home");
@@ -98,6 +100,7 @@ test("rollbackPage publishes a new version using the selected version schema", a
   assert.deepEqual(calls.revalidation, {
     locale: "en-US",
     market: "us",
+    requestId: "request-rollback-main",
     siteHost: "store.brand-platform.com",
     slug: "home",
   });
