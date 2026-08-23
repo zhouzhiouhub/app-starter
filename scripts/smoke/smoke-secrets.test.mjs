@@ -25,6 +25,7 @@ test("smoke secret redaction removes tokens from common failure shapes", () => {
       "redis://cache-user:cache-secret@redis.example.com:6379/0",
       "https://admin-user:admin-secret@admin.example.com",
       "https://web.example.com/preview?preview_token=payload.signature&access_token=access-token-value&api_key=api-key-value",
+      "https://auth.example.com/callback#access_token=fragment-access-token&id_token=fragment-id-token",
       "https://uploads.example.com/object.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=credential-value&X-Amz-Date=20260820T000000Z&X-Amz-Expires=900&X-Amz-SignedHeaders=content-type%3Bhost&X-Amz-Signature=signature-value&X-Amz-Security-Token=security-token-value",
     ].join(" "),
   );
@@ -33,6 +34,8 @@ test("smoke secret redaction removes tokens from common failure shapes", () => {
   assert.equal(message.includes("colon.header.payload"), false);
   assert.equal(message.includes("access-token-value"), false);
   assert.equal(message.includes("api-key-value"), false);
+  assert.equal(message.includes("fragment-access-token"), false);
+  assert.equal(message.includes("fragment-id-token"), false);
   assert.equal(message.includes("ChangeMe456!"), false);
   assert.equal(message.includes("oauth-client-secret"), false);
   assert.equal(message.includes("oauth-client-secret-query"), false);
@@ -57,6 +60,8 @@ test("smoke secret redaction removes tokens from common failure shapes", () => {
   assert.match(message, /preview_token=\[redacted\]/);
   assert.match(message, /access_token=\[redacted\]/);
   assert.match(message, /api_key=\[redacted\]/);
+  assert.match(message, /#access_token=\[redacted\]/);
+  assert.match(message, /id_token=\[redacted\]/);
   assert.match(message, /"clientSecret":"\[redacted\]"/);
   assert.match(message, /client_secret=\[redacted\]/);
   assert.match(message, /databaseUrl=\[redacted\]/);
@@ -104,6 +109,8 @@ test("smoke report value redaction sanitizes nested details", () => {
       ok: true,
       requestUrl:
         "https://web.example.com/preview?preview_token=payload.signature&api_key=api-key-value",
+      redirectUrl:
+        "https://auth.example.com/callback#access_token=fragment-access-token&id_token=fragment-id-token",
       previewToken: "payload.signature",
     }),
     {
@@ -122,6 +129,8 @@ test("smoke report value redaction sanitizes nested details", () => {
       ok: true,
       requestUrl:
         "https://web.example.com/preview?preview_token=[redacted]&api_key=[redacted]",
+      redirectUrl:
+        "https://auth.example.com/callback#access_token=[redacted]&id_token=[redacted]",
       previewToken: "[redacted]",
     },
   );

@@ -75,7 +75,7 @@ export function redactSmokeSecrets(value) {
     )
     .replace(/(\bBearer\s+)[a-zA-Z0-9._-]+/gi, "$1[redacted]")
     .replace(
-      new RegExp(`([?&](?:${secretKeyPattern})=)[^&#\\s)"']+`, "gi"),
+      new RegExp(`([?&#](?:${secretKeyPattern})=)[^&#\\s)"']+`, "gi"),
       "$1[redacted]",
     )
     .replace(
