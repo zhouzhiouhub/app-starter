@@ -67,3 +67,18 @@ test("web analytics scripts stay disabled without consent or provider", () => {
     false,
   );
 });
+
+test("web analytics config ignores malformed or oversized provider ids", () => {
+  const config = readAnalyticsRuntimeConfig({
+    ANALYTICS_CONSENT_GRANTED: "true",
+    ANALYTICS_ENABLED: "true",
+    CLARITY_PROJECT_ID: "clarity-123",
+    GA4_MEASUREMENT_ID: `G-${"A".repeat(64)}`,
+    GTM_CONTAINER_ID: "https://tag.example.com",
+  });
+
+  assert.equal(config.clarityProjectId, null);
+  assert.equal(config.ga4MeasurementId, null);
+  assert.equal(config.gtmContainerId, null);
+  assert.equal(shouldLoadAnalyticsScripts(config), false);
+});

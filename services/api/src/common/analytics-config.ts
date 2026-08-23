@@ -8,6 +8,8 @@ export type AnalyticsRuntimeConfig = {
   gtmContainerId: string | null;
 };
 
+const maxAnalyticsProviderIdLength = 64;
+
 export function readAnalyticsRuntimeConfig(
   env: Record<string, string | undefined> = process.env,
 ): AnalyticsRuntimeConfig {
@@ -29,7 +31,11 @@ function readProviderId(
 ): string | null {
   const trimmed = value?.trim();
 
-  if (!trimmed || !pattern.test(trimmed)) {
+  if (
+    !trimmed ||
+    trimmed.length > maxAnalyticsProviderIdLength ||
+    !pattern.test(trimmed)
+  ) {
     return null;
   }
 

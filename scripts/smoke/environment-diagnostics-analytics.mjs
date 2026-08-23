@@ -1,16 +1,25 @@
-const analyticsProviderPatterns = {
-  CLARITY_PROJECT_ID: /^[a-z0-9]+$/i,
-  GA4_MEASUREMENT_ID: /^G-[A-Z0-9]+$/i,
-  GTM_CONTAINER_ID: /^GTM-[A-Z0-9]+$/i,
+const analyticsProviderRules = {
+  CLARITY_PROJECT_ID: {
+    maxLength: 64,
+    pattern: /^[a-z0-9]+$/i,
+  },
+  GA4_MEASUREMENT_ID: {
+    maxLength: 64,
+    pattern: /^G-[A-Z0-9]+$/i,
+  },
+  GTM_CONTAINER_ID: {
+    maxLength: 64,
+    pattern: /^GTM-[A-Z0-9]+$/i,
+  },
 };
 
 export function createAnalyticsDiagnostics(env = process.env) {
   const enabled = readBooleanDiagnostic(env, "ANALYTICS_ENABLED");
   const consent = readBooleanDiagnostic(env, "ANALYTICS_CONSENT_GRANTED");
   const providers = Object.fromEntries(
-    Object.entries(analyticsProviderPatterns).map(([name, pattern]) => [
+    Object.entries(analyticsProviderRules).map(([name, rule]) => [
       name,
-      readProviderDiagnostic(env, name, pattern),
+      readProviderDiagnostic(env, name, rule),
     ]),
   );
   const invalidProviders = Object.entries(providers)
@@ -58,14 +67,18 @@ function readBooleanDiagnostic(env, name) {
   };
 }
 
-function readProviderDiagnostic(env, name, pattern) {
+function readProviderDiagnostic(env, name, rule) {
   const value = env[name]?.trim();
   const configured = Boolean(value);
 
   return {
     configured,
-    valid: configured ? pattern.test(value) : false,
+    valid: configured ? isValidProviderId(value, rule) : false,
   };
+}
+
+function isValidProviderId(value, rule) {
+  return value.length <= rule.maxLength && rule.pattern.test(value);
 }
 
 function readBooleanValue(value) {

@@ -29,7 +29,7 @@ test("smoke environment diagnostics blocks unsafe analytics config", () => {
   const diagnostics = createSmokeEnvironmentDiagnostics({
     ANALYTICS_CONSENT_GRANTED: "allowed",
     ANALYTICS_ENABLED: "true",
-    GTM_CONTAINER_ID: "https://tag.example.com",
+    GTM_CONTAINER_ID: `GTM-${"A".repeat(64)}`,
   });
 
   assert.equal(diagnostics.analytics.enabled.productionReady, true);

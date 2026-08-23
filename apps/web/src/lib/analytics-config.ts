@@ -6,6 +6,8 @@ export type AnalyticsRuntimeConfig = {
   clarityProjectId: string | null;
 };
 
+const maxAnalyticsProviderIdLength = 64;
+
 export function readAnalyticsRuntimeConfig(
   env: NodeJS.ProcessEnv = process.env,
 ): AnalyticsRuntimeConfig {
@@ -59,7 +61,11 @@ function readProviderId(
 ): string | null {
   const trimmed = value?.trim();
 
-  if (!trimmed || !pattern.test(trimmed)) {
+  if (
+    !trimmed ||
+    trimmed.length > maxAnalyticsProviderIdLength ||
+    !pattern.test(trimmed)
+  ) {
     return null;
   }
 

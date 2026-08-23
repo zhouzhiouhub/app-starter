@@ -61,7 +61,7 @@ test("site settings response ignores invalid analytics provider ids", () => {
       ANALYTICS_CONSENT_GRANTED: "true",
       ANALYTICS_ENABLED: "true",
       CLARITY_PROJECT_ID: "clarity-123",
-      GA4_MEASUREMENT_ID: "GA-123",
+      GA4_MEASUREMENT_ID: `G-${"A".repeat(64)}`,
       GTM_CONTAINER_ID: "https://tag.example.com",
     },
     () => {
