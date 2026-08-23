@@ -15,10 +15,9 @@ import {
   addStorefrontHostCacheParam,
   createStorefrontHostHeaders,
 } from "./storefront-host-header.ts";
+import { isPreviewTokenCandidate } from "./preview-token-param.ts";
 
 const apiBaseUrl = getApiBaseUrl();
-const maxPreviewTokenLength = 2048;
-const previewTokenPattern = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]{43}$/;
 
 export async function getPublishedPage(input: {
   locale: string;
@@ -106,14 +105,6 @@ export async function getPreviewPage(
   } catch {
     return null;
   }
-}
-
-function isPreviewTokenCandidate(token: string): boolean {
-  return (
-    token.length <= maxPreviewTokenLength &&
-    token.trim() === token &&
-    previewTokenPattern.test(token)
-  );
 }
 
 async function fetchPublishedSchema(input: {
