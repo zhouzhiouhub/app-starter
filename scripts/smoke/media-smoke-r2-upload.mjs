@@ -2,6 +2,10 @@ import {
   isOversizedResponseBodyError,
   readBoundedResponseText,
 } from "./bounded-response-text.mjs";
+import {
+  cancelResponseBody,
+  readRedirectLocation,
+} from "./http-response-summary.mjs";
 import { redactSmokeSecrets } from "./smoke-secrets.mjs";
 
 export async function uploadSmokeImage(target, image) {
@@ -14,6 +18,9 @@ export async function uploadSmokeImage(target, image) {
 
   if (!response.ok) {
     const redirectLocation = readRedirectLocation(response);
+    if (redirectLocation) {
+      await cancelResponseBody(response);
+    }
     const failureBody = redirectLocation
       ? { text: "" }
       : await readUploadFailureBody(response, target.uploadUrl);
@@ -56,12 +63,4 @@ async function readUploadFailureBody(response, url) {
 
 function readUploadErrorMessage(error) {
   return redactSmokeSecrets(error instanceof Error ? error.message : error);
-}
-
-function readRedirectLocation(response) {
-  if (response.status < 300 || response.status >= 400) {
-    return null;
-  }
-
-  return response.headers.get("location")?.trim() ?? null;
 }

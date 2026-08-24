@@ -36,8 +36,15 @@ test("R2 smoke upload disables automatic redirects", async () => {
 });
 
 test("R2 smoke upload reports redacted redirect targets", async () => {
+  let bodyCanceled = false;
+
   await withFetch(async () => {
     return {
+      body: {
+        async cancel() {
+          bodyCanceled = true;
+        },
+      },
       headers: new Headers({
         Location:
           "https://storage.example.com/login?token=header.payload.signature&X-Amz-Signature=abc123",
@@ -63,6 +70,8 @@ test("R2 smoke upload reports redacted redirect targets", async () => {
       },
     );
   });
+
+  assert.equal(bodyCanceled, true);
 });
 
 test("R2 smoke upload reports oversized error bodies safely", async () => {
