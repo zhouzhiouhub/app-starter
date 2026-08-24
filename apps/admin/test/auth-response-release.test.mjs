@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { adminRequest } from "../src/features/auth/api.ts";
+import {
+  adminRequest,
+  restoreCurrentUser,
+} from "../src/features/auth/api.ts";
 import { AUTH_SESSION_STORAGE_KEY } from "../src/features/auth/constants.ts";
 
 test("admin refresh failures cancel discarded response bodies", async () => {
@@ -56,12 +59,33 @@ test("admin retry failures cancel discarded authorization responses", async () =
   assert.equal(storage.getItem(AUTH_SESSION_STORAGE_KEY), null);
 });
 
+test("current user restore cancels rejected profile response bodies", async () => {
+  const storage = createSessionStorage("access-token-1", "refresh-token-1");
+  const canceledLabels = [];
+
+  await withLocalStorage(storage, async () => {
+    await withFetch(
+      async () => cancellableResponse(403, "me", canceledLabels),
+      async () => {
+        assert.equal(await restoreCurrentUser(), null);
+      },
+    );
+  });
+
+  assert.deepEqual(canceledLabels, ["me"]);
+  assert.equal(storage.getItem(AUTH_SESSION_STORAGE_KEY), null);
+});
+
 function createExpiredSessionStorage() {
+  return createSessionStorage("expired-access-token", "refresh-token-1");
+}
+
+function createSessionStorage(accessToken, refreshToken) {
   const storage = createMemoryStorage();
 
   storage.setItem(
     AUTH_SESSION_STORAGE_KEY,
-    JSON.stringify(createSession("expired-access-token", "refresh-token-1")),
+    JSON.stringify(createSession(accessToken, refreshToken)),
   );
 
   return storage;

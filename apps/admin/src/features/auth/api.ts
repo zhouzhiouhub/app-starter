@@ -82,6 +82,7 @@ export async function restoreCurrentUser(): Promise<AuthUser | null> {
     const response = await adminRequest("/auth/me");
 
     if (!response.ok) {
+      await cancelAuthResponseBody(response);
       clearAuthSession();
       return null;
     }
