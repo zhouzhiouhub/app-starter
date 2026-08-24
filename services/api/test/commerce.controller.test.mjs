@@ -9,13 +9,14 @@ import { AdminApiGuard } from "../dist/common/admin-api.guard.js";
 import { REQUIRE_SCOPES_KEY } from "../dist/common/require-scopes.decorator.js";
 import { AdminCommerceController } from "../dist/modules/commerce/admin-commerce.controller.js";
 import { PublicCommerceController } from "../dist/modules/commerce/public-commerce.controller.js";
+import { StripeWebhookController } from "../dist/modules/commerce/stripe-webhook.controller.js";
 import { assertApiConflict } from "./api-error-test-assertions.mjs";
 import { withEnv } from "./env-helper.mjs";
 
 class PublicCommerceRouteTestModule {}
 
 Module({
-  controllers: [PublicCommerceController],
+  controllers: [PublicCommerceController, StripeWebhookController],
 })(PublicCommerceRouteTestModule);
 
 test("commerce read placeholders carry the current request id", () => {
@@ -68,6 +69,26 @@ test("commerce endpoints reject writes while commerce is disabled", () => {
   }
 });
 
+test("stripe webhook placeholder rejects events without echoing payloads", () => {
+  for (const flag of ["false", "true"]) {
+    withEnv({ COMMERCE_ENABLED: flag }, () => {
+      const controller = new StripeWebhookController();
+
+      const error = assertApiConflict(
+        () => controller.receiveStripeWebhook("request-webhook-disabled"),
+        apiErrorCodes.COMMERCE_DISABLED,
+      );
+      const response = error.getResponse();
+      const serialized = JSON.stringify(response);
+
+      assert.equal(response?.requestId, "request-webhook-disabled");
+      assert.match(response?.message, /Stripe webhook is reserved/);
+      assert.equal(serialized.includes("evt_secret"), false);
+      assert.equal(serialized.includes("stripe-signature"), false);
+    });
+  }
+});
+
 test("public commerce disabled routes keep the MVP public paths", async () => {
   const app = await NestFactory.create(PublicCommerceRouteTestModule, {
     logger: false,
@@ -96,6 +117,30 @@ test("public commerce disabled routes keep the MVP public paths", async () => {
       assert.equal(body.code, apiErrorCodes.COMMERCE_DISABLED);
       assert.equal(body.requestId, `request-commerce-${path}`);
     }
+
+    const webhookResponse = await fetch(
+      `http://127.0.0.1:${port}/api/v1/webhooks/stripe`,
+      {
+        body: JSON.stringify({
+          id: "evt_secret_payload",
+          object: "event",
+        }),
+        headers: {
+          "content-type": "application/json",
+          "stripe-signature": "t=1,v1=secret_signature",
+          "x-request-id": "request-commerce-webhook",
+        },
+        method: "POST",
+      },
+    );
+    const webhookText = await webhookResponse.text();
+    const webhookBody = JSON.parse(webhookText);
+
+    assert.equal(webhookResponse.status, 409);
+    assert.equal(webhookBody.code, apiErrorCodes.COMMERCE_DISABLED);
+    assert.equal(webhookBody.requestId, "request-commerce-webhook");
+    assert.equal(webhookText.includes("evt_secret_payload"), false);
+    assert.equal(webhookText.includes("secret_signature"), false);
   } finally {
     await app.close();
   }
