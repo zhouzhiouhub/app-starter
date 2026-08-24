@@ -41,6 +41,37 @@ test("seed credentials reject empty values", () => {
   );
 });
 
+test("seed credentials reject invalid admin emails", () => {
+  for (const email of [
+    "owner",
+    "owner@example",
+    "owner example@brand.com",
+    "owner@exa\rmple.com",
+  ]) {
+    assert.throws(
+      () =>
+        readSeedAdminCredentials({
+          SEED_ADMIN_EMAIL: email,
+          SEED_ADMIN_PASSWORD: "local-password",
+        }),
+      /valid email/,
+    );
+  }
+});
+
+test("seed credentials reject unsafe admin passwords", () => {
+  for (const password of ["short", "a".repeat(129), "valid-password\r"]) {
+    assert.throws(
+      () =>
+        readSeedAdminCredentials({
+          SEED_ADMIN_EMAIL: "owner@example.com",
+          SEED_ADMIN_PASSWORD: password,
+        }),
+      /8 to 128 characters/,
+    );
+  }
+});
+
 test("seed credentials reject documented defaults in production", () => {
   assert.throws(
     () => readSeedAdminCredentials({ NODE_ENV: "production" }),

@@ -9,6 +9,9 @@ const DEFAULT_SITE_DOMAIN = "localhost";
 const DEFAULT_SITE_NAME = "Default Site";
 const DEFAULT_SEED_ADMIN_EMAIL = "admin@example.com";
 const DEFAULT_SEED_ADMIN_PASSWORD = "ChangeMe123!";
+const SEED_ADMIN_PASSWORD_MIN_LENGTH = 8;
+const SEED_ADMIN_PASSWORD_MAX_LENGTH = 128;
+const SEED_ADMIN_EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const TENANT_ADMIN_ROLE = "tenant-admin";
 const TENANT_ADMIN_PERMISSIONS = [
   "page:read",
@@ -205,6 +208,16 @@ export function readSeedAdminCredentials(env = process.env) {
     throw new Error("SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD cannot be empty.");
   }
 
+  if (!isSafeSeedAdminEmail(email)) {
+    throw new Error("SEED_ADMIN_EMAIL must be a valid email address.");
+  }
+
+  if (!isSafeSeedAdminPassword(password)) {
+    throw new Error(
+      "SEED_ADMIN_PASSWORD must be 8 to 128 characters and cannot contain control characters.",
+    );
+  }
+
   if (
     isProductionSeedEnvironment(env) &&
     (email === DEFAULT_SEED_ADMIN_EMAIL ||
@@ -216,6 +229,30 @@ export function readSeedAdminCredentials(env = process.env) {
   }
 
   return { email, password };
+}
+
+function isSafeSeedAdminEmail(value) {
+  return (
+    value.length <= 254 &&
+    SEED_ADMIN_EMAIL_PATTERN.test(value) &&
+    !hasControlCharacter(value)
+  );
+}
+
+function isSafeSeedAdminPassword(value) {
+  return (
+    value.length >= SEED_ADMIN_PASSWORD_MIN_LENGTH &&
+    value.length <= SEED_ADMIN_PASSWORD_MAX_LENGTH &&
+    !hasControlCharacter(value)
+  );
+}
+
+function hasControlCharacter(value) {
+  return Array.from(value).some((character) => {
+    const codePoint = character.codePointAt(0);
+
+    return codePoint <= 0x1f || codePoint === 0x7f;
+  });
 }
 
 function isProductionSeedEnvironment(env) {

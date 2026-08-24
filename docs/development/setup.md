@@ -237,7 +237,9 @@ object can be uploaded with PUT, and `MEDIA_CDN_BASE_URL` produces an HTTPS CDN
 URL on a non-local host without query strings or embedded credentials.
 The production seed refuses the documented local admin defaults, so set
 non-default `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` before running
-`pnpm --filter @app-starter/api prisma:seed` against production. Production
+`pnpm --filter @app-starter/api prisma:seed` against production. The seed admin
+email must be valid, and the password must be 8 to 128 characters without
+control characters. Production
 smoke also rejects the documented local admin email or password, even when they
 come from `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD`; set non-default
 `SMOKE_ADMIN_EMAIL` and `SMOKE_ADMIN_PASSWORD` for production runs. The smoke
