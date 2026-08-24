@@ -3,6 +3,27 @@ import { apiErrorCodes, isUnsafeProductionHostname } from "@app-starter/schema";
 import { DEFAULT_MEDIA_CDN_BASE_URL } from "./media.constants.js";
 import { isProductionMediaEnvironment } from "./media.production-env.js";
 
+const sensitiveMediaUrlQueryKeySuffixes = [
+  "accesskeyid",
+  "accesstoken",
+  "apikey",
+  "clientsecret",
+  "credential",
+  "keypairid",
+  "password",
+  "previewtoken",
+  "refreshtoken",
+  "secret",
+  "session",
+  "signature",
+  "token",
+];
+const sensitiveMediaUrlQueryKeys = new Set([
+  "policy",
+  "sig",
+  ...sensitiveMediaUrlQueryKeySuffixes,
+]);
+
 export function assertAllowedMediaUrl(
   url: string,
   env: Record<string, string | undefined> = process.env,
@@ -47,6 +68,20 @@ function assertAllowedMediaUrlHost(
     throw new BadRequestException({
       code: apiErrorCodes.VALIDATION_ERROR,
       message: "Media URL must not include credentials.",
+    });
+  }
+
+  if (parsed.hash) {
+    throw new BadRequestException({
+      code: apiErrorCodes.VALIDATION_ERROR,
+      message: "Media URL must not include fragments.",
+    });
+  }
+
+  if (hasSensitiveMediaUrlQueryParameters(parsed)) {
+    throw new BadRequestException({
+      code: apiErrorCodes.VALIDATION_ERROR,
+      message: "Media URL must not include credential or token parameters.",
     });
   }
 
@@ -211,4 +246,19 @@ function assertAllowedHost(
 
 function trimTrailingSlashes(pathname: string): string {
   return pathname.replace(/\/+$/, "");
+}
+
+function hasSensitiveMediaUrlQueryParameters(url: URL): boolean {
+  return Array.from(url.searchParams.keys()).some(isSensitiveMediaUrlQueryKey);
+}
+
+function isSensitiveMediaUrlQueryKey(key: string): boolean {
+  const normalized = key.replace(/[-_\s]/g, "").toLowerCase();
+  return (
+    normalized.startsWith("xamz") ||
+    sensitiveMediaUrlQueryKeys.has(normalized) ||
+    sensitiveMediaUrlQueryKeySuffixes.some((suffix) =>
+      normalized.endsWith(suffix),
+    )
+  );
 }

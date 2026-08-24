@@ -81,3 +81,51 @@ test("media service rejects external registrations on managed CDN hosts", async 
     },
   );
 });
+
+test("media service rejects external registrations with sensitive URL parts", async () => {
+  await withEnv(
+    {
+      MEDIA_EXTERNAL_URL_HOSTS: "assets.brand-platform.com",
+    },
+    async () => {
+      const service = new MediaService({
+        mediaAsset: {
+          findFirst() {
+            throw new Error("unsafe media URLs must not query storage.");
+          },
+        },
+      });
+
+      for (const [url, message] of [
+        [
+          "https://assets.brand-platform.com/hero.png#access_token=secret",
+          "Media URL must not include fragments.",
+        ],
+        [
+          "https://assets.brand-platform.com/hero.png?X-Amz-Signature=signed",
+          "Media URL must not include credential or token parameters.",
+        ],
+      ]) {
+        await assert.rejects(
+          () =>
+            service.confirm(
+              {
+                filename: "hero.png",
+                mimeType: "image/png",
+                r2Key: "tenant-1/imports/hero.png",
+                size: 2048,
+                url,
+              },
+              undefined,
+              actor,
+            ),
+          (error) => {
+            assert.equal(error.getStatus(), 400);
+            assert.equal(error.getResponse().message, message);
+            return true;
+          },
+        );
+      }
+    },
+  );
+});

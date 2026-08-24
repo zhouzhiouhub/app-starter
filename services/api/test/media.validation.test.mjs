@@ -198,3 +198,32 @@ test("media URL allowlist rejects embedded credentials", () => {
     },
   );
 });
+
+test("media URL allowlist rejects fragments and sensitive query parameters", () => {
+  const env = {
+    MEDIA_CDN_BASE_URL: "https://cdn.example.com",
+    MEDIA_EXTERNAL_URL_HOSTS: "images.example.com",
+  };
+
+  assert.doesNotThrow(() =>
+    assertAllowedMediaUrl("https://cdn.example.com/hero.webp?v=2", env),
+  );
+  assert.doesNotThrow(() =>
+    assertAllowedExternalMediaUrl(
+      "https://images.example.com/hero.webp?width=1200",
+      env,
+    ),
+  );
+  assert.throws(
+    () => assertAllowedMediaUrl("https://cdn.example.com/hero.webp#token", env),
+    /Media URL must not include fragments/,
+  );
+  assert.throws(
+    () =>
+      assertAllowedExternalMediaUrl(
+        "https://images.example.com/hero.webp?X-Amz-Signature=signed",
+        env,
+      ),
+    /credential or token/,
+  );
+});
