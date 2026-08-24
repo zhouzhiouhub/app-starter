@@ -44,3 +44,64 @@ test("JSON smoke fetch records redacted redirect locations", async () => {
     },
   );
 });
+
+test("JSON smoke fetch rejects oversized content lengths before reading", async () => {
+  await withFetch(
+    async () => ({
+      headers: new Headers({ "Content-Length": "1000001" }),
+      ok: true,
+      status: 200,
+      statusText: "OK",
+      async text() {
+        throw new Error("oversized bodies should not be read");
+      },
+    }),
+    async () => {
+      await assert.rejects(
+        fetchJson("https://api.example.com/api/v1/public/config?token=secret"),
+        (error) =>
+          error instanceof Error &&
+          error.message ===
+            "https://api.example.com/api/v1/public/config?token=[redacted] returned a JSON response body larger than 1000000 bytes.",
+      );
+    },
+  );
+});
+
+test("JSON smoke fetch rejects oversized bodies before parsing", async () => {
+  await withFetch(
+    async () =>
+      new Response("x".repeat(1_000_001), {
+        status: 200,
+        statusText: "OK",
+      }),
+    async () => {
+      await assert.rejects(
+        fetchJson("https://api.example.com/api/v1/public/config"),
+        /returned a JSON response body larger than 1000000 bytes/,
+      );
+    },
+  );
+});
+
+test("JSON smoke fetch redacts non-JSON response snippets", async () => {
+  await withFetch(
+    async () =>
+      new Response(
+        "<html><body>token=header.payload.signature</body></html>",
+        {
+          status: 502,
+          statusText: "Bad Gateway",
+        },
+      ),
+    async () => {
+      await assert.rejects(
+        fetchJson("https://api.example.com/api/v1/public/config"),
+        (error) =>
+          error instanceof Error &&
+          !error.message.includes("header.payload.signature") &&
+          error.message.includes("token=[redacted]"),
+      );
+    },
+  );
+});
