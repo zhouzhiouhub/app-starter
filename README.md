@@ -573,7 +573,7 @@ pnpm smoke:publish
 
 `API_URL` 必须是 API origin 或精确的 `/api/v1` base，`WEB_URL` 必须是前台 origin，`ADMIN_URL` 必须是后台静态应用 origin；Smoke Runner 会在发起登录、发布或 Admin 静态页请求前拒绝嵌入账号密码、query、fragment、异常路径和非 HTTP(S) 协议。
 Admin 静态页 smoke 还会校验入口 `type="module"` 脚本和已声明的 stylesheet 都解析到同一个 `ADMIN_URL` origin，且脚本返回 JavaScript、样式返回 CSS，避免生产 shell 误依赖外部域资源或漏部署样式产物。
-生产 smoke 在 `NODE_ENV`、`APP_ENV` 或 `VERCEL_ENV` 为 `production` 时会拒绝文档里的本地默认管理员邮箱或密码；生产验收请显式设置非默认 `SMOKE_ADMIN_EMAIL` 和 `SMOKE_ADMIN_PASSWORD`。
+生产 smoke 在 `NODE_ENV`、`APP_ENV` 或 `VERCEL_ENV` 为 `production` 时会拒绝文档里的本地默认管理员邮箱或密码；生产验收请显式设置非默认 `SMOKE_ADMIN_EMAIL` 和 `SMOKE_ADMIN_PASSWORD`。Smoke 登录配置会在发起请求前校验：邮箱必须有效，密码必须为 8 到 128 字符且不含控制字符，`SMOKE_TENANT_SLUG` 必须是小写字母、数字和连字符组成且不能以连字符开头或结尾。
 `SMOKE_PAGE_SLUG`、`SMOKE_LOCALE`、`SMOKE_MARKET` 也会在创建测试页前按 Page Schema 上下文格式校验。
 布尔 smoke 开关只接受 `true`/`false`、`1`/`0`、`yes`/`no`、`on`/`off`，拼写错误会直接失败。
 `SMOKE_RETRY_ATTEMPTS` 必须为 1-60，`SMOKE_RETRY_DELAY_MS` 必须为 1-60000 毫秒。

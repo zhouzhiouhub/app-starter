@@ -242,9 +242,12 @@ email must be valid, and the password must be 8 to 128 characters without
 control characters. Production
 smoke also rejects the documented local admin email or password, even when they
 come from `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD`; set non-default
-`SMOKE_ADMIN_EMAIL` and `SMOKE_ADMIN_PASSWORD` for production runs. The smoke
-admin account must include `audit:read`; rerun the seed after pulling role
-changes if the audit log check returns 403.
+`SMOKE_ADMIN_EMAIL` and `SMOKE_ADMIN_PASSWORD` for production runs. Smoke login
+configuration is validated before any request is sent: the email must be valid,
+the password must be 8 to 128 characters without control characters, and
+`SMOKE_TENANT_SLUG` must be a lowercase DNS-safe label without leading or
+trailing hyphens. The smoke admin account must include `audit:read`; rerun the
+seed after pulling role changes if the audit log check returns 403.
 Set `SMOKE_REPORT_PATH=tmp/smoke-report.json` to write a machine-readable report
 with the checked slug, page ID, storefront request URL, public storefront URL,
 analytics diagnostics, feature flag diagnostics, database diagnostics, identity diagnostics, media environment

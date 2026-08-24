@@ -163,6 +163,56 @@ test("smoke config rejects documented local admin credentials in production", as
   );
 });
 
+test("smoke config validates login inputs before requests", async () => {
+  for (const [name, value, expected] of [
+    ["SMOKE_ADMIN_EMAIL", "owner", /SMOKE_ADMIN_EMAIL must be a valid email/],
+    [
+      "SMOKE_ADMIN_EMAIL",
+      "owner@exa\rmple.com",
+      /SMOKE_ADMIN_EMAIL must be a valid email/,
+    ],
+    [
+      "SMOKE_ADMIN_PASSWORD",
+      "short",
+      /SMOKE_ADMIN_PASSWORD must be 8 to 128 characters/,
+    ],
+    [
+      "SMOKE_ADMIN_PASSWORD",
+      "a".repeat(129),
+      /SMOKE_ADMIN_PASSWORD must be 8 to 128 characters/,
+    ],
+    [
+      "SMOKE_ADMIN_PASSWORD",
+      "valid-password\rinside",
+      /SMOKE_ADMIN_PASSWORD must be 8 to 128 characters/,
+    ],
+    [
+      "SMOKE_TENANT_SLUG",
+      "Default",
+      /SMOKE_TENANT_SLUG must be 1 to 100 lowercase/,
+    ],
+    [
+      "SMOKE_TENANT_SLUG",
+      "-default",
+      /SMOKE_TENANT_SLUG must be 1 to 100 lowercase/,
+    ],
+  ]) {
+    await withEnv(
+      {
+        API_URL: "https://api.example.com",
+        SMOKE_ADMIN_EMAIL: "owner@example.com",
+        SMOKE_ADMIN_PASSWORD: "valid-password",
+        SMOKE_TENANT_SLUG: "default",
+        WEB_URL: "https://web.example.com",
+        [name]: value,
+      },
+      async () => {
+        assert.throws(() => readConfig(), expected);
+      },
+    );
+  }
+});
+
 test("smoke config validates positive integer retry settings", () => {
   assert.equal(
     normalizeSmokePositiveInt(" 8 ", "SMOKE_RETRY_ATTEMPTS", {
