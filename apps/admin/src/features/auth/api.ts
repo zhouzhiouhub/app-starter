@@ -41,11 +41,17 @@ export async function logoutCurrentSession(): Promise<void> {
     return;
   }
 
-  await fetch(`${getApiBaseUrl()}/auth/logout`, {
-    body: JSON.stringify({ refreshToken: session.refreshToken }),
-    headers: { "Content-Type": "application/json" },
-    method: "POST",
-  }).catch(() => undefined);
+  // Local logout is complete; server revocation should not block navigation.
+  try {
+    void fetch(`${getApiBaseUrl()}/auth/logout`, {
+      body: JSON.stringify({ refreshToken: session.refreshToken }),
+      headers: { "Content-Type": "application/json" },
+      keepalive: true,
+      method: "POST",
+    }).catch(() => undefined);
+  } catch {
+    // Logout remains local if the browser refuses the best-effort request.
+  }
 }
 
 export async function restoreCurrentUser(): Promise<AuthUser | null> {
