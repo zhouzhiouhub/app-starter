@@ -5,12 +5,18 @@ import { withFetch } from "./smoke-test-runtime.mjs";
 
 test("JSON smoke fetch records redacted redirect locations", async () => {
   const calls = [];
+  let bodyCanceled = false;
 
   await withFetch(
     async (url, init = {}) => {
       calls.push({ init, url });
 
       return {
+        body: {
+          cancel() {
+            bodyCanceled = true;
+          },
+        },
         headers: new Headers({
           location:
             "https://api.example.com/login?password=ChangeMe123!&token=header.payload.signature",
@@ -47,6 +53,8 @@ test("JSON smoke fetch records redacted redirect locations", async () => {
       );
     },
   );
+
+  assert.equal(bodyCanceled, true);
 });
 
 test("JSON smoke fetch rejects oversized content lengths before reading", async () => {

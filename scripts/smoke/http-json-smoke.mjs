@@ -1,4 +1,5 @@
 import { readBoundedResponseText } from "./bounded-response-text.mjs";
+import { cancelResponseBody } from "./http-response-summary.mjs";
 import { redactSmokeSecrets } from "./smoke-secrets.mjs";
 
 export async function assertJsonReachable(url, label) {
@@ -17,6 +18,9 @@ export async function fetchJson(url, init) {
     redirect: init?.redirect ?? "manual",
   });
   const redirectLocation = readRedirectLocation(response);
+  if (redirectLocation) {
+    await cancelResponseBody(response);
+  }
   const body = redirectLocation
     ? null
     : await readJsonResponseBody(response, url);
