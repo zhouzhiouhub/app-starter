@@ -156,3 +156,41 @@ test("createPreviewToken does not store preview tokens in idempotency records", 
     ]);
   });
 });
+
+test("createPreviewToken sanitizes request ids before audit and response", async () => {
+  await withEnv({ PREVIEW_TOKEN_SECRET: "preview-secret" }, async () => {
+    const auditCalls = [];
+    const prisma = {
+      page: {
+        findFirst() {
+          return Promise.resolve({
+            id: "page-1",
+            slug: "campaign",
+          });
+        },
+      },
+      site: {
+        findFirst() {
+          return Promise.resolve({
+            id: "site-1",
+            tenantId: "tenant-1",
+          });
+        },
+      },
+    };
+
+    const response = await createPreviewToken(
+      prisma,
+      {
+        record: async (input) => auditCalls.push(input),
+      },
+      "page-1",
+      undefined,
+      createPageActor({ name: "Admin", scopes: ["page:read"] }),
+      "request-preview-1\r\nx-secret: leaked",
+    );
+
+    assert.equal(response.meta.requestId, "local-dev");
+    assert.equal(auditCalls[0].requestId, "local-dev");
+  });
+});

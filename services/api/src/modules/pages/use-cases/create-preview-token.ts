@@ -1,5 +1,6 @@
 import { ServiceUnavailableException } from "@nestjs/common";
 import { apiErrorCodes } from "@app-starter/schema";
+import { readRequestId } from "../../../common/request-id.js";
 import type { AuditService } from "../../audit/audit.service.js";
 import type { Actor } from "../../identity/identity.types.js";
 import type { PrismaService } from "../../prisma/prisma.service.js";
@@ -19,6 +20,7 @@ export async function createPreviewToken(
   actor: Actor,
   requestId = "local-dev",
 ) {
+  const safeRequestId = readRequestId({ "x-request-id": requestId });
   const site = await getSiteForTenant(prisma, actor.tenantId);
 
   return runIdempotent(prisma, {
@@ -59,7 +61,7 @@ export async function createPreviewToken(
             siteId: site.id,
             slug: page.slug,
           },
-          requestId,
+          requestId: safeRequestId,
           targetId: page.id,
           targetType: "page",
           tenantId: actor.tenantId,
@@ -72,7 +74,7 @@ export async function createPreviewToken(
             token: preview.token,
           },
           meta: {
-            requestId,
+            requestId: safeRequestId,
             tenantId: site.tenantId,
             siteId: site.id,
           },
