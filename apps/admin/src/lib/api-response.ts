@@ -21,6 +21,7 @@ export async function readApiResponseJson<T>(
 
 export async function readResponseBody(response: Response): Promise<unknown> {
   if (hasOversizedContentLength(response)) {
+    await cancelApiResponseBody(response);
     return readOversizedApiResponse();
   }
 
@@ -40,6 +41,14 @@ export async function readResponseBody(response: Response): Promise<unknown> {
     return JSON.parse(text) as unknown;
   } catch {
     return { message: readPlainTextResponseMessage(text, response.status) };
+  }
+}
+
+async function cancelApiResponseBody(response: Response): Promise<void> {
+  try {
+    await response.body?.cancel();
+  } catch {
+    return;
   }
 }
 

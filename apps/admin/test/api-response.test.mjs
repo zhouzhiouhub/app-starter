@@ -84,11 +84,20 @@ test("response body reader avoids surfacing HTML error documents", async () => {
 });
 
 test("response body reader reports oversized error bodies", async () => {
+  let bodyCanceled = false;
   const result = await readResponseBody(
-    new Response("{}", {
-      headers: { "Content-Length": "1000001" },
+    {
+      body: {
+        cancel() {
+          bodyCanceled = true;
+        },
+      },
+      headers: new Headers({ "Content-Length": "1000001" }),
       status: 502,
-    }),
+      async text() {
+        throw new Error("oversized bodies should not be read");
+      },
+    },
   );
 
   assert.deepEqual(result, {
@@ -97,6 +106,7 @@ test("response body reader reports oversized error bodies", async () => {
       message: "API response body is too large to process.",
     },
   });
+  assert.equal(bodyCanceled, true);
 });
 
 test("response body reader reports oversized bodies without length headers", async () => {
