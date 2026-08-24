@@ -14,6 +14,7 @@ import { listAllMediaAssetPages } from "./media-list-pagination.ts";
 import { readMediaUploadTargetResponse } from "./media-upload-target.ts";
 
 const mediaResolverPageLimit = 100;
+const mediaUploadRedirectPolicy: RequestRedirect = "manual";
 
 export async function listMediaAssets(
   page = 1,
@@ -177,6 +178,7 @@ async function putMediaFile(
       body: file,
       headers: upload.headers,
       method: upload.method,
+      redirect: mediaUploadRedirectPolicy,
     });
   } catch {
     throw new Error(

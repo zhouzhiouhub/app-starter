@@ -147,12 +147,84 @@ test("media upload API rejects files larger than the prepared target", async () 
   assert.deepEqual(requests, ["/api/v1/media/upload-url"]);
 });
 
+test("media direct uploads do not automatically follow redirects", async () => {
+  const requests = [];
+  const file = {
+    name: "asset.webp",
+    size: 1024,
+    type: "image/webp",
+  };
+  let uploadBody;
+
+  await withFetch(async (url, init = {}) => {
+    requests.push({
+      method: init.method,
+      path: readRequestPath(String(url)),
+      redirect: init.redirect,
+    });
+
+    if (String(url).endsWith("/media/upload-url")) {
+      return jsonResponse({ data: validTarget });
+    }
+
+    if (String(url) === validTarget.uploadUrl) {
+      uploadBody = init.body;
+      return new Response(null, { status: 204 });
+    }
+
+    if (String(url).endsWith("/media/confirm")) {
+      return jsonResponse({
+        data: {
+          id: "asset-1",
+        },
+      });
+    }
+
+    return new Response("", { status: 404 });
+  }, async () => {
+    assert.deepEqual(
+      await uploadMediaFile({
+        altText: "Hero image",
+        file,
+      }),
+      { id: "asset-1" },
+    );
+  });
+
+  assert.equal(uploadBody, file);
+  assert.deepEqual(requests, [
+    {
+      method: "POST",
+      path: "/media/upload-url",
+      redirect: "manual",
+    },
+    {
+      method: "PUT",
+      path: "upload-target",
+      redirect: "manual",
+    },
+    {
+      method: "POST",
+      path: "/media/confirm",
+      redirect: "manual",
+    },
+  ]);
+});
+
 function jsonResponse(body) {
   return new Response(JSON.stringify(body), { status: 200 });
 }
 
 function readHeadersWithSpecialName() {
   return Object.fromEntries([["__proto__", "polluted"]]);
+}
+
+function readRequestPath(url) {
+  if (url === validTarget.uploadUrl) {
+    return "upload-target";
+  }
+
+  return url.replace(/^.*\/api\/v1/u, "");
 }
 
 async function withFetch(fetchImplementation, callback) {
