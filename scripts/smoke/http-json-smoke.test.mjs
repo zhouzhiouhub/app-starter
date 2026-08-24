@@ -50,8 +50,15 @@ test("JSON smoke fetch records redacted redirect locations", async () => {
 });
 
 test("JSON smoke fetch rejects oversized content lengths before reading", async () => {
+  let bodyCanceled = false;
+
   await withFetch(
     async () => ({
+      body: {
+        cancel() {
+          bodyCanceled = true;
+        },
+      },
       headers: new Headers({ "Content-Length": "1000001" }),
       ok: true,
       status: 200,
@@ -70,6 +77,8 @@ test("JSON smoke fetch rejects oversized content lengths before reading", async 
       );
     },
   );
+
+  assert.equal(bodyCanceled, true);
 });
 
 test("JSON smoke fetch rejects oversized bodies before parsing", async () => {

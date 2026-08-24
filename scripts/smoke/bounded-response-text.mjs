@@ -1,4 +1,5 @@
 import { redactSmokeSecrets } from "./smoke-secrets.mjs";
+import { cancelResponseBody } from "./http-response-summary.mjs";
 
 export const maxSmokeResponseBodyBytes = 1_000_000;
 
@@ -8,7 +9,7 @@ export async function readBoundedResponseText(
   response,
   { label, maxBytes = maxSmokeResponseBodyBytes, url },
 ) {
-  assertResponseContentLength(response, { label, maxBytes, url });
+  await assertResponseContentLength(response, { label, maxBytes, url });
 
   if (response.body?.getReader) {
     return readBoundedResponseStream(response.body, { label, maxBytes, url });
@@ -24,7 +25,7 @@ export function isOversizedResponseBodyError(error) {
   return error?.code === oversizedResponseBodyCode;
 }
 
-function assertResponseContentLength(response, options) {
+async function assertResponseContentLength(response, options) {
   const value = response.headers.get("content-length");
 
   if (!value) {
@@ -33,8 +34,9 @@ function assertResponseContentLength(response, options) {
 
   const byteLength = Number(value);
 
-  if (Number.isFinite(byteLength)) {
-    assertResponseBodySize(byteLength, options);
+  if (Number.isFinite(byteLength) && byteLength > options.maxBytes) {
+    await cancelResponseBody(response);
+    throw createOversizedResponseBodyError(options);
   }
 }
 
