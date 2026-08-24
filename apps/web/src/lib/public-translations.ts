@@ -1,4 +1,7 @@
-import { publishedPageRevalidateSeconds } from "@app-starter/schema";
+import {
+  getPublicTranslationCacheTags,
+  publishedPageRevalidateSeconds,
+} from "@app-starter/schema";
 import {
   readWebRuntimeDefaults,
   resolveWebLocale,
@@ -38,6 +41,11 @@ export async function getPublicTranslationMessages(input: {
         headers: createStorefrontHostHeaders(input.storefrontHost),
         next: {
           revalidate: publishedPageRevalidateSeconds,
+          tags: getPublicTranslationCacheTags({
+            fallbackLocale: defaults.fallbackLocale,
+            locale,
+            siteHost: input.storefrontHost,
+          }),
         },
         redirect: "manual",
       },

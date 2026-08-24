@@ -23,6 +23,7 @@ export function getStorefrontHref(locale: string, slug = "home"): string {
 
 export const publishedPageRevalidateSeconds = 60;
 export const publishedPagesCacheTag = "published-page";
+export const publicTranslationsCacheTag = "public-translation";
 export const storefrontRevalidateSecretHeader =
   "x-storefront-revalidate-secret";
 
@@ -65,6 +66,19 @@ export function getPublishedPageCacheTags(input: {
       `${root}:${context.market}:${context.locale}:${slug}`,
     ]),
   ].filter(uniqueTag);
+}
+
+export function getPublicTranslationCacheTags(input: {
+  fallbackLocale?: string;
+  locale: string;
+  siteHost?: string | null;
+}): string[] {
+  const root = readCacheTagRoot(publicTranslationsCacheTag, input.siteHost);
+  const locales = [input.locale, input.fallbackLocale ?? input.locale];
+
+  return [root, ...locales.map((locale) => `${root}:${locale}`)].filter(
+    uniqueTag,
+  );
 }
 
 export function getPublishedPageRevalidationPaths(input: {
@@ -131,13 +145,17 @@ function readCacheContexts(input: PublishedPageCacheInput): {
 }
 
 function readPublishedPageCacheTagRoot(siteHost?: string | null): string {
+  return readCacheTagRoot(publishedPagesCacheTag, siteHost);
+}
+
+function readCacheTagRoot(root: string, siteHost?: string | null): string {
   const host = readCacheSiteHost(siteHost);
 
   if (!host) {
-    return publishedPagesCacheTag;
+    return root;
   }
 
-  return `${publishedPagesCacheTag}:site:${createCacheHash(host)}`;
+  return `${root}:site:${createCacheHash(host)}`;
 }
 
 function readCacheSiteHost(siteHost?: string | null): string | null {

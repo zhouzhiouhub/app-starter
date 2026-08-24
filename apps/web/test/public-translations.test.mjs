@@ -41,15 +41,20 @@ test("public translation lookup forwards storefront hosts for cache scoping", as
     requests[0].url,
     /\/public\/translations\/en-US\?storefrontHost=store\.brand-platform\.com$/,
   );
-  assert.deepEqual(requests[0].init, {
-    headers: {
-      "x-storefront-host": "store.brand-platform.com",
-    },
-    next: {
-      revalidate: 60,
-    },
-    redirect: "manual",
+  assert.deepEqual(requests[0].init.headers, {
+    "x-storefront-host": "store.brand-platform.com",
   });
+  assert.equal(requests[0].init.next.revalidate, 60);
+  assert.equal(requests[0].init.next.tags.length, 2);
+  assert.match(
+    requests[0].init.next.tags[0],
+    /^public-translation:site:[a-z0-9]+$/,
+  );
+  assert.equal(
+    requests[0].init.next.tags[1],
+    `${requests[0].init.next.tags[0]}:en-US`,
+  );
+  assert.equal(requests[0].init.redirect, "manual");
 });
 
 test("public translation lookup accepts declared fallback locale messages", async () => {

@@ -4,9 +4,11 @@ import {
   getPublishedPageCacheTags,
   getPublishedPageRevalidationPaths,
   getPublishedPagesCacheTags,
+  getPublicTranslationCacheTags,
   getStorefrontHref,
   publishedPageRevalidateSeconds,
   publishedPagesCacheTag,
+  publicTranslationsCacheTag,
   resolveLocaleFromPath,
   rewriteStorefrontHref,
   toStorefrontPathPrefix,
@@ -108,5 +110,52 @@ test("published page cache helpers define ISR tags and paths", () => {
   assert.deepEqual(
     getPublishedPageRevalidationPaths({ locale: "en-US", slug: "contact" }),
     ["/en/contact"],
+  );
+});
+
+test("public translation cache helpers define locale and site tags", () => {
+  assert.equal(publicTranslationsCacheTag, "public-translation");
+  assert.deepEqual(
+    getPublicTranslationCacheTags({
+      fallbackLocale: "en-US",
+      locale: "en-US",
+    }),
+    ["public-translation", "public-translation:en-US"],
+  );
+  assert.deepEqual(
+    getPublicTranslationCacheTags({
+      fallbackLocale: "en-US",
+      locale: "de-DE",
+    }),
+    [
+      "public-translation",
+      "public-translation:de-DE",
+      "public-translation:en-US",
+    ],
+  );
+
+  const siteTags = getPublicTranslationCacheTags({
+    fallbackLocale: "en-US",
+    locale: "de-DE",
+    siteHost: "Store.Brand-Platform.com:443",
+  });
+  assert.equal(siteTags.length, 3);
+  assert.match(siteTags[0], /^public-translation:site:[a-z0-9]+$/);
+  assert.equal(siteTags[1], `${siteTags[0]}:de-DE`);
+  assert.equal(siteTags[2], `${siteTags[0]}:en-US`);
+  assert.deepEqual(
+    siteTags,
+    getPublicTranslationCacheTags({
+      fallbackLocale: "en-US",
+      locale: "de-DE",
+      siteHost: "store.brand-platform.com",
+    }),
+  );
+  assert.deepEqual(
+    getPublicTranslationCacheTags({
+      locale: "en-US",
+      siteHost: "store.example.com",
+    }),
+    ["public-translation", "public-translation:en-US"],
   );
 });
