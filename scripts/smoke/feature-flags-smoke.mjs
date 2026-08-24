@@ -13,6 +13,7 @@ const expectedConfig = {
 export async function assertFeatureFlagsDisabled(input, accessToken) {
   await assertPublicConfig(input);
   await assertPublicTranslationFallback(input);
+  await assertCommerceReadPlaceholders(input, accessToken);
   await assertCommerceDisabled(input);
   await assertLocaleCreationDisabled(input, accessToken);
 
@@ -59,6 +60,19 @@ async function assertPublicTranslationFallback(input) {
   }
 }
 
+async function assertCommerceReadPlaceholders(input, accessToken) {
+  await assertEmptyListResponse(
+    `${input.apiBaseUrl}/products`,
+    accessToken,
+    "Products placeholder",
+  );
+  await assertEmptyListResponse(
+    `${input.apiBaseUrl}/orders`,
+    accessToken,
+    "Orders placeholder",
+  );
+}
+
 async function assertCommerceDisabled(input) {
   await assertErrorResponse(
     `${input.apiBaseUrl}/public/cart`,
@@ -90,6 +104,25 @@ async function assertCommerceDisabled(input) {
     },
     "COMMERCE_DISABLED",
   );
+}
+
+async function assertEmptyListResponse(url, accessToken, label) {
+  const response = await fetchJson(url, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(readHttpError(response, `${label} failed.`));
+  }
+
+  if (
+    !Array.isArray(response.body?.data) ||
+    response.body.data.length !== 0
+  ) {
+    throw new Error(`${label} expected an empty data array.`);
+  }
 }
 
 async function assertLocaleCreationDisabled(input, accessToken) {

@@ -237,7 +237,8 @@ machine-readable artifact.
 
 The script logs in with `SMOKE_ADMIN_EMAIL` / `SMOKE_ADMIN_PASSWORD` (falling
 back to the seeded admin), verifies the MVP disabled feature flags
-(`COMMERCE_ENABLED=false` and `MULTI_LOCALE_ENABLED=false`), saves a draft,
+(`COMMERCE_ENABLED=false` and `MULTI_LOCALE_ENABLED=false`), checks Products /
+Orders empty placeholders and the Stripe Webhook placeholder, saves a draft,
 creates a Preview Token, checks the public preview API and Web `/preview`
 route, publishes a unique page through the Admin API, publishes a rollback
 candidate, rolls back to the first published version, verifies

@@ -94,11 +94,107 @@ test("feature flag smoke rejects redirected public config checks", async () => {
   });
 });
 
-test("feature flag smoke checks the disabled stripe webhook placeholder", async () => {
+test("feature flag smoke checks disabled commerce placeholders", async () => {
   const calls = [];
 
-  await withFetch(async (url, init = {}) => {
-    calls.push({ init, url });
+  await withFetch(createFeatureFlagSmokeFetch({ calls }), async () => {
+    await assertFeatureFlagsDisabled(
+      {
+        apiBaseUrl: "https://api.example.com/api/v1",
+      },
+      "access-token",
+    );
+  });
+
+  const webhookCall = calls.find((call) =>
+    call.url.endsWith("/webhooks/stripe"),
+  );
+
+  assert.ok(webhookCall);
+  assert.equal(webhookCall.init.method, "POST");
+  assert.equal(webhookCall.init.redirect, "manual");
+  assert.equal(
+    webhookCall.init.headers["Stripe-Signature"],
+    "t=1,v1=smoke-signature",
+  );
+  assert.match(webhookCall.init.body, /evt_smoke_webhook/);
+
+  for (const suffix of ["/products", "/orders"]) {
+    const call = calls.find((candidate) => candidate.url.endsWith(suffix));
+
+    assert.ok(call);
+    assert.equal(call.init.redirect, "manual");
+    assert.equal(call.init.headers.Authorization, "Bearer access-token");
+  }
+});
+
+test("feature flag smoke rejects redirected stripe webhook checks safely", async () => {
+  await withFetch(createFeatureFlagSmokeFetch({
+    overrides: {
+      "/webhooks/stripe": () =>
+        new Response("", {
+          headers: {
+            Location:
+              "https://api.example.com/login?signature=smoke-signature",
+          },
+          status: 302,
+          statusText: "Found",
+        }),
+    },
+  }), async () => {
+    await assert.rejects(
+      () =>
+        assertFeatureFlagsDisabled(
+          {
+            apiBaseUrl: "https://api.example.com/api/v1",
+          },
+          "access-token",
+        ),
+      (error) => {
+        assert.match(
+          error.message,
+          /webhooks\/stripe expected 409 COMMERCE_DISABLED/,
+        );
+        assert.match(error.message, /302 Found/);
+        assert.match(error.message, /redirect:/);
+        assert.equal(error.message.includes("smoke-signature"), false);
+        return true;
+      },
+    );
+  });
+});
+
+test("feature flag smoke rejects non-empty commerce placeholders", async () => {
+  await withFetch(createFeatureFlagSmokeFetch({
+    overrides: {
+      "/products": () =>
+        jsonResponse({
+          data: [{ id: "product-should-not-exist" }],
+        }),
+    },
+  }), async () => {
+    await assert.rejects(
+      () =>
+        assertFeatureFlagsDisabled(
+          {
+            apiBaseUrl: "https://api.example.com/api/v1",
+          },
+          "access-token",
+        ),
+      /Products placeholder expected an empty data array\./,
+    );
+  });
+});
+
+function createFeatureFlagSmokeFetch(options = {}) {
+  return async (url, init = {}) => {
+    options.calls?.push({ init, url });
+
+    const override = readRouteHandler(url, options.overrides ?? {});
+
+    if (override) {
+      return override(url, init);
+    }
 
     if (url.endsWith("/public/config")) {
       return jsonResponse({
@@ -122,6 +218,10 @@ test("feature flag smoke checks the disabled stripe webhook placeholder", async 
           locale: "en-US",
         },
       });
+    }
+
+    if (url.endsWith("/products") || url.endsWith("/orders")) {
+      return jsonResponse({ data: [] });
     }
 
     if (
@@ -149,99 +249,14 @@ test("feature flag smoke checks the disabled stripe webhook placeholder", async 
     }
 
     return jsonResponse({}, { status: 404, statusText: "Not Found" });
-  }, async () => {
-    await assertFeatureFlagsDisabled(
-      {
-        apiBaseUrl: "https://api.example.com/api/v1",
-      },
-      "access-token",
-    );
-  });
+  };
+}
 
-  const webhookCall = calls.find((call) =>
-    call.url.endsWith("/webhooks/stripe"),
-  );
-
-  assert.ok(webhookCall);
-  assert.equal(webhookCall.init.method, "POST");
-  assert.equal(webhookCall.init.redirect, "manual");
-  assert.equal(
-    webhookCall.init.headers["Stripe-Signature"],
-    "t=1,v1=smoke-signature",
-  );
-  assert.match(webhookCall.init.body, /evt_smoke_webhook/);
-});
-
-test("feature flag smoke rejects redirected stripe webhook checks safely", async () => {
-  await withFetch(async (url) => {
-    if (url.endsWith("/public/config")) {
-      return jsonResponse({
-        data: {
-          commerceEnabled: false,
-          defaultCurrency: "USD",
-          defaultLocale: "en-US",
-          defaultMarket: "us",
-          fallbackLocale: "en-US",
-          multiLocaleEnabled: false,
-        },
-      });
-    }
-
-    if (url.endsWith("/public/translations/de-DE")) {
-      return jsonResponse({
-        data: [],
-        meta: {
-          fallbackLocale: "en-US",
-          isFallback: true,
-          locale: "en-US",
-        },
-      });
-    }
-
-    if (url.endsWith("/public/cart") || url.endsWith("/public/checkout")) {
-      return jsonResponse(
-        {
-          code: "COMMERCE_DISABLED",
-          message: "Commerce is disabled.",
-        },
-        { status: 409, statusText: "Conflict" },
-      );
-    }
-
-    if (url.endsWith("/webhooks/stripe")) {
-      return new Response("", {
-        headers: {
-          Location:
-            "https://api.example.com/login?signature=smoke-signature",
-        },
-        status: 302,
-        statusText: "Found",
-      });
-    }
-
-    return jsonResponse({}, { status: 404, statusText: "Not Found" });
-  }, async () => {
-    await assert.rejects(
-      () =>
-        assertFeatureFlagsDisabled(
-          {
-            apiBaseUrl: "https://api.example.com/api/v1",
-          },
-          "access-token",
-        ),
-      (error) => {
-        assert.match(
-          error.message,
-          /webhooks\/stripe expected 409 COMMERCE_DISABLED/,
-        );
-        assert.match(error.message, /302 Found/);
-        assert.match(error.message, /redirect:/);
-        assert.equal(error.message.includes("smoke-signature"), false);
-        return true;
-      },
-    );
-  });
-});
+function readRouteHandler(url, handlers) {
+  return Object.entries(handlers).find(([suffix]) =>
+    url.endsWith(suffix),
+  )?.[1];
+}
 
 function jsonResponse(body, init = {}) {
   return new Response(JSON.stringify(body), {
