@@ -1,3 +1,4 @@
+import { getStorefrontHref } from "../../packages/schema/dist/index.js";
 import { redactSmokeSecrets } from "./smoke-secrets.mjs";
 import { readSmokeStorefrontOrigin } from "./storefront-smoke-host.mjs";
 
@@ -107,8 +108,7 @@ export function formatNotFoundAttempt(attempt) {
 }
 
 export function getStorefrontPath(locale, slug) {
-  const prefix = locale.split("-")[0].toLowerCase();
-  return slug === "home" ? `/${prefix}` : `/${prefix}/${slug}`;
+  return getStorefrontHref(locale, slug);
 }
 
 export function getExpectedStorefrontOrigin(input) {

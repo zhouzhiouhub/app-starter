@@ -14,6 +14,7 @@ import { createStorefrontSmokeRequestInit } from "./storefront-smoke-http.mjs";
 test("storefront smoke helpers preserve nested storefront slugs", () => {
   assert.equal(getStorefrontPath("en-US", "home"), "/en");
   assert.equal(getStorefrontPath("en-US", "legal/terms"), "/en/legal/terms");
+  assert.equal(getStorefrontPath("fr-FR", "legal/terms"), "/fr/legal/terms");
   assert.equal(
     joinUrl("https://example.com", "/en/legal/terms"),
     "https://example.com/en/legal/terms",
