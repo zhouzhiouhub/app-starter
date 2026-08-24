@@ -37,14 +37,18 @@ test("R2 smoke upload disables automatic redirects", async () => {
 
 test("R2 smoke upload reports redacted redirect targets", async () => {
   await withFetch(async () => {
-    return new Response("", {
-      headers: {
+    return {
+      headers: new Headers({
         Location:
           "https://storage.example.com/login?token=header.payload.signature&X-Amz-Signature=abc123",
-      },
+      }),
+      ok: false,
       status: 302,
       statusText: "Found",
-    });
+      async text() {
+        throw new Error("redirect response bodies should not be read");
+      },
+    };
   }, async () => {
     await assert.rejects(
       () => uploadSmokeImage(target, image),
@@ -55,6 +59,32 @@ test("R2 smoke upload reports redacted redirect targets", async () => {
         assert.match(error.message, /X-Amz-Signature=\[redacted\]/i);
         assert.equal(error.message.includes("header.payload.signature"), false);
         assert.equal(error.message.includes("abc123"), false);
+        return true;
+      },
+    );
+  });
+});
+
+test("R2 smoke upload reports oversized error bodies safely", async () => {
+  await withFetch(async () => {
+    return {
+      headers: new Headers({ "Content-Length": "1000001" }),
+      ok: false,
+      status: 500,
+      statusText: "Internal Server Error",
+      async text() {
+        throw new Error("oversized upload error bodies should not be read");
+      },
+    };
+  }, async () => {
+    await assert.rejects(
+      () => uploadSmokeImage(target, image),
+      (error) => {
+        assert.match(error.message, /R2 object upload failed\. 500/);
+        assert.match(error.message, /body read error:/);
+        assert.match(error.message, /X-Amz-Signature=\[redacted\]/i);
+        assert.equal(error.message.includes("abc123"), false);
+        assert.equal(error.message.includes("access%2F20260819"), false);
         return true;
       },
     );
