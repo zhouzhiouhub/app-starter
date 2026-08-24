@@ -112,3 +112,26 @@ test("smoke readiness requires an archived report path", () => {
     },
   ]);
 });
+
+test("smoke readiness validates archived report paths", () => {
+  const readiness = createSmokeProductionReadiness(createReadyEnvironment(), {
+    ...createReadyConfig(),
+    reportPath: "C:\\tmp\\smoke-report.txt",
+  });
+
+  assert.deepEqual(readiness.blockers, [
+    {
+      area: "report.path",
+      issue: "absolute-or-null-path",
+      message: "SMOKE_REPORT_PATH must be a safe relative JSON report path.",
+    },
+  ]);
+  assert.equal(readiness.productionReady, false);
+  assert.deepEqual(readiness.nextActions, [
+    {
+      action:
+        "Set SMOKE_REPORT_PATH to a relative JSON path under tmp/, reports/, artifacts/, or .tmp/.",
+      area: "report.path",
+    },
+  ]);
+});

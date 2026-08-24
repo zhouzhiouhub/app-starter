@@ -7,6 +7,7 @@ import { collectDatabaseReadiness } from "./smoke-readiness-database.mjs";
 import { collectIdentityReadiness } from "./smoke-readiness-identity.mjs";
 import { collectRedisReadiness } from "./smoke-readiness-redis.mjs";
 import { collectRevalidationReadiness } from "./smoke-readiness-revalidation.mjs";
+import { readSmokeReportPathIssue } from "./smoke-report-path-config.mjs";
 
 export function collectSmokeReadinessFindings(environment, config) {
   const blockers = [];
@@ -160,16 +161,28 @@ function collectPreviewReadiness(blockers, preview) {
 }
 
 function collectReportReadiness(blockers, config) {
-  if (typeof config.reportPath === "string" && config.reportPath.length > 0) {
+  const reportPath = config.reportPath;
+
+  if (typeof reportPath !== "string" || reportPath.length === 0) {
+    appendBlocker(
+      blockers,
+      "report.path",
+      "report-path-not-configured",
+      "Set SMOKE_REPORT_PATH to archive a machine-readable production smoke report.",
+    );
     return;
   }
 
-  appendBlocker(
-    blockers,
-    "report.path",
-    "report-path-not-configured",
-    "Set SMOKE_REPORT_PATH to archive a machine-readable production smoke report.",
-  );
+  const issue = readSmokeReportPathIssue(reportPath);
+
+  if (issue) {
+    appendBlocker(
+      blockers,
+      "report.path",
+      issue,
+      "SMOKE_REPORT_PATH must be a safe relative JSON report path.",
+    );
+  }
 }
 
 function collectDeploymentReadiness(blockers, deployment, config) {

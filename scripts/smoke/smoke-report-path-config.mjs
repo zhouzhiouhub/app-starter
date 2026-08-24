@@ -4,10 +4,24 @@ const reportPathSegmentPattern = /^[A-Za-z0-9._-]+$/;
 const reportPathRoots = new Set([".tmp", "artifacts", "reports", "tmp"]);
 
 export function normalizeSmokeReportPath(value) {
+  const issue = readSmokeReportPathIssue(value);
+
+  if (issue) {
+    throw new Error(readSmokeReportPathErrorMessage(issue));
+  }
+
+  return value.trim().replace(/\\/g, "/");
+}
+
+export function readSmokeReportPathIssue(value) {
+  if (typeof value !== "string") {
+    return "invalid-path";
+  }
+
   const trimmed = value.trim();
 
   if (!trimmed) {
-    throw new Error("SMOKE_REPORT_PATH must not be empty.");
+    return "empty-path";
   }
 
   if (
@@ -15,16 +29,14 @@ export function normalizeSmokeReportPath(value) {
     posix.isAbsolute(trimmed) ||
     win32.isAbsolute(trimmed)
   ) {
-    throw new Error("SMOKE_REPORT_PATH must be a relative JSON report path.");
+    return "absolute-or-null-path";
   }
 
   const normalized = trimmed.replace(/\\/g, "/");
   const segments = normalized.split("/");
 
   if (segments.length < 2 || !reportPathRoots.has(segments[0])) {
-    throw new Error(
-      "SMOKE_REPORT_PATH must be under tmp/, reports/, artifacts/, or .tmp/.",
-    );
+    return "unsafe-root";
   }
 
   if (
@@ -36,14 +48,32 @@ export function normalizeSmokeReportPath(value) {
         !reportPathSegmentPattern.test(segment),
     )
   ) {
-    throw new Error(
-      "SMOKE_REPORT_PATH must use safe path segments without traversal.",
-    );
+    return "unsafe-segments";
   }
 
   if (!segments.at(-1).toLowerCase().endsWith(".json")) {
-    throw new Error("SMOKE_REPORT_PATH must end with .json.");
+    return "non-json-extension";
   }
 
-  return normalized;
+  return null;
+}
+
+function readSmokeReportPathErrorMessage(issue) {
+  if (issue === "empty-path") {
+    return "SMOKE_REPORT_PATH must not be empty.";
+  }
+
+  if (issue === "absolute-or-null-path" || issue === "invalid-path") {
+    return "SMOKE_REPORT_PATH must be a relative JSON report path.";
+  }
+
+  if (issue === "unsafe-root") {
+    return "SMOKE_REPORT_PATH must be under tmp/, reports/, artifacts/, or .tmp/.";
+  }
+
+  if (issue === "unsafe-segments") {
+    return "SMOKE_REPORT_PATH must use safe path segments without traversal.";
+  }
+
+  return "SMOKE_REPORT_PATH must end with .json.";
 }

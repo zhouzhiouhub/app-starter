@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readConfig } from "./publish-smoke-config.mjs";
-import { normalizeSmokeReportPath } from "./smoke-report-path-config.mjs";
+import {
+  normalizeSmokeReportPath,
+  readSmokeReportPathIssue,
+} from "./smoke-report-path-config.mjs";
 import { withEnv } from "./smoke-test-env.mjs";
 
 test("smoke report path config validates report output paths", () => {
@@ -36,6 +39,24 @@ test("smoke report path config validates report output paths", () => {
   assert.throws(
     () => normalizeSmokeReportPath("/tmp/smoke-report.json"),
     /SMOKE_REPORT_PATH must be a relative JSON report path/,
+  );
+});
+
+test("smoke report path config exposes stable issue codes", () => {
+  assert.equal(readSmokeReportPathIssue("tmp/smoke-report.json"), null);
+  assert.equal(readSmokeReportPathIssue(""), "empty-path");
+  assert.equal(
+    readSmokeReportPathIssue("C:\\tmp\\smoke-report.json"),
+    "absolute-or-null-path",
+  );
+  assert.equal(readSmokeReportPathIssue("package.json"), "unsafe-root");
+  assert.equal(
+    readSmokeReportPathIssue("tmp/../package.json"),
+    "unsafe-segments",
+  );
+  assert.equal(
+    readSmokeReportPathIssue("tmp/smoke-report.txt"),
+    "non-json-extension",
   );
 });
 
