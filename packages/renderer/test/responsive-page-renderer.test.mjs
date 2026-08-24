@@ -91,6 +91,43 @@ test("page renderer resolves translation messages for chrome and sections", () =
   assert.equal(heroNode.props.body, "Default hero body");
 });
 
+test("page renderer preserves non-text props with default values", () => {
+  const schema = structuredClone(exampleLandingPage);
+  schema.sections[0] = {
+    ...schema.sections[0],
+    component: "custom-card",
+    props: {
+      config: {
+        defaultValue: "raw default",
+        mode: "manual",
+      },
+      title: {
+        defaultValue: "Default custom title",
+        i18nKey: "sections.custom.title",
+      },
+    },
+  };
+
+  const rendered = PageRenderer({
+    registry: {
+      "custom-card": () => null,
+    },
+    schema,
+    translationMessages: {
+      "sections.custom.title": "Translated custom title",
+    },
+    viewport: "desktop",
+  });
+  const firstSectionNode = readMainChildren(rendered)[0];
+  const customNode = firstSectionNode.props.children.props.children;
+
+  assert.deepEqual(customNode.props.config, {
+    defaultValue: "raw default",
+    mode: "manual",
+  });
+  assert.equal(customNode.props.title, "Translated custom title");
+});
+
 test("page renderer applies explicit horizontal layout offsets", () => {
   const schema = structuredClone(exampleLandingPage);
   schema.sections[0].layout.desktop.x = 0;

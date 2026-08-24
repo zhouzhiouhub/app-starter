@@ -40,7 +40,7 @@ function readTranslatedText(
   value: Record<string, unknown>,
   messages: TranslationMessages,
 ): string | null {
-  if (typeof value.defaultValue !== "string") {
+  if (!isI18nTextRecord(value)) {
     return null;
   }
 
@@ -56,6 +56,18 @@ function readTranslatedText(
   }
 
   return value.defaultValue;
+}
+
+function isI18nTextRecord(
+  value: Record<string, unknown>,
+): value is { defaultValue: string; i18nKey?: string } {
+  const keys = Object.keys(value);
+
+  return (
+    typeof value.defaultValue === "string" &&
+    keys.every((key) => key === "defaultValue" || key === "i18nKey") &&
+    (value.i18nKey === undefined || typeof value.i18nKey === "string")
+  );
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
