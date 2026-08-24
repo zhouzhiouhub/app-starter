@@ -1,6 +1,7 @@
 import { ResponsivePageRenderer } from "@app-starter/renderer";
 import type { Metadata } from "next";
 import { getNotFoundPage } from "../lib/published-page";
+import { getPublicTranslationMessages } from "../lib/public-translations";
 import { readStorefrontRequestHost } from "../lib/storefront-request-host";
 
 export const metadata: Metadata = {
@@ -17,6 +18,15 @@ export default async function NotFoundPage() {
     locale: "en-US",
     storefrontHost,
   });
+  const translationMessages = await getPublicTranslationMessages({
+    locale: schema.meta.locale,
+    storefrontHost,
+  });
 
-  return <ResponsivePageRenderer schema={schema} />;
+  return (
+    <ResponsivePageRenderer
+      schema={schema}
+      translationMessages={translationMessages}
+    />
+  );
 }

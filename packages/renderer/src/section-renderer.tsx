@@ -6,6 +6,7 @@ import {
 import { defaultComponentRegistry } from "./component-registry.js";
 import type { SectionRenderOptions } from "./renderer-options.js";
 import { createSectionLayoutStyle } from "./section-layout.js";
+import { resolveTranslatedProps } from "./translation-messages.js";
 
 export function renderSection(
   node: SectionNode,
@@ -19,12 +20,14 @@ export function renderSection(
     return null;
   }
 
+  const componentProps = resolveTranslatedProps(
+    options.resolveMediaUrl
+      ? resolveMediaReferences(node.props, options.resolveMediaUrl)
+      : node.props,
+    options.translationMessages,
+  );
   const content = Component ? (
-    <Component
-      {...(options.resolveMediaUrl
-        ? resolveMediaReferences(node.props, options.resolveMediaUrl)
-        : node.props)}
-    />
+    <Component {...componentProps} />
   ) : (
     options.onMissingComponent?.(node) ?? (
       <section data-component-missing={node.component} data-section-id={node.id}>

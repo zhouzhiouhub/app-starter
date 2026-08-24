@@ -6,6 +6,7 @@ import type {
   Viewport,
 } from "@app-starter/schema";
 import type { ComponentRegistry } from "./component-registry.js";
+import type { TranslationMessages } from "./translation-messages.js";
 
 export interface RenderOptions {
   viewport?: Viewport;
@@ -16,6 +17,7 @@ export interface RenderOptions {
   };
   onMissingComponent?: (node: SectionNode) => ReactNode;
   resolveMediaUrl?: (reference: MediaAssetReference) => string;
+  translationMessages?: TranslationMessages;
 }
 
 export interface SectionRenderOptions extends RenderOptions {

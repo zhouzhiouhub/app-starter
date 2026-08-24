@@ -12,6 +12,7 @@ import {
 import type { RenderOptions } from "./renderer-options.js";
 import { createSectionVerticalOffsets } from "./section-layout.js";
 import { renderSection } from "./section-renderer.js";
+import { resolveTranslatedProps } from "./translation-messages.js";
 
 export type {
   ComponentRegistry,
@@ -19,6 +20,7 @@ export type {
 } from "./component-registry.js";
 export { defaultComponentRegistry } from "./component-registry.js";
 export type { RenderOptions } from "./renderer-options.js";
+export type { TranslationMessages } from "./translation-messages.js";
 export { renderSection } from "./section-renderer.js";
 
 export function PageRenderer(
@@ -27,11 +29,19 @@ export function PageRenderer(
   const viewport = props.viewport ?? "desktop";
   const sections = getOrderedSectionsForViewport(props.schema, viewport);
   const verticalOffsets = createSectionVerticalOffsets(sections, viewport);
+  const headerContent = resolveTranslatedProps(
+    resolveHeaderContent(props.schema),
+    props.translationMessages,
+  );
+  const footerContent = resolveTranslatedProps(
+    resolveFooterContent(props.schema),
+    props.translationMessages,
+  );
   const header = renderChromeSlot(
     props.schema.chrome.header,
     props.chrome?.header,
     <StorefrontHeader
-      content={resolveHeaderContent(props.schema)}
+      content={headerContent}
       currentLocale={props.schema.meta.locale}
       variant={props.schema.chrome.header.variant}
     />,
@@ -40,7 +50,7 @@ export function PageRenderer(
     props.schema.chrome.footer,
     props.chrome?.footer,
     <StorefrontFooter
-      content={resolveFooterContent(props.schema)}
+      content={footerContent}
       variant={props.schema.chrome.footer.variant}
     />,
   );

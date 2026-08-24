@@ -3,6 +3,7 @@ import { resolveLocaleFromPath } from "@app-starter/schema";
 import { notFound } from "next/navigation";
 import { buildPageMetadata } from "../../../lib/page-metadata";
 import { getPublishedPage } from "../../../lib/published-page";
+import { getPublicTranslationMessages } from "../../../lib/public-translations";
 import { getStorefrontOrigin } from "../../../lib/site-url";
 import { readStorefrontRequestHost } from "../../../lib/storefront-request-host";
 
@@ -29,8 +30,9 @@ export default async function LocalizedPage(props: {
 }) {
   const params = await props.params;
   const storefrontHost = await readStorefrontRequestHost();
+  const locale = resolveLocaleFromPath(params.locale);
   const schema = await getPublishedPage({
-    locale: resolveLocaleFromPath(params.locale),
+    locale,
     slug: params.slug?.join("/") ?? "home",
     storefrontHost,
   });
@@ -39,5 +41,15 @@ export default async function LocalizedPage(props: {
     notFound();
   }
 
-  return <ResponsivePageRenderer schema={schema} />;
+  const translationMessages = await getPublicTranslationMessages({
+    locale,
+    storefrontHost,
+  });
+
+  return (
+    <ResponsivePageRenderer
+      schema={schema}
+      translationMessages={translationMessages}
+    />
+  );
 }

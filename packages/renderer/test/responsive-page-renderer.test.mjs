@@ -58,6 +58,39 @@ test("page renderer renders every MVP section on desktop and mobile", () => {
   }
 });
 
+test("page renderer resolves translation messages for chrome and sections", () => {
+  const schema = structuredClone(exampleLandingPage);
+  schema.chrome.header.enabled = true;
+  schema.chrome.header.content.brand.label = {
+    defaultValue: "Default brand",
+    i18nKey: "chrome.brand",
+  };
+  schema.sections[0].props.title = {
+    defaultValue: "Default hero title",
+    i18nKey: "sections.hero.title",
+  };
+  schema.sections[0].props.body = {
+    defaultValue: "Default hero body",
+    i18nKey: "sections.hero.body",
+  };
+
+  const rendered = PageRenderer({
+    schema,
+    translationMessages: {
+      "chrome.brand": "Translated brand",
+      "sections.hero.title": "Translated hero title",
+    },
+    viewport: "desktop",
+  });
+  const [headerNode] = rendered.props.children;
+  const firstSectionNode = readMainChildren(rendered)[0];
+  const heroNode = firstSectionNode.props.children.props.children;
+
+  assert.equal(headerNode.props.content.brand.label, "Translated brand");
+  assert.equal(heroNode.props.title, "Translated hero title");
+  assert.equal(heroNode.props.body, "Default hero body");
+});
+
 test("page renderer applies explicit horizontal layout offsets", () => {
   const schema = structuredClone(exampleLandingPage);
   schema.sections[0].layout.desktop.x = 0;

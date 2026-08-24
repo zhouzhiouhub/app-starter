@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getPreviewPage } from "../../lib/published-page";
 import { readPreviewTokenParam } from "../../lib/preview-token-param";
+import { getPublicTranslationMessages } from "../../lib/public-translations";
 import { readStorefrontRequestHost } from "../../lib/storefront-request-host";
 
 export const dynamic = "force-dynamic";
@@ -32,5 +33,15 @@ export default async function PreviewPage(props: {
     notFound();
   }
 
-  return <ResponsivePageRenderer schema={schema} />;
+  const translationMessages = await getPublicTranslationMessages({
+    locale: schema.meta.locale,
+    storefrontHost,
+  });
+
+  return (
+    <ResponsivePageRenderer
+      schema={schema}
+      translationMessages={translationMessages}
+    />
+  );
 }
