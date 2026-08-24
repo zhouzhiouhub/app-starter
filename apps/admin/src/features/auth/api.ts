@@ -57,9 +57,17 @@ async function revokeRefreshToken(refreshToken: string): Promise<void> {
       redirect: adminAuthRedirectPolicy,
     });
 
-    await response.body?.cancel();
+    await cancelAuthResponseBody(response);
   } catch {
     // Logout remains local if the browser refuses the best-effort request.
+  }
+}
+
+async function cancelAuthResponseBody(response: Response): Promise<void> {
+  try {
+    await response.body?.cancel();
+  } catch {
+    return;
   }
 }
 
@@ -96,6 +104,8 @@ export async function adminRequest(
     return response;
   }
 
+  await cancelAuthResponseBody(response);
+
   const refreshed = await refreshAuthSession();
 
   if (!refreshed) {
@@ -106,6 +116,7 @@ export async function adminRequest(
   const retried = await sendWithAccessToken(path, init);
 
   if (retried.status === 401) {
+    await cancelAuthResponseBody(retried);
     clearAuthSession();
     throw new AuthRequiredError();
   }
@@ -142,6 +153,7 @@ async function refreshAuthSessionOnce(): Promise<AuthSession | null> {
   }
 
   if (!response.ok) {
+    await cancelAuthResponseBody(response);
     return null;
   }
 
