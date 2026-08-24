@@ -15,6 +15,7 @@ export const loginBodySchema = z.object({
     .trim()
     .min(1)
     .max(100)
+    .regex(/^[a-z0-9](?:[a-z0-9-]{0,98}[a-z0-9])?$/)
     .default(DEFAULT_AUTH_TENANT_SLUG),
 });
 export type LoginBody = z.infer<typeof loginBodySchema>;

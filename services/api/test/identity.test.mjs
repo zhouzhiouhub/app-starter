@@ -28,6 +28,31 @@ test("login body lowercases email and requires a password", () => {
   assert.equal(parsed.email, "admin@example.com");
   assert.equal(parsed.tenantSlug, "default");
   assert.throws(() => loginBodySchema.parse({ email: "admin@example.com" }));
+  assert.equal(
+    loginBodySchema.parse({
+      email: "Admin@Example.com",
+      password: "ChangeMe123!",
+      tenantSlug: "brand-us",
+    }).tenantSlug,
+    "brand-us",
+  );
+  for (const tenantSlug of [
+    "Brand-US",
+    "brand_us",
+    "brand/us",
+    "brand.",
+    "-brand",
+    "brand-",
+    "brand\rslug",
+  ]) {
+    assert.throws(() =>
+      loginBodySchema.parse({
+        email: "admin@example.com",
+        password: "ChangeMe123!",
+        tenantSlug,
+      }),
+    );
+  }
 });
 
 test("identity request parsers keep API validation errors structured", () => {

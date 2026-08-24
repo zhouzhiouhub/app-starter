@@ -2,6 +2,31 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { IdentityService } from "../dist/modules/identity/identity.service.js";
 
+test("identity service rejects malformed tenant slugs before tenant lookup", async () => {
+  const service = new IdentityService(
+    {
+      tenant: {
+        findUnique() {
+          throw new Error("Malformed tenant slugs should not query storage.");
+        },
+      },
+    },
+    createTokenService(),
+  );
+
+  await assert.rejects(
+    () =>
+      service.login({
+        email: "admin@example.com",
+        password: "ChangeMe123!",
+        tenantSlug: "brand/us",
+      }),
+    (error) =>
+      error.getStatus?.() === 400 &&
+      error.getResponse?.().code === "VALIDATION_ERROR",
+  );
+});
+
 test("identity service rotates refresh tokens on refresh", async () => {
   const createdRecords = [];
   const updatedRecords = [];
