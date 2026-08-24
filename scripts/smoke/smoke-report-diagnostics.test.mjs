@@ -1,0 +1,136 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import { formatSmokeReportSummary } from "./smoke-report-cli.mjs";
+
+test("smoke report CLI suggests fixes for storefront diagnostics", () => {
+  const lines = formatSmokeReportSummary({
+    schemaVersion: "smoke-report.v3",
+    summary: {
+      blockerCount: 0,
+      checkCount: 3,
+      failedCheckCount: 1,
+      failedCheckDetails: [
+        {
+          details: {
+            storefront: {
+              diagnosis: "stale-or-fallback-content",
+              status: 200,
+            },
+          },
+          message:
+            "Storefront page did not show published title token=payload.signature",
+          name: "storefront.page",
+        },
+      ],
+      failedChecks: ["storefront.page"],
+      passedCheckCount: 2,
+      productionReady: true,
+      status: "failed",
+      warningCount: 0,
+    },
+  });
+
+  assert.equal(
+    lines.includes(
+      "    - storefront.page: Storefront page did not show published title token=[redacted] (diagnosis: stale-or-fallback-content)",
+    ),
+    true,
+  );
+  assert.equal(
+    lines.includes(
+      "    - Check publish revalidation, ISR cache freshness, and storefront host routing.",
+    ),
+    true,
+  );
+});
+
+test("smoke report CLI suggests fixes for storefront SEO diagnostics", () => {
+  const lines = formatSmokeReportSummary({
+    schemaVersion: "smoke-report.v3",
+    summary: {
+      blockerCount: 0,
+      checkCount: 3,
+      failedCheckCount: 1,
+      failedCheckDetails: [
+        {
+          details: {
+            notFound: {
+              noIndex: false,
+              status: 200,
+            },
+            robots: {
+              hasHostLine: false,
+              hasSitemapLine: false,
+              hasUserAgent: false,
+              pointsToHost: false,
+              pointsToSitemap: false,
+            },
+            sitemap: {
+              expectedUrlPresent: false,
+              notFoundUrlPresent: true,
+            },
+            storefrontSeo: {
+              diagnosis: "canonical-mismatch",
+            },
+          },
+          message: "Storefront SEO metadata mismatch.",
+          name: "storefront.seo",
+        },
+      ],
+      failedChecks: ["storefront.seo"],
+      passedCheckCount: 2,
+      productionReady: true,
+      status: "failed",
+      warningCount: 0,
+    },
+  });
+
+  assert.equal(
+    lines.includes(
+      "    - storefront.seo: Storefront SEO metadata mismatch. (diagnosis: canonical-mismatch)",
+    ),
+    true,
+  );
+  assert.equal(
+    lines.includes(
+      "    - Check SMOKE_STOREFRONT_HOST / WEB_URL and storefront canonical metadata generation.",
+    ),
+    true,
+  );
+  assert.equal(
+    lines.includes(
+      "    - Check robots.txt generation includes User-agent and Host lines.",
+    ),
+    true,
+  );
+  assert.equal(
+    lines.includes("    - Check robots.txt Host uses the expected storefront origin."),
+    true,
+  );
+  assert.equal(
+    lines.includes(
+      "    - Check robots.txt Sitemap points to the storefront sitemap URL.",
+    ),
+    true,
+  );
+  assert.equal(
+    lines.includes(
+      "    - Check sitemap generation includes the published smoke page URL after publish/revalidation.",
+    ),
+    true,
+  );
+  assert.equal(
+    lines.includes("    - Exclude the 404 system page from sitemap output."),
+    true,
+  );
+  assert.equal(
+    lines.includes("    - Ensure unknown storefront routes return HTTP 404."),
+    true,
+  );
+  assert.equal(
+    lines.includes(
+      "    - Ensure the storefront 404 page renders noindex robots metadata.",
+    ),
+    true,
+  );
+});

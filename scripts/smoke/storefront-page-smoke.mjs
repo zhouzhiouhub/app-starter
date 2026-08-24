@@ -62,7 +62,13 @@ export async function assertStorefrontPage(input, title) {
 
 export function assertIndexableStorefrontPage(html, input) {
   if (hasNoIndexRobots(html)) {
-    throw new Error("Storefront page rendered noindex robots metadata.");
+    throw createStorefrontSeoFailure(
+      "Storefront page rendered noindex robots metadata.",
+      input,
+      {
+        diagnosis: "noindex-page",
+      },
+    );
   }
 
   if (input) {
@@ -99,10 +105,24 @@ function assertStorefrontCanonical(html, input) {
   error.smokeDetails = {
     storefrontSeo: {
       canonicalHref,
+      diagnosis: "canonical-mismatch",
       expectedCanonicalUrl,
       url: joinUrl(input.webUrl, getStorefrontPath(input.locale, input.slug)),
     },
   };
 
   throw error;
+}
+
+function createStorefrontSeoFailure(message, input, details) {
+  const error = new Error(message);
+  error.smokeDetails = {
+    storefrontSeo: {
+      ...details,
+      url: input
+        ? joinUrl(input.webUrl, getStorefrontPath(input.locale, input.slug))
+        : null,
+    },
+  };
+  return error;
 }
