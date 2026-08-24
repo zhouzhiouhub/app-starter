@@ -16,7 +16,10 @@ import {
   createStorefrontHostHeaders,
 } from "./storefront-host-header.ts";
 import { isPreviewTokenCandidate } from "./preview-token-param.ts";
-import { readPublicApiJson } from "./public-api-response.ts";
+import {
+  cancelPublicApiResponseBody,
+  readPublicApiJson,
+} from "./public-api-response.ts";
 
 const apiBaseUrl = getApiBaseUrl();
 
@@ -102,6 +105,7 @@ export async function getPreviewPage(
     );
 
     if (!response.ok) {
+      await cancelPublicApiResponseBody(response);
       return null;
     }
 
@@ -169,6 +173,7 @@ async function fetchPublishedSchema(input: {
     );
 
     if (!response.ok) {
+      await cancelPublicApiResponseBody(response);
       return null;
     }
 

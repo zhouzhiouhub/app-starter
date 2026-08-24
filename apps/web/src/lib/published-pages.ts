@@ -14,7 +14,10 @@ import {
   addStorefrontHostCacheParam,
   createStorefrontHostHeaders,
 } from "./storefront-host-header.ts";
-import { readPublicApiJson } from "./public-api-response.ts";
+import {
+  cancelPublicApiResponseBody,
+  readPublicApiJson,
+} from "./public-api-response.ts";
 
 const apiBaseUrl = getApiBaseUrl();
 
@@ -60,6 +63,7 @@ export async function listPublishedPages(input?: {
     });
 
     if (!response.ok) {
+      await cancelPublicApiResponseBody(response);
       return [];
     }
 

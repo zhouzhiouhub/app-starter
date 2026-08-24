@@ -2,6 +2,7 @@ const maxPublicApiJsonBodyLength = 1_000_000;
 
 export async function readPublicApiJson(response: Response): Promise<unknown> {
   if (hasOversizedContentLength(response)) {
+    await cancelPublicApiResponseBody(response);
     return null;
   }
 
@@ -12,6 +13,16 @@ export async function readPublicApiJson(response: Response): Promise<unknown> {
   }
 
   return readJsonFromResponse(response);
+}
+
+export async function cancelPublicApiResponseBody(
+  response: Response,
+): Promise<void> {
+  try {
+    await response.body?.cancel();
+  } catch {
+    return;
+  }
 }
 
 function readJsonFromText(text: string): unknown {
