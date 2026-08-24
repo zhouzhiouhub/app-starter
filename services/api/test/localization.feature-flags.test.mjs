@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { apiErrorCodes } from "../../../packages/schema/dist/index.js";
+import {
+  apiErrorCodes,
+  translationEntryMaxCount,
+} from "../../../packages/schema/dist/index.js";
 import { LocalizationController } from "../dist/modules/localization/localization.controller.js";
 import { LocalizationService } from "../dist/modules/localization/localization.service.js";
 import {
@@ -202,6 +205,7 @@ test("admin translations read tenant-scoped stored entries", async () => {
   assert.deepEqual(queries, [
     {
       orderBy: { key: "asc" },
+      take: translationEntryMaxCount,
       where: {
         locale: "en-US",
         tenantId: "tenant-1",
@@ -218,6 +222,7 @@ test("admin translations read tenant-scoped stored entries", async () => {
     },
   ]);
   assert.equal(response.meta.tenantId, "tenant-1");
+  assert.equal(response.meta.entryLimit, translationEntryMaxCount);
   assert.equal(response.meta.requestId, "request-translations-list");
 });
 

@@ -112,7 +112,12 @@ export function LocalizationStatusPanel(props: {
           </Tag>
         </Descriptions.Item>
         <Descriptions.Item label="Translation entries">
-          {state.translationCount}
+          <Space size={4}>
+            <span>{state.translationCount}</span>
+            <Typography.Text type="secondary">
+              / {state.translationEntryLimit}
+            </Typography.Text>
+          </Space>
         </Descriptions.Item>
         <Descriptions.Item label="Fallback probe">
           <Space size={4}>

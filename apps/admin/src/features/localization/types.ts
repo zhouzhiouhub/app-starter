@@ -12,6 +12,7 @@ export interface LocalizationLocale {
 }
 
 export interface LocalizationTranslationsMeta {
+  entryLimit: number;
   fallbackLocale: string;
   isFallback: boolean;
   locale: string;

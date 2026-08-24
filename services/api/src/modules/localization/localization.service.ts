@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { translationEntryMaxCount } from "@app-starter/schema";
 import type { Actor } from "../identity/identity.types.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { toTranslationResponse } from "./localization.mapper.js";
@@ -16,6 +17,7 @@ export class LocalizationService {
     const localeContext = resolveTranslationLocale(locale);
     const translations = await this.prisma.translation.findMany({
       orderBy: { key: "asc" },
+      take: translationEntryMaxCount,
       where: {
         locale: localeContext.locale,
         tenantId: actor.tenantId,
@@ -27,6 +29,7 @@ export class LocalizationService {
       meta: {
         requestId,
         tenantId: actor.tenantId,
+        entryLimit: translationEntryMaxCount,
         locale: localeContext.locale,
         fallbackLocale: localeContext.fallbackLocale,
         isFallback: localeContext.isFallback,

@@ -27,6 +27,7 @@ test("localization summary state reads the active MVP defaults", () => {
     ],
     translations: [],
     translationsMeta: {
+      entryLimit: 2000,
       fallbackLocale: "en-US",
       isFallback: false,
       locale: "en-US",
@@ -42,6 +43,7 @@ test("localization summary state reads the active MVP defaults", () => {
     marketCurrency: "USD",
     status: "active",
     translationCount: 0,
+    translationEntryLimit: 2000,
     translationRequestedLocale: "en-US",
     translationResolvedLocale: "en-US",
   });
@@ -74,6 +76,7 @@ test("localization summary exposes non-default translation fallback entries", ()
       },
     ],
     translationsMeta: {
+      entryLimit: 2000,
       fallbackLocale: "en-US",
       isFallback: true,
       locale: "en-US",
@@ -86,6 +89,7 @@ test("localization summary exposes non-default translation fallback entries", ()
   assert.equal(state.fallbackLocale, "en-US");
   assert.equal(state.status, "fallback");
   assert.equal(state.translationCount, 1);
+  assert.equal(state.translationEntryLimit, 2000);
   assert.equal(state.translationRequestedLocale, "de-DE");
   assert.equal(state.translationResolvedLocale, "en-US");
 });
@@ -102,6 +106,7 @@ test("localization summary state marks missing market data", () => {
     markets: [],
     translations: [],
     translationsMeta: {
+      entryLimit: 2000,
       fallbackLocale: "en-US",
       isFallback: true,
       locale: "en-US",

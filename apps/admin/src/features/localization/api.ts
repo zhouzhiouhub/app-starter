@@ -55,6 +55,7 @@ async function getTranslations(locale: string): Promise<{
   return {
     entries: result.data ?? [],
     meta: {
+      entryLimit: result.meta?.entryLimit ?? result.data?.length ?? 0,
       fallbackLocale: result.meta?.fallbackLocale ?? locale,
       isFallback: result.meta?.isFallback === true,
       locale: result.meta?.locale ?? locale,

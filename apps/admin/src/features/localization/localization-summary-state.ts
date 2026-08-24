@@ -12,6 +12,7 @@ export interface LocalizationSummaryState {
   marketCurrency: string;
   status: "active" | "fallback" | "missing";
   translationCount: number;
+  translationEntryLimit: number;
   translationRequestedLocale: string;
   translationResolvedLocale: string;
 }
@@ -34,6 +35,7 @@ export function readLocalizationSummaryState(
     marketCurrency: market?.currency ?? "USD",
     status: readStatus(summary, market, locale),
     translationCount: summary.translations.length,
+    translationEntryLimit: summary.translationsMeta.entryLimit,
     translationRequestedLocale: summary.translationsMeta.requestedLocale,
     translationResolvedLocale: summary.translationsMeta.locale,
   };
