@@ -13,6 +13,7 @@ const expectedConfig = {
 export async function assertFeatureFlagsDisabled(input, accessToken) {
   await assertPublicConfig(input);
   await assertPublicTranslationFallback(input);
+  await assertLocalizationReadPlaceholders(input, accessToken);
   await assertCommerceReadPlaceholders(input, accessToken);
   await assertCommerceDisabled(input);
   await assertLocaleCreationDisabled(input, accessToken);
@@ -56,6 +57,62 @@ async function assertPublicTranslationFallback(input) {
   ) {
     throw new Error(
       "Public translations did not fall back to the default locale.",
+    );
+  }
+}
+
+async function assertLocalizationReadPlaceholders(input, accessToken) {
+  const markets = await fetchAdminJson(
+    `${input.apiBaseUrl}/markets`,
+    accessToken,
+    "Markets placeholder",
+  );
+  const market = readSingleRecord(markets, "Markets placeholder");
+
+  if (
+    market.code !== expectedConfig.defaultMarket ||
+    market.defaultLocale !== expectedConfig.defaultLocale ||
+    market.currency !== expectedConfig.defaultCurrency ||
+    market.status !== "active"
+  ) {
+    throw new Error("Markets placeholder did not expose the default market.");
+  }
+
+  const locales = await fetchAdminJson(
+    `${input.apiBaseUrl}/locales`,
+    accessToken,
+    "Locales placeholder",
+  );
+  const locale = readSingleRecord(locales, "Locales placeholder");
+
+  if (
+    locale.code !== expectedConfig.defaultLocale ||
+    locale.fallbackLocale !== expectedConfig.fallbackLocale ||
+    locale.status !== "active"
+  ) {
+    throw new Error("Locales placeholder did not expose the default locale.");
+  }
+
+  const translations = await fetchAdminJson(
+    `${input.apiBaseUrl}/translations?locale=de-DE`,
+    accessToken,
+    "Translations placeholder",
+  );
+
+  if (
+    !Array.isArray(translations.body?.data) ||
+    translations.body.data.length !== 0
+  ) {
+    throw new Error("Translations placeholder expected an empty data array.");
+  }
+
+  if (
+    translations.body?.meta?.locale !== expectedConfig.defaultLocale ||
+    translations.body?.meta?.fallbackLocale !== expectedConfig.fallbackLocale ||
+    translations.body?.meta?.isFallback !== true
+  ) {
+    throw new Error(
+      "Translations placeholder did not fall back to the default locale.",
     );
   }
 }
@@ -128,6 +185,31 @@ async function assertEmptyListResponse(url, accessToken, label) {
   ) {
     throw new Error(`${label} expected an empty data array.`);
   }
+}
+
+async function fetchAdminJson(url, accessToken, label) {
+  const response = await fetchJson(url, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(readHttpError(response, `${label} failed.`));
+  }
+
+  return response;
+}
+
+function readSingleRecord(response, label) {
+  if (
+    !Array.isArray(response.body?.data) ||
+    response.body.data.length !== 1
+  ) {
+    throw new Error(`${label} expected a single data record.`);
+  }
+
+  return response.body.data[0];
 }
 
 async function assertLocaleCreationDisabled(input, accessToken) {

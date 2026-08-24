@@ -237,11 +237,12 @@ machine-readable artifact.
 
 The script logs in with `SMOKE_ADMIN_EMAIL` / `SMOKE_ADMIN_PASSWORD` (falling
 back to the seeded admin), verifies the MVP disabled feature flags
-(`COMMERCE_ENABLED=false` and `MULTI_LOCALE_ENABLED=false`), checks Products /
-Orders / Payments empty placeholders and the Stripe Webhook placeholder, saves
-a draft, creates a Preview Token, checks the public preview API and Web `/preview`
-route, publishes a unique page through the Admin API, publishes a rollback
-candidate, rolls back to the first published version, verifies
+(`COMMERCE_ENABLED=false` and `MULTI_LOCALE_ENABLED=false`), checks the default
+Market / Locale / Translation read placeholders, Products / Orders / Payments
+empty placeholders, and the Stripe Webhook placeholder, saves a draft, creates
+a Preview Token, checks the public preview API and Web `/preview` route,
+publishes a unique page through the Admin API, publishes a rollback candidate,
+rolls back to the first published version, verifies
 `preview_token.created`, `page.published`, and `page.rolled_back` audit logs,
 checks `GET /api/v1/public/pages/:slug`, then checks the media upload target,
 media confirmation, media list filters, storefront HTML, canonical metadata,

@@ -94,7 +94,7 @@ test("feature flag smoke rejects redirected public config checks", async () => {
   });
 });
 
-test("feature flag smoke checks disabled commerce placeholders", async () => {
+test("feature flag smoke checks disabled feature placeholders", async () => {
   const calls = [];
 
   await withFetch(createFeatureFlagSmokeFetch({ calls }), async () => {
@@ -119,7 +119,14 @@ test("feature flag smoke checks disabled commerce placeholders", async () => {
   );
   assert.match(webhookCall.init.body, /evt_smoke_webhook/);
 
-  for (const suffix of ["/products", "/orders", "/payments"]) {
+  for (const suffix of [
+    "/markets",
+    "/locales",
+    "/translations?locale=de-DE",
+    "/products",
+    "/orders",
+    "/payments",
+  ]) {
     const call = calls.find((candidate) => candidate.url.endsWith(suffix));
 
     assert.ok(call);
@@ -186,6 +193,33 @@ test("feature flag smoke rejects non-empty commerce placeholders", async () => {
   });
 });
 
+test("feature flag smoke rejects localization placeholder drift", async () => {
+  await withFetch(createFeatureFlagSmokeFetch({
+    overrides: {
+      "/translations?locale=de-DE": () =>
+        jsonResponse({
+          data: [],
+          meta: {
+            fallbackLocale: "en-US",
+            isFallback: false,
+            locale: "de-DE",
+          },
+        }),
+    },
+  }), async () => {
+    await assert.rejects(
+      () =>
+        assertFeatureFlagsDisabled(
+          {
+            apiBaseUrl: "https://api.example.com/api/v1",
+          },
+          "access-token",
+        ),
+      /Translations placeholder did not fall back to the default locale\./,
+    );
+  });
+});
+
 function createFeatureFlagSmokeFetch(options = {}) {
   return async (url, init = {}) => {
     options.calls?.push({ init, url });
@@ -220,6 +254,42 @@ function createFeatureFlagSmokeFetch(options = {}) {
       });
     }
 
+    if (url.endsWith("/markets")) {
+      return jsonResponse({
+        data: [
+          {
+            code: "us",
+            currency: "USD",
+            defaultLocale: "en-US",
+            status: "active",
+          },
+        ],
+      });
+    }
+
+    if (url.endsWith("/locales") && init.method !== "POST") {
+      return jsonResponse({
+        data: [
+          {
+            code: "en-US",
+            fallbackLocale: "en-US",
+            status: "active",
+          },
+        ],
+      });
+    }
+
+    if (url.endsWith("/translations?locale=de-DE")) {
+      return jsonResponse({
+        data: [],
+        meta: {
+          fallbackLocale: "en-US",
+          isFallback: true,
+          locale: "en-US",
+        },
+      });
+    }
+
     if (
       url.endsWith("/products") ||
       url.endsWith("/orders") ||
@@ -242,7 +312,7 @@ function createFeatureFlagSmokeFetch(options = {}) {
       );
     }
 
-    if (url.endsWith("/locales")) {
+    if (url.endsWith("/locales") && init.method === "POST") {
       return jsonResponse(
         {
           code: "MULTI_LOCALE_DISABLED",
