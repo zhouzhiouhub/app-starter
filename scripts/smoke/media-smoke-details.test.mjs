@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createMediaSmokeDetails } from "./media-smoke.mjs";
+import {
+  createMediaSmokeDetails,
+  createMediaUploadTargetSmokeDetails,
+} from "./media-smoke.mjs";
 import { r2UploadUrl } from "./media-smoke-test-helpers.mjs";
 
 test("smoke helpers summarize media checks without signed upload URLs", () => {
@@ -49,6 +52,34 @@ test("smoke helpers summarize media checks without signed upload URLs", () => {
     uploadMethod: "PUT",
     uploadUrlMatchesR2Key: true,
     uploadedObject: true,
+  });
+  assert.equal("uploadUrl" in details, false);
+  assert.equal(JSON.stringify(details).includes("X-Amz-Signature"), false);
+});
+
+test("smoke helpers summarize upload target failures without signed URLs", () => {
+  const details = createMediaUploadTargetSmokeDetails({
+    confirmPath: "/api/v1/media/confirm",
+    expiresAt: "2026-08-19T10:00:00.000Z",
+    headers: {
+      "Content-Type": "image/png",
+    },
+    maxSize: 26214400,
+    method: "PUT",
+    r2Key: "tenant/2026/08/19/smoke.png",
+    uploadUrl: r2UploadUrl("/bucket/tenant/2026/08/19/other.png"),
+  });
+
+  assert.deepEqual(details, {
+    confirmPath: "/api/v1/media/confirm",
+    isR2UploadUrl: true,
+    presignedUrlHost: "account.r2.cloudflarestorage.com",
+    r2Key: "tenant/2026/08/19/smoke.png",
+    uploadContentType: "image/png",
+    uploadExpiresAt: "2026-08-19T10:00:00.000Z",
+    uploadMaxSize: 26214400,
+    uploadMethod: "PUT",
+    uploadUrlMatchesR2Key: false,
   });
   assert.equal("uploadUrl" in details, false);
   assert.equal(JSON.stringify(details).includes("X-Amz-Signature"), false);

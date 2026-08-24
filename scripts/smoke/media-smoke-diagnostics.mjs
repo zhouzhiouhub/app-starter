@@ -122,6 +122,26 @@ export function createMediaSmokeDetails(target, asset, requireR2Upload) {
   };
 }
 
+export function createMediaUploadTargetSmokeDetails(target) {
+  const r2Key = typeof target?.r2Key === "string" ? target.r2Key : null;
+
+  return {
+    confirmPath:
+      typeof target?.confirmPath === "string" ? target.confirmPath : null,
+    isR2UploadUrl: isR2UploadUrl(target?.uploadUrl),
+    presignedUrlHost: readUrlHost(target?.uploadUrl),
+    r2Key,
+    uploadContentType: target?.headers?.["Content-Type"] ?? null,
+    uploadExpiresAt:
+      typeof target?.expiresAt === "string" ? target.expiresAt : null,
+    uploadMaxSize: Number.isInteger(target?.maxSize) ? target.maxSize : null,
+    uploadMethod: typeof target?.method === "string" ? target.method : null,
+    uploadUrlMatchesR2Key: r2Key
+      ? isR2UploadUrlForKey(target?.uploadUrl, r2Key)
+      : false,
+  };
+}
+
 function decodedPathEndsWithKey(url, r2Key) {
   try {
     return decodeURIComponent(url.pathname).endsWith(`/${r2Key}`);

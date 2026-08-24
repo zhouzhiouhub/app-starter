@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { fetchJson, readHttpError } from "./http-json-smoke.mjs";
 import {
+  createMediaUploadTargetSmokeDetails,
   isR2UploadUrl,
   isR2UploadUrlForKey,
 } from "./media-smoke-diagnostics.mjs";
@@ -28,8 +29,9 @@ export async function requestMediaUploadTarget(input, accessToken, image) {
   assertUploadTargetShape(target, image);
 
   if (input.requireR2Upload && !isR2UploadUrl(target.uploadUrl)) {
-    throw new Error(
+    throw createMediaUploadTargetError(
       "Media upload target is not a secure Cloudflare R2 presigned URL.",
+      target,
     );
   }
 
@@ -37,12 +39,21 @@ export async function requestMediaUploadTarget(input, accessToken, image) {
     input.requireR2Upload &&
     !isR2UploadUrlForKey(target.uploadUrl, target.r2Key)
   ) {
-    throw new Error(
+    throw createMediaUploadTargetError(
       "Media upload target URL does not match the returned R2 key.",
+      target,
     );
   }
 
   return target;
+}
+
+function createMediaUploadTargetError(message, target) {
+  const error = new Error(message);
+  error.smokeDetails = {
+    mediaUploadTarget: createMediaUploadTargetSmokeDetails(target),
+  };
+  return error;
 }
 
 function assertUploadTargetShape(target, image) {

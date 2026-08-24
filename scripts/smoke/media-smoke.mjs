@@ -2,6 +2,7 @@ import { createMediaSmokeDetails } from "./media-smoke-diagnostics.mjs";
 import { createSmokeMediaAsset } from "./media-smoke-upload-flow.mjs";
 
 export {
+  createMediaUploadTargetSmokeDetails,
   createMediaSmokeDetails,
   formatMediaListFilterDiagnostic,
   isCdnUrlForR2Key,

@@ -227,6 +227,57 @@ test("media smoke upload flow reports CDN diagnostics on confirmation failures",
   });
 });
 
+test("media smoke upload flow reports upload target diagnostics on R2 failures", async () => {
+  const r2Key = "tenant-1/2026/08/21/smoke.png";
+
+  await withFetch(async (url) => {
+    if (url.endsWith("/media/upload-url")) {
+      return jsonResponse({
+        data: {
+          confirmPath: "/api/v1/media/confirm",
+          expiresAt: "2026-08-21T00:15:00.000Z",
+          headers: { "Content-Type": "image/png" },
+          maxSize: 26214400,
+          method: "PUT",
+          r2Key,
+          type: "image",
+          uploadUrl: "https://uploads.local.invalid/tenant-1/smoke.png",
+        },
+      });
+    }
+
+    throw new Error(`Unexpected fetch URL: ${url}`);
+  }, async () => {
+    await assert.rejects(
+      () =>
+        createSmokeMediaAsset(
+          {
+            apiBaseUrl: "https://api.example.com",
+            requireR2Upload: true,
+          },
+          "access-token",
+        ),
+      (error) => {
+        assert.match(error.message, /secure Cloudflare R2 presigned URL/);
+        assert.equal(
+          error.smokeDetails.mediaUploadTarget.isR2UploadUrl,
+          false,
+        );
+        assert.equal(
+          error.smokeDetails.mediaUploadTarget.presignedUrlHost,
+          "uploads.local.invalid",
+        );
+        assert.equal(
+          error.smokeDetails.mediaUploadTarget.uploadUrlMatchesR2Key,
+          false,
+        );
+        assert.equal("uploadUrl" in error.smokeDetails.mediaUploadTarget, false);
+        return true;
+      },
+    );
+  });
+});
+
 function jsonResponse(body) {
   return new Response(JSON.stringify(body), {
     headers: { "Content-Type": "application/json" },

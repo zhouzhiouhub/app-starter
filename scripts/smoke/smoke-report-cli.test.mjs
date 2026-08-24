@@ -124,6 +124,70 @@ test("smoke report CLI includes failed check diagnostics and suggested fixes", (
   ]);
 });
 
+test("smoke report CLI suggests fixes for media diagnostics", () => {
+  const lines = formatSmokeReportSummary({
+    schemaVersion: "smoke-report.v3",
+    summary: {
+      blockerCount: 0,
+      checkCount: 5,
+      failedCheckCount: 2,
+      failedCheckDetails: [
+        {
+          details: {
+            mediaUploadTarget: {
+              isR2UploadUrl: false,
+              uploadUrlMatchesR2Key: false,
+            },
+          },
+          message:
+            "Media upload target is not a secure Cloudflare R2 presigned URL.",
+          name: "media.upload-target",
+        },
+        {
+          details: {
+            media: {
+              cdnUrlMatchesR2Key: false,
+              productionCdn: false,
+            },
+          },
+          message: "Media confirm did not return a production CDN URL.",
+          name: "media.confirm",
+        },
+      ],
+      failedChecks: ["media.upload-target", "media.confirm"],
+      passedCheckCount: 3,
+      productionReady: true,
+      status: "failed",
+      warningCount: 0,
+    },
+  });
+
+  assert.equal(
+    lines.includes(
+      "    - Configure R2 upload variables so /media/upload-url returns a Cloudflare R2 presigned PUT URL.",
+    ),
+    true,
+  );
+  assert.equal(
+    lines.includes(
+      "    - Check R2 object-key signing so the presigned upload URL path matches the returned r2Key.",
+    ),
+    true,
+  );
+  assert.equal(
+    lines.includes(
+      "    - Set MEDIA_CDN_BASE_URL to a production HTTPS CDN host before requiring R2 smoke.",
+    ),
+    true,
+  );
+  assert.equal(
+    lines.includes(
+      "    - Check media confirm URL generation so the CDN URL points to the confirmed R2 key.",
+    ),
+    true,
+  );
+});
+
 test("smoke report CLI writes failed summaries to warning output", () => {
   const logLines = [];
   const warnLines = [];

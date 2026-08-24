@@ -139,15 +139,52 @@ function formatFailureDetailLines(details) {
 
 function readFailureActions(details) {
   const actions = details.flatMap((detail) => {
-    const diagnosis = readFailureDiagnosis(detail.details);
-    const action = diagnosis
-      ? revalidationFailureActions.get(diagnosis)
-      : undefined;
+    const action = readRevalidationFailureAction(detail.details);
 
-    return action ? [action] : [];
+    return [
+      ...(action ? [action] : []),
+      ...readMediaFailureActions(detail.details),
+    ];
   });
 
   return [...new Set(actions)];
+}
+
+function readRevalidationFailureAction(details) {
+  const diagnosis = readFailureDiagnosis(details);
+  return diagnosis ? revalidationFailureActions.get(diagnosis) : undefined;
+}
+
+function readMediaFailureActions(details) {
+  const media = readPlainRecord(details.media);
+  const uploadTarget = readPlainRecord(details.mediaUploadTarget);
+  const actions = [];
+
+  if (uploadTarget.isR2UploadUrl === false) {
+    actions.push(
+      "Configure R2 upload variables so /media/upload-url returns a Cloudflare R2 presigned PUT URL.",
+    );
+  }
+
+  if (uploadTarget.uploadUrlMatchesR2Key === false) {
+    actions.push(
+      "Check R2 object-key signing so the presigned upload URL path matches the returned r2Key.",
+    );
+  }
+
+  if (media.productionCdn === false) {
+    actions.push(
+      "Set MEDIA_CDN_BASE_URL to a production HTTPS CDN host before requiring R2 smoke.",
+    );
+  }
+
+  if (media.cdnUrlMatchesR2Key === false) {
+    actions.push(
+      "Check media confirm URL generation so the CDN URL points to the confirmed R2 key.",
+    );
+  }
+
+  return actions;
 }
 
 function readFailureDiagnosis(details) {
