@@ -15,6 +15,10 @@ import {
   isOversizedResponseBodyError,
   readBoundedResponseText,
 } from "./bounded-response-text.mjs";
+import {
+  cancelResponseBody,
+  readRedirectLocation,
+} from "./http-response-summary.mjs";
 import { redactSmokeSecrets } from "./smoke-secrets.mjs";
 
 export async function assertAdminApp(input) {
@@ -65,6 +69,9 @@ export async function readAdminAppAttempt(url) {
   try {
     const response = await fetch(url, { redirect: "manual" });
     const redirectLocation = readRedirectLocation(response);
+    if (redirectLocation) {
+      await cancelResponseBody(response);
+    }
     const body = redirectLocation
       ? { text: "" }
       : await readAdminAppResponseBody(response, url);
@@ -259,14 +266,4 @@ async function readAdminAppResponseBody(response, url) {
       text: "",
     };
   }
-}
-
-function readRedirectLocation(response) {
-  if (response.status < 300 || response.status >= 400) {
-    return null;
-  }
-
-  const location = response.headers.get("location")?.trim();
-
-  return location ? redactSmokeSecrets(location) : null;
 }

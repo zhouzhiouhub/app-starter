@@ -4,12 +4,18 @@ import { assertAdminApp } from "./admin-app-smoke.mjs";
 import { withFetch } from "./smoke-test-runtime.mjs";
 
 test("admin app smoke rejects redirected shell responses", async () => {
+  let bodyCanceled = false;
   const calls = [];
 
   await withFetch(async (url, init = {}) => {
     calls.push({ init, url });
 
     return {
+      body: {
+        async cancel() {
+          bodyCanceled = true;
+        },
+      },
       headers: new Headers({
         "content-type": "text/html",
         Location:
@@ -38,6 +44,8 @@ test("admin app smoke rejects redirected shell responses", async () => {
       },
     );
   });
+
+  assert.equal(bodyCanceled, true);
 });
 
 test("admin app smoke rejects redirected module assets", async () => {
