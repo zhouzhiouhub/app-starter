@@ -24,9 +24,13 @@ const apiSecretKeyPattern = [
   "token",
   "x-amz-[a-z0-9-]+",
 ].join("|");
+const pemBlockPattern =
+  /-----BEGIN [A-Z0-9 ]+-----[\s\S]*?-----END [A-Z0-9 ]+-----/g;
+const redactedPemValue = "[redacted-pem]";
 
 export function redactApiMessageSecrets(value: string): string {
   return value
+    .replace(pemBlockPattern, redactedPemValue)
     .replace(
       /\b([a-z][a-z0-9+.-]*:\/\/)([^/?#\s)"'<@]+)(?::([^/?#\s)"'<@]*))?@/gi,
       "$1[redacted]@",
