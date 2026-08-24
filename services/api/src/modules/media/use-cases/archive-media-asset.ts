@@ -54,6 +54,7 @@ async function archiveAsset(
   }
 
   const usage = await findMediaUsage(prisma, {
+    limit: 10,
     mediaAssetId: asset.id,
     tenantId: actor.tenantId,
   });
@@ -63,7 +64,7 @@ async function archiveAsset(
       code: apiErrorCodes.CONFLICT,
       message: "Media asset is still referenced by page versions.",
       details: {
-        usage: usage.slice(0, 10),
+        usage,
       },
     });
   }

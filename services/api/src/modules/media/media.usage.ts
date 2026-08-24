@@ -13,11 +13,13 @@ export type MediaUsage = {
 export async function findMediaUsage(
   prisma: PrismaService,
   input: {
+    limit?: number;
     mediaAssetId: string;
     tenantId: string;
   },
 ): Promise<MediaUsage[]> {
   const reference = `media://${input.mediaAssetId}`;
+  const limit = normalizeUsageLimit(input.limit);
   const versions = await prisma.pageVersion.findMany({
     where: {
       page: {
@@ -44,16 +46,34 @@ export async function findMediaUsage(
     },
   });
 
-  return versions
-    .filter((version) =>
-      collectMediaReferences(version.schema).includes(reference),
-    )
-    .map((version) => ({
+  const usage: MediaUsage[] = [];
+
+  for (const version of versions) {
+    if (!collectMediaReferences(version.schema).includes(reference)) {
+      continue;
+    }
+
+    usage.push({
       pageId: version.page.id,
       pageSlug: version.page.slug,
       pageTitle: version.page.title,
       versionId: version.id,
       version: version.version,
       status: version.status,
-    }));
+    });
+
+    if (usage.length >= limit) {
+      break;
+    }
+  }
+
+  return usage;
+}
+
+function normalizeUsageLimit(value: number | undefined): number {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return 10;
+  }
+
+  return Math.max(1, Math.floor(value));
 }

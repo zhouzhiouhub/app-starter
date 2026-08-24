@@ -32,7 +32,27 @@ test("media service archives assets that are not referenced", async () => {
     pageVersion: {
       findMany(options) {
         assertUsageScanQuery(options);
-        return Promise.resolve([]);
+        return Promise.resolve([
+          {
+            id: "version-false-positive",
+            version: 1,
+            status: "draft",
+            schema: {
+              sections: [
+                {
+                  props: {
+                    images: [{ src: "media://asset-10" }],
+                  },
+                },
+              ],
+            },
+            page: {
+              id: "page-1",
+              slug: "home",
+              title: "Home",
+            },
+          },
+        ]);
       },
     },
   });
@@ -93,6 +113,25 @@ test("media service blocks archive when page versions reference the asset", asyn
         assertUsageScanQuery(options);
         return Promise.resolve([
           {
+            id: "version-false-positive",
+            version: 2,
+            status: "published",
+            schema: {
+              sections: [
+                {
+                  props: {
+                    images: [{ src: "media://asset-10" }],
+                  },
+                },
+              ],
+            },
+            page: {
+              id: "page-10",
+              slug: "lookalike",
+              title: "Lookalike",
+            },
+          },
+          {
             id: "version-1",
             version: 1,
             status: "draft",
@@ -118,7 +157,76 @@ test("media service blocks archive when page versions reference the asset", asyn
 
   await assert.rejects(
     () => service.archive("asset-1", actor),
-    /Media asset is still referenced/,
+    (error) => {
+      assert.equal(error.getStatus(), 409);
+      assert.equal(
+        error.getResponse().message,
+        "Media asset is still referenced by page versions.",
+      );
+      assert.deepEqual(error.getResponse().details.usage, [
+        {
+          pageId: "page-1",
+          pageSlug: "home",
+          pageTitle: "Home",
+          versionId: "version-1",
+          version: 1,
+          status: "draft",
+        },
+      ]);
+      return true;
+    },
+  );
+});
+
+test("media service limits archive usage details", async () => {
+  const service = new MediaService({
+    mediaAsset: {
+      findFirst() {
+        return Promise.resolve(createMediaAsset());
+      },
+      update() {
+        throw new Error("referenced assets must not be archived.");
+      },
+    },
+    pageVersion: {
+      findMany(options) {
+        assertUsageScanQuery(options);
+        return Promise.resolve(
+          Array.from({ length: 12 }, (_value, index) => ({
+            id: `version-${index + 1}`,
+            version: index + 1,
+            status: index % 2 === 0 ? "draft" : "published",
+            schema: {
+              sections: [
+                {
+                  props: {
+                    images: [{ src: "media://asset-1" }],
+                  },
+                },
+              ],
+            },
+            page: {
+              id: `page-${index + 1}`,
+              slug: `page-${index + 1}`,
+              title: `Page ${index + 1}`,
+            },
+          })),
+        );
+      },
+    },
+  });
+
+  await assert.rejects(
+    () => service.archive("asset-1", actor),
+    (error) => {
+      const usage = error.getResponse().details.usage;
+
+      assert.equal(error.getStatus(), 409);
+      assert.equal(usage.length, 10);
+      assert.equal(usage[0].versionId, "version-1");
+      assert.equal(usage.at(-1).versionId, "version-10");
+      return true;
+    },
   );
 });
 
