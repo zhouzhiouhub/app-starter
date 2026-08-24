@@ -113,6 +113,8 @@ test("publishPage reports revalidation failures without failing the publish", as
     "published-page",
     "published-page:us:en-US",
     "published-page:us:en-US:contact",
+    "public-translation",
+    "public-translation:en-US",
   ]);
 });
 

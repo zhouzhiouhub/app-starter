@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import {
-  getPublishedPageCacheTags,
   getPublishedPageRevalidationPaths,
+  getStorefrontRevalidationCacheTags,
 } from "../../packages/schema/dist/index.js";
 import { fetchJson, readHttpError } from "./http-json-smoke.mjs";
 import { createRevalidationSmokeDetails } from "./revalidation-smoke.mjs";
@@ -58,7 +58,7 @@ function assertRevalidationTargets(revalidation, input) {
   const paths = Array.isArray(revalidation?.paths) ? revalidation.paths : [];
   const tags = Array.isArray(revalidation?.tags) ? revalidation.tags : [];
   const expectedPaths = getPublishedPageRevalidationPaths(input);
-  const expectedTags = getPublishedPageCacheTags(input);
+  const expectedTags = getStorefrontRevalidationCacheTags(input);
   const missingPaths = expectedPaths.filter((path) => !paths.includes(path));
   const missingTags = expectedTags.filter((tag) => !tags.includes(tag));
 

@@ -81,6 +81,24 @@ export function getPublicTranslationCacheTags(input: {
   );
 }
 
+export function getStorefrontRevalidationCacheTags(input: {
+  fallbackLocale?: string;
+  fallbackMarket?: string;
+  locale: string;
+  market: string;
+  siteHost?: string | null;
+  slug: string;
+}): string[] {
+  return [
+    ...getPublishedPageCacheTags(input),
+    ...getPublicTranslationCacheTags({
+      fallbackLocale: input.fallbackLocale,
+      locale: input.locale,
+      siteHost: input.siteHost,
+    }),
+  ].filter(uniqueTag);
+}
+
 export function getPublishedPageRevalidationPaths(input: {
   locale: string;
   slug: string;

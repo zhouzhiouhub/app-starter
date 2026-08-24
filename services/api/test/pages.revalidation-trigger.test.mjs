@@ -115,6 +115,8 @@ test("storefront revalidation posts the page payload with secret header", async 
         "published-page",
         "published-page:us:en-US",
         "published-page:us:en-US:contact",
+        "public-translation",
+        "public-translation:en-US",
       ]);
       assert.equal(calls.length, 1);
       assert.equal(calls[0].url, "https://web.example.com/api/revalidate");
@@ -162,10 +164,12 @@ test("storefront revalidation posts safe site hosts for scoped tags", async () =
       );
 
       assert.equal(result.triggered, true);
-      assert.equal(result.tags.length, 3);
+      assert.equal(result.tags.length, 5);
       assert.match(result.tags[0], /^published-page:site:[a-z0-9]+$/);
       assert.equal(result.tags[1], `${result.tags[0]}:us:en-US`);
       assert.equal(result.tags[2], `${result.tags[0]}:us:en-US:contact`);
+      assert.match(result.tags[3], /^public-translation:site:[a-z0-9]+$/);
+      assert.equal(result.tags[4], `${result.tags[3]}:en-US`);
       assert.deepEqual(JSON.parse(calls[0].init.body), {
         ...pageInput(),
         siteHost: "store.brand-platform.com",
@@ -215,6 +219,9 @@ test("storefront revalidation reports fallback locale cache tags without posting
         "published-page:us:de-DE:contact",
         "published-page:us:en-US",
         "published-page:us:en-US:contact",
+        "public-translation",
+        "public-translation:de-DE",
+        "public-translation:en-US",
       ]);
       assert.deepEqual(JSON.parse(calls[0].init.body), {
         locale: "de-DE",

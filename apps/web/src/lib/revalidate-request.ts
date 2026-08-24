@@ -1,6 +1,6 @@
 import {
-  getPublishedPageCacheTags,
   getPublishedPageRevalidationPaths,
+  getStorefrontRevalidationCacheTags,
   localeCodeSchema,
   marketCodeSchema,
   pageSlugSchema,
@@ -133,7 +133,7 @@ export function parseRevalidatePayload(
     input,
     ok: true,
     paths: getPublishedPageRevalidationPaths(input),
-    tags: getPublishedPageCacheTags({
+    tags: getStorefrontRevalidationCacheTags({
       ...input,
       fallbackLocale: defaults.fallbackLocale,
     }),

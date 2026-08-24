@@ -150,6 +150,8 @@ test("rollbackPage reports revalidation failures without failing the rollback", 
     "published-page",
     "published-page:us:en-US",
     "published-page:us:en-US:home",
+    "public-translation",
+    "public-translation:en-US",
   ]);
 });
 

@@ -33,6 +33,8 @@ test("revalidate payload builds page paths and tags", () => {
     "published-page",
     "published-page:us:en-US",
     "published-page:us:en-US:contact",
+    "public-translation",
+    "public-translation:en-US",
   ]);
 });
 
@@ -71,6 +73,9 @@ test("revalidate payload includes fallback locale cache tags", () => {
     "published-page:us:de-DE:contact",
     "published-page:us:en-US",
     "published-page:us:en-US:contact",
+    "public-translation",
+    "public-translation:de-DE",
+    "public-translation:en-US",
   ]);
 });
 
@@ -92,10 +97,12 @@ test("revalidate payload accepts safe site hosts for scoped tags", () => {
     siteHost: "store.brand-platform.com",
     slug: "contact",
   });
-  assert.equal(result.tags.length, 3);
+  assert.equal(result.tags.length, 5);
   assert.match(result.tags[0], /^published-page:site:[a-z0-9]+$/);
   assert.equal(result.tags[1], `${result.tags[0]}:us:en-US`);
   assert.equal(result.tags[2], `${result.tags[0]}:us:en-US:contact`);
+  assert.match(result.tags[3], /^public-translation:site:[a-z0-9]+$/);
+  assert.equal(result.tags[4], `${result.tags[3]}:en-US`);
 });
 
 test("revalidate payload rejects unsafe site hosts", () => {

@@ -1,6 +1,6 @@
 import {
-  getPublishedPageCacheTags,
   getPublishedPageRevalidationPaths,
+  getStorefrontRevalidationCacheTags,
   readSiteDomainHeader,
   type PageSchema,
   type StorefrontRevalidationResult,
@@ -243,7 +243,7 @@ function readStorefrontRevalidationSiteHost(
 function readStorefrontRevalidationTags(
   input: StorefrontRevalidationInput,
 ): string[] {
-  return getPublishedPageCacheTags({
+  return getStorefrontRevalidationCacheTags({
     fallbackLocale: input.fallbackLocale,
     locale: input.locale,
     market: input.market,

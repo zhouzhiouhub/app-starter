@@ -5,6 +5,7 @@ import {
   getPublishedPageRevalidationPaths,
   getPublishedPagesCacheTags,
   getPublicTranslationCacheTags,
+  getStorefrontRevalidationCacheTags,
   getStorefrontHref,
   publishedPageRevalidateSeconds,
   publishedPagesCacheTag,
@@ -157,5 +158,26 @@ test("public translation cache helpers define locale and site tags", () => {
       siteHost: "store.example.com",
     }),
     ["public-translation", "public-translation:en-US"],
+  );
+});
+
+test("storefront revalidation cache helper includes page and translation tags", () => {
+  assert.deepEqual(
+    getStorefrontRevalidationCacheTags({
+      fallbackLocale: "en-US",
+      locale: "de-DE",
+      market: "us",
+      slug: "contact",
+    }),
+    [
+      "published-page",
+      "published-page:us:de-DE",
+      "published-page:us:de-DE:contact",
+      "published-page:us:en-US",
+      "published-page:us:en-US:contact",
+      "public-translation",
+      "public-translation:de-DE",
+      "public-translation:en-US",
+    ],
   );
 });

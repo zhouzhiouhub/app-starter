@@ -45,6 +45,8 @@ test("publish page smoke accepts revalidation targets for the published page", (
               "published-page",
               "published-page:us:en-US",
               "published-page:us:en-US:contact",
+              "public-translation",
+              "public-translation:en-US",
             ],
             triggered: true,
           },
