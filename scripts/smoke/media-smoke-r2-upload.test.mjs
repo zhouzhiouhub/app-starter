@@ -1,0 +1,62 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import { uploadSmokeImage } from "./media-smoke-r2-upload.mjs";
+import { r2UploadUrl } from "./media-smoke-test-helpers.mjs";
+import { withFetch } from "./smoke-test-runtime.mjs";
+
+const image = {
+  body: Buffer.from("smoke-image"),
+};
+
+const target = {
+  headers: { "Content-Type": "image/png" },
+  method: "PUT",
+  uploadUrl: r2UploadUrl("/bucket/tenant-1/smoke.png"),
+};
+
+test("R2 smoke upload disables automatic redirects", async () => {
+  const calls = [];
+
+  await withFetch(async (url, init = {}) => {
+    calls.push({ init, url });
+
+    return new Response("", {
+      status: 200,
+      statusText: "OK",
+    });
+  }, async () => {
+    await uploadSmokeImage(target, image);
+  });
+
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].url, target.uploadUrl);
+  assert.equal(calls[0].init.method, "PUT");
+  assert.equal(calls[0].init.redirect, "manual");
+  assert.equal(calls[0].init.headers["Content-Type"], "image/png");
+});
+
+test("R2 smoke upload reports redacted redirect targets", async () => {
+  await withFetch(async () => {
+    return new Response("", {
+      headers: {
+        Location:
+          "https://storage.example.com/login?token=header.payload.signature&X-Amz-Signature=abc123",
+      },
+      status: 302,
+      statusText: "Found",
+    });
+  }, async () => {
+    await assert.rejects(
+      () => uploadSmokeImage(target, image),
+      (error) => {
+        assert.match(error.message, /R2 object upload failed\. 302: Found/);
+        assert.match(error.message, /redirect:/);
+        assert.match(error.message, /token=\[redacted\]/);
+        assert.match(error.message, /X-Amz-Signature=\[redacted\]/i);
+        assert.equal(error.message.includes("header.payload.signature"), false);
+        assert.equal(error.message.includes("abc123"), false);
+        return true;
+      },
+    );
+  });
+});
