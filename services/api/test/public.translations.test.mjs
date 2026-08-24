@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { publicTranslationMessageMaxLength } from "../../../packages/schema/dist/index.js";
+import {
+  publicTranslationEntryMaxCount,
+  publicTranslationMessageMaxLength,
+} from "../../../packages/schema/dist/index.js";
 import { PublicController } from "../dist/modules/public/public.controller.js";
 import { PublicTranslationsService } from "../dist/modules/public/public-translations.service.js";
 import { withEnv } from "./env-helper.mjs";
@@ -41,6 +44,7 @@ test("public translations read tenant-scoped messages", async () => {
   assert.deepEqual(queries, [
     {
       orderBy: { key: "asc" },
+      take: publicTranslationEntryMaxCount,
       where: {
         locale: "en-US",
         tenantId: "tenant-public",

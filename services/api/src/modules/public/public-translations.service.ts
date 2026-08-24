@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import {
+  publicTranslationEntryMaxCount,
   publicTranslationKeyMaxLength,
   publicTranslationMessageMaxLength,
 } from "@app-starter/schema";
@@ -40,6 +41,7 @@ export class PublicTranslationsService {
 
     const translations = await this.prisma.translation.findMany({
       orderBy: { key: "asc" },
+      take: publicTranslationEntryMaxCount,
       where: {
         locale: localeContext.locale,
         tenantId: site.tenantId,
