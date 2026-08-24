@@ -96,7 +96,7 @@ function sanitizeTag(tag: string): SanitizedTag {
   const parsed = parseRichTextTag(tag);
 
   if (!parsed) {
-    return { html: "" };
+    return { html: escapeText(tag) };
   }
 
   if (parsed.name === "a") {
@@ -119,7 +119,7 @@ function sanitizeTag(tag: string): SanitizedTag {
 }
 
 function parseRichTextTag(tag: string): RichTextTag | null {
-  const parsed = /^<\s*(\/?)\s*([a-z0-9]+)\b([^>]*)>/i.exec(tag);
+  const parsed = /^<\s*(\/?)\s*([a-z][a-z0-9]*)\b([^>]*)>/i.exec(tag);
   const name = parsed?.[2]?.toLowerCase();
 
   if (!parsed || !name) {

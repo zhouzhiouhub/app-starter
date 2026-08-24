@@ -15,6 +15,13 @@ test("rich text sanitizer keeps basic editorial markup", () => {
   );
 });
 
+test("rich text sanitizer keeps literal angle bracket text", () => {
+  assert.equal(
+    sanitizeRichText("<p>2 < 3 > 1 and <!draft> notes</p>"),
+    "<p>2 &lt; 3 &gt; 1 and &lt;!draft&gt; notes</p>",
+  );
+});
+
 test("rich text sanitizer strips scripts, events, and unsafe links", () => {
   assert.equal(
     sanitizeRichText(
