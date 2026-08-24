@@ -678,4 +678,4 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 2. 补齐部署 Smoke Test：前台 Vercel、API 独立 Node 服务、Admin 静态托管、Redis 生产连接、环境变量清单和回滚步骤。
 3. 做 Page Builder 视觉验收：Desktop / Mobile 双端检查、核心区块与设计稿差异记录、媒体解析异常态。
 4. 补多语言运营后台前的最小闭环：只读 Locale / Translation 视图、非默认 Locale 关闭态提示与权限测试。
-5. 保持 Commerce 关闭态，只继续完善 Products / Orders 空列表和 `COMMERCE_DISABLED` 错误分支测试；不进入真实交易。
+5. 保持 Commerce 关闭态，只继续完善 Products / Orders 空列表、Stripe Webhook 占位和 `COMMERCE_DISABLED` 错误分支测试；不进入真实交易。

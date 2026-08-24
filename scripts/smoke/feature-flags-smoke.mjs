@@ -78,6 +78,18 @@ async function assertCommerceDisabled(input) {
     },
     "COMMERCE_DISABLED",
   );
+  await assertErrorResponse(
+    `${input.apiBaseUrl}/webhooks/stripe`,
+    {
+      body: JSON.stringify({ id: "evt_smoke_webhook", object: "event" }),
+      headers: {
+        "Content-Type": "application/json",
+        "Stripe-Signature": "t=1,v1=smoke-signature",
+      },
+      method: "POST",
+    },
+    "COMMERCE_DISABLED",
+  );
 }
 
 async function assertLocaleCreationDisabled(input, accessToken) {
@@ -117,6 +129,9 @@ export function readDisabledEndpointDiagnostic(response) {
         response.statusText ??
         null,
     ),
+    ...(response.redirectLocation
+      ? { redirectLocation: response.redirectLocation }
+      : {}),
     status: response.status,
     statusText: response.statusText || "",
   };
@@ -126,8 +141,11 @@ export function formatDisabledEndpointDiagnostic(diagnostic) {
   const statusText = diagnostic.statusText ? ` ${diagnostic.statusText}` : "";
   const code = diagnostic.code ?? "NO_CODE";
   const message = diagnostic.message ? `: ${diagnostic.message}` : "";
+  const redirect = diagnostic.redirectLocation
+    ? ` redirect: ${diagnostic.redirectLocation}`
+    : "";
 
-  return `${diagnostic.status}${statusText} ${code}${message}`;
+  return `${diagnostic.status}${statusText} ${code}${message}${redirect}`;
 }
 
 function redactOptionalSmokeMessage(value) {
