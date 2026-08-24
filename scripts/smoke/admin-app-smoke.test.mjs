@@ -271,6 +271,50 @@ test("admin app smoke keeps structured diagnostics on failures", async () => {
   );
 });
 
+test("admin app smoke reports oversized shell responses safely", async () => {
+  await withFetch(
+    async () => ({
+      headers: new Headers({
+        "content-length": "1000001",
+        "content-type": "text/html",
+      }),
+      ok: true,
+      status: 200,
+      statusText: "OK",
+      async text() {
+        throw new Error("oversized shell bodies should not be read");
+      },
+    }),
+    async () => {
+      await assert.rejects(
+        () =>
+          assertAdminApp({
+            adminUrl:
+              "https://admin.example.com?token=header.payload.signature",
+          }),
+        (error) => {
+          assert.equal(error.smokeDetails.adminApp.ok, false);
+          assert.equal(error.smokeDetails.adminApp.status, 200);
+          assert.equal(error.smokeDetails.adminApp.hasHtmlContentType, true);
+          assert.equal(error.smokeDetails.adminApp.hasRootElement, false);
+          assert.equal(
+            error.smokeDetails.adminApp.bodyReadError,
+            "https://admin.example.com?token=[redacted] returned a static Admin shell response body larger than 1000000 bytes.",
+          );
+          assert.equal(
+            error.smokeDetails.adminApp.url,
+            "https://admin.example.com?token=[redacted]",
+          );
+          assert.match(error.message, /body read error:/);
+          assert.equal(error.message.includes("header.payload.signature"), false);
+
+          return true;
+        },
+      );
+    },
+  );
+});
+
 test("admin app smoke summarizes request attempts", async () => {
   await withFetch(
     async () => {

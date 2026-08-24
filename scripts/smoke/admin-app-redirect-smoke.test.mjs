@@ -9,15 +9,19 @@ test("admin app smoke rejects redirected shell responses", async () => {
   await withFetch(async (url, init = {}) => {
     calls.push({ init, url });
 
-    return new Response("", {
-      headers: {
+    return {
+      headers: new Headers({
         "content-type": "text/html",
         Location:
           "https://admin.example.com/login?token=header.payload.signature",
-      },
+      }),
+      ok: false,
       status: 302,
       statusText: "Found",
-    });
+      async text() {
+        throw new Error("redirect response bodies should not be read");
+      },
+    };
   }, async () => {
     await assert.rejects(
       () => assertAdminApp({ adminUrl: "https://admin.example.com" }),

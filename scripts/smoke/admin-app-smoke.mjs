@@ -11,6 +11,10 @@ import {
   readModulePreloadReferences,
   readModulePreloadSummary,
 } from "./admin-app-modulepreload-assets.mjs";
+import {
+  isOversizedResponseBodyError,
+  readBoundedResponseText,
+} from "./bounded-response-text.mjs";
 import { redactSmokeSecrets } from "./smoke-secrets.mjs";
 
 export async function assertAdminApp(input) {
@@ -60,8 +64,11 @@ export async function assertAdminApp(input) {
 export async function readAdminAppAttempt(url) {
   try {
     const response = await fetch(url, { redirect: "manual" });
-    const text = await response.text();
     const redirectLocation = readRedirectLocation(response);
+    const body = redirectLocation
+      ? { text: "" }
+      : await readAdminAppResponseBody(response, url);
+    const text = body.text;
     const hasRootElement = hasAdminRootElement(text);
     const contentType = response.headers.get("content-type");
     const hasHtmlContentType = isHtmlContentType(contentType);
@@ -76,6 +83,7 @@ export async function readAdminAppAttempt(url) {
       readStylesheetReferences(text, url),
     );
     const attempt = {
+      ...(body.bodyReadError ? { bodyReadError: body.bodyReadError } : {}),
       bodySnippet: null,
       contentType,
       hasHtmlContentType,
@@ -98,7 +106,7 @@ export async function readAdminAppAttempt(url) {
       modulePreloadOk: modulePreload.ok,
       modulePreloadUrlIssues: modulePreload.urlIssues,
       modulePreloadUrls: modulePreload.urls,
-      ok: response.ok,
+      ok: response.ok && !body.bodyReadError,
       ...(redirectLocation ? { redirectLocation } : {}),
       status: response.status,
       statusText: response.statusText,
@@ -107,7 +115,7 @@ export async function readAdminAppAttempt(url) {
       stylesheetOk: stylesheet.ok,
       stylesheetUrlIssues: stylesheet.urlIssues,
       stylesheetUrls: stylesheet.urls,
-      url,
+      url: redactSmokeSecrets(url),
     };
 
     return {
@@ -145,7 +153,7 @@ export async function readAdminAppAttempt(url) {
       stylesheetOk: false,
       stylesheetUrlIssues: [],
       stylesheetUrls: [],
-      url,
+      url: redactSmokeSecrets(url),
     };
   }
 }
@@ -177,6 +185,9 @@ export function formatAdminAppAttempt(attempt) {
     `, modulepreloads ok: ${attempt.modulePreloadOk}`;
   const modulePreloadIssue = formatModulePreloadIssue(attempt);
   const body = attempt.bodySnippet ? `, body: "${attempt.bodySnippet}"` : "";
+  const bodyReadError = attempt.bodyReadError
+    ? `, body read error: ${attempt.bodyReadError}`
+    : "";
   const error = attempt.errorMessage ? `, error: ${attempt.errorMessage}` : "";
   const redirect = attempt.redirectLocation
     ? `, redirect: ${attempt.redirectLocation}`
@@ -186,7 +197,7 @@ export function formatAdminAppAttempt(attempt) {
     `, stylesheets ok: ${attempt.stylesheetOk}`;
   const stylesheetIssue = formatStylesheetIssue(attempt);
 
-  return `${status}${content}, root element present: ${attempt.hasRootElement}${redirect}${moduleScript}${moduleStatus}${moduleRedirect}${moduleError}${moduleUrlIssue}${modulePreloads}${modulePreloadIssue}${stylesheets}${stylesheetIssue}${body}${error}`;
+  return `${status}${content}, root element present: ${attempt.hasRootElement}${redirect}${moduleScript}${moduleStatus}${moduleRedirect}${moduleError}${moduleUrlIssue}${modulePreloads}${modulePreloadIssue}${stylesheets}${stylesheetIssue}${bodyReadError}${body}${error}`;
 }
 
 function createAdminAppFailure(attempt) {
@@ -228,6 +239,26 @@ function readBodySnippet(text) {
 
 function readErrorMessage(error) {
   return redactSmokeSecrets(error instanceof Error ? error.message : error);
+}
+
+async function readAdminAppResponseBody(response, url) {
+  try {
+    return {
+      text: await readBoundedResponseText(response, {
+        label: "static Admin shell",
+        url,
+      }),
+    };
+  } catch (error) {
+    if (!isOversizedResponseBodyError(error)) {
+      throw error;
+    }
+
+    return {
+      bodyReadError: readErrorMessage(error),
+      text: "",
+    };
+  }
 }
 
 function readRedirectLocation(response) {
