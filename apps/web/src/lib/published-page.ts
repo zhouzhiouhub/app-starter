@@ -96,6 +96,7 @@ export async function getPreviewPage(
       {
         cache: "no-store",
         ...(headers ? { headers } : {}),
+        redirect: "manual",
       },
     );
 
@@ -161,6 +162,7 @@ async function fetchPublishedSchema(input: {
             slug: input.slug,
           }),
         },
+        redirect: "manual",
       },
     );
 

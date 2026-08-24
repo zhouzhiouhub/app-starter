@@ -54,6 +54,7 @@ export async function listPublishedPages(input?: {
           siteHost: input?.storefrontHost,
         }),
       },
+      redirect: "manual",
     });
 
     if (!response.ok) {

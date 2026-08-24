@@ -55,6 +55,7 @@ test("published page lookup forwards the safe storefront host", async () => {
     requests[0].init.headers["x-storefront-host"],
     "store.brand-platform.com",
   );
+  assert.equal(requests[0].init.redirect, "manual");
   assert.equal(requests[0].init.next.tags.length, 3);
   assert.match(
     requests[0].init.next.tags[0],
@@ -219,7 +220,10 @@ test("preview page lookup fetches only compact token candidates", async () => {
 
   assert.equal(requests.length, 1);
   assert.match(requests[0].url, /\/public\/preview\/payload\.a{43}$/);
-  assert.deepEqual(requests[0].init, { cache: "no-store" });
+  assert.deepEqual(requests[0].init, {
+    cache: "no-store",
+    redirect: "manual",
+  });
 });
 
 test("preview page lookup rejects non-preview responses", async () => {
@@ -289,6 +293,7 @@ test("preview page lookup forwards the safe storefront host", async () => {
     headers: {
       "x-storefront-host": "store.brand-platform.com",
     },
+    redirect: "manual",
   });
 });
 
