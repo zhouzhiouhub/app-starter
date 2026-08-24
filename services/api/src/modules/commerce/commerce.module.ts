@@ -1,7 +1,8 @@
 import { Module } from "@nestjs/common";
-import { CommerceController } from "./commerce.controller.js";
+import { AdminCommerceController } from "./admin-commerce.controller.js";
+import { PublicCommerceController } from "./public-commerce.controller.js";
 
 @Module({
-  controllers: [CommerceController]
+  controllers: [AdminCommerceController, PublicCommerceController],
 })
 export class CommerceModule {}
