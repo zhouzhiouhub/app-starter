@@ -133,6 +133,26 @@ test("storefront revalidation posts the page payload with secret header", async 
   );
 });
 
+test("storefront revalidation cancels response bodies after status checks", async () => {
+  await withEnv(revalidationEnv(), async () => {
+    const canceledStatuses = [];
+    const success = await triggerStorefrontRevalidation(
+      pageInput({ slug: "home" }),
+      async () => createCancellableResponse(200, true, canceledStatuses),
+    );
+    const failure = await triggerStorefrontRevalidation(
+      pageInput({ slug: "home" }),
+      async () => createCancellableResponse(502, false, canceledStatuses),
+    );
+
+    assert.equal(success.triggered, true);
+    assert.equal(failure.triggered, false);
+    assert.equal(failure.reason, "request-failed");
+    assert.equal(failure.status, 502);
+    assert.deepEqual(canceledStatuses, [200, 502]);
+  });
+});
+
 test("storefront revalidation headers forward only safe request ids", () => {
   assert.equal(
     createStorefrontRevalidationHeaders("secret-1", " request-publish-1 ")[
@@ -149,6 +169,18 @@ test("storefront revalidation headers forward only safe request ids", () => {
     false,
   );
 });
+
+function createCancellableResponse(status, ok, canceledStatuses) {
+  return {
+    body: new ReadableStream({
+      cancel() {
+        canceledStatuses.push(status);
+      },
+    }),
+    ok,
+    status,
+  };
+}
 
 test("storefront revalidation posts safe site hosts for scoped tags", async () => {
   await withEnv(

@@ -14,6 +14,10 @@ import {
   createStorefrontRevalidationHeaders,
   createStorefrontRevalidationPayload,
 } from "./pages.revalidation-request.js";
+import {
+  cancelStorefrontRevalidationResponseBody,
+  type StorefrontRevalidationResponse,
+} from "./pages.revalidation-response.js";
 
 export type { StorefrontRevalidationResult };
 export {
@@ -56,7 +60,7 @@ export type RevalidatablePageResponse = {
 type Fetcher = (
   input: string | URL,
   init?: RequestInit,
-) => Promise<{ ok: boolean; status: number }>;
+) => Promise<StorefrontRevalidationResponse>;
 
 const maxStorefrontRevalidationSecretLength = 1024;
 const storefrontRevalidationRedirectPolicy: RequestRedirect = "manual";
@@ -108,6 +112,8 @@ export async function triggerStorefrontRevalidation(
       redirect: storefrontRevalidationRedirectPolicy,
       signal: controller.signal,
     });
+
+    await cancelStorefrontRevalidationResponseBody(response);
 
     if (!response.ok) {
       return {
