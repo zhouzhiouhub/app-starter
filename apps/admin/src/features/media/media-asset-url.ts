@@ -1,25 +1,6 @@
-const unsafeMediaAssetUrlCharacters = new Set(["<", ">", '"', "'", "`", "\\"]);
-const sensitiveMediaAssetQueryKeySuffixes = [
-  "accesskeyid",
-  "accesstoken",
-  "apikey",
-  "clientsecret",
-  "credential",
-  "keypairid",
-  "password",
-  "previewtoken",
-  "refreshtoken",
-  "secret",
-  "session",
-  "signature",
-  "token",
-];
+import { hasSensitiveMediaUrlQueryParameters } from "./media-url-sensitive-parameters.ts";
 
-const sensitiveMediaAssetQueryKeys = new Set([
-  "policy",
-  "sig",
-  ...sensitiveMediaAssetQueryKeySuffixes,
-]);
+const unsafeMediaAssetUrlCharacters = new Set(["<", ">", '"', "'", "`", "\\"]);
 
 export function readSafeMediaAssetUrl(value: string): string | null {
   const url = value.trim();
@@ -41,7 +22,7 @@ export function readSafeMediaAssetUrl(value: string): string | null {
     parsed.username ||
     parsed.password ||
     parsed.hash ||
-    hasSensitiveMediaAssetQueryParameters(parsed)
+    hasSensitiveMediaUrlQueryParameters(parsed)
   ) {
     return null;
   }
@@ -67,19 +48,4 @@ function hasUnsafeMediaAssetUrlCharacter(value: string): boolean {
       unsafeMediaAssetUrlCharacters.has(character)
     );
   });
-}
-
-function hasSensitiveMediaAssetQueryParameters(url: URL): boolean {
-  return Array.from(url.searchParams.keys()).some(isSensitiveMediaAssetQueryKey);
-}
-
-function isSensitiveMediaAssetQueryKey(key: string): boolean {
-  const normalized = key.replace(/[-_\s]/g, "").toLowerCase();
-  return (
-    normalized.startsWith("xamz") ||
-    sensitiveMediaAssetQueryKeys.has(normalized) ||
-    sensitiveMediaAssetQueryKeySuffixes.some((suffix) =>
-      normalized.endsWith(suffix),
-    )
-  );
 }

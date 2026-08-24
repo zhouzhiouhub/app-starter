@@ -1,4 +1,5 @@
 import { isProductionHttpUrl } from "@app-starter/schema";
+import { hasSensitiveMediaUrlQueryParameters } from "./media-url-sensitive-parameters.ts";
 
 export function readExternalMediaUrlError(
   value: string | undefined,
@@ -23,6 +24,14 @@ export function readExternalMediaUrlError(
 
   if (parsed.username || parsed.password) {
     return "Media URL must not include username or password.";
+  }
+
+  if (parsed.hash) {
+    return "Media URL must not include fragments.";
+  }
+
+  if (hasSensitiveMediaUrlQueryParameters(parsed)) {
+    return "Media URL must not include credential or token query parameters.";
   }
 
   if (!isProductionHttpUrl(parsed)) {

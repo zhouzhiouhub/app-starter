@@ -34,6 +34,21 @@ test("external media URL validation rejects embedded credentials", () => {
   );
 });
 
+test("external media URL validation rejects fragments and sensitive query parameters", () => {
+  assert.match(
+    readExternalMediaUrlError(
+      "https://assets.brand-platform.com/hero.webp#access_token=secret",
+    ) ?? "",
+    /fragments/,
+  );
+  assert.match(
+    readExternalMediaUrlError(
+      "https://assets.brand-platform.com/hero.webp?X-Amz-Signature=signed",
+    ) ?? "",
+    /credential or token/,
+  );
+});
+
 test("external media URL validation rejects placeholder and private hosts", () => {
   for (const value of [
     "https://cdn.example.com/hero.webp",
