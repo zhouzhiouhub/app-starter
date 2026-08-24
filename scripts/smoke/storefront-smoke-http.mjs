@@ -2,6 +2,10 @@ import {
   isOversizedResponseBodyError,
   readBoundedResponseText,
 } from "./bounded-response-text.mjs";
+import {
+  cancelResponseBody,
+  readRedirectLocation,
+} from "./http-response-summary.mjs";
 import { redactSmokeSecrets } from "./smoke-secrets.mjs";
 import { readSmokeStorefrontHost } from "./storefront-smoke-host.mjs";
 
@@ -13,6 +17,9 @@ export async function fetchStorefrontText(url, input, init) {
     createStorefrontSmokeRequestInit(input, init),
   );
   const redirectLocation = readRedirectLocation(response);
+  if (redirectLocation) {
+    await cancelResponseBody(response);
+  }
   const body = redirectLocation
     ? { text: "" }
     : await readStorefrontResponseBody(response, url);
@@ -90,14 +97,4 @@ async function readStorefrontResponseBody(response, url) {
       text: "",
     };
   }
-}
-
-function readRedirectLocation(response) {
-  if (response.status < 300 || response.status >= 400) {
-    return null;
-  }
-
-  const location = response.headers.get("location")?.trim();
-
-  return location ? redactSmokeSecrets(location) : null;
 }

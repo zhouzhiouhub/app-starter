@@ -145,8 +145,15 @@ test("storefront smoke request helper forwards storefront hosts", () => {
 });
 
 test("storefront smoke request helper skips redirected response bodies", async () => {
+  let bodyCanceled = false;
+
   await withFetch(
     async () => ({
+      body: {
+        async cancel() {
+          bodyCanceled = true;
+        },
+      },
       headers: new Headers({
         location: "https://web.example.com/login?token=payload.signature",
       }),
@@ -171,6 +178,7 @@ test("storefront smoke request helper skips redirected response bodies", async (
         text: "",
         url: "https://web.example.com/en/smoke-page",
       });
+      assert.equal(bodyCanceled, true);
     },
   );
 });
