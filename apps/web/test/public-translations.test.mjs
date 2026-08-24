@@ -62,6 +62,40 @@ test("public translation lookup forwards storefront hosts for cache scoping", as
   assert.equal(requests[0].init.redirect, "manual");
 });
 
+test("public translation lookup can bypass ISR caching for preview routes", async () => {
+  const requests = [];
+
+  await withFetch(
+    async (url, init) => {
+      requests.push({ init, url: String(url) });
+      return jsonResponse({
+        data: {
+          locale: "en-US",
+          messages: {
+            "page.home.hero.title": "Preview title",
+          },
+        },
+      });
+    },
+    async () => {
+      assert.deepEqual(
+        await getPublicTranslationMessages({
+          cacheMode: "no-store",
+          locale: "en-US",
+        }),
+        {
+          "page.home.hero.title": "Preview title",
+        },
+      );
+    },
+  );
+
+  assert.equal(requests.length, 1);
+  assert.equal(requests[0].init.cache, "no-store");
+  assert.equal(requests[0].init.next, undefined);
+  assert.equal(requests[0].init.redirect, "manual");
+});
+
 test("public translation lookup accepts declared fallback locale messages", async () => {
   await withFetch(
     async () =>

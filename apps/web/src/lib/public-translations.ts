@@ -22,6 +22,7 @@ const forbiddenPublicTranslationMessageKeys = new Set([
 ]);
 
 export async function getPublicTranslationMessages(input: {
+  cacheMode?: "no-store" | "revalidate";
   locale: string;
   storefrontHost?: string | null;
 }): Promise<Record<string, string>> {
@@ -38,18 +39,12 @@ export async function getPublicTranslationMessages(input: {
     const query = searchParams.toString();
     const response = await fetch(
       `${apiBaseUrl}/public/translations/${encodeURIComponent(locale)}${query ? `?${query}` : ""}`,
-      {
-        headers: createStorefrontHostHeaders(input.storefrontHost),
-        next: {
-          revalidate: publishedPageRevalidateSeconds,
-          tags: getPublicTranslationCacheTags({
-            fallbackLocale: defaults.fallbackLocale,
-            locale,
-            siteHost: input.storefrontHost,
-          }),
-        },
-        redirect: "manual",
-      },
+      createPublicTranslationFetchInit({
+        cacheMode: input.cacheMode ?? "revalidate",
+        fallbackLocale: defaults.fallbackLocale,
+        locale,
+        storefrontHost: input.storefrontHost,
+      }),
     );
 
     if (!response.ok) {
@@ -64,6 +59,37 @@ export async function getPublicTranslationMessages(input: {
   } catch {
     return {};
   }
+}
+
+function createPublicTranslationFetchInit(input: {
+  cacheMode: "no-store" | "revalidate";
+  fallbackLocale: string;
+  locale: string;
+  storefrontHost?: string | null;
+}) {
+  const init = {
+    headers: createStorefrontHostHeaders(input.storefrontHost),
+    redirect: "manual" as const,
+  };
+
+  if (input.cacheMode === "no-store") {
+    return {
+      ...init,
+      cache: "no-store" as const,
+    };
+  }
+
+  return {
+    ...init,
+    next: {
+      revalidate: publishedPageRevalidateSeconds,
+      tags: getPublicTranslationCacheTags({
+        fallbackLocale: input.fallbackLocale,
+        locale: input.locale,
+        siteHost: input.storefrontHost,
+      }),
+    },
+  };
 }
 
 function readPublicTranslationMessages(

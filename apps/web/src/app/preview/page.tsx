@@ -34,6 +34,7 @@ export default async function PreviewPage(props: {
   }
 
   const translationMessages = await getPublicTranslationMessages({
+    cacheMode: "no-store",
     locale: schema.meta.locale,
     storefrontHost,
   });
