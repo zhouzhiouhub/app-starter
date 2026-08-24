@@ -547,7 +547,7 @@ POST /api/v1/webhooks/stripe
 - `GET /api/v1/translations` 需要 `translation:read`，按当前登录 Tenant 读取默认 Locale 翻译条目；`MULTI_LOCALE_ENABLED=false` 时请求非默认 Locale 会回退到默认 Locale，并在 meta 标记 `isFallback=true`。
 - `GET /api/v1/public/pages` 返回已发布页面摘要，用于前台 sitemap。
 - `GET /api/v1/public/pages/:slug` 只返回已发布版本；未发布或不存在时返回 `NOT_FOUND`。
-- `GET /api/v1/public/translations/:locale` 按公开店面域名解析 Tenant，返回对应 Tenant 的翻译消息包；多语言关闭时非默认 Locale 会回退默认 Locale。
+- `GET /api/v1/public/translations/:locale` 按公开店面域名解析 Tenant，返回对应 Tenant 的安全翻译消息包；多语言关闭时非默认 Locale 会回退默认 Locale。
 - `GET /api/v1/public/preview/:token` 返回短期预览 Token 对应的草稿 Schema，并显式设置 `Cache-Control: no-store`。
 - 前台只渲染已发布页面；未发布或不存在的 slug 进入 404 页面。
 - 当前 `cart`、`checkout` 和 Stripe Webhook 占位路由会返回 `COMMERCE_DISABLED`，这是预期行为。

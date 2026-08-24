@@ -88,6 +88,50 @@ test("public translations do not leak default tenant for unmatched hosts", async
   assert.equal(response.meta.requestId, "request-public-unmatched-translations");
 });
 
+test("public translations omit unsafe message keys", async () => {
+  const service = new PublicTranslationsService(
+    {
+      getPublicSiteContext: async () => ({
+        siteId: "site-public",
+        tenantId: "tenant-public",
+      }),
+    },
+    {
+      translation: {
+        findMany: async () => [
+          {
+            key: "page.home.hero.title",
+            value: "Build better storefronts",
+          },
+          {
+            key: "__proto__",
+            value: "polluted",
+          },
+          {
+            key: " constructor ",
+            value: "trimmed unsafe",
+          },
+          {
+            key: "page.home\u0000title",
+            value: "control unsafe",
+          },
+        ],
+      },
+    },
+  );
+
+  const response = await service.list({
+    locale: "en-US",
+    requestId: "request-public-translation-safe-keys",
+  });
+
+  assert.deepEqual(response.data.messages, {
+    "page.home.hero.title": "Build better storefronts",
+  });
+  assert.equal(response.data.messages.__proto__, Object.prototype);
+  assert.equal(response.meta.total, 1);
+});
+
 test("public translations query fallback locale while multi-locale is disabled", async () => {
   await withEnv(
     {

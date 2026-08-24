@@ -3,6 +3,13 @@ import { PrismaService } from "../prisma/prisma.service.js";
 import { PagesService } from "../pages/pages.service.js";
 import { resolvePublicLocale } from "./public.runtime-config.js";
 
+const maxPublicTranslationKeyLength = 256;
+const forbiddenPublicTranslationMessageKeys = new Set([
+  "__proto__",
+  "constructor",
+  "prototype",
+]);
+
 @Injectable()
 export class PublicTranslationsService {
   constructor(
@@ -53,24 +60,52 @@ function createPublicTranslationResponse(input: {
   tenantId: string | null;
   translations: Array<{ key: string; value: string }>;
 }) {
+  const messages = createPublicTranslationMessages(input.translations);
+
   return {
     data: {
       locale: input.localeContext.locale,
-      messages: Object.fromEntries(
-        input.translations.map((translation) => [
-          translation.key,
-          translation.value,
-        ]),
-      ),
+      messages,
     },
     meta: {
       requestId: input.requestId ?? "local-dev",
       tenantId: input.tenantId,
       siteId: input.siteId,
-      total: input.translations.length,
+      total: Object.keys(messages).length,
       locale: input.localeContext.locale,
       fallbackLocale: input.localeContext.fallbackLocale,
       isFallback: input.localeContext.isFallback,
     },
   };
+}
+
+function createPublicTranslationMessages(
+  translations: Array<{ key: string; value: string }>,
+) {
+  const messages: Record<string, string> = {};
+
+  for (const translation of translations) {
+    if (isSafePublicTranslationKey(translation.key)) {
+      messages[translation.key] = translation.value;
+    }
+  }
+
+  return messages;
+}
+
+function isSafePublicTranslationKey(key: string) {
+  return (
+    key.trim() === key &&
+    key.length > 0 &&
+    key.length <= maxPublicTranslationKeyLength &&
+    !forbiddenPublicTranslationMessageKeys.has(key.toLowerCase()) &&
+    !hasControlCharacter(key)
+  );
+}
+
+function hasControlCharacter(value: string) {
+  return Array.from(value).some((character) => {
+    const codePoint = character.codePointAt(0) ?? 0;
+    return codePoint <= 0x1f || codePoint === 0x7f;
+  });
 }
