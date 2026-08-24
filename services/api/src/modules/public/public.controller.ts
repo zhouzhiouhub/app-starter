@@ -4,6 +4,7 @@ import {
   Header,
   Headers,
   NotFoundException,
+  Optional,
   Param,
   Query,
 } from "@nestjs/common";
@@ -14,6 +15,7 @@ import {
 } from "@app-starter/schema";
 import { CurrentRequestId } from "../../common/request-id.decorator.js";
 import { PagesService } from "../pages/pages.service.js";
+import { PublicTranslationsService } from "./public-translations.service.js";
 import {
   readPublicRuntimeConfig,
   resolvePublicLocale,
@@ -27,7 +29,11 @@ type PublicRequestHeaders = Record<
 
 @Controller("public")
 export class PublicController {
-  constructor(private readonly pages: PagesService) {}
+  constructor(
+    private readonly pages: PagesService,
+    @Optional()
+    private readonly translations?: PublicTranslationsService,
+  ) {}
 
   @Get("config")
   getConfig(@CurrentRequestId() requestId = "local-dev") {
@@ -47,7 +53,16 @@ export class PublicController {
   getTranslations(
     @Param("locale") locale: string,
     @CurrentRequestId() requestId = "local-dev",
+    @Headers() headers?: PublicRequestHeaders,
   ) {
+    if (this.translations) {
+      return this.translations.list({
+        locale,
+        requestId,
+        siteHost: readPublicSiteHost(headers),
+      });
+    }
+
     const localeContext = resolvePublicLocale(locale);
 
     return {

@@ -11,6 +11,7 @@ import { getPreviewPageByToken } from "./use-cases/get-preview-page-by-token.js"
 import { getPublishedPageBySlug } from "./use-cases/get-published-page-by-slug.js";
 import { listPages } from "./use-cases/list-pages.js";
 import { listPublishedPages } from "./use-cases/list-published-pages.js";
+import { getPublicSite } from "./pages.site.js";
 import { publishPage } from "./use-cases/publish-page.js";
 import { publishPageBySlug } from "./use-cases/publish-page-by-slug.js";
 import { rollbackPage } from "./use-cases/rollback-page.js";
@@ -176,5 +177,16 @@ export class PagesService {
 
   async listPublished(context: PublishedPageContext, requestId = "local-dev") {
     return listPublishedPages(this.prisma, context, requestId);
+  }
+
+  async getPublicSiteContext(siteHost?: string | null) {
+    const site = await getPublicSite(this.prisma, siteHost);
+
+    return site
+      ? {
+          siteId: site.id,
+          tenantId: site.tenantId,
+        }
+      : null;
   }
 }
