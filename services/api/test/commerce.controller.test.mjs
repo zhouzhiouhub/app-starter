@@ -10,6 +10,7 @@ import { REQUIRE_SCOPES_KEY } from "../dist/common/require-scopes.decorator.js";
 import { AdminCommerceController } from "../dist/modules/commerce/admin-commerce.controller.js";
 import { PublicCommerceController } from "../dist/modules/commerce/public-commerce.controller.js";
 import { StripeWebhookController } from "../dist/modules/commerce/stripe-webhook.controller.js";
+import { TENANT_ADMIN_PERMISSIONS } from "../dist/modules/identity/identity.constants.js";
 import { assertApiConflict } from "./api-error-test-assertions.mjs";
 import { withEnv } from "./env-helper.mjs";
 
@@ -23,11 +24,14 @@ test("commerce read placeholders carry the current request id", () => {
   const controller = new AdminCommerceController();
   const products = controller.getProducts("request-products");
   const orders = controller.getOrders("request-orders");
+  const payments = controller.getPayments("request-payments");
 
   assert.deepEqual(products.data, []);
   assert.deepEqual(orders.data, []);
+  assert.deepEqual(payments.data, []);
   assert.equal(products.meta.requestId, "request-products");
   assert.equal(orders.meta.requestId, "request-orders");
+  assert.equal(payments.meta.requestId, "request-payments");
 });
 
 test("commerce read placeholders require admin guard and read scopes", () => {
@@ -40,10 +44,18 @@ test("commerce read placeholders require admin guard and read scopes", () => {
     REQUIRE_SCOPES_KEY,
     AdminCommerceController.prototype.getOrders,
   );
+  const paymentScopes = Reflect.getMetadata(
+    REQUIRE_SCOPES_KEY,
+    AdminCommerceController.prototype.getPayments,
+  );
 
   assert.deepEqual(guards, [AdminApiGuard]);
   assert.deepEqual(productScopes, ["product:read"]);
   assert.deepEqual(orderScopes, ["order:read"]);
+  assert.deepEqual(paymentScopes, ["payment:read"]);
+  assert.equal(TENANT_ADMIN_PERMISSIONS.includes("product:read"), true);
+  assert.equal(TENANT_ADMIN_PERMISSIONS.includes("order:read"), true);
+  assert.equal(TENANT_ADMIN_PERMISSIONS.includes("payment:read"), true);
 });
 
 test("commerce endpoints reject writes while commerce is disabled", () => {

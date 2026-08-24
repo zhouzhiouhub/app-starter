@@ -119,7 +119,7 @@ test("feature flag smoke checks disabled commerce placeholders", async () => {
   );
   assert.match(webhookCall.init.body, /evt_smoke_webhook/);
 
-  for (const suffix of ["/products", "/orders"]) {
+  for (const suffix of ["/products", "/orders", "/payments"]) {
     const call = calls.find((candidate) => candidate.url.endsWith(suffix));
 
     assert.ok(call);
@@ -220,7 +220,11 @@ function createFeatureFlagSmokeFetch(options = {}) {
       });
     }
 
-    if (url.endsWith("/products") || url.endsWith("/orders")) {
+    if (
+      url.endsWith("/products") ||
+      url.endsWith("/orders") ||
+      url.endsWith("/payments")
+    ) {
       return jsonResponse({ data: [] });
     }
 

@@ -71,6 +71,11 @@ async function assertCommerceReadPlaceholders(input, accessToken) {
     accessToken,
     "Orders placeholder",
   );
+  await assertEmptyListResponse(
+    `${input.apiBaseUrl}/payments`,
+    accessToken,
+    "Payments placeholder",
+  );
 }
 
 async function assertCommerceDisabled(input) {

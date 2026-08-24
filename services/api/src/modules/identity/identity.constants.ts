@@ -21,6 +21,7 @@ export const TENANT_ADMIN_PERMISSIONS = [
   "translation:read",
   "product:read",
   "order:read",
+  "payment:read",
   "audit:read",
 ] as const;
 export const ACTIVE_USER_STATUS = "active";

@@ -23,4 +23,13 @@ export class AdminCommerceController {
       meta: { requestId },
     };
   }
+
+  @Get("payments")
+  @RequireScopes("payment:read")
+  getPayments(@CurrentRequestId() requestId = "local-dev") {
+    return {
+      data: [],
+      meta: { requestId },
+    };
+  }
 }
