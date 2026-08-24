@@ -51,6 +51,26 @@ test("preview window opener cleanup tolerates restricted windows", () => {
   });
 });
 
+test("preview windows reject unsafe URLs before opening", () => {
+  const calls = [];
+
+  withOpen((url, target, features) => {
+    calls.push({ features, target, url });
+    return null;
+  }, () => {
+    for (const url of [
+      "javascript:alert(1)",
+      "https://user:pass@web.example.com/preview?token=abc",
+      "https://web.example.com/preview?token=abc#access_token=secret",
+      "/preview?token=abc",
+    ]) {
+      openStorefrontPreviewWindow(url);
+    }
+  });
+
+  assert.deepEqual(calls, []);
+});
+
 function withOpen(openImplementation, callback) {
   const descriptor = Object.getOwnPropertyDescriptor(globalThis, "open");
 
