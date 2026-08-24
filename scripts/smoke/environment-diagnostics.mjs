@@ -14,7 +14,7 @@ export function createSmokeEnvironmentDiagnostics(
 ) {
   return {
     analytics: createAnalyticsDiagnostics(env),
-    database: createDatabaseDiagnostics(env),
+    database: createDatabaseDiagnostics(env, options),
     deployment: createDeploymentDiagnostics(env, options),
     featureFlags: createFeatureFlagDiagnostics(env),
     identity: createIdentityDiagnostics(env),

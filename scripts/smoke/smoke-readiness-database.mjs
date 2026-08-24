@@ -16,14 +16,39 @@ export function collectDatabaseReadiness(blockers, database) {
     return;
   }
 
+  if (database.urlSafe !== true) {
+    appendBlocker(
+      blockers,
+      "database.url",
+      database.urlIssue ?? "database-url-not-production-ready",
+      "DATABASE_URL must be a production PostgreSQL connection URL.",
+      {
+        host: database.host ?? null,
+        variable: database.variable ?? "DATABASE_URL",
+      },
+    );
+    return;
+  }
+
+  const migrations = readPlainRecord(database.migrations);
+
   appendBlocker(
     blockers,
-    "database.url",
-    database.urlIssue ?? "database-url-not-production-ready",
-    "DATABASE_URL must be a production PostgreSQL connection URL.",
+    "database.migrations",
+    migrations.issue ?? "missing-diagnostics",
+    "Prisma migrations must be committed before production smoke.",
     {
-      host: database.host ?? null,
-      variable: database.variable ?? "DATABASE_URL",
+      directory: migrations.directory ?? "services/api/prisma/migrations",
+      hasMigrationLock: migrations.hasMigrationLock === true,
+      migrationCount: Number.isInteger(migrations.migrationCount)
+        ? migrations.migrationCount
+        : 0,
     },
   );
+}
+
+function readPlainRecord(value) {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? value
+    : {};
 }

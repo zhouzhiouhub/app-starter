@@ -205,6 +205,48 @@ test("smoke readiness requires a production database URL", () => {
   ]);
 });
 
+test("smoke readiness requires committed Prisma migrations", () => {
+  const environment = createReadyEnvironment();
+  environment.database = {
+    configured: true,
+    host: "db.brand-platform.com",
+    migrations: {
+      directory: "services/api/prisma/migrations",
+      hasMigrationLock: false,
+      issue: "missing-directory",
+      migrationCount: 0,
+      productionReady: false,
+    },
+    productionReady: false,
+    urlIssue: null,
+    urlSafe: true,
+    variable: "DATABASE_URL",
+  };
+  const readiness = createSmokeProductionReadiness(
+    environment,
+    createReadyConfig(),
+  );
+
+  assert.deepEqual(readiness.blockers, [
+    {
+      area: "database.migrations",
+      directory: "services/api/prisma/migrations",
+      hasMigrationLock: false,
+      issue: "missing-directory",
+      message: "Prisma migrations must be committed before production smoke.",
+      migrationCount: 0,
+    },
+  ]);
+  assert.equal(readiness.productionReady, false);
+  assert.deepEqual(readiness.nextActions, [
+    {
+      action:
+        "Create and commit Prisma migration files, then run prisma migrate deploy in production.",
+      area: "database.migrations",
+    },
+  ]);
+});
+
 test("smoke readiness requires a production Redis URL", () => {
   const environment = createReadyEnvironment();
   environment.redis = {

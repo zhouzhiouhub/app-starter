@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import test from "node:test";
 import { createSmokeEnvironmentDiagnostics } from "./environment-diagnostics.mjs";
 
@@ -11,6 +14,13 @@ test("smoke environment diagnostics reports database readiness without secrets",
   assert.deepEqual(diagnostics.database, {
     configured: true,
     host: "db.brand-platform.com",
+    migrations: {
+      directory: "services/api/prisma/migrations",
+      hasMigrationLock: true,
+      issue: null,
+      migrationCount: 1,
+      productionReady: true,
+    },
     productionReady: true,
     urlIssue: null,
     urlSafe: true,
@@ -22,6 +32,32 @@ test("smoke environment diagnostics reports database readiness without secrets",
   assert.equal(serialized.includes("super-secret"), false);
   assert.equal(serialized.includes("app_starter"), false);
   assert.equal(serialized.includes("sslmode"), false);
+});
+
+test("smoke environment diagnostics reports missing Prisma migrations", () => {
+  const diagnostics = createSmokeEnvironmentDiagnostics(
+    {
+      DATABASE_URL:
+        "postgresql://db-user:super-secret@db.brand-platform.com:5432/app_starter?sslmode=require",
+    },
+    {
+      prismaMigrationsDir: join(
+        tmpdir(),
+        `app-starter-missing-migrations-${randomUUID()}`,
+      ),
+      prismaMigrationsLabel: "services/api/prisma/migrations",
+    },
+  );
+
+  assert.deepEqual(diagnostics.database.migrations, {
+    directory: "services/api/prisma/migrations",
+    hasMigrationLock: false,
+    issue: "missing-directory",
+    migrationCount: 0,
+    productionReady: false,
+  });
+  assert.equal(diagnostics.database.urlSafe, true);
+  assert.equal(diagnostics.database.productionReady, false);
 });
 
 test("smoke environment diagnostics reports unsafe database URLs", () => {

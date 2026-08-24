@@ -28,6 +28,15 @@ function readBlockerActions(blocker) {
     ];
   }
 
+  if (blocker.area === "database.migrations") {
+    return [
+      createAction(
+        blocker.area,
+        "Create and commit Prisma migration files, then run prisma migrate deploy in production.",
+      ),
+    ];
+  }
+
   if (blocker.area === "cache.redis") {
     return [
       createAction(

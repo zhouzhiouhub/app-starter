@@ -63,6 +63,13 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
     database: {
       configured: true,
       host: "db.brand-platform.com",
+      migrations: {
+        directory: "services/api/prisma/migrations",
+        hasMigrationLock: true,
+        issue: null,
+        migrationCount: 1,
+        productionReady: true,
+      },
       productionReady: true,
       urlIssue: null,
       urlSafe: true,

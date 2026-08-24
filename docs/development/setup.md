@@ -137,6 +137,13 @@ pnpm --filter @app-starter/api run prisma:seed
 pnpm dev
 ```
 
+Local development may continue to use `prisma db push` while the schema is
+changing quickly. Production deploys must use the committed Prisma migration
+files under `services/api/prisma/migrations` and run `prisma migrate deploy`.
+Production smoke readiness treats a missing migrations directory, a missing
+`migration_lock.toml`, or an empty migrations directory as a blocker even when
+`DATABASE_URL` itself is production-safe.
+
 Page write APIs use an `IdempotencyRecord` table, and Preview Token issuance plus
 page publish/rollback use an append-only `AuditLog` table. The audit log endpoint
 (`GET /api/v1/audit-logs`) is admin-only, scoped to the current tenant, and
@@ -250,7 +257,8 @@ trailing hyphens. The smoke admin account must include `audit:read`; rerun the
 seed after pulling role changes if the audit log check returns 403.
 Set `SMOKE_REPORT_PATH=tmp/smoke-report.json` to write a machine-readable report
 with the checked slug, page ID, storefront request URL, public storefront URL,
-analytics diagnostics, feature flag diagnostics, database diagnostics, identity diagnostics, media environment
+analytics diagnostics, feature flag diagnostics, database and Prisma migration
+diagnostics, identity diagnostics, media environment
 diagnostics, revalidation environment diagnostics, and passed/failed check list. If the smoke
 run fails, the report records the failed check name, error message, and
 structured failure details in `summary.failedCheckDetails` so production R2 /
@@ -270,8 +278,8 @@ setup has consent plus at least one valid provider. Feature flag diagnostics
 record whether `COMMERCE_ENABLED` and `MULTI_LOCALE_ENABLED` are explicitly
 configured and disabled. Database diagnostics record only non-secret
 `DATABASE_URL` readiness metadata: whether it is configured, the database host,
-URL safety, and whether it is production-ready. Redis diagnostics record only
-non-secret `REDIS_URL` readiness metadata: whether it is configured, the Redis
+URL safety, committed migration readiness, and whether it is production-ready.
+Redis diagnostics record only non-secret `REDIS_URL` readiness metadata: whether it is configured, the Redis
 host, TLS usage, URL safety, and whether it is production-ready. Identity
 diagnostics record only whether JWT private and public keys are configured,
 parse as PEM keys, and verify as a matching RS256 pair; key material is never
