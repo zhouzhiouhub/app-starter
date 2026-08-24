@@ -25,6 +25,7 @@ test("localization summary state reads the active MVP defaults", () => {
         status: "active",
       },
     ],
+    translations: [],
     translationsMeta: {
       fallbackLocale: "en-US",
       isFallback: false,
@@ -40,12 +41,13 @@ test("localization summary state reads the active MVP defaults", () => {
     isFallback: false,
     marketCurrency: "USD",
     status: "active",
+    translationCount: 0,
     translationRequestedLocale: "en-US",
     translationResolvedLocale: "en-US",
   });
 });
 
-test("localization summary exposes non-default translation fallback", () => {
+test("localization summary exposes non-default translation fallback entries", () => {
   const state = readLocalizationSummaryState({
     locales: [
       {
@@ -62,6 +64,15 @@ test("localization summary exposes non-default translation fallback", () => {
         status: "active",
       },
     ],
+    translations: [
+      {
+        context: "Homepage",
+        key: "page.home.hero.title",
+        locale: "en-US",
+        updatedAt: "2026-08-24T00:00:00.000Z",
+        value: "Build better storefronts",
+      },
+    ],
     translationsMeta: {
       fallbackLocale: "en-US",
       isFallback: true,
@@ -74,6 +85,7 @@ test("localization summary exposes non-default translation fallback", () => {
   assert.equal(state.defaultLocale, "en-US");
   assert.equal(state.fallbackLocale, "en-US");
   assert.equal(state.status, "fallback");
+  assert.equal(state.translationCount, 1);
   assert.equal(state.translationRequestedLocale, "de-DE");
   assert.equal(state.translationResolvedLocale, "en-US");
 });
@@ -88,6 +100,7 @@ test("localization summary state marks missing market data", () => {
       },
     ],
     markets: [],
+    translations: [],
     translationsMeta: {
       fallbackLocale: "en-US",
       isFallback: true,

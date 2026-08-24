@@ -1,10 +1,11 @@
-import { Descriptions, Space, Table, Tag, Typography } from "antd";
+import { Alert, Descriptions, Space, Table, Tag, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { readLocalizationSummaryState } from "../localization-summary-state";
 import type {
   LocalizationLocale,
   LocalizationMarket,
   LocalizationSummary,
+  LocalizationTranslationEntry,
 } from "../types";
 
 const marketColumns: ColumnsType<LocalizationMarket> = [
@@ -52,6 +53,33 @@ const localeColumns: ColumnsType<LocalizationLocale> = [
   },
 ];
 
+const translationColumns: ColumnsType<LocalizationTranslationEntry> = [
+  {
+    dataIndex: "key",
+    key: "key",
+    title: "Key",
+    render: (value: string) => <Typography.Text code>{value}</Typography.Text>,
+  },
+  {
+    dataIndex: "locale",
+    key: "locale",
+    title: "Locale",
+    render: (value: string) => <Typography.Text code>{value}</Typography.Text>,
+  },
+  {
+    dataIndex: "value",
+    ellipsis: true,
+    key: "value",
+    title: "Value",
+  },
+  {
+    dataIndex: "context",
+    key: "context",
+    render: (value?: string | null) => value ?? "not set",
+    title: "Context",
+  },
+];
+
 export function LocalizationStatusPanel(props: {
   summary: LocalizationSummary;
 }) {
@@ -59,6 +87,12 @@ export function LocalizationStatusPanel(props: {
 
   return (
     <Space direction="vertical" size={16} style={{ width: "100%" }}>
+      <Alert
+        description="Non-default Locale creation and publishing return MULTI_LOCALE_DISABLED while the MVP flag is off."
+        message="Multi-locale writes disabled"
+        showIcon
+        type="info"
+      />
       <Descriptions bordered column={{ md: 2, xs: 1 }} size="small">
         <Descriptions.Item label="Default market">
           <Typography.Text code>{state.defaultMarket}</Typography.Text>
@@ -76,6 +110,9 @@ export function LocalizationStatusPanel(props: {
           <Tag color={state.isFallback ? "orange" : "green"}>
             {state.isFallback ? "fallback" : "default"}
           </Tag>
+        </Descriptions.Item>
+        <Descriptions.Item label="Translation entries">
+          {state.translationCount}
         </Descriptions.Item>
         <Descriptions.Item label="Fallback probe">
           <Space size={4}>
@@ -104,6 +141,17 @@ export function LocalizationStatusPanel(props: {
         dataSource={props.summary.locales}
         pagination={false}
         rowKey="code"
+        size="small"
+      />
+      <Table<LocalizationTranslationEntry>
+        columns={translationColumns}
+        dataSource={props.summary.translations}
+        locale={{
+          emptyText:
+            "No translation entries are stored for this fallback probe.",
+        }}
+        pagination={false}
+        rowKey={(record) => `${record.locale}:${record.key}`}
         size="small"
       />
     </Space>

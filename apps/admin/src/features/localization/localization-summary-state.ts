@@ -11,6 +11,7 @@ export interface LocalizationSummaryState {
   isFallback: boolean;
   marketCurrency: string;
   status: "active" | "fallback" | "missing";
+  translationCount: number;
   translationRequestedLocale: string;
   translationResolvedLocale: string;
 }
@@ -32,6 +33,7 @@ export function readLocalizationSummaryState(
     isFallback: summary.translationsMeta.isFallback,
     marketCurrency: market?.currency ?? "USD",
     status: readStatus(summary, market, locale),
+    translationCount: summary.translations.length,
     translationRequestedLocale: summary.translationsMeta.requestedLocale,
     translationResolvedLocale: summary.translationsMeta.locale,
   };

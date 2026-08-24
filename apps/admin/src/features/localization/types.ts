@@ -19,8 +19,17 @@ export interface LocalizationTranslationsMeta {
   requestId?: string;
 }
 
+export interface LocalizationTranslationEntry {
+  context?: string | null;
+  key: string;
+  locale: string;
+  updatedAt?: string;
+  value: string;
+}
+
 export interface LocalizationSummary {
   locales: LocalizationLocale[];
   markets: LocalizationMarket[];
+  translations: LocalizationTranslationEntry[];
   translationsMeta: LocalizationTranslationsMeta;
 }
