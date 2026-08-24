@@ -47,14 +47,33 @@ export async function getPublicTranslationMessages(input: {
       return {};
     }
 
-    return readPublicTranslationMessages(await response.json());
+    return readPublicTranslationMessages(await response.json(), {
+      fallbackLocale: defaults.fallbackLocale,
+      locale,
+      defaultLocale: defaults.defaultLocale,
+    });
   } catch {
     return {};
   }
 }
 
-function readPublicTranslationMessages(value: unknown): Record<string, string> {
-  if (!isRecord(value) || !isRecord(value.data) || !isRecord(value.data.messages)) {
+function readPublicTranslationMessages(
+  value: unknown,
+  context: {
+    defaultLocale: string;
+    fallbackLocale: string;
+    locale: string;
+  },
+): Record<string, string> {
+  if (
+    !isRecord(value) ||
+    !isRecord(value.data) ||
+    !isRecord(value.data.messages) ||
+    !isExpectedTranslationLocale(
+      { data: value.data, meta: value.meta },
+      context,
+    )
+  ) {
     return {};
   }
 
@@ -67,6 +86,33 @@ function readPublicTranslationMessages(value: unknown): Record<string, string> {
   }
 
   return messages;
+}
+
+function isExpectedTranslationLocale(
+  value: {
+    data: Record<string, unknown>;
+    meta?: unknown;
+  },
+  context: {
+    defaultLocale: string;
+    fallbackLocale: string;
+    locale: string;
+  },
+) {
+  const responseLocale = value.data.locale;
+
+  if (responseLocale === context.locale) {
+    return true;
+  }
+
+  if (!isRecord(value.meta) || value.meta.isFallback !== true) {
+    return false;
+  }
+
+  return (
+    responseLocale === context.defaultLocale ||
+    responseLocale === context.fallbackLocale
+  );
 }
 
 function isSafePublicTranslationKey(key: string) {

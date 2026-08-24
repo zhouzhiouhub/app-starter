@@ -10,6 +10,7 @@ test("public translation lookup forwards storefront hosts for cache scoping", as
       requests.push({ init, url: String(url) });
       return jsonResponse({
         data: {
+          locale: "en-US",
           messages: Object.fromEntries([
             ["page.home.hero.title", "Translated hero title"],
             ["__proto__", "polluted"],
@@ -51,6 +52,56 @@ test("public translation lookup forwards storefront hosts for cache scoping", as
   });
 });
 
+test("public translation lookup accepts declared fallback locale messages", async () => {
+  await withFetch(
+    async () =>
+      jsonResponse({
+        data: {
+          locale: "en-US",
+          messages: {
+            "page.home.hero.title": "Default locale title",
+          },
+        },
+        meta: {
+          isFallback: true,
+          locale: "en-US",
+        },
+      }),
+    async () => {
+      assert.deepEqual(
+        await getPublicTranslationMessages({ locale: "de-DE" }),
+        {
+          "page.home.hero.title": "Default locale title",
+        },
+      );
+    },
+  );
+});
+
+test("public translation lookup rejects undeclared locale mismatches", async () => {
+  await withFetch(
+    async () =>
+      jsonResponse({
+        data: {
+          locale: "fr-FR",
+          messages: {
+            "page.home.hero.title": "Wrong locale title",
+          },
+        },
+        meta: {
+          isFallback: false,
+          locale: "fr-FR",
+        },
+      }),
+    async () => {
+      assert.deepEqual(
+        await getPublicTranslationMessages({ locale: "de-DE" }),
+        {},
+      );
+    },
+  );
+});
+
 test("public translation lookup returns empty messages for invalid locales", async () => {
   const requests = [];
 
@@ -59,6 +110,7 @@ test("public translation lookup returns empty messages for invalid locales", asy
       requests.push(String(url));
       return jsonResponse({
         data: {
+          locale: "en-US",
           messages: {
             "page.home.hero.title": "Translated hero title",
           },
