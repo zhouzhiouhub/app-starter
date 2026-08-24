@@ -15,6 +15,7 @@ export interface LocalizationTranslationsMeta {
   fallbackLocale: string;
   isFallback: boolean;
   locale: string;
+  requestedLocale: string;
   requestId?: string;
 }
 

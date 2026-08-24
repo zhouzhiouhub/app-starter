@@ -6,11 +6,14 @@ import type {
   LocalizationSummary,
   LocalizationTranslationsMeta,
 } from "./types";
+import { readFallbackProbeLocale } from "./localization-fallback-probe";
 
 export async function getLocalizationSummary(): Promise<LocalizationSummary> {
   const [markets, locales] = await Promise.all([getMarkets(), getLocales()]);
   const defaultLocale = locales[0]?.code ?? markets[0]?.defaultLocale ?? "en-US";
-  const translationsMeta = await getTranslationsMeta(defaultLocale);
+  const translationsMeta = await getTranslationsMeta(
+    readFallbackProbeLocale(defaultLocale),
+  );
 
   return {
     locales,
@@ -49,6 +52,7 @@ async function getTranslationsMeta(
     fallbackLocale: result.meta?.fallbackLocale ?? locale,
     isFallback: result.meta?.isFallback === true,
     locale: result.meta?.locale ?? locale,
+    requestedLocale: locale,
     requestId: result.meta?.requestId,
   };
 }

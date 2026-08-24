@@ -77,6 +77,17 @@ export function LocalizationStatusPanel(props: {
             {state.isFallback ? "fallback" : "default"}
           </Tag>
         </Descriptions.Item>
+        <Descriptions.Item label="Fallback probe">
+          <Space size={4}>
+            <Typography.Text code>
+              {state.translationRequestedLocale}
+            </Typography.Text>
+            <Typography.Text type="secondary">-&gt;</Typography.Text>
+            <Typography.Text code>
+              {state.translationResolvedLocale}
+            </Typography.Text>
+          </Space>
+        </Descriptions.Item>
         <Descriptions.Item label="MVP state">
           <Tag color={readStateTagColor(state.status)}>{state.status}</Tag>
         </Descriptions.Item>
