@@ -211,8 +211,72 @@ test("media direct uploads do not automatically follow redirects", async () => {
   ]);
 });
 
+test("media direct uploads cancel response bodies after status checks", async () => {
+  const canceledStatuses = [];
+  const file = {
+    name: "asset.webp",
+    size: 1024,
+    type: "image/webp",
+  };
+  let uploadCount = 0;
+
+  await withFetch(async (url) => {
+    if (String(url).endsWith("/media/upload-url")) {
+      return jsonResponse({ data: validTarget });
+    }
+
+    if (String(url) === validTarget.uploadUrl) {
+      uploadCount += 1;
+      return cancellableResponse(
+        uploadCount === 1 ? 201 : 503,
+        canceledStatuses,
+      );
+    }
+
+    if (String(url).endsWith("/media/confirm")) {
+      return jsonResponse({
+        data: {
+          id: `asset-${uploadCount}`,
+        },
+      });
+    }
+
+    return new Response("", { status: 404 });
+  }, async () => {
+    assert.deepEqual(
+      await uploadMediaFile({
+        altText: "Hero image",
+        file,
+      }),
+      { id: "asset-1" },
+    );
+
+    await assert.rejects(
+      () =>
+        uploadMediaFile({
+          altText: "Hero image",
+          file,
+        }),
+      /Upload failed with status 503/,
+    );
+  });
+
+  assert.deepEqual(canceledStatuses, [201, 503]);
+});
+
 function jsonResponse(body) {
   return new Response(JSON.stringify(body), { status: 200 });
+}
+
+function cancellableResponse(status, canceledStatuses) {
+  return new Response(
+    new ReadableStream({
+      cancel() {
+        canceledStatuses.push(status);
+      },
+    }),
+    { status },
+  );
 }
 
 function readHeadersWithSpecialName() {

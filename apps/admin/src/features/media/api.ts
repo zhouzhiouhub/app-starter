@@ -186,8 +186,18 @@ async function putMediaFile(
     );
   }
 
+  await cancelMediaUploadResponseBody(response);
+
   if (!response.ok) {
     throw new Error(`Upload failed with status ${response.status}.`);
+  }
+}
+
+async function cancelMediaUploadResponseBody(response: Response): Promise<void> {
+  try {
+    await response.body?.cancel();
+  } catch {
+    return;
   }
 }
 
