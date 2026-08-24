@@ -212,7 +212,9 @@ test("media smoke upload flow reports CDN diagnostics on confirmation failures",
       (error) => {
         assert.match(error.message, /production CDN URL/);
         assert.equal(error.smokeDetails.media.cdnHost, "cdn.example.com");
+        assert.equal(error.smokeDetails.media.cdnHostMatchesExpected, null);
         assert.equal(error.smokeDetails.media.cdnUrlMatchesR2Key, true);
+        assert.equal(error.smokeDetails.media.expectedCdnHost, null);
         assert.equal(error.smokeDetails.media.productionCdn, false);
         assert.equal(error.smokeDetails.media.uploadUrlMatchesR2Key, true);
         assert.equal(error.smokeDetails.media.uploadedObject, true);
@@ -221,6 +223,76 @@ test("media smoke upload flow reports CDN diagnostics on confirmation failures",
           JSON.stringify(error.smokeDetails).includes("X-Amz-Signature"),
           false,
         );
+        return true;
+      },
+    );
+  });
+});
+
+test("media smoke upload flow rejects mismatched configured CDN hosts", async () => {
+  const r2Key = "tenant-1/2026/08/21/smoke.png";
+
+  await withFetch(async (url, init = {}) => {
+    if (url.endsWith("/media/upload-url")) {
+      return jsonResponse({
+        data: {
+          confirmPath: "/api/v1/media/confirm",
+          expiresAt: "2026-08-21T00:15:00.000Z",
+          headers: { "Content-Type": "image/png" },
+          maxSize: 26214400,
+          method: "PUT",
+          r2Key,
+          type: "image",
+          uploadUrl: r2UploadUrl(`/bucket/${r2Key}`),
+        },
+      });
+    }
+
+    if (url === r2UploadUrl(`/bucket/${r2Key}`)) {
+      return new Response("", { status: 200, statusText: "OK" });
+    }
+
+    if (url.endsWith("/media/confirm")) {
+      const body = JSON.parse(init.body);
+      return jsonResponse({
+        data: {
+          filename: body.filename,
+          id: "asset-1",
+          mimeType: body.mimeType,
+          r2Key: body.r2Key,
+          reference: "media://asset-1",
+          size: body.size,
+          status: "active",
+          type: "image",
+          url: `https://cdn.other-brand.com/${body.r2Key}`,
+        },
+      });
+    }
+
+    throw new Error(`Unexpected fetch URL: ${url}`);
+  }, async () => {
+    await assert.rejects(
+      () =>
+        createSmokeMediaAsset(
+          {
+            apiBaseUrl: "https://api.example.com",
+            expectedMediaCdnHost: "cdn.brand-assets.com",
+            requireR2Upload: true,
+          },
+          "access-token",
+        ),
+      (error) => {
+        assert.match(error.message, /MEDIA_CDN_BASE_URL/);
+        assert.equal(error.smokeDetails.media.cdnHost, "cdn.other-brand.com");
+        assert.equal(error.smokeDetails.media.cdnHostMatchesExpected, false);
+        assert.equal(error.smokeDetails.media.cdnUrlMatchesR2Key, true);
+        assert.equal(
+          error.smokeDetails.media.expectedCdnHost,
+          "cdn.brand-assets.com",
+        );
+        assert.equal(error.smokeDetails.media.productionCdn, true);
+        assert.equal(error.smokeDetails.media.uploadedObject, true);
+        assert.equal("uploadUrl" in error.smokeDetails.media, false);
         return true;
       },
     );

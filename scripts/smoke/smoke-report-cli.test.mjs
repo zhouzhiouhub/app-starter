@@ -146,6 +146,7 @@ test("smoke report CLI suggests fixes for media diagnostics", () => {
         {
           details: {
             media: {
+              cdnHostMatchesExpected: false,
               cdnUrlMatchesR2Key: false,
               productionCdn: false,
             },
@@ -183,6 +184,12 @@ test("smoke report CLI suggests fixes for media diagnostics", () => {
   assert.equal(
     lines.includes(
       "    - Check media confirm URL generation so the CDN URL points to the confirmed R2 key.",
+    ),
+    true,
+  );
+  assert.equal(
+    lines.includes(
+      "    - Check API MEDIA_CDN_BASE_URL matches the CDN host used in media confirm responses.",
     ),
     true,
   );

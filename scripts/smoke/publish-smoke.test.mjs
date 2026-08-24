@@ -106,6 +106,7 @@ test("readConfig uses seeded defaults and explicit smoke overrides", async () =>
     {
       ADMIN_URL: "https://admin.example.com/",
       API_URL: "http://api.example.com/api/v1/",
+      MEDIA_CDN_BASE_URL: "https://cdn.brand-assets.com/media",
       SEED_ADMIN_EMAIL: "",
       SEED_ADMIN_PASSWORD: "",
       SMOKE_ADMIN_EMAIL: "owner@example.com",
@@ -125,6 +126,7 @@ test("readConfig uses seeded defaults and explicit smoke overrides", async () =>
       assert.equal(config.adminUrl, "https://admin.example.com");
       assert.equal(config.apiBaseUrl, "http://api.example.com/api/v1");
       assert.equal(config.email, "owner@example.com");
+      assert.equal(config.expectedMediaCdnHost, "cdn.brand-assets.com");
       assert.equal(config.password, "ChangeMe456!");
       assert.equal(config.requireAdminApp, true);
       assert.equal(config.requireR2Upload, true);

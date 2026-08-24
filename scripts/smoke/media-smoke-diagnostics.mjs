@@ -64,6 +64,11 @@ export function isProductionCdnUrl(value) {
   }
 }
 
+export function isExpectedCdnHost(value, expectedCdnHost) {
+  const host = readUrlHost(value);
+  return Boolean(host && expectedCdnHost && host === expectedCdnHost);
+}
+
 export function isMediaReference(value) {
   return typeof value === "string" && /^media:\/\/[a-zA-Z0-9_-]+$/.test(value);
 }
@@ -99,15 +104,24 @@ export function formatMediaListFilterDiagnostic(diagnostic) {
   return `items: ${diagnostic.itemCount}, expected asset: ${diagnostic.expectedAssetId ?? "unknown"}, id present: ${diagnostic.idPresent}, filename matches: ${diagnostic.filenameMatches}, reference matches: ${diagnostic.referenceMatches}, status: ${diagnostic.status ?? "missing"}, type: ${diagnostic.type ?? "missing"}`;
 }
 
-export function createMediaSmokeDetails(target, asset, requireR2Upload) {
+export function createMediaSmokeDetails(
+  target,
+  asset,
+  requireR2Upload,
+  expectedCdnHost = null,
+) {
+  const cdnHost = readUrlHost(asset.url);
+
   return {
     assetId: asset.id,
     assetSize: asset.size ?? null,
     assetStatus: asset.status ?? null,
     assetType: asset.type ?? null,
-    cdnHost: readUrlHost(asset.url),
+    cdnHost,
+    cdnHostMatchesExpected: expectedCdnHost ? cdnHost === expectedCdnHost : null,
     cdnUrlMatchesR2Key: isCdnUrlForR2Key(asset.url, target.r2Key),
     confirmPath: target.confirmPath,
+    expectedCdnHost,
     isR2UploadUrl: isR2UploadUrl(target.uploadUrl),
     presignedUrlHost: readUrlHost(target.uploadUrl),
     productionCdn: isProductionCdnUrl(asset.url),

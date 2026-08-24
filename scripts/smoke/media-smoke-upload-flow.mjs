@@ -22,6 +22,7 @@ const smokeImage = {
 };
 
 export async function createSmokeMediaAsset(input, accessToken) {
+  const expectedCdnHost = input.expectedMediaCdnHost ?? null;
   const target = await requestMediaUploadTarget(input, accessToken, smokeImage);
 
   if (input.requireR2Upload) {
@@ -34,7 +35,13 @@ export async function createSmokeMediaAsset(input, accessToken) {
     target,
     smokeImage,
   );
-  assertMediaAssetShape(asset, target, smokeImage, input.requireR2Upload);
+  assertMediaAssetShape(
+    asset,
+    target,
+    smokeImage,
+    input.requireR2Upload,
+    expectedCdnHost,
+  );
   await assertMediaListFilters(input, accessToken, asset);
 
   return { asset, target };

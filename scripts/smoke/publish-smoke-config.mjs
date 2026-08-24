@@ -51,6 +51,7 @@ export function readConfig() {
     adminUrl: readAdminUrlConfig(requireAdminApp),
     apiBaseUrl: normalizeApiBaseUrl(readEnv("API_URL", defaultApiUrl)),
     email,
+    expectedMediaCdnHost: readOptionalUrlHostEnv("MEDIA_CDN_BASE_URL"),
     locale: normalizeSmokeLocale(readEnv("SMOKE_LOCALE", defaultLocale)),
     market: normalizeSmokeMarket(readEnv("SMOKE_MARKET", defaultMarket)),
     password,
@@ -196,4 +197,18 @@ function readOptionalStorefrontHostEnv(name) {
   }
 
   return normalizeStorefrontHost(value);
+}
+
+function readOptionalUrlHostEnv(name) {
+  const value = process.env[name]?.trim();
+
+  if (!value) {
+    return null;
+  }
+
+  try {
+    return new URL(value).hostname || null;
+  } catch {
+    return null;
+  }
 }

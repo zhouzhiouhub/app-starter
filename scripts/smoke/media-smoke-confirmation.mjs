@@ -3,6 +3,7 @@ import { fetchJson, readHttpError } from "./http-json-smoke.mjs";
 import {
   createMediaSmokeDetails,
   isCdnUrlForR2Key,
+  isExpectedCdnHost,
   isMediaReference,
   isProductionCdnUrl,
 } from "./media-smoke-diagnostics.mjs";
@@ -36,6 +37,7 @@ export function assertMediaAssetShape(
   target,
   image,
   requireProductionCdn,
+  expectedCdnHost = null,
 ) {
   if (!asset || typeof asset !== "object") {
     throw new Error("Media confirm did not return a data object.");
@@ -71,6 +73,7 @@ export function assertMediaAssetShape(
       target,
       asset,
       requireProductionCdn,
+      expectedCdnHost,
     );
   }
 
@@ -80,14 +83,40 @@ export function assertMediaAssetShape(
       target,
       asset,
       requireProductionCdn,
+      expectedCdnHost,
+    );
+  }
+
+  if (
+    requireProductionCdn &&
+    expectedCdnHost &&
+    !isExpectedCdnHost(asset.url, expectedCdnHost)
+  ) {
+    throw createMediaShapeError(
+      "Media confirm CDN host did not match MEDIA_CDN_BASE_URL.",
+      target,
+      asset,
+      requireProductionCdn,
+      expectedCdnHost,
     );
   }
 }
 
-function createMediaShapeError(message, target, asset, requireProductionCdn) {
+function createMediaShapeError(
+  message,
+  target,
+  asset,
+  requireProductionCdn,
+  expectedCdnHost,
+) {
   const error = new Error(message);
   error.smokeDetails = {
-    media: createMediaSmokeDetails(target, asset, requireProductionCdn),
+    media: createMediaSmokeDetails(
+      target,
+      asset,
+      requireProductionCdn,
+      expectedCdnHost,
+    ),
   };
   return error;
 }

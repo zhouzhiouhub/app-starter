@@ -137,6 +137,12 @@ function readMediaFailureActions(details) {
     );
   }
 
+  if (media.cdnHostMatchesExpected === false) {
+    actions.push(
+      "Check API MEDIA_CDN_BASE_URL matches the CDN host used in media confirm responses.",
+    );
+  }
+
   return actions;
 }
 

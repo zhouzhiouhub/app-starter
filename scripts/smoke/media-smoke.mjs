@@ -23,5 +23,10 @@ export async function assertMediaUploadTarget(input, accessToken) {
       : "Media upload target, confirm, and list filters passed.",
   );
 
-  return createMediaSmokeDetails(target, asset, input.requireR2Upload);
+  return createMediaSmokeDetails(
+    target,
+    asset,
+    input.requireR2Upload,
+    input.expectedMediaCdnHost ?? null,
+  );
 }
