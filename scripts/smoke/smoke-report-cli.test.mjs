@@ -82,6 +82,48 @@ test("smoke report CLI separates smoke failures from production gates", () => {
   );
 });
 
+test("smoke report CLI includes failed check diagnostics and suggested fixes", () => {
+  const lines = formatSmokeReportSummary({
+    schemaVersion: "smoke-report.v3",
+    summary: {
+      blockerCount: 0,
+      checkCount: 4,
+      failedCheckCount: 1,
+      failedCheckDetails: [
+        {
+          details: {
+            revalidation: {
+              diagnosis: "revalidation-secret-mismatch",
+              status: 401,
+            },
+          },
+          message:
+            "Storefront revalidation failed with token=payload.signature",
+          name: "page.publish",
+        },
+      ],
+      failedChecks: ["page.publish"],
+      passedCheckCount: 3,
+      productionReady: true,
+      status: "failed",
+      warningCount: 0,
+    },
+  });
+
+  assert.deepEqual(lines, [
+    "\nSmoke report summary (smoke-report.v3):",
+    "  Status: failed",
+    "  Checks: 3/4 passed, 1 failed",
+    "  Smoke passed: no",
+    "  Production gates: passed",
+    "  Failed checks: page.publish",
+    "  Failure details:",
+    "    - page.publish: Storefront revalidation failed with token=[redacted] (diagnosis: revalidation-secret-mismatch)",
+    "  Suggested fixes:",
+    "    - Make STOREFRONT_REVALIDATE_SECRET match between API and Web runtimes.",
+  ]);
+});
+
 test("smoke report CLI writes failed summaries to warning output", () => {
   const logLines = [];
   const warnLines = [];
