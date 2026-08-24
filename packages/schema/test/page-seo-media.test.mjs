@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   collectMediaReferences,
   pageSchema,
+  pageMediaReferenceMaxCount,
   resolveMediaReferences,
 } from "../dist/index.js";
 import { minimalPage } from "./page-schema-test-helpers.mjs";
@@ -68,6 +69,22 @@ test("media references can be collected and resolved", () => {
   assert.equal(resolved.hero.image, "https://cdn.example.com/asset-1");
   assert.equal(resolved.gallery[0], "https://cdn.example.com/asset-2");
   assert.equal(resolved.gallery[1], "https://cdn.example.com/static.jpg");
+});
+
+test("media reference collection can stop at a safe limit", () => {
+  const input = {
+    gallery: Array.from(
+      { length: pageMediaReferenceMaxCount + 2 },
+      (_value, index) => `media://asset-${index}`,
+    ),
+  };
+
+  assert.equal(pageMediaReferenceMaxCount, 200);
+  assert.deepEqual(collectMediaReferences(input, { maxCount: 2 }), [
+    "media://asset-0",
+    "media://asset-1",
+  ]);
+  assert.deepEqual(collectMediaReferences(input, { maxCount: 0 }), []);
 });
 
 test("page schema rejects unsafe SEO URLs", () => {

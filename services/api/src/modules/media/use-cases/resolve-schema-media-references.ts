@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import {
   collectMediaReferences,
+  pageMediaReferenceMaxCount,
   pageSchema,
   readMediaAssetId,
   resolveMediaReferences,
@@ -16,7 +17,9 @@ export async function resolveSchemaMediaReferences(
   schema: PageSchema,
   tenantId: string,
 ): Promise<PageSchema> {
-  const references = collectMediaReferences(schema);
+  const references = collectMediaReferences(schema, {
+    maxCount: pageMediaReferenceMaxCount,
+  });
 
   if (references.length === 0) {
     return schema;

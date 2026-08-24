@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createFallbackPage } from "@app-starter/schema";
+import {
+  createFallbackPage,
+  pageMediaReferenceMaxCount,
+} from "@app-starter/schema";
 import { MediaService } from "../dist/modules/media/media.service.js";
 import { withEnv } from "./env-helper.mjs";
 
@@ -184,6 +187,54 @@ test("media service leaves disallowed media URLs unresolved", () =>
     assert.equal(
       resolved.sections[0].props.images[1].src,
       "media://asset-dirty",
+    );
+  }));
+
+test("media service caps media reference resolution queries", () =>
+  withMediaCdnEnv(async () => {
+    let requestedIds = [];
+    const service = new MediaService({
+      mediaAsset: {
+        findMany(options) {
+          requestedIds = options.where.id.in;
+          assert.deepEqual(options.where.tenantId, "tenant-1");
+          return Promise.resolve([]);
+        },
+      },
+    });
+    const schema = createFallbackPage({ slug: "gallery" });
+    const resolved = await service.resolveSchemaMediaReferences(
+      {
+        ...schema,
+        sections: [
+          {
+            id: "gallery",
+            component: "image-gallery",
+            props: {
+              images: Array.from(
+                { length: pageMediaReferenceMaxCount + 2 },
+                (_value, index) => ({
+                  alt: `Image ${index}`,
+                  src: `media://asset-${index}`,
+                }),
+              ),
+            },
+            layout: {},
+          },
+        ],
+      },
+      "tenant-1",
+    );
+
+    assert.equal(requestedIds.length, pageMediaReferenceMaxCount);
+    assert.equal(requestedIds[0], "asset-0");
+    assert.equal(
+      requestedIds.at(-1),
+      `asset-${pageMediaReferenceMaxCount - 1}`,
+    );
+    assert.equal(
+      resolved.sections[0].props.images.at(-1).src,
+      `media://asset-${pageMediaReferenceMaxCount + 1}`,
     );
   }));
 

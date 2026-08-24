@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import {
   apiErrorCodes,
   collectMediaReferences,
+  pageMediaReferenceMaxCount,
   readMediaAssetId,
   type PageSchema,
 } from "@app-starter/schema";
@@ -15,10 +16,23 @@ export async function assertSchemaMediaReferencesPublishable(
   schema: PageSchema,
   tenantId: string,
 ): Promise<void> {
-  const references = collectMediaReferences(schema);
+  const references = collectMediaReferences(schema, {
+    maxCount: pageMediaReferenceMaxCount + 1,
+  });
 
   if (references.length === 0) {
     return;
+  }
+
+  if (references.length > pageMediaReferenceMaxCount) {
+    throw new BadRequestException({
+      code: apiErrorCodes.VALIDATION_ERROR,
+      message: "Page references too many media assets.",
+      details: {
+        mediaReferenceCount: references.length,
+        mediaReferenceLimit: pageMediaReferenceMaxCount,
+      },
+    });
   }
 
   const ids = references

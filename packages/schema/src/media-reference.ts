@@ -7,6 +7,11 @@ export const mediaAssetReferenceSchema = z
     "Media reference must look like media://asset-id",
   );
 export type MediaAssetReference = z.infer<typeof mediaAssetReferenceSchema>;
+export const pageMediaReferenceMaxCount = 200;
+
+type CollectMediaReferencesOptions = {
+  maxCount?: number;
+};
 
 export function isMediaAssetReference(
   value: string,
@@ -22,9 +27,12 @@ export function readMediaAssetId(reference: string): string | null {
   return reference.slice("media://".length);
 }
 
-export function collectMediaReferences(value: unknown): MediaAssetReference[] {
+export function collectMediaReferences(
+  value: unknown,
+  options: CollectMediaReferencesOptions = {},
+): MediaAssetReference[] {
   const references = new Set<MediaAssetReference>();
-  collect(value, references);
+  collect(value, references, normalizeMaxCount(options.maxCount));
   return [...references];
 }
 
@@ -55,23 +63,47 @@ export function resolveMediaReferences<T>(
 function collect(
   value: unknown,
   references: Set<MediaAssetReference>,
-): void {
+  maxCount: number | null,
+): boolean {
+  if (maxCount !== null && references.size >= maxCount) {
+    return true;
+  }
+
   if (typeof value === "string") {
     if (isMediaAssetReference(value)) {
       references.add(value);
     }
 
-    return;
+    return maxCount !== null && references.size >= maxCount;
   }
 
   if (Array.isArray(value)) {
-    value.forEach((item) => collect(item, references));
-    return;
+    for (const item of value) {
+      if (collect(item, references, maxCount)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   if (!value || typeof value !== "object") {
-    return;
+    return false;
   }
 
-  Object.values(value).forEach((child) => collect(child, references));
+  for (const child of Object.values(value)) {
+    if (collect(child, references, maxCount)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function normalizeMaxCount(value: number | undefined): number | null {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return null;
+  }
+
+  return Math.max(0, Math.floor(value));
 }
