@@ -15,7 +15,7 @@ export async function readPublicApiJson(response: Response): Promise<unknown> {
 }
 
 function readJsonFromText(text: string): unknown {
-  if (!text || text.length > maxPublicApiJsonBodyLength) {
+  if (!text) {
     return null;
   }
 
@@ -49,6 +49,12 @@ function readContentLength(response: Response): string | null {
 }
 
 async function readResponseText(response: Response): Promise<string | null> {
+  const stream = (response as { body?: unknown }).body;
+
+  if (isReadableByteStream(stream)) {
+    return readResponseStreamText(stream);
+  }
+
   const readText = (response as { text?: unknown }).text;
 
   if (typeof readText !== "function") {
@@ -56,10 +62,65 @@ async function readResponseText(response: Response): Promise<string | null> {
   }
 
   try {
-    return (await readText.call(response)) as string;
+    const text = (await readText.call(response)) as string;
+
+    return hasOversizedText(text) ? null : text;
   } catch {
     return null;
   }
+}
+
+async function readResponseStreamText(
+  stream: ReadableStream<Uint8Array>,
+): Promise<string | null> {
+  const decoder = new TextDecoder();
+  const reader = stream.getReader();
+  const chunks: string[] = [];
+  let byteLength = 0;
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+
+      if (done) {
+        break;
+      }
+
+      byteLength += value.byteLength;
+
+      if (byteLength > maxPublicApiJsonBodyLength) {
+        await reader.cancel();
+        return null;
+      }
+
+      chunks.push(decoder.decode(value, { stream: true }));
+    }
+
+    const tail = decoder.decode();
+
+    if (tail) {
+      chunks.push(tail);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  return chunks.join("");
+}
+
+function isReadableByteStream(
+  value: unknown,
+): value is ReadableStream<Uint8Array> {
+  return Boolean(
+    value &&
+      typeof value === "object" &&
+      "getReader" in value &&
+      typeof (value as { getReader?: unknown }).getReader === "function",
+  );
+}
+
+function hasOversizedText(text: string): boolean {
+  return new TextEncoder().encode(text).byteLength > maxPublicApiJsonBodyLength;
 }
 
 async function readJsonFromResponse(response: Response): Promise<unknown> {

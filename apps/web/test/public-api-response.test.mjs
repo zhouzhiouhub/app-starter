@@ -30,9 +30,18 @@ test("public API response reader rejects oversized content lengths", async () =>
 });
 
 test("public API response reader rejects oversized bodies without length headers", async () => {
-  const result = await readPublicApiJson(
-    new Response("x".repeat(1_000_001), { status: 200 }),
-  );
+  const result = await readPublicApiJson({
+    body: new ReadableStream({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode("x".repeat(1_000_001)));
+        controller.close();
+      },
+    }),
+    headers: new Headers(),
+    async text() {
+      throw new Error("streamed bodies should not call text");
+    },
+  });
 
   assert.equal(result, null);
 });
