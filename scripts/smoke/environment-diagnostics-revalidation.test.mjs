@@ -18,6 +18,8 @@ test("smoke environment diagnostics reports revalidation WEB_URL fallback", () =
     endpointPath: "/api/revalidate",
     requireRevalidation: true,
     secretConfigured: true,
+    secretIssue: null,
+    secretSafe: true,
     urlConfigured: true,
     urlIssue: null,
     urlSafe: true,
@@ -39,12 +41,31 @@ test("smoke environment diagnostics reports unsafe revalidation URLs", () => {
     endpointPath: null,
     requireRevalidation: true,
     secretConfigured: true,
+    secretIssue: null,
+    secretSafe: true,
     urlConfigured: true,
     urlIssue: "embedded-credentials",
     urlSafe: false,
     urlSource: "STOREFRONT_REVALIDATE_URL",
     usesWebUrlFallback: false,
   });
+});
+
+test("smoke environment diagnostics rejects unsafe revalidation secrets", () => {
+  for (const [secret, issue] of [
+    ["secret-1\r\nx-secret: leaked", "control-character"],
+    ["a".repeat(1025), "oversized-secret"],
+  ]) {
+    const diagnostics = createSmokeEnvironmentDiagnostics({
+      STOREFRONT_REVALIDATE_SECRET: secret,
+      STOREFRONT_REVALIDATE_URL: "https://web.brand.com/api/revalidate",
+    });
+
+    assert.equal(diagnostics.revalidation.configured, false);
+    assert.equal(diagnostics.revalidation.secretConfigured, true);
+    assert.equal(diagnostics.revalidation.secretIssue, issue);
+    assert.equal(diagnostics.revalidation.secretSafe, false);
+  }
 });
 
 test("smoke environment diagnostics requires production revalidation URLs", () => {

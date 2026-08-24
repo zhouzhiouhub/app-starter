@@ -6,6 +6,7 @@ import {
 } from "./smoke-readiness-blockers.mjs";
 import { collectDatabaseReadiness } from "./smoke-readiness-database.mjs";
 import { collectRedisReadiness } from "./smoke-readiness-redis.mjs";
+import { collectRevalidationReadiness } from "./smoke-readiness-revalidation.mjs";
 
 export function collectSmokeReadinessFindings(environment, config) {
   const blockers = [];
@@ -240,56 +241,5 @@ function collectMediaReadiness(blockers, media, config) {
       media?.cdnUrlIssue ?? "cdn-not-production-ready",
       "MEDIA_CDN_BASE_URL must be a production HTTPS CDN origin.",
     );
-  }
-}
-
-function collectRevalidationReadiness(
-  blockers,
-  warnings,
-  revalidation,
-  config,
-) {
-  if (config.requireRevalidation !== true) {
-    appendBlocker(
-      blockers,
-      "revalidation",
-      "revalidation-smoke-not-required",
-      "Set SMOKE_REQUIRE_REVALIDATION=true to prove storefront ISR refresh.",
-    );
-    return;
-  }
-
-  if (revalidation?.secretConfigured !== true) {
-    appendBlocker(
-      blockers,
-      "revalidation.secret",
-      "missing-secret",
-      "Configure STOREFRONT_REVALIDATE_SECRET before production smoke.",
-    );
-  }
-
-  if (revalidation?.urlConfigured !== true) {
-    appendBlocker(
-      blockers,
-      "revalidation.url",
-      "missing-url",
-      "Configure STOREFRONT_REVALIDATE_URL or WEB_URL before production smoke.",
-    );
-  } else if (revalidation?.urlSafe !== true) {
-    appendBlocker(
-      blockers,
-      "revalidation.url",
-      revalidation?.urlIssue ?? "unsafe-url",
-      "Storefront revalidation URL must be a production HTTPS endpoint.",
-    );
-  }
-
-  if (revalidation?.usesWebUrlFallback === true) {
-    warnings.push({
-      area: "revalidation.url",
-      issue: "uses-web-url-fallback",
-      message:
-        "STOREFRONT_REVALIDATE_URL is not set; smoke will derive /api/revalidate from WEB_URL.",
-    });
   }
 }

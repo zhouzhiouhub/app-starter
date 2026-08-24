@@ -361,6 +361,7 @@ CLARITY_PROJECT_ID=xxxxxxxxxx
 - 不要把生产数据库连接串提交到 Git。
 - Analytics 脚本只有在 `ANALYTICS_ENABLED=true` 且 `ANALYTICS_CONSENT_GRANTED=true` 时才会加载；未接入 Consent 机制前保持关闭。
 - `PREVIEW_TOKEN_TTL_SECONDS` 只接受 1 到 3600 秒，非法或更长配置会回退到 3600 秒，保持预览链接 1 小时有效。
+- `STOREFRONT_REVALIDATE_SECRET` 必须是不超过 1024 字符且不包含控制字符的非空值；生产 smoke readiness 会把超长或含控制字符的值判定为不安全配置。
 - `STOREFRONT_REVALIDATE_TIMEOUT_MS` 只接受 1 到 30000 毫秒，非法或更长配置会回退到 5000 毫秒，避免发布请求被异常超时值拖住。
 - 轮换 Preview Token 密钥时，先把旧值放入 `PREVIEW_TOKEN_PREVIOUS_SECRET`，再更新 `PREVIEW_TOKEN_SECRET`；等待超过 `PREVIEW_TOKEN_TTL_SECONDS` 后再移除旧值。
 - 如果数据库服务商提供 pooled connection string 和 direct connection string，API 运行时优先使用 pooled connection string，数据库迁移任务按服务商要求使用 direct connection string。

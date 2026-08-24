@@ -65,6 +65,10 @@ STOREFRONT_REVALIDATE_URL=http://localhost:3000/api/revalidate
 STOREFRONT_REVALIDATE_TIMEOUT_MS=5000
 ```
 
+`STOREFRONT_REVALIDATE_SECRET` must be a non-empty value up to 1024 characters
+without control characters. Production smoke readiness treats oversized or
+control-character secrets as unsafe instead of configured.
+
 `STOREFRONT_REVALIDATE_URL` can be the full Web revalidation route. If it is
 set to the Web origin only, the API normalizes it to `/api/revalidate`.
 In production, both the explicit revalidation URL and the `WEB_URL` fallback

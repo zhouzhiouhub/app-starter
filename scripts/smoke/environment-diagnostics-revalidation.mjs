@@ -4,6 +4,7 @@ import {
 } from "./cdn-hostname.mjs";
 
 const defaultRevalidatePath = "/api/revalidate";
+const maxRevalidationSecretLength = 1024;
 
 export function createRevalidationDiagnostics(env = process.env, options = {}) {
   const revalidateUrl = readEnv(env, "STOREFRONT_REVALIDATE_URL");
@@ -14,22 +15,58 @@ export function createRevalidationDiagnostics(env = process.env, options = {}) {
       ? "WEB_URL"
       : null;
   const endpoint = readRevalidationEndpoint(revalidateUrl ?? webUrl, source);
+  const secret = readRevalidationSecret(env);
 
   return {
-    configured:
-      Boolean(readEnv(env, "STOREFRONT_REVALIDATE_SECRET")) && endpoint.safe,
+    configured: secret.safe && endpoint.safe,
     endpointHost: endpoint.host,
     endpointPath: endpoint.path,
     requireRevalidation:
       typeof options.requireRevalidation === "boolean"
         ? options.requireRevalidation
         : readBooleanEnv(env, "SMOKE_REQUIRE_REVALIDATION", true),
-    secretConfigured: Boolean(readEnv(env, "STOREFRONT_REVALIDATE_SECRET")),
+    secretConfigured: secret.configured,
+    secretIssue: secret.issue,
+    secretSafe: secret.safe,
     urlConfigured: Boolean(source),
     urlIssue: endpoint.issue,
     urlSafe: endpoint.safe,
     urlSource: source,
     usesWebUrlFallback: source === "WEB_URL",
+  };
+}
+
+function readRevalidationSecret(env) {
+  const value = readEnv(env, "STOREFRONT_REVALIDATE_SECRET");
+
+  if (!value) {
+    return {
+      configured: false,
+      issue: "missing-secret",
+      safe: false,
+    };
+  }
+
+  if (value.length > maxRevalidationSecretLength) {
+    return {
+      configured: true,
+      issue: "oversized-secret",
+      safe: false,
+    };
+  }
+
+  if (hasControlCharacter(value)) {
+    return {
+      configured: true,
+      issue: "control-character",
+      safe: false,
+    };
+  }
+
+  return {
+    configured: true,
+    issue: null,
+    safe: true,
   };
 }
 
@@ -147,4 +184,11 @@ function readBooleanEnv(env, name, fallback) {
 function readEnv(env, name) {
   const value = env[name]?.trim();
   return value ? value : null;
+}
+
+function hasControlCharacter(value) {
+  return Array.from(value).some((character) => {
+    const codePoint = character.codePointAt(0) ?? 0;
+    return codePoint <= 0x1f || codePoint === 0x7f;
+  });
 }

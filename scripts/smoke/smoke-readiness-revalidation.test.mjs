@@ -59,3 +59,33 @@ test("smoke readiness blocks non-production revalidation URLs", () => {
     },
   ]);
 });
+
+test("smoke readiness blocks unsafe revalidation secrets", () => {
+  const environment = createReadyEnvironment();
+  environment.revalidation.secretConfigured = true;
+  environment.revalidation.secretIssue = "control-character";
+  environment.revalidation.secretSafe = false;
+
+  const readiness = createSmokeProductionReadiness(
+    environment,
+    createReadyConfig(),
+  );
+
+  assert.deepEqual(readiness.blockers, [
+    {
+      area: "revalidation.secret",
+      issue: "control-character",
+      message:
+        "STOREFRONT_REVALIDATE_SECRET must be a safe bounded value before production smoke.",
+      variable: "STOREFRONT_REVALIDATE_SECRET",
+    },
+  ]);
+  assert.equal(readiness.productionReady, false);
+  assert.deepEqual(readiness.nextActions, [
+    {
+      action:
+        "Set STOREFRONT_REVALIDATE_SECRET in both API and Web runtimes.",
+      area: "revalidation.secret",
+    },
+  ]);
+});
