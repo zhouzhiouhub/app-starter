@@ -40,6 +40,7 @@ export function readSafeMediaAssetUrl(value: string): string | null {
     !isAllowedMediaAssetProtocol(parsed) ||
     parsed.username ||
     parsed.password ||
+    parsed.hash ||
     hasSensitiveMediaAssetQueryParameters(parsed)
   ) {
     return null;
