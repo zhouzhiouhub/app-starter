@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { apiErrorCodes } from "../../../packages/schema/dist/index.js";
 import { LocalizationController } from "../dist/modules/localization/localization.controller.js";
+import { LocalizationService } from "../dist/modules/localization/localization.service.js";
 import {
   assertApiBadRequest,
   assertApiConflict,
@@ -9,10 +10,19 @@ import {
 import { withEnv } from "./env-helper.mjs";
 
 const idempotencyKey = "7f10f6d3-02d9-4f3d-a69d-49b26ec63132";
+const actor = {
+  email: "admin@example.com",
+  id: "user-1",
+  name: "Admin",
+  roles: ["tenant-admin"],
+  scopes: ["translation:read"],
+  status: "active",
+  tenantId: "tenant-1",
+};
 
 test("locale creation rejects writes while multi-locale is disabled", () => {
   withEnv({ MULTI_LOCALE_ENABLED: "false" }, () => {
-    const controller = new LocalizationController();
+    const controller = createController();
 
     const error = assertApiConflict(
       () =>
@@ -30,7 +40,7 @@ test("locale creation rejects writes while multi-locale is disabled", () => {
 
 test("locale creation does not echo disabled invalid locale input", () => {
   withEnv({ MULTI_LOCALE_ENABLED: "false" }, () => {
-    const controller = new LocalizationController();
+    const controller = createController();
 
     assert.throws(
       () => controller.createLocale({ code: "<script>alert(1)</script>" }),
@@ -45,7 +55,7 @@ test("locale creation does not echo disabled invalid locale input", () => {
 
 test("locale creation validates locale codes when multi-locale is enabled", () => {
   withEnv({ MULTI_LOCALE_ENABLED: " TRUE " }, () => {
-    const controller = new LocalizationController();
+    const controller = createController();
     const created = controller.createLocale(
       { code: "de-DE" },
       idempotencyKey,
@@ -68,7 +78,7 @@ test("locale creation validates locale codes when multi-locale is enabled", () =
 
 test("locale creation requires idempotency keys when multi-locale is enabled", () => {
   withEnv({ MULTI_LOCALE_ENABLED: " TRUE " }, () => {
-    const controller = new LocalizationController();
+    const controller = createController();
 
     assertApiBadRequest(
       () => controller.createLocale({ code: "de-DE" }),
@@ -81,19 +91,20 @@ test("locale creation requires idempotency keys when multi-locale is enabled", (
   });
 });
 
-test("admin locales ignore invalid default locale environment values", () => {
-  withEnv(
+test("admin locales ignore invalid default locale environment values", async () => {
+  await withEnv(
     {
       DEFAULT_CURRENCY: "usd",
       DEFAULT_LOCALE: "bad_locale",
       DEFAULT_MARKET: "Bad-Market",
       FALLBACK_LOCALE: "still_bad",
     },
-    () => {
-      const controller = new LocalizationController();
+    async () => {
+      const controller = createController();
       const locales = controller.getLocales("request-admin-locales");
       const markets = controller.getMarkets("request-admin-markets");
-      const translations = controller.getTranslations(
+      const translations = await controller.getTranslations(
+        actor,
         undefined,
         "request-admin-translations",
       );
@@ -112,16 +123,16 @@ test("admin locales ignore invalid default locale environment values", () => {
   );
 });
 
-test("admin translations expose configured fallback locale metadata", () => {
-  withEnv(
+test("admin translations expose configured fallback locale metadata", async () => {
+  await withEnv(
     {
       DEFAULT_LOCALE: "en-US",
       FALLBACK_LOCALE: "de-DE",
       MULTI_LOCALE_ENABLED: "false",
     },
-    () => {
-      const controller = new LocalizationController();
-      const response = controller.getTranslations("fr-FR");
+    async () => {
+      const controller = createController();
+      const response = await controller.getTranslations(actor, "fr-FR");
 
       assert.equal(response.meta.locale, "en-US");
       assert.equal(response.meta.fallbackLocale, "de-DE");
@@ -130,17 +141,17 @@ test("admin translations expose configured fallback locale metadata", () => {
   );
 });
 
-test("admin translations expose default locale fallback metadata", () => {
-  withEnv(
+test("admin translations expose default locale fallback metadata", async () => {
+  await withEnv(
     {
       DEFAULT_LOCALE: "en-US",
       FALLBACK_LOCALE: "en-US",
       MULTI_LOCALE_ENABLED: "false",
     },
-    () => {
-      const controller = new LocalizationController();
-      const defaultResponse = controller.getTranslations();
-      const fallbackResponse = controller.getTranslations("de-DE");
+    async () => {
+      const controller = createController();
+      const defaultResponse = await controller.getTranslations(actor);
+      const fallbackResponse = await controller.getTranslations(actor, "de-DE");
 
       assert.equal(defaultResponse.meta.locale, "en-US");
       assert.equal(defaultResponse.meta.fallbackLocale, "en-US");
@@ -153,10 +164,101 @@ test("admin translations expose default locale fallback metadata", () => {
 });
 
 test("admin translations reject invalid locale format", () => {
-  const controller = new LocalizationController();
+  const controller = createController();
 
-  assertApiBadRequest(
-    () => controller.getTranslations("bad_locale"),
-    apiErrorCodes.VALIDATION_ERROR,
+  return assert.rejects(
+    () => controller.getTranslations(actor, "bad_locale"),
+    (error) =>
+      error.getStatus?.() === 400 &&
+      error.getResponse?.().code === apiErrorCodes.VALIDATION_ERROR,
   );
 });
+
+test("admin translations read tenant-scoped stored entries", async () => {
+  const queries = [];
+  const service = createService({
+    translation: {
+      findMany: async (query) => {
+        queries.push(query);
+        return [
+          {
+            context: "Homepage",
+            key: "page.home.hero.title",
+            locale: "en-US",
+            updatedAt: new Date("2026-08-24T00:00:00.000Z"),
+            value: "Build better storefronts",
+          },
+        ];
+      },
+    },
+  });
+
+  const response = await service.listTranslations(
+    actor,
+    "en-US",
+    "request-translations-list",
+  );
+
+  assert.deepEqual(queries, [
+    {
+      orderBy: { key: "asc" },
+      where: {
+        locale: "en-US",
+        tenantId: "tenant-1",
+      },
+    },
+  ]);
+  assert.deepEqual(response.data, [
+    {
+      context: "Homepage",
+      key: "page.home.hero.title",
+      locale: "en-US",
+      updatedAt: "2026-08-24T00:00:00.000Z",
+      value: "Build better storefronts",
+    },
+  ]);
+  assert.equal(response.meta.tenantId, "tenant-1");
+  assert.equal(response.meta.requestId, "request-translations-list");
+});
+
+test("admin translations query the fallback default locale while disabled", async () => {
+  await withEnv(
+    {
+      DEFAULT_LOCALE: "en-US",
+      MULTI_LOCALE_ENABLED: "false",
+    },
+    async () => {
+      let queryLocale = null;
+      const service = createService({
+        translation: {
+          findMany: async (query) => {
+            queryLocale = query.where.locale;
+            return [];
+          },
+        },
+      });
+
+      const response = await service.listTranslations(actor, "de-DE");
+
+      assert.equal(queryLocale, "en-US");
+      assert.equal(response.meta.locale, "en-US");
+      assert.equal(response.meta.isFallback, true);
+    },
+  );
+});
+
+function createController(prisma = createEmptyPrisma()) {
+  return new LocalizationController(createService(prisma));
+}
+
+function createService(prisma) {
+  return new LocalizationService(prisma);
+}
+
+function createEmptyPrisma() {
+  return {
+    translation: {
+      findMany: async () => [],
+    },
+  };
+}

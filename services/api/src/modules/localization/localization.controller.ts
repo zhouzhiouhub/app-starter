@@ -10,21 +10,25 @@ import {
 } from "@nestjs/common";
 import { apiErrorCodes } from "@app-starter/schema";
 import { AdminApiGuard } from "../../common/admin-api.guard.js";
+import { CurrentUser } from "../../common/current-user.decorator.js";
 import { isMultiLocaleEnabled } from "../../common/feature-flags.js";
 import { requireIdempotencyKey } from "../../common/idempotency-key.js";
 import { CurrentRequestId } from "../../common/request-id.decorator.js";
 import { RequireScopes } from "../../common/require-scopes.decorator.js";
 import { readApiRuntimeDefaults } from "../../common/runtime-defaults.js";
+import type { Actor } from "../identity/identity.types.js";
+import { LocalizationService } from "./localization.service.js";
 import {
   parseCreateLocaleInput,
   readDefaultLocale,
   readFallbackLocale,
-  resolveTranslationLocale,
 } from "./localization.validation.js";
 
 @Controller()
 @UseGuards(AdminApiGuard)
 export class LocalizationController {
+  constructor(private readonly localization: LocalizationService) {}
+
   @Get("markets")
   @RequireScopes("market:read")
   getMarkets(@CurrentRequestId() requestId = "local-dev") {
@@ -61,20 +65,11 @@ export class LocalizationController {
   @Get("translations")
   @RequireScopes("translation:read")
   getTranslations(
+    @CurrentUser() actor: Actor,
     @Query("locale") locale?: string,
     @CurrentRequestId() requestId = "local-dev",
   ) {
-    const localeContext = resolveTranslationLocale(locale);
-
-    return {
-      data: [],
-      meta: {
-        requestId,
-        locale: localeContext.locale,
-        fallbackLocale: localeContext.fallbackLocale,
-        isFallback: localeContext.isFallback,
-      },
-    };
+    return this.localization.listTranslations(actor, locale, requestId);
   }
 
   @Post("locales")

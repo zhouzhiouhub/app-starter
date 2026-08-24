@@ -100,10 +100,9 @@ async function assertLocalizationReadPlaceholders(input, accessToken) {
   );
 
   if (
-    !Array.isArray(translations.body?.data) ||
-    translations.body.data.length !== 0
+    !Array.isArray(translations.body?.data)
   ) {
-    throw new Error("Translations placeholder expected an empty data array.");
+    throw new Error("Translations placeholder expected a data array.");
   }
 
   if (

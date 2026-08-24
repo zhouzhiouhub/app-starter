@@ -544,6 +544,7 @@ POST /api/v1/webhooks/stripe
 - 后台页面、Localization 和商品/订单列表接口需要 `Authorization: Bearer {accessToken}`。
 - `POST /api/v1/pages`、`PUT /api/v1/pages/:id/schema`、发布接口需要 `Idempotency-Key`。
 - `GET /api/v1/audit-logs` 需要 `audit:read`，只返回当前登录 Tenant 的审计日志，支持按 action、actorId、targetType、targetId 过滤。
+- `GET /api/v1/translations` 需要 `translation:read`，按当前登录 Tenant 读取默认 Locale 翻译条目；`MULTI_LOCALE_ENABLED=false` 时请求非默认 Locale 会回退到默认 Locale，并在 meta 标记 `isFallback=true`。
 - `GET /api/v1/public/pages` 返回已发布页面摘要，用于前台 sitemap。
 - `GET /api/v1/public/pages/:slug` 只返回已发布版本；未发布或不存在时返回 `NOT_FOUND`。
 - `GET /api/v1/public/preview/:token` 返回短期预览 Token 对应的草稿 Schema，并显式设置 `Cache-Control: no-store`。

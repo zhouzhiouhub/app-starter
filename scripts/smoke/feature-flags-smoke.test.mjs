@@ -220,6 +220,35 @@ test("feature flag smoke rejects localization placeholder drift", async () => {
   });
 });
 
+test("feature flag smoke accepts stored default translation entries", async () => {
+  await withFetch(createFeatureFlagSmokeFetch({
+    overrides: {
+      "/translations?locale=de-DE": () =>
+        jsonResponse({
+          data: [
+            {
+              key: "page.home.hero.title",
+              locale: "en-US",
+              value: "Build better storefronts",
+            },
+          ],
+          meta: {
+            fallbackLocale: "en-US",
+            isFallback: true,
+            locale: "en-US",
+          },
+        }),
+    },
+  }), async () => {
+    await assertFeatureFlagsDisabled(
+      {
+        apiBaseUrl: "https://api.example.com/api/v1",
+      },
+      "access-token",
+    );
+  });
+});
+
 function createFeatureFlagSmokeFetch(options = {}) {
   return async (url, init = {}) => {
     options.calls?.push({ init, url });
