@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { MEDIA_MAX_UPLOAD_BYTES } from "../src/features/media/constants.ts";
-import { createMediaUploadUrl } from "../src/features/media/api.ts";
+import {
+  createMediaUploadUrl,
+  uploadMediaFile,
+} from "../src/features/media/api.ts";
 import { readMediaUploadTargetResponse } from "../src/features/media/media-upload-target.ts";
 
 const validTarget = {
@@ -113,6 +116,35 @@ test("media upload API validates upload target responses before use", async () =
       );
     },
   );
+});
+
+test("media upload API rejects files larger than the prepared target", async () => {
+  const requests = [];
+
+  await withFetch(async (url) => {
+    requests.push(String(url));
+
+    if (String(url).endsWith("/media/upload-url")) {
+      return jsonResponse({ data: { ...validTarget, maxSize: 1024 } });
+    }
+
+    throw new Error("unexpected upload request");
+  }, async () => {
+    await assert.rejects(
+      () =>
+        uploadMediaFile({
+          altText: "Hero image",
+          file: {
+            name: "asset.webp",
+            size: 2048,
+            type: "image/webp",
+          },
+        }),
+      /prepared upload size limit/,
+    );
+  });
+
+  assert.deepEqual(requests, ["/api/v1/media/upload-url"]);
 });
 
 function jsonResponse(body) {

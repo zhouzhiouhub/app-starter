@@ -166,6 +166,10 @@ async function putMediaFile(
   upload: MediaUploadTarget,
   file: File,
 ): Promise<void> {
+  if (file.size > upload.maxSize) {
+    throw new Error("File exceeds the prepared upload size limit.");
+  }
+
   let response: Response;
 
   try {
