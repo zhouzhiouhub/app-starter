@@ -67,6 +67,10 @@ function readFailedRequestDiagnosis(status) {
     return "web-revalidation-not-configured";
   }
 
+  if (status === 500) {
+    return "web-revalidation-failed";
+  }
+
   if (status) {
     return "request-failed";
   }

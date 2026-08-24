@@ -176,3 +176,44 @@ test("smoke report CLI suggests fixes for storefront redirects", () => {
     true,
   );
 });
+
+test("smoke report CLI suggests fixes for Web revalidation execution failures", () => {
+  const lines = formatSmokeReportSummary({
+    schemaVersion: "smoke-report.v3",
+    summary: {
+      blockerCount: 0,
+      checkCount: 1,
+      failedCheckCount: 1,
+      failedCheckDetails: [
+        {
+          details: {
+            revalidation: {
+              diagnosis: "web-revalidation-failed",
+              status: 500,
+            },
+          },
+          message: "Storefront revalidation failed.",
+          name: "page.publish",
+        },
+      ],
+      failedChecks: ["page.publish"],
+      passedCheckCount: 0,
+      productionReady: true,
+      status: "failed",
+      warningCount: 0,
+    },
+  });
+
+  assert.equal(
+    lines.includes(
+      "    - page.publish: Storefront revalidation failed. (diagnosis: web-revalidation-failed)",
+    ),
+    true,
+  );
+  assert.equal(
+    lines.includes(
+      "    - Check the Web /api/revalidate route logs for failed cache tag or path refresh operations.",
+    ),
+    true,
+  );
+});

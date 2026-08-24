@@ -102,4 +102,17 @@ test("smoke helpers classify revalidation HTTP failures", () => {
     ).diagnosis,
     "web-revalidation-not-configured",
   );
+  assert.equal(
+    createRevalidationSmokeDetails(
+      {
+        paths: ["/en/contact"],
+        reason: "request-failed",
+        status: 500,
+        tags: [],
+        triggered: false,
+      },
+      { requireRevalidation: true },
+    ).diagnosis,
+    "web-revalidation-failed",
+  );
 });

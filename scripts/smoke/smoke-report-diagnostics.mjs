@@ -29,6 +29,10 @@ const revalidationFailureActions = new Map([
     "web-revalidation-not-configured",
     "Configure STOREFRONT_REVALIDATE_SECRET in the Web runtime.",
   ],
+  [
+    "web-revalidation-failed",
+    "Check the Web /api/revalidate route logs for failed cache tag or path refresh operations.",
+  ],
 ]);
 const publicApiFailureActions = new Map([
   [

@@ -7,6 +7,7 @@ import {
   createRevalidateErrorBody,
   createRevalidateResponseInit,
 } from "../../../lib/revalidate-response";
+import { runRevalidationOperations } from "../../../lib/revalidate-executor";
 import {
   hasValidRevalidateSecret,
   readConfiguredRevalidateSecret,
@@ -55,13 +56,21 @@ export async function POST(request: NextRequest) {
   }
 
   const { input, paths, tags } = payload;
+  const revalidation = runRevalidationOperations({
+    paths,
+    revalidatePath,
+    revalidateTag,
+    tags,
+  });
 
-  for (const tag of tags) {
-    revalidateTag(tag);
-  }
-
-  for (const path of paths) {
-    revalidatePath(path);
+  if (!revalidation.ok) {
+    return errorResponse({
+      code: "REVALIDATE_FAILED",
+      details: revalidation.error,
+      message: "Storefront revalidation failed.",
+      requestId,
+      status: 500,
+    });
   }
 
   return NextResponse.json(
