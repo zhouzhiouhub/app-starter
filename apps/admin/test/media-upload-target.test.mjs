@@ -44,6 +44,16 @@ test("media upload target reader rejects unsafe upload targets", () => {
     { ...validTarget, expiresAt: " soon " },
     { ...validTarget, headers: { Authorization: "Bearer token" } },
     { ...validTarget, headers: { "Content-Type": "image/png\nx: y" } },
+    { ...validTarget, headers: { "X-Empty": "" } },
+    { ...validTarget, headers: { ["X-".padEnd(129, "A")]: "value" } },
+    { ...validTarget, headers: { "X-Long": "a".repeat(1025) } },
+    { ...validTarget, headers: readHeadersWithSpecialName() },
+    {
+      ...validTarget,
+      headers: Object.fromEntries(
+        Array.from({ length: 17 }, (_, index) => [`X-Test-${index}`, "value"]),
+      ),
+    },
     { ...validTarget, maxSize: MEDIA_MAX_UPLOAD_BYTES + 1 },
     { ...validTarget, method: "POST" },
     { ...validTarget, r2Key: "tenant-1/key\nx" },
@@ -107,6 +117,10 @@ test("media upload API validates upload target responses before use", async () =
 
 function jsonResponse(body) {
   return new Response(JSON.stringify(body), { status: 200 });
+}
+
+function readHeadersWithSpecialName() {
+  return Object.fromEntries([["__proto__", "polluted"]]);
 }
 
 async function withFetch(fetchImplementation, callback) {

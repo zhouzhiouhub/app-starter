@@ -3,11 +3,17 @@ import type { MediaAssetType, MediaUploadTarget } from "./types";
 
 const maxMediaUploadUrlLength = 4096;
 const maxMediaUploadR2KeyLength = 2048;
+const maxUploadHeaderCount = 16;
+const maxUploadHeaderNameLength = 128;
+const maxUploadHeaderValueLength = 1024;
 const uploadHeaderNamePattern = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
 const forbiddenUploadHeaderNames = new Set([
+  "__proto__",
   "authorization",
+  "constructor",
   "cookie",
   "proxy-authorization",
+  "prototype",
   "set-cookie",
 ]);
 const mediaUploadTargetError = "Upload URL could not be prepared.";
@@ -130,9 +136,15 @@ function readUploadHeaders(value: unknown): Record<string, string> | null {
     return null;
   }
 
+  const entries = Object.entries(value);
+
+  if (entries.length > maxUploadHeaderCount) {
+    return null;
+  }
+
   const headers: Record<string, string> = {};
 
-  for (const [name, headerValue] of Object.entries(value)) {
+  for (const [name, headerValue] of entries) {
     if (!isSafeUploadHeader(name, headerValue)) {
       return null;
     }
@@ -146,6 +158,9 @@ function readUploadHeaders(value: unknown): Record<string, string> | null {
 function isSafeUploadHeader(name: string, value: unknown): value is string {
   return (
     typeof value === "string" &&
+    name.length <= maxUploadHeaderNameLength &&
+    value.length > 0 &&
+    value.length <= maxUploadHeaderValueLength &&
     uploadHeaderNamePattern.test(name) &&
     !forbiddenUploadHeaderNames.has(name.toLowerCase()) &&
     !hasControlCharacter(value)
