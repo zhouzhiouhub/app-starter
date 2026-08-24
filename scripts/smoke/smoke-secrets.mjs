@@ -24,6 +24,8 @@ const secretKeyPattern = [
   "token",
   "x-amz-[a-z0-9-]+",
 ].join("|");
+const pemBlockPattern =
+  /-----BEGIN [A-Z0-9 ]+-----[\s\S]*?-----END [A-Z0-9 ]+-----/g;
 const sensitiveKeyNames = new Set([
   "accesstoken",
   "apikey",
@@ -60,6 +62,7 @@ const sensitiveKeyNames = new Set([
 
 export function redactSmokeSecrets(value) {
   return String(value)
+    .replace(pemBlockPattern, "[redacted-pem]")
     .replace(
       /\b([a-z][a-z0-9+.-]*:\/\/)([^/?#\s)"'<@]+)(?::([^/?#\s)"'<@]*))?@/gi,
       "$1[redacted]@",

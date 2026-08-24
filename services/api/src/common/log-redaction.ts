@@ -25,6 +25,9 @@ const logSecretKeyPattern = [
   "x-amz-[a-z0-9-]+",
 ].join("|");
 
+const pemBlockPattern =
+  /-----BEGIN [A-Z0-9 ]+-----[\s\S]*?-----END [A-Z0-9 ]+-----/g;
+
 const sensitiveLogKeySuffixes = [
   "accesskeyid",
   "accesstoken",
@@ -65,10 +68,12 @@ const sensitiveLogKeys = new Set([
   ...sensitiveLogKeySuffixes,
 ]);
 
+const redactedPemValue = "[redacted-pem]";
 const redactedValue = "[redacted]";
 
 export function redactLogSecrets(value: unknown): string {
   return String(value)
+    .replace(pemBlockPattern, redactedPemValue)
     .replace(
       /\b([a-z][a-z0-9+.-]*:\/\/)([^/?#\s)"'<@]+)(?::([^/?#\s)"'<@]*))?@/gi,
       "$1[redacted]@",

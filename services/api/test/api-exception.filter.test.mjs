@@ -50,6 +50,7 @@ test("API exception filter redacts secrets from internal error logs", () => {
       "Upstream failed Authorization: Bearer header.payload.signature",
       "databaseUrl=postgresql://db-user:db-secret@db.example.com/app",
       '"accessToken":"json-token-value"',
+      "rawPem=-----BEGIN PRIVATE KEY-----\nprivate-key-body\n-----END PRIVATE KEY-----",
       "https://uploads.example.com/object?X-Amz-Signature=signed-value#access_token=fragment-token",
     ].join(" "),
   );
@@ -63,11 +64,13 @@ test("API exception filter redacts secrets from internal error logs", () => {
   assert.equal(logged.includes("db-user"), false);
   assert.equal(logged.includes("db-secret"), false);
   assert.equal(logged.includes("json-token-value"), false);
+  assert.equal(logged.includes("private-key-body"), false);
   assert.equal(logged.includes("signed-value"), false);
   assert.equal(logged.includes("fragment-token"), false);
   assert.match(logged, /Authorization: Bearer \[redacted\]/);
   assert.match(logged, /databaseUrl=\[redacted\]/);
   assert.match(logged, /"accessToken":"\[redacted\]"/);
+  assert.match(logged, /rawPem=\[redacted-pem\]/);
   assert.match(logged, /X-Amz-Signature=\[redacted\]/);
   assert.match(logged, /#access_token=\[redacted\]/);
 });

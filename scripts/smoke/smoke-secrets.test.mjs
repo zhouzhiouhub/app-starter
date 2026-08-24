@@ -19,6 +19,7 @@ test("smoke secret redaction removes tokens from common failure shapes", () => {
       "databaseUrl=postgresql://db-user:db-secret@db.example.com:5432/app",
       "jwt=header.payload.signature",
       "privateKeyPem=private-key-value",
+      "rawPem=-----BEGIN PRIVATE KEY-----\nprivate-key-body\n-----END PRIVATE KEY-----",
       "refreshToken=refresh-token-value",
       "sentryDsn=https://public:dsn-secret@sentry.example.com/1",
       "postgresql://db-user:db-secret@db.example.com:5432/app",
@@ -40,6 +41,7 @@ test("smoke secret redaction removes tokens from common failure shapes", () => {
   assert.equal(message.includes("oauth-client-secret"), false);
   assert.equal(message.includes("oauth-client-secret-query"), false);
   assert.equal(message.includes("private-key-value"), false);
+  assert.equal(message.includes("private-key-body"), false);
   assert.equal(message.includes("shared"), false);
   assert.equal(message.includes("dsn-secret"), false);
   assert.equal(message.includes("refresh-token-value"), false);
@@ -67,6 +69,7 @@ test("smoke secret redaction removes tokens from common failure shapes", () => {
   assert.match(message, /databaseUrl=\[redacted\]/);
   assert.match(message, /jwt=\[redacted\]/);
   assert.match(message, /privateKeyPem=\[redacted\]/);
+  assert.match(message, /rawPem=\[redacted-pem\]/);
   assert.match(message, /sentryDsn=\[redacted\]/);
   assert.match(message, /"password":"\[redacted\]"/);
   assert.match(message, /Authorization Bearer \[redacted\]/);
