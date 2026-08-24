@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { publicTranslationMessageMaxLength } from "@app-starter/schema";
 import { getPublicTranslationMessages } from "../src/lib/public-translations.ts";
 
 test("public translation lookup forwards storefront hosts for cache scoping", async () => {
@@ -16,6 +17,10 @@ test("public translation lookup forwards storefront hosts for cache scoping", as
             ["__proto__", "polluted"],
             [" constructor ", "trimmed unsafe"],
             ["page.home\u0000title", "control unsafe"],
+            [
+              "page.home.hero.body",
+              "a".repeat(publicTranslationMessageMaxLength + 1),
+            ],
           ]),
         },
       });

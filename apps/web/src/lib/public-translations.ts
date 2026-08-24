@@ -1,6 +1,8 @@
 import {
   getPublicTranslationCacheTags,
   publishedPageRevalidateSeconds,
+  publicTranslationKeyMaxLength,
+  publicTranslationMessageMaxLength,
 } from "@app-starter/schema";
 import {
   readWebRuntimeDefaults,
@@ -13,7 +15,6 @@ import {
 } from "./storefront-host-header.ts";
 
 const apiBaseUrl = getApiBaseUrl();
-const maxPublicTranslationKeyLength = 256;
 const forbiddenPublicTranslationMessageKeys = new Set([
   "__proto__",
   "constructor",
@@ -88,12 +89,23 @@ function readPublicTranslationMessages(
   const messages: Record<string, string> = {};
 
   for (const [key, message] of Object.entries(value.data.messages)) {
-    if (isSafePublicTranslationKey(key) && typeof message === "string") {
+    if (isSafePublicTranslationEntry(key, message)) {
       messages[key] = message;
     }
   }
 
   return messages;
+}
+
+function isSafePublicTranslationEntry(
+  key: string,
+  message: unknown,
+): message is string {
+  return (
+    isSafePublicTranslationKey(key) &&
+    typeof message === "string" &&
+    message.length <= publicTranslationMessageMaxLength
+  );
 }
 
 function isExpectedTranslationLocale(
@@ -127,7 +139,7 @@ function isSafePublicTranslationKey(key: string) {
   return (
     key.trim() === key &&
     key.length > 0 &&
-    key.length <= maxPublicTranslationKeyLength &&
+    key.length <= publicTranslationKeyMaxLength &&
     !forbiddenPublicTranslationMessageKeys.has(key.toLowerCase()) &&
     !hasControlCharacter(key)
   );

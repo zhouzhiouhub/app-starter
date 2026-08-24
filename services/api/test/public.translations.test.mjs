@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { publicTranslationMessageMaxLength } from "../../../packages/schema/dist/index.js";
 import { PublicController } from "../dist/modules/public/public.controller.js";
 import { PublicTranslationsService } from "../dist/modules/public/public-translations.service.js";
 import { withEnv } from "./env-helper.mjs";
@@ -88,7 +89,7 @@ test("public translations do not leak default tenant for unmatched hosts", async
   assert.equal(response.meta.requestId, "request-public-unmatched-translations");
 });
 
-test("public translations omit unsafe message keys", async () => {
+test("public translations omit unsafe message entries", async () => {
   const service = new PublicTranslationsService(
     {
       getPublicSiteContext: async () => ({
@@ -114,6 +115,10 @@ test("public translations omit unsafe message keys", async () => {
           {
             key: "page.home\u0000title",
             value: "control unsafe",
+          },
+          {
+            key: "page.home.hero.body",
+            value: "a".repeat(publicTranslationMessageMaxLength + 1),
           },
         ],
       },

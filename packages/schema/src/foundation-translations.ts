@@ -1,0 +1,2 @@
+export const publicTranslationKeyMaxLength = 256;
+export const publicTranslationMessageMaxLength = 20_000;

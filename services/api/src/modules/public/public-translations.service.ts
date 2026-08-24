@@ -1,9 +1,12 @@
 import { Injectable } from "@nestjs/common";
+import {
+  publicTranslationKeyMaxLength,
+  publicTranslationMessageMaxLength,
+} from "@app-starter/schema";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { PagesService } from "../pages/pages.service.js";
 import { resolvePublicLocale } from "./public.runtime-config.js";
 
-const maxPublicTranslationKeyLength = 256;
 const forbiddenPublicTranslationMessageKeys = new Set([
   "__proto__",
   "constructor",
@@ -85,7 +88,7 @@ function createPublicTranslationMessages(
   const messages: Record<string, string> = {};
 
   for (const translation of translations) {
-    if (isSafePublicTranslationKey(translation.key)) {
+    if (isSafePublicTranslationEntry(translation)) {
       messages[translation.key] = translation.value;
     }
   }
@@ -93,11 +96,21 @@ function createPublicTranslationMessages(
   return messages;
 }
 
+function isSafePublicTranslationEntry(translation: {
+  key: string;
+  value: string;
+}) {
+  return (
+    isSafePublicTranslationKey(translation.key) &&
+    translation.value.length <= publicTranslationMessageMaxLength
+  );
+}
+
 function isSafePublicTranslationKey(key: string) {
   return (
     key.trim() === key &&
     key.length > 0 &&
-    key.length <= maxPublicTranslationKeyLength &&
+    key.length <= publicTranslationKeyMaxLength &&
     !forbiddenPublicTranslationMessageKeys.has(key.toLowerCase()) &&
     !hasControlCharacter(key)
   );
