@@ -3,6 +3,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { Module } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
+import {
+  apiRequestBodyLimit,
+  configureApiApplication,
+} from "../dist/common/api-application.js";
 import { IdentityController } from "../dist/modules/identity/identity.controller.js";
 import { buildLoginGetHint } from "../dist/modules/identity/identity.login-hint.js";
 import { IdentityService } from "../dist/modules/identity/identity.service.js";
@@ -59,6 +63,58 @@ test("auth login route accepts GET for the hint and POST for login", async () =>
     const postBody = await postResponse.json();
     assert.equal(postBody.data.loggedIn, true);
     assert.equal(postBody.meta.requestId, "request-login-route");
+  } finally {
+    await app.close();
+  }
+});
+
+test("API bootstrap rejects oversized JSON bodies before auth handlers", async () => {
+  let loginCalls = 0;
+  const app = await NestFactory.create(LoginRouteTestModule, {
+    bodyParser: false,
+    logger: false,
+  });
+
+  configureApiApplication(app);
+  await app.listen(0, "127.0.0.1");
+
+  const address = app.getHttpServer().address();
+  const port =
+    typeof address === "object" && address !== null ? address.port : 0;
+
+  app.get(IdentityService).login = () => {
+    loginCalls += 1;
+    return { data: { loggedIn: true } };
+  };
+
+  try {
+    const response = await fetch(
+      `http://127.0.0.1:${port}/api/v1/auth/login`,
+      {
+        body: JSON.stringify({
+          email: "admin@example.com",
+          password: "x".repeat(110 * 1024),
+        }),
+        headers: {
+          "content-type": "application/json",
+          "x-request-id": "request-body-limit",
+        },
+        method: "POST",
+      },
+    );
+    const body = await response.json();
+
+    assert.equal(apiRequestBodyLimit, "100kb");
+    assert.equal(response.status, 413);
+    assert.deepEqual(body, {
+      error: {
+        code: "VALIDATION_ERROR",
+        message: "Request body is too large.",
+        requestId: "request-body-limit",
+      },
+    });
+    assert.equal(loginCalls, 0);
+    assert.equal(response.headers.get("x-request-id"), "request-body-limit");
   } finally {
     await app.close();
   }

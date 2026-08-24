@@ -30,6 +30,8 @@ interface NormalizedError {
   details?: unknown;
 }
 
+const httpPayloadTooLargeStatus = 413;
+
 @Catch()
 export class ApiExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(ApiExceptionFilter.name);
@@ -39,12 +41,11 @@ export class ApiExceptionFilter implements ExceptionFilter {
     const http = host.switchToHttp();
     const response = http.getResponse<HttpResponseLike>();
     const request = http.getRequest<HttpRequestLike>();
-    const statusCode =
-      mapped instanceof HttpException
-        ? mapped.getStatus()
-        : HttpStatus.INTERNAL_SERVER_ERROR;
+    const statusCode = readStatusCode(mapped);
     const body =
-      mapped instanceof HttpException ? mapped.getResponse() : undefined;
+      mapped instanceof HttpException
+        ? mapped.getResponse()
+        : readNonNestHttpErrorBody(mapped, statusCode);
     const normalized = normalizeError(body, statusCode);
 
     if (statusCode >= HttpStatus.INTERNAL_SERVER_ERROR) {
@@ -58,6 +59,60 @@ export class ApiExceptionFilter implements ExceptionFilter {
       },
     });
   }
+}
+
+function readStatusCode(error: unknown): number {
+  if (error instanceof HttpException) {
+    return error.getStatus();
+  }
+
+  if (error && typeof error === "object") {
+    const record = error as { status?: unknown; statusCode?: unknown };
+    const status = readHttpStatus(record.statusCode) ?? readHttpStatus(record.status);
+
+    if (status !== null) {
+      return status;
+    }
+  }
+
+  return HttpStatus.INTERNAL_SERVER_ERROR;
+}
+
+function readHttpStatus(value: unknown): number | null {
+  return Number.isInteger(value) &&
+    Number(value) >= HttpStatus.BAD_REQUEST &&
+    Number(value) <= 599
+    ? Number(value)
+    : null;
+}
+
+function readNonNestHttpErrorBody(
+  error: unknown,
+  statusCode: number,
+): unknown {
+  if (statusCode === httpPayloadTooLargeStatus) {
+    return {
+      code: apiErrorCodes.VALIDATION_ERROR,
+      message: "Request body is too large.",
+    };
+  }
+
+  if (isJsonParseFailure(error)) {
+    return {
+      code: apiErrorCodes.VALIDATION_ERROR,
+      message: "Request body must be valid JSON.",
+    };
+  }
+
+  return undefined;
+}
+
+function isJsonParseFailure(error: unknown): boolean {
+  return Boolean(
+    error &&
+      typeof error === "object" &&
+      (error as { type?: unknown }).type === "entity.parse.failed",
+  );
 }
 
 function readLogError(error: unknown): unknown {

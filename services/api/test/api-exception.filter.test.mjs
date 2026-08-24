@@ -99,6 +99,47 @@ test("API exception filter keeps client validation details", () => {
   });
 });
 
+test("API exception filter preserves payload-too-large parser errors", () => {
+  const filter = new ApiExceptionFilter();
+  const { host, response } = createHost({
+    "x-request-id": "request-body-too-large",
+  });
+  const error = new Error("request entity too large");
+  error.statusCode = 413;
+
+  filter.catch(error, host);
+
+  assert.equal(response.statusCode, 413);
+  assert.deepEqual(response.body, {
+    error: {
+      code: apiErrorCodes.VALIDATION_ERROR,
+      message: "Request body is too large.",
+      requestId: "request-body-too-large",
+    },
+  });
+});
+
+test("API exception filter normalizes JSON parser failures", () => {
+  const filter = new ApiExceptionFilter();
+  const { host, response } = createHost({
+    "x-request-id": "request-json-parse",
+  });
+  const error = new SyntaxError("Unexpected token secret-token");
+  error.status = 400;
+  error.type = "entity.parse.failed";
+
+  filter.catch(error, host);
+
+  assert.equal(response.statusCode, 400);
+  assert.deepEqual(response.body, {
+    error: {
+      code: apiErrorCodes.VALIDATION_ERROR,
+      message: "Request body must be valid JSON.",
+      requestId: "request-json-parse",
+    },
+  });
+});
+
 test("API exception filter redacts secrets from client error responses", () => {
   const filter = new ApiExceptionFilter();
   const { host, response } = createHost();
