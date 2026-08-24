@@ -32,6 +32,10 @@ export function redactApiMessageSecrets(value: string): string {
   return value
     .replace(pemBlockPattern, redactedPemValue)
     .replace(
+      /(\/api\/v1\/public\/preview\/)[a-zA-Z0-9._-]+/g,
+      "$1[redacted]",
+    )
+    .replace(
       /\b([a-z][a-z0-9+.-]*:\/\/)([^/?#\s)"'<@]+)(?::([^/?#\s)"'<@]*))?@/gi,
       "$1[redacted]@",
     )

@@ -1,6 +1,7 @@
 import { ExportOutlined } from "@ant-design/icons";
 import { Button, Space, Table, Tag, Tooltip, Typography } from "antd";
 import { useNavigate } from "react-router-dom";
+import { formatAuditMetadata } from "../audit-metadata-format";
 import type { AuditLog } from "../types";
 
 export function AuditLogTable(props: {
@@ -64,7 +65,7 @@ export function AuditLogTable(props: {
                 whiteSpace: "pre-wrap",
               }}
             >
-              {formatMetadata(metadata)}
+              {formatAuditMetadata(metadata)}
             </Typography.Text>
           ),
           title: "Metadata",
@@ -132,12 +133,4 @@ function formatTarget(log: AuditLog): string {
   }
 
   return `${log.targetType}:${log.targetId}`;
-}
-
-function formatMetadata(metadata: unknown): string {
-  try {
-    return JSON.stringify(metadata ?? {}, null, 2);
-  } catch {
-    return "{}";
-  }
 }
