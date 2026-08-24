@@ -162,7 +162,11 @@ test("public API smoke forwards the configured storefront host", async () => {
 
   await withFetch(
     async (url, init = {}) => {
-      calls.push({ headers: init.headers ?? {}, url });
+      calls.push({
+        headers: init.headers ?? {},
+        redirect: init.redirect,
+        url,
+      });
 
       return new Response(
         JSON.stringify({
@@ -206,6 +210,7 @@ test("public API smoke forwards the configured storefront host", async () => {
       headers: {
         "x-storefront-host": "store.brand-platform.com",
       },
+      redirect: "manual",
       url: "https://api.example.com/public/pages/smoke-page?locale=en-US&market=us",
     },
   ]);

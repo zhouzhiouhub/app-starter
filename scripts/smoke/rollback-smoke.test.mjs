@@ -108,7 +108,11 @@ test("rollback smoke flow returns revalidation diagnostics for reports", async (
   const calls = [];
 
   await withFetch(async (url, init = {}) => {
-    calls.push({ method: init.method ?? "GET", url });
+    calls.push({
+      method: init.method ?? "GET",
+      redirect: init.redirect,
+      url,
+    });
 
     if (url === "https://api.example.com/api/v1/pages/page-1") {
       return jsonResponse({
@@ -193,6 +197,10 @@ test("rollback smoke flow returns revalidation diagnostics for reports", async (
   assert.deepEqual(
     calls.map((call) => call.method),
     ["GET", "POST", "POST", "GET"],
+  );
+  assert.deepEqual(
+    calls.map((call) => call.redirect),
+    ["manual", "manual", "manual", "manual"],
   );
 });
 

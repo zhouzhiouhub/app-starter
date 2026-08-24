@@ -1,11 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  assertAuditLogs,
   formatPageAuditLogDiagnostic,
   hasUnsafeAuditMetadata,
   isPageAuditLog,
   readPageAuditLogDiagnostic,
 } from "./audit-smoke.mjs";
+import { withFetch } from "./smoke-test-runtime.mjs";
 
 test("smoke helpers validate safe page audit logs", () => {
   assert.equal(
@@ -188,4 +190,41 @@ test("smoke helpers diagnose malformed audit log payloads", () => {
       validMatches: 0,
     },
   );
+});
+
+test("audit smoke requests reject redirects without leaking tokens", async () => {
+  const calls = [];
+
+  await withFetch(async (url, init = {}) => {
+    calls.push({ init, url });
+
+    return new Response("", {
+      headers: {
+        Location:
+          "https://api.example.com/login?token=header.payload.signature",
+      },
+      status: 302,
+      statusText: "Found",
+    });
+  }, async () => {
+    await assert.rejects(
+      () =>
+        assertAuditLogs(
+          {
+            apiBaseUrl: "https://api.example.com/api/v1",
+            slug: "smoke-page",
+          },
+          "access-token",
+          "page-1",
+          ["page.published"],
+        ),
+      (error) => {
+        assert.equal(calls[0].init.redirect, "manual");
+        assert.match(error.message, /audit log request failed\. 302: Found/);
+        assert.match(error.message, /redirect:/);
+        assert.equal(error.message.includes("header.payload.signature"), false);
+        return true;
+      },
+    );
+  });
 });

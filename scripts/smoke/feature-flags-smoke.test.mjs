@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  assertFeatureFlagsDisabled,
   formatDisabledEndpointDiagnostic,
   readApiErrorCode,
   readDisabledEndpointDiagnostic,
 } from "./feature-flags-smoke.mjs";
+import { withFetch } from "./smoke-test-runtime.mjs";
 
 test("feature flag smoke helpers read API error codes", () => {
   assert.equal(
@@ -54,4 +56,38 @@ test("feature flag smoke helpers summarize disabled endpoint responses", () => {
     ),
     "500 Internal Server Error NO_CODE: Internal Server Error",
   );
+});
+
+test("feature flag smoke rejects redirected public config checks", async () => {
+  const calls = [];
+
+  await withFetch(async (url, init = {}) => {
+    calls.push({ init, url });
+
+    return new Response("", {
+      headers: {
+        Location:
+          "https://api.example.com/login?token=header.payload.signature",
+      },
+      status: 302,
+      statusText: "Found",
+    });
+  }, async () => {
+    await assert.rejects(
+      () =>
+        assertFeatureFlagsDisabled(
+          {
+            apiBaseUrl: "https://api.example.com/api/v1",
+          },
+          "access-token",
+        ),
+      (error) => {
+        assert.equal(calls[0].init.redirect, "manual");
+        assert.match(error.message, /Public config failed\. 302: Found/);
+        assert.match(error.message, /redirect:/);
+        assert.equal(error.message.includes("header.payload.signature"), false);
+        return true;
+      },
+    );
+  });
 });

@@ -1,3 +1,4 @@
+import { fetchJson, readHttpError } from "./http-json-smoke.mjs";
 import { redactSmokeSecrets } from "./smoke-secrets.mjs";
 
 const defaultAuditActions = ["preview_token.created", "page.published"];
@@ -155,40 +156,4 @@ function readAuditMetadata(log) {
   }
 
   return metadata;
-}
-
-async function fetchJson(url, init) {
-  const response = await fetch(url, init);
-  const text = await response.text();
-  const body = text ? parseJson(text, url) : null;
-
-  return {
-    body,
-    ok: response.ok,
-    status: response.status,
-    statusText: response.statusText,
-    url,
-  };
-}
-
-function parseJson(text, url) {
-  try {
-    return JSON.parse(text);
-  } catch {
-    throw new Error(
-      redactSmokeSecrets(
-        `${url} returned non-JSON content: ${text.slice(0, 160)}`,
-      ),
-    );
-  }
-}
-
-function readHttpError(response, fallback) {
-  const message =
-    response.body?.error?.message ??
-    response.body?.message ??
-    response.statusText ??
-    fallback;
-
-  return redactSmokeSecrets(`${fallback} ${response.status}: ${message}`);
 }
