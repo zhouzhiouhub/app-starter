@@ -14,6 +14,7 @@ import {
   addStorefrontHostCacheParam,
   createStorefrontHostHeaders,
 } from "./storefront-host-header.ts";
+import { readPublicApiJson } from "./public-api-response.ts";
 
 const apiBaseUrl = getApiBaseUrl();
 
@@ -62,9 +63,9 @@ export async function listPublishedPages(input?: {
       return [];
     }
 
-    const result = (await response.json()) as { data?: unknown };
+    const result = await readPublicApiJson(response);
 
-    if (!Array.isArray(result.data)) {
+    if (!isRecord(result) || !Array.isArray(result.data)) {
       return [];
     }
 
@@ -113,4 +114,8 @@ function readIsoDateString(value: unknown): string | null {
   const date = new Date(value);
 
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value));
 }

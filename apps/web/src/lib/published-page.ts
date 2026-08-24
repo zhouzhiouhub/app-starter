@@ -16,6 +16,7 @@ import {
   createStorefrontHostHeaders,
 } from "./storefront-host-header.ts";
 import { isPreviewTokenCandidate } from "./preview-token-param.ts";
+import { readPublicApiJson } from "./public-api-response.ts";
 
 const apiBaseUrl = getApiBaseUrl();
 
@@ -104,17 +105,18 @@ export async function getPreviewPage(
       return null;
     }
 
-    const result = (await response.json()) as { data?: unknown };
+    const result = await readPublicApiJson(response);
     return readPreviewSchema(result);
   } catch {
     return null;
   }
 }
 
-function readPreviewSchema(result: {
-  data?: unknown;
-  meta?: unknown;
-}): PageSchema | null {
+function readPreviewSchema(result: unknown): PageSchema | null {
+  if (!isRecord(result)) {
+    return null;
+  }
+
   const parsed = pageSchema.safeParse(result.data);
 
   if (!parsed.success || !isMatchingPreviewMeta(result.meta, parsed.data)) {
@@ -170,7 +172,7 @@ async function fetchPublishedSchema(input: {
       return null;
     }
 
-    const result = (await response.json()) as { data?: unknown };
+    const result = await readPublicApiJson(response);
     return readMatchingPublishedSchema(result, input);
   } catch {
     return null;
@@ -178,7 +180,7 @@ async function fetchPublishedSchema(input: {
 }
 
 function readMatchingPublishedSchema(
-  result: { data?: unknown; meta?: unknown },
+  result: unknown,
   input: {
     defaultLocale: string;
     locale: string;
@@ -186,6 +188,10 @@ function readMatchingPublishedSchema(
     slug: string;
   },
 ): PageSchema | null {
+  if (!isRecord(result)) {
+    return null;
+  }
+
   const parsed = pageSchema.safeParse(result.data);
 
   if (!parsed.success) {
@@ -215,10 +221,13 @@ function isDeclaredLocaleFallback(
   meta: unknown,
   defaultLocale: string,
 ): boolean {
-  if (!meta || typeof meta !== "object" || Array.isArray(meta)) {
+  if (!isRecord(meta)) {
     return false;
   }
 
-  const record = meta as Record<string, unknown>;
-  return record.isFallback === true && record.locale === defaultLocale;
+  return meta.isFallback === true && meta.locale === defaultLocale;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value));
 }

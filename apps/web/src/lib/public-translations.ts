@@ -13,6 +13,7 @@ import {
   addStorefrontHostCacheParam,
   createStorefrontHostHeaders,
 } from "./storefront-host-header.ts";
+import { readPublicApiJson } from "./public-api-response.ts";
 
 const apiBaseUrl = getApiBaseUrl();
 const forbiddenPublicTranslationMessageKeys = new Set([
@@ -51,7 +52,7 @@ export async function getPublicTranslationMessages(input: {
       return {};
     }
 
-    return readPublicTranslationMessages(await response.json(), {
+    return readPublicTranslationMessages(await readPublicApiJson(response), {
       fallbackLocale: defaults.fallbackLocale,
       locale,
       defaultLocale: defaults.defaultLocale,
