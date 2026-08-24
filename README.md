@@ -29,13 +29,19 @@
   - `extensions/custom-apps`
   - `themes/custom`
 - 本地 PostgreSQL 已成功创建 `app_starter` 数据库。
-- Prisma 已完成 `db push`，当前数据库表：
+- Prisma 已完成本地 `db push`，并已提交初始 Prisma Migration；当前数据库表：
   - `Tenant`
   - `Site`
   - `Page`
   - `PageVersion`
   - `Translation`
   - `MediaAsset`
+  - `User`
+  - `Role`
+  - `UserRole`
+  - `RefreshToken`
+  - `IdempotencyRecord`
+  - `AuditLog`
 - NestJS 已接入 Prisma Service，页面读写走 PostgreSQL，不再使用本地 JSON 文件。
 - 种子数据会创建默认 Tenant / Site，以及已发布的 `home` 示例页。
 - 页面管理 API：列表、创建、保存草稿、按 ID 发布。
@@ -433,24 +439,32 @@ pnpm --filter @app-starter/api run prisma:seed
 & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -h localhost -p 5432 -d app_starter -c "\dt"
 ```
 
-当前应看到 6 张表：
+当前应看到 12 张业务表：
 
 ```text
-MediaAsset
+Tenant
+Site
 Page
 PageVersion
-Site
-Tenant
 Translation
+MediaAsset
+User
+Role
+UserRole
+RefreshToken
+IdempotencyRecord
+AuditLog
 ```
 
 不要因为 Prisma CLI 提示有大版本更新就直接升级到 Prisma 7。当前项目锁定在 Prisma 5.x，后续升级需要单独评估。
 
-生产环境不要直接使用 `prisma db push` 更新数据库结构。上线后应引入 Prisma Migration，并使用：
+生产环境不要直接使用 `prisma db push` 更新数据库结构。仓库已提交初始 Prisma Migration，生产部署应使用：
 
 ```powershell
 pnpm --filter @app-starter/api exec prisma migrate deploy --schema prisma/schema.prisma
 ```
+
+生产 smoke readiness 会检查 `services/api/prisma/migrations`、`migration_lock.toml` 和至少一份 `migration.sql`，避免 `DATABASE_URL` 已经指向云端但数据库结构没有可审计迁移工件。
 
 ## 10. 启动开发环境
 
