@@ -134,3 +134,45 @@ test("smoke report CLI suggests fixes for storefront SEO diagnostics", () => {
     true,
   );
 });
+
+test("smoke report CLI suggests fixes for storefront redirects", () => {
+  const lines = formatSmokeReportSummary({
+    schemaVersion: "smoke-report.v3",
+    summary: {
+      blockerCount: 0,
+      checkCount: 1,
+      failedCheckCount: 1,
+      failedCheckDetails: [
+        {
+          details: {
+            storefront: {
+              diagnosis: "redirect-response",
+              redirectLocation: "https://web.example.com/login?token=[redacted]",
+              status: 302,
+            },
+          },
+          message: "Storefront page redirected to token=payload.signature.",
+          name: "storefront.page",
+        },
+      ],
+      failedChecks: ["storefront.page"],
+      passedCheckCount: 0,
+      productionReady: true,
+      status: "failed",
+      warningCount: 0,
+    },
+  });
+
+  assert.equal(
+    lines.includes(
+      "    - storefront.page: Storefront page redirected to token=[redacted] (diagnosis: redirect-response)",
+    ),
+    true,
+  );
+  assert.equal(
+    lines.includes(
+      "    - Check WEB_URL, storefront host routing, and hosting rewrites so published page smoke does not receive a redirect.",
+    ),
+    true,
+  );
+});

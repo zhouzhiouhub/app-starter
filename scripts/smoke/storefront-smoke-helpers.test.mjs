@@ -121,10 +121,12 @@ test("storefront smoke request helper forwards storefront hosts", () => {
         "x-storefront-host": "store.brand-platform.com",
       },
       method: "GET",
+      redirect: "manual",
     },
   );
   assert.deepEqual(createStorefrontSmokeRequestInit({}, { method: "GET" }), {
     method: "GET",
+    redirect: "manual",
   });
   assert.deepEqual(
     createStorefrontSmokeRequestInit(
@@ -133,6 +135,7 @@ test("storefront smoke request helper forwards storefront hosts", () => {
     ),
     {
       method: "GET",
+      redirect: "manual",
     },
   );
 });

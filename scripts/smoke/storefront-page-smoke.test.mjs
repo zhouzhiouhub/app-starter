@@ -6,6 +6,7 @@ import {
   formatStorefrontPageAttempt,
   readStorefrontPageAttempt,
 } from "./storefront-smoke.mjs";
+import { createStorefrontSmokeRequestInit } from "./storefront-smoke-http.mjs";
 import { withFetch } from "./smoke-test-runtime.mjs";
 
 test("smoke helpers summarize storefront page attempts", () => {
@@ -33,6 +34,32 @@ test("smoke helpers summarize storefront page attempts", () => {
     'status 503 Service Unavailable, diagnosis: http-error, title present: false, body: "<html> <body>Storefront render failed</body> </html>"',
   );
 
+  const redirected = readStorefrontPageAttempt(
+    {
+      ok: false,
+      redirectLocation: "https://web.example.com/login?token=[redacted]",
+      status: 302,
+      statusText: "Found",
+      text: "",
+    },
+    "Published title",
+  );
+
+  assert.deepEqual(redirected, {
+    bodySnippet: null,
+    diagnosis: "redirect-response",
+    documentTitle: null,
+    ok: false,
+    redirectLocation: "https://web.example.com/login?token=[redacted]",
+    status: 302,
+    statusText: "Found",
+    titlePresent: false,
+  });
+  assert.equal(
+    formatStorefrontPageAttempt(redirected),
+    "status 302 Found, diagnosis: redirect-response, title present: false, redirect: https://web.example.com/login?token=[redacted]",
+  );
+
   const stale = readStorefrontPageAttempt(
     {
       ok: true,
@@ -56,6 +83,32 @@ test("smoke helpers summarize storefront page attempts", () => {
   assert.equal(
     formatStorefrontPageAttempt(stale),
     'status 200 OK, diagnosis: stale-or-fallback-content, title present: false, document title: "Previous campaign", body: "<html><head><title>Previous campaign</title></head><body>Old page content</body></html>"',
+  );
+});
+
+test("storefront smoke requests disable automatic redirects", () => {
+  assert.deepEqual(createStorefrontSmokeRequestInit({}), {
+    redirect: "manual",
+  });
+
+  assert.deepEqual(
+    createStorefrontSmokeRequestInit(
+      {
+        storefrontHost: "store.brand-platform.com",
+      },
+      {
+        headers: { Accept: "text/html" },
+        method: "GET",
+      },
+    ),
+    {
+      headers: {
+        Accept: "text/html",
+        "x-storefront-host": "store.brand-platform.com",
+      },
+      method: "GET",
+      redirect: "manual",
+    },
   );
 });
 
@@ -96,6 +149,54 @@ test("storefront page smoke failure keeps structured diagnostics", async () => {
             ok: true,
             status: 200,
             statusText: "OK",
+            titlePresent: false,
+            url: "https://web.example.com/en/smoke-page",
+          });
+
+          return true;
+        },
+      );
+    },
+  );
+});
+
+test("storefront page smoke rejects redirected storefront responses", async () => {
+  await withFetch(
+    async () =>
+      new Response("", {
+        headers: {
+          location: "https://web.example.com/login?token=secret-token",
+        },
+        status: 302,
+        statusText: "Found",
+      }),
+    async () => {
+      await assert.rejects(
+        () =>
+          assertStorefrontPage(
+            {
+              locale: "en-US",
+              retryAttempts: 1,
+              retryDelayMs: 1,
+              slug: "smoke-page",
+              webUrl: "https://web.example.com",
+            },
+            "Published title",
+          ),
+        (error) => {
+          assert.equal(
+            error.message.includes("diagnosis: redirect-response"),
+            true,
+          );
+          assert.deepEqual(error.smokeDetails.storefront, {
+            bodySnippet: null,
+            diagnosis: "redirect-response",
+            documentTitle: null,
+            expectedTitle: "Published title",
+            ok: false,
+            redirectLocation: "https://web.example.com/login?token=[redacted]",
+            status: 302,
+            statusText: "Found",
             titlePresent: false,
             url: "https://web.example.com/en/smoke-page",
           });

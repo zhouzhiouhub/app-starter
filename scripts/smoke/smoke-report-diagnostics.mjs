@@ -66,6 +66,10 @@ const storefrontFailureActions = new Map([
     "Verify WEB_URL is reachable from the smoke runner and accepts the storefront host header.",
   ],
   [
+    "redirect-response",
+    "Check WEB_URL, storefront host routing, and hosting rewrites so published page smoke does not receive a redirect.",
+  ],
+  [
     "stale-or-fallback-content",
     "Check publish revalidation, ISR cache freshness, and storefront host routing.",
   ],

@@ -9,8 +9,10 @@ export async function fetchStorefrontText(url, input, init) {
     createStorefrontSmokeRequestInit(input, init),
   );
   const text = await response.text();
+  const redirectLocation = readRedirectLocation(response);
 
   return {
+    ...(redirectLocation ? { redirectLocation } : {}),
     ok: response.ok,
     status: response.status,
     statusText: response.statusText,
@@ -21,13 +23,17 @@ export async function fetchStorefrontText(url, input, init) {
 
 export function createStorefrontSmokeRequestInit(input, init = {}) {
   const host = readSmokeStorefrontHost(input);
+  const smokeInit = {
+    ...init,
+    redirect: "manual",
+  };
 
   if (!host) {
-    return init;
+    return smokeInit;
   }
 
   return {
-    ...init,
+    ...smokeInit,
     headers: {
       ...readHeaderObject(init.headers),
       [storefrontHostHeaderName]: host,
@@ -57,4 +63,14 @@ function readHeaderObject(headers) {
   }
 
   return headers;
+}
+
+function readRedirectLocation(response) {
+  if (response.status < 300 || response.status >= 400) {
+    return null;
+  }
+
+  const location = response.headers.get("location")?.trim();
+
+  return location ? redactSmokeSecrets(location) : null;
 }

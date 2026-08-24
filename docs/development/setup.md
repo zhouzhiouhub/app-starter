@@ -183,6 +183,9 @@ For Web production deployments, `VERCEL_ENV=production` or `APP_ENV=production`
 requires `API_URL` / `NEXT_PUBLIC_API_URL` and `WEB_URL` / `NEXT_PUBLIC_WEB_URL`
 to resolve to production HTTPS URLs outside local, private, placeholder, or
 documentation hosts. Local development can still use localhost fallbacks.
+Storefront page, robots, sitemap, and 404 smoke requests use manual redirects;
+a production 30x response is reported with a redacted `Location` so deployment
+rewrites, storefront host routing, and `WEB_URL` can be fixed before launch.
 
 After sign-in, open `http://localhost:5173/pages` to list and create pages.
 The editor at `/pages/:id` loads the draft schema, can save a draft, and can

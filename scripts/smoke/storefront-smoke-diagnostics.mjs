@@ -16,6 +16,9 @@ export function readStorefrontPageAttempt(response, title) {
     ),
     documentTitle,
     ok: response.ok,
+    ...(response.redirectLocation
+      ? { redirectLocation: response.redirectLocation }
+      : {}),
     status: response.status,
     statusText: response.statusText || "",
     titlePresent,
@@ -30,8 +33,11 @@ export function formatStorefrontPageAttempt(attempt) {
   const body = attempt.bodySnippet
     ? `, body: ${JSON.stringify(attempt.bodySnippet)}`
     : "";
+  const redirect = attempt.redirectLocation
+    ? `, redirect: ${attempt.redirectLocation}`
+    : "";
 
-  return `status ${attempt.status}${statusText}, diagnosis: ${attempt.diagnosis}, title present: ${attempt.titlePresent}${documentTitle}${body}`;
+  return `status ${attempt.status}${statusText}, diagnosis: ${attempt.diagnosis}, title present: ${attempt.titlePresent}${documentTitle}${redirect}${body}`;
 }
 
 export function readRobotsAttempt(response, webUrl) {
@@ -189,6 +195,10 @@ function readDocumentTitle(html) {
 }
 
 function readStorefrontPageDiagnosis(response, titlePresent, documentTitle) {
+  if (response.redirectLocation) {
+    return "redirect-response";
+  }
+
   if (!response.ok) {
     return "http-error";
   }
