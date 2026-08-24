@@ -40,6 +40,16 @@ test("auth session storage ignores malformed sessions", () => {
     );
 
     assert.equal(readAuthSession(), null);
+    assert.equal(storage.getItem(AUTH_SESSION_STORAGE_KEY), null);
+  });
+});
+
+test("auth session storage clears malformed JSON sessions", () => {
+  withLocalStorage(createMemoryStorage(), (storage) => {
+    storage.setItem(AUTH_SESSION_STORAGE_KEY, "{not-json");
+
+    assert.equal(readAuthSession(), null);
+    assert.equal(storage.getItem(AUTH_SESSION_STORAGE_KEY), null);
   });
 });
 
@@ -76,6 +86,7 @@ test("auth session storage ignores persisted unsafe token values", () => {
     );
 
     assert.equal(readAuthSession(), null);
+    assert.equal(storage.getItem(AUTH_SESSION_STORAGE_KEY), null);
   });
 });
 

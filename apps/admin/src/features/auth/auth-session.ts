@@ -13,10 +13,17 @@ export function readAuthSession(): AuthSession | null {
   }
 
   try {
-    return readValidAuthSession(JSON.parse(raw));
+    const session = readValidAuthSession(JSON.parse(raw));
+
+    if (session) {
+      return session;
+    }
   } catch {
-    return null;
+    // Malformed persisted auth state should not linger after detection.
   }
+
+  clearAuthSession();
+  return null;
 }
 
 export function readValidAuthSession(value: unknown): AuthSession | null {
