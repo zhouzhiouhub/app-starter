@@ -78,6 +78,7 @@ test("public API smoke helper summarizes page body mismatches", () => {
   );
 
   assert.deepEqual(diagnostic, {
+    diagnosis: "title-mismatch",
     expectedFallback: true,
     expectedLocale: "en-US",
     expectedTitle: "Published Page",
@@ -93,6 +94,66 @@ test("public API smoke helper summarizes page body mismatches", () => {
   assert.equal(
     formatPublicPageBodyDiagnostic(diagnostic),
     "title: Draft Page (expected Published Page), locale: de-DE (expected en-US), fallback: false (expected true), fallback locale: en-US, noIndex: true",
+  );
+});
+
+test("public API smoke failures keep structured diagnostics", async () => {
+  await withFetch(
+    async () =>
+      new Response(
+        JSON.stringify({
+          data: {
+            meta: {
+              title: "Draft Page",
+            },
+            seo: {
+              noIndex: false,
+            },
+          },
+          meta: {
+            fallbackLocale: "en-US",
+            isFallback: false,
+            locale: "en-US",
+          },
+        }),
+        {
+          headers: { "Content-Type": "application/json" },
+          status: 200,
+          statusText: "OK",
+        },
+      ),
+    async () => {
+      await assert.rejects(
+        () =>
+          assertPublicApi(
+            {
+              apiBaseUrl: "https://api.example.com",
+              locale: "en-US",
+              market: "us",
+              slug: "smoke-page",
+            },
+            "Published Page",
+          ),
+        (error) => {
+          assert.match(error.message, /published title/);
+          assert.deepEqual(error.smokeDetails.publicApi, {
+            diagnosis: "title-mismatch",
+            expectedFallback: false,
+            expectedLocale: "en-US",
+            expectedTitle: "Published Page",
+            fallbackLocale: "en-US",
+            fallbackMatches: true,
+            isFallback: false,
+            locale: "en-US",
+            localeMatches: true,
+            noIndex: false,
+            title: "Draft Page",
+            titleMatches: false,
+          });
+          return true;
+        },
+      );
+    },
   );
 });
 

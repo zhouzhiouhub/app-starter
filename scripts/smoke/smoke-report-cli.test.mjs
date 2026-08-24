@@ -188,6 +188,48 @@ test("smoke report CLI suggests fixes for media diagnostics", () => {
   );
 });
 
+test("smoke report CLI suggests fixes for public API diagnostics", () => {
+  const lines = formatSmokeReportSummary({
+    schemaVersion: "smoke-report.v3",
+    summary: {
+      blockerCount: 0,
+      checkCount: 3,
+      failedCheckCount: 1,
+      failedCheckDetails: [
+        {
+          details: {
+            publicApi: {
+              diagnosis: "title-mismatch",
+              locale: "en-US",
+            },
+          },
+          message:
+            "Public page API did not return published title token=payload.signature",
+          name: "public-page.api",
+        },
+      ],
+      failedChecks: ["public-page.api"],
+      passedCheckCount: 2,
+      productionReady: true,
+      status: "failed",
+      warningCount: 0,
+    },
+  });
+
+  assert.equal(
+    lines.includes(
+      "    - public-page.api: Public page API did not return published title token=[redacted] (diagnosis: title-mismatch)",
+    ),
+    true,
+  );
+  assert.equal(
+    lines.includes(
+      "    - Check that publish wrote the expected PageVersion and the public page API reads the current published slug.",
+    ),
+    true,
+  );
+});
+
 test("smoke report CLI writes failed summaries to warning output", () => {
   const logLines = [];
   const warnLines = [];

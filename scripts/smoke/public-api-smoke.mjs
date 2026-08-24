@@ -70,34 +70,38 @@ function assertPublishedPageBody(body, input) {
   const diagnostic = readPublicPageBodyDiagnostic(body, input);
 
   if (!diagnostic.titleMatches) {
-    throw new Error(
+    throw createPublicPageBodyFailure(
       `Public page API did not return the published title (${formatPublicPageBodyDiagnostic(
         diagnostic,
       )}).`,
+      diagnostic,
     );
   }
 
   if (diagnostic.noIndex === true) {
-    throw new Error(
+    throw createPublicPageBodyFailure(
       `Public page API returned the smoke page as noIndex (${formatPublicPageBodyDiagnostic(
         diagnostic,
       )}).`,
+      diagnostic,
     );
   }
 
   if (!diagnostic.localeMatches) {
-    throw new Error(
+    throw createPublicPageBodyFailure(
       `Public page API returned an unexpected locale (${formatPublicPageBodyDiagnostic(
         diagnostic,
       )}).`,
+      diagnostic,
     );
   }
 
   if (!diagnostic.fallbackMatches) {
-    throw new Error(
+    throw createPublicPageBodyFailure(
       `Public page API returned an unexpected fallback flag (${formatPublicPageBodyDiagnostic(
         diagnostic,
       )}).`,
+      diagnostic,
     );
   }
 }
@@ -109,6 +113,12 @@ export function readPublicPageBodyDiagnostic(body, input) {
   const isFallback = body?.meta?.isFallback ?? null;
 
   return {
+    diagnosis: readPublicPageBodyDiagnosis({
+      fallbackMatches: isFallback === input.expectedFallback,
+      localeMatches: locale === input.expectedLocale,
+      noIndex: body?.data?.seo?.noIndex === true,
+      titleMatches: title === input.expectedTitle,
+    }),
     expectedFallback: input.expectedFallback,
     expectedLocale: input.expectedLocale,
     expectedTitle: input.expectedTitle,
@@ -125,6 +135,34 @@ export function readPublicPageBodyDiagnostic(body, input) {
 
 export function formatPublicPageBodyDiagnostic(diagnostic) {
   return `title: ${diagnostic.title ?? "missing"} (expected ${diagnostic.expectedTitle}), locale: ${diagnostic.locale ?? "missing"} (expected ${diagnostic.expectedLocale}), fallback: ${diagnostic.isFallback ?? "missing"} (expected ${diagnostic.expectedFallback}), fallback locale: ${diagnostic.fallbackLocale ?? "missing"}, noIndex: ${diagnostic.noIndex}`;
+}
+
+function createPublicPageBodyFailure(message, diagnostic) {
+  const error = new Error(message);
+  error.smokeDetails = {
+    publicApi: diagnostic,
+  };
+  return error;
+}
+
+function readPublicPageBodyDiagnosis(diagnostic) {
+  if (!diagnostic.titleMatches) {
+    return "title-mismatch";
+  }
+
+  if (diagnostic.noIndex === true) {
+    return "noindex-page";
+  }
+
+  if (!diagnostic.localeMatches) {
+    return "locale-mismatch";
+  }
+
+  if (!diagnostic.fallbackMatches) {
+    return "fallback-mismatch";
+  }
+
+  return "published-page-valid";
 }
 
 async function fetchJson(url, init) {
