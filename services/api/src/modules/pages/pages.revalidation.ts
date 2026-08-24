@@ -58,6 +58,8 @@ type Fetcher = (
   init?: RequestInit,
 ) => Promise<{ ok: boolean; status: number }>;
 
+const maxStorefrontRevalidationSecretLength = 1024;
+
 export async function triggerStorefrontRevalidation(
   input: StorefrontRevalidationInput,
   fetcher: Fetcher = fetch,
@@ -76,7 +78,7 @@ export async function triggerStorefrontRevalidation(
 
   const normalizedInput = normalized.input;
   const tags = readStorefrontRevalidationTags(normalizedInput);
-  const secret = process.env.STOREFRONT_REVALIDATE_SECRET?.trim();
+  const secret = readStorefrontRevalidationSecret();
 
   if (!secret) {
     return { paths, reason: "missing-secret", tags, triggered: false };
@@ -245,6 +247,27 @@ function readStorefrontRevalidationTags(
     market: input.market,
     siteHost: input.siteHost,
     slug: input.slug,
+  });
+}
+
+function readStorefrontRevalidationSecret(): string | null {
+  const secret = process.env.STOREFRONT_REVALIDATE_SECRET?.trim();
+
+  if (
+    !secret ||
+    secret.length > maxStorefrontRevalidationSecretLength ||
+    hasControlCharacter(secret)
+  ) {
+    return null;
+  }
+
+  return secret;
+}
+
+function hasControlCharacter(value: string): boolean {
+  return Array.from(value).some((character) => {
+    const codePoint = character.codePointAt(0) ?? 0;
+    return codePoint <= 0x1f || codePoint === 0x7f;
   });
 }
 

@@ -74,6 +74,28 @@ test("storefront revalidation skips when secret is missing", async () => {
   );
 });
 
+test("storefront revalidation skips unsafe secrets before fetching", async () => {
+  for (const secret of [
+    "secret-1\r\nx-secret: leaked",
+    "a".repeat(1025),
+  ]) {
+    await withEnv(
+      revalidationEnv({
+        STOREFRONT_REVALIDATE_SECRET: secret,
+      }),
+      async () => {
+        const result = await triggerStorefrontRevalidation(
+          pageInput(),
+          rejectingFetch,
+        );
+
+        assert.equal(result.triggered, false);
+        assert.equal(result.reason, "missing-secret");
+      },
+    );
+  }
+});
+
 test("storefront revalidation posts the page payload with secret header", async () => {
   await withEnv(
     revalidationEnv({
