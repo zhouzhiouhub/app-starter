@@ -156,6 +156,36 @@ test("identity service treats concurrent refresh rotation conflicts as replay", 
   });
 });
 
+test("identity service rejects malformed refresh tokens before hashing", async () => {
+  const service = new IdentityService(
+    {
+      refreshToken: {
+        findUnique() {
+          throw new Error("Malformed refresh tokens should not query storage.");
+        },
+      },
+    },
+    {
+      hashRefreshToken() {
+        throw new Error("Malformed refresh tokens should not be hashed.");
+      },
+    },
+  );
+
+  await assert.rejects(
+    () => service.refresh({ refreshToken: "refresh token value" }),
+    (error) =>
+      error.getStatus?.() === 400 &&
+      error.getResponse?.().code === "VALIDATION_ERROR",
+  );
+  await assert.rejects(
+    () => service.logout({ refreshToken: "refresh/token/value" }),
+    (error) =>
+      error.getStatus?.() === 400 &&
+      error.getResponse?.().code === "VALIDATION_ERROR",
+  );
+});
+
 function createActiveUser() {
   return {
     email: "admin@example.com",

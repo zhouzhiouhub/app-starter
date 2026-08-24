@@ -20,7 +20,7 @@ export const loginBodySchema = z.object({
 export type LoginBody = z.infer<typeof loginBodySchema>;
 
 export const refreshBodySchema = z.object({
-  refreshToken: z.string().min(16).max(512),
+  refreshToken: z.string().min(16).max(512).regex(/^[A-Za-z0-9_-]+$/),
 });
 export type RefreshBody = z.infer<typeof refreshBodySchema>;
 

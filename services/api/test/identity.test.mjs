@@ -47,6 +47,20 @@ test("identity request parsers keep API validation errors structured", () => {
       error.getResponse?.().code === "VALIDATION_ERROR" &&
       error.getStatus?.() === 400,
   );
+  for (const refreshToken of [
+    "refresh token value",
+    "refresh/token/value",
+    "refresh.token.value",
+    "refresh-token-value\r",
+    "a".repeat(513),
+  ]) {
+    assert.throws(
+      () => parseRefreshBody({ refreshToken }),
+      (error) =>
+        error.getResponse?.().code === "VALIDATION_ERROR" &&
+        error.getStatus?.() === 400,
+    );
+  }
 });
 
 test("identity authorization reads bearer tokens defensively", () => {
