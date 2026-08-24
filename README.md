@@ -586,7 +586,7 @@ pnpm smoke:publish
 该脚本会登录默认管理员，先验证 `COMMERCE_ENABLED=false`、`MULTI_LOCALE_ENABLED=false` 的关闭态，生成媒体上传目标、确认媒体入库并校验 CDN URL，再保存草稿、生成 Preview Token、验证公共预览 API 与前台 `/preview?token=`，随后发布一个唯一 slug 的测试页，验证回滚、Preview Token / 页面发布 / 回滚审计日志、公共页面 API、前台 HTML、`robots.txt`、`sitemap.xml` 和 404/noindex 是否读取到同一份已发布内容并满足 SEO 发布门禁。执行账号需要 `audit:read`；设置 `SMOKE_REPORT_PATH=tmp/smoke-report.json` 可输出 JSON 验收报告。生产环境如果要强制验证 R2 Presigned URL、真实 PUT 上传和生产 CDN URL，可设置 `SMOKE_REQUIRE_R2_UPLOAD=true`；如果要把 Admin 静态托管也纳入部署验收，可设置 `SMOKE_REQUIRE_ADMIN_APP=true` 并配置 `ADMIN_URL`。生产 CDN URL 不能继续使用 `cdn.example.com` 或任何 `example` / `test` / `invalid` / 本地 / 私网 / 保留网段域名或 IP；这些会被 smoke 诊断判定为非生产可用。若只想验证发布与前台读取、暂不强制 ISR 回调，可临时设置：
 
 `API_URL` 必须是 API origin 或精确的 `/api/v1` base，`WEB_URL` 必须是前台 origin，`ADMIN_URL` 必须是后台静态应用 origin；Smoke Runner 会在发起登录、发布或 Admin 静态页请求前拒绝嵌入账号密码、query、fragment、异常路径和非 HTTP(S) 协议。
-Admin 静态页 smoke 还会校验入口 `type="module"` 脚本和已声明的 stylesheet 都解析到同一个 `ADMIN_URL` origin，且脚本返回 JavaScript、样式返回 CSS，避免生产 shell 误依赖外部域资源或漏部署样式产物。
+Admin 静态页 smoke 还会校验入口 `type="module"` 脚本、`modulepreload` chunks 和已声明的 stylesheet 都解析到同一个 `ADMIN_URL` origin，且脚本/chunk 返回 JavaScript、样式返回 CSS，避免生产 shell 误依赖外部域资源或漏部署静态产物。
 生产 smoke 在 `NODE_ENV`、`APP_ENV` 或 `VERCEL_ENV` 为 `production` 时会拒绝文档里的本地默认管理员邮箱或密码；生产验收请显式设置非默认 `SMOKE_ADMIN_EMAIL` 和 `SMOKE_ADMIN_PASSWORD`。Smoke 登录配置会在发起请求前校验：邮箱必须有效，密码必须为 8 到 128 字符且不含控制字符，`SMOKE_TENANT_SLUG` 必须是小写字母、数字和连字符组成且不能以连字符开头或结尾。
 `SMOKE_PAGE_SLUG`、`SMOKE_LOCALE`、`SMOKE_MARKET` 也会在创建测试页前按 Page Schema 上下文格式校验。
 布尔 smoke 开关只接受 `true`/`false`、`1`/`0`、`yes`/`no`、`on`/`off`，拼写错误会直接失败。

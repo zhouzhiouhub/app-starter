@@ -176,7 +176,8 @@ Admin production builds do not synthesize storefront links from the current
 Admin browser hostname; configure a safe `VITE_WEB_URL` / `WEB_URL` or a safe
 site domain before using Preview or View on site links.
 When `SMOKE_REQUIRE_ADMIN_APP=true`, production smoke also verifies the Admin
-shell, module script, and declared stylesheet assets from the same Admin origin.
+shell, module entry script, modulepreload chunks, and declared stylesheet assets
+from the same Admin origin.
 
 For Web production deployments, `VERCEL_ENV=production` or `APP_ENV=production`
 requires `API_URL` / `NEXT_PUBLIC_API_URL` and `WEB_URL` / `NEXT_PUBLIC_WEB_URL`

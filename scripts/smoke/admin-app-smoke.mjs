@@ -6,6 +6,11 @@ import {
   readStylesheetReferences,
   readStylesheetSummary,
 } from "./admin-app-assets.mjs";
+import {
+  formatModulePreloadIssue,
+  readModulePreloadReferences,
+  readModulePreloadSummary,
+} from "./admin-app-modulepreload-assets.mjs";
 import { redactSmokeSecrets } from "./smoke-secrets.mjs";
 
 export async function assertAdminApp(input) {
@@ -25,6 +30,11 @@ export async function assertAdminApp(input) {
       moduleScriptStatusText: null,
       moduleScriptUrl: null,
       moduleScriptUrlIssue: null,
+      modulePreloadCount: 0,
+      modulePreloadFailures: [],
+      modulePreloadOk: false,
+      modulePreloadUrlIssues: [],
+      modulePreloadUrls: [],
       ok: false,
       status: null,
       statusText: null,
@@ -58,6 +68,9 @@ export async function readAdminAppAttempt(url) {
     const moduleScript = moduleScriptReference.url
       ? await readModuleScriptAttempt(moduleScriptReference.url)
       : createMissingModuleScriptAttempt();
+    const modulePreload = await readModulePreloadSummary(
+      readModulePreloadReferences(text, url),
+    );
     const stylesheet = await readStylesheetSummary(
       readStylesheetReferences(text, url),
     );
@@ -76,6 +89,11 @@ export async function readAdminAppAttempt(url) {
       moduleScriptStatusText: moduleScript.statusText,
       moduleScriptUrl: moduleScriptReference.url,
       moduleScriptUrlIssue: moduleScriptReference.issue,
+      modulePreloadCount: modulePreload.count,
+      modulePreloadFailures: modulePreload.failures,
+      modulePreloadOk: modulePreload.ok,
+      modulePreloadUrlIssues: modulePreload.urlIssues,
+      modulePreloadUrls: modulePreload.urls,
       ok: response.ok,
       status: response.status,
       statusText: response.statusText,
@@ -109,6 +127,11 @@ export async function readAdminAppAttempt(url) {
       moduleScriptStatusText: null,
       moduleScriptUrl: null,
       moduleScriptUrlIssue: null,
+      modulePreloadCount: 0,
+      modulePreloadFailures: [],
+      modulePreloadOk: false,
+      modulePreloadUrlIssues: [],
+      modulePreloadUrls: [],
       ok: false,
       status: null,
       statusText: null,
@@ -141,6 +164,10 @@ export function formatAdminAppAttempt(attempt) {
   const moduleUrlIssue = attempt.moduleScriptUrlIssue
     ? `, module script URL issue: ${attempt.moduleScriptUrlIssue}`
     : "";
+  const modulePreloads =
+    `, modulepreload count: ${attempt.modulePreloadCount}` +
+    `, modulepreloads ok: ${attempt.modulePreloadOk}`;
+  const modulePreloadIssue = formatModulePreloadIssue(attempt);
   const body = attempt.bodySnippet ? `, body: "${attempt.bodySnippet}"` : "";
   const error = attempt.errorMessage ? `, error: ${attempt.errorMessage}` : "";
   const stylesheets =
@@ -148,7 +175,7 @@ export function formatAdminAppAttempt(attempt) {
     `, stylesheets ok: ${attempt.stylesheetOk}`;
   const stylesheetIssue = formatStylesheetIssue(attempt);
 
-  return `${status}${content}, root element present: ${attempt.hasRootElement}${moduleScript}${moduleStatus}${moduleError}${moduleUrlIssue}${stylesheets}${stylesheetIssue}${body}${error}`;
+  return `${status}${content}, root element present: ${attempt.hasRootElement}${moduleScript}${moduleStatus}${moduleError}${moduleUrlIssue}${modulePreloads}${modulePreloadIssue}${stylesheets}${stylesheetIssue}${body}${error}`;
 }
 
 function createAdminAppFailure(attempt) {
@@ -173,6 +200,7 @@ function isAdminAppAttemptPassing(attempt) {
     attempt.moduleScriptUrlIssue === null &&
     attempt.moduleScriptOk &&
     attempt.moduleScriptHasJavaScriptContentType &&
+    attempt.modulePreloadOk &&
     attempt.stylesheetOk
   );
 }

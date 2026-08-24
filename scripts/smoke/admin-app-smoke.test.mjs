@@ -13,6 +13,7 @@ test("admin app smoke accepts static Admin shell HTML", async () => {
         return new Response(
           [
             '<div id="root"></div>',
+            '<link rel="modulepreload" href="/assets/vendor.js">',
             '<link rel="stylesheet" href="/assets/admin.css">',
             '<script type="module" src="/assets/admin.js"></script>',
           ].join(""),
@@ -27,6 +28,14 @@ test("admin app smoke accepts static Admin shell HTML", async () => {
       if (url === "https://admin.example.com/assets/admin.js") {
         return new Response("console.log('admin')", {
           headers: { "content-type": "text/javascript; charset=utf-8" },
+          status: 200,
+          statusText: "OK",
+        });
+      }
+
+      if (url === "https://admin.example.com/assets/vendor.js") {
+        return new Response("export const vendor = true", {
+          headers: { "content-type": "application/javascript; charset=utf-8" },
           status: 200,
           statusText: "OK",
         });
@@ -61,6 +70,11 @@ test("admin app smoke accepts static Admin shell HTML", async () => {
         moduleScriptStatusText: "OK",
         moduleScriptUrl: "https://admin.example.com/assets/admin.js",
         moduleScriptUrlIssue: null,
+        modulePreloadCount: 1,
+        modulePreloadFailures: [],
+        modulePreloadOk: true,
+        modulePreloadUrlIssues: [],
+        modulePreloadUrls: ["https://admin.example.com/assets/vendor.js"],
         ok: true,
         status: 200,
         statusText: "OK",
@@ -268,7 +282,7 @@ test("admin app smoke summarizes request attempts", async () => {
       assert.equal(attempt.errorMessage.includes("payload.signature"), false);
       assert.equal(
         formatAdminAppAttempt(attempt),
-        "request failed, html content: false, root element present: false, module script present: false, module script reachable: false, module script JavaScript: false, stylesheet count: 0, stylesheets ok: false, error: network failed with token=[redacted]",
+        "request failed, html content: false, root element present: false, module script present: false, module script reachable: false, module script JavaScript: false, modulepreload count: 0, modulepreloads ok: false, stylesheet count: 0, stylesheets ok: false, error: network failed with token=[redacted]",
       );
     },
   );

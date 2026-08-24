@@ -1,3 +1,5 @@
+import { readAdminAppFailureActions } from "./smoke-report-admin-diagnostics.mjs";
+
 const revalidationFailureActions = new Map([
   [
     "invalid-revalidation-payload",
@@ -85,6 +87,7 @@ export function readFailureActions(details) {
 
     return [
       ...(action ? [action] : []),
+      ...readAdminAppFailureActions(detail.details),
       ...readMediaFailureActions(detail.details),
       ...readPublicApiFailureActions(detail.details),
       ...readStorefrontFailureActions(detail.details),
