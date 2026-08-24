@@ -1,9 +1,12 @@
 import type { StorefrontRevalidationResult } from "@app-starter/schema";
+import { redactApiMessageSecrets } from "../../lib/api-message-redaction.ts";
 import {
   readStorefrontPageUrl,
   type WebOriginInput,
 } from "./storefront-url.ts";
 import type { EditorFeedback } from "./types.ts";
+
+const maxRevalidationPathLabelLength = 120;
 
 export function buildPublicationFeedback(input: {
   action: "publish" | "rollback";
@@ -130,13 +133,22 @@ function formatPathCheck(paths: string[]): string {
 }
 
 function formatPathList(paths: string[]): string {
-  const visible = paths.slice(0, 3);
+  const visible = paths.slice(0, 3).map(formatPathLabel);
   const suffix =
     paths.length > visible.length
       ? `, and ${paths.length - visible.length} more`
       : "";
 
   return `${visible.join(", ")}${suffix}`;
+}
+
+function formatPathLabel(path: string): string {
+  const redacted = redactApiMessageSecrets(path.trim().replace(/\s+/g, " "));
+  const label = redacted || "[unavailable]";
+
+  return label.length > maxRevalidationPathLabelLength
+    ? `${label.slice(0, maxRevalidationPathLabelLength)}...`
+    : label;
 }
 
 function formatStatus(status: number | undefined): string {

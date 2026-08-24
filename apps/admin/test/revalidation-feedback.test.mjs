@@ -255,3 +255,26 @@ test("publication feedback marks failed revalidation as warning with affected pa
     /Check affected paths: \/en\/contact, \/en\/support, \/en\/about, and 1 more\./,
   );
 });
+
+test("publication feedback redacts sensitive affected path details", () => {
+  const feedback = buildPublicationFeedback({
+    action: "publish",
+    locale: "en-US",
+    revalidation: {
+      paths: [
+        "/preview?preview_token=secret-token",
+        `/en/${"long-path-segment-".repeat(12)}?signature=signed-value`,
+      ],
+      reason: "request-failed",
+      tags: ["published-page"],
+      triggered: false,
+    },
+    slug: "home",
+  });
+
+  assert.equal(feedback.message.includes("secret-token"), false);
+  assert.equal(feedback.message.includes("signed-value"), false);
+  assert.match(feedback.message, /preview_token=\[redacted\]/);
+  assert.match(feedback.message, /\.\.\./);
+  assert.equal(feedback.message.length < 500, true);
+});
