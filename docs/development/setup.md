@@ -101,6 +101,11 @@ PREVIEW_TOKEN_PREVIOUS_SECRET=
 PREVIEW_TOKEN_TTL_SECONDS=3600
 ```
 
+Production `PREVIEW_TOKEN_SECRET` must be 32 to 1024 characters and must not
+contain control characters. If `PREVIEW_TOKEN_PREVIOUS_SECRET` is configured
+for rotation, it must satisfy the same boundary. The API rejects unsafe
+production preview-token secrets, and smoke readiness reports them as blockers.
+
 To rotate the Preview Token secret, deploy the new value in
 `PREVIEW_TOKEN_SECRET` and keep the old value in
 `PREVIEW_TOKEN_PREVIOUS_SECRET` for longer than `PREVIEW_TOKEN_TTL_SECONDS`.
@@ -262,8 +267,9 @@ PEM-shaped values.
 Revalidation environment diagnostics record only non-secret readiness metadata:
 whether a secret is configured, the URL source, endpoint host/path, URL safety,
 and whether the smoke run requires revalidation. Preview environment diagnostics
-record only whether `PREVIEW_TOKEN_SECRET` and a rotation secret are configured. Smoke
-report details and failure messages
+record only non-secret readiness metadata: whether `PREVIEW_TOKEN_SECRET` and a
+rotation secret are configured, whether configured values are production-safe,
+and any safety issue code. Smoke report details and failure messages
 redact preview token paths, sensitive query parameters, JSON credential fields,
 R2 signed URL parameters, and Bearer tokens before they are written to the
 report or printed by the CLI.

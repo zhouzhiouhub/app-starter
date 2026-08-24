@@ -342,7 +342,7 @@ STOREFRONT_REVALIDATE_SECRET=use-a-secret-value
 STOREFRONT_REVALIDATE_URL=https://your-storefront.example.com/api/revalidate
 STOREFRONT_REVALIDATE_TIMEOUT_MS=5000
 
-PREVIEW_TOKEN_SECRET=use-a-different-secret-value
+PREVIEW_TOKEN_SECRET=use-a-preview-secret-at-least-32-chars
 PREVIEW_TOKEN_PREVIOUS_SECRET=
 PREVIEW_TOKEN_TTL_SECONDS=3600
 
@@ -360,6 +360,7 @@ CLARITY_PROJECT_ID=xxxxxxxxxx
 - 不要把本机 PostgreSQL 密码用于生产环境。
 - 不要把生产数据库连接串提交到 Git。
 - Analytics 脚本只有在 `ANALYTICS_ENABLED=true` 且 `ANALYTICS_CONSENT_GRANTED=true` 时才会加载；未接入 Consent 机制前保持关闭。
+- 生产 `PREVIEW_TOKEN_SECRET` 必须是 32 到 1024 字符且不包含控制字符的签名密钥；如果配置 `PREVIEW_TOKEN_PREVIOUS_SECRET` 做轮换，也必须满足同样边界。
 - `PREVIEW_TOKEN_TTL_SECONDS` 只接受 1 到 3600 秒，非法或更长配置会回退到 3600 秒，保持预览链接 1 小时有效。
 - `STOREFRONT_REVALIDATE_SECRET` 必须是不超过 1024 字符且不包含控制字符的非空值；生产 smoke readiness 会把超长或含控制字符的值判定为不安全配置。
 - `STOREFRONT_REVALIDATE_TIMEOUT_MS` 只接受 1 到 30000 毫秒，非法或更长配置会回退到 5000 毫秒，避免发布请求被异常超时值拖住。

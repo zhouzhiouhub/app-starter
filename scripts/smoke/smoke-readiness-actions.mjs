@@ -156,7 +156,16 @@ function readBlockerActions(blocker) {
     return [
       createAction(
         blocker.area,
-        "Set PREVIEW_TOKEN_SECRET in the API runtime before production smoke.",
+        "Set PREVIEW_TOKEN_SECRET to a 32-1024 character production signing secret in the API runtime.",
+      ),
+    ];
+  }
+
+  if (blocker.area === "preview.previous-secret") {
+    return [
+      createAction(
+        blocker.area,
+        "Remove PREVIEW_TOKEN_PREVIOUS_SECRET or set it to the previous production-safe signing secret.",
       ),
     ];
   }

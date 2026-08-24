@@ -157,16 +157,35 @@ function collectFeatureFlagReadiness(blockers, featureFlags) {
 }
 
 function collectPreviewReadiness(blockers, preview) {
-  if (preview?.secretConfigured === true) {
-    return;
+  if (preview?.secretConfigured !== true) {
+    appendBlocker(
+      blockers,
+      "preview.secret",
+      "missing-secret",
+      "Configure PREVIEW_TOKEN_SECRET before production smoke.",
+    );
+  } else if (preview?.secretSafe === false) {
+    appendBlocker(
+      blockers,
+      "preview.secret",
+      preview.secretIssue ?? "unsafe-secret",
+      "PREVIEW_TOKEN_SECRET must be a production-safe signing secret.",
+      { variable: "PREVIEW_TOKEN_SECRET" },
+    );
   }
 
-  appendBlocker(
-    blockers,
-    "preview.secret",
-    "missing-secret",
-    "Configure PREVIEW_TOKEN_SECRET before production smoke.",
-  );
+  if (
+    preview?.previousSecretConfigured === true &&
+    preview.previousSecretSafe === false
+  ) {
+    appendBlocker(
+      blockers,
+      "preview.previous-secret",
+      preview.previousSecretIssue ?? "unsafe-secret",
+      "PREVIEW_TOKEN_PREVIOUS_SECRET must be production-safe when configured.",
+      { variable: "PREVIEW_TOKEN_PREVIOUS_SECRET" },
+    );
+  }
 }
 
 function collectReportReadiness(blockers, config) {

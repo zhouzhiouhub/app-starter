@@ -2,14 +2,16 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 
 const defaultPreviewTokenTtlSeconds = 60 * 60;
 const maxPreviewTokenTtlSeconds = defaultPreviewTokenTtlSeconds;
+const minPreviewTokenSecretLength = 32;
+const maxPreviewTokenSecretLength = 1024;
 const maxPreviewTokenLength = 2048;
 const previewTokenSignatureLength = 43;
 const previewTokenSegmentPattern = /^[A-Za-z0-9_-]+$/;
 const localPreviewTokenSecret = "local-dev-preview-token-secret";
 
 export class PreviewTokenConfigurationError extends Error {
-  constructor() {
-    super("PREVIEW_TOKEN_SECRET is required in production.");
+  constructor(message = "PREVIEW_TOKEN_SECRET is required in production.") {
+    super(message);
   }
 }
 
@@ -101,7 +103,10 @@ function readPreviewTokenParts(
 }
 
 function readPreviewTokenSecret(env = process.env): string {
-  const configured = env.PREVIEW_TOKEN_SECRET?.trim();
+  const configured = readConfiguredPreviewTokenSecret(
+    env,
+    "PREVIEW_TOKEN_SECRET",
+  );
 
   if (configured) {
     return configured;
@@ -125,8 +130,7 @@ export function isProductionPreviewTokenEnvironment(
 function readPreviousPreviewTokenSecret(
   env = process.env,
 ): string | null {
-  const configured = env.PREVIEW_TOKEN_PREVIOUS_SECRET?.trim();
-  return configured || null;
+  return readConfiguredPreviewTokenSecret(env, "PREVIEW_TOKEN_PREVIOUS_SECRET");
 }
 
 function readPreviewTokenVerificationSecrets(env = process.env): string[] {
@@ -150,6 +154,43 @@ function readPreviewTokenTtlSeconds(env = process.env): number {
   }
 
   return defaultPreviewTokenTtlSeconds;
+}
+
+function readConfiguredPreviewTokenSecret(
+  env: NodeJS.ProcessEnv,
+  name: "PREVIEW_TOKEN_PREVIOUS_SECRET" | "PREVIEW_TOKEN_SECRET",
+): string | null {
+  const configured = env[name]?.trim();
+
+  if (!configured) {
+    return null;
+  }
+
+  if (
+    isProductionPreviewTokenEnvironment(env) &&
+    !isSafePreviewTokenSecret(configured)
+  ) {
+    throw new PreviewTokenConfigurationError(
+      `${name} must be 32 to 1024 characters and must not contain control characters in production.`,
+    );
+  }
+
+  return configured;
+}
+
+function isSafePreviewTokenSecret(value: string): boolean {
+  return (
+    value.length >= minPreviewTokenSecretLength &&
+    value.length <= maxPreviewTokenSecretLength &&
+    !hasControlCharacter(value)
+  );
+}
+
+function hasControlCharacter(value: string): boolean {
+  return Array.from(value).some((character) => {
+    const codePoint = character.codePointAt(0) ?? 0;
+    return codePoint <= 0x1f || codePoint === 0x7f;
+  });
 }
 
 function sign(encodedPayload: string, secret: string): string {

@@ -23,7 +23,7 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
     R2_REGION: "auto",
     R2_SECRET_ACCESS_KEY: "super-secret",
     REDIS_URL: "rediss://cache-user:cache-secret@redis.brand-cache.com:6379/0",
-    PREVIEW_TOKEN_SECRET: "super-preview-secret",
+    PREVIEW_TOKEN_SECRET: "super-preview-secret-value-123456789",
     STOREFRONT_REVALIDATE_SECRET: "super-revalidate-secret",
     STOREFRONT_REVALIDATE_URL: "https://web.brand-platform.com/",
   });
@@ -151,7 +151,11 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
     preview: {
       configured: true,
       previousSecretConfigured: false,
+      previousSecretIssue: null,
+      previousSecretSafe: true,
       secretConfigured: true,
+      secretIssue: null,
+      secretSafe: true,
     },
     redis: {
       configured: true,
@@ -180,7 +184,7 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
 
   const serialized = JSON.stringify(diagnostics);
   assert.equal(serialized.includes("super-secret"), false);
-  assert.equal(serialized.includes("super-preview-secret"), false);
+  assert.equal(serialized.includes("super-preview-secret-value"), false);
   assert.equal(serialized.includes("super-revalidate-secret"), false);
   assert.equal(serialized.includes("db-user"), false);
   assert.equal(serialized.includes("db-secret"), false);
@@ -225,7 +229,11 @@ test("smoke environment diagnostics reports missing R2 and CDN fallback", () => 
   assert.deepEqual(diagnostics.preview, {
     configured: false,
     previousSecretConfigured: false,
+    previousSecretIssue: null,
+    previousSecretSafe: true,
     secretConfigured: false,
+    secretIssue: "missing-secret",
+    secretSafe: false,
   });
   assert.deepEqual(diagnostics.revalidation, {
     configured: false,

@@ -25,8 +25,53 @@ test("smoke readiness requires a production preview token secret", () => {
   assert.deepEqual(readiness.nextActions, [
     {
       action:
-        "Set PREVIEW_TOKEN_SECRET in the API runtime before production smoke.",
+        "Set PREVIEW_TOKEN_SECRET to a 32-1024 character production signing secret in the API runtime.",
       area: "preview.secret",
+    },
+  ]);
+});
+
+test("smoke readiness blocks unsafe preview token secrets", () => {
+  const environment = createReadyEnvironment();
+  environment.preview = {
+    previousSecretConfigured: true,
+    previousSecretIssue: "control-character",
+    previousSecretSafe: false,
+    secretConfigured: true,
+    secretIssue: "short-secret",
+    secretSafe: false,
+  };
+  const readiness = createSmokeProductionReadiness(
+    environment,
+    createReadyConfig(),
+  );
+
+  assert.deepEqual(
+    readiness.blockers.map((blocker) => [
+      blocker.area,
+      blocker.issue,
+      blocker.variable,
+    ]),
+    [
+      ["preview.secret", "short-secret", "PREVIEW_TOKEN_SECRET"],
+      [
+        "preview.previous-secret",
+        "control-character",
+        "PREVIEW_TOKEN_PREVIOUS_SECRET",
+      ],
+    ],
+  );
+  assert.equal(readiness.productionReady, false);
+  assert.deepEqual(readiness.nextActions, [
+    {
+      action:
+        "Set PREVIEW_TOKEN_SECRET to a 32-1024 character production signing secret in the API runtime.",
+      area: "preview.secret",
+    },
+    {
+      action:
+        "Remove PREVIEW_TOKEN_PREVIOUS_SECRET or set it to the previous production-safe signing secret.",
+      area: "preview.previous-secret",
     },
   ]);
 });

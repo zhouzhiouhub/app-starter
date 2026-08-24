@@ -90,6 +90,45 @@ test("preview token secret is required for deployment production markers", () =>
   }
 });
 
+test("preview token secrets require safe production values", () => {
+  const now = new Date("2026-08-19T00:00:00.000Z");
+  const safeSecret = "a".repeat(32);
+
+  for (const PREVIEW_TOKEN_SECRET of [
+    "short-preview-secret",
+    "a".repeat(1025),
+    `safe-preview-token-secret-value-1\r\nx-secret: leaked`,
+  ]) {
+    assert.throws(
+      () =>
+        createPagePreviewToken({
+          env: {
+            APP_ENV: "production",
+            PREVIEW_TOKEN_SECRET,
+          },
+          now,
+          pageId: "page-1",
+          slug: "campaign",
+          tenantId: "tenant-1",
+        }),
+      /PREVIEW_TOKEN_SECRET must be 32 to 1024 characters/,
+    );
+  }
+
+  assert.throws(
+    () =>
+      verifyPagePreviewToken(`payload.${"a".repeat(43)}`, {
+        env: {
+          APP_ENV: "production",
+          PREVIEW_TOKEN_PREVIOUS_SECRET: "short-previous-secret",
+          PREVIEW_TOKEN_SECRET: safeSecret,
+        },
+        now,
+      }),
+    /PREVIEW_TOKEN_PREVIOUS_SECRET must be 32 to 1024 characters/,
+  );
+});
+
 test("preview token TTL stays within the one hour preview window", () => {
   const now = new Date("2026-08-19T00:00:00.000Z");
 
