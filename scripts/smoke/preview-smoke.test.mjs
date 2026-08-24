@@ -73,6 +73,16 @@ test("preview smoke helpers summarize web preview attempts", () => {
     },
     "Draft title",
   );
+  const redirected = readWebPreviewAttempt(
+    {
+      ok: false,
+      redirectLocation: "https://web.example.com/login?token=[redacted]",
+      status: 302,
+      statusText: "Found",
+      text: "",
+    },
+    "Draft title",
+  );
 
   assert.deepEqual(passed, {
     bodySnippet: null,
@@ -89,6 +99,19 @@ test("preview smoke helpers summarize web preview attempts", () => {
   assert.equal(
     formatWebPreviewAttempt(failed),
     'status 500 Internal Server Error, title present: false, noindex: false, body: "<html> <body>Preview crashed while loading draft</body> </html>"',
+  );
+  assert.deepEqual(redirected, {
+    bodySnippet: null,
+    noIndex: false,
+    ok: false,
+    redirectLocation: "https://web.example.com/login?token=[redacted]",
+    status: 302,
+    statusText: "Found",
+    titlePresent: false,
+  });
+  assert.equal(
+    formatWebPreviewAttempt(redirected),
+    "status 302 Found, title present: false, noindex: false, redirect: https://web.example.com/login?token=[redacted]",
   );
 });
 

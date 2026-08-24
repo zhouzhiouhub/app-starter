@@ -80,6 +80,9 @@ export function readWebPreviewAttempt(response, title) {
     bodySnippet: response.ok ? null : readBodySnippet(response.text),
     noIndex,
     ok: response.ok,
+    ...(response.redirectLocation
+      ? { redirectLocation: response.redirectLocation }
+      : {}),
     status: response.status,
     statusText: response.statusText || "",
     titlePresent,
@@ -91,8 +94,11 @@ export function formatWebPreviewAttempt(attempt) {
   const body = attempt.bodySnippet
     ? `, body: ${JSON.stringify(attempt.bodySnippet)}`
     : "";
+  const redirect = attempt.redirectLocation
+    ? `, redirect: ${attempt.redirectLocation}`
+    : "";
 
-  return `status ${attempt.status}${statusText}, title present: ${attempt.titlePresent}, noindex: ${attempt.noIndex}${body}`;
+  return `status ${attempt.status}${statusText}, title present: ${attempt.titlePresent}, noindex: ${attempt.noIndex}${redirect}${body}`;
 }
 
 function delay(ms) {
