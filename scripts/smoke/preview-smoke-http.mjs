@@ -2,6 +2,10 @@ import {
   fetchJson,
   readHttpError,
 } from "./http-json-smoke.mjs";
+import {
+  isOversizedResponseBodyError,
+  readBoundedResponseText,
+} from "./bounded-response-text.mjs";
 import { redactSmokeSecrets } from "./smoke-secrets.mjs";
 
 export { fetchJson, readHttpError, redactSmokeSecrets };
@@ -11,15 +15,18 @@ export async function fetchText(url, init) {
     ...init,
     redirect: init?.redirect ?? "manual",
   });
-  const text = await response.text();
   const redirectLocation = readRedirectLocation(response);
+  const body = redirectLocation
+    ? { text: "" }
+    : await readPreviewResponseBody(response, url);
 
   return {
+    ...(body.bodyReadError ? { bodyReadError: body.bodyReadError } : {}),
     ok: response.ok,
     ...(redirectLocation ? { redirectLocation } : {}),
     status: response.status,
     statusText: response.statusText,
-    text,
+    text: body.text,
     url,
   };
 }
@@ -38,4 +45,24 @@ function readRedirectLocation(response) {
   const location = response.headers.get("location")?.trim();
 
   return location ? redactSmokeSecrets(location) : null;
+}
+
+async function readPreviewResponseBody(response, url) {
+  try {
+    return {
+      text: await readBoundedResponseText(response, {
+        label: "preview",
+        url,
+      }),
+    };
+  } catch (error) {
+    if (!isOversizedResponseBodyError(error)) {
+      throw error;
+    }
+
+    return {
+      bodyReadError: readErrorMessage(error),
+      text: "",
+    };
+  }
 }

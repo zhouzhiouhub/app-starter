@@ -32,6 +32,7 @@ export async function assertPublicPreview(input, token, title) {
 export async function assertWebPreview(input, token, title) {
   const url = joinUrl(input.webUrl, getPreviewPath(token));
   let lastError = "";
+  let lastAttempt = null;
 
   for (
     let attemptNumber = 1;
@@ -55,8 +56,18 @@ export async function assertWebPreview(input, token, title) {
       }
 
       lastError = formatWebPreviewAttempt(previewAttempt);
+      lastAttempt = previewAttempt;
     } catch (error) {
       lastError = readErrorMessage(error);
+      lastAttempt = {
+        bodySnippet: null,
+        error: lastError,
+        noIndex: false,
+        ok: false,
+        status: null,
+        statusText: "",
+        titlePresent: false,
+      };
     }
 
     if (attemptNumber < input.retryAttempts) {
@@ -64,7 +75,12 @@ export async function assertWebPreview(input, token, title) {
     }
   }
 
-  throw new Error(`Web preview page did not render the draft (${lastError}).`);
+  throw createWebPreviewFailure(
+    url,
+    title,
+    `Web preview page did not render the draft (${lastError}).`,
+    lastAttempt,
+  );
 }
 
 export function getPreviewPath(token) {
@@ -73,13 +89,21 @@ export function getPreviewPath(token) {
 }
 
 export function readWebPreviewAttempt(response, title) {
-  const titlePresent = response.text.includes(title);
-  const noIndex = hasNoIndexRobots(response.text);
+  const bodyReadError = response.bodyReadError ?? null;
+  const titlePresent = bodyReadError ? false : response.text.includes(title);
+  const noIndex = bodyReadError ? false : hasNoIndexRobots(response.text);
 
   return {
-    bodySnippet: response.ok ? null : readBodySnippet(response.text),
+    bodySnippet:
+      response.ok && !bodyReadError ? null : readBodySnippet(response.text),
+    ...(bodyReadError
+      ? {
+          bodyReadError,
+          diagnosis: "response-body-too-large",
+        }
+      : {}),
     noIndex,
-    ok: response.ok,
+    ok: response.ok && !bodyReadError,
     ...(response.redirectLocation
       ? { redirectLocation: response.redirectLocation }
       : {}),
@@ -91,14 +115,33 @@ export function readWebPreviewAttempt(response, title) {
 
 export function formatWebPreviewAttempt(attempt) {
   const statusText = attempt.statusText ? ` ${attempt.statusText}` : "";
+  const diagnosis = attempt.diagnosis
+    ? `, diagnosis: ${attempt.diagnosis}`
+    : "";
   const body = attempt.bodySnippet
     ? `, body: ${JSON.stringify(attempt.bodySnippet)}`
+    : "";
+  const bodyReadError = attempt.bodyReadError
+    ? `, body read error: ${attempt.bodyReadError}`
     : "";
   const redirect = attempt.redirectLocation
     ? `, redirect: ${attempt.redirectLocation}`
     : "";
 
-  return `status ${attempt.status}${statusText}, title present: ${attempt.titlePresent}, noindex: ${attempt.noIndex}${redirect}${body}`;
+  return `status ${attempt.status}${statusText}${diagnosis}, title present: ${attempt.titlePresent}, noindex: ${attempt.noIndex}${redirect}${bodyReadError}${body}`;
+}
+
+function createWebPreviewFailure(url, expectedTitle, message, attempt) {
+  const error = new Error(message);
+  error.smokeDetails = {
+    webPreview: {
+      ...(attempt ?? {}),
+      expectedTitle,
+      url: redactSmokeSecrets(url),
+    },
+  };
+
+  return error;
 }
 
 function delay(ms) {

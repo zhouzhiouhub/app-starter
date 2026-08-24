@@ -140,3 +140,60 @@ test("preview smoke HTTP helpers disable redirects by default", async () => {
     );
   });
 });
+
+test("preview smoke HTTP helpers skip redirected text bodies", async () => {
+  await withFetch(
+    async () => ({
+      headers: new Headers({
+        location: "https://web.example.com/login?token=payload.signature",
+      }),
+      ok: false,
+      status: 302,
+      statusText: "Found",
+      async text() {
+        throw new Error("redirect response bodies should not be read");
+      },
+    }),
+    async () => {
+      const response = await fetchText(
+        "https://web.example.com/preview?token=payload.signature",
+      );
+
+      assert.deepEqual(response, {
+        ok: false,
+        redirectLocation: "https://web.example.com/login?token=[redacted]",
+        status: 302,
+        statusText: "Found",
+        text: "",
+        url: "https://web.example.com/preview?token=payload.signature",
+      });
+    },
+  );
+});
+
+test("preview smoke HTTP helpers cap oversized text responses", async () => {
+  await withFetch(
+    async () => ({
+      headers: new Headers({ "Content-Length": "1000001" }),
+      ok: true,
+      status: 200,
+      statusText: "OK",
+      async text() {
+        throw new Error("oversized preview bodies should not be read");
+      },
+    }),
+    async () => {
+      const response = await fetchText(
+        "https://web.example.com/preview?token=payload.signature",
+      );
+
+      assert.equal(response.ok, true);
+      assert.equal(response.status, 200);
+      assert.equal(response.text, "");
+      assert.equal(
+        response.bodyReadError,
+        "https://web.example.com/preview?token=[redacted] returned a preview response body larger than 1000000 bytes.",
+      );
+    },
+  );
+});
