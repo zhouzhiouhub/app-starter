@@ -55,6 +55,10 @@ the API requires the full R2 upload configuration and a safe explicit
 `MEDIA_CDN_BASE_URL`; otherwise upload target or managed CDN URL creation fails
 instead of returning `.local.invalid` placeholders. Media production mode is
 detected from `NODE_ENV`, `APP_ENV`, or `VERCEL_ENV`.
+Production R2 readiness validates the configuration before issuing presigned
+URLs: `R2_ACCOUNT_ID` must be a DNS-safe label, `R2_BUCKET` must be 3 to 63
+characters using letters, numbers, dots, or hyphens, and R2 credentials plus
+`R2_REGION` must not contain whitespace or control characters.
 
 For storefront ISR, set the same secret in the API and Web runtimes. The API
 uses `STOREFRONT_REVALIDATE_URL` to call the Web app after publish or rollback:
@@ -249,11 +253,13 @@ CDN, ISR, and SEO failures can be triaged from the JSON artifact. Media check
 details include the presigned URL host, CDN host, upload URL/R2 key match
 status, CDN/R2 key match status, upload target metadata, and whether a real
 object upload was required, but never include the signed upload URL itself.
-Media environment diagnostics
-also record whether the CDN URL is HTTPS, production-ready, and free of query
-strings or embedded credentials. Publish and rollback revalidation details
-include a `diagnosis` field for triggered, missing secret, missing URL, HTTP
-request failure, and network or timeout-style failures. Analytics diagnostics
+Media environment diagnostics record R2 missing-variable names, non-secret
+invalid-variable issue codes, and whether the CDN URL is HTTPS,
+production-ready, and free of query strings or embedded credentials, but never
+record R2 account IDs, access keys, secret keys, or bucket names. Publish and
+rollback revalidation details include a `diagnosis` field for triggered,
+missing secret, missing URL, HTTP request failure, and network or timeout-style
+failures. Analytics diagnostics
 record whether the runtime gates are valid and whether an enabled analytics
 setup has consent plus at least one valid provider. Feature flag diagnostics
 record whether `COMMERCE_ENABLED` and `MULTI_LOCALE_ENABLED` are explicitly

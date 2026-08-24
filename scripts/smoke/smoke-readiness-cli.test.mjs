@@ -33,6 +33,21 @@ test("smoke readiness CLI formats blockers with remediation context", () => {
         message: "Configure all required R2 variables before production smoke.",
         missingRequired: ["R2_SECRET_ACCESS_KEY"],
       },
+      {
+        area: "media.r2",
+        issue: "invalid-config",
+        issues: [
+          {
+            issue: "invalid-account-id",
+            variable: "R2_ACCOUNT_ID",
+          },
+          {
+            issue: "invalid-bucket",
+            variable: "R2_BUCKET",
+          },
+        ],
+        message: "R2 upload configuration contains invalid production values.",
+      },
     ],
     nextActions: [
       {
@@ -41,6 +56,11 @@ test("smoke readiness CLI formats blockers with remediation context", () => {
       },
       {
         action: "Set missing R2 variables: R2_SECRET_ACCESS_KEY.",
+        area: "media.r2",
+      },
+      {
+        action:
+          "Replace invalid R2 variables with production-safe account, bucket, credential, and region values.",
         area: "media.r2",
       },
     ],
@@ -53,9 +73,11 @@ test("smoke readiness CLI formats blockers with remediation context", () => {
     "Production smoke passed, but the report is not yet production-ready:",
     "  - [deployment.api/placeholder-host] API_URL must be a production HTTPS URL. (host: api.example.com, path: /api/v1, variable: API_URL)",
     "  - [media.r2/missing-required-env] Configure all required R2 variables before production smoke. (missing: R2_SECRET_ACCESS_KEY)",
+    "  - [media.r2/invalid-config] R2 upload configuration contains invalid production values. (issues: R2_ACCOUNT_ID invalid-account-id, R2_BUCKET invalid-bucket)",
     "Next actions:",
     "  - [deployment.api] Set API_URL to the deployed API HTTPS origin.",
     "  - [media.r2] Set missing R2 variables: R2_SECRET_ACCESS_KEY.",
+    "  - [media.r2] Replace invalid R2 variables with production-safe account, bucket, credential, and region values.",
   ]);
 });
 

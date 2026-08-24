@@ -236,14 +236,42 @@ function collectMediaReadiness(blockers, media, config) {
       "r2-upload-smoke-not-required",
       "Set SMOKE_REQUIRE_R2_UPLOAD=true to prove R2 upload and CDN delivery.",
     );
-  } else if (media?.r2?.configured !== true) {
-    appendBlocker(
-      blockers,
-      "media.r2",
-      "missing-required-env",
-      "Configure all required R2 variables before production smoke.",
-      { missingRequired: media?.r2?.missingRequired ?? [] },
-    );
+  } else {
+    const missingRequired = media?.r2?.missingRequired ?? [];
+    const issues = media?.r2?.issues ?? [];
+
+    if (missingRequired.length > 0) {
+      appendBlocker(
+        blockers,
+        "media.r2",
+        "missing-required-env",
+        "Configure all required R2 variables before production smoke.",
+        { missingRequired },
+      );
+    }
+
+    if (issues.length > 0) {
+      appendBlocker(
+        blockers,
+        "media.r2",
+        "invalid-config",
+        "R2 upload configuration contains invalid production values.",
+        { issues },
+      );
+    }
+
+    if (
+      media?.r2?.configured !== true &&
+      missingRequired.length === 0 &&
+      issues.length === 0
+    ) {
+      appendBlocker(
+        blockers,
+        "media.r2",
+        "r2-not-production-ready",
+        "R2 upload configuration must be production-ready before smoke.",
+      );
+    }
   }
 
   if (media?.cdnConfigured !== true) {

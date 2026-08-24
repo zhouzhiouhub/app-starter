@@ -61,9 +61,7 @@ function readBlockerActions(blocker) {
     return [
       createAction(
         blocker.area,
-        blocker.issue === "r2-upload-smoke-not-required"
-          ? "Configure R2 credentials and set SMOKE_REQUIRE_R2_UPLOAD=true."
-          : `Set missing R2 variables${formatMissingList(blocker.missingRequired)}.`,
+        readR2Action(blocker),
       ),
     ];
   }
@@ -215,6 +213,18 @@ function readWarningActions(warning) {
 
 function createAction(area, action) {
   return { action, area };
+}
+
+function readR2Action(blocker) {
+  if (blocker.issue === "r2-upload-smoke-not-required") {
+    return "Configure R2 credentials and set SMOKE_REQUIRE_R2_UPLOAD=true.";
+  }
+
+  if (blocker.issue === "invalid-config") {
+    return "Replace invalid R2 variables with production-safe account, bucket, credential, and region values.";
+  }
+
+  return `Set missing R2 variables${formatMissingList(blocker.missingRequired)}.`;
 }
 
 function dedupeActions(actions) {

@@ -16,6 +16,15 @@ export type MediaUploadTarget = {
   expiresAt: Date;
 };
 
+type R2UploadConfig = Required<
+  Pick<
+    R2UploadEnv,
+    "R2_ACCESS_KEY_ID" | "R2_ACCOUNT_ID" | "R2_BUCKET" | "R2_SECRET_ACCESS_KEY"
+  >
+> & {
+  R2_REGION: string;
+};
+
 export type R2UploadEnv = MediaProductionEnvironment & {
   CDN_BASE_URL?: string;
   MEDIA_CDN_BASE_URL?: string;
@@ -39,18 +48,19 @@ export function createMediaUploadTarget(input: {
   const now = input.now ?? new Date();
   const expiresAt = new Date(now.getTime() + ttlSeconds * 1000);
   const isProduction = isProductionMediaEnvironment(env);
+  const r2Config = readR2UploadConfig(env);
 
-  if (hasR2UploadConfig(env)) {
+  if (r2Config) {
     return {
       uploadUrl: createR2PresignedPutUrl({
-        accessKeyId: env.R2_ACCESS_KEY_ID,
-        accountId: env.R2_ACCOUNT_ID,
-        bucket: env.R2_BUCKET,
+        accessKeyId: r2Config.R2_ACCESS_KEY_ID,
+        accountId: r2Config.R2_ACCOUNT_ID,
+        bucket: r2Config.R2_BUCKET,
         mimeType: input.mimeType,
         now,
         r2Key: input.r2Key,
-        region: env.R2_REGION ?? "auto",
-        secretAccessKey: env.R2_SECRET_ACCESS_KEY,
+        region: r2Config.R2_REGION,
+        secretAccessKey: r2Config.R2_SECRET_ACCESS_KEY,
         ttlSeconds,
       }),
       headers: {
@@ -98,26 +108,91 @@ export function createMediaCdnUrl(
 }
 
 export class MediaUploadConfigurationError extends Error {
-  constructor() {
-    super("R2 upload configuration is required in production.");
+  constructor(message = "R2 upload configuration is required in production.") {
+    super(message);
   }
 }
 
-function hasR2UploadConfig(
-  env: R2UploadEnv,
-): env is Required<
-  Pick<
-    R2UploadEnv,
-    "R2_ACCOUNT_ID" | "R2_ACCESS_KEY_ID" | "R2_BUCKET" | "R2_SECRET_ACCESS_KEY"
-  >
-> &
-  R2UploadEnv {
+function readR2UploadConfig(env: R2UploadEnv): R2UploadConfig | null {
+  const config = {
+    R2_ACCESS_KEY_ID: readR2EnvValue(env.R2_ACCESS_KEY_ID),
+    R2_ACCOUNT_ID: readR2EnvValue(env.R2_ACCOUNT_ID),
+    R2_BUCKET: readR2EnvValue(env.R2_BUCKET),
+    R2_REGION: readR2EnvValue(env.R2_REGION) ?? "auto",
+    R2_SECRET_ACCESS_KEY: readR2EnvValue(env.R2_SECRET_ACCESS_KEY),
+  };
+  const requiredValues = [
+    config.R2_ACCESS_KEY_ID,
+    config.R2_ACCOUNT_ID,
+    config.R2_BUCKET,
+    config.R2_SECRET_ACCESS_KEY,
+  ];
+
+  if (requiredValues.every((value) => !value)) {
+    return null;
+  }
+
+  if (
+    requiredValues.some((value) => !value) ||
+    !isSafeR2AccountId(config.R2_ACCOUNT_ID) ||
+    !isSafeR2Bucket(config.R2_BUCKET) ||
+    !isSafeR2Credential(config.R2_ACCESS_KEY_ID) ||
+    !isSafeR2Credential(config.R2_SECRET_ACCESS_KEY) ||
+    !isSafeR2Region(config.R2_REGION)
+  ) {
+    throw new MediaUploadConfigurationError(
+      "R2 upload configuration is invalid.",
+    );
+  }
+
+  return config as R2UploadConfig;
+}
+
+function readR2EnvValue(value: string | undefined): string | null {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : null;
+}
+
+function isSafeR2AccountId(value: string | null): value is string {
   return Boolean(
-    env.R2_ACCOUNT_ID &&
-    env.R2_ACCESS_KEY_ID &&
-    env.R2_BUCKET &&
-    env.R2_SECRET_ACCESS_KEY,
+    value &&
+      value.length <= 63 &&
+      /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/i.test(value),
   );
+}
+
+function isSafeR2Bucket(value: string | null): value is string {
+  return Boolean(
+    value &&
+      value.length >= 3 &&
+      value.length <= 63 &&
+      /^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/i.test(value) &&
+      !value.includes(".."),
+  );
+}
+
+function isSafeR2Credential(value: string | null): value is string {
+  return Boolean(
+    value &&
+      value.length <= 4096 &&
+      !/\s/.test(value) &&
+      !hasControlCharacter(value),
+  );
+}
+
+function isSafeR2Region(value: string | null): value is string {
+  return Boolean(
+    value &&
+      value.length <= 64 &&
+      /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i.test(value),
+  );
+}
+
+function hasControlCharacter(value: string): boolean {
+  return Array.from(value).some((character) => {
+    const codePoint = character.codePointAt(0) ?? 0;
+    return codePoint <= 0x1f || codePoint === 0x7f;
+  });
 }
 
 function readMediaUploadTargetTtlSeconds(value: number | undefined): number {

@@ -62,7 +62,7 @@ export function createProductionReadyEnvironmentDiagnostics() {
     media: {
       cdnConfigured: true,
       cdnProductionReady: true,
-      r2: { configured: true, missingRequired: [] },
+      r2: { configured: true, issues: [], missingRequired: [] },
     },
     preview: {
       secretConfigured: true,

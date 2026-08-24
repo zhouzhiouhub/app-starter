@@ -346,6 +346,14 @@ PREVIEW_TOKEN_SECRET=use-a-preview-secret-at-least-32-chars
 PREVIEW_TOKEN_PREVIOUS_SECRET=
 PREVIEW_TOKEN_TTL_SECONDS=3600
 
+R2_ACCOUNT_ID=your-r2-account-id
+R2_ACCESS_KEY_ID=your-r2-access-key-id
+R2_SECRET_ACCESS_KEY=your-r2-secret-access-key
+R2_BUCKET=your-media-bucket
+R2_REGION=auto
+MEDIA_CDN_BASE_URL=https://cdn.your-storefront.example.com
+MEDIA_EXTERNAL_URL_HOSTS=
+
 ANALYTICS_ENABLED=false
 ANALYTICS_CONSENT_GRANTED=false
 GTM_CONTAINER_ID=GTM-XXXXXXX
@@ -360,6 +368,7 @@ CLARITY_PROJECT_ID=xxxxxxxxxx
 - 不要把本机 PostgreSQL 密码用于生产环境。
 - 不要把生产数据库连接串提交到 Git。
 - Analytics 脚本只有在 `ANALYTICS_ENABLED=true` 且 `ANALYTICS_CONSENT_GRANTED=true` 时才会加载；未接入 Consent 机制前保持关闭。
+- R2 生产配置必须使用 DNS 安全的 `R2_ACCOUNT_ID`、3 到 63 字符的安全 bucket 名称，以及不含空白或控制字符的凭据和 region；生产 smoke readiness 会把格式错误的 R2 变量判定为 `invalid-config`。
 - 生产 `PREVIEW_TOKEN_SECRET` 必须是 32 到 1024 字符且不包含控制字符的签名密钥；如果配置 `PREVIEW_TOKEN_PREVIOUS_SECRET` 做轮换，也必须满足同样边界。
 - `PREVIEW_TOKEN_TTL_SECONDS` 只接受 1 到 3600 秒，非法或更长配置会回退到 3600 秒，保持预览链接 1 小时有效。
 - `STOREFRONT_REVALIDATE_SECRET` 必须是不超过 1024 字符且不包含控制字符的非空值；生产 smoke readiness 会把超长或含控制字符的值判定为不安全配置。

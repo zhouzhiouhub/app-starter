@@ -39,6 +39,7 @@ export function createReadyEnvironment() {
       cdnProductionReady: true,
       r2: {
         configured: true,
+        issues: [],
         missingRequired: [],
       },
     },

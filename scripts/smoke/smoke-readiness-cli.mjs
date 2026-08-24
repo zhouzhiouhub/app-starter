@@ -82,6 +82,7 @@ function formatIssueContext(issue) {
     formatField("path", issue?.path),
     formatField("variable", issue?.variable),
     formatListField("missing", issue?.missingRequired),
+    formatIssueListField("issues", issue?.issues),
   ].filter(Boolean);
 
   return fields.join(", ");
@@ -97,4 +98,20 @@ function formatListField(name, value) {
   return Array.isArray(value) && value.length > 0
     ? `${name}: ${value.join(", ")}`
     : null;
+}
+
+function formatIssueListField(name, value) {
+  if (!Array.isArray(value) || value.length === 0) {
+    return null;
+  }
+
+  const items = value
+    .map((issue) => {
+      const variable = issue?.variable;
+      const code = issue?.issue;
+      return variable && code ? `${variable} ${code}` : null;
+    })
+    .filter(Boolean);
+
+  return items.length > 0 ? `${name}: ${items.join(", ")}` : null;
 }

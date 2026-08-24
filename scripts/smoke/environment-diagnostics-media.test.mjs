@@ -144,6 +144,7 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
       externalUrlHostsProductionReady: true,
       r2: {
         configured: true,
+        issues: [],
         missingRequired: [],
         region: "auto",
       },
@@ -206,6 +207,7 @@ test("smoke environment diagnostics reports missing R2 and CDN fallback", () => 
     "R2_SECRET_ACCESS_KEY",
     "R2_BUCKET",
   ]);
+  assert.deepEqual(diagnostics.media.r2.issues, []);
   assert.equal(diagnostics.media.r2.configured, false);
   assert.equal(diagnostics.media.cdnConfigured, false);
   assert.equal(diagnostics.media.cdnHost, "cdn.local.invalid");

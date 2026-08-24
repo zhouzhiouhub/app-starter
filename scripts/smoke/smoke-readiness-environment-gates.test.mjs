@@ -282,6 +282,54 @@ test("smoke readiness blocks unsafe external media host allowlists", () => {
   ]);
 });
 
+test("smoke readiness blocks unsafe R2 configuration values", () => {
+  const environment = createReadyEnvironment();
+  environment.media.r2 = {
+    configured: false,
+    issues: [
+      {
+        issue: "invalid-account-id",
+        variable: "R2_ACCOUNT_ID",
+      },
+      {
+        issue: "invalid-bucket",
+        variable: "R2_BUCKET",
+      },
+    ],
+    missingRequired: [],
+  };
+  const readiness = createSmokeProductionReadiness(
+    environment,
+    createReadyConfig(),
+  );
+
+  assert.deepEqual(readiness.blockers, [
+    {
+      area: "media.r2",
+      issue: "invalid-config",
+      issues: [
+        {
+          issue: "invalid-account-id",
+          variable: "R2_ACCOUNT_ID",
+        },
+        {
+          issue: "invalid-bucket",
+          variable: "R2_BUCKET",
+        },
+      ],
+      message: "R2 upload configuration contains invalid production values.",
+    },
+  ]);
+  assert.equal(readiness.productionReady, false);
+  assert.deepEqual(readiness.nextActions, [
+    {
+      action:
+        "Replace invalid R2 variables with production-safe account, bucket, credential, and region values.",
+      area: "media.r2",
+    },
+  ]);
+});
+
 test("smoke readiness requires production JWT keys", () => {
   const environment = createReadyEnvironment();
   environment.identity = {

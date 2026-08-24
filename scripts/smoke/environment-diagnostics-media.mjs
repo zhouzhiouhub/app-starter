@@ -20,9 +20,7 @@ export function createMediaDiagnostics(env = process.env) {
   const externalUrlHosts = readExternalUrlHostDiagnostics(
     readEnv(env, "MEDIA_EXTERNAL_URL_HOSTS"),
   );
-  const missingR2Variables = r2RequiredVariables.filter(
-    (name) => !readEnv(env, name),
-  );
+  const r2 = readR2Diagnostics(env);
 
   return {
     cdnConfigured,
@@ -41,11 +39,70 @@ export function createMediaDiagnostics(env = process.env) {
       (host) => !host.issue,
     ),
     r2: {
-      configured: missingR2Variables.length === 0,
-      missingRequired: missingR2Variables,
-      region: readEnv(env, "R2_REGION") ?? "auto",
+      configured: r2.missingRequired.length === 0 && r2.issues.length === 0,
+      issues: r2.issues,
+      missingRequired: r2.missingRequired,
+      region: r2.region,
     },
   };
+}
+
+function readR2Diagnostics(env) {
+  const accountId = readEnv(env, "R2_ACCOUNT_ID");
+  const accessKeyId = readEnv(env, "R2_ACCESS_KEY_ID");
+  const bucket = readEnv(env, "R2_BUCKET");
+  const region = readEnv(env, "R2_REGION");
+  const secretAccessKey = readEnv(env, "R2_SECRET_ACCESS_KEY");
+  const missingRequired = r2RequiredVariables.filter((name) => !readEnv(env, name));
+  const issues = [];
+
+  appendR2Issue(issues, "R2_ACCOUNT_ID", accountId, isSafeR2AccountId);
+  appendR2Issue(issues, "R2_ACCESS_KEY_ID", accessKeyId, isSafeR2Credential);
+  appendR2Issue(issues, "R2_BUCKET", bucket, isSafeR2Bucket);
+  appendR2Issue(
+    issues,
+    "R2_SECRET_ACCESS_KEY",
+    secretAccessKey,
+    isSafeR2Credential,
+  );
+
+  if (region && !isSafeR2Region(region)) {
+    issues.push({
+      issue: "invalid-region",
+      variable: "R2_REGION",
+    });
+  }
+
+  return {
+    issues,
+    missingRequired,
+    region: region && isSafeR2Region(region) ? region : "auto",
+  };
+}
+
+function appendR2Issue(issues, variable, value, isSafe) {
+  if (!value) {
+    return;
+  }
+
+  if (!isSafe(value)) {
+    issues.push({
+      issue: readR2Issue(variable),
+      variable,
+    });
+  }
+}
+
+function readR2Issue(variable) {
+  if (variable === "R2_ACCOUNT_ID") {
+    return "invalid-account-id";
+  }
+
+  if (variable === "R2_BUCKET") {
+    return "invalid-bucket";
+  }
+
+  return "invalid-credential";
 }
 
 function readCdnDiagnostics(value) {
@@ -201,4 +258,42 @@ function readProductionHostSafety(host) {
 function readEnv(env, name) {
   const value = env[name]?.trim();
   return value ? value : null;
+}
+
+function isSafeR2AccountId(value) {
+  return (
+    value.length <= 63 &&
+    /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/i.test(value)
+  );
+}
+
+function isSafeR2Bucket(value) {
+  return (
+    value.length >= 3 &&
+    value.length <= 63 &&
+    /^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/i.test(value) &&
+    !value.includes("..")
+  );
+}
+
+function isSafeR2Credential(value) {
+  return (
+    value.length <= 4096 &&
+    !/\s/.test(value) &&
+    !hasControlCharacter(value)
+  );
+}
+
+function isSafeR2Region(value) {
+  return (
+    value.length <= 64 &&
+    /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i.test(value)
+  );
+}
+
+function hasControlCharacter(value) {
+  return Array.from(value).some((character) => {
+    const codePoint = character.codePointAt(0) ?? 0;
+    return codePoint <= 0x1f || codePoint === 0x7f;
+  });
 }
