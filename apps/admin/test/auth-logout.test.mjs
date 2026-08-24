@@ -51,6 +51,35 @@ test("logout clears local session without waiting for server revocation", async 
   });
 });
 
+test("logout cancels server revocation response bodies", async () => {
+  const storage = createMemoryStorage();
+  let markCanceled;
+  const canceled = new Promise((resolve) => {
+    markCanceled = resolve;
+  });
+
+  storage.setItem(AUTH_SESSION_STORAGE_KEY, JSON.stringify(authSession));
+
+  await withLocalStorage(storage, async () => {
+    await withFetch(
+      async () =>
+        new Response(
+          new ReadableStream({
+            cancel() {
+              markCanceled();
+            },
+          }),
+          { status: 200 },
+        ),
+      async () => {
+        await logoutCurrentSession();
+      },
+    );
+  });
+
+  assert.equal(await readPromiseState(canceled), "settled");
+});
+
 test("logout ignores request startup failures after clearing local session", async () => {
   const storage = createMemoryStorage();
   storage.setItem(AUTH_SESSION_STORAGE_KEY, JSON.stringify(authSession));
@@ -91,6 +120,21 @@ async function readImmediatePromiseState(promise) {
     ),
     new Promise((resolve) => {
       setTimeout(() => resolve(pending), 0);
+    }),
+  ]);
+
+  return state === pending ? "pending" : state;
+}
+
+async function readPromiseState(promise) {
+  const pending = Symbol("pending");
+  const state = await Promise.race([
+    promise.then(
+      () => "settled",
+      () => "settled",
+    ),
+    new Promise((resolve) => {
+      setTimeout(() => resolve(pending), 100);
     }),
   ]);
 

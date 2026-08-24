@@ -44,14 +44,20 @@ export async function logoutCurrentSession(): Promise<void> {
   }
 
   // Local logout is complete; server revocation should not block navigation.
+  void revokeRefreshToken(session.refreshToken);
+}
+
+async function revokeRefreshToken(refreshToken: string): Promise<void> {
   try {
-    void fetch(`${getApiBaseUrl()}/auth/logout`, {
-      body: JSON.stringify({ refreshToken: session.refreshToken }),
+    const response = await fetch(`${getApiBaseUrl()}/auth/logout`, {
+      body: JSON.stringify({ refreshToken }),
       headers: { "Content-Type": "application/json" },
       keepalive: true,
       method: "POST",
       redirect: adminAuthRedirectPolicy,
-    }).catch(() => undefined);
+    });
+
+    await response.body?.cancel();
   } catch {
     // Logout remains local if the browser refuses the best-effort request.
   }
