@@ -142,8 +142,15 @@ test("preview smoke HTTP helpers disable redirects by default", async () => {
 });
 
 test("preview smoke HTTP helpers skip redirected text bodies", async () => {
+  let bodyCanceled = false;
+
   await withFetch(
     async () => ({
+      body: {
+        cancel() {
+          bodyCanceled = true;
+        },
+      },
       headers: new Headers({
         location: "https://web.example.com/login?token=payload.signature",
       }),
@@ -169,6 +176,8 @@ test("preview smoke HTTP helpers skip redirected text bodies", async () => {
       });
     },
   );
+
+  assert.equal(bodyCanceled, true);
 });
 
 test("preview smoke HTTP helpers cap oversized text responses", async () => {

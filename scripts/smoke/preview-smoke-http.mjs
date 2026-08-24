@@ -6,6 +6,7 @@ import {
   isOversizedResponseBodyError,
   readBoundedResponseText,
 } from "./bounded-response-text.mjs";
+import { cancelResponseBody } from "./http-response-summary.mjs";
 import { redactSmokeSecrets } from "./smoke-secrets.mjs";
 
 export { fetchJson, readHttpError, redactSmokeSecrets };
@@ -16,6 +17,9 @@ export async function fetchText(url, init) {
     redirect: init?.redirect ?? "manual",
   });
   const redirectLocation = readRedirectLocation(response);
+  if (redirectLocation) {
+    await cancelResponseBody(response);
+  }
   const body = redirectLocation
     ? { text: "" }
     : await readPreviewResponseBody(response, url);
