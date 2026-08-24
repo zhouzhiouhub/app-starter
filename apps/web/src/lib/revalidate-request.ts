@@ -6,6 +6,10 @@ import {
   pageSlugSchema,
   readSiteDomainHeader,
 } from "@app-starter/schema";
+import {
+  readRevalidateRequestBody,
+  type RevalidateBodyReadable,
+} from "./revalidate-request-body.ts";
 import { readWebRuntimeDefaults } from "./runtime-defaults.ts";
 
 export type RevalidateInput = {
@@ -18,7 +22,11 @@ export type RevalidateInput = {
 export type RevalidatePayloadErrorDetails = {
   defaults: RevalidateDefaults;
   fields: string[];
-  reason: "invalid-body" | "invalid-fields" | "invalid-json";
+  reason:
+    | "body-too-large"
+    | "invalid-body"
+    | "invalid-fields"
+    | "invalid-json";
 };
 
 export type RevalidatePayloadError = {
@@ -45,10 +53,6 @@ export type RevalidateDefaults = {
   market: string;
 };
 
-type JsonReadable = {
-  json(): Promise<unknown>;
-};
-
 type RevalidateSiteHostResult =
   | {
       ok: true;
@@ -59,17 +63,26 @@ type RevalidateSiteHostResult =
     };
 
 export async function readRevalidatePayload(
-  request: JsonReadable,
+  request: RevalidateBodyReadable,
   defaults = readRevalidateDefaults(),
 ): Promise<RevalidatePayloadResult> {
-  try {
-    return parseRevalidatePayload(await request.json(), defaults);
-  } catch {
-    return validationError("Revalidation request body must be valid JSON.", {
-      defaults,
-      fields: ["body"],
-      reason: "invalid-json",
-    });
+  const body = await readRevalidateRequestBody(request);
+
+  switch (body.reason) {
+    case null:
+      return parseRevalidatePayload(body.value, defaults);
+    case "body-too-large":
+      return validationError("Revalidation request body is too large.", {
+        defaults,
+        fields: ["body"],
+        reason: "body-too-large",
+      });
+    case "invalid-json":
+      return validationError("Revalidation request body must be valid JSON.", {
+        defaults,
+        fields: ["body"],
+        reason: "invalid-json",
+      });
   }
 }
 

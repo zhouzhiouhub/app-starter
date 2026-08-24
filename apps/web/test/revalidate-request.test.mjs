@@ -148,6 +148,48 @@ test("revalidate payload reports invalid JSON", async () => {
   assert.deepEqual(result.error.details.fields, ["body"]);
 });
 
+test("revalidate payload rejects oversized content lengths", async () => {
+  const result = await readRevalidatePayload(
+    {
+      headers: new Headers({ "Content-Length": "10001" }),
+      async json() {
+        throw new Error("oversized bodies should not be parsed");
+      },
+    },
+    defaults,
+  );
+
+  assert.equal(result.ok, false);
+  assert.equal(result.error.code, "VALIDATION_ERROR");
+  assert.equal(result.error.message, "Revalidation request body is too large.");
+  assert.equal(result.error.details.reason, "body-too-large");
+  assert.deepEqual(result.error.details.fields, ["body"]);
+});
+
+test("revalidate payload rejects oversized streaming bodies", async () => {
+  const result = await readRevalidatePayload(
+    {
+      body: new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode("x".repeat(10_001)));
+          controller.close();
+        },
+      }),
+      headers: new Headers(),
+      async json() {
+        throw new Error("streamed bodies should not call json");
+      },
+    },
+    defaults,
+  );
+
+  assert.equal(result.ok, false);
+  assert.equal(result.error.code, "VALIDATION_ERROR");
+  assert.equal(result.error.message, "Revalidation request body is too large.");
+  assert.equal(result.error.details.reason, "body-too-large");
+  assert.deepEqual(result.error.details.fields, ["body"]);
+});
+
 test("revalidate payload reports invalid fields", () => {
   const result = parseRevalidatePayload(
     {
