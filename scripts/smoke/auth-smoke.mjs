@@ -9,6 +9,7 @@ export async function loginSmokeAdmin(input, fetcher = fetchJson) {
     }),
     headers: { "Content-Type": "application/json" },
     method: "POST",
+    redirect: "manual",
   });
 
   if (!response.ok) {

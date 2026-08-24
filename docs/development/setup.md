@@ -223,6 +223,9 @@ credentials, query strings, fragments, unsupported protocols, and unexpected
 paths before it sends login or publish requests. It also validates
 `SMOKE_PAGE_SLUG`, `SMOKE_LOCALE`, and `SMOKE_MARKET` before creating the smoke
 page so invalid schema context fails before any publish request is sent.
+The login smoke request uses manual redirects so a 30x response is reported
+instead of following a wrong API proxy, old domain, or hosted login page with
+the admin credentials.
 Boolean smoke flags accept only `true`/`false`, `1`/`0`, `yes`/`no`, or
 `on`/`off`; misspelled values fail instead of silently disabling a check.
 Retry settings are also validated: `SMOKE_RETRY_ATTEMPTS` must be 1-60 and

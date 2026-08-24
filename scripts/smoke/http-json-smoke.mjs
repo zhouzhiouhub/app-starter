@@ -14,10 +14,12 @@ export async function fetchJson(url, init) {
   const response = await fetch(url, init);
   const text = await response.text();
   const body = text ? parseJson(text, url) : null;
+  const redirectLocation = readRedirectLocation(response);
 
   return {
     body,
     ok: response.ok,
+    ...(redirectLocation ? { redirectLocation } : {}),
     status: response.status,
     statusText: response.statusText,
     url,
@@ -31,7 +33,11 @@ export function readHttpError(response, fallback) {
     response.statusText ??
     fallback;
 
-  return redactSmokeSecrets(`${fallback} ${response.status}: ${message}`);
+  const redirect = response.redirectLocation
+    ? ` redirect: ${response.redirectLocation}`
+    : "";
+
+  return redactSmokeSecrets(`${fallback} ${response.status}: ${message}${redirect}`);
 }
 
 function parseJson(text, url) {
@@ -44,4 +50,14 @@ function parseJson(text, url) {
       ),
     );
   }
+}
+
+function readRedirectLocation(response) {
+  if (response.status < 300 || response.status >= 400) {
+    return null;
+  }
+
+  const location = response.headers.get("location")?.trim();
+
+  return location ? redactSmokeSecrets(location) : null;
 }
