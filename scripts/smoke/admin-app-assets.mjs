@@ -1,10 +1,15 @@
 import { redactSmokeSecrets } from "./smoke-secrets.mjs";
+import {
+  cancelResponseBody,
+  readRedirectLocation,
+} from "./http-response-summary.mjs";
 
 export async function readModuleScriptAttempt(url) {
   try {
     const response = await fetch(url, { redirect: "manual" });
     const contentType = response.headers.get("content-type");
     const redirectLocation = readRedirectLocation(response);
+    await cancelResponseBody(response);
 
     return {
       contentType,
@@ -158,6 +163,7 @@ async function readStylesheetAttempt(url) {
     const response = await fetch(url, { redirect: "manual" });
     const contentType = response.headers.get("content-type");
     const redirectLocation = readRedirectLocation(response);
+    await cancelResponseBody(response);
 
     return {
       contentType,
@@ -285,14 +291,4 @@ function isCssContentType(value) {
 
 function readErrorMessage(error) {
   return redactSmokeSecrets(error instanceof Error ? error.message : error);
-}
-
-function readRedirectLocation(response) {
-  if (response.status < 300 || response.status >= 400) {
-    return null;
-  }
-
-  const location = response.headers.get("location")?.trim();
-
-  return location ? redactSmokeSecrets(location) : null;
 }
