@@ -17,6 +17,7 @@ export class AuthRequiredError extends Error {
 }
 
 let refreshAuthSessionPromise: Promise<AuthSession | null> | null = null;
+const adminAuthRedirectPolicy: RequestRedirect = "manual";
 
 export async function loginWithPassword(input: {
   email: string;
@@ -26,6 +27,7 @@ export async function loginWithPassword(input: {
     body: JSON.stringify(input),
     headers: { "Content-Type": "application/json" },
     method: "POST",
+    redirect: adminAuthRedirectPolicy,
   });
   const session = await readSessionResponse(response, "Login failed.");
   writeAuthSession(session);
@@ -48,6 +50,7 @@ export async function logoutCurrentSession(): Promise<void> {
       headers: { "Content-Type": "application/json" },
       keepalive: true,
       method: "POST",
+      redirect: adminAuthRedirectPolicy,
     }).catch(() => undefined);
   } catch {
     // Logout remains local if the browser refuses the best-effort request.
@@ -126,6 +129,7 @@ async function refreshAuthSessionOnce(): Promise<AuthSession | null> {
       body: JSON.stringify({ refreshToken: session.refreshToken }),
       headers: { "Content-Type": "application/json" },
       method: "POST",
+      redirect: adminAuthRedirectPolicy,
     });
   } catch {
     return null;
@@ -167,6 +171,7 @@ async function sendWithAccessToken(
   return fetch(`${getApiBaseUrl()}${path}`, {
     ...init,
     headers,
+    redirect: adminAuthRedirectPolicy,
   });
 }
 
