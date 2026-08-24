@@ -10,6 +10,10 @@ import {
 import { Button, Space, Tooltip } from "antd";
 import { useNavigate } from "react-router-dom";
 import { buildPageAuditLogPath } from "../audit-log-link";
+import {
+  storefrontExternalLinkRel,
+  storefrontExternalLinkTarget,
+} from "../storefront-link-policy";
 import { readStorefrontPageUrl } from "../storefront-url";
 
 export function PageEditorToolbar(props: {
@@ -106,8 +110,8 @@ export function PageEditorToolbar(props: {
         disabled={viewDisabled}
         href={storefrontUrl.ok ? storefrontUrl.href : undefined}
         icon={<ExportOutlined />}
-        rel="noreferrer"
-        target="_blank"
+        rel={storefrontExternalLinkRel}
+        target={storefrontExternalLinkTarget}
         title={viewTitle}
       >
         View on site
