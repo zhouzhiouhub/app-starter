@@ -58,6 +58,14 @@ test("identity authorization reads bearer tokens defensively", () => {
   assert.equal(readBearerToken("Bearer"), undefined);
   assert.equal(readBearerToken("Bearer "), undefined);
   assert.equal(readBearerToken("Bearer access-token extra"), undefined);
+  assert.equal(readBearerToken(`Bearer ${"a".repeat(4097)}`), undefined);
+  assert.equal(readBearerToken("Bearer access/token"), undefined);
+  assert.equal(readBearerToken("Bearer access:token"), undefined);
+  assert.equal(readBearerToken("Bearer access\u0000token"), undefined);
+  assert.equal(
+    readBearerToken("Bearer header.payload_signature-token"),
+    "header.payload_signature-token",
+  );
 });
 
 test("password hashing uses bcrypt and verifies the original value", async () => {
