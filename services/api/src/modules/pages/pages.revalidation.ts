@@ -59,6 +59,7 @@ type Fetcher = (
 ) => Promise<{ ok: boolean; status: number }>;
 
 const maxStorefrontRevalidationSecretLength = 1024;
+const storefrontRevalidationRedirectPolicy: RequestRedirect = "manual";
 
 export async function triggerStorefrontRevalidation(
   input: StorefrontRevalidationInput,
@@ -104,6 +105,7 @@ export async function triggerStorefrontRevalidation(
         normalizedInput.requestId,
       ),
       method: "POST",
+      redirect: storefrontRevalidationRedirectPolicy,
       signal: controller.signal,
     });
 

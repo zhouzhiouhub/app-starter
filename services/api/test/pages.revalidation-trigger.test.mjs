@@ -119,6 +119,7 @@ test("storefront revalidation posts the page payload with secret header", async 
       assert.equal(calls.length, 1);
       assert.equal(calls[0].url, "https://web.example.com/api/revalidate");
       assert.equal(calls[0].init.method, "POST");
+      assert.equal(calls[0].init.redirect, "manual");
       assert.equal(calls[0].init.headers["Content-Type"], "application/json");
       assert.equal(
         calls[0].init.headers["x-storefront-revalidate-secret"],
