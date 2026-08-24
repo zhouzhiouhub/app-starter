@@ -2,14 +2,16 @@ import { redactSmokeSecrets } from "./smoke-secrets.mjs";
 
 export async function readModuleScriptAttempt(url) {
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, { redirect: "manual" });
     const contentType = response.headers.get("content-type");
+    const redirectLocation = readRedirectLocation(response);
 
     return {
       contentType,
       errorMessage: null,
       hasJavaScriptContentType: isJavaScriptContentType(contentType),
       ok: response.ok,
+      ...(redirectLocation ? { redirectLocation } : {}),
       status: response.status,
       statusText: response.statusText,
     };
@@ -49,6 +51,7 @@ export async function readStylesheetSummary(references) {
         contentType,
         errorMessage,
         hasCssContentType,
+        redirectLocation,
         status,
         statusText,
         url,
@@ -56,6 +59,7 @@ export async function readStylesheetSummary(references) {
         contentType,
         errorMessage,
         hasCssContentType,
+        ...(redirectLocation ? { redirectLocation } : {}),
         status,
         statusText,
         url,
@@ -142,20 +146,25 @@ export function formatStylesheetIssue(attempt) {
   const error = firstFailure.errorMessage
     ? `, stylesheet error: ${firstFailure.errorMessage}`
     : "";
+  const redirect = firstFailure.redirectLocation
+    ? `, stylesheet redirect: ${firstFailure.redirectLocation}`
+    : "";
 
-  return `, stylesheet status: ${status}, stylesheet CSS: ${firstFailure.hasCssContentType}${error}`;
+  return `, stylesheet status: ${status}, stylesheet CSS: ${firstFailure.hasCssContentType}${redirect}${error}`;
 }
 
 async function readStylesheetAttempt(url) {
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, { redirect: "manual" });
     const contentType = response.headers.get("content-type");
+    const redirectLocation = readRedirectLocation(response);
 
     return {
       contentType,
       errorMessage: null,
       hasCssContentType: isCssContentType(contentType),
       ok: response.ok,
+      ...(redirectLocation ? { redirectLocation } : {}),
       status: response.status,
       statusText: response.statusText,
       url,
@@ -276,4 +285,14 @@ function isCssContentType(value) {
 
 function readErrorMessage(error) {
   return redactSmokeSecrets(error instanceof Error ? error.message : error);
+}
+
+function readRedirectLocation(response) {
+  if (response.status < 300 || response.status >= 400) {
+    return null;
+  }
+
+  const location = response.headers.get("location")?.trim();
+
+  return location ? redactSmokeSecrets(location) : null;
 }

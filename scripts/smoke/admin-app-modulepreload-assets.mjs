@@ -14,6 +14,7 @@ export async function readModulePreloadSummary(references) {
         contentType,
         errorMessage,
         hasJavaScriptContentType,
+        redirectLocation,
         status,
         statusText,
         url,
@@ -21,6 +22,7 @@ export async function readModulePreloadSummary(references) {
         contentType,
         errorMessage,
         hasJavaScriptContentType,
+        ...(redirectLocation ? { redirectLocation } : {}),
         status,
         statusText,
         url,
@@ -66,8 +68,11 @@ export function formatModulePreloadIssue(attempt) {
   const error = firstFailure.errorMessage
     ? `, modulepreload error: ${firstFailure.errorMessage}`
     : "";
+  const redirect = firstFailure.redirectLocation
+    ? `, modulepreload redirect: ${firstFailure.redirectLocation}`
+    : "";
 
-  return `, modulepreload status: ${status}, modulepreload JavaScript: ${firstFailure.hasJavaScriptContentType}${error}`;
+  return `, modulepreload status: ${status}, modulepreload JavaScript: ${firstFailure.hasJavaScriptContentType}${redirect}${error}`;
 }
 
 async function readModulePreloadAttempt(url) {

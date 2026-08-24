@@ -59,8 +59,9 @@ export async function assertAdminApp(input) {
 
 export async function readAdminAppAttempt(url) {
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, { redirect: "manual" });
     const text = await response.text();
+    const redirectLocation = readRedirectLocation(response);
     const hasRootElement = hasAdminRootElement(text);
     const contentType = response.headers.get("content-type");
     const hasHtmlContentType = isHtmlContentType(contentType);
@@ -85,6 +86,9 @@ export async function readAdminAppAttempt(url) {
       moduleScriptHasJavaScriptContentType:
         moduleScript.hasJavaScriptContentType,
       moduleScriptOk: moduleScript.ok,
+      ...(moduleScript.redirectLocation
+        ? { moduleScriptRedirectLocation: moduleScript.redirectLocation }
+        : {}),
       moduleScriptStatus: moduleScript.status,
       moduleScriptStatusText: moduleScript.statusText,
       moduleScriptUrl: moduleScriptReference.url,
@@ -95,6 +99,7 @@ export async function readAdminAppAttempt(url) {
       modulePreloadUrlIssues: modulePreload.urlIssues,
       modulePreloadUrls: modulePreload.urls,
       ok: response.ok,
+      ...(redirectLocation ? { redirectLocation } : {}),
       status: response.status,
       statusText: response.statusText,
       stylesheetCount: stylesheet.count,
@@ -158,6 +163,9 @@ export function formatAdminAppAttempt(attempt) {
   const moduleStatus = attempt.moduleScriptStatus
     ? `, module script status: ${attempt.moduleScriptStatus}${attempt.moduleScriptStatusText ? ` ${attempt.moduleScriptStatusText}` : ""}`
     : "";
+  const moduleRedirect = attempt.moduleScriptRedirectLocation
+    ? `, module script redirect: ${attempt.moduleScriptRedirectLocation}`
+    : "";
   const moduleError = attempt.moduleScriptErrorMessage
     ? `, module script error: ${attempt.moduleScriptErrorMessage}`
     : "";
@@ -170,12 +178,15 @@ export function formatAdminAppAttempt(attempt) {
   const modulePreloadIssue = formatModulePreloadIssue(attempt);
   const body = attempt.bodySnippet ? `, body: "${attempt.bodySnippet}"` : "";
   const error = attempt.errorMessage ? `, error: ${attempt.errorMessage}` : "";
+  const redirect = attempt.redirectLocation
+    ? `, redirect: ${attempt.redirectLocation}`
+    : "";
   const stylesheets =
     `, stylesheet count: ${attempt.stylesheetCount}` +
     `, stylesheets ok: ${attempt.stylesheetOk}`;
   const stylesheetIssue = formatStylesheetIssue(attempt);
 
-  return `${status}${content}, root element present: ${attempt.hasRootElement}${moduleScript}${moduleStatus}${moduleError}${moduleUrlIssue}${modulePreloads}${modulePreloadIssue}${stylesheets}${stylesheetIssue}${body}${error}`;
+  return `${status}${content}, root element present: ${attempt.hasRootElement}${redirect}${moduleScript}${moduleStatus}${moduleRedirect}${moduleError}${moduleUrlIssue}${modulePreloads}${modulePreloadIssue}${stylesheets}${stylesheetIssue}${body}${error}`;
 }
 
 function createAdminAppFailure(attempt) {
@@ -217,4 +228,14 @@ function readBodySnippet(text) {
 
 function readErrorMessage(error) {
   return redactSmokeSecrets(error instanceof Error ? error.message : error);
+}
+
+function readRedirectLocation(response) {
+  if (response.status < 300 || response.status >= 400) {
+    return null;
+  }
+
+  const location = response.headers.get("location")?.trim();
+
+  return location ? redactSmokeSecrets(location) : null;
 }
