@@ -208,6 +208,52 @@ test("storefront page smoke rejects redirected storefront responses", async () =
   );
 });
 
+test("storefront page smoke reports oversized storefront responses", async () => {
+  await withFetch(
+    async () =>
+      new Response("x".repeat(1_000_001), {
+        status: 200,
+        statusText: "OK",
+      }),
+    async () => {
+      await assert.rejects(
+        () =>
+          assertStorefrontPage(
+            {
+              locale: "en-US",
+              retryAttempts: 1,
+              retryDelayMs: 1,
+              slug: "smoke-page",
+              webUrl: "https://web.example.com",
+            },
+            "Published title",
+          ),
+        (error) => {
+          assert.equal(
+            error.message.includes("response-body-too-large"),
+            true,
+          );
+          assert.deepEqual(error.smokeDetails.storefront, {
+            bodySnippet: null,
+            bodyReadError:
+              "https://web.example.com/en/smoke-page returned a storefront response body larger than 1000000 bytes.",
+            diagnosis: "response-body-too-large",
+            documentTitle: null,
+            expectedTitle: "Published title",
+            ok: false,
+            status: 200,
+            statusText: "OK",
+            titlePresent: false,
+            url: "https://web.example.com/en/smoke-page",
+          });
+
+          return true;
+        },
+      );
+    },
+  );
+});
+
 test("storefront page smoke forwards the configured storefront host", async () => {
   const calls = [];
 

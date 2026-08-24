@@ -3,19 +3,21 @@ import { redactSmokeSecrets } from "./smoke-secrets.mjs";
 import { readSmokeStorefrontOrigin } from "./storefront-smoke-host.mjs";
 
 export function readStorefrontPageAttempt(response, title) {
-  const documentTitle = readDocumentTitle(response.text);
-  const titlePresent = response.text.includes(title);
+  const bodyReadError = response.bodyReadError ?? null;
+  const documentTitle = bodyReadError ? null : readDocumentTitle(response.text);
+  const titlePresent = bodyReadError ? false : response.text.includes(title);
 
   return {
     bodySnippet:
       response.ok && titlePresent ? null : readBodySnippet(response.text),
+    ...(bodyReadError ? { bodyReadError } : {}),
     diagnosis: readStorefrontPageDiagnosis(
       response,
       titlePresent,
       documentTitle,
     ),
     documentTitle,
-    ok: response.ok,
+    ok: response.ok && !bodyReadError,
     ...(response.redirectLocation
       ? { redirectLocation: response.redirectLocation }
       : {}),
@@ -33,24 +35,30 @@ export function formatStorefrontPageAttempt(attempt) {
   const body = attempt.bodySnippet
     ? `, body: ${JSON.stringify(attempt.bodySnippet)}`
     : "";
+  const bodyReadError = attempt.bodyReadError
+    ? `, body read error: ${attempt.bodyReadError}`
+    : "";
   const redirect = attempt.redirectLocation
     ? `, redirect: ${attempt.redirectLocation}`
     : "";
 
-  return `status ${attempt.status}${statusText}, diagnosis: ${attempt.diagnosis}, title present: ${attempt.titlePresent}${documentTitle}${redirect}${body}`;
+  return `status ${attempt.status}${statusText}, diagnosis: ${attempt.diagnosis}, title present: ${attempt.titlePresent}${documentTitle}${redirect}${bodyReadError}${body}`;
 }
 
 export function readRobotsAttempt(response, webUrl) {
-  const text = response.text.toLowerCase();
+  const bodyReadError = response.bodyReadError ?? null;
+  const text = bodyReadError ? "" : response.text.toLowerCase();
   const hostUrl = webUrl.toLowerCase();
   const sitemapUrl = joinUrl(webUrl, "/sitemap.xml").toLowerCase();
 
   return {
-    bodySnippet: response.ok ? null : readBodySnippet(response.text),
+    bodySnippet:
+      response.ok && !bodyReadError ? null : readBodySnippet(response.text),
+    ...(bodyReadError ? { bodyReadError } : {}),
     hasHostLine: hasRobotsDirective(text, "host"),
     hasSitemapLine: text.includes("sitemap:"),
     hasUserAgent: text.includes("user-agent"),
-    ok: response.ok,
+    ok: response.ok && !bodyReadError,
     pointsToHost: hasRobotsDirectiveValue(text, "host", hostUrl),
     pointsToSitemap: text.includes(sitemapUrl),
     status: response.status,
@@ -63,18 +71,24 @@ export function formatRobotsAttempt(attempt) {
   const body = attempt.bodySnippet
     ? `, body: ${JSON.stringify(attempt.bodySnippet)}`
     : "";
+  const bodyReadError = attempt.bodyReadError
+    ? `, body read error: ${attempt.bodyReadError}`
+    : "";
 
-  return `status ${attempt.status}${statusText}, user-agent: ${attempt.hasUserAgent}, host line: ${attempt.hasHostLine}, host URL: ${attempt.pointsToHost}, sitemap line: ${attempt.hasSitemapLine}, sitemap URL: ${attempt.pointsToSitemap}${body}`;
+  return `status ${attempt.status}${statusText}, user-agent: ${attempt.hasUserAgent}, host line: ${attempt.hasHostLine}, host URL: ${attempt.pointsToHost}, sitemap line: ${attempt.hasSitemapLine}, sitemap URL: ${attempt.pointsToSitemap}${bodyReadError}${body}`;
 }
 
 export function readSitemapAttempt(response, expectedUrl) {
-  const urls = parseSitemapUrls(response.text);
+  const bodyReadError = response.bodyReadError ?? null;
+  const urls = bodyReadError ? [] : parseSitemapUrls(response.text);
 
   return {
-    bodySnippet: response.ok ? null : readBodySnippet(response.text),
+    bodySnippet:
+      response.ok && !bodyReadError ? null : readBodySnippet(response.text),
+    ...(bodyReadError ? { bodyReadError } : {}),
     expectedUrlPresent: urls.includes(expectedUrl),
     notFoundUrlPresent: urls.some(isNotFoundSitemapUrl),
-    ok: response.ok,
+    ok: response.ok && !bodyReadError,
     status: response.status,
     statusText: response.statusText || "",
     urlCount: urls.length,
@@ -86,18 +100,23 @@ export function formatSitemapAttempt(attempt) {
   const body = attempt.bodySnippet
     ? `, body: ${JSON.stringify(attempt.bodySnippet)}`
     : "";
+  const bodyReadError = attempt.bodyReadError
+    ? `, body read error: ${attempt.bodyReadError}`
+    : "";
 
-  return `status ${attempt.status}${statusText}, expected URL present: ${attempt.expectedUrlPresent}, 404 present: ${attempt.notFoundUrlPresent}, URL count: ${attempt.urlCount}${body}`;
+  return `status ${attempt.status}${statusText}, expected URL present: ${attempt.expectedUrlPresent}, 404 present: ${attempt.notFoundUrlPresent}, URL count: ${attempt.urlCount}${bodyReadError}${body}`;
 }
 
 export function readNotFoundAttempt(response) {
-  const noIndex = hasNoIndexRobots(response.text);
+  const bodyReadError = response.bodyReadError ?? null;
+  const noIndex = bodyReadError ? false : hasNoIndexRobots(response.text);
 
   return {
     bodySnippet:
       response.status === 404 && noIndex
         ? null
         : readBodySnippet(response.text),
+    ...(bodyReadError ? { bodyReadError } : {}),
     noIndex,
     status: response.status,
     statusText: response.statusText || "",
@@ -109,8 +128,11 @@ export function formatNotFoundAttempt(attempt) {
   const body = attempt.bodySnippet
     ? `, body: ${JSON.stringify(attempt.bodySnippet)}`
     : "";
+  const bodyReadError = attempt.bodyReadError
+    ? `, body read error: ${attempt.bodyReadError}`
+    : "";
 
-  return `status ${attempt.status}${statusText}, noindex: ${attempt.noIndex}${body}`;
+  return `status ${attempt.status}${statusText}, noindex: ${attempt.noIndex}${bodyReadError}${body}`;
 }
 
 export function getStorefrontPath(locale, slug) {
@@ -197,6 +219,10 @@ function readDocumentTitle(html) {
 function readStorefrontPageDiagnosis(response, titlePresent, documentTitle) {
   if (response.redirectLocation) {
     return "redirect-response";
+  }
+
+  if (response.bodyReadError) {
+    return "response-body-too-large";
   }
 
   if (!response.ok) {

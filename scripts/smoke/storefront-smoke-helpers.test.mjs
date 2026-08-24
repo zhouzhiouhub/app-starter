@@ -9,7 +9,11 @@ import {
   readCanonicalHref,
   readExpectedCanonicalUrl,
 } from "./storefront-smoke.mjs";
-import { createStorefrontSmokeRequestInit } from "./storefront-smoke-http.mjs";
+import {
+  createStorefrontSmokeRequestInit,
+  fetchStorefrontText,
+} from "./storefront-smoke-http.mjs";
+import { withFetch } from "./smoke-test-runtime.mjs";
 
 test("storefront smoke helpers preserve nested storefront slugs", () => {
   assert.equal(getStorefrontPath("en-US", "home"), "/en");
@@ -136,6 +140,61 @@ test("storefront smoke request helper forwards storefront hosts", () => {
     {
       method: "GET",
       redirect: "manual",
+    },
+  );
+});
+
+test("storefront smoke request helper skips redirected response bodies", async () => {
+  await withFetch(
+    async () => ({
+      headers: new Headers({
+        location: "https://web.example.com/login?token=payload.signature",
+      }),
+      ok: false,
+      status: 302,
+      statusText: "Found",
+      async text() {
+        throw new Error("redirect response bodies should not be read");
+      },
+    }),
+    async () => {
+      const response = await fetchStorefrontText(
+        "https://web.example.com/en/smoke-page",
+        {},
+      );
+
+      assert.deepEqual(response, {
+        ok: false,
+        redirectLocation: "https://web.example.com/login?token=[redacted]",
+        status: 302,
+        statusText: "Found",
+        text: "",
+        url: "https://web.example.com/en/smoke-page",
+      });
+    },
+  );
+});
+
+test("storefront smoke request helper caps streamed response bodies", async () => {
+  await withFetch(
+    async () =>
+      new Response("x".repeat(1_000_001), {
+        status: 200,
+        statusText: "OK",
+      }),
+    async () => {
+      const response = await fetchStorefrontText(
+        "https://web.example.com/en/smoke-page?token=payload.signature",
+        {},
+      );
+
+      assert.equal(response.ok, true);
+      assert.equal(response.status, 200);
+      assert.equal(response.text, "");
+      assert.equal(
+        response.bodyReadError,
+        "https://web.example.com/en/smoke-page?token=[redacted] returned a storefront response body larger than 1000000 bytes.",
+      );
     },
   );
 });

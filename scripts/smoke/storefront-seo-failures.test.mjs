@@ -252,3 +252,42 @@ test("SEO smoke forwards the configured storefront host", async () => {
     ],
   );
 });
+
+test("SEO smoke reports oversized storefront response bodies", async () => {
+  await withFetch(
+    async () => ({
+      headers: new Headers({ "Content-Length": "1000001" }),
+      ok: true,
+      status: 200,
+      statusText: "OK",
+      async text() {
+        throw new Error("oversized robots bodies should not be read");
+      },
+    }),
+    async () => {
+      await assert.rejects(
+        () => assertRobots({ webUrl: "https://web.example.com" }),
+        (error) => {
+          assert.deepEqual(error.smokeDetails.robots, {
+            bodyReadError:
+              "https://web.example.com/robots.txt returned a storefront response body larger than 1000000 bytes.",
+            bodySnippet: null,
+            expectedHostUrl: "https://web.example.com",
+            expectedSitemapUrl: "https://web.example.com/sitemap.xml",
+            hasHostLine: false,
+            hasSitemapLine: false,
+            hasUserAgent: false,
+            ok: false,
+            pointsToHost: false,
+            pointsToSitemap: false,
+            status: 200,
+            statusText: "OK",
+            url: "https://web.example.com/robots.txt",
+          });
+
+          return true;
+        },
+      );
+    },
+  );
+});
