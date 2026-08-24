@@ -51,6 +51,10 @@ function readRevalidationDiagnosis(input) {
 }
 
 function readFailedRequestDiagnosis(status) {
+  if (status >= 300 && status < 400) {
+    return "revalidation-redirect";
+  }
+
   if (status === 400) {
     return "invalid-revalidation-payload";
   }

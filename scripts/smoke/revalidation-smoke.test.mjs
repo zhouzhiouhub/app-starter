@@ -55,6 +55,19 @@ test("smoke helpers classify revalidation HTTP failures", () => {
       {
         paths: ["/en/contact"],
         reason: "request-failed",
+        status: 302,
+        tags: [],
+        triggered: false,
+      },
+      { requireRevalidation: true },
+    ).diagnosis,
+    "revalidation-redirect",
+  );
+  assert.equal(
+    createRevalidationSmokeDetails(
+      {
+        paths: ["/en/contact"],
+        reason: "request-failed",
         status: 400,
         tags: [],
         triggered: false,

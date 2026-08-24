@@ -217,3 +217,44 @@ test("smoke report CLI suggests fixes for Web revalidation execution failures", 
     true,
   );
 });
+
+test("smoke report CLI suggests fixes for revalidation redirects", () => {
+  const lines = formatSmokeReportSummary({
+    schemaVersion: "smoke-report.v3",
+    summary: {
+      blockerCount: 0,
+      checkCount: 1,
+      failedCheckCount: 1,
+      failedCheckDetails: [
+        {
+          details: {
+            revalidation: {
+              diagnosis: "revalidation-redirect",
+              status: 302,
+            },
+          },
+          message: "Storefront revalidation was redirected.",
+          name: "page.publish",
+        },
+      ],
+      failedChecks: ["page.publish"],
+      passedCheckCount: 0,
+      productionReady: true,
+      status: "failed",
+      warningCount: 0,
+    },
+  });
+
+  assert.equal(
+    lines.includes(
+      "    - page.publish: Storefront revalidation was redirected. (diagnosis: revalidation-redirect)",
+    ),
+    true,
+  );
+  assert.equal(
+    lines.includes(
+      "    - Check STOREFRONT_REVALIDATE_URL and hosting rewrites so /api/revalidate responds directly instead of redirecting.",
+    ),
+    true,
+  );
+});

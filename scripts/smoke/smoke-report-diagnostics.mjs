@@ -18,6 +18,10 @@ const revalidationFailureActions = new Map([
     "Verify the Web deployment is reachable from the API and increase timeout only after connectivity is healthy.",
   ],
   [
+    "revalidation-redirect",
+    "Check STOREFRONT_REVALIDATE_URL and hosting rewrites so /api/revalidate responds directly instead of redirecting.",
+  ],
+  [
     "revalidate-route-missing",
     "Verify the Web deployment exposes /api/revalidate at STOREFRONT_REVALIDATE_URL.",
   ],
