@@ -1,5 +1,8 @@
 import { storefrontRevalidateSecretHeader } from "@app-starter/schema";
-import { requestIdHeaderName } from "../../common/request-id.js";
+import {
+  readRequestId,
+  requestIdHeaderName,
+} from "../../common/request-id.js";
 import type { StorefrontRevalidationInput } from "./pages.revalidation.js";
 
 export type StorefrontRevalidationPayload = Omit<
@@ -11,17 +14,26 @@ export function createStorefrontRevalidationHeaders(
   secret: string,
   requestId: string | undefined,
 ): Record<string, string> {
+  const forwardedRequestId = readForwardedRequestId(requestId);
   const headers = {
     "Content-Type": "application/json",
     [storefrontRevalidateSecretHeader]: secret,
   };
 
-  return requestId
+  return forwardedRequestId
     ? {
         ...headers,
-        [requestIdHeaderName]: requestId,
+        [requestIdHeaderName]: forwardedRequestId,
       }
     : headers;
+}
+
+function readForwardedRequestId(requestId: string | undefined): string | null {
+  if (!requestId) {
+    return null;
+  }
+
+  return readRequestId({ "x-request-id": requestId }, "") || null;
 }
 
 export function createStorefrontRevalidationPayload(

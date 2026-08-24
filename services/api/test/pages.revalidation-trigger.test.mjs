@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { triggerStorefrontRevalidation } from "../dist/modules/pages/pages.revalidation.js";
+import { createStorefrontRevalidationHeaders } from "../dist/modules/pages/pages.revalidation-request.js";
 import { withEnv } from "./env-helper.mjs";
 
 const defaultPageInput = {
@@ -104,6 +105,23 @@ test("storefront revalidation posts the page payload with secret header", async 
       assert.equal(calls[0].init.headers["X-Request-Id"], "request-publish-1");
       assert.deepEqual(JSON.parse(calls[0].init.body), pageInput());
     },
+  );
+});
+
+test("storefront revalidation headers forward only safe request ids", () => {
+  assert.equal(
+    createStorefrontRevalidationHeaders("secret-1", " request-publish-1 ")[
+      "X-Request-Id"
+    ],
+    "request-publish-1",
+  );
+  assert.equal(
+    "X-Request-Id" in
+      createStorefrontRevalidationHeaders(
+        "secret-1",
+        "request-1\r\nx-secret: leaked",
+      ),
+    false,
   );
 });
 
