@@ -112,6 +112,74 @@ test("audit service allows system actors and empty metadata", async () => {
   });
 });
 
+test("audit service caps oversized metadata before storage", async () => {
+  const calls = [];
+  const service = new AuditService({
+    auditLog: {
+      create: async (query) => {
+        calls.push(query);
+      },
+    },
+  });
+
+  await service.record({
+    action: "page.published",
+    metadata: {
+      fields: Object.fromEntries(
+        Array.from({ length: 52 }, (_value, index) => [
+          `field${index}`,
+          `value-${index}`,
+        ]),
+      ),
+      longNote: `Authorization: Bearer header.payload.signature ${"a".repeat(
+        1_200,
+      )}`,
+      nested: {
+        child: {
+          child: {
+            child: {
+              child: {
+                child: {
+                  child: { value: "too deep" },
+                },
+              },
+            },
+          },
+        },
+      },
+      previewToken: "preview-token",
+      steps: Array.from({ length: 52 }, (_value, index) => ({
+        index,
+        secret: `secret-${index}`,
+      })),
+    },
+    targetType: "page",
+    tenantId: "tenant-1",
+  });
+
+  const metadata = calls[0].data.metadata;
+
+  assert.equal(metadata.previewToken, "[redacted]");
+  assert.equal(metadata.fields.field0, "value-0");
+  assert.equal(metadata.fields.field49, "value-49");
+  assert.equal(metadata.fields.field50, undefined);
+  assert.equal(
+    metadata.fields.__metadataTruncated,
+    "[truncated]: 2 more field(s)",
+  );
+  assert.equal(metadata.steps.length, 51);
+  assert.equal(metadata.steps[0].secret, "[redacted]");
+  assert.equal(metadata.steps[49].secret, "[redacted]");
+  assert.equal(metadata.steps[50], "[truncated]: 2 more item(s)");
+  assert.match(metadata.longNote, /Authorization: Bearer \[redacted\]/);
+  assert.equal(metadata.longNote.includes("header.payload.signature"), false);
+  assert.equal(metadata.longNote.endsWith("[truncated]"), true);
+  assert.equal(
+    metadata.nested.child.child.child.child.child,
+    "[truncated]",
+  );
+});
+
 test("audit service lists tenant-scoped logs with filters and pagination", async () => {
   const calls = {};
   const createdAt = new Date("2026-08-19T00:00:00.000Z");
