@@ -22,6 +22,7 @@ export function getStorefrontHref(locale: string, slug = "home"): string {
 }
 
 export const publishedPageRevalidateSeconds = 60;
+export const publicPublishedPageListMaxCount = 1_000;
 export const publishedPagesCacheTag = "published-page";
 export const publicTranslationsCacheTag = "public-translation";
 export const storefrontRevalidateSecretHeader =

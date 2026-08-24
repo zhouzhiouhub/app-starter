@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { publicPublishedPageListMaxCount } from "../../../packages/schema/dist/index.js";
 import { listPublishedPages } from "../src/lib/published-pages.ts";
 
 test("published pages list falls back from invalid runtime defaults", async () => {
@@ -226,6 +227,32 @@ test("published pages list drops summaries with malformed noIndex flags", async 
         pages.map((page) => ({ noIndex: page.noIndex, slug: page.slug })),
         [{ noIndex: true, slug: "hidden" }],
       );
+    },
+  );
+});
+
+test("published pages list caps oversized API responses", async () => {
+  await withFetch(
+    async () =>
+      jsonResponse({
+        data: Array.from(
+          { length: publicPublishedPageListMaxCount + 2 },
+          (_value, index) => ({
+            noIndex: false,
+            slug: index === 0 ? "home" : `campaign-${index}`,
+            title: `Campaign ${index}`,
+            updatedAt: "2026-08-21T00:00:00.000Z",
+          }),
+        ),
+      }),
+    async () => {
+      const pages = await listPublishedPages({
+        locale: "en-US",
+        market: "us",
+      });
+
+      assert.equal(pages.length, publicPublishedPageListMaxCount);
+      assert.equal(pages.at(-1).slug, "campaign-999");
     },
   );
 });

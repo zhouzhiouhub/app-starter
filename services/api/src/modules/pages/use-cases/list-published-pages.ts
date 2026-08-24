@@ -1,4 +1,5 @@
 import type { Prisma } from "@prisma/client";
+import { publicPublishedPageListMaxCount } from "@app-starter/schema";
 import type { PrismaService } from "../../prisma/prisma.service.js";
 import {
   matchesPublishedPageContext,
@@ -28,6 +29,7 @@ export async function listPublishedPages(
         tenantId: null,
         siteId: null,
         total: 0,
+        pageLimit: publicPublishedPageListMaxCount,
       },
     };
   }
@@ -40,6 +42,7 @@ export async function listPublishedPages(
     orderBy: {
       slug: "asc",
     },
+    take: publicPublishedPageListMaxCount,
     select: {
       id: true,
       publishedVersionId: true,
@@ -62,6 +65,7 @@ export async function listPublishedPages(
       tenantId: site.tenantId,
       siteId: site.id,
       total: summaries.length,
+      pageLimit: publicPublishedPageListMaxCount,
     },
   };
 }

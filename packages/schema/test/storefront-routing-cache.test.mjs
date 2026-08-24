@@ -9,6 +9,7 @@ import {
   getStorefrontHref,
   publishedPageRevalidateSeconds,
   publishedPagesCacheTag,
+  publicPublishedPageListMaxCount,
   publicTranslationsCacheTag,
   resolveLocaleFromPath,
   rewriteStorefrontHref,
@@ -31,6 +32,7 @@ test("storefront hrefs use short language prefixes", () => {
 
 test("published page cache helpers define ISR tags and paths", () => {
   assert.equal(publishedPageRevalidateSeconds, 60);
+  assert.equal(publicPublishedPageListMaxCount, 1_000);
   assert.equal(publishedPagesCacheTag, "published-page");
   assert.deepEqual(
     getPublishedPageCacheTags({

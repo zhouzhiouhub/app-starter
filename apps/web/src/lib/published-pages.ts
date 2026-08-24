@@ -2,6 +2,7 @@ import {
   getPublishedPagesCacheTags,
   pageSlugSchema,
   publishedPageRevalidateSeconds,
+  publicPublishedPageListMaxCount,
 } from "@app-starter/schema";
 import {
   readWebRuntimeDefaults,
@@ -67,7 +68,9 @@ export async function listPublishedPages(input?: {
       return [];
     }
 
-    return result.data.flatMap(readPublishedPageSummary);
+    return result.data
+      .slice(0, publicPublishedPageListMaxCount)
+      .flatMap(readPublishedPageSummary);
   } catch {
     return [];
   }

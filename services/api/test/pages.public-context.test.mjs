@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { publicPublishedPageListMaxCount } from "../../../packages/schema/dist/index.js";
 import { getPublishedPageBySlug } from "../dist/modules/pages/use-cases/get-published-page-by-slug.js";
 import { listPublishedPages } from "../dist/modules/pages/use-cases/list-published-pages.js";
 import {
@@ -191,6 +192,7 @@ test("listPublishedPages returns an empty result for unmatched request hosts", a
       tenantId: null,
       siteId: null,
       total: 0,
+      pageLimit: publicPublishedPageListMaxCount,
     },
   });
 });

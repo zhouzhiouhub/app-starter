@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { publicPublishedPageListMaxCount } from "../../../packages/schema/dist/index.js";
 import { listPublishedPages } from "../dist/modules/pages/use-cases/list-published-pages.js";
 import {
   createPublicPageSchema,
@@ -17,6 +18,7 @@ test("listPublishedPages returns public summaries for published pages", async ()
           publishedVersionId: { not: null },
         });
         assert.deepEqual(query.orderBy, { slug: "asc" });
+        assert.equal(query.take, publicPublishedPageListMaxCount);
         assert.deepEqual(query.select, {
           id: true,
           publishedVersionId: true,
@@ -120,6 +122,7 @@ test("listPublishedPages returns public summaries for published pages", async ()
     },
   ]);
   assert.equal(result.meta.total, 2);
+  assert.equal(result.meta.pageLimit, publicPublishedPageListMaxCount);
   assert.equal(result.meta.tenantId, "tenant-1");
   assert.equal(result.meta.requestId, "request-public-list");
 });
