@@ -11,7 +11,10 @@ export async function assertJsonReachable(url, label) {
 }
 
 export async function fetchJson(url, init) {
-  const response = await fetch(url, init);
+  const response = await fetch(url, {
+    ...init,
+    redirect: init?.redirect ?? "manual",
+  });
   const text = await response.text();
   const body = text ? parseJson(text, url) : null;
   const redirectLocation = readRedirectLocation(response);
