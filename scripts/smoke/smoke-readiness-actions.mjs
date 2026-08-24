@@ -131,6 +131,15 @@ function readBlockerActions(blocker) {
     (typeof blocker.area === "string" &&
       blocker.area.startsWith("identity.jwt."))
   ) {
+    if (blocker.area === "identity.jwt.pair") {
+      return [
+        createAction(
+          blocker.area,
+          "Replace JWT_PRIVATE_KEY and JWT_PUBLIC_KEY with a matching RS256 PEM key pair in the API runtime.",
+        ),
+      ];
+    }
+
     return [
       createAction(
         blocker.area,

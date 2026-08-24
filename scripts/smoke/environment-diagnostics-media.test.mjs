@@ -1,17 +1,17 @@
 import assert from "node:assert/strict";
+import { generateKeyPairSync } from "node:crypto";
 import test from "node:test";
 import { createSmokeEnvironmentDiagnostics } from "./environment-diagnostics.mjs";
 
 test("smoke environment diagnostics reports media readiness without secrets", () => {
+  const pair = createRsaPemPair();
   const diagnostics = createSmokeEnvironmentDiagnostics({
     ANALYTICS_CONSENT_GRANTED: "false",
     ANALYTICS_ENABLED: "false",
     DATABASE_URL:
       "postgresql://db-user:db-secret@db.brand-platform.com:5432/app?sslmode=require",
-    JWT_PRIVATE_KEY:
-      "-----BEGIN PRIVATE KEY-----\\nprivate-key-body\\n-----END PRIVATE KEY-----",
-    JWT_PUBLIC_KEY:
-      "-----BEGIN PUBLIC KEY-----\\npublic-key-body\\n-----END PUBLIC KEY-----",
+    JWT_PRIVATE_KEY: pair.privateKey.replaceAll("\n", "\\n"),
+    JWT_PUBLIC_KEY: pair.publicKey.replaceAll("\n", "\\n"),
     MEDIA_CDN_BASE_URL: "https://cdn.brand-assets.com/media",
     MEDIA_EXTERNAL_URL_HOSTS:
       "images.brand-assets.com, https://assets.brand-assets.org",
@@ -119,6 +119,11 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
     identity: {
       jwt: {
         configured: true,
+        pair: {
+          checked: true,
+          issue: null,
+          valid: true,
+        },
         privateKey: {
           configured: true,
           issue: null,
@@ -189,8 +194,8 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
   assert.equal(serialized.includes("super-revalidate-secret"), false);
   assert.equal(serialized.includes("db-user"), false);
   assert.equal(serialized.includes("db-secret"), false);
-  assert.equal(serialized.includes("private-key-body"), false);
-  assert.equal(serialized.includes("public-key-body"), false);
+  assert.equal(serialized.includes("PRIVATE KEY"), false);
+  assert.equal(serialized.includes("PUBLIC KEY"), false);
   assert.equal(serialized.includes("bucket-name"), false);
   assert.equal(serialized.includes("account-id"), false);
   assert.equal(serialized.includes("access-key"), false);
@@ -370,3 +375,17 @@ test("smoke environment diagnostics reports unsafe external media hosts", () => 
   assert.equal(serialized.includes("secret"), false);
   assert.equal(serialized.includes("token=1"), false);
 });
+
+function createRsaPemPair() {
+  return generateKeyPairSync("rsa", {
+    modulusLength: 2048,
+    privateKeyEncoding: {
+      format: "pem",
+      type: "pkcs8",
+    },
+    publicKeyEncoding: {
+      format: "pem",
+      type: "spki",
+    },
+  });
+}

@@ -31,6 +31,9 @@ export function createReadyEnvironment() {
     },
     identity: {
       jwt: {
+        pair: {
+          valid: true,
+        },
         productionReady: true,
       },
     },

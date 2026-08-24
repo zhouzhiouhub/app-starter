@@ -273,8 +273,9 @@ configured and disabled. Database diagnostics record only non-secret
 URL safety, and whether it is production-ready. Redis diagnostics record only
 non-secret `REDIS_URL` readiness metadata: whether it is configured, the Redis
 host, TLS usage, URL safety, and whether it is production-ready. Identity
-diagnostics record only whether JWT private and public keys are configured with
-PEM-shaped values.
+diagnostics record only whether JWT private and public keys are configured,
+parse as PEM keys, and verify as a matching RS256 pair; key material is never
+written to the report.
 Revalidation environment diagnostics record only non-secret readiness metadata:
 whether a secret is configured, the URL source, endpoint host/path, URL safety,
 and whether the smoke run requires revalidation. Preview environment diagnostics

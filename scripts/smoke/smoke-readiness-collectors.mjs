@@ -1,10 +1,10 @@
 import {
   appendBlocker,
   appendDisabledFeatureFlagBlocker,
-  appendJwtKeyBlocker,
   appendUrlBlocker,
 } from "./smoke-readiness-blockers.mjs";
 import { collectDatabaseReadiness } from "./smoke-readiness-database.mjs";
+import { collectIdentityReadiness } from "./smoke-readiness-identity.mjs";
 import { collectRedisReadiness } from "./smoke-readiness-redis.mjs";
 import { collectRevalidationReadiness } from "./smoke-readiness-revalidation.mjs";
 
@@ -98,35 +98,6 @@ function collectAnalyticsReadiness(blockers, analytics) {
       { variable: provider },
     );
   }
-}
-
-function collectIdentityReadiness(blockers, identity) {
-  if (identity?.jwt?.productionReady === true) {
-    return;
-  }
-
-  const jwt = identity?.jwt;
-
-  if (!jwt || typeof jwt !== "object" || Array.isArray(jwt)) {
-    appendBlocker(
-      blockers,
-      "identity.jwt",
-      "missing-diagnostics",
-      "Collect JWT key diagnostics before production smoke.",
-    );
-    return;
-  }
-
-  appendJwtKeyBlocker(blockers, {
-    area: "identity.jwt.private",
-    diagnostic: jwt.privateKey,
-    variable: "JWT_PRIVATE_KEY",
-  });
-  appendJwtKeyBlocker(blockers, {
-    area: "identity.jwt.public",
-    diagnostic: jwt.publicKey,
-    variable: "JWT_PUBLIC_KEY",
-  });
 }
 
 function collectFeatureFlagReadiness(blockers, featureFlags) {
