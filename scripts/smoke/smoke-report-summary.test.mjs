@@ -108,5 +108,6 @@ test("smoke report counts failed checks even when names are missing", () => {
     "unnamed-check-1",
     "media.confirm",
   ]);
+  failSmokeReport(report, new Error("Smoke failed."));
   assert.doesNotThrow(() => assertSmokeReportWritable(report));
 });

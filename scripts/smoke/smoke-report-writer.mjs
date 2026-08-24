@@ -59,7 +59,33 @@ export function assertSmokeReportWritable(report) {
     throw new Error("Smoke report summary must be an object.");
   }
 
+  assertSmokeReportTerminal(report);
   assertSmokeReportSummaryCurrent(report);
+}
+
+function assertSmokeReportTerminal(report) {
+  if (!["failed", "passed"].includes(report.status)) {
+    throw new Error("Smoke report status must be passed or failed before write.");
+  }
+
+  if (!isIsoDateString(report.finishedAt)) {
+    throw new Error("Smoke report must include a terminal finishedAt timestamp.");
+  }
+
+  if (report.status === "passed") {
+    if (report.error !== null) {
+      throw new Error("Smoke report passed status must not include an error.");
+    }
+
+    if (report.checks.some((check) => check.status === "failed")) {
+      throw new Error("Smoke report passed status must not include failed checks.");
+    }
+    return;
+  }
+
+  if (!isFailureErrorRecord(report.error)) {
+    throw new Error("Smoke report failed status must include an error message.");
+  }
 }
 
 function assertSmokeReportSummaryCurrent(report) {

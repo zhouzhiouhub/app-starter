@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   assertSmokeReportWritable,
   completeSmokeReport,
+  createSmokeReportSummary,
   failSmokeReport,
   recordSmokeCheck,
   recordSmokeCheckFailure,
@@ -98,7 +99,17 @@ test("smoke report helpers capture pass and failure state without secrets", () =
 test("smoke report validates required fields before writing", () => {
   const report = createTestSmokeReport();
 
+  completeSmokeReport(report, {
+    pageId: "page-1",
+    storefrontRequestUrl: "https://web.example.com/en/smoke-page",
+    storefrontUrl: "https://web.example.com/en/smoke-page",
+  });
+
   assert.doesNotThrow(() => assertSmokeReportWritable(report));
+  assert.throws(
+    () => assertSmokeReportWritable(createTestSmokeReport()),
+    /status must be passed or failed before write/,
+  );
   assert.throws(
     () =>
       assertSmokeReportWritable({
@@ -190,6 +201,55 @@ test("smoke report validates required fields before writing", () => {
         summary: [],
       }),
     /summary must be an object/,
+  );
+  assert.throws(
+    () =>
+      assertSmokeReportWritable({
+        ...report,
+        finishedAt: null,
+      }),
+    /terminal finishedAt timestamp/,
+  );
+  assert.throws(
+    () => {
+      const passedWithFailedCheck = {
+        ...report,
+        checks: [
+          ...report.checks,
+          {
+            error: { message: "failed" },
+            failedAt: "2026-08-20T00:00:01.000Z",
+            name: "media.confirm",
+            status: "failed",
+          },
+        ],
+      };
+      passedWithFailedCheck.summary = createSmokeReportSummary(
+        passedWithFailedCheck,
+      );
+      assertSmokeReportWritable(passedWithFailedCheck);
+    },
+    /passed status must not include failed checks/,
+  );
+  assert.throws(
+    () =>
+      assertSmokeReportWritable({
+        ...report,
+        error: { message: "unexpected" },
+        summary: {
+          ...report.summary,
+        },
+      }),
+    /passed status must not include an error/,
+  );
+  assert.throws(
+    () => {
+      const failedReport = createTestSmokeReport();
+      failSmokeReport(failedReport, new Error("failed"));
+      failedReport.error = null;
+      assertSmokeReportWritable(failedReport);
+    },
+    /failed status must include an error message/,
   );
   assert.throws(
     () =>

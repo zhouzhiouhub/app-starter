@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import {
+  completeSmokeReport,
   createSmokeReportSummary,
   failSmokeReport,
   recordSmokeCheck,
@@ -50,6 +51,7 @@ test("smoke report redacts secrets from check details", async () => {
     recordSmokeCheckFailure(report, "media.confirm", new Error("failed"), {
       refreshToken: "refresh-token-value",
     });
+    failSmokeReport(report, new Error("failed"));
 
     assert.equal(report.checks[0].details.previewToken, "[redacted]");
     assert.equal(report.checks[1].details.refreshToken, "[redacted]");
@@ -109,6 +111,11 @@ test("smoke report helper writes JSON when configured", async () => {
       { now: "2026-08-19T00:00:00.000Z" },
     );
 
+    completeSmokeReport(report, {
+      pageId: "page-1",
+      storefrontRequestUrl: "https://web.example.com/en/smoke-page",
+      storefrontUrl: "https://web.example.com/en/smoke-page",
+    });
     await writeSmokeReportIfConfigured({ reportPath }, report);
     const written = JSON.parse(await readFile(reportPath, "utf8"));
 
