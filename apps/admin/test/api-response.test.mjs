@@ -39,6 +39,22 @@ test("API response reader preserves plain text error bodies", async () => {
   );
 });
 
+test("API response reader rejects oversized successful bodies", async () => {
+  await assert.rejects(
+    readApiResponseJson(
+      new Response("{}", {
+        headers: { "Content-Length": "1000001" },
+        status: 200,
+      }),
+      "Request failed.",
+    ),
+    (error) =>
+      error instanceof ApiRequestError &&
+      error.code === "RESPONSE_BODY_TOO_LARGE" &&
+      error.message === "API response body is too large to process.",
+  );
+});
+
 test("API response reader redacts secrets from plain text errors", async () => {
   await assert.rejects(
     readApiResponseJson(
@@ -65,4 +81,33 @@ test("response body reader avoids surfacing HTML error documents", async () => {
   );
 
   assert.deepEqual(result, { message: "Request failed (502)." });
+});
+
+test("response body reader reports oversized error bodies", async () => {
+  const result = await readResponseBody(
+    new Response("{}", {
+      headers: { "Content-Length": "1000001" },
+      status: 502,
+    }),
+  );
+
+  assert.deepEqual(result, {
+    error: {
+      code: "RESPONSE_BODY_TOO_LARGE",
+      message: "API response body is too large to process.",
+    },
+  });
+});
+
+test("response body reader reports oversized bodies without length headers", async () => {
+  const result = await readResponseBody(
+    new Response("x".repeat(1_000_001), { status: 502 }),
+  );
+
+  assert.deepEqual(result, {
+    error: {
+      code: "RESPONSE_BODY_TOO_LARGE",
+      message: "API response body is too large to process.",
+    },
+  });
 });
