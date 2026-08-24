@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   adminRequest,
   loginWithPassword,
+  logoutCurrentSession,
   readAuthApiErrorMessage,
 } from "../src/features/auth/api.ts";
 import { AUTH_SESSION_STORAGE_KEY } from "../src/features/auth/constants.ts";
@@ -77,6 +78,53 @@ test("auth API rejects malformed session responses before storage", async () => 
         );
       },
     );
+  });
+
+  assert.equal(storage.getItem(AUTH_SESSION_STORAGE_KEY), null);
+});
+
+test("logout clears local session before the server request settles", async () => {
+  const storage = createMemoryStorage();
+  let markLogoutStarted;
+  let resolveLogout;
+  const logoutStarted = new Promise((resolve) => {
+    markLogoutStarted = resolve;
+  });
+
+  storage.setItem(
+    AUTH_SESSION_STORAGE_KEY,
+    JSON.stringify({
+      accessToken: "access-token-1",
+      refreshToken: "refresh-token-1",
+      user: {
+        email: "admin@example.com",
+        id: "user-1",
+        name: "Admin",
+        roles: ["admin"],
+        scopes: ["page:read"],
+        tenantId: "tenant-1",
+      },
+    }),
+  );
+
+  await withLocalStorage(storage, async () => {
+    await withFetch(async (url, init) => {
+      assert.equal(storage.getItem(AUTH_SESSION_STORAGE_KEY), null);
+      assert.equal(String(url).endsWith("/auth/logout"), true);
+      assert.match(String(init?.body), /refresh-token-1/);
+      markLogoutStarted();
+
+      return new Promise((resolve) => {
+        resolveLogout = () => resolve(new Response(null, { status: 204 }));
+      });
+    }, async () => {
+      const logout = logoutCurrentSession();
+      await logoutStarted;
+
+      assert.equal(storage.getItem(AUTH_SESSION_STORAGE_KEY), null);
+      resolveLogout();
+      await logout;
+    });
   });
 
   assert.equal(storage.getItem(AUTH_SESSION_STORAGE_KEY), null);

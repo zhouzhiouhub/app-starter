@@ -35,15 +35,17 @@ export async function loginWithPassword(input: {
 export async function logoutCurrentSession(): Promise<void> {
   const session = readAuthSession();
 
-  if (session?.refreshToken) {
-    await fetch(`${getApiBaseUrl()}/auth/logout`, {
-      body: JSON.stringify({ refreshToken: session.refreshToken }),
-      headers: { "Content-Type": "application/json" },
-      method: "POST",
-    }).catch(() => undefined);
+  clearAuthSession();
+
+  if (!session?.refreshToken) {
+    return;
   }
 
-  clearAuthSession();
+  await fetch(`${getApiBaseUrl()}/auth/logout`, {
+    body: JSON.stringify({ refreshToken: session.refreshToken }),
+    headers: { "Content-Type": "application/json" },
+    method: "POST",
+  }).catch(() => undefined);
 }
 
 export async function restoreCurrentUser(): Promise<AuthUser | null> {
