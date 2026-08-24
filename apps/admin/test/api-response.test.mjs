@@ -100,9 +100,19 @@ test("response body reader reports oversized error bodies", async () => {
 });
 
 test("response body reader reports oversized bodies without length headers", async () => {
-  const result = await readResponseBody(
-    new Response("x".repeat(1_000_001), { status: 502 }),
-  );
+  const result = await readResponseBody({
+    body: new ReadableStream({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode("x".repeat(1_000_001)));
+        controller.close();
+      },
+    }),
+    headers: new Headers(),
+    status: 502,
+    async text() {
+      throw new Error("streamed bodies should not call text");
+    },
+  });
 
   assert.deepEqual(result, {
     error: {

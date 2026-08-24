@@ -24,14 +24,16 @@ export async function readResponseBody(response: Response): Promise<unknown> {
     return readOversizedApiResponse();
   }
 
-  const text = await response.text();
+  const body = await readBoundedResponseText(response);
+
+  if (body.oversized) {
+    return readOversizedApiResponse();
+  }
+
+  const text = body.text;
 
   if (!text) {
     return null;
-  }
-
-  if (text.length > maxApiResponseBodyLength) {
-    return readOversizedApiResponse();
   }
 
   try {
@@ -61,6 +63,62 @@ function hasOversizedContentLength(response: Response): boolean {
   const length = Number(value);
 
   return Number.isFinite(length) && length > maxApiResponseBodyLength;
+}
+
+async function readBoundedResponseText(
+  response: Response,
+): Promise<{ oversized: false; text: string } | { oversized: true }> {
+  if (response.body?.getReader) {
+    return readBoundedResponseStream(response.body);
+  }
+
+  const text = await response.text();
+
+  return hasOversizedText(text)
+    ? { oversized: true }
+    : { oversized: false, text };
+}
+
+async function readBoundedResponseStream(
+  stream: ReadableStream<Uint8Array>,
+): Promise<{ oversized: false; text: string } | { oversized: true }> {
+  const decoder = new TextDecoder();
+  const reader = stream.getReader();
+  const chunks: string[] = [];
+  let byteLength = 0;
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+
+      if (done) {
+        break;
+      }
+
+      byteLength += value.byteLength;
+
+      if (byteLength > maxApiResponseBodyLength) {
+        await reader.cancel();
+        return { oversized: true };
+      }
+
+      chunks.push(decoder.decode(value, { stream: true }));
+    }
+
+    const tail = decoder.decode();
+
+    if (tail) {
+      chunks.push(tail);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  return { oversized: false, text: chunks.join("") };
+}
+
+function hasOversizedText(text: string): boolean {
+  return new TextEncoder().encode(text).byteLength > maxApiResponseBodyLength;
 }
 
 function readOversizedApiResponse(): {
