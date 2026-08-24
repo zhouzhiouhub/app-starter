@@ -10,14 +10,18 @@ test("JSON smoke fetch records redacted redirect locations", async () => {
     async (url, init = {}) => {
       calls.push({ init, url });
 
-      return new Response("", {
-        headers: {
+      return {
+        headers: new Headers({
           location:
             "https://api.example.com/login?password=ChangeMe123!&token=header.payload.signature",
-        },
+        }),
+        ok: false,
         status: 302,
         statusText: "Found",
-      });
+        async text() {
+          throw new Error("redirect response bodies should not be read");
+        },
+      };
     },
     async () => {
       const response = await fetchJson(

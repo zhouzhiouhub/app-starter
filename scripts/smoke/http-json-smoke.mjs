@@ -1,6 +1,5 @@
+import { readBoundedResponseText } from "./bounded-response-text.mjs";
 import { redactSmokeSecrets } from "./smoke-secrets.mjs";
-
-const maxJsonResponseBodyLength = 1_000_000;
 
 export async function assertJsonReachable(url, label) {
   const response = await fetchJson(url);
@@ -17,8 +16,10 @@ export async function fetchJson(url, init) {
     ...init,
     redirect: init?.redirect ?? "manual",
   });
-  const body = await readJsonResponseBody(response, url);
   const redirectLocation = readRedirectLocation(response);
+  const body = redirectLocation
+    ? null
+    : await readJsonResponseBody(response, url);
 
   return {
     body,
@@ -57,39 +58,16 @@ function parseJson(text, url) {
 }
 
 async function readJsonResponseBody(response, url) {
-  if (hasOversizedContentLength(response)) {
-    throw new Error(readOversizedJsonResponseMessage(url));
-  }
-
-  const text = await response.text();
+  const text = await readBoundedResponseText(response, {
+    label: "JSON",
+    url,
+  });
 
   if (!text) {
     return null;
   }
 
-  if (text.length > maxJsonResponseBodyLength) {
-    throw new Error(readOversizedJsonResponseMessage(url));
-  }
-
   return parseJson(text, url);
-}
-
-function hasOversizedContentLength(response) {
-  const value = response.headers.get("content-length");
-
-  if (!value) {
-    return false;
-  }
-
-  const length = Number(value);
-
-  return Number.isFinite(length) && length > maxJsonResponseBodyLength;
-}
-
-function readOversizedJsonResponseMessage(url) {
-  return redactSmokeSecrets(
-    `${url} returned a JSON response body larger than ${maxJsonResponseBodyLength} bytes.`,
-  );
 }
 
 function readRedirectLocation(response) {
