@@ -11,6 +11,11 @@ const pageVersionSelect = {
   createdAt: true,
 } as const;
 
+export const pageVersionSummarySelect = {
+  ...pageVersionSelect,
+  authorId: true,
+} as const;
+
 export type PageVersionRecord = {
   id: string;
   version: number;

@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createPreviewToken } from "../src/features/pages/api.ts";
+import {
+  createPreviewToken,
+  listPageVersions,
+} from "../src/features/pages/api.ts";
 
 const validPreviewToken = `payload.${"a".repeat(43)}`;
 const validPreviewTokenData = {
@@ -57,6 +60,54 @@ test("page preview token API rejects malformed responses", async () => {
       },
     );
   }
+});
+
+test("page version history API requests encoded page ids with pagination", async () => {
+  const requests = [];
+  const versions = [
+    {
+      authorEmail: "admin@example.com",
+      authorId: "user-1",
+      authorName: "Admin",
+      createdAt: "2026-08-20T00:00:00.000Z",
+      id: "version-2",
+      publishedAt: "2026-08-21T00:00:00.000Z",
+      status: "published",
+      version: 2,
+    },
+  ];
+
+  await withFetch(
+    async (url, init) => {
+      requests.push({ init, url: String(url) });
+      return jsonResponse({
+        data: versions,
+        meta: {
+          limit: 10,
+          page: 2,
+          pageId: "page 1?",
+          total: 21,
+        },
+      });
+    },
+    async () => {
+      assert.deepEqual(await listPageVersions("page 1?", 2, 10), {
+        data: versions,
+        meta: {
+          limit: 10,
+          page: 2,
+          pageId: "page 1?",
+          total: 21,
+        },
+      });
+    },
+  );
+
+  assert.equal(
+    requests[0].url,
+    "/api/v1/pages/page%201%3F/versions?limit=10&page=2",
+  );
+  assert.equal(requests[0].init.method, undefined);
 });
 
 function jsonResponse(body) {

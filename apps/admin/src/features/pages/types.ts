@@ -46,6 +46,10 @@ export interface PageListMeta {
   total: number;
 }
 
+export interface PageVersionListMeta extends PageListMeta {
+  pageId: string;
+}
+
 export interface CreatePageInput {
   slug: string;
   templateId?: PageTemplateId;

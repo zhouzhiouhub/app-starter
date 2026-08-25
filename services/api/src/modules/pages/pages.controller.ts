@@ -59,6 +59,18 @@ export class PagesController {
     return this.pages.getById(id, actor, requestId);
   }
 
+  @Get(":id/versions")
+  @RequireScopes("page:read")
+  listVersions(
+    @CurrentUser() actor: Actor,
+    @Param("id") id: string,
+    @Query("page") page?: string,
+    @Query("limit") limit?: string,
+    @CurrentRequestId() requestId = "local-dev",
+  ) {
+    return this.pages.listVersions(id, { page, limit }, actor, requestId);
+  }
+
   @Post(":id/preview-token")
   @RequireScopes("page:read")
   createPreviewToken(

@@ -12,6 +12,7 @@ import { getPublishedPageBySlug } from "./use-cases/get-published-page-by-slug.j
 import { listPages } from "./use-cases/list-pages.js";
 import { listPublishedPages } from "./use-cases/list-published-pages.js";
 import { getPublicSite } from "./pages.site.js";
+import { listPageVersions } from "./use-cases/list-page-versions.js";
 import { publishPage } from "./use-cases/publish-page.js";
 import { publishPageBySlug } from "./use-cases/publish-page-by-slug.js";
 import { rollbackPage } from "./use-cases/rollback-page.js";
@@ -35,6 +36,15 @@ export class PagesService {
 
   async getById(id: string, actor: Actor, requestId: string) {
     return getPageById(this.prisma, id, actor, requestId);
+  }
+
+  async listVersions(
+    id: string,
+    query: { page?: string | number; limit?: string | number },
+    actor: Actor,
+    requestId: string,
+  ) {
+    return listPageVersions(this.prisma, id, query, actor, requestId);
   }
 
   async createPreviewToken(

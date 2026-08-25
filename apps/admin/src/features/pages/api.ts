@@ -13,6 +13,8 @@ import type {
   PageMutationResult,
   PagePreviewToken,
   PageSummary,
+  PageVersionListMeta,
+  PageVersionSummary,
 } from "./types.ts";
 
 const maxPreviewTokenLength = 2048;
@@ -71,6 +73,35 @@ export async function getPage(pageId: string): Promise<PageDetail> {
   }
 
   return result.data;
+}
+
+export async function listPageVersions(
+  pageId: string,
+  page = 1,
+  limit = 20,
+): Promise<{ data: PageVersionSummary[]; meta: PageVersionListMeta }> {
+  const query = new URLSearchParams({
+    limit: String(limit),
+    page: String(page),
+  });
+  const result = await readAdminJson<{
+    data?: PageVersionSummary[];
+    meta?: Partial<PageVersionListMeta>;
+  }>(
+    `/pages/${encodeURIComponent(pageId)}/versions?${query.toString()}`,
+    {},
+    "Page version history could not be loaded.",
+  );
+
+  return {
+    data: result.data ?? [],
+    meta: {
+      limit: result.meta?.limit ?? limit,
+      page: result.meta?.page ?? page,
+      pageId: result.meta?.pageId ?? pageId,
+      total: result.meta?.total ?? result.data?.length ?? 0,
+    },
+  };
 }
 
 export async function createPreviewToken(
