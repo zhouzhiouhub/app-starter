@@ -13,6 +13,9 @@ type PublishedPageRecord = {
   publishedVersionId: string | null;
   slug: string;
 };
+type PublishedPageSummaryRecord = ReturnType<
+  typeof toPublishedPageSummary
+>[number];
 
 export async function listPublishedPages(
   prisma: PrismaService,
@@ -34,28 +37,10 @@ export async function listPublishedPages(
     };
   }
 
-  const pages = await prisma.page.findMany({
-    where: {
-      siteId: site.id,
-      publishedVersionId: { not: null },
-    },
-    orderBy: {
-      slug: "asc",
-    },
-    take: publicPublishedPageListMaxCount,
-    select: {
-      id: true,
-      publishedVersionId: true,
-      slug: true,
-    },
-  });
-  const versionsByPageAndId = await readPublishedVersionsByPageAndId(
+  const summaries = await readPublishedPageSummaries(
     prisma,
-    pages,
-  );
-
-  const summaries = pages.flatMap((page) =>
-    toPublishedPageSummary(page, context, versionsByPageAndId),
+    site.id,
+    context,
   );
 
   return {
@@ -68,6 +53,65 @@ export async function listPublishedPages(
       pageLimit: publicPublishedPageListMaxCount,
     },
   };
+}
+
+async function readPublishedPageSummaries(
+  prisma: PrismaService,
+  siteId: string,
+  context: PublishedPageContext,
+) {
+  const summaries: PublishedPageSummaryRecord[] = [];
+  let skip = 0;
+
+  while (summaries.length < publicPublishedPageListMaxCount) {
+    const pages = await readPublishedPageRecords(prisma, siteId, skip);
+
+    if (pages.length === 0) {
+      return summaries;
+    }
+
+    const versionsByPageAndId = await readPublishedVersionsByPageAndId(
+      prisma,
+      pages,
+    );
+
+    summaries.push(
+      ...pages.flatMap((page) =>
+        toPublishedPageSummary(page, context, versionsByPageAndId),
+      ),
+    );
+
+    if (pages.length < publicPublishedPageListMaxCount) {
+      return summaries.slice(0, publicPublishedPageListMaxCount);
+    }
+
+    skip += pages.length;
+  }
+
+  return summaries.slice(0, publicPublishedPageListMaxCount);
+}
+
+async function readPublishedPageRecords(
+  prisma: PrismaService,
+  siteId: string,
+  skip: number,
+): Promise<PublishedPageRecord[]> {
+  return prisma.page.findMany({
+    where: {
+      siteId,
+      publishedVersionId: { not: null },
+    },
+    orderBy: {
+      slug: "asc",
+    },
+    skip,
+    take: publicPublishedPageListMaxCount,
+    select: {
+      id: true,
+      publishedVersionId: true,
+      slug: true,
+    },
+  });
 }
 
 type PublishedVersionRecord = {

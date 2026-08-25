@@ -18,6 +18,7 @@ test("listPublishedPages returns public summaries for published pages", async ()
           publishedVersionId: { not: null },
         });
         assert.deepEqual(query.orderBy, { slug: "asc" });
+        assert.equal(query.skip, 0);
         assert.equal(query.take, publicPublishedPageListMaxCount);
         assert.deepEqual(query.select, {
           id: true,
@@ -228,5 +229,88 @@ test("listPublishedPages skips corrupt published schemas", async () => {
     result.data.map((page) => page.slug),
     ["home"],
   );
+  assert.equal(result.meta.total, 1);
+});
+
+test("listPublishedPages continues past fully filtered candidate batches", async () => {
+  const staleLocalePages = Array.from(
+    { length: publicPublishedPageListMaxCount },
+    (_value, index) => ({
+      id: `page-de-${index}`,
+      publishedVersionId: `version-de-${index}`,
+      slug: `de-campaign-${index}`,
+    }),
+  );
+  const validPage = {
+    id: "page-home",
+    publishedVersionId: "version-home",
+    slug: "home",
+  };
+  const pagesByVersionId = new Map(
+    [...staleLocalePages, validPage].map((page) => [
+      page.publishedVersionId,
+      page,
+    ]),
+  );
+  const pageCalls = [];
+  const versionBatchSizes = [];
+  const prisma = {
+    page: {
+      findMany: async (query) => {
+        pageCalls.push({ skip: query.skip, take: query.take });
+
+        if (query.skip === 0) {
+          return staleLocalePages;
+        }
+
+        if (query.skip === publicPublishedPageListMaxCount) {
+          return [validPage];
+        }
+
+        return [];
+      },
+    },
+    pageVersion: {
+      findMany: async (query) => {
+        versionBatchSizes.push(query.where.id.in.length);
+
+        return query.where.id.in.map((versionId) => {
+          const page = pagesByVersionId.get(versionId);
+          const isValidPage = versionId === validPage.publishedVersionId;
+
+          return {
+            createdAt: new Date("2026-08-19T00:00:00.000Z"),
+            id: versionId,
+            pageId: page.id,
+            publishedAt: new Date("2026-08-19T00:01:00.000Z"),
+            schema: createPublicPageSchema(page.slug, page.slug, {
+              locale: isValidPage ? "en-US" : "de-DE",
+            }),
+          };
+        });
+      },
+    },
+    site: {
+      findUnique: async () => createPublicSite(),
+    },
+  };
+
+  const result = await listPublishedPages(prisma, {
+    locale: "en-US",
+    market: "us",
+  });
+
+  assert.deepEqual(
+    result.data.map((page) => page.slug),
+    ["home"],
+  );
+  assert.deepEqual(pageCalls, [
+    { skip: 0, take: publicPublishedPageListMaxCount },
+    {
+      skip: publicPublishedPageListMaxCount,
+      take: publicPublishedPageListMaxCount,
+    },
+  ]);
+  assert.deepEqual(versionBatchSizes, [publicPublishedPageListMaxCount, 1]);
   assert.equal(result.meta.total, 1);
 });
