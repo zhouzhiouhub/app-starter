@@ -167,7 +167,12 @@ test("smoke readiness requires coherent analytics config when enabled", () => {
     },
     {
       action:
-        "Set a valid GTM_CONTAINER_ID, GA4_MEASUREMENT_ID, or CLARITY_PROJECT_ID, or set ANALYTICS_ENABLED=false.",
+        "Configure at least one analytics provider ID: GTM_CONTAINER_ID, GA4_MEASUREMENT_ID, or CLARITY_PROJECT_ID; otherwise set ANALYTICS_ENABLED=false.",
+      area: "analytics.provider",
+    },
+    {
+      action:
+        "Fix GTM_CONTAINER_ID to match GTM container ID such as GTM-XXXXXXX, or remove it and disable analytics.",
       area: "analytics.provider",
     },
   ]);

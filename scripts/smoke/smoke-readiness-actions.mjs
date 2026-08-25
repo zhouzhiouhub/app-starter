@@ -1,4 +1,9 @@
 import {
+  readAnalyticsConsentAction,
+  readAnalyticsEnabledAction,
+  readAnalyticsProviderAction,
+} from "./smoke-readiness-analytics-actions.mjs";
+import {
   readCdnAction,
   readExternalHostsAction,
   readR2Action,
@@ -113,7 +118,7 @@ function readBlockerActions(blocker) {
     return [
       createAction(
         blocker.area,
-        "Set ANALYTICS_ENABLED to true or false.",
+        readAnalyticsEnabledAction(blocker),
       ),
     ];
   }
@@ -122,7 +127,7 @@ function readBlockerActions(blocker) {
     return [
       createAction(
         blocker.area,
-        "Keep ANALYTICS_CONSENT_GRANTED=false until a consent mechanism or CMP grants analytics consent.",
+        readAnalyticsConsentAction(blocker),
       ),
     ];
   }
@@ -131,7 +136,7 @@ function readBlockerActions(blocker) {
     return [
       createAction(
         blocker.area,
-        "Set a valid GTM_CONTAINER_ID, GA4_MEASUREMENT_ID, or CLARITY_PROJECT_ID, or set ANALYTICS_ENABLED=false.",
+        readAnalyticsProviderAction(blocker),
       ),
     ];
   }

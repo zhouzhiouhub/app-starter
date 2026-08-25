@@ -80,6 +80,58 @@ test("smoke readiness next actions explain deployment URL blockers", () => {
   );
 });
 
+test("smoke readiness next actions explain analytics readiness blockers", () => {
+  assert.deepEqual(
+    createSmokeReadinessNextActions([
+      {
+        area: "analytics.enabled",
+        issue: "invalid-boolean",
+        message: "ANALYTICS_ENABLED must be true or false.",
+        variable: "ANALYTICS_ENABLED",
+      },
+      {
+        area: "analytics.consent",
+        issue: "invalid-boolean",
+        message: "ANALYTICS_CONSENT_GRANTED must be true or false.",
+        variable: "ANALYTICS_CONSENT_GRANTED",
+      },
+      {
+        area: "analytics.provider",
+        issue: "missing-provider",
+        message: "Enable analytics only with at least one valid provider ID.",
+      },
+      {
+        area: "analytics.provider",
+        issue: "invalid-provider",
+        message: "GTM_CONTAINER_ID is not a valid analytics provider ID.",
+        variable: "GTM_CONTAINER_ID",
+      },
+    ]),
+    [
+      {
+        action:
+          "Set ANALYTICS_ENABLED to a boolean value (true/false, 1/0, yes/no, or on/off).",
+        area: "analytics.enabled",
+      },
+      {
+        action:
+          "Set ANALYTICS_CONSENT_GRANTED to a boolean value (true/false, 1/0, yes/no, or on/off).",
+        area: "analytics.consent",
+      },
+      {
+        action:
+          "Configure at least one analytics provider ID: GTM_CONTAINER_ID, GA4_MEASUREMENT_ID, or CLARITY_PROJECT_ID; otherwise set ANALYTICS_ENABLED=false.",
+        area: "analytics.provider",
+      },
+      {
+        action:
+          "Fix GTM_CONTAINER_ID to match GTM container ID such as GTM-XXXXXXX, or remove it and disable analytics.",
+        area: "analytics.provider",
+      },
+    ],
+  );
+});
+
 test("smoke readiness next actions explain Redis readiness blockers", () => {
   assert.deepEqual(
     createSmokeReadinessNextActions([
