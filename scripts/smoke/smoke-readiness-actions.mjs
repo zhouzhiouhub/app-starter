@@ -1,5 +1,6 @@
 import {
   readCdnAction,
+  readExternalHostsAction,
   readR2Action,
 } from "./smoke-readiness-media-actions.mjs";
 import {
@@ -103,7 +104,7 @@ function readBlockerActions(blocker) {
     return [
       createAction(
         blocker.area,
-        "Set MEDIA_EXTERNAL_URL_HOSTS to comma-separated production hostnames or HTTPS origins without paths, query strings, credentials, local hosts, or placeholder hosts.",
+        readExternalHostsAction(blocker),
       ),
     ];
   }

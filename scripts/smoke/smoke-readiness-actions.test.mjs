@@ -184,6 +184,44 @@ test("smoke readiness next actions explain R2 readiness blockers", () => {
   );
 });
 
+test("smoke readiness next actions explain external media host blockers", () => {
+  assert.deepEqual(
+    createSmokeReadinessNextActions([
+      {
+        area: "media.external-hosts",
+        issue: "unsafe-hosts",
+        issues: [
+          {
+            host: "assets.brand.com",
+            issue: "unsupported-protocol",
+          },
+          {
+            host: "cdn.example.com",
+            issue: "placeholder-host",
+          },
+          {
+            host: null,
+            issue: "invalid-host",
+          },
+          {
+            host: "media.brand.com",
+            issue: "unsupported-url-parts",
+          },
+        ],
+        message:
+          "MEDIA_EXTERNAL_URL_HOSTS must contain production-safe hostnames or HTTPS origins.",
+      },
+    ]),
+    [
+      {
+        action:
+          "Fix MEDIA_EXTERNAL_URL_HOSTS: assets.brand.com must use https:// or be listed as a bare hostname; replace placeholder host cdn.example.com with the real production media host; replace one hostname entry with a valid production hostname; remove paths, query strings, and fragments from media.brand.com.",
+        area: "media.external-hosts",
+      },
+    ],
+  );
+});
+
 test("smoke readiness next actions explain runtime secret and report blockers", () => {
   assert.deepEqual(
     createSmokeReadinessNextActions([

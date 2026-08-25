@@ -42,6 +42,19 @@ export function readCdnAction(blocker) {
   return "Set MEDIA_CDN_BASE_URL to a production HTTPS CDN URL.";
 }
 
+export function readExternalHostsAction(blocker) {
+  const details = Array.isArray(blocker.issues)
+    ? blocker.issues.map((issue) => readExternalHostIssueAction(issue))
+    : [];
+  const filtered = details.filter(Boolean);
+
+  if (filtered.length === 0) {
+    return "Set MEDIA_EXTERNAL_URL_HOSTS to comma-separated production hostnames or HTTPS origins without paths, query strings, credentials, local hosts, or placeholder hosts.";
+  }
+
+  return `Fix MEDIA_EXTERNAL_URL_HOSTS: ${filtered.join("; ")}.`;
+}
+
 function readInvalidR2Action(issues) {
   const details = Array.isArray(issues)
     ? issues.map((issue) => readR2IssueAction(issue)).filter(Boolean)
@@ -52,6 +65,44 @@ function readInvalidR2Action(issues) {
   }
 
   return `Fix invalid R2 variables: ${details.join("; ")}.`;
+}
+
+function readExternalHostIssueAction(issue) {
+  if (!issue || typeof issue !== "object") {
+    return null;
+  }
+
+  const host = issue.host ?? "one entry";
+
+  if (issue.issue === "unsupported-protocol") {
+    return `${host} must use https:// or be listed as a bare hostname`;
+  }
+
+  if (issue.issue === "embedded-credentials") {
+    return `remove usernames and passwords from ${host}`;
+  }
+
+  if (issue.issue === "unsupported-url-parts") {
+    return `remove paths, query strings, and fragments from ${host}`;
+  }
+
+  if (issue.issue === "invalid-url") {
+    return "replace one URL entry with a valid HTTPS origin";
+  }
+
+  if (issue.issue === "invalid-host") {
+    return "replace one hostname entry with a valid production hostname";
+  }
+
+  if (issue.issue === "local-host") {
+    return `replace ${host} with a public production media host`;
+  }
+
+  if (issue.issue === "placeholder-host") {
+    return `replace placeholder host ${host} with the real production media host`;
+  }
+
+  return issue.host ? `${issue.host} has an unsupported value` : null;
 }
 
 function readR2IssueAction(issue) {

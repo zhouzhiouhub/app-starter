@@ -318,7 +318,7 @@ test("smoke readiness blocks unsafe external media host allowlists", () => {
   assert.deepEqual(readiness.nextActions, [
     {
       action:
-        "Set MEDIA_EXTERNAL_URL_HOSTS to comma-separated production hostnames or HTTPS origins without paths, query strings, credentials, local hosts, or placeholder hosts.",
+        "Fix MEDIA_EXTERNAL_URL_HOSTS: replace localhost with a public production media host; replace placeholder host cdn.example.com with the real production media host.",
       area: "media.external-hosts",
     },
   ]);
