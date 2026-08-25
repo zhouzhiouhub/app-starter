@@ -9,6 +9,8 @@ export function readDeploymentAction(blocker) {
 
   return readCommonUrlAction(blocker.issue, {
     fallback,
+    controlCharacter:
+      `Remove control characters from ${variable} before rerunning production smoke.`,
     localHost:
       `Replace local or private ${variable} hosts with the deployed public HTTPS ${label}.`,
     placeholderHost:

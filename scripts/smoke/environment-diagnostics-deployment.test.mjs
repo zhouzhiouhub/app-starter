@@ -55,6 +55,44 @@ test("smoke environment diagnostics reports unsafe deployment URLs", () => {
   assert.equal(diagnostics.deployment.web.productionReady, false);
 });
 
+test("smoke environment diagnostics rejects control characters in deployment URLs", () => {
+  const diagnostics = createSmokeEnvironmentDiagnostics({
+    ADMIN_URL: "https://admin.brand.com\t",
+    API_URL: "https://api.brand.com\t/api/v1",
+    WEB_URL: "https://store.brand.com\n.evil.com",
+  });
+
+  assert.deepEqual(diagnostics.deployment, {
+    admin: {
+      configured: true,
+      host: null,
+      path: null,
+      productionReady: false,
+      urlIssue: "control-character",
+      urlSafe: false,
+      variable: "ADMIN_URL",
+    },
+    api: {
+      configured: true,
+      host: null,
+      path: null,
+      productionReady: false,
+      urlIssue: "control-character",
+      urlSafe: false,
+      variable: "API_URL",
+    },
+    web: {
+      configured: true,
+      host: null,
+      path: null,
+      productionReady: false,
+      urlIssue: "control-character",
+      urlSafe: false,
+      variable: "WEB_URL",
+    },
+  });
+});
+
 test("smoke environment diagnostics rejects private and documentation IPv6 deployment hosts", () => {
   const diagnostics = createSmokeEnvironmentDiagnostics({
     ADMIN_URL: "https://[fd00::1]",

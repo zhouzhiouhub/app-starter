@@ -133,3 +133,38 @@ test("smoke readiness reports unsafe storefront deployment blockers", () => {
     },
   ]);
 });
+
+test("smoke readiness explains control characters in deployment URLs", () => {
+  const environment = createReadyEnvironment();
+  environment.deployment.api = {
+    host: null,
+    path: null,
+    productionReady: false,
+    urlIssue: "control-character",
+    variable: "API_URL",
+  };
+
+  const readiness = createSmokeProductionReadiness(
+    environment,
+    createReadyConfig(),
+  );
+
+  assert.deepEqual(readiness.blockers, [
+    {
+      area: "deployment.api",
+      host: null,
+      issue: "control-character",
+      message: "API_URL must be a production HTTPS URL.",
+      path: null,
+      variable: "API_URL",
+    },
+  ]);
+  assert.equal(readiness.productionReady, false);
+  assert.deepEqual(readiness.nextActions, [
+    {
+      action:
+        "Remove control characters from API_URL before rerunning production smoke.",
+      area: "deployment.api",
+    },
+  ]);
+});

@@ -49,10 +49,19 @@ function readDeploymentUrlDiagnostics(input) {
 }
 
 function readDeploymentUrl(value, pathPolicy) {
+  if (hasControlCharacter(value)) {
+    return {
+      host: null,
+      issue: "control-character",
+      path: null,
+    };
+  }
+
+  const trimmed = value.trim();
   let url;
 
   try {
-    url = new URL(value);
+    url = new URL(trimmed);
   } catch {
     return {
       host: null,
@@ -109,6 +118,13 @@ function trimTrailingSlashes(pathname) {
 }
 
 function readEnv(env, name) {
-  const value = env[name]?.trim();
-  return value ? value : null;
+  const value = env[name];
+  return typeof value === "string" && value.trim() ? value : null;
+}
+
+function hasControlCharacter(value) {
+  return Array.from(value).some((character) => {
+    const codePoint = character.codePointAt(0) ?? 0;
+    return codePoint <= 0x1f || codePoint === 0x7f;
+  });
 }
