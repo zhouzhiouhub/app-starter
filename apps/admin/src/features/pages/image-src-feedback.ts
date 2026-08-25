@@ -1,4 +1,7 @@
-import { isPublishableImageSrc } from "@app-starter/schema";
+import {
+  hasSensitiveUrlParameters,
+  isPublishableImageSrc,
+} from "@app-starter/schema";
 
 export interface ImageSrcFeedback {
   help?: string;
@@ -7,6 +10,8 @@ export interface ImageSrcFeedback {
 
 const invalidImageSrcHelp =
   "Use a relative URL, HTTPS image URL, or media://asset-id reference.";
+const sensitiveImageSrcHelp =
+  "Remove token, signature, key, or secret query parameters before publishing.";
 const emptyImageSrcHelp = "Add an image URL or media reference before publishing.";
 
 export function readImageSrcFeedback(
@@ -29,7 +34,9 @@ export function readImageSrcFeedback(
   }
 
   return {
-    help: invalidImageSrcHelp,
+    help: hasSensitiveUrlParameters(src)
+      ? sensitiveImageSrcHelp
+      : invalidImageSrcHelp,
     status: "error",
   };
 }

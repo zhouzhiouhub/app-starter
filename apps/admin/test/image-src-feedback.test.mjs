@@ -42,4 +42,10 @@ test("image source feedback rejects unsafe image sources", () => {
     ).status,
     "error",
   );
+  assert.match(
+    readImageSrcFeedback(
+      "https://cdn.example.com/gallery.jpg?X-Amz-Signature=signed",
+    ).help ?? "",
+    /Remove token, signature, key, or secret query parameters/,
+  );
 });
