@@ -59,6 +59,21 @@ test("CORS origin config rejects unsafe configured origins", () => {
     }),
     [],
   );
+  assert.deepEqual(
+    readConfiguredCorsOrigins({
+      ADMIN_URL: " https://admin.example.com ",
+      WEB_URL: "https://web.example.com\n",
+    }),
+    ["https://admin.example.com"],
+  );
+  assert.deepEqual(
+    readConfiguredCorsOrigins({
+      ADMIN_URL: "https://admin.example.com/ad\tmin",
+      NODE_ENV: "production",
+      WEB_URL: "https://store.brand-platform.com\n",
+    }),
+    [],
+  );
 });
 
 test("CORS origin config rejects unsafe production origins", () => {
@@ -173,4 +188,14 @@ test("CORS dev origin helper rejects unsafe origins", () => {
   assert.equal(isAllowedDevOrigin("file:///tmp/app"), false);
   assert.equal(isAllowedDevOrigin("https://user:pass@localhost:5173"), false);
   assert.equal(isAllowedDevOrigin("not a url"), false);
+  assert.equal(isAllowedDevOrigin("http://localhost:5173\n"), false);
+  assert.equal(isAllowedDevOrigin("http://192.168.1.20\t:5173"), false);
+  assert.equal(
+    isAllowedCorsOrigin({
+      configuredOrigins: [],
+      isProduction: false,
+      origin: "http://localhost:5173\n",
+    }),
+    false,
+  );
 });

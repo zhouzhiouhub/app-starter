@@ -75,6 +75,10 @@ export function isProductionCorsEnvironment(env: CorsEnvironment): boolean {
 }
 
 export function isAllowedDevOrigin(origin: string): boolean {
+  if (hasControlCharacter(origin)) {
+    return false;
+  }
+
   try {
     const url = new URL(origin);
 
@@ -102,10 +106,14 @@ function readConfiguredHttpOrigin(
   fallback: string | undefined,
   requireProductionOrigin: boolean,
 ): string | null {
-  const configured = value?.trim();
+  const configured = readControlSafeTrimmedValue(value);
 
   if (configured) {
     return readHttpOrigin(configured, requireProductionOrigin);
+  }
+
+  if (hasExplicitConfiguredOrigin(value)) {
+    return null;
   }
 
   return fallback ? readHttpOrigin(fallback, requireProductionOrigin) : null;
@@ -115,6 +123,10 @@ function readHttpOrigin(
   value: string,
   requireProductionOrigin = false,
 ): string | null {
+  if (hasControlCharacter(value)) {
+    return null;
+  }
+
   try {
     const url = new URL(value);
 
@@ -140,6 +152,29 @@ function uniqueOrigins(values: Array<string | null>): string[] {
 
 function isHttpProtocol(protocol: string): boolean {
   return protocol === "http:" || protocol === "https:";
+}
+
+function hasExplicitConfiguredOrigin(value: string | undefined): boolean {
+  return Boolean(
+    value && (hasControlCharacter(value) || value.trim().length > 0),
+  );
+}
+
+function readControlSafeTrimmedValue(
+  value: string | undefined,
+): string | null {
+  if (!value || hasControlCharacter(value)) {
+    return null;
+  }
+
+  return value.trim() || null;
+}
+
+function hasControlCharacter(value: string): boolean {
+  return Array.from(value).some((character) => {
+    const codePoint = character.codePointAt(0) ?? 0;
+    return codePoint <= 0x1f || codePoint === 0x7f;
+  });
 }
 
 function isPrivateIpv4(hostname: string): boolean {
