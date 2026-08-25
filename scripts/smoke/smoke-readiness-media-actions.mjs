@@ -94,6 +94,10 @@ function readExternalHostIssueAction(issue) {
     return `remove paths, query strings, and fragments from ${host}`;
   }
 
+  if (issue.issue === "control-character") {
+    return `remove control characters from ${host}`;
+  }
+
   if (issue.issue === "invalid-url") {
     return "replace one URL entry with a valid HTTPS origin";
   }

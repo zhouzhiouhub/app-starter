@@ -113,20 +113,26 @@ function readExternalUrlHostDiagnostics(value) {
 
   return value
     .split(",")
-    .map((item) => readExternalUrlHost(item.trim()))
+    .map(readExternalUrlHost)
     .filter(Boolean);
 }
 
 function readExternalUrlHost(value) {
-  if (!value) {
+  if (hasControlCharacter(value)) {
+    return { host: null, issue: "control-character" };
+  }
+
+  const trimmed = value.trim();
+
+  if (!trimmed) {
     return null;
   }
 
-  if (value.includes("://")) {
-    return readExternalUrlHostFromUrl(value);
+  if (trimmed.includes("://")) {
+    return readExternalUrlHostFromUrl(trimmed);
   }
 
-  return readExternalUrlHostFromHostname(value);
+  return readExternalUrlHostFromHostname(trimmed);
 }
 
 function readExternalUrlHostFromUrl(value) {
