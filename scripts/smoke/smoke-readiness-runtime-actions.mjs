@@ -81,7 +81,7 @@ export function readReportPathAction(blocker) {
   }
 
   if (blocker.issue === "unsafe-segments") {
-    return "Use only safe SMOKE_REPORT_PATH segments without empty parts, traversal, reserved names, special characters, or .json directories.";
+    return "Use only safe SMOKE_REPORT_PATH segments without empty parts, traversal, reserved names, trailing dots, special characters, or .json directories.";
   }
 
   if (blocker.issue === "non-json-extension") {

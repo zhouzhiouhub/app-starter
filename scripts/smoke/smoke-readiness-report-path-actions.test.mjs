@@ -8,6 +8,6 @@ test("smoke readiness report path actions explain unsafe segments", () => {
       area: "report.path",
       issue: "unsafe-segments",
     }),
-    "Use only safe SMOKE_REPORT_PATH segments without empty parts, traversal, reserved names, special characters, or .json directories.",
+    "Use only safe SMOKE_REPORT_PATH segments without empty parts, traversal, reserved names, trailing dots, special characters, or .json directories.",
   );
 });

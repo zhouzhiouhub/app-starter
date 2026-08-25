@@ -71,6 +71,7 @@ export function readSmokeReportPathIssue(value) {
         segment === ".." ||
         hasReservedWindowsBasename(segment) ||
         hasJsonIntermediateSegment(segment, index, segments.length) ||
+        hasTrailingDotSegment(segment) ||
         !reportPathSegmentPattern.test(segment),
     )
   ) {
@@ -111,4 +112,8 @@ function hasReservedWindowsBasename(segment) {
 
 function hasJsonIntermediateSegment(segment, index, segmentCount) {
   return index < segmentCount - 1 && segment.toLowerCase().endsWith(".json");
+}
+
+function hasTrailingDotSegment(segment) {
+  return segment.endsWith(".");
 }
