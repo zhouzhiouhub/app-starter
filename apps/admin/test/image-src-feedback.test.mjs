@@ -36,4 +36,10 @@ test("image source feedback rejects unsafe image sources", () => {
     readImageSrcFeedback("https://user:pass@example.com/image.jpg").status,
     "error",
   );
+  assert.equal(
+    readImageSrcFeedback(
+      "https://cdn.example.com/gallery.jpg?X-Amz-Signature=signed",
+    ).status,
+    "error",
+  );
 });

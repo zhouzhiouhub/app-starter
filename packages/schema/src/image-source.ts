@@ -1,9 +1,11 @@
 import type { SectionNode } from "./foundation.js";
+import { hasSensitiveUrlParameters } from "./foundation-url.js";
 import type { PageSchema } from "./page-schema.js";
 import { mediaAssetReferenceSchema } from "./media-reference.js";
 
 export type PublishableImageSrcIssueReason =
   | "http_requires_https"
+  | "sensitive_query_parameter"
   | "invalid_image_source";
 
 export interface PublishableImageSrcIssue {
@@ -16,7 +18,11 @@ const unsafeImageSrcCharacters = new Set(["<", ">", '"', "'", "`", "\\"]);
 export function isPublishableImageSrc(value: string): boolean {
   const src = value.trim();
 
-  if (!src || hasUnsafeImageSrcCharacter(src)) {
+  if (
+    !src ||
+    hasUnsafeImageSrcCharacter(src) ||
+    hasSensitiveUrlParameters(src)
+  ) {
     return false;
   }
 
@@ -105,10 +111,20 @@ function addImageSrcIssue(
 
   issues.push({
     field,
-    reason: src.startsWith("http://")
-      ? "http_requires_https"
-      : "invalid_image_source",
+    reason: readImageSrcIssueReason(src),
   });
+}
+
+function readImageSrcIssueReason(src: string): PublishableImageSrcIssueReason {
+  if (hasSensitiveUrlParameters(src)) {
+    return "sensitive_query_parameter";
+  }
+
+  if (src.startsWith("http://")) {
+    return "http_requires_https";
+  }
+
+  return "invalid_image_source";
 }
 
 function hasUnsafeImageSrcCharacter(src: string): boolean {
