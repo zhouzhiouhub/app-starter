@@ -20,6 +20,7 @@ test("smoke secret redaction removes tokens from common failure shapes", () => {
       "client_secret=oauth-client-secret-query",
       "databaseUrl=postgresql://db-user:db-secret@db.example.com:5432/app",
       "jwt=header.payload.signature",
+      "oauth_verifier=oauth-verifier-secret",
       "privateKeyPem=private-key-value",
       "rawPem=-----BEGIN PRIVATE KEY-----\nprivate-key-body\n-----END PRIVATE KEY-----",
       "refreshToken=refresh-token-value",
@@ -28,6 +29,7 @@ test("smoke secret redaction removes tokens from common failure shapes", () => {
       "redis://cache-user:cache-secret@redis.example.com:6379/0",
       "https://admin-user:admin-secret@admin.example.com",
       "https://web.example.com/preview?preview_token=payload.signature&access_token=access-token-value&api_key=api-key-value",
+      "https://auth.example.com/callback?authorization_code=oauth-code&code_verifier=pkce-secret",
       "https://auth.example.com/callback#access_token=fragment-access-token&id_token=fragment-id-token",
       "https://cdn.example.com/object.png?sig=edge-signature-value",
       "https://uploads.example.com/object.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=credential-value&X-Amz-Date=20260820T000000Z&X-Amz-Expires=900&X-Amz-SignedHeaders=content-type%3Bhost&X-Amz-Signature=signature-value&X-Amz-Security-Token=security-token-value",
@@ -45,6 +47,9 @@ test("smoke secret redaction removes tokens from common failure shapes", () => {
   assert.equal(message.includes("ChangeMe456!"), false);
   assert.equal(message.includes("oauth-client-secret"), false);
   assert.equal(message.includes("oauth-client-secret-query"), false);
+  assert.equal(message.includes("oauth-code"), false);
+  assert.equal(message.includes("oauth-verifier-secret"), false);
+  assert.equal(message.includes("pkce-secret"), false);
   assert.equal(message.includes("private-key-value"), false);
   assert.equal(message.includes("private-key-body"), false);
   assert.equal(message.includes("shared"), false);
@@ -68,8 +73,11 @@ test("smoke secret redaction removes tokens from common failure shapes", () => {
   assert.match(message, /preview_token=\[redacted\]/);
   assert.match(message, /access_token=\[redacted\]/);
   assert.match(message, /api_key=\[redacted\]/);
+  assert.match(message, /authorization_code=\[redacted\]/);
+  assert.match(message, /code_verifier=\[redacted\]/);
   assert.match(message, /#access_token=\[redacted\]/);
   assert.match(message, /id_token=\[redacted\]/);
+  assert.match(message, /oauth_verifier=\[redacted\]/);
   assert.match(message, /sig=\[redacted\]/);
   assert.match(message, /"clientSecret":"\[redacted\]"/);
   assert.match(message, /client_secret=\[redacted\]/);
@@ -109,7 +117,9 @@ test("smoke report value redaction sanitizes nested details", () => {
       attempts: [
         {
           authorization: "Bearer header.payload.signature",
+          authorizationCode: "oauth-code",
           clientSecret: "oauth-client-secret",
+          codeVerifier: "pkce-secret",
           cookie: "preview_token=payload.signature",
           databaseUrl: "postgresql://db-user:db-secret@db.example.com/app",
           privateKeyPem: "private-key-value",
@@ -123,14 +133,16 @@ test("smoke report value redaction sanitizes nested details", () => {
       requestUrl:
         "https://web.example.com/preview?preview_token=payload.signature&api_key=api-key-value",
       redirectUrl:
-        "https://auth.example.com/callback#access_token=fragment-access-token&id_token=fragment-id-token",
+        "https://auth.example.com/callback?oauth_verifier=oauth-verifier-secret#access_token=fragment-access-token&id_token=fragment-id-token",
       previewToken: "payload.signature",
     }),
     {
       attempts: [
         {
           authorization: "[redacted]",
+          authorizationCode: "[redacted]",
           clientSecret: "[redacted]",
+          codeVerifier: "[redacted]",
           cookie: "[redacted]",
           databaseUrl: "[redacted]",
           privateKeyPem: "[redacted]",
@@ -144,7 +156,7 @@ test("smoke report value redaction sanitizes nested details", () => {
       requestUrl:
         "https://web.example.com/preview?preview_token=[redacted]&api_key=[redacted]",
       redirectUrl:
-        "https://auth.example.com/callback#access_token=[redacted]&id_token=[redacted]",
+        "https://auth.example.com/callback?oauth_verifier=[redacted]#access_token=[redacted]&id_token=[redacted]",
       previewToken: "[redacted]",
     },
   );

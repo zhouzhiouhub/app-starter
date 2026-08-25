@@ -30,11 +30,12 @@ test("audit service appends audit log records", async () => {
         databaseUrl: "postgresql://user:secret@db.example.com/app",
         idToken: "header.payload.signature",
         note: "Authorization: Bearer header.payload.signature",
+        oauthVerifier: "oauth-verifier-secret",
         previewApiUrl:
           "https://api.example.com/api/v1/public/preview/payload.signature",
         sentryDsn: "https://public:secret@sentry.example.com/1",
         uploadUrl:
-          "https://uploads.example.com/object?X-Amz-Signature=signed-value#access_token=fragment-token",
+          "https://uploads.example.com/object?authorization_code=oauth-code&X-Amz-Signature=signed-value#access_token=fragment-token",
         previewToken: "preview-token",
         publicUrl: "https://store.example.com/page?utm_source=newsletter",
         requestSignature: "signature-value",
@@ -64,11 +65,12 @@ test("audit service appends audit log records", async () => {
         databaseUrl: "[redacted]",
         idToken: "[redacted]",
         note: "Authorization: Bearer [redacted]",
+        oauthVerifier: "[redacted]",
         previewApiUrl:
           "https://api.example.com/api/v1/public/preview/[redacted]",
         sentryDsn: "[redacted]",
         uploadUrl:
-          "https://uploads.example.com/object?X-Amz-Signature=[redacted]#access_token=[redacted]",
+          "https://uploads.example.com/object?authorization_code=[redacted]&X-Amz-Signature=[redacted]#access_token=[redacted]",
         previewToken: "[redacted]",
         publicUrl: "https://store.example.com/page?utm_source=newsletter",
         requestSignature: "[redacted]",

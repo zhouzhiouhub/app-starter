@@ -52,6 +52,7 @@ test("API exception filter redacts secrets from internal error logs", () => {
       "databaseUrl=postgresql://db-user:db-secret@db.example.com/app",
       '"accessToken":"json-token-value"',
       "rawPem=-----BEGIN PRIVATE KEY-----\nprivate-key-body\n-----END PRIVATE KEY-----",
+      "https://auth.example.com/callback?authorization_code=oauth-code&code_verifier=pkce-secret",
       "https://uploads.example.com/object?X-Amz-Signature=signed-value#access_token=fragment-token",
     ].join(" "),
   );
@@ -67,6 +68,8 @@ test("API exception filter redacts secrets from internal error logs", () => {
   assert.equal(logged.includes("db-secret"), false);
   assert.equal(logged.includes("json-token-value"), false);
   assert.equal(logged.includes("private-key-body"), false);
+  assert.equal(logged.includes("oauth-code"), false);
+  assert.equal(logged.includes("pkce-secret"), false);
   assert.equal(logged.includes("signed-value"), false);
   assert.equal(logged.includes("fragment-token"), false);
   assert.match(logged, /Authorization: Bearer \[redacted\]/);
@@ -74,6 +77,8 @@ test("API exception filter redacts secrets from internal error logs", () => {
   assert.match(logged, /databaseUrl=\[redacted\]/);
   assert.match(logged, /"accessToken":"\[redacted\]"/);
   assert.match(logged, /rawPem=\[redacted-pem\]/);
+  assert.match(logged, /authorization_code=\[redacted\]/);
+  assert.match(logged, /code_verifier=\[redacted\]/);
   assert.match(logged, /X-Amz-Signature=\[redacted\]/);
   assert.match(logged, /#access_token=\[redacted\]/);
 });
@@ -157,10 +162,12 @@ test("API exception filter redacts secrets from client error responses", () => {
           { secretAccessKey: "r2-secret" },
         ],
         callbackUrl:
-          "https://auth.example.com/callback#access_token=fragment-token",
+          "https://auth.example.com/callback?authorization_code=oauth-code#access_token=fragment-token",
+        codeVerifier: "pkce-secret",
         nested: {
           databaseUrl: "postgresql://db-user:db-secret@db.example.com/app",
         },
+        oauthVerifier: "oauth-verifier-secret",
         token: "detail-token",
       },
       message: "Invalid callback token=message-secret",
@@ -174,9 +181,11 @@ test("API exception filter redacts secrets from client error responses", () => {
     "Invalid callback token=[redacted]",
   );
   assert.equal(response.body.error.details.token, "[redacted]");
+  assert.equal(response.body.error.details.codeVerifier, "[redacted]");
+  assert.equal(response.body.error.details.oauthVerifier, "[redacted]");
   assert.equal(
     response.body.error.details.callbackUrl,
-    "https://auth.example.com/callback#access_token=[redacted]",
+    "https://auth.example.com/callback?authorization_code=[redacted]#access_token=[redacted]",
   );
   assert.equal(
     response.body.error.details.nested.databaseUrl,
@@ -197,6 +206,9 @@ test("API exception filter redacts secrets from client error responses", () => {
   const serialized = JSON.stringify(response.body);
   assert.equal(serialized.includes("message-secret"), false);
   assert.equal(serialized.includes("detail-token"), false);
+  assert.equal(serialized.includes("oauth-code"), false);
+  assert.equal(serialized.includes("oauth-verifier-secret"), false);
+  assert.equal(serialized.includes("pkce-secret"), false);
   assert.equal(serialized.includes("db-user"), false);
   assert.equal(serialized.includes("db-secret"), false);
   assert.equal(serialized.includes("fragment-token"), false);

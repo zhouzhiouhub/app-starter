@@ -13,7 +13,10 @@ const sensitiveMetadataKeys = new Set([
   "accesstoken",
   "apikey",
   "authorization",
+  "authcode",
+  "authorizationcode",
   "clientsecret",
+  "codeverifier",
   "connectionstring",
   "cookie",
   "credential",
@@ -21,6 +24,8 @@ const sensitiveMetadataKeys = new Set([
   "dsn",
   "idtoken",
   "jwt",
+  "oauthcode",
+  "oauthverifier",
   "password",
   "passphrase",
   "pem",
@@ -105,7 +110,10 @@ function shouldRedactMetadataKey(key: string): boolean {
     sensitiveMetadataKeys.has(normalized) ||
     normalized.endsWith("accesskeyid") ||
     normalized.endsWith("apikey") ||
+    normalized.endsWith("authcode") ||
+    normalized.endsWith("authorizationcode") ||
     normalized.endsWith("clientsecret") ||
+    normalized.endsWith("codeverifier") ||
     normalized.endsWith("connectionstring") ||
     normalized.endsWith("credential") ||
     normalized.endsWith("cookie") ||
@@ -113,6 +121,8 @@ function shouldRedactMetadataKey(key: string): boolean {
     normalized.endsWith("dsn") ||
     normalized.endsWith("idtoken") ||
     normalized.endsWith("jwt") ||
+    normalized.endsWith("oauthcode") ||
+    normalized.endsWith("oauthverifier") ||
     normalized.endsWith("password") ||
     normalized.endsWith("passphrase") ||
     normalized.endsWith("pem") ||

@@ -7,19 +7,25 @@ test("API message redaction removes secrets from JSON-like fragments", () => {
     [
       '"accessToken":"header.payload.signature"',
       '"authorization":"Bearer json.header.payload"',
+      '"authorizationCode":"oauth-code"',
       '"password":"ChangeMe123!"',
       '"clientSecret":"oauth-client-secret"',
+      '"codeVerifier":"pkce-secret"',
       '"databaseUrl":"postgresql://db-user:db-secret@db.example.com/app"',
       '"previewApiUrl":"https://api.example.com/api/v1/public/preview/payload.signature"',
       "'privateKeyPem':'private-key-body'",
       "Authorization: Basic dXNlcjpwYXNz",
       "Authorization=ApiKey admin-api-key-value",
+      "callback=https://auth.example.com/callback?oauth_verifier=oauth-verifier-secret",
       "rawPem=-----BEGIN PRIVATE KEY-----\nraw-private-key-body\n-----END PRIVATE KEY-----",
     ].join(" "),
   );
 
   assert.equal(message.includes("header.payload.signature"), false);
   assert.equal(message.includes("json.header.payload"), false);
+  assert.equal(message.includes("oauth-code"), false);
+  assert.equal(message.includes("oauth-verifier-secret"), false);
+  assert.equal(message.includes("pkce-secret"), false);
   assert.equal(message.includes("ChangeMe123"), false);
   assert.equal(message.includes("oauth-client-secret"), false);
   assert.equal(message.includes("db-user"), false);
@@ -31,6 +37,8 @@ test("API message redaction removes secrets from JSON-like fragments", () => {
   assert.equal(message.includes("raw-private-key-body"), false);
   assert.match(message, /"accessToken":"\[redacted\]"/);
   assert.match(message, /"authorization":"\[redacted\]"/);
+  assert.match(message, /"authorizationCode":"\[redacted\]"/);
+  assert.match(message, /"codeVerifier":"\[redacted\]"/);
   assert.match(message, /"password":"\[redacted\]"/);
   assert.match(message, /"clientSecret":"\[redacted\]"/);
   assert.match(message, /"databaseUrl":"\[redacted\]"/);
@@ -41,6 +49,7 @@ test("API message redaction removes secrets from JSON-like fragments", () => {
   assert.match(message, /'privateKeyPem':'\[redacted\]'/);
   assert.match(message, /Authorization: Basic \[redacted\]/);
   assert.match(message, /Authorization=ApiKey \[redacted\]/);
+  assert.match(message, /oauth_verifier=\[redacted\]/);
   assert.match(message, /rawPem=\[redacted-pem\]/);
 });
 

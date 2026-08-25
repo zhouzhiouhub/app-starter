@@ -1,7 +1,10 @@
 const secretKeyPattern = [
   "access[-_]?token",
   "api[-_]?key",
+  "auth[-_]?code",
+  "authorization[-_]?code",
   "client[-_]?secret",
+  "code[-_]?verifier",
   "connection[-_]?string",
   "cookie",
   "credential",
@@ -10,6 +13,8 @@ const secretKeyPattern = [
   "[a-z0-9]+[-_]?dsn",
   "id[-_]?token",
   "jwt",
+  "oauth[-_]?code",
+  "oauth[-_]?verifier",
   "password",
   "passphrase",
   "pem",
@@ -30,8 +35,11 @@ const pemBlockPattern =
 const sensitiveKeyNames = new Set([
   "accesstoken",
   "apikey",
+  "authcode",
   "authorization",
+  "authorizationcode",
   "clientsecret",
+  "codeverifier",
   "connectionstring",
   "cookie",
   "credential",
@@ -39,6 +47,8 @@ const sensitiveKeyNames = new Set([
   "dsn",
   "idtoken",
   "jwt",
+  "oauthcode",
+  "oauthverifier",
   "password",
   "passphrase",
   "pem",
@@ -133,12 +143,17 @@ function isSensitiveSmokeKey(key) {
 
   return (
     sensitiveKeyNames.has(normalized) ||
+    normalized.endsWith("authcode") ||
+    normalized.endsWith("authorizationcode") ||
     normalized.endsWith("clientsecret") ||
+    normalized.endsWith("codeverifier") ||
     normalized.endsWith("connectionstring") ||
     normalized.endsWith("credential") ||
     normalized.endsWith("databaseurl") ||
     normalized.endsWith("dsn") ||
     normalized.endsWith("jwt") ||
+    normalized.endsWith("oauthcode") ||
+    normalized.endsWith("oauthverifier") ||
     normalized.endsWith("password") ||
     normalized.endsWith("passphrase") ||
     normalized.endsWith("pem") ||
