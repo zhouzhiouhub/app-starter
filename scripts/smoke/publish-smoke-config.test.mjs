@@ -134,6 +134,42 @@ test("smoke config includes default fallback context for revalidation targets", 
   );
 });
 
+test("smoke config derives expected CDN checks only from safe CDN bases", async () => {
+  await withEnv(
+    {
+      API_URL: "https://api.example.com",
+      MEDIA_CDN_BASE_URL: "https://cdn.brand-assets.com/media",
+      WEB_URL: "https://web.example.com",
+    },
+    async () => {
+      const config = readConfig();
+
+      assert.equal(config.expectedMediaCdnHost, "cdn.brand-assets.com");
+      assert.equal(config.expectedMediaCdnPathPrefix, "/media");
+    },
+  );
+
+  for (const mediaCdnBaseUrl of [
+    "https://cdn.brand-assets.com/media?token=1",
+    "https://cdn.example.com/media",
+    "http://cdn.brand-assets.com/media",
+  ]) {
+    await withEnv(
+      {
+        API_URL: "https://api.example.com",
+        MEDIA_CDN_BASE_URL: mediaCdnBaseUrl,
+        WEB_URL: "https://web.example.com",
+      },
+      async () => {
+        const config = readConfig();
+
+        assert.equal(config.expectedMediaCdnHost, null);
+        assert.equal(config.expectedMediaCdnPathPrefix, null);
+      },
+    );
+  }
+});
+
 test("smoke config rejects documented local admin credentials in production", async () => {
   assert.equal(isProductionSmokeEnvironment({ APP_ENV: " production " }), true);
   assert.equal(

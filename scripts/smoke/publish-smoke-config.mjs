@@ -10,6 +10,7 @@ import {
   retryAttemptsRange,
   retryDelayMsRange,
 } from "./publish-smoke-config-defaults.mjs";
+import { readCdnDiagnostics } from "./environment-diagnostics-media-cdn.mjs";
 import {
   normalizeAdminOrigin,
   normalizeApiBaseUrl,
@@ -47,14 +48,18 @@ export function readConfig() {
   assertSmokeLoginConfig({ email, password, tenantSlug });
   assertProductionSmokeCredentials({ email, password });
 
+  const expectedMediaCdn = readOptionalExpectedMediaCdnBaseUrl(
+    "MEDIA_CDN_BASE_URL",
+  );
+
   return {
     adminUrl: readAdminUrlConfig(requireAdminApp),
     apiBaseUrl: normalizeApiBaseUrl(readEnv("API_URL", defaultApiUrl)),
     email,
-    expectedMediaCdnHost: readOptionalUrlHostEnv("MEDIA_CDN_BASE_URL"),
-    expectedMediaCdnPathPrefix: readOptionalUrlPathPrefixEnv(
-      "MEDIA_CDN_BASE_URL",
-    ),
+    expectedMediaCdnHost: expectedMediaCdn?.hostname ?? null,
+    expectedMediaCdnPathPrefix: expectedMediaCdn
+      ? normalizeUrlPathPrefix(expectedMediaCdn.pathname)
+      : null,
     fallbackLocale: defaultLocale,
     fallbackMarket: defaultMarket,
     locale: normalizeSmokeLocale(readEnv("SMOKE_LOCALE", defaultLocale)),
@@ -204,29 +209,19 @@ function readOptionalStorefrontHostEnv(name) {
   return normalizeStorefrontHost(value);
 }
 
-function readOptionalUrlHostEnv(name) {
+function readOptionalExpectedMediaCdnBaseUrl(name) {
   const value = process.env[name]?.trim();
 
   if (!value) {
     return null;
   }
 
-  try {
-    return new URL(value).hostname || null;
-  } catch {
-    return null;
-  }
-}
-
-function readOptionalUrlPathPrefixEnv(name) {
-  const value = process.env[name]?.trim();
-
-  if (!value) {
+  if (!readCdnDiagnostics(value).safe) {
     return null;
   }
 
   try {
-    return normalizeUrlPathPrefix(new URL(value).pathname);
+    return new URL(value);
   } catch {
     return null;
   }
