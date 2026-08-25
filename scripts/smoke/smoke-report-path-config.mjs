@@ -2,6 +2,30 @@ import { posix, win32 } from "node:path";
 
 const reportPathSegmentPattern = /^[A-Za-z0-9._-]+$/;
 const reportPathRoots = new Set([".tmp", "artifacts", "reports", "tmp"]);
+const reservedWindowsBasenames = new Set([
+  "aux",
+  "con",
+  "com1",
+  "com2",
+  "com3",
+  "com4",
+  "com5",
+  "com6",
+  "com7",
+  "com8",
+  "com9",
+  "lpt1",
+  "lpt2",
+  "lpt3",
+  "lpt4",
+  "lpt5",
+  "lpt6",
+  "lpt7",
+  "lpt8",
+  "lpt9",
+  "nul",
+  "prn",
+]);
 
 export function normalizeSmokeReportPath(value) {
   const issue = readSmokeReportPathIssue(value);
@@ -45,6 +69,7 @@ export function readSmokeReportPathIssue(value) {
         !segment ||
         segment === "." ||
         segment === ".." ||
+        hasReservedWindowsBasename(segment) ||
         !reportPathSegmentPattern.test(segment),
     )
   ) {
@@ -76,4 +101,9 @@ function readSmokeReportPathErrorMessage(issue) {
   }
 
   return "SMOKE_REPORT_PATH must end with .json.";
+}
+
+function hasReservedWindowsBasename(segment) {
+  const basename = segment.split(".")[0].toLowerCase();
+  return reservedWindowsBasenames.has(basename);
 }
