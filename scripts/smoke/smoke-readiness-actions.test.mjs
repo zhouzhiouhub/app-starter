@@ -107,3 +107,40 @@ test("smoke readiness next actions explain CDN readiness blockers", () => {
     ],
   );
 });
+
+test("smoke readiness next actions explain R2 readiness blockers", () => {
+  assert.deepEqual(
+    createSmokeReadinessNextActions([
+      {
+        area: "media.r2",
+        issue: "invalid-config",
+        issues: [
+          {
+            issue: "invalid-account-id",
+            variable: "R2_ACCOUNT_ID",
+          },
+          {
+            issue: "invalid-bucket",
+            variable: "R2_BUCKET",
+          },
+          {
+            issue: "invalid-credential",
+            variable: "R2_SECRET_ACCESS_KEY",
+          },
+          {
+            issue: "invalid-region",
+            variable: "R2_REGION",
+          },
+        ],
+        message: "R2 upload configuration contains invalid production values.",
+      },
+    ]),
+    [
+      {
+        action:
+          "Fix invalid R2 variables: R2_ACCOUNT_ID must be a DNS-safe account label up to 63 characters; R2_BUCKET must be 3-63 characters using letters, numbers, dots, or hyphens; R2_SECRET_ACCESS_KEY must not contain whitespace or control characters; R2_REGION must be a DNS-safe region label such as auto.",
+        area: "media.r2",
+      },
+    ],
+  );
+});

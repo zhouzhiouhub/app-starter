@@ -1,3 +1,8 @@
+import {
+  readCdnAction,
+  readR2Action,
+} from "./smoke-readiness-media-actions.mjs";
+
 export function createSmokeReadinessNextActions(blockers, warnings = []) {
   return dedupeActions([
     ...blockers.flatMap((blocker) => readBlockerActions(blocker)),
@@ -233,50 +238,6 @@ function createAction(area, action) {
   return { action, area };
 }
 
-function readR2Action(blocker) {
-  if (blocker.issue === "r2-upload-smoke-not-required") {
-    return "Configure R2 credentials and set SMOKE_REQUIRE_R2_UPLOAD=true.";
-  }
-
-  if (blocker.issue === "invalid-config") {
-    return "Replace invalid R2 variables with production-safe account, bucket, credential, and region values.";
-  }
-
-  return `Set missing R2 variables${formatMissingList(blocker.missingRequired)}.`;
-}
-
-function readCdnAction(blocker) {
-  if (blocker.issue === "cdn-not-configured") {
-    return "Set MEDIA_CDN_BASE_URL to the production HTTPS CDN URL used for published media.";
-  }
-
-  if (blocker.issue === "unsupported-protocol") {
-    return "Use an https:// MEDIA_CDN_BASE_URL; production media CDN URLs cannot use http://.";
-  }
-
-  if (blocker.issue === "embedded-credentials") {
-    return "Remove usernames, passwords, and credentials from MEDIA_CDN_BASE_URL.";
-  }
-
-  if (blocker.issue === "unsupported-url-parts") {
-    return "Remove query strings and fragments from MEDIA_CDN_BASE_URL; keep only the HTTPS CDN origin or path prefix.";
-  }
-
-  if (blocker.issue === "local-host") {
-    return "Replace local or private MEDIA_CDN_BASE_URL hosts with a public production HTTPS CDN host.";
-  }
-
-  if (blocker.issue === "placeholder-host") {
-    return "Replace placeholder MEDIA_CDN_BASE_URL hosts with the real production HTTPS CDN host.";
-  }
-
-  if (blocker.issue === "invalid-url") {
-    return "Set MEDIA_CDN_BASE_URL to a valid production HTTPS CDN URL.";
-  }
-
-  return "Set MEDIA_CDN_BASE_URL to a production HTTPS CDN URL.";
-}
-
 function dedupeActions(actions) {
   const seen = new Set();
   const result = [];
@@ -290,10 +251,4 @@ function dedupeActions(actions) {
   }
 
   return result;
-}
-
-function formatMissingList(values) {
-  return Array.isArray(values) && values.length > 0
-    ? `: ${values.join(", ")}`
-    : "";
 }
