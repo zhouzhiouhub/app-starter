@@ -49,6 +49,8 @@ export function readRedisAction(blocker) {
   return readCommonUrlAction(blocker.issue, {
     fallback:
       "Set REDIS_URL to a production rediss:// Redis endpoint outside local or placeholder hosts.",
+    controlCharacter:
+      "Remove control characters from REDIS_URL before rerunning production smoke.",
     localHost:
       "Replace local or private REDIS_URL hosts with a managed production Redis hostname.",
     placeholderHost:

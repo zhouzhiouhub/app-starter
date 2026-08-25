@@ -6,8 +6,13 @@ import {
 export function createRedisDiagnostics(env = process.env) {
   const value = readEnv(env, "REDIS_URL");
   const configured = Boolean(value);
-  const url = value ? readRedisUrl(value) : null;
-  const urlIssue = readRedisUrlIssue({ configured, url });
+  const hasControlCharacters = value ? hasControlCharacter(value) : false;
+  const url = value && !hasControlCharacters ? readRedisUrl(value) : null;
+  const urlIssue = readRedisUrlIssue({
+    configured,
+    hasControlCharacters,
+    url,
+  });
 
   return {
     configured,
@@ -23,6 +28,10 @@ export function createRedisDiagnostics(env = process.env) {
 function readRedisUrlIssue(input) {
   if (!input.configured) {
     return "missing-url";
+  }
+
+  if (input.hasControlCharacters) {
+    return "control-character";
   }
 
   if (!input.url) {
@@ -54,13 +63,20 @@ function readRedisUrlIssue(input) {
 
 function readRedisUrl(value) {
   try {
-    return new URL(value);
+    return new URL(value.trim());
   } catch {
     return null;
   }
 }
 
 function readEnv(env, name) {
-  const value = env[name]?.trim();
-  return value ? value : null;
+  const value = env[name];
+  return typeof value === "string" && value.trim() ? value : null;
+}
+
+function hasControlCharacter(value) {
+  return Array.from(value).some((character) => {
+    const codePoint = character.codePointAt(0) ?? 0;
+    return codePoint <= 0x1f || codePoint === 0x7f;
+  });
 }

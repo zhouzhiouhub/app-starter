@@ -76,3 +76,21 @@ test("smoke environment diagnostics reports unsafe Redis URLs", () => {
   assert.equal(placeholder.redis.urlIssue, "placeholder-host");
   assert.equal(documentationIpv4.redis.urlIssue, "placeholder-host");
 });
+
+test("smoke environment diagnostics rejects control characters in Redis URLs", () => {
+  for (const value of [
+    "rediss://cache-user:secret@redis.brand-cache.com\t:6379/0",
+    "rediss://cache-user:secret@redis.brand-cache.com\n.evil.com:6379/0",
+  ]) {
+    const diagnostics = createSmokeEnvironmentDiagnostics({
+      REDIS_URL: value,
+    });
+
+    assert.equal(diagnostics.redis.configured, true);
+    assert.equal(diagnostics.redis.host, null);
+    assert.equal(diagnostics.redis.productionReady, false);
+    assert.equal(diagnostics.redis.urlIssue, "control-character");
+    assert.equal(diagnostics.redis.urlSafe, false);
+    assert.equal(diagnostics.redis.usesTls, false);
+  }
+});
