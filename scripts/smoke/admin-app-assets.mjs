@@ -3,6 +3,7 @@ import {
   cancelResponseBody,
   readRedirectLocation,
 } from "./http-response-summary.mjs";
+import { readErrorMessage } from "./smoke-error-message.mjs";
 
 export async function readModuleScriptAttempt(url) {
   try {
@@ -287,8 +288,4 @@ function isJavaScriptContentType(value) {
 
 function isCssContentType(value) {
   return typeof value === "string" && /\btext\/css\b/i.test(value);
-}
-
-function readErrorMessage(error) {
-  return redactSmokeSecrets(error instanceof Error ? error.message : error);
 }

@@ -19,6 +19,7 @@ import {
   cancelResponseBody,
   readRedirectLocation,
 } from "./http-response-summary.mjs";
+import { readErrorMessage } from "./smoke-error-message.mjs";
 import { redactSmokeSecrets } from "./smoke-secrets.mjs";
 
 export async function assertAdminApp(input) {
@@ -242,10 +243,6 @@ function readBodySnippet(text) {
   const normalized = redactSmokeSecrets(text).replace(/\s+/g, " ").trim();
 
   return normalized ? normalized.slice(0, 240) : null;
-}
-
-function readErrorMessage(error) {
-  return redactSmokeSecrets(error instanceof Error ? error.message : error);
 }
 
 async function readAdminAppResponseBody(response, url) {

@@ -10,9 +10,10 @@ import {
   cancelResponseBody,
   readRedirectLocation,
 } from "./http-response-summary.mjs";
+import { readErrorMessage } from "./smoke-error-message.mjs";
 import { redactSmokeSecrets } from "./smoke-secrets.mjs";
 
-export { fetchJson, readHttpError, redactSmokeSecrets };
+export { fetchJson, readErrorMessage, readHttpError, redactSmokeSecrets };
 
 export async function fetchText(url, init) {
   const response = await fetch(url, {
@@ -36,12 +37,6 @@ export async function fetchText(url, init) {
     text: body.text,
     url,
   };
-}
-
-export function readErrorMessage(error) {
-  return redactSmokeSecrets(
-    error instanceof Error ? error.message : String(error),
-  );
 }
 
 async function readPreviewResponseBody(response, url) {
