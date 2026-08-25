@@ -128,6 +128,39 @@ test("storefront chrome links do not expose blocked href values", () => {
   );
 });
 
+test("storefront chrome links block sensitive href parameters", () => {
+  const header = StorefrontHeader({
+    content: {
+      navigation: [
+        {
+          href: "https://example.com/private?token=secret-value",
+          label: "Private",
+        },
+        {
+          href: "https://example.com/callback#access_token=fragment-token",
+          label: "Callback",
+        },
+      ],
+    },
+  });
+  const blocked = findElements(header, "span");
+  const rendered = JSON.stringify({
+    blocked: blocked.map((node) => node.props),
+    links: findElements(header, "a").map((node) => node.props),
+  });
+
+  assert.equal(findElements(header, "a").length, 1);
+  assert.equal(
+    blocked.filter(
+      (node) =>
+        node.props["data-chrome-navigation-href-blocked"] === "unsafe",
+    ).length,
+    2,
+  );
+  assert.equal(rendered.includes("secret-value"), false);
+  assert.equal(rendered.includes("fragment-token"), false);
+});
+
 function findElements(node, type) {
   if (!node || typeof node !== "object") {
     return [];

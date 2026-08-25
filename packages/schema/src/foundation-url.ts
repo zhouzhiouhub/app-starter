@@ -2,7 +2,7 @@ import { z } from "zod";
 import { mediaAssetReferenceSchema } from "./media-reference.js";
 
 const unsafeHrefCharacters = new Set(["<", ">", '"', "'", "`", "\\"]);
-const sensitiveSeoQueryKeySuffixes = [
+const sensitiveUrlParameterKeySuffixes = [
   "accesstoken",
   "apikey",
   "clientsecret",
@@ -23,16 +23,17 @@ const sensitiveSeoQueryKeySuffixes = [
   "signature",
   "token",
 ];
-const sensitiveSeoQueryKeys = new Set([
+const sensitiveUrlParameterKeys = new Set([
   "policy",
   "sig",
-  ...sensitiveSeoQueryKeySuffixes,
+  ...sensitiveUrlParameterKeySuffixes,
 ]);
+const urlParameterPattern = /(?:^|[?&#;])([^=\s&#;]+)=/g;
 
 export function isSafeHref(value: string): boolean {
   const href = value.trim();
 
-  if (!href || hasUnsafeHrefCharacter(href)) {
+  if (!href || hasUnsafeHrefCharacter(href) || hasSensitiveUrlParameters(href)) {
     return false;
   }
 
@@ -134,7 +135,7 @@ function hasUnsafeHrefCharacter(href: string): boolean {
 }
 
 function hasSensitiveSeoQueryParameters(url: URL): boolean {
-  return Array.from(url.searchParams.keys()).some(isSensitiveSeoQueryKey);
+  return Array.from(url.searchParams.keys()).some(isSensitiveUrlParameterKey);
 }
 
 function hasSensitiveRelativeSeoQueryParameters(value: string): boolean {
@@ -147,11 +148,27 @@ function hasSensitiveRelativeSeoQueryParameters(value: string): boolean {
   }
 }
 
-function isSensitiveSeoQueryKey(key: string): boolean {
+function hasSensitiveUrlParameters(value: string): boolean {
+  return Array.from(value.matchAll(urlParameterPattern)).some((match) =>
+    isSensitiveUrlParameterKey(readDecodedParameterKey(match[1] ?? "")),
+  );
+}
+
+function readDecodedParameterKey(key: string): string {
+  try {
+    return decodeURIComponent(key.replace(/\+/g, " "));
+  } catch {
+    return key;
+  }
+}
+
+function isSensitiveUrlParameterKey(key: string): boolean {
   const normalized = key.replace(/[-_\s]/g, "").toLowerCase();
   return (
     normalized.startsWith("xamz") ||
-    sensitiveSeoQueryKeys.has(normalized) ||
-    sensitiveSeoQueryKeySuffixes.some((suffix) => normalized.endsWith(suffix))
+    sensitiveUrlParameterKeys.has(normalized) ||
+    sensitiveUrlParameterKeySuffixes.some((suffix) =>
+      normalized.endsWith(suffix),
+    )
   );
 }

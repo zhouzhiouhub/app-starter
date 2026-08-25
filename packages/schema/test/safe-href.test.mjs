@@ -21,3 +21,16 @@ test("safe href schema rejects control characters and unsafe URL forms", () => {
     safeHrefSchema.parse("https://example.com\njavascript:alert(1)"),
   );
 });
+
+test("safe href schema rejects sensitive URL parameters", () => {
+  for (const href of [
+    "/en/contact?token=secret",
+    "/en/contact?access%5Ftoken=secret",
+    "https://example.com/signup?X-Amz-Signature=signed-value",
+    "https://example.com/callback#access_token=fragment-token",
+    "#preview_token=fragment-token",
+  ]) {
+    assert.equal(isSafeHref(href), false, href);
+    assert.throws(() => safeHrefSchema.parse(href));
+  }
+});

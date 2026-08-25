@@ -64,6 +64,26 @@ test("CTA components do not expose blocked href values", () => {
   assert.equal(rendered.includes("token=secret"), false);
 });
 
+test("CTA components block sensitive href parameters", () => {
+  for (const ctaHref of [
+    "https://example.com/signup?api_key=secret-value",
+    "https://example.com/callback#access_token=fragment-token",
+  ]) {
+    const cta = CtaBar({
+      ctaHref,
+      ctaLabel: "Launch",
+      title: "Ready",
+    });
+    const rendered = JSON.stringify(cta);
+    const blocked = findFirstElement(cta, "span");
+
+    assert.equal(findFirstElement(cta, "a"), null);
+    assert.equal(blocked?.props["data-cta-href-blocked"], "unsafe");
+    assert.equal(rendered.includes("secret-value"), false);
+    assert.equal(rendered.includes("fragment-token"), false);
+  }
+});
+
 function findFirstElement(node, type) {
   if (!node || typeof node !== "object") {
     return null;
