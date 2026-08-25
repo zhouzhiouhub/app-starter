@@ -58,3 +58,52 @@ test("smoke readiness next actions explain Redis readiness blockers", () => {
     ],
   );
 });
+
+test("smoke readiness next actions explain CDN readiness blockers", () => {
+  assert.deepEqual(
+    createSmokeReadinessNextActions([
+      {
+        area: "media.cdn",
+        issue: "cdn-not-configured",
+        message: "Configure MEDIA_CDN_BASE_URL before production smoke.",
+      },
+      {
+        area: "media.cdn",
+        issue: "unsupported-protocol",
+        message: "MEDIA_CDN_BASE_URL must use HTTPS.",
+      },
+      {
+        area: "media.cdn",
+        issue: "unsupported-url-parts",
+        message: "MEDIA_CDN_BASE_URL must not include query strings.",
+      },
+      {
+        area: "media.cdn",
+        issue: "placeholder-host",
+        message: "MEDIA_CDN_BASE_URL must not use placeholder hosts.",
+      },
+    ]),
+    [
+      {
+        action:
+          "Set MEDIA_CDN_BASE_URL to the production HTTPS CDN URL used for published media.",
+        area: "media.cdn",
+      },
+      {
+        action:
+          "Use an https:// MEDIA_CDN_BASE_URL; production media CDN URLs cannot use http://.",
+        area: "media.cdn",
+      },
+      {
+        action:
+          "Remove query strings and fragments from MEDIA_CDN_BASE_URL; keep only the HTTPS CDN origin or path prefix.",
+        area: "media.cdn",
+      },
+      {
+        action:
+          "Replace placeholder MEDIA_CDN_BASE_URL hosts with the real production HTTPS CDN host.",
+        area: "media.cdn",
+      },
+    ],
+  );
+});

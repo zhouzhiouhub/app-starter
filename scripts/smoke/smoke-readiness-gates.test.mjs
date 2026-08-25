@@ -83,7 +83,7 @@ test("smoke readiness reports CDN blockers even when R2 upload smoke is omitted"
       ],
       [
         "media.cdn",
-        "Set MEDIA_CDN_BASE_URL to a production HTTPS CDN origin.",
+        "Replace placeholder MEDIA_CDN_BASE_URL hosts with the real production HTTPS CDN host.",
       ],
     ],
   );

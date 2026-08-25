@@ -79,7 +79,7 @@ function readBlockerActions(blocker) {
     return [
       createAction(
         blocker.area,
-        "Set MEDIA_CDN_BASE_URL to a production HTTPS CDN origin.",
+        readCdnAction(blocker),
       ),
     ];
   }
@@ -243,6 +243,38 @@ function readR2Action(blocker) {
   }
 
   return `Set missing R2 variables${formatMissingList(blocker.missingRequired)}.`;
+}
+
+function readCdnAction(blocker) {
+  if (blocker.issue === "cdn-not-configured") {
+    return "Set MEDIA_CDN_BASE_URL to the production HTTPS CDN URL used for published media.";
+  }
+
+  if (blocker.issue === "unsupported-protocol") {
+    return "Use an https:// MEDIA_CDN_BASE_URL; production media CDN URLs cannot use http://.";
+  }
+
+  if (blocker.issue === "embedded-credentials") {
+    return "Remove usernames, passwords, and credentials from MEDIA_CDN_BASE_URL.";
+  }
+
+  if (blocker.issue === "unsupported-url-parts") {
+    return "Remove query strings and fragments from MEDIA_CDN_BASE_URL; keep only the HTTPS CDN origin or path prefix.";
+  }
+
+  if (blocker.issue === "local-host") {
+    return "Replace local or private MEDIA_CDN_BASE_URL hosts with a public production HTTPS CDN host.";
+  }
+
+  if (blocker.issue === "placeholder-host") {
+    return "Replace placeholder MEDIA_CDN_BASE_URL hosts with the real production HTTPS CDN host.";
+  }
+
+  if (blocker.issue === "invalid-url") {
+    return "Set MEDIA_CDN_BASE_URL to a valid production HTTPS CDN URL.";
+  }
+
+  return "Set MEDIA_CDN_BASE_URL to a production HTTPS CDN URL.";
 }
 
 function dedupeActions(actions) {
