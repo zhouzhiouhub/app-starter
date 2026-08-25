@@ -99,6 +99,23 @@ test("page structure preflight blocks duplicate section ids", () => {
   );
 });
 
+test("page structure preflight blocks visible unsupported components", () => {
+  const schema = structuredClone(exampleLandingPage);
+  schema.sections[0].component = "legacy-carousel";
+  schema.sections[1].component = "experimental-quote";
+  schema.sections[1].visibility.desktop = false;
+  schema.sections[1].visibility.mobile = false;
+
+  assert.deepEqual(collectPageStructurePreflightIssues(schema), [
+    {
+      field: "sections[0].component",
+      message:
+        'Section 1 uses unsupported component "legacy-carousel". Choose a supported section before publishing so the storefront renderer can render the page.',
+      severity: "error",
+    },
+  ]);
+});
+
 test("page structure preflight warns about stale section orders", () => {
   const schema = structuredClone(exampleLandingPage);
   schema.layout.desktop.sectionOrder = ["hero", "missing", "hero"];

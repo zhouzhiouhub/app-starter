@@ -1,12 +1,7 @@
 import type { SectionNode, Viewport } from "@app-starter/schema";
+import type { SectionTemplateId } from "./section-components.ts";
 
-export type SectionTemplateId =
-  | "cta-bar"
-  | "faq"
-  | "hero-banner"
-  | "image-gallery"
-  | "rich-text"
-  | "spec-table";
+export type { SectionTemplateId } from "./section-components.ts";
 
 export function createSection(
   templateId: SectionTemplateId,

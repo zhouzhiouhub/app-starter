@@ -90,3 +90,18 @@ test("publish preflight warns about missing visible viewport layouts", () => {
   );
   assert.equal(blocker, null);
 });
+
+test("publish preflight blocks visible components missing from the renderer", () => {
+  const schema = structuredClone(exampleLandingPage);
+  schema.sections[0].component = "legacy-carousel";
+
+  const issues = collectPublishPreflightIssues(schema);
+  const blocker = findBlockingPublishPreflightIssue(schema);
+
+  assert.deepEqual(
+    issues.map((issue) => [issue.field, issue.severity]),
+    [["sections[0].component", "error"]],
+  );
+  assert.match(issues[0].message, /storefront renderer can render the page/);
+  assert.equal(blocker?.field, "sections[0].component");
+});

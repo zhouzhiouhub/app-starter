@@ -1,5 +1,6 @@
 import type { PageSchema, SectionNode, Viewport } from "@app-starter/schema";
 import type { PublishPreflightIssue } from "./publish-preflight-types";
+import { isSupportedSectionComponent } from "./section-components.ts";
 
 const orderedViewports: Viewport[] = ["desktop", "mobile"];
 const mobileCanvasWidth = 390;
@@ -10,6 +11,7 @@ export function collectPageStructurePreflightIssues(
   return [
     ...collectEmptyPageIssues(schema),
     ...collectEmptyViewportIssues(schema),
+    ...collectUnsupportedSectionComponentIssues(schema),
     ...collectMissingViewportLayoutIssues(schema),
     ...collectMobileLayoutOverflowIssues(schema),
     ...collectDuplicateSectionIdIssues(schema),
@@ -59,6 +61,32 @@ function hasVisibleSection(schema: PageSchema, viewport: Viewport): boolean {
 
 function isSectionVisible(section: SectionNode, viewport: Viewport): boolean {
   return section.visibility?.[viewport] !== false;
+}
+
+function collectUnsupportedSectionComponentIssues(
+  schema: PageSchema,
+): PublishPreflightIssue[] {
+  return schema.sections.flatMap((section, sectionIndex) => {
+    if (!isSectionVisibleInAnyViewport(section)) {
+      return [];
+    }
+
+    if (isSupportedSectionComponent(section.component)) {
+      return [];
+    }
+
+    return [
+      {
+        field: `sections[${sectionIndex}].component`,
+        message: `Section ${sectionIndex + 1} uses unsupported component "${section.component}". Choose a supported section before publishing so the storefront renderer can render the page.`,
+        severity: "error",
+      },
+    ];
+  });
+}
+
+function isSectionVisibleInAnyViewport(section: SectionNode): boolean {
+  return orderedViewports.some((viewport) => isSectionVisible(section, viewport));
 }
 
 function collectMissingViewportLayoutIssues(

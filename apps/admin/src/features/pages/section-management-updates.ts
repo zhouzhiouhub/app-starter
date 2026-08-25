@@ -6,48 +6,54 @@ import {
   type Viewport,
 } from "@app-starter/schema";
 import {
-  createSection,
+  supportedSectionComponentIds,
   type SectionTemplateId,
-} from "./section-template-factory.ts";
+} from "./section-components.ts";
+import { createSection } from "./section-template-factory.ts";
 
-export type { SectionTemplateId } from "./section-template-factory.ts";
+export type { SectionTemplateId } from "./section-components.ts";
 
-export const sectionTemplateOptions: Array<{
+interface SectionTemplateOption {
   description: string;
   label: string;
   value: SectionTemplateId;
-}> = [
-  {
+}
+
+const sectionTemplateDetails: Record<
+  SectionTemplateId,
+  Omit<SectionTemplateOption, "value">
+> = {
+  "hero-banner": {
     description: "Large campaign header.",
     label: "Hero",
-    value: "hero-banner",
   },
-  {
+  "rich-text": {
     description: "Editorial text block.",
     label: "Rich text",
-    value: "rich-text",
   },
-  {
+  "cta-bar": {
     description: "Conversion callout.",
     label: "CTA",
-    value: "cta-bar",
   },
-  {
+  faq: {
     description: "Question and answer list.",
     label: "FAQ",
-    value: "faq",
   },
-  {
+  "image-gallery": {
     description: "Image grid.",
     label: "Image gallery",
-    value: "image-gallery",
   },
-  {
+  "spec-table": {
     description: "Specification rows.",
     label: "Spec table",
-    value: "spec-table",
   },
-];
+};
+
+export const sectionTemplateOptions: SectionTemplateOption[] =
+  supportedSectionComponentIds.map((value) => ({
+    ...sectionTemplateDetails[value],
+    value,
+  }));
 
 export function addSection(
   current: PageSchema,

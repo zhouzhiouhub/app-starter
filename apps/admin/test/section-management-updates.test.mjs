@@ -6,11 +6,20 @@ import {
   setSectionOrderForViewport,
 } from "@app-starter/schema";
 import { collectPublishPreflightIssues } from "../src/features/pages/publish-preflight.ts";
+import { supportedSectionComponentIds } from "../src/features/pages/section-components.ts";
 import {
   addSection,
   duplicateSection,
   removeSection,
+  sectionTemplateOptions,
 } from "../src/features/pages/section-management-updates.ts";
+
+test("section library options cover the supported renderer components", () => {
+  assert.deepEqual(
+    sectionTemplateOptions.map((option) => option.value),
+    supportedSectionComponentIds,
+  );
+});
 
 test("new CTA sections include safe default links", () => {
   for (const templateId of ["hero-banner", "cta-bar"]) {
