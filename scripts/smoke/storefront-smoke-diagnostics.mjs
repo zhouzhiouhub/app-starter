@@ -81,13 +81,21 @@ export function formatRobotsAttempt(attempt) {
 export function readSitemapAttempt(response, expectedUrl) {
   const bodyReadError = response.bodyReadError ?? null;
   const urls = bodyReadError ? [] : parseSitemapUrls(response.text);
+  const expectedOrigin = readUrlOrigin(expectedUrl);
+  const offOriginUrls = urls.filter(
+    (url) => readUrlOrigin(url) !== expectedOrigin,
+  );
 
   return {
     bodySnippet:
       response.ok && !bodyReadError ? null : readBodySnippet(response.text),
     ...(bodyReadError ? { bodyReadError } : {}),
     expectedUrlPresent: urls.includes(expectedUrl),
+    firstOffOriginUrl: offOriginUrls[0]
+      ? redactSmokeSecrets(offOriginUrls[0])
+      : null,
     notFoundUrlPresent: urls.some(isNotFoundSitemapUrl),
+    offOriginUrlCount: offOriginUrls.length,
     ok: response.ok && !bodyReadError,
     status: response.status,
     statusText: response.statusText || "",
@@ -103,8 +111,11 @@ export function formatSitemapAttempt(attempt) {
   const bodyReadError = attempt.bodyReadError
     ? `, body read error: ${attempt.bodyReadError}`
     : "";
+  const offOrigin = attempt.firstOffOriginUrl
+    ? `, first off-origin URL: ${JSON.stringify(attempt.firstOffOriginUrl)}`
+    : "";
 
-  return `status ${attempt.status}${statusText}, expected URL present: ${attempt.expectedUrlPresent}, 404 present: ${attempt.notFoundUrlPresent}, URL count: ${attempt.urlCount}${bodyReadError}${body}`;
+  return `status ${attempt.status}${statusText}, expected URL present: ${attempt.expectedUrlPresent}, 404 present: ${attempt.notFoundUrlPresent}, off-origin URLs: ${attempt.offOriginUrlCount}, URL count: ${attempt.urlCount}${offOrigin}${bodyReadError}${body}`;
 }
 
 export function readNotFoundAttempt(response) {
@@ -245,6 +256,14 @@ function readStorefrontPageDiagnosis(response, titlePresent, documentTitle) {
 function isNotFoundSitemapUrl(url) {
   const normalized = url.replace(/\/+$/, "");
   return normalized.endsWith("/404");
+}
+
+function readUrlOrigin(value) {
+  try {
+    return new URL(value).origin;
+  } catch {
+    return null;
+  }
 }
 
 function hasRobotsDirective(text, directive) {

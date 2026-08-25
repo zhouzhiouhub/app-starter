@@ -82,6 +82,7 @@ export async function assertSitemap(input) {
     getExpectedStorefrontOrigin(input),
     getStorefrontPath(input.locale, input.slug),
   );
+  const expectedOrigin = getExpectedStorefrontOrigin(input);
   let lastError = "";
   let lastAttempt = null;
 
@@ -93,7 +94,8 @@ export async function assertSitemap(input) {
       if (
         sitemapAttempt.ok &&
         sitemapAttempt.expectedUrlPresent &&
-        !sitemapAttempt.notFoundUrlPresent
+        !sitemapAttempt.notFoundUrlPresent &&
+        sitemapAttempt.offOriginUrlCount === 0
       ) {
         console.log("sitemap.xml passed.");
         return;
@@ -107,7 +109,9 @@ export async function assertSitemap(input) {
         bodySnippet: null,
         error: lastError,
         expectedUrlPresent: false,
+        firstOffOriginUrl: null,
         notFoundUrlPresent: false,
+        offOriginUrlCount: 0,
         ok: false,
         status: null,
         statusText: "",
@@ -123,9 +127,9 @@ export async function assertSitemap(input) {
   throw createSeoSmokeFailure(
     "sitemap",
     url,
-    `sitemap.xml did not include the published page (${lastError}).`,
+    `sitemap.xml did not match the expected storefront URLs (${lastError}).`,
     lastAttempt,
-    { expectedUrl },
+    { expectedOrigin, expectedUrl },
   );
 }
 

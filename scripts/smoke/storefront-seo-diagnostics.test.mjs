@@ -63,7 +63,9 @@ test("smoke helpers summarize robots, sitemap, and 404 attempts", () => {
   assert.deepEqual(sitemap, {
     bodySnippet: null,
     expectedUrlPresent: false,
+    firstOffOriginUrl: null,
     notFoundUrlPresent: true,
+    offOriginUrlCount: 0,
     ok: true,
     status: 200,
     statusText: "OK",
@@ -71,7 +73,7 @@ test("smoke helpers summarize robots, sitemap, and 404 attempts", () => {
   });
   assert.equal(
     formatSitemapAttempt(sitemap),
-    "status 200 OK, expected URL present: false, 404 present: true, URL count: 2",
+    "status 200 OK, expected URL present: false, 404 present: true, off-origin URLs: 0, URL count: 2",
   );
   assert.deepEqual(notFound, {
     bodySnippet: "<html><body>Unexpected page</body></html>",

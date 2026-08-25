@@ -68,6 +68,7 @@ test("smoke report CLI suggests fixes for storefront SEO diagnostics", () => {
             sitemap: {
               expectedUrlPresent: false,
               notFoundUrlPresent: true,
+              offOriginUrlCount: 1,
             },
             storefrontSeo: {
               diagnosis: "canonical-mismatch",
@@ -121,6 +122,12 @@ test("smoke report CLI suggests fixes for storefront SEO diagnostics", () => {
   );
   assert.equal(
     lines.includes("    - Exclude the 404 system page from sitemap output."),
+    true,
+  );
+  assert.equal(
+    lines.includes(
+      "    - Ensure sitemap URLs use the expected storefront origin only.",
+    ),
     true,
   );
   assert.equal(

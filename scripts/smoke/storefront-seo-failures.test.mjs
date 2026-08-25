@@ -132,14 +132,65 @@ test("SEO smoke failures keep structured diagnostics", async () => {
         (error) => {
           assert.deepEqual(error.smokeDetails.sitemap, {
             bodySnippet: null,
+            expectedOrigin: "https://web.example.com",
             expectedUrl: "https://web.example.com/en/smoke-page",
             expectedUrlPresent: false,
+            firstOffOriginUrl: null,
             notFoundUrlPresent: false,
+            offOriginUrlCount: 0,
             ok: true,
             status: 200,
             statusText: "OK",
             url: "https://web.example.com/sitemap.xml",
             urlCount: 1,
+          });
+
+          return true;
+        },
+      );
+    },
+  );
+
+  await withFetch(
+    async () =>
+      new Response(
+        [
+          '<?xml version="1.0"?>',
+          "<urlset>",
+          "  <url><loc>https://store.brand-platform.com/en/smoke-page</loc></url>",
+          "  <url><loc>https://web.example.com/en/other</loc></url>",
+          "</urlset>",
+        ].join("\n"),
+        {
+          status: 200,
+          statusText: "OK",
+        },
+      ),
+    async () => {
+      await assert.rejects(
+        () =>
+          assertSitemap({
+            locale: "en-US",
+            retryAttempts: 1,
+            retryDelayMs: 1,
+            slug: "smoke-page",
+            storefrontHost: "store.brand-platform.com",
+            webUrl: "https://web.example.com",
+          }),
+        (error) => {
+          assert.deepEqual(error.smokeDetails.sitemap, {
+            bodySnippet: null,
+            expectedOrigin: "https://store.brand-platform.com",
+            expectedUrl: "https://store.brand-platform.com/en/smoke-page",
+            expectedUrlPresent: true,
+            firstOffOriginUrl: "https://web.example.com/en/other",
+            notFoundUrlPresent: false,
+            offOriginUrlCount: 1,
+            ok: true,
+            status: 200,
+            statusText: "OK",
+            url: "https://web.example.com/sitemap.xml",
+            urlCount: 2,
           });
 
           return true;

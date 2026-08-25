@@ -261,6 +261,12 @@ function readSitemapActions(details) {
     actions.push("Exclude the 404 system page from sitemap output.");
   }
 
+  if (sitemap.offOriginUrlCount > 0) {
+    actions.push(
+      "Ensure sitemap URLs use the expected storefront origin only.",
+    );
+  }
+
   return actions;
 }
 
