@@ -1,5 +1,5 @@
 import { useCallback, type Dispatch, type SetStateAction } from "react";
-import type { PageSchema } from "@app-starter/schema";
+import type { MediaAssetReference, PageSchema } from "@app-starter/schema";
 import { redirectWhenAuthRequired } from "../../auth/auth-redirect";
 import {
   createPreviewToken,
@@ -9,7 +9,7 @@ import {
   savePageDraft,
 } from "../api";
 import { readEditorErrorFeedback } from "../editor-feedback";
-import { readMediaPublishPreflightIssue } from "../media-publish-preflight";
+import { collectMediaPublishPreflightIssues } from "../media-publish-preflight";
 import type { MediaResolverFeedback } from "../../media/media-resolver-feedback";
 import type { PageEditorSavedState } from "../page-editor-detail-state";
 import { readPageEditorSavedState } from "../page-editor-detail-state";
@@ -34,6 +34,7 @@ interface UsePageEditorActionsInput {
   applySavedState: (state: PageEditorSavedState) => void;
   draftSchema: PageSchema | null;
   mediaFeedback: MediaResolverFeedback | null;
+  mediaReferences: MediaAssetReference[];
   pageId: string | undefined;
   resetSchema: (schema: PageSchema) => void;
   refreshVersionHistory: () => Promise<void>;
@@ -93,25 +94,20 @@ export function usePageEditorActions(input: UsePageEditorActionsInput) {
       return;
     }
 
-    const preflightIssues = collectPublishPreflightIssues(input.draftSchema, {
+    const schemaIssues = collectPublishPreflightIssues(input.draftSchema, {
       siteDomain: input.siteDomain,
     });
+    const mediaIssues = collectMediaPublishPreflightIssues({
+      feedback: input.mediaFeedback,
+      references: input.mediaReferences,
+    });
+    const preflightIssues = [...schemaIssues, ...mediaIssues];
     const blockingIssue =
       findBlockingPublishPreflightIssueFromIssues(preflightIssues);
 
     if (blockingIssue) {
       input.setFeedback({
         message: `Cannot publish yet. ${blockingIssue.message}`,
-        type: "error",
-      });
-      return;
-    }
-
-    const mediaIssue = readMediaPublishPreflightIssue(input.mediaFeedback);
-
-    if (mediaIssue) {
-      input.setFeedback({
-        message: `Cannot publish yet. ${mediaIssue.message}`,
         type: "error",
       });
       return;

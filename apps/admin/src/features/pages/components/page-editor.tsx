@@ -3,7 +3,7 @@ import { Alert, Typography } from "antd";
 import {
   getOrderedSectionsForViewport,
 } from "@app-starter/schema";
-import { readMediaPublishPreflightIssue } from "../media-publish-preflight";
+import { collectMediaPublishPreflightIssues } from "../media-publish-preflight";
 import {
   collectPublishPreflightIssues,
   findBlockingPublishPreflightIssueFromIssues,
@@ -54,10 +54,18 @@ export function PageEditor(props: PageEditorProps) {
     const issues = collectPublishPreflightIssues(props.schema, {
       siteDomain: props.page.siteDomain,
     });
-    const mediaIssue = readMediaPublishPreflightIssue(props.mediaFeedback);
+    const mediaIssues = collectMediaPublishPreflightIssues({
+      feedback: props.mediaFeedback,
+      references: props.mediaReferences,
+    });
 
-    return mediaIssue ? [...issues, mediaIssue] : issues;
-  }, [props.mediaFeedback, props.page.siteDomain, props.schema]);
+    return [...issues, ...mediaIssues];
+  }, [
+    props.mediaFeedback,
+    props.mediaReferences,
+    props.page.siteDomain,
+    props.schema,
+  ]);
   const publishDisabled = Boolean(
     findBlockingPublishPreflightIssueFromIssues(publishPreflightIssues),
   );

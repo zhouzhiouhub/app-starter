@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { readMediaPublishPreflightIssue } from "../src/features/pages/media-publish-preflight.ts";
+import { pageMediaReferenceMaxCount } from "@app-starter/schema";
+import {
+  collectMediaPublishPreflightIssues,
+  readMediaPublishPreflightIssue,
+  readMediaReferenceLimitPreflightIssue,
+} from "../src/features/pages/media-publish-preflight.ts";
 
 test("media publish preflight waits for reference resolution", () => {
   assert.deepEqual(
@@ -49,4 +54,47 @@ test("media publish preflight blocks missing references", () => {
   );
 
   assert.equal(readMediaPublishPreflightIssue(null), null);
+});
+
+test("media publish preflight blocks oversized reference sets", () => {
+  const references = Array.from(
+    { length: pageMediaReferenceMaxCount + 1 },
+    (_value, index) => `media://asset-${index}`,
+  );
+
+  assert.deepEqual(readMediaReferenceLimitPreflightIssue(references), {
+    field: "media.references",
+    message: `Page references ${pageMediaReferenceMaxCount + 1} media assets, above the publish limit of ${pageMediaReferenceMaxCount}. Remove unused media references before publishing.`,
+    severity: "error",
+  });
+
+  assert.equal(
+    readMediaReferenceLimitPreflightIssue(references.slice(1)),
+    null,
+  );
+});
+
+test("media publish preflight combines resolver and reference limit issues", () => {
+  const references = Array.from(
+    { length: pageMediaReferenceMaxCount + 1 },
+    (_value, index) => `media://asset-${index}`,
+  );
+
+  const issues = collectMediaPublishPreflightIssues({
+    feedback: {
+      message: "Resolving media references...",
+      type: "info",
+    },
+    references,
+  });
+
+  assert.deepEqual(
+    issues.map((issue) => [issue.field, issue.severity]),
+    [
+      ["media.references", "error"],
+      ["media.references", "error"],
+    ],
+  );
+  assert.match(issues[0].message, /above the publish limit/);
+  assert.match(issues[1].message, /still resolving/);
 });

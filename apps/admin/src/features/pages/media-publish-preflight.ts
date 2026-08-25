@@ -1,5 +1,19 @@
+import {
+  pageMediaReferenceMaxCount,
+  type MediaAssetReference,
+} from "@app-starter/schema";
 import type { MediaResolverFeedback } from "../media/media-resolver-feedback.ts";
 import type { PublishPreflightIssue } from "./publish-preflight-types.ts";
+
+export function collectMediaPublishPreflightIssues(input: {
+  feedback: MediaResolverFeedback | null;
+  references: MediaAssetReference[];
+}): PublishPreflightIssue[] {
+  return [
+    readMediaReferenceLimitPreflightIssue(input.references),
+    readMediaPublishPreflightIssue(input.feedback),
+  ].filter(isPublishPreflightIssue);
+}
 
 export function readMediaPublishPreflightIssue(
   feedback: MediaResolverFeedback | null,
@@ -32,4 +46,24 @@ export function readMediaPublishPreflightIssue(
     }`,
     severity: "error",
   };
+}
+
+export function readMediaReferenceLimitPreflightIssue(
+  references: MediaAssetReference[],
+): PublishPreflightIssue | null {
+  if (references.length <= pageMediaReferenceMaxCount) {
+    return null;
+  }
+
+  return {
+    field: "media.references",
+    message: `Page references ${references.length} media assets, above the publish limit of ${pageMediaReferenceMaxCount}. Remove unused media references before publishing.`,
+    severity: "error",
+  };
+}
+
+function isPublishPreflightIssue(
+  issue: PublishPreflightIssue | null,
+): issue is PublishPreflightIssue {
+  return issue !== null;
 }
