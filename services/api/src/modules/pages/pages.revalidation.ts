@@ -28,6 +28,7 @@ export {
 
 export type StorefrontRevalidationInput = {
   fallbackLocale?: string;
+  fallbackMarket?: string;
   locale: string;
   market: string;
   requestId?: string;
@@ -188,8 +189,10 @@ export function createStorefrontRevalidationInput(
   siteHost?: string | null,
   requestId?: string,
 ): StorefrontRevalidationInput {
+  const defaults = readApiRuntimeDefaults();
   const input: StorefrontRevalidationInput = {
-    fallbackLocale: readApiRuntimeDefaults().fallbackLocale,
+    fallbackLocale: defaults.fallbackLocale,
+    fallbackMarket: defaults.market,
     locale: schema.meta.locale,
     market: schema.meta.market,
     slug: schema.meta.slug,
@@ -251,6 +254,7 @@ function readStorefrontRevalidationTags(
 ): string[] {
   return getStorefrontRevalidationCacheTags({
     fallbackLocale: input.fallbackLocale,
+    fallbackMarket: input.fallbackMarket,
     locale: input.locale,
     market: input.market,
     siteHost: input.siteHost,

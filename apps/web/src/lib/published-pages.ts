@@ -54,6 +54,8 @@ export async function listPublishedPages(input?: {
       next: {
         revalidate: publishedPageRevalidateSeconds,
         tags: getPublishedPagesCacheTags({
+          fallbackLocale: defaults.fallbackLocale,
+          fallbackMarket: defaults.defaultMarket,
           locale,
           market,
           siteHost: input?.storefrontHost,

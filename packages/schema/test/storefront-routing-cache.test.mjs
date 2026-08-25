@@ -183,3 +183,25 @@ test("storefront revalidation cache helper includes page and translation tags", 
     ],
   );
 });
+
+test("storefront revalidation cache helper includes fallback market tags", () => {
+  assert.deepEqual(
+    getStorefrontRevalidationCacheTags({
+      fallbackLocale: "en-US",
+      fallbackMarket: "us",
+      locale: "de-DE",
+      market: "eu",
+      slug: "contact",
+    }),
+    [
+      "published-page",
+      "published-page:eu:de-DE",
+      "published-page:eu:de-DE:contact",
+      "published-page:us:en-US",
+      "published-page:us:en-US:contact",
+      "public-translation",
+      "public-translation:de-DE",
+      "public-translation:en-US",
+    ],
+  );
+});

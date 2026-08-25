@@ -8,6 +8,7 @@ import {
 
 const defaults = {
   fallbackLocale: "en-US",
+  fallbackMarket: "us",
   locale: "en-US",
   market: "us",
 };
@@ -71,6 +72,30 @@ test("revalidate payload includes fallback locale cache tags", () => {
     "published-page",
     "published-page:us:de-DE",
     "published-page:us:de-DE:contact",
+    "published-page:us:en-US",
+    "published-page:us:en-US:contact",
+    "public-translation",
+    "public-translation:de-DE",
+    "public-translation:en-US",
+  ]);
+});
+
+test("revalidate payload includes fallback market cache tags", () => {
+  const result = parseRevalidatePayload(
+    {
+      locale: "de-DE",
+      market: "eu",
+      slug: "contact",
+    },
+    defaults,
+  );
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.paths, ["/de/contact"]);
+  assert.deepEqual(result.tags, [
+    "published-page",
+    "published-page:eu:de-DE",
+    "published-page:eu:de-DE:contact",
     "published-page:us:en-US",
     "published-page:us:en-US:contact",
     "public-translation",

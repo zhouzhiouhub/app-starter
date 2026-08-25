@@ -7,7 +7,7 @@ import type { StorefrontRevalidationInput } from "./pages.revalidation.js";
 
 export type StorefrontRevalidationPayload = Omit<
   StorefrontRevalidationInput,
-  "fallbackLocale" | "requestId"
+  "fallbackLocale" | "fallbackMarket" | "requestId"
 >;
 
 export function createStorefrontRevalidationHeaders(

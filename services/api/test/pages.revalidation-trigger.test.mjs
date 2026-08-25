@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { triggerStorefrontRevalidation } from "../dist/modules/pages/pages.revalidation.js";
+import {
+  createStorefrontRevalidationInput,
+  triggerStorefrontRevalidation,
+} from "../dist/modules/pages/pages.revalidation.js";
 import { createStorefrontRevalidationHeaders } from "../dist/modules/pages/pages.revalidation-request.js";
 import { withEnv } from "./env-helper.mjs";
 
@@ -230,7 +233,38 @@ test("storefront revalidation skips invalid site hosts before fetching", async (
   );
 });
 
-test("storefront revalidation reports fallback locale cache tags without posting them", async () => {
+test("storefront revalidation input includes runtime fallback context", async () => {
+  await withEnv(
+    {
+      DEFAULT_MARKET: "ca",
+      FALLBACK_LOCALE: "fr-FR",
+    },
+    async () => {
+      const input = createStorefrontRevalidationInput(
+        {
+          meta: {
+            locale: "de-DE",
+            market: "eu",
+            slug: "contact",
+          },
+        },
+        null,
+        "request-publish-2",
+      );
+
+      assert.deepEqual(input, {
+        fallbackLocale: "fr-FR",
+        fallbackMarket: "ca",
+        locale: "de-DE",
+        market: "eu",
+        requestId: "request-publish-2",
+        slug: "contact",
+      });
+    },
+  );
+});
+
+test("storefront revalidation reports fallback cache tags without posting them", async () => {
   await withEnv(
     revalidationEnv({
       STOREFRONT_REVALIDATE_URL: "",
@@ -239,7 +273,12 @@ test("storefront revalidation reports fallback locale cache tags without posting
     async () => {
       const { calls, fetcher } = createRecordingFetch();
       const result = await triggerStorefrontRevalidation(
-        pageInput({ fallbackLocale: "en-US", locale: "de-DE" }),
+        pageInput({
+          fallbackLocale: "en-US",
+          fallbackMarket: "us",
+          locale: "de-DE",
+          market: "eu",
+        }),
         fetcher,
       );
 
@@ -247,8 +286,8 @@ test("storefront revalidation reports fallback locale cache tags without posting
       assert.deepEqual(result.paths, ["/de/contact"]);
       assert.deepEqual(result.tags, [
         "published-page",
-        "published-page:us:de-DE",
-        "published-page:us:de-DE:contact",
+        "published-page:eu:de-DE",
+        "published-page:eu:de-DE:contact",
         "published-page:us:en-US",
         "published-page:us:en-US:contact",
         "public-translation",
@@ -257,7 +296,7 @@ test("storefront revalidation reports fallback locale cache tags without posting
       ]);
       assert.deepEqual(JSON.parse(calls[0].init.body), {
         locale: "de-DE",
-        market: "us",
+        market: "eu",
         slug: "contact",
       });
     },

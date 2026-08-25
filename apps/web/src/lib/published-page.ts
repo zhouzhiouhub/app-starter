@@ -40,6 +40,7 @@ export async function getPublishedPage(input: {
   return fetchPublishedSchema({
     defaultLocale: defaults.defaultLocale,
     fallbackLocale: defaults.fallbackLocale,
+    fallbackMarket: defaults.defaultMarket,
     locale,
     market: defaults.defaultMarket,
     slug: slug.data,
@@ -57,6 +58,7 @@ export async function getNotFoundPage(input?: {
   const published = await fetchPublishedSchema({
     defaultLocale: defaults.defaultLocale,
     fallbackLocale: defaults.fallbackLocale,
+    fallbackMarket: defaults.defaultMarket,
     locale,
     market: defaults.defaultMarket,
     slug: "404",
@@ -70,6 +72,7 @@ export async function getNotFoundPage(input?: {
   const home = await fetchPublishedSchema({
     defaultLocale: defaults.defaultLocale,
     fallbackLocale: defaults.fallbackLocale,
+    fallbackMarket: defaults.defaultMarket,
     locale,
     market: defaults.defaultMarket,
     slug: "home",
@@ -143,6 +146,7 @@ function isMatchingPreviewMeta(meta: unknown, schema: PageSchema): boolean {
 async function fetchPublishedSchema(input: {
   defaultLocale: string;
   fallbackLocale: string;
+  fallbackMarket: string;
   locale: string;
   market: string;
   slug: string;
@@ -163,6 +167,7 @@ async function fetchPublishedSchema(input: {
           revalidate: publishedPageRevalidateSeconds,
           tags: getPublishedPageCacheTags({
             fallbackLocale: input.fallbackLocale,
+            fallbackMarket: input.fallbackMarket,
             locale: input.locale,
             market: input.market,
             siteHost: input.storefrontHost,

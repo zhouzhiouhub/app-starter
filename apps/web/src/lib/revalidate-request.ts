@@ -49,6 +49,7 @@ export type RevalidatePayloadResult =
 
 export type RevalidateDefaults = {
   fallbackLocale: string;
+  fallbackMarket: string;
   locale: string;
   market: string;
 };
@@ -149,6 +150,7 @@ export function parseRevalidatePayload(
     tags: getStorefrontRevalidationCacheTags({
       ...input,
       fallbackLocale: defaults.fallbackLocale,
+      fallbackMarket: defaults.fallbackMarket,
     }),
   };
 }
@@ -160,6 +162,7 @@ export function readRevalidateDefaults(
 
   return {
     fallbackLocale: defaults.fallbackLocale,
+    fallbackMarket: defaults.defaultMarket,
     locale: defaults.defaultLocale,
     market: defaults.defaultMarket,
   };

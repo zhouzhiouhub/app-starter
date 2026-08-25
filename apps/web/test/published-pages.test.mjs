@@ -101,6 +101,41 @@ test("published pages list forwards the safe storefront host", async () => {
   );
 });
 
+test("published pages list tags fallback locale and market contexts", async () => {
+  await withEnv(
+    {
+      DEFAULT_LOCALE: "en-US",
+      DEFAULT_MARKET: "us",
+      FALLBACK_LOCALE: "en-US",
+    },
+    async () => {
+      const requests = [];
+
+      await withFetch(
+        async (url, init) => {
+          requests.push({ init, url: String(url) });
+          return jsonResponse({ data: [] });
+        },
+        async () => {
+          assert.deepEqual(
+            await listPublishedPages({ locale: "de-DE", market: "eu" }),
+            [],
+          );
+        },
+      );
+
+      assert.equal(requests.length, 1);
+      assert.match(requests[0].url, /locale=de-DE/);
+      assert.match(requests[0].url, /market=eu/);
+      assert.deepEqual(requests[0].init.next.tags, [
+        "published-page",
+        "published-page:eu:de-DE",
+        "published-page:us:en-US",
+      ]);
+    },
+  );
+});
+
 test("published pages list drops unsafe summary slugs", async () => {
   await withFetch(
     async () =>
