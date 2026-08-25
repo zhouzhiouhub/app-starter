@@ -137,6 +137,54 @@ test("media URL allowlist accepts explicit external hosts", () => {
   );
 });
 
+test("media URL allowlist enforces managed CDN source prefixes", () => {
+  const env = {
+    MEDIA_CDN_BASE_URL: "https://media.brand-platform.com/assets",
+    MEDIA_EXTERNAL_URL_HOSTS: "images.brand-platform.com",
+  };
+
+  assert.doesNotThrow(() =>
+    assertAllowedMediaUrl(
+      "https://media.brand-platform.com/assets/tenant-1/hero.webp",
+      env,
+    ),
+  );
+  assert.doesNotThrow(() =>
+    assertAllowedMediaUrl(
+      "https://images.brand-platform.com/private/hero.webp",
+      env,
+    ),
+  );
+  assert.throws(
+    () =>
+      assertAllowedMediaUrl(
+        "https://media.brand-platform.com/private/hero.webp",
+        env,
+      ),
+    {
+      name: "BadRequestException",
+    },
+  );
+  assert.throws(
+    () =>
+      assertAllowedMediaUrl(
+        "http://media.brand-platform.com/assets/tenant-1/hero.webp",
+        env,
+      ),
+    {
+      name: "BadRequestException",
+    },
+  );
+});
+
+test("media URL allowlist keeps root managed CDN sources broad", () => {
+  assert.doesNotThrow(() =>
+    assertAllowedMediaUrl("https://cdn.example.com/hero.webp", {
+      MEDIA_CDN_BASE_URL: "https://cdn.example.com",
+    }),
+  );
+});
+
 test("media URL allowlist rejects unlisted hosts", () => {
   assert.throws(
     () =>

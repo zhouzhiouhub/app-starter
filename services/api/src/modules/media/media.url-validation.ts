@@ -1,17 +1,23 @@
 import { BadRequestException } from "@nestjs/common";
+import { apiErrorCodes, isSensitiveUrlParameterKey } from "@app-starter/schema";
 import {
-  apiErrorCodes,
-  isSensitiveUrlParameterKey,
-  isUnsafeProductionHostname,
-} from "@app-starter/schema";
-import { DEFAULT_MEDIA_CDN_BASE_URL } from "./media.constants.js";
-import { isProductionMediaEnvironment } from "./media.production-env.js";
+  isAllowedMediaUrlSource,
+  readAllowedMediaUrlSources,
+  readExternalMediaUrlHosts,
+  type MediaUrlSource,
+} from "./media.url-sources.js";
+
+export {
+  readAllowedMediaUrlHosts,
+  readExternalMediaUrlHosts,
+  readManagedMediaUrlHosts,
+} from "./media.url-sources.js";
 
 export function assertAllowedMediaUrl(
   url: string,
   env: Record<string, string | undefined> = process.env,
 ) {
-  assertAllowedMediaUrlHost(url, readAllowedMediaUrlHosts(env), {
+  assertAllowedMediaUrlSource(url, readAllowedMediaUrlSources(env), {
     message: "Media URL host is not allowed.",
   });
 }
@@ -26,11 +32,43 @@ export function assertAllowedExternalMediaUrl(
   });
 }
 
+function assertAllowedMediaUrlSource(
+  url: string,
+  allowedSources: MediaUrlSource[],
+  input: { message: string },
+) {
+  const parsed = readSafeMediaUrl(url, {});
+  const source = allowedSources.find((candidate) =>
+    isAllowedMediaUrlSource(parsed, candidate),
+  );
+
+  if (source) {
+    return;
+  }
+
+  throw new BadRequestException({
+    code: apiErrorCodes.VALIDATION_ERROR,
+    message: input.message,
+    details: {
+      host: parsed.hostname,
+    },
+  });
+}
+
 function assertAllowedMediaUrlHost(
   url: string,
   allowedHosts: Set<string>,
   input: { message: string; requireHttps?: boolean },
 ) {
+  const parsed = readSafeMediaUrl(url, { requireHttps: input.requireHttps });
+
+  assertAllowedHost(parsed.hostname, allowedHosts, input.message);
+}
+
+function readSafeMediaUrl(
+  url: string,
+  input: { requireHttps?: boolean },
+): URL {
   const parsed = new URL(url);
 
   if (!["http:", "https:"].includes(parsed.protocol)) {
@@ -68,145 +106,7 @@ function assertAllowedMediaUrlHost(
     });
   }
 
-  assertAllowedHost(parsed.hostname, allowedHosts, input.message);
-}
-
-export function readAllowedMediaUrlHosts(
-  env: Record<string, string | undefined> = process.env,
-): Set<string> {
-  return new Set([
-    ...readExternalMediaUrlHosts(env),
-    ...readManagedMediaUrlHosts(env),
-  ]);
-}
-
-export function readExternalMediaUrlHosts(
-  env: Record<string, string | undefined> = process.env,
-): Set<string> {
-  return new Set(
-    readHostsFromList(env.MEDIA_EXTERNAL_URL_HOSTS, {
-      rejectUnsafeProductionHost: isProductionMediaEnvironment(env),
-      rejectUrlParts: true,
-      requireHttps: true,
-    }),
-  );
-}
-
-export function readManagedMediaUrlHosts(
-  env: Record<string, string | undefined> = process.env,
-): Set<string> {
-  const rejectUnsafeProductionHost = isProductionMediaEnvironment(env);
-  const urls = rejectUnsafeProductionHost
-    ? [env.MEDIA_CDN_BASE_URL]
-    : [env.MEDIA_CDN_BASE_URL, env.CDN_BASE_URL, DEFAULT_MEDIA_CDN_BASE_URL];
-
-  return new Set(
-    urls
-      .map((url) =>
-        readSafeHostFromHttpUrl(url, {
-          rejectUnsafeProductionHost,
-          requireHttps: rejectUnsafeProductionHost,
-        }),
-      )
-      .filter((host): host is string => Boolean(host)),
-  );
-}
-
-function readHostsFromList(
-  value: string | undefined,
-  options: {
-    rejectUnsafeProductionHost?: boolean;
-    rejectUrlParts?: boolean;
-    requireHttps?: boolean;
-  },
-): string[] {
-  if (!value) {
-    return [];
-  }
-
-  return value
-    .split(",")
-    .map((item) => readHostFromUrlOrHost(item.trim(), options))
-    .filter((host): host is string => Boolean(host));
-}
-
-function readHostFromUrlOrHost(
-  value: string,
-  options: {
-    rejectUnsafeProductionHost?: boolean;
-    rejectUrlParts?: boolean;
-    requireHttps?: boolean;
-  },
-): string | undefined {
-  if (!value) {
-    return undefined;
-  }
-
-  return (
-    readSafeHostFromHttpUrl(value, options) ??
-    readHostFromBareValue(value, options)
-  );
-}
-
-function readSafeHostFromHttpUrl(
-  value: string | undefined,
-  options: {
-    rejectUnsafeProductionHost?: boolean;
-    rejectUrlParts?: boolean;
-    requireHttps?: boolean;
-  },
-): string | undefined {
-  const trimmed = value?.trim();
-
-  if (!trimmed) {
-    return undefined;
-  }
-
-  try {
-    const url = new URL(trimmed);
-
-    if (
-      !["http:", "https:"].includes(url.protocol) ||
-      (options.requireHttps && url.protocol !== "https:") ||
-      (options.rejectUnsafeProductionHost &&
-        isUnsafeProductionHostname(url.hostname)) ||
-      url.username ||
-      url.password ||
-      (options.rejectUrlParts && trimTrailingSlashes(url.pathname)) ||
-      url.search ||
-      url.hash
-    ) {
-      return undefined;
-    }
-
-    return url.hostname.toLowerCase();
-  } catch {
-    return undefined;
-  }
-}
-
-function readHostFromBareValue(
-  value: string,
-  options: { rejectUnsafeProductionHost?: boolean },
-): string | undefined {
-  if (!value || /[/?#\\@]/.test(value)) {
-    return undefined;
-  }
-
-  try {
-    const url = new URL(`https://${value}`);
-
-    if (
-      options.rejectUnsafeProductionHost &&
-      isUnsafeProductionHostname(url.hostname)
-    ) {
-      return undefined;
-    }
-
-    return url.hostname.toLowerCase();
-  } catch {
-    return undefined;
-  }
+  return parsed;
 }
 
 function assertAllowedHost(
@@ -225,10 +125,6 @@ function assertAllowedHost(
       host: hostname,
     },
   });
-}
-
-function trimTrailingSlashes(pathname: string): string {
-  return pathname.replace(/\/+$/, "");
 }
 
 function hasSensitiveMediaUrlQueryParameters(url: URL): boolean {
