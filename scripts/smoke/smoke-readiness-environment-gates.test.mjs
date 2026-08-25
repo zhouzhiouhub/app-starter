@@ -115,12 +115,12 @@ test("smoke readiness requires MVP feature flags explicitly disabled", () => {
   assert.deepEqual(readiness.nextActions, [
     {
       action:
-        "Set COMMERCE_ENABLED=false in the API runtime before production smoke.",
+        "Set COMMERCE_ENABLED=false in the API runtime before production smoke; MVP must not enable checkout, payment, or order creation flows.",
       area: "feature-flags.commerce",
     },
     {
       action:
-        "Set MULTI_LOCALE_ENABLED=false in the API runtime before production smoke.",
+        "Set MULTI_LOCALE_ENABLED=false explicitly in the API runtime; production smoke blocks missing MVP feature flag values.",
       area: "feature-flags.multi-locale",
     },
   ]);

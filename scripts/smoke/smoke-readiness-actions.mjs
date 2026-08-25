@@ -8,6 +8,7 @@ import {
   readExternalHostsAction,
   readR2Action,
 } from "./smoke-readiness-media-actions.mjs";
+import { readFeatureFlagAction } from "./smoke-readiness-feature-flag-actions.mjs";
 import {
   readJwtAction,
   readPreviewSecretAction,
@@ -149,9 +150,7 @@ function readBlockerActions(blocker) {
     return [
       createAction(
         blocker.area,
-        blocker.variable
-          ? `Set ${blocker.variable}=false in the API runtime before production smoke.`
-          : "Set COMMERCE_ENABLED=false and MULTI_LOCALE_ENABLED=false in the API runtime before production smoke.",
+        readFeatureFlagAction(blocker),
       ),
     ];
   }

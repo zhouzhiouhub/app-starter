@@ -132,6 +132,48 @@ test("smoke readiness next actions explain analytics readiness blockers", () => 
   );
 });
 
+test("smoke readiness next actions explain MVP feature flag blockers", () => {
+  assert.deepEqual(
+    createSmokeReadinessNextActions([
+      {
+        area: "feature-flags.commerce",
+        issue: "enabled",
+        message: "COMMERCE_ENABLED must be explicitly set to false.",
+        variable: "COMMERCE_ENABLED",
+      },
+      {
+        area: "feature-flags.multi-locale",
+        issue: "missing-env",
+        message: "MULTI_LOCALE_ENABLED must be explicitly set to false.",
+        variable: "MULTI_LOCALE_ENABLED",
+      },
+      {
+        area: "feature-flags.commerce",
+        issue: "invalid-boolean",
+        message: "COMMERCE_ENABLED must be explicitly set to false.",
+        variable: "COMMERCE_ENABLED",
+      },
+    ]),
+    [
+      {
+        action:
+          "Set COMMERCE_ENABLED=false in the API runtime before production smoke; MVP must not enable checkout, payment, or order creation flows.",
+        area: "feature-flags.commerce",
+      },
+      {
+        action:
+          "Set MULTI_LOCALE_ENABLED=false explicitly in the API runtime; production smoke blocks missing MVP feature flag values.",
+        area: "feature-flags.multi-locale",
+      },
+      {
+        action:
+          "Set COMMERCE_ENABLED=false using a valid boolean value (true/false, 1/0, yes/no, or on/off).",
+        area: "feature-flags.commerce",
+      },
+    ],
+  );
+});
+
 test("smoke readiness next actions explain Redis readiness blockers", () => {
   assert.deepEqual(
     createSmokeReadinessNextActions([
