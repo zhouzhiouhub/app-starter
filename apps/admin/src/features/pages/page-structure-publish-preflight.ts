@@ -2,6 +2,7 @@ import type { PageSchema, Viewport } from "@app-starter/schema";
 import type { PublishPreflightIssue } from "./publish-preflight-types";
 
 const orderedViewports: Viewport[] = ["desktop", "mobile"];
+const mobileCanvasWidth = 390;
 
 export function collectPageStructurePreflightIssues(
   schema: PageSchema,
@@ -9,6 +10,7 @@ export function collectPageStructurePreflightIssues(
   return [
     ...collectEmptyPageIssues(schema),
     ...collectEmptyViewportIssues(schema),
+    ...collectMobileLayoutOverflowIssues(schema),
     ...collectDuplicateSectionIdIssues(schema),
     ...collectSectionOrderIssues(schema),
   ];
@@ -52,6 +54,30 @@ function collectEmptyViewportIssues(schema: PageSchema): PublishPreflightIssue[]
 
 function hasVisibleSection(schema: PageSchema, viewport: Viewport): boolean {
   return schema.sections.some((section) => section.visibility?.[viewport] !== false);
+}
+
+function collectMobileLayoutOverflowIssues(
+  schema: PageSchema,
+): PublishPreflightIssue[] {
+  return schema.sections.flatMap((section, sectionIndex) => {
+    if (section.visibility?.mobile === false) {
+      return [];
+    }
+
+    const layout = section.layout.mobile;
+
+    if (!layout || layout.x + layout.width <= mobileCanvasWidth) {
+      return [];
+    }
+
+    return [
+      {
+        field: `sections[${sectionIndex}].layout.mobile.width`,
+        message: `Mobile section ${sectionIndex + 1} extends beyond the ${mobileCanvasWidth}px canvas. Reduce X or Width before publishing to avoid clipped storefront content.`,
+        severity: "warning",
+      },
+    ];
+  });
 }
 
 function collectDuplicateSectionIdIssues(

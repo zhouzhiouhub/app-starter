@@ -97,6 +97,21 @@ test("publish preflight blocks hidden viewport content", () => {
   assert.equal(blocker?.field, "sections[0].visibility.desktop");
 });
 
+test("publish preflight warns about mobile layout overflow", () => {
+  const schema = structuredClone(exampleLandingPage);
+  schema.sections[0].layout.mobile = { width: 420, x: 0, y: 0 };
+
+  const issues = collectPublishPreflightIssues(schema);
+  const blocker = findBlockingPublishPreflightIssue(schema);
+
+  assert.deepEqual(
+    issues.map((issue) => [issue.field, issue.severity]),
+    [["sections[0].layout.mobile.width", "warning"]],
+  );
+  assert.match(issues[0].message, /avoid clipped storefront content/);
+  assert.equal(blocker, null);
+});
+
 test("publish preflight warns about stale section order data", () => {
   const schema = structuredClone(exampleLandingPage);
   schema.layout.desktop.sectionOrder = ["copy", "missing", "copy"];

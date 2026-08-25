@@ -40,6 +40,24 @@ test("page structure preflight blocks viewports without visible sections", () =>
   assert.deepEqual(collectPageStructurePreflightIssues(schema), []);
 });
 
+test("page structure preflight warns about mobile layout overflow", () => {
+  const schema = structuredClone(exampleLandingPage);
+  schema.sections[0].layout.mobile = { width: 360, x: 48, y: 0 };
+  schema.sections[1].layout.mobile = { width: 640, x: 0, y: 560 };
+  schema.sections[1].visibility.mobile = false;
+
+  const issues = collectPageStructurePreflightIssues(schema);
+
+  assert.deepEqual(
+    issues.map((issue) => [issue.field, issue.severity]),
+    [["sections[0].layout.mobile.width", "warning"]],
+  );
+  assert.match(issues[0].message, /Mobile section 1 extends beyond the 390px canvas/);
+
+  schema.sections[0].layout.mobile = { width: 342, x: 48, y: 0 };
+  assert.deepEqual(collectPageStructurePreflightIssues(schema), []);
+});
+
 test("page structure preflight blocks duplicate section ids", () => {
   const schema = structuredClone(exampleLandingPage);
 
