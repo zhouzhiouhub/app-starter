@@ -87,6 +87,33 @@ test("smoke readiness explains unexpected revalidation paths", () => {
   ]);
 });
 
+test("smoke readiness explains control characters in revalidation URLs", () => {
+  const environment = createReadyEnvironment();
+  environment.revalidation.urlSafe = false;
+  environment.revalidation.urlIssue = "control-character";
+
+  const readiness = createSmokeProductionReadiness(
+    environment,
+    createReadyConfig(),
+  );
+
+  assert.deepEqual(readiness.blockers, [
+    {
+      area: "revalidation.url",
+      issue: "control-character",
+      message: "Storefront revalidation URL must be a production HTTPS endpoint.",
+    },
+  ]);
+  assert.equal(readiness.productionReady, false);
+  assert.deepEqual(readiness.nextActions, [
+    {
+      action:
+        "Remove control characters from STOREFRONT_REVALIDATE_URL or WEB_URL before rerunning production smoke.",
+      area: "revalidation.url",
+    },
+  ]);
+});
+
 test("smoke readiness blocks unsafe revalidation secrets", () => {
   const environment = createReadyEnvironment();
   environment.revalidation.secretConfigured = true;

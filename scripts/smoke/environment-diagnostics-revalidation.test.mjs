@@ -90,6 +90,44 @@ test("smoke environment diagnostics rejects unsafe revalidation secrets", () => 
   }
 });
 
+test("smoke environment diagnostics rejects control characters in revalidation URLs", () => {
+  for (const [source, env] of [
+    [
+      "STOREFRONT_REVALIDATE_URL",
+      {
+        STOREFRONT_REVALIDATE_URL:
+          "https://web.brand-platform.com\t/api/revalidate",
+      },
+    ],
+    [
+      "WEB_URL",
+      {
+        WEB_URL: "https://web.brand-platform.com\n.evil.com",
+      },
+    ],
+  ]) {
+    const diagnostics = createSmokeEnvironmentDiagnostics({
+      STOREFRONT_REVALIDATE_SECRET: "secret-value",
+      ...env,
+    });
+
+    assert.deepEqual(diagnostics.revalidation, {
+      configured: false,
+      endpointHost: null,
+      endpointPath: null,
+      requireRevalidation: true,
+      secretConfigured: true,
+      secretIssue: null,
+      secretSafe: true,
+      urlConfigured: true,
+      urlIssue: "control-character",
+      urlSafe: false,
+      urlSource: source,
+      usesWebUrlFallback: source === "WEB_URL",
+    });
+  }
+});
+
 test("smoke environment diagnostics requires production revalidation URLs", () => {
   for (const [value, issue] of [
     ["http://web.brand.com/api/revalidate", "insecure-protocol"],

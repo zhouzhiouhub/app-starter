@@ -7,8 +7,8 @@ const defaultRevalidatePath = "/api/revalidate";
 const maxRevalidationSecretLength = 1024;
 
 export function createRevalidationDiagnostics(env = process.env, options = {}) {
-  const revalidateUrl = readEnv(env, "STOREFRONT_REVALIDATE_URL");
-  const webUrl = readEnv(env, "WEB_URL");
+  const revalidateUrl = readUrlEnv(env, "STOREFRONT_REVALIDATE_URL");
+  const webUrl = readUrlEnv(env, "WEB_URL");
   const source = revalidateUrl
     ? "STOREFRONT_REVALIDATE_URL"
     : webUrl
@@ -80,9 +80,19 @@ function readRevalidationEndpoint(value, source) {
     };
   }
 
+  if (hasControlCharacter(value)) {
+    return {
+      host: null,
+      issue: "control-character",
+      path: null,
+      safe: false,
+    };
+  }
+
+  const trimmed = value.trim();
   let url;
   try {
-    url = new URL(value);
+    url = new URL(trimmed);
   } catch {
     return {
       host: null,
@@ -201,6 +211,11 @@ function readBooleanEnv(env, name, fallback) {
 function readEnv(env, name) {
   const value = env[name]?.trim();
   return value ? value : null;
+}
+
+function readUrlEnv(env, name) {
+  const value = env[name];
+  return typeof value === "string" && value.trim() ? value : null;
 }
 
 function hasControlCharacter(value) {

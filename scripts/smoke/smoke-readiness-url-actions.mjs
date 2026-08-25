@@ -62,6 +62,8 @@ export function readRevalidationUrlAction(blocker) {
   return readCommonUrlAction(blocker.issue, {
     fallback:
       "Set STOREFRONT_REVALIDATE_URL to the deployed storefront /api/revalidate endpoint.",
+    controlCharacter:
+      "Remove control characters from STOREFRONT_REVALIDATE_URL or WEB_URL before rerunning production smoke.",
     localHost:
       "Replace local or private STOREFRONT_REVALIDATE_URL hosts with the deployed storefront HTTPS host.",
     placeholderHost:
@@ -84,6 +86,10 @@ export function readRevalidationUrlAction(blocker) {
 }
 
 function readCommonUrlAction(issue, actions) {
+  if (issue === "control-character") {
+    return actions.controlCharacter ?? actions.invalidUrl ?? actions.fallback;
+  }
+
   if (issue === "invalid-url") {
     return actions.invalidUrl;
   }
