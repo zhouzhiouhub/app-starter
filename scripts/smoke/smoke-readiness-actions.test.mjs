@@ -246,6 +246,11 @@ test("smoke readiness next actions explain R2 readiness blockers", () => {
     createSmokeReadinessNextActions([
       {
         area: "media.r2",
+        issue: "r2-upload-smoke-not-required",
+        message: "Set SMOKE_REQUIRE_R2_UPLOAD=true.",
+      },
+      {
+        area: "media.r2",
         issue: "invalid-config",
         issues: [
           {
@@ -269,6 +274,11 @@ test("smoke readiness next actions explain R2 readiness blockers", () => {
       },
     ]),
     [
+      {
+        action:
+          "Set SMOKE_REQUIRE_R2_UPLOAD=true after configuring R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET, R2_REGION, and production MEDIA_CDN_BASE_URL so smoke proves presigned URL creation, actual PUT upload, and CDN delivery.",
+        area: "media.r2",
+      },
       {
         action:
           "Fix invalid R2 variables: R2_ACCOUNT_ID must be a DNS-safe account label up to 63 characters; R2_BUCKET must be 3-63 characters using letters, numbers, dots, or hyphens; R2_SECRET_ACCESS_KEY must not contain whitespace or control characters; R2_REGION must be a DNS-safe region label such as auto.",

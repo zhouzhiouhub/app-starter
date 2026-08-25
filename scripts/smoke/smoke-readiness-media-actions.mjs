@@ -1,6 +1,6 @@
 export function readR2Action(blocker) {
   if (blocker.issue === "r2-upload-smoke-not-required") {
-    return "Configure R2 credentials and set SMOKE_REQUIRE_R2_UPLOAD=true.";
+    return "Set SMOKE_REQUIRE_R2_UPLOAD=true after configuring R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET, R2_REGION, and production MEDIA_CDN_BASE_URL so smoke proves presigned URL creation, actual PUT upload, and CDN delivery.";
   }
 
   if (blocker.issue === "invalid-config") {

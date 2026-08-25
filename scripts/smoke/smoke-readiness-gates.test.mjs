@@ -46,7 +46,7 @@ test("smoke readiness marks omitted production gates as blockers", () => {
       ],
       [
         "media.r2",
-        "Configure R2 credentials and set SMOKE_REQUIRE_R2_UPLOAD=true.",
+        "Set SMOKE_REQUIRE_R2_UPLOAD=true after configuring R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET, R2_REGION, and production MEDIA_CDN_BASE_URL so smoke proves presigned URL creation, actual PUT upload, and CDN delivery.",
       ],
       [
         "revalidation",
@@ -79,7 +79,7 @@ test("smoke readiness reports CDN blockers even when R2 upload smoke is omitted"
     [
       [
         "media.r2",
-        "Configure R2 credentials and set SMOKE_REQUIRE_R2_UPLOAD=true.",
+        "Set SMOKE_REQUIRE_R2_UPLOAD=true after configuring R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET, R2_REGION, and production MEDIA_CDN_BASE_URL so smoke proves presigned URL creation, actual PUT upload, and CDN delivery.",
       ],
       [
         "media.cdn",
