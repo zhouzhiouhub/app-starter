@@ -17,6 +17,7 @@ const secretKeyPattern = [
   "private[-_]?key(?:[-_]?pem)?",
   "refresh[-_]?token",
   "secret",
+  "sig",
   "session[-_]?id",
   "session",
   "set[-_]?cookie",
@@ -46,6 +47,7 @@ const sensitiveKeyNames = new Set([
   "privatekeypem",
   "refreshtoken",
   "secret",
+  "sig",
   "session",
   "sessionid",
   "setcookie",
@@ -138,6 +140,7 @@ function isSensitiveSmokeKey(key) {
     normalized.endsWith("pem") ||
     normalized.endsWith("privatekey") ||
     normalized.endsWith("secret") ||
+    normalized.endsWith("sig") ||
     normalized.endsWith("signature") ||
     normalized.endsWith("token")
   );
