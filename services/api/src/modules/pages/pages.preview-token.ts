@@ -160,15 +160,27 @@ function readConfiguredPreviewTokenSecret(
   env: NodeJS.ProcessEnv,
   name: "PREVIEW_TOKEN_PREVIOUS_SECRET" | "PREVIEW_TOKEN_SECRET",
 ): string | null {
-  const configured = env[name]?.trim();
+  const raw = env[name];
+
+  if (!raw) {
+    return null;
+  }
+
+  const configured = raw.trim();
 
   if (!configured) {
+    if (isProductionPreviewTokenEnvironment(env) && hasControlCharacter(raw)) {
+      throw new PreviewTokenConfigurationError(
+        `${name} must be 32 to 1024 characters and must not contain control characters in production.`,
+      );
+    }
+
     return null;
   }
 
   if (
     isProductionPreviewTokenEnvironment(env) &&
-    !isSafePreviewTokenSecret(configured)
+    (hasControlCharacter(raw) || !isSafePreviewTokenSecret(configured))
   ) {
     throw new PreviewTokenConfigurationError(
       `${name} must be 32 to 1024 characters and must not contain control characters in production.`,

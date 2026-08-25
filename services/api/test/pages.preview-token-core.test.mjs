@@ -97,6 +97,7 @@ test("preview token secrets require safe production values", () => {
   for (const PREVIEW_TOKEN_SECRET of [
     "short-preview-secret",
     "a".repeat(1025),
+    `${"a".repeat(32)}\n`,
     `safe-preview-token-secret-value-1\r\nx-secret: leaked`,
   ]) {
     assert.throws(
@@ -121,6 +122,18 @@ test("preview token secrets require safe production values", () => {
         env: {
           APP_ENV: "production",
           PREVIEW_TOKEN_PREVIOUS_SECRET: "short-previous-secret",
+          PREVIEW_TOKEN_SECRET: safeSecret,
+        },
+        now,
+      }),
+    /PREVIEW_TOKEN_PREVIOUS_SECRET must be 32 to 1024 characters/,
+  );
+  assert.throws(
+    () =>
+      verifyPagePreviewToken(`payload.${"a".repeat(43)}`, {
+        env: {
+          APP_ENV: "production",
+          PREVIEW_TOKEN_PREVIOUS_SECRET: `${"b".repeat(32)}\t`,
           PREVIEW_TOKEN_SECRET: safeSecret,
         },
         now,

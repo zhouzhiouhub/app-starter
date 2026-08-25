@@ -27,6 +27,14 @@ function readPreviewSecret(env, name) {
     };
   }
 
+  if (hasControlCharacter(value)) {
+    return {
+      configured: true,
+      issue: "control-character",
+      safe: false,
+    };
+  }
+
   if (value.length < minPreviewTokenSecretLength) {
     return {
       configured: true,
@@ -43,14 +51,6 @@ function readPreviewSecret(env, name) {
     };
   }
 
-  if (hasControlCharacter(value)) {
-    return {
-      configured: true,
-      issue: "control-character",
-      safe: false,
-    };
-  }
-
   return {
     configured: true,
     issue: null,
@@ -59,8 +59,18 @@ function readPreviewSecret(env, name) {
 }
 
 function readEnv(env, name) {
-  const value = env[name]?.trim();
-  return value ? value : null;
+  const value = env[name];
+
+  if (!value) {
+    return null;
+  }
+
+  if (hasControlCharacter(value)) {
+    return value;
+  }
+
+  const trimmed = value.trim();
+  return trimmed ? trimmed : null;
 }
 
 function hasControlCharacter(value) {

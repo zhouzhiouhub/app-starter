@@ -55,3 +55,20 @@ test("smoke environment diagnostics reports unsafe preview token secrets", () =>
     secretSafe: false,
   });
 });
+
+test("smoke environment diagnostics reports trimmed preview control characters", () => {
+  const diagnostics = createSmokeEnvironmentDiagnostics({
+    PREVIEW_TOKEN_PREVIOUS_SECRET: `${"b".repeat(32)}\t`,
+    PREVIEW_TOKEN_SECRET: `${"a".repeat(32)}\n`,
+  });
+
+  assert.deepEqual(diagnostics.preview, {
+    configured: false,
+    previousSecretConfigured: true,
+    previousSecretIssue: "control-character",
+    previousSecretSafe: false,
+    secretConfigured: true,
+    secretIssue: "control-character",
+    secretSafe: false,
+  });
+});
