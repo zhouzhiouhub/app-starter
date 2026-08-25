@@ -246,7 +246,7 @@ test("smoke readiness requires committed Prisma migrations", () => {
   assert.deepEqual(readiness.nextActions, [
     {
       action:
-        "Create and commit Prisma migration files, then run prisma migrate deploy in production.",
+        "Create services/api/prisma/migrations with committed Prisma migration folders, then run prisma migrate deploy in production.",
       area: "database.migrations",
     },
   ]);
