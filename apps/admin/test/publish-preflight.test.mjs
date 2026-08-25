@@ -150,6 +150,38 @@ test("publish preflight distinguishes SEO errors from warnings", () => {
   assert.equal(blocker?.field, "seo.canonical");
 });
 
+test("publish preflight warns when canonical leaves the storefront origin", () => {
+  const schema = structuredClone(exampleLandingPage);
+  schema.seo.canonical = "https://legacy.example.com/en/smoke-page";
+
+  assert.deepEqual(collectPublishPreflightIssues(schema), []);
+
+  const issues = collectPublishPreflightIssues(schema, {
+    siteDomain: "Store.Brand-Platform.com:443",
+  });
+  const blocker = findBlockingPublishPreflightIssue(schema, {
+    siteDomain: "Store.Brand-Platform.com:443",
+  });
+
+  assert.deepEqual(
+    issues.map((issue) => [issue.field, issue.severity]),
+    [["seo.canonical", "warning"]],
+  );
+  assert.match(
+    issues[0].message,
+    /Canonical URL points to https:\/\/legacy\.example\.com/,
+  );
+  assert.equal(blocker, null);
+
+  schema.seo.canonical = "https://store.brand-platform.com/en/smoke-page";
+  assert.deepEqual(
+    collectPublishPreflightIssues(schema, {
+      siteDomain: "Store.Brand-Platform.com:443",
+    }),
+    [],
+  );
+});
+
 test("publish preflight flags invalid gallery image sources", () => {
   const schema = structuredClone(exampleLandingPage);
 

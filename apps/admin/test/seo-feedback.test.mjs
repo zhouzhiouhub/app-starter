@@ -33,6 +33,33 @@ test("SEO feedback validates canonical URLs", () => {
   );
 });
 
+test("SEO feedback warns about cross-origin canonical URLs with site context", () => {
+  assert.deepEqual(
+    readSeoFieldFeedback("canonical", "/en/page", {
+      storefrontOrigin: "https://store.brand-platform.com",
+    }),
+    {},
+  );
+  assert.deepEqual(
+    readSeoFieldFeedback("canonical", "https://store.brand-platform.com/en/page", {
+      storefrontOrigin: "https://store.brand-platform.com",
+    }),
+    {},
+  );
+
+  const feedback = readSeoFieldFeedback(
+    "canonical",
+    "https://legacy.example.com/en/page",
+    {
+      storefrontOrigin: "https://store.brand-platform.com",
+    },
+  );
+
+  assert.equal(feedback.status, "warning");
+  assert.match(feedback.help ?? "", /Canonical URL points to https:\/\/legacy\.example\.com/);
+  assert.match(feedback.help ?? "", /current storefront origin/);
+});
+
 test("SEO feedback validates Open Graph image URLs and media references", () => {
   assert.deepEqual(readSeoFieldFeedback("ogImage", "/og.jpg"), {});
   assert.deepEqual(readSeoFieldFeedback("ogImage", "https://cdn.example.com/og.jpg"), {});

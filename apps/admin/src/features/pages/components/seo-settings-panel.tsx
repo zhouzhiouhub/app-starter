@@ -11,6 +11,7 @@ import {
   updateSeoNoIndex,
   type SeoField,
 } from "../seo-updates";
+import { readStorefrontPageOrigin } from "../storefront-page-origin";
 
 const seoFields: Array<{
   field: SeoField;
@@ -45,6 +46,7 @@ export function SeoSettingsPanel(props: {
   highlightedField: string | null;
   onChange: (schema: PageSchema) => void;
   schema: PageSchema;
+  siteDomain?: string | null;
 }) {
   function handleChange(field: SeoField, value: string) {
     props.onChange(updateSeoField(props.schema, field, value));
@@ -53,6 +55,15 @@ export function SeoSettingsPanel(props: {
   function handleIndexingChange(checked: boolean) {
     props.onChange(updateSeoNoIndex(props.schema, !checked));
   }
+
+  const storefrontOrigin =
+    props.siteDomain === undefined
+      ? null
+      : readStorefrontPageOrigin({
+          locale: props.schema.meta.locale,
+          siteDomain: props.siteDomain,
+          slug: props.schema.meta.slug,
+        });
 
   return (
     <section
@@ -76,7 +87,9 @@ export function SeoSettingsPanel(props: {
         </Form.Item>
         {seoFields.map((item) => {
           const value = props.schema.seo[item.field] ?? "";
-          const feedback = readSeoFieldFeedback(item.field, value);
+          const feedback = readSeoFieldFeedback(item.field, value, {
+            storefrontOrigin,
+          });
           const publishField = `seo.${item.field}`;
 
           return (

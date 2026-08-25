@@ -51,11 +51,13 @@ export function PageEditor(props: PageEditorProps) {
     [orderedSections, selectedSectionId],
   );
   const publishPreflightIssues = useMemo(() => {
-    const issues = collectPublishPreflightIssues(props.schema);
+    const issues = collectPublishPreflightIssues(props.schema, {
+      siteDomain: props.page.siteDomain,
+    });
     const mediaIssue = readMediaPublishPreflightIssue(props.mediaFeedback);
 
     return mediaIssue ? [...issues, mediaIssue] : issues;
-  }, [props.mediaFeedback, props.schema]);
+  }, [props.mediaFeedback, props.page.siteDomain, props.schema]);
   const publishDisabled = Boolean(
     findBlockingPublishPreflightIssueFromIssues(publishPreflightIssues),
   );
@@ -177,6 +179,7 @@ export function PageEditor(props: PageEditorProps) {
               highlightedField={preflightFocus.highlightedField}
               onChange={props.onSchemaChange}
               schema={props.schema}
+              siteDomain={props.page.siteDomain}
             />
           </div>
           <div

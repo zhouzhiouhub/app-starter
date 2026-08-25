@@ -10,6 +10,7 @@ import {
   resolveStorefrontOrigin,
   resolveWebOrigin,
 } from "../src/features/pages/storefront-url.ts";
+import { readStorefrontPageOrigin } from "../src/features/pages/storefront-page-origin.ts";
 
 test("storefront URL helper accepts safe configured web origins", () => {
   assert.equal(
@@ -322,6 +323,22 @@ test("storefront URL helper prefers current site domains for public links", () =
   assert.equal(
     getStorefrontPreviewUrl(token, "localhost:3000"),
     `http://localhost:3000/preview?token=${token}`,
+  );
+  assert.equal(
+    readStorefrontPageOrigin({
+      locale: "en-US",
+      siteDomain: "Store.Brand-Platform.com:443",
+      slug: "campaign",
+    }),
+    "https://store.brand-platform.com",
+  );
+  assert.equal(
+    readStorefrontPageOrigin({
+      locale: "en-US",
+      siteDomain: "Store.Brand-Platform.com:443",
+      slug: "campaign?token=secret",
+    }),
+    null,
   );
 });
 

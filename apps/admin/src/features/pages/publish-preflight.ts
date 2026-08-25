@@ -11,6 +11,10 @@ import { readSeoFieldFeedback } from "./seo-feedback.ts";
 import { collectPageStructurePreflightIssues } from "./page-structure-publish-preflight.ts";
 import { collectSectionPreflightIssues } from "./section-publish-preflight.ts";
 import type { SeoField } from "./seo-updates";
+import {
+  readStorefrontPageOrigin,
+  type WebOriginInput,
+} from "./storefront-page-origin.ts";
 
 export type { PublishPreflightIssue, PublishPreflightSeverity };
 
@@ -24,12 +28,15 @@ interface SafeHrefCheck {
 interface SeoCheck {
   field: SeoField;
   label: string;
+  storefrontOrigin?: string | null;
   value: string | undefined;
 }
 
 export interface PublishPreflightOptions {
   defaultLocale?: string;
   multiLocaleEnabled?: boolean;
+  siteDomain?: string | null;
+  storefrontRuntime?: WebOriginInput;
 }
 
 export interface PublishPreflightIssueSummary {
@@ -48,7 +55,7 @@ export function collectPublishPreflightIssues(
   collectLocaleIssues(schema, issues, options);
   issues.push(...collectPageStructurePreflightIssues(schema));
   collectChromeIssues(schema, issues);
-  collectSeoIssues(schema, issues);
+  collectSeoIssues(schema, issues, options);
   issues.push(...collectSectionPreflightIssues(schema));
 
   return issues;
@@ -211,10 +218,21 @@ function collectChromeIssues(
 function collectSeoIssues(
   schema: PageSchema,
   issues: PublishPreflightIssue[],
+  options: PublishPreflightOptions,
 ): void {
+  const storefrontOrigin = hasStorefrontOriginContext(options)
+    ? readStorefrontPageOrigin({
+        locale: schema.meta.locale,
+        runtime: options.storefrontRuntime,
+        siteDomain: options.siteDomain,
+        slug: schema.meta.slug,
+      })
+    : null;
+
   addSeoIssue(issues, {
     field: "canonical",
     label: "Canonical URL",
+    storefrontOrigin,
     value: schema.seo.canonical,
   });
   addSeoIssue(issues, {
@@ -222,6 +240,10 @@ function collectSeoIssues(
     label: "Open Graph image",
     value: schema.seo.ogImage,
   });
+}
+
+function hasStorefrontOriginContext(options: PublishPreflightOptions): boolean {
+  return "siteDomain" in options || options.storefrontRuntime !== undefined;
 }
 
 function addSafeHrefIssue(
@@ -247,7 +269,9 @@ function addSeoIssue(
   issues: PublishPreflightIssue[],
   check: SeoCheck,
 ): void {
-  const feedback = readSeoFieldFeedback(check.field, check.value);
+  const feedback = readSeoFieldFeedback(check.field, check.value, {
+    storefrontOrigin: check.storefrontOrigin,
+  });
 
   if (!feedback.status) {
     return;

@@ -93,7 +93,9 @@ export function usePageEditorActions(input: UsePageEditorActionsInput) {
       return;
     }
 
-    const preflightIssues = collectPublishPreflightIssues(input.draftSchema);
+    const preflightIssues = collectPublishPreflightIssues(input.draftSchema, {
+      siteDomain: input.siteDomain,
+    });
     const blockingIssue =
       findBlockingPublishPreflightIssueFromIssues(preflightIssues);
 

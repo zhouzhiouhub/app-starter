@@ -11,9 +11,14 @@ export interface SeoFieldFeedback {
   status?: "error" | "warning";
 }
 
+export interface SeoFieldFeedbackOptions {
+  storefrontOrigin?: string | null;
+}
+
 export function readSeoFieldFeedback(
   field: SeoField,
   value: string | undefined,
+  options: SeoFieldFeedbackOptions = {},
 ): SeoFieldFeedback {
   const input = value?.trim() ?? "";
 
@@ -22,12 +27,14 @@ export function readSeoFieldFeedback(
   }
 
   if (field === "canonical") {
-    return seoUrlSchema.safeParse(input).success
-      ? {}
-      : {
-          help: "Use a relative URL or http(s) canonical URL.",
-          status: "error",
-        };
+    if (!seoUrlSchema.safeParse(input).success) {
+      return {
+        help: "Use a relative URL or http(s) canonical URL.",
+        status: "error",
+      };
+    }
+
+    return readCanonicalOriginFeedback(input, options.storefrontOrigin);
   }
 
   if (field === "ogImage") {
@@ -54,4 +61,35 @@ export function readSeoFieldFeedback(
   }
 
   return {};
+}
+
+function readCanonicalOriginFeedback(
+  canonical: string,
+  storefrontOrigin: string | null | undefined,
+): SeoFieldFeedback {
+  const canonicalOrigin = readAbsoluteUrlOrigin(canonical);
+  const expectedOrigin = readAbsoluteUrlOrigin(storefrontOrigin);
+
+  if (!canonicalOrigin || !expectedOrigin || canonicalOrigin === expectedOrigin) {
+    return {};
+  }
+
+  return {
+    help: `Canonical URL points to ${canonicalOrigin}. Use a relative URL or the current storefront origin (${expectedOrigin}) unless this page should consolidate ranking elsewhere.`,
+    status: "warning",
+  };
+}
+
+function readAbsoluteUrlOrigin(value: string | null | undefined): string | null {
+  const input = value?.trim();
+
+  if (!input || !/^https?:\/\//i.test(input)) {
+    return null;
+  }
+
+  try {
+    return new URL(input).origin;
+  } catch {
+    return null;
+  }
 }
