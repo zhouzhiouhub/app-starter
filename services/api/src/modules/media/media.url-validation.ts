@@ -49,9 +49,7 @@ function assertAllowedMediaUrlSource(
   throw new BadRequestException({
     code: apiErrorCodes.VALIDATION_ERROR,
     message: input.message,
-    details: {
-      host: parsed.hostname,
-    },
+    details: createMediaUrlSourceFailureDetails(parsed, allowedSources),
   });
 }
 
@@ -125,6 +123,28 @@ function assertAllowedHost(
       host: hostname,
     },
   });
+}
+
+function createMediaUrlSourceFailureDetails(
+  url: URL,
+  allowedSources: MediaUrlSource[],
+) {
+  const hostname = url.hostname.toLowerCase();
+  const matchingHostSources = allowedSources.filter(
+    (source) => source.hostname === hostname,
+  );
+
+  return {
+    allowedPathPrefixes: matchingHostSources.map(readDisplayPathPrefix),
+    allowedProtocols: matchingHostSources.map((source) => source.protocol),
+    host: url.hostname,
+    path: url.pathname,
+    protocol: url.protocol,
+  };
+}
+
+function readDisplayPathPrefix(source: MediaUrlSource): string {
+  return source.pathPrefix || "/";
 }
 
 function hasSensitiveMediaUrlQueryParameters(url: URL): boolean {

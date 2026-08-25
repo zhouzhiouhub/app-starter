@@ -161,8 +161,16 @@ test("media URL allowlist enforces managed CDN source prefixes", () => {
         "https://media.brand-platform.com/private/hero.webp",
         env,
       ),
-    {
-      name: "BadRequestException",
+    (error) => {
+      assert.equal(error.name, "BadRequestException");
+      assert.deepEqual(error.getResponse().details, {
+        allowedPathPrefixes: ["/assets"],
+        allowedProtocols: ["https:"],
+        host: "media.brand-platform.com",
+        path: "/private/hero.webp",
+        protocol: "https:",
+      });
+      return true;
     },
   );
   assert.throws(
