@@ -127,7 +127,8 @@ test("smoke readiness reports unsafe storefront deployment blockers", () => {
   assert.equal(readiness.productionReady, false);
   assert.deepEqual(readiness.nextActions, [
     {
-      action: "Set WEB_URL to the deployed storefront HTTPS origin.",
+      action:
+        "Replace local or private WEB_URL hosts with the deployed public HTTPS storefront origin.",
       area: "deployment.web",
     },
   ]);

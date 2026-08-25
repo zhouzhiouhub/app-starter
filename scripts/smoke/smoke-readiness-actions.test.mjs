@@ -28,13 +28,53 @@ test("smoke readiness next actions preserve the public helper export", () => {
     [
       {
         action:
-          "Set API_URL to the deployed API HTTPS origin or exact /api/v1 base.",
+          "Replace placeholder API_URL hosts with the real production API endpoint.",
         area: "deployment.api",
       },
       {
         action:
           "Optionally set STOREFRONT_REVALIDATE_URL explicitly instead of relying on WEB_URL fallback.",
         area: "revalidation.url",
+      },
+    ],
+  );
+});
+
+test("smoke readiness next actions explain deployment URL blockers", () => {
+  assert.deepEqual(
+    createSmokeReadinessNextActions([
+      {
+        area: "deployment.api",
+        issue: "unexpected-path",
+        message: "API_URL must be production ready.",
+        variable: "API_URL",
+      },
+      {
+        area: "deployment.web",
+        issue: "unsupported-url-parts",
+        message: "WEB_URL must be production ready.",
+        variable: "WEB_URL",
+      },
+      {
+        area: "deployment.admin",
+        issue: "embedded-credentials",
+        message: "ADMIN_URL must be production ready.",
+        variable: "ADMIN_URL",
+      },
+    ]),
+    [
+      {
+        action:
+          "Set API_URL to the deployed API origin or exact /api/v1 base; remove any other path.",
+        area: "deployment.api",
+      },
+      {
+        action: "Remove query strings and fragments from WEB_URL.",
+        area: "deployment.web",
+      },
+      {
+        action: "Remove usernames and passwords from ADMIN_URL.",
+        area: "deployment.admin",
       },
     ],
   );
@@ -51,8 +91,7 @@ test("smoke readiness next actions explain Redis readiness blockers", () => {
     ]),
     [
       {
-        action:
-          "Set REDIS_URL to a production rediss:// Redis endpoint outside local or placeholder hosts.",
+        action: "Use rediss:// for REDIS_URL; production Redis must use TLS.",
         area: "cache.redis",
       },
     ],

@@ -54,7 +54,7 @@ test("smoke readiness blocks non-production revalidation URLs", () => {
   assert.deepEqual(readiness.nextActions, [
     {
       action:
-        "Set STOREFRONT_REVALIDATE_URL to the deployed storefront /api/revalidate endpoint.",
+        "Replace local or private STOREFRONT_REVALIDATE_URL hosts with the deployed storefront HTTPS host.",
       area: "revalidation.url",
     },
   ]);

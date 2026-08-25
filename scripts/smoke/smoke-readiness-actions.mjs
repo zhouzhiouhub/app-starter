@@ -2,6 +2,12 @@ import {
   readCdnAction,
   readR2Action,
 } from "./smoke-readiness-media-actions.mjs";
+import {
+  readDatabaseUrlAction,
+  readDeploymentAction,
+  readRedisAction,
+  readRevalidationUrlAction,
+} from "./smoke-readiness-url-actions.mjs";
 
 export function createSmokeReadinessNextActions(blockers, warnings = []) {
   return dedupeActions([
@@ -19,7 +25,7 @@ function readBlockerActions(blocker) {
     return [
       createAction(
         blocker.area,
-        "Set API_URL to the deployed API HTTPS origin or exact /api/v1 base.",
+        readDeploymentAction(blocker),
       ),
     ];
   }
@@ -28,7 +34,7 @@ function readBlockerActions(blocker) {
     return [
       createAction(
         blocker.area,
-        "Set DATABASE_URL to a production PostgreSQL connection URL outside local or placeholder hosts.",
+        readDatabaseUrlAction(blocker),
       ),
     ];
   }
@@ -46,7 +52,7 @@ function readBlockerActions(blocker) {
     return [
       createAction(
         blocker.area,
-        "Set REDIS_URL to a production rediss:// Redis endpoint outside local or placeholder hosts.",
+        readRedisAction(blocker),
       ),
     ];
   }
@@ -55,7 +61,7 @@ function readBlockerActions(blocker) {
     return [
       createAction(
         blocker.area,
-        "Set WEB_URL to the deployed storefront HTTPS origin.",
+        readDeploymentAction(blocker),
       ),
     ];
   }
@@ -64,9 +70,7 @@ function readBlockerActions(blocker) {
     return [
       createAction(
         blocker.area,
-        blocker.issue === "admin-smoke-not-required"
-          ? "Set ADMIN_URL to the deployed Admin origin and SMOKE_REQUIRE_ADMIN_APP=true."
-          : "Set ADMIN_URL to the deployed Admin HTTPS origin, then rerun with SMOKE_REQUIRE_ADMIN_APP=true.",
+        readDeploymentAction(blocker),
       ),
     ];
   }
@@ -204,7 +208,7 @@ function readBlockerActions(blocker) {
     return [
       createAction(
         blocker.area,
-        "Set STOREFRONT_REVALIDATE_URL to the deployed storefront /api/revalidate endpoint.",
+        readRevalidationUrlAction(blocker),
       ),
     ];
   }

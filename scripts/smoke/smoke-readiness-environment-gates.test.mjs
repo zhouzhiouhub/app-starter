@@ -199,7 +199,7 @@ test("smoke readiness requires a production database URL", () => {
   assert.deepEqual(readiness.nextActions, [
     {
       action:
-        "Set DATABASE_URL to a production PostgreSQL connection URL outside local or placeholder hosts.",
+        "Replace local or private DATABASE_URL hosts with a managed production PostgreSQL hostname.",
       area: "database.url",
     },
   ]);
@@ -273,7 +273,7 @@ test("smoke readiness requires a production Redis URL", () => {
   assert.deepEqual(readiness.nextActions, [
     {
       action:
-        "Set REDIS_URL to a production rediss:// Redis endpoint outside local or placeholder hosts.",
+        "Replace local or private REDIS_URL hosts with a managed production Redis hostname.",
       area: "cache.redis",
     },
   ]);
