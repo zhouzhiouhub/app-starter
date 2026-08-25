@@ -226,4 +226,28 @@ test("media URL allowlist rejects fragments and sensitive query parameters", () 
       ),
     /credential or token/,
   );
+  assert.throws(
+    () =>
+      assertAllowedExternalMediaUrl(
+        "https://images.example.com/hero.webp?authorization_code=oauth-code",
+        env,
+      ),
+    /credential or token/,
+  );
+  assert.throws(
+    () =>
+      assertAllowedExternalMediaUrl(
+        "https://images.example.com/hero.webp?code_verifier=pkce-secret",
+        env,
+      ),
+    /credential or token/,
+  );
+  assert.throws(
+    () =>
+      assertAllowedMediaUrl(
+        "https://cdn.example.com/hero.webp#oauth_verifier=oauth-secret",
+        env,
+      ),
+    /fragments/,
+  );
 });

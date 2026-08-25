@@ -47,6 +47,18 @@ test("external media URL validation rejects fragments and sensitive query parame
     ) ?? "",
     /credential or token/,
   );
+  assert.match(
+    readExternalMediaUrlError(
+      "https://assets.brand-platform.com/hero.webp?authorization_code=oauth-code",
+    ) ?? "",
+    /credential or token/,
+  );
+  assert.match(
+    readExternalMediaUrlError(
+      "https://assets.brand-platform.com/hero.webp?code_verifier=pkce-secret",
+    ) ?? "",
+    /credential or token/,
+  );
 });
 
 test("external media URL validation rejects placeholder and private hosts", () => {

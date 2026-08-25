@@ -105,6 +105,10 @@ test("media service rejects external registrations with sensitive URL parts", as
           "https://assets.brand-platform.com/hero.png?X-Amz-Signature=signed",
           "Media URL must not include credential or token parameters.",
         ],
+        [
+          "https://assets.brand-platform.com/hero.png?authorization_code=oauth-code",
+          "Media URL must not include credential or token parameters.",
+        ],
       ]) {
         await assert.rejects(
           () =>
