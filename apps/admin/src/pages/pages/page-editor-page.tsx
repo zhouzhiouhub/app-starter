@@ -39,6 +39,7 @@ export function PageEditorPage() {
       isDraftDirty={editor.isDraftDirty}
       isPublishing={editor.isPublishing}
       isSaving={editor.isSaving}
+      isVersionHistoryLoading={editor.isVersionHistoryLoading}
       mediaFeedback={editor.mediaFeedback}
       mediaReferences={editor.mediaReferences}
       mediaResolver={editor.mediaResolver}
@@ -52,10 +53,15 @@ export function PageEditorPage() {
       onSaveDraft={() => void editor.saveDraft()}
       onSchemaChange={(schema) => editor.setDraftSchema(schema)}
       onUndo={editor.undo}
+      onVersionHistoryPageChange={(page) =>
+        void editor.onVersionHistoryPageChange(page)
+      }
       onViewportChange={editor.setViewport}
       page={editor.page}
       rollingBackVersionId={editor.rollingBackVersionId}
       schema={editor.draftSchema}
+      versionHistoryError={editor.versionHistoryError}
+      versionHistoryMeta={editor.versionHistoryMeta}
       versions={editor.versions}
       viewport={editor.viewport}
     />

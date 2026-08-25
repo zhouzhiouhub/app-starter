@@ -10,6 +10,7 @@ import { usePageEditorAutosave } from "./use-page-editor-autosave";
 import { usePageEditorAutosaveState } from "./use-page-editor-autosave-state";
 import { usePageMediaPreflight } from "./use-page-media-preflight";
 import { usePageEditorSavedState } from "./use-page-editor-saved-state";
+import { usePageVersionList } from "./use-page-version-list";
 import { useSchemaHistory } from "./use-schema-history";
 
 export function usePageEditor(pageId: string | undefined) {
@@ -37,8 +38,8 @@ export function usePageEditor(pageId: string | undefined) {
     applySavedState,
     page,
     savedDraftFingerprint,
-    versions,
   } = usePageEditorSavedState({ resetSchema });
+  const versionHistory = usePageVersionList(pageId);
   const { mediaFeedback, mediaReferences, mediaResolver } =
     usePageMediaPreflight(draftSchema);
 
@@ -77,6 +78,7 @@ export function usePageEditor(pageId: string | undefined) {
       mediaFeedback,
       pageId,
       resetSchema,
+      refreshVersionHistory: versionHistory.refreshFirstPage,
       setFeedback,
       setIsCreatingPreview,
       setIsPublishing,
@@ -91,6 +93,7 @@ export function usePageEditor(pageId: string | undefined) {
       page?.siteDomain,
       pageId,
       resetSchema,
+      versionHistory.refreshFirstPage,
     ],
   );
   const { openPreview, publish, rollbackToVersion, saveDraft } =
@@ -127,6 +130,7 @@ export function usePageEditor(pageId: string | undefined) {
     isLoading,
     isPublishing,
     isSaving,
+    isVersionHistoryLoading: versionHistory.isLoading,
     mediaFeedback,
     mediaReferences,
     mediaResolver,
@@ -141,7 +145,10 @@ export function usePageEditor(pageId: string | undefined) {
     setFeedback,
     setViewport,
     undo,
-    versions,
+    versionHistoryError: versionHistory.error,
+    versionHistoryMeta: versionHistory.meta,
+    versions: versionHistory.versions,
+    onVersionHistoryPageChange: versionHistory.loadPage,
     viewport,
   };
 }

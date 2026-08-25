@@ -1,8 +1,12 @@
 import { RollbackOutlined } from "@ant-design/icons";
-import { Button, Modal, Table, Tag, Tooltip, Typography } from "antd";
-import type { PageVersionSummary } from "../types";
+import { Alert, Button, Modal, Table, Tag, Tooltip, Typography } from "antd";
+import type { PageVersionListMeta, PageVersionSummary } from "../types";
 
 export function PublicationHistoryPanel(props: {
+  error: string | null;
+  isLoading: boolean;
+  meta: PageVersionListMeta;
+  onPageChange: (page: number) => void | Promise<void>;
   onRollbackVersion: (versionId: string) => void | Promise<void>;
   publishedVersionId: string | null;
   rollingBackVersionId: string | null;
@@ -29,6 +33,14 @@ export function PublicationHistoryPanel(props: {
       }}
     >
       <Typography.Title level={4}>Publication history</Typography.Title>
+      {props.error ? (
+        <Alert
+          message={props.error}
+          showIcon
+          style={{ marginBottom: 12 }}
+          type="warning"
+        />
+      ) : null}
       <Table<PageVersionSummary>
         columns={[
           {
@@ -105,7 +117,14 @@ export function PublicationHistoryPanel(props: {
           },
         ]}
         dataSource={props.versions}
-        pagination={false}
+        loading={props.isLoading}
+        pagination={{
+          current: props.meta.page,
+          pageSize: props.meta.limit,
+          showSizeChanger: false,
+          total: props.meta.total,
+          onChange: props.onPageChange,
+        }}
         rowKey="id"
         size="small"
       />

@@ -2,12 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Alert, Typography } from "antd";
 import {
   getOrderedSectionsForViewport,
-  type MediaAssetReference,
-  type PageSchema,
-  type Viewport,
 } from "@app-starter/schema";
-import type { MediaResolverFeedback } from "../../media/media-resolver-feedback";
-import type { MediaResolverState } from "../../media/hooks/use-media-resolver";
 import { readMediaPublishPreflightIssue } from "../media-publish-preflight";
 import {
   collectPublishPreflightIssues,
@@ -16,9 +11,9 @@ import {
 import { readPublishPreflightFocusStyle } from "../publish-preflight-focus-style";
 import { usePublishPreflightFix } from "../hooks/use-publish-preflight-fix";
 import { usePublishPreflightFocus } from "../hooks/use-publish-preflight-focus";
-import type { EditorFeedback, PageSummary, PageVersionSummary } from "../types";
 import { ChromeSettingsPanel } from "./chrome-settings-panel";
 import { PageContentFields } from "./page-content-fields";
+import type { PageEditorProps } from "./page-editor-props";
 import { PageEditorStatusTags } from "./page-editor-status-tags";
 import { PageEditorToolbar } from "./page-editor-toolbar";
 import { PagePreviewPane } from "./page-preview-pane";
@@ -30,32 +25,7 @@ import { SectionLibraryPanel } from "./section-library-panel";
 import { SectionPropertiesPanel } from "./section-properties-panel";
 import { SeoSettingsPanel } from "./seo-settings-panel";
 
-export function PageEditor(props: {
-  canRedo: boolean;
-  canUndo: boolean;
-  feedback: EditorFeedback | null;
-  isCreatingPreview: boolean;
-  isDraftDirty: boolean;
-  isPublishing: boolean;
-  isSaving: boolean;
-  mediaFeedback: MediaResolverFeedback | null;
-  mediaReferences: MediaAssetReference[];
-  mediaResolver: MediaResolverState;
-  onFeedbackClose: () => void;
-  onOpenPreview: () => void;
-  onPublish: () => void;
-  onRedo: () => void;
-  onRollbackVersion: (versionId: string) => void | Promise<void>;
-  onSaveDraft: () => void;
-  onSchemaChange: (schema: PageSchema) => void;
-  onUndo: () => void;
-  onViewportChange: (viewport: Viewport) => void;
-  page: PageSummary;
-  rollingBackVersionId: string | null;
-  schema: PageSchema;
-  versions: PageVersionSummary[];
-  viewport: Viewport;
-}) {
+export function PageEditor(props: PageEditorProps) {
   const [selectedSectionId, setSelectedSectionId] = useState(
     props.schema.sections[0]?.id ?? null,
   );
@@ -220,6 +190,10 @@ export function PageEditor(props: {
             />
           </div>
           <PublicationHistoryPanel
+            error={props.versionHistoryError}
+            isLoading={props.isVersionHistoryLoading}
+            meta={props.versionHistoryMeta}
+            onPageChange={props.onVersionHistoryPageChange}
             onRollbackVersion={props.onRollbackVersion}
             publishedVersionId={props.page.publishedVersionId}
             rollingBackVersionId={props.rollingBackVersionId}

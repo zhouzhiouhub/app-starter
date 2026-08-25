@@ -36,6 +36,7 @@ interface UsePageEditorActionsInput {
   mediaFeedback: MediaResolverFeedback | null;
   pageId: string | undefined;
   resetSchema: (schema: PageSchema) => void;
+  refreshVersionHistory: () => Promise<void>;
   setFeedback: Dispatch<SetStateAction<EditorFeedback | null>>;
   setIsCreatingPreview: Dispatch<SetStateAction<boolean>>;
   setIsPublishing: Dispatch<SetStateAction<boolean>>;
@@ -65,6 +66,7 @@ export function usePageEditorActions(input: UsePageEditorActionsInput) {
             input.draftSchema,
           ),
         );
+        await input.refreshVersionHistory();
 
         if (!options.silent) {
           input.setFeedback({
@@ -125,6 +127,7 @@ export function usePageEditorActions(input: UsePageEditorActionsInput) {
       input.applySavedState(
         readPageEditorSavedState(await getPage(input.pageId), published.schema),
       );
+      await input.refreshVersionHistory();
       input.setFeedback(
         buildPublicationFeedback({
           action: "publish",
@@ -174,6 +177,7 @@ export function usePageEditorActions(input: UsePageEditorActionsInput) {
           input.draftSchema,
         ),
       );
+      await input.refreshVersionHistory();
       const preview = await createPreviewToken(input.pageId);
       openStorefrontPreviewWindow(
         getStorefrontPreviewUrl(preview.token, input.siteDomain),
@@ -211,6 +215,7 @@ export function usePageEditorActions(input: UsePageEditorActionsInput) {
             rolledBack.schema,
           ),
         );
+        await input.refreshVersionHistory();
         input.setFeedback(
           buildPublicationFeedback({
             action: "rollback",
