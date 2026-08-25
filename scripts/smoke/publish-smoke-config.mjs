@@ -54,7 +54,7 @@ export function readConfig() {
 
   return {
     adminUrl: readAdminUrlConfig(requireAdminApp),
-    apiBaseUrl: normalizeApiBaseUrl(readEnv("API_URL", defaultApiUrl)),
+    apiBaseUrl: normalizeApiBaseUrl(readUrlEnv("API_URL", defaultApiUrl)),
     email,
     expectedMediaCdnHost: expectedMediaCdn?.hostname ?? null,
     expectedMediaCdnPathPrefix: expectedMediaCdn
@@ -82,7 +82,7 @@ export function readConfig() {
     slug: normalizeSmokeSlug(readEnv("SMOKE_PAGE_SLUG", createSmokeSlug())),
     storefrontHost: readOptionalStorefrontHostEnv("SMOKE_STOREFRONT_HOST"),
     tenantSlug,
-    webUrl: normalizeWebOrigin(readEnv("WEB_URL", defaultWebUrl)),
+    webUrl: normalizeWebOrigin(readUrlEnv("WEB_URL", defaultWebUrl)),
   };
 }
 
@@ -151,7 +151,7 @@ function createSmokeSlug() {
 }
 
 function readAdminUrlConfig(requireAdminApp) {
-  const value = readEnv("ADMIN_URL", defaultAdminUrl);
+  const value = readUrlEnv("ADMIN_URL", defaultAdminUrl);
 
   if (requireAdminApp) {
     return normalizeAdminOrigin(value);
@@ -167,6 +167,11 @@ function readAdminUrlConfig(requireAdminApp) {
 function readEnv(name, fallback) {
   const value = process.env[name]?.trim();
   return value ? value : fallback;
+}
+
+function readUrlEnv(name, fallback) {
+  const value = process.env[name];
+  return typeof value === "string" && value.trim() ? value : fallback;
 }
 
 function readBooleanEnv(name, fallback) {
@@ -210,7 +215,7 @@ function readOptionalStorefrontHostEnv(name) {
 }
 
 function readOptionalExpectedMediaCdnBaseUrl(name) {
-  const value = process.env[name]?.trim();
+  const value = readUrlEnv(name, null);
 
   if (!value) {
     return null;
@@ -221,7 +226,7 @@ function readOptionalExpectedMediaCdnBaseUrl(name) {
   }
 
   try {
-    return new URL(value);
+    return new URL(value.trim());
   } catch {
     return null;
   }

@@ -113,10 +113,15 @@ function normalizeOrigin(value, name, label, article) {
 }
 
 function readSmokeUrl(value, name) {
+  if (hasControlCharacter(value)) {
+    throw new Error(`${name} must not contain control characters.`);
+  }
+
+  const trimmed = value.trim();
   let url;
 
   try {
-    url = new URL(value.trim());
+    url = new URL(trimmed);
   } catch {
     throw new Error(`${name} must be an absolute http(s) URL.`);
   }
@@ -138,4 +143,11 @@ function readSmokeUrl(value, name) {
 
 function trimTrailingSlashes(pathname) {
   return pathname.replace(/\/+$/, "");
+}
+
+function hasControlCharacter(value) {
+  return Array.from(value).some((character) => {
+    const codePoint = character.codePointAt(0) ?? 0;
+    return codePoint <= 0x1f || codePoint === 0x7f;
+  });
 }

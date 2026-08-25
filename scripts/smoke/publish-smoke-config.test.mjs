@@ -150,6 +150,7 @@ test("smoke config derives expected CDN checks only from safe CDN bases", async 
   );
 
   for (const mediaCdnBaseUrl of [
+    "https://cdn.brand-assets.com\t/media",
     "https://cdn.brand-assets.com/media?token=1",
     "https://cdn.example.com/media",
     "http://cdn.brand-assets.com/media",

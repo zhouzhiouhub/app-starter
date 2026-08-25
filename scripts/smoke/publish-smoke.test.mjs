@@ -70,6 +70,10 @@ test("smoke helpers reject unsafe publish URLs", async () => {
     () => normalizeApiBaseUrl("ftp://api.example.com"),
     /API_URL must use http or https/,
   );
+  assert.throws(
+    () => normalizeApiBaseUrl("https://api.example.com\t/api/v1"),
+    /API_URL must not contain control characters/,
+  );
   assert.equal(
     normalizeWebOrigin("https://web.example.com/"),
     "https://web.example.com",
@@ -86,6 +90,14 @@ test("smoke helpers reject unsafe publish URLs", async () => {
     () => normalizeWebOrigin("https://web.example.com?token=secret"),
     /WEB_URL must not include query strings or fragments/,
   );
+  assert.throws(
+    () => normalizeWebOrigin("https://web.example.com\n.evil.com"),
+    /WEB_URL must not contain control characters/,
+  );
+  assert.throws(
+    () => normalizeAdminOrigin("https://admin.example.com\t"),
+    /ADMIN_URL must not contain control characters/,
+  );
 
   await withEnv(
     {
@@ -96,6 +108,47 @@ test("smoke helpers reject unsafe publish URLs", async () => {
       assert.throws(
         () => readConfig(),
         /API_URL must not include query strings or fragments/,
+      );
+    },
+  );
+
+  await withEnv(
+    {
+      API_URL: "https://api.example.com\t/api/v1",
+      WEB_URL: "https://web.example.com",
+    },
+    async () => {
+      assert.throws(
+        () => readConfig(),
+        /API_URL must not contain control characters/,
+      );
+    },
+  );
+
+  await withEnv(
+    {
+      API_URL: "https://api.example.com",
+      WEB_URL: "https://web.example.com\n.evil.com",
+    },
+    async () => {
+      assert.throws(
+        () => readConfig(),
+        /WEB_URL must not contain control characters/,
+      );
+    },
+  );
+
+  await withEnv(
+    {
+      ADMIN_URL: "https://admin.example.com\t",
+      API_URL: "https://api.example.com",
+      SMOKE_REQUIRE_ADMIN_APP: "true",
+      WEB_URL: "https://web.example.com",
+    },
+    async () => {
+      assert.throws(
+        () => readConfig(),
+        /ADMIN_URL must not contain control characters/,
       );
     },
   );
