@@ -9,6 +9,10 @@ const mediaBaseUrlFilePathPattern =
 export function readCdnDiagnostics(value) {
   let url;
 
+  if (hasControlCharacter(value)) {
+    return readUnsafeCdnUrl(null, null, "control-character");
+  }
+
   try {
     url = new URL(value);
   } catch {
@@ -35,6 +39,10 @@ export function readCdnDiagnostics(value) {
     return readUnsafeCdnUrl(host, url.hostname, "unsupported-url-parts");
   }
 
+  if (hasDecodedPathControlCharacter(url.pathname)) {
+    return readUnsafeCdnUrl(host, url.hostname, "control-character");
+  }
+
   if (hasFileLikeBaseUrlPath(url.pathname)) {
     return readUnsafeCdnUrl(host, url.hostname, "file-path");
   }
@@ -59,7 +67,7 @@ function readUnsafeCdnUrl(host, hostname, issue) {
   return {
     host,
     issue,
-    localHost: isLocalHostname(hostname),
+    localHost: Boolean(hostname && isLocalHostname(hostname)),
     productionReady: false,
     safe: false,
   };
@@ -84,4 +92,19 @@ function decodePathSegment(value) {
   } catch {
     return value;
   }
+}
+
+function hasDecodedPathControlCharacter(pathname) {
+  try {
+    return hasControlCharacter(decodeURIComponent(pathname));
+  } catch {
+    return false;
+  }
+}
+
+function hasControlCharacter(value) {
+  return Array.from(value).some((character) => {
+    const codePoint = character.codePointAt(0) ?? 0;
+    return codePoint <= 0x1f || codePoint === 0x7f;
+  });
 }
