@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      '@app-starter/schema':
+        specifier: workspace:*
+        version: link:packages/schema
     devDependencies:
       '@eslint/js':
         specifier: ^9.0.0
@@ -138,6 +142,10 @@ importers:
         version: 5.9.3
 
   packages/analytics:
+    dependencies:
+      '@app-starter/schema':
+        specifier: workspace:*
+        version: link:../schema
     devDependencies:
       typescript:
         specifier: ^5.6.0
@@ -211,6 +219,9 @@ importers:
 
   packages/ui:
     dependencies:
+      '@app-starter/schema':
+        specifier: workspace:*
+        version: link:../schema
       react:
         specifier: ^19.0.0
         version: 19.2.8

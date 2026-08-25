@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "packageManager": "pnpm@9.12.0",
+  "dependencies": {
+    "@app-starter/schema": "workspace:*"
+  },
   "scripts": {
     "build:admin-packages": "pnpm --filter @app-starter/admin-theme --filter @app-starter/custom-admin build",
     "build:api-packages": "pnpm --filter @app-starter/schema --filter @app-starter/extension-sdk build",

@@ -1,82 +1,14 @@
-const logSecretKeyPattern = [
-  "access[-_]?token",
-  "api[-_]?key",
-  "auth[-_]?code",
-  "authorization[-_]?code",
-  "client[-_]?secret",
-  "code[-_]?verifier",
-  "connection[-_]?string",
-  "cookie",
-  "credential",
-  "database[-_]?url",
-  "dsn",
-  "[a-z0-9]+[-_]?dsn",
-  "id[-_]?token",
-  "jwt",
-  "oauth[-_]?code",
-  "oauth[-_]?verifier",
-  "password",
-  "passphrase",
-  "pem",
-  "preview[-_]?token",
-  "private[-_]?key(?:[-_]?pem)?",
-  "refresh[-_]?token",
-  "secret",
-  "session[-_]?id",
-  "session",
-  "set[-_]?cookie",
-  "signature",
-  "token",
-  "x-amz-[a-z0-9-]+",
-].join("|");
+import {
+  isSensitiveSecretLikeKey,
+  sensitiveCredentialKeyPatternSource,
+  sensitiveUrlParameterKeyPatternSource,
+} from "@app-starter/schema";
+
+const logSecretKeyPattern = sensitiveCredentialKeyPatternSource;
+const logUrlParameterKeyPattern = sensitiveUrlParameterKeyPatternSource;
 
 const pemBlockPattern =
   /-----BEGIN [A-Z0-9 ]+-----[\s\S]*?-----END [A-Z0-9 ]+-----/g;
-
-const sensitiveLogKeySuffixes = [
-  "accesskeyid",
-  "accesstoken",
-  "apikey",
-  "authcode",
-  "authorizationcode",
-  "clientsecret",
-  "codeverifier",
-  "connectionstring",
-  "credential",
-  "cookie",
-  "databaseurl",
-  "dsn",
-  "idtoken",
-  "jwt",
-  "oauthcode",
-  "oauthverifier",
-  "password",
-  "passphrase",
-  "pem",
-  "previewtoken",
-  "privatekey",
-  "privatekeypem",
-  "refreshtoken",
-  "secret",
-  "secretaccesskey",
-  "session",
-  "sessionid",
-  "signature",
-  "token",
-];
-
-const sensitiveLogKeys = new Set([
-  "authorization",
-  "setcookie",
-  "xamzalgorithm",
-  "xamzcredential",
-  "xamzdate",
-  "xamzexpires",
-  "xamzsecuritytoken",
-  "xamzsignature",
-  "xamzsignedheaders",
-  ...sensitiveLogKeySuffixes,
-]);
 
 const redactedPemValue = "[redacted-pem]";
 const redactedValue = "[redacted]";
@@ -103,7 +35,10 @@ export function redactLogSecrets(value: unknown): string {
     )
     .replace(/(\bBearer\s+)[a-zA-Z0-9._-]+/gi, "$1[redacted]")
     .replace(
-      new RegExp(`([?&#](?:${logSecretKeyPattern})=)[^&#\\s)"']+`, "gi"),
+      new RegExp(
+        `([?&#](?:${logUrlParameterKeyPattern})=)[^&#\\s)"']+`,
+        "gi",
+      ),
       "$1[redacted]",
     )
     .replace(
@@ -157,9 +92,5 @@ function isPlainRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isSensitiveLogKey(key: string): boolean {
-  const normalized = key.replace(/[-_\s]/g, "").toLowerCase();
-  return (
-    sensitiveLogKeys.has(normalized) ||
-    sensitiveLogKeySuffixes.some((suffix) => normalized.endsWith(suffix))
-  );
+  return isSensitiveSecretLikeKey(key);
 }

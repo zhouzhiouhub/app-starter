@@ -1,4 +1,8 @@
 import type { Prisma } from "@prisma/client";
+import {
+  isSensitiveSecretLikeKey,
+  normalizeSensitiveKey,
+} from "@app-starter/schema";
 import { redactLogSecrets } from "../../common/log-redaction.js";
 
 const redactedValue = "[redacted]";
@@ -8,39 +12,6 @@ const maxAuditMetadataDepth = 6;
 const maxAuditMetadataObjectEntries = 50;
 const maxAuditMetadataStringLength = 1_000;
 const metadataTruncatedKey = "__metadataTruncated";
-const sensitiveMetadataKeys = new Set([
-  "accesskeyid",
-  "accesstoken",
-  "apikey",
-  "authorization",
-  "authcode",
-  "authorizationcode",
-  "clientsecret",
-  "codeverifier",
-  "connectionstring",
-  "cookie",
-  "credential",
-  "databaseurl",
-  "dsn",
-  "idtoken",
-  "jwt",
-  "oauthcode",
-  "oauthverifier",
-  "password",
-  "passphrase",
-  "pem",
-  "privatekey",
-  "refreshtoken",
-  "schema",
-  "secret",
-  "secretaccesskey",
-  "session",
-  "sessionid",
-  "setcookie",
-  "signature",
-  "token",
-]);
-
 export function sanitizeAuditMetadata(value: unknown): unknown {
   const sanitized = sanitizeAuditMetadataValue(value);
   return sanitized ?? {};
@@ -104,36 +75,7 @@ function sanitizeAuditMetadataValueAtDepth(
 }
 
 function shouldRedactMetadataKey(key: string): boolean {
-  const normalized = key.replace(/[-_]/g, "").toLowerCase();
-
-  return (
-    sensitiveMetadataKeys.has(normalized) ||
-    normalized.endsWith("accesskeyid") ||
-    normalized.endsWith("apikey") ||
-    normalized.endsWith("authcode") ||
-    normalized.endsWith("authorizationcode") ||
-    normalized.endsWith("clientsecret") ||
-    normalized.endsWith("codeverifier") ||
-    normalized.endsWith("connectionstring") ||
-    normalized.endsWith("credential") ||
-    normalized.endsWith("cookie") ||
-    normalized.endsWith("databaseurl") ||
-    normalized.endsWith("dsn") ||
-    normalized.endsWith("idtoken") ||
-    normalized.endsWith("jwt") ||
-    normalized.endsWith("oauthcode") ||
-    normalized.endsWith("oauthverifier") ||
-    normalized.endsWith("password") ||
-    normalized.endsWith("passphrase") ||
-    normalized.endsWith("pem") ||
-    normalized.endsWith("privatekey") ||
-    normalized.endsWith("secret") ||
-    normalized.endsWith("secretaccesskey") ||
-    normalized.endsWith("session") ||
-    normalized.endsWith("sessionid") ||
-    normalized.endsWith("signature") ||
-    normalized.endsWith("token")
-  );
+  return normalizeSensitiveKey(key) === "schema" || isSensitiveSecretLikeKey(key);
 }
 
 function isJsonPrimitive(value: unknown): value is string | number | boolean {

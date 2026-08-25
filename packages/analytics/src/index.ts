@@ -1,3 +1,8 @@
+import {
+  isSensitiveSecretLikeKey,
+  isSensitiveUrlParameterKey,
+} from "@app-starter/schema";
+
 export interface AnalyticsEvent {
   name: string;
   tenantId?: string;
@@ -15,45 +20,11 @@ const reservedDataLayerKeys = new Set([
   "locale",
 ]);
 
-const sensitivePayloadKeyFragments = [
-  "accesskey",
+const sensitivePayloadPiiKeyFragments = [
   "address",
-  "apikey",
-  "authorization",
-  "cookie",
-  "credential",
   "email",
-  "password",
   "phone",
-  "secret",
-  "session",
-  "signature",
-  "token",
 ];
-
-const sensitiveStringQueryKeySuffixes = [
-  "accesskeyid",
-  "accesstoken",
-  "apikey",
-  "clientsecret",
-  "credential",
-  "cookie",
-  "idtoken",
-  "keypairid",
-  "password",
-  "previewtoken",
-  "refreshtoken",
-  "secret",
-  "session",
-  "signature",
-  "token",
-];
-
-const sensitiveStringQueryKeys = new Set([
-  "policy",
-  "sig",
-  ...sensitiveStringQueryKeySuffixes,
-]);
 
 const redactedAnalyticsValue = "[redacted]";
 const emailValuePattern = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i;
@@ -128,8 +99,11 @@ function isBlockedPayloadKey(key: string, dropReservedKeys: boolean): boolean {
     return true;
   }
 
-  return sensitivePayloadKeyFragments.some((fragment) =>
-    normalized.includes(fragment),
+  return (
+    isSensitiveSecretLikeKey(key) ||
+    sensitivePayloadPiiKeyFragments.some((fragment) =>
+      normalized.includes(fragment),
+    )
   );
 }
 
@@ -155,17 +129,14 @@ function isPlainRecord(value: unknown): value is Record<string, unknown> {
 
 function hasSensitiveStringQueryParameter(value: string): boolean {
   return Array.from(value.matchAll(queryParameterValuePattern)).some((match) =>
-    isSensitiveStringQueryKey(match[1] ?? ""),
+    isSensitiveUrlParameterKey(readDecodedParameterKey(match[1] ?? "")),
   );
 }
 
-function isSensitiveStringQueryKey(key: string): boolean {
-  const normalized = key.replace(/[-_\s]/g, "").toLowerCase();
-  return (
-    normalized.startsWith("xamz") ||
-    sensitiveStringQueryKeys.has(normalized) ||
-    sensitiveStringQueryKeySuffixes.some((suffix) =>
-      normalized.endsWith(suffix),
-    )
-  );
+function readDecodedParameterKey(key: string): string {
+  try {
+    return decodeURIComponent(key.replace(/\+/g, " "));
+  } catch {
+    return key;
+  }
 }

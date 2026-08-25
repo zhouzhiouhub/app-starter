@@ -1,8 +1,12 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "baseUrl": ".",
     "jsx": "react-jsx",
     "outDir": "dist",
+    "paths": {
+      "@app-starter/schema": ["../schema/dist/index.d.ts"]
+    },
     "rootDir": "src",
     "declaration": true,
     "declarationMap": true,

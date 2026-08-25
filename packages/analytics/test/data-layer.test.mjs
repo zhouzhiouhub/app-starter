@@ -7,6 +7,7 @@ test("analytics payload sanitizer removes reserved and sensitive fields", () => 
     sanitizeAnalyticsPayload({
       apiKey: "api-key-value",
       authCookie: "session=abc",
+      codeVerifier: "pkce-secret",
       email: "buyer@example.com",
       event: "override",
       locale: "de-DE",
@@ -16,6 +17,7 @@ test("analytics payload sanitizer removes reserved and sensitive fields", () => 
         phoneNumber: "+15551234567",
         plan: "pro",
       },
+      oauthVerifier: "oauth-verifier-secret",
       orders: [
         {
           r2AccessKeyId: "access-key",
@@ -80,6 +82,8 @@ test("analytics payload sanitizer redacts URLs with sensitive credentials", () =
       },
       redirects: [
         "/checkout?token=secret",
+        "/callback?access%5Ftoken=secret",
+        "https://cdn.example.com/file?Policy=signed-policy&sig=signed-value",
         "https://store.example.com/page?utm_source=newsletter",
       ],
       signedUrl: "https://user:password@example.com/download",
@@ -92,6 +96,8 @@ test("analytics payload sanitizer redacts URLs with sensitive credentials", () =
         publicUrl: "https://store.example.com/page?variant=summer",
       },
       redirects: [
+        "[redacted]",
+        "[redacted]",
         "[redacted]",
         "https://store.example.com/page?utm_source=newsletter",
       ],

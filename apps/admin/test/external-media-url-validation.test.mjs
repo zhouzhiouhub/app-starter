@@ -49,6 +49,12 @@ test("external media URL validation rejects fragments and sensitive query parame
   );
   assert.match(
     readExternalMediaUrlError(
+      "https://assets.brand-platform.com/hero.webp?Policy=signed-policy",
+    ) ?? "",
+    /credential or token/,
+  );
+  assert.match(
+    readExternalMediaUrlError(
       "https://assets.brand-platform.com/hero.webp?authorization_code=oauth-code",
     ) ?? "",
     /credential or token/,

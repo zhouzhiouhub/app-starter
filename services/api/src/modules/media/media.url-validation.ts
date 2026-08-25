@@ -1,33 +1,11 @@
 import { BadRequestException } from "@nestjs/common";
-import { apiErrorCodes, isUnsafeProductionHostname } from "@app-starter/schema";
+import {
+  apiErrorCodes,
+  isSensitiveUrlParameterKey,
+  isUnsafeProductionHostname,
+} from "@app-starter/schema";
 import { DEFAULT_MEDIA_CDN_BASE_URL } from "./media.constants.js";
 import { isProductionMediaEnvironment } from "./media.production-env.js";
-
-const sensitiveMediaUrlQueryKeySuffixes = [
-  "accesskeyid",
-  "accesstoken",
-  "apikey",
-  "authcode",
-  "authorizationcode",
-  "clientsecret",
-  "codeverifier",
-  "credential",
-  "keypairid",
-  "oauthcode",
-  "oauthverifier",
-  "password",
-  "previewtoken",
-  "refreshtoken",
-  "secret",
-  "session",
-  "signature",
-  "token",
-];
-const sensitiveMediaUrlQueryKeys = new Set([
-  "policy",
-  "sig",
-  ...sensitiveMediaUrlQueryKeySuffixes,
-]);
 
 export function assertAllowedMediaUrl(
   url: string,
@@ -258,12 +236,5 @@ function hasSensitiveMediaUrlQueryParameters(url: URL): boolean {
 }
 
 function isSensitiveMediaUrlQueryKey(key: string): boolean {
-  const normalized = key.replace(/[-_\s]/g, "").toLowerCase();
-  return (
-    normalized.startsWith("xamz") ||
-    sensitiveMediaUrlQueryKeys.has(normalized) ||
-    sensitiveMediaUrlQueryKeySuffixes.some((suffix) =>
-      normalized.endsWith(suffix),
-    )
-  );
+  return isSensitiveUrlParameterKey(key);
 }

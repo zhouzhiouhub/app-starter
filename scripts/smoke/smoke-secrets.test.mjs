@@ -24,6 +24,7 @@ test("smoke secret redaction removes tokens from common failure shapes", () => {
       "privateKeyPem=private-key-value",
       "rawPem=-----BEGIN PRIVATE KEY-----\nprivate-key-body\n-----END PRIVATE KEY-----",
       "refreshToken=refresh-token-value",
+      "secretAccessKey=aws-secret-key",
       "sentryDsn=https://public:dsn-secret@sentry.example.com/1",
       "postgresql://db-user:db-secret@db.example.com:5432/app",
       "redis://cache-user:cache-secret@redis.example.com:6379/0",
@@ -31,7 +32,7 @@ test("smoke secret redaction removes tokens from common failure shapes", () => {
       "https://web.example.com/preview?preview_token=payload.signature&access_token=access-token-value&api_key=api-key-value",
       "https://auth.example.com/callback?authorization_code=oauth-code&code_verifier=pkce-secret",
       "https://auth.example.com/callback#access_token=fragment-access-token&id_token=fragment-id-token",
-      "https://cdn.example.com/object.png?sig=edge-signature-value",
+      "https://cdn.example.com/object.png?Policy=signed-policy-value&sig=edge-signature-value",
       "https://uploads.example.com/object.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=credential-value&X-Amz-Date=20260820T000000Z&X-Amz-Expires=900&X-Amz-SignedHeaders=content-type%3Bhost&X-Amz-Signature=signature-value&X-Amz-Security-Token=security-token-value",
     ].join(" "),
   );
@@ -55,6 +56,7 @@ test("smoke secret redaction removes tokens from common failure shapes", () => {
   assert.equal(message.includes("shared"), false);
   assert.equal(message.includes("dsn-secret"), false);
   assert.equal(message.includes("refresh-token-value"), false);
+  assert.equal(message.includes("aws-secret-key"), false);
   assert.equal(message.includes("db-user"), false);
   assert.equal(message.includes("db-secret"), false);
   assert.equal(message.includes("cache-user"), false);
@@ -66,6 +68,7 @@ test("smoke secret redaction removes tokens from common failure shapes", () => {
   assert.equal(message.includes("20260820T000000Z"), false);
   assert.equal(message.includes("content-type%3Bhost"), false);
   assert.equal(message.includes("edge-signature-value"), false);
+  assert.equal(message.includes("signed-policy-value"), false);
   assert.equal(message.includes("signature-value"), false);
   assert.equal(message.includes("security-token-value"), false);
   assert.match(message, /\/public\/preview\/\[redacted\]/);
@@ -78,6 +81,7 @@ test("smoke secret redaction removes tokens from common failure shapes", () => {
   assert.match(message, /#access_token=\[redacted\]/);
   assert.match(message, /id_token=\[redacted\]/);
   assert.match(message, /oauth_verifier=\[redacted\]/);
+  assert.match(message, /Policy=\[redacted\]/);
   assert.match(message, /sig=\[redacted\]/);
   assert.match(message, /"clientSecret":"\[redacted\]"/);
   assert.match(message, /client_secret=\[redacted\]/);
@@ -92,6 +96,7 @@ test("smoke secret redaction removes tokens from common failure shapes", () => {
   assert.match(message, /Authorization: Basic \[redacted\]/);
   assert.match(message, /Authorization=ApiKey \[redacted\]/);
   assert.match(message, /refreshToken=\[redacted\]/);
+  assert.match(message, /secretAccessKey=\[redacted\]/);
   assert.match(message, /postgresql:\/\/\[redacted\]@db\.example\.com:5432\/app/);
   assert.match(message, /redis:\/\/\[redacted\]@redis\.example\.com:6379\/0/);
   assert.match(message, /https:\/\/\[redacted\]@admin\.example\.com/);
@@ -126,7 +131,7 @@ test("smoke report value redaction sanitizes nested details", () => {
           sentryDsn: "https://public:dsn-secret@sentry.example.com/1",
           sig: "edge-signature-value",
           uploadUrl:
-            "https://uploads.example.com/object.png?sig=upload-signature-value&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Signature=signature-value",
+            "https://uploads.example.com/object.png?Policy=signed-policy-value&sig=upload-signature-value&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Signature=signature-value",
         },
       ],
       ok: true,
@@ -149,7 +154,7 @@ test("smoke report value redaction sanitizes nested details", () => {
           sentryDsn: "[redacted]",
           sig: "[redacted]",
           uploadUrl:
-            "https://uploads.example.com/object.png?sig=[redacted]&X-Amz-Algorithm=[redacted]&X-Amz-Signature=[redacted]",
+            "https://uploads.example.com/object.png?Policy=[redacted]&sig=[redacted]&X-Amz-Algorithm=[redacted]&X-Amz-Signature=[redacted]",
         },
       ],
       ok: true,
