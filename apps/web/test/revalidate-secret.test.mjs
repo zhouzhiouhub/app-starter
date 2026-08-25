@@ -24,6 +24,18 @@ test("revalidate secret helper ignores unsafe configured secrets", () => {
   );
   assert.equal(
     readConfiguredRevalidateSecret({
+      STOREFRONT_REVALIDATE_SECRET: "shared-secret\n",
+    }),
+    "",
+  );
+  assert.equal(
+    readConfiguredRevalidateSecret({
+      STOREFRONT_REVALIDATE_SECRET: "\t",
+    }),
+    "",
+  );
+  assert.equal(
+    readConfiguredRevalidateSecret({
       STOREFRONT_REVALIDATE_SECRET: "a".repeat(1025),
     }),
     "",
@@ -82,6 +94,13 @@ test("revalidate secret helper rejects control characters before comparing", () 
   assert.equal(
     hasValidRevalidateSecret({
       configuredSecret: "shared\rsecret",
+      providedSecret: "shared-secret",
+    }),
+    false,
+  );
+  assert.equal(
+    hasValidRevalidateSecret({
+      configuredSecret: "shared-secret\n",
       providedSecret: "shared-secret",
     }),
     false,
