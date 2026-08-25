@@ -1,6 +1,6 @@
 export function readDeploymentAction(blocker) {
   if (blocker.issue === "admin-smoke-not-required") {
-    return "Set ADMIN_URL to the deployed Admin origin and SMOKE_REQUIRE_ADMIN_APP=true.";
+    return "Set ADMIN_URL to the deployed Admin HTTPS origin and SMOKE_REQUIRE_ADMIN_APP=true so smoke verifies the Admin shell, module script, modulepreload chunks, and stylesheet assets from the same origin.";
   }
 
   const variable = blocker.variable ?? readDeploymentVariable(blocker.area);

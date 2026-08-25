@@ -42,7 +42,7 @@ test("smoke readiness marks omitted production gates as blockers", () => {
     [
       [
         "deployment.admin",
-        "Set ADMIN_URL to the deployed Admin origin and SMOKE_REQUIRE_ADMIN_APP=true.",
+        "Set ADMIN_URL to the deployed Admin HTTPS origin and SMOKE_REQUIRE_ADMIN_APP=true so smoke verifies the Admin shell, module script, modulepreload chunks, and stylesheet assets from the same origin.",
       ],
       [
         "media.r2",
