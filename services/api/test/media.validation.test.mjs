@@ -229,6 +229,14 @@ test("media URL allowlist rejects fragments and sensitive query parameters", () 
   assert.throws(
     () =>
       assertAllowedExternalMediaUrl(
+        "https://images.example.com/hero.webp?Policy=signed-policy",
+        env,
+      ),
+    /credential or token/,
+  );
+  assert.throws(
+    () =>
+      assertAllowedExternalMediaUrl(
         "https://images.example.com/hero.webp?authorization_code=oauth-code",
         env,
       ),

@@ -16,7 +16,9 @@ test("API message redaction removes secrets from JSON-like fragments", () => {
       "'privateKeyPem':'private-key-body'",
       "Authorization: Basic dXNlcjpwYXNz",
       "Authorization=ApiKey admin-api-key-value",
+      "secretAccessKey=aws-secret-key",
       "callback=https://auth.example.com/callback?oauth_verifier=oauth-verifier-secret",
+      "download=https://cdn.example.com/object?Policy=policy-secret&sig=sig-secret",
       "rawPem=-----BEGIN PRIVATE KEY-----\nraw-private-key-body\n-----END PRIVATE KEY-----",
     ].join(" "),
   );
@@ -25,6 +27,8 @@ test("API message redaction removes secrets from JSON-like fragments", () => {
   assert.equal(message.includes("json.header.payload"), false);
   assert.equal(message.includes("oauth-code"), false);
   assert.equal(message.includes("oauth-verifier-secret"), false);
+  assert.equal(message.includes("policy-secret"), false);
+  assert.equal(message.includes("sig-secret"), false);
   assert.equal(message.includes("pkce-secret"), false);
   assert.equal(message.includes("ChangeMe123"), false);
   assert.equal(message.includes("oauth-client-secret"), false);
@@ -34,6 +38,7 @@ test("API message redaction removes secrets from JSON-like fragments", () => {
   assert.equal(message.includes("dXNlcjpwYXNz"), false);
   assert.equal(message.includes("admin-api-key-value"), false);
   assert.equal(message.includes("private-key-body"), false);
+  assert.equal(message.includes("aws-secret-key"), false);
   assert.equal(message.includes("raw-private-key-body"), false);
   assert.match(message, /"accessToken":"\[redacted\]"/);
   assert.match(message, /"authorization":"\[redacted\]"/);
@@ -49,7 +54,10 @@ test("API message redaction removes secrets from JSON-like fragments", () => {
   assert.match(message, /'privateKeyPem':'\[redacted\]'/);
   assert.match(message, /Authorization: Basic \[redacted\]/);
   assert.match(message, /Authorization=ApiKey \[redacted\]/);
+  assert.match(message, /secretAccessKey=\[redacted\]/);
   assert.match(message, /oauth_verifier=\[redacted\]/);
+  assert.match(message, /Policy=\[redacted\]/);
+  assert.match(message, /sig=\[redacted\]/);
   assert.match(message, /rawPem=\[redacted-pem\]/);
 });
 

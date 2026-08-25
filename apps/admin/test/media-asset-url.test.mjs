@@ -25,6 +25,7 @@ test("media asset URL helper rejects unsafe URLs", () => {
     "https://cdn.example.com/hero.webp?token=secret",
     "https://cdn.example.com/hero.webp?authorization_code=oauth-code",
     "https://cdn.example.com/hero.webp?code_verifier=pkce-secret",
+    "https://cdn.example.com/hero.webp?Policy=signed-policy",
     "https://cdn.example.com/hero.webp?X-Amz-Signature=signed-value",
     "https://cdn.example.com/hero.webp#access_token=secret",
     "https://cdn.example.com/hero.webp\njavascript:alert(1)",

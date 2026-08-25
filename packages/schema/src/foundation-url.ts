@@ -1,38 +1,8 @@
 import { z } from "zod";
 import { mediaAssetReferenceSchema } from "./media-reference.js";
+import { isSensitiveUrlParameterKey } from "./sensitive-key.js";
 
 const unsafeHrefCharacters = new Set(["<", ">", '"', "'", "`", "\\"]);
-const sensitiveUrlParameterKeySuffixes = [
-  "accesstoken",
-  "apikey",
-  "authcode",
-  "authorizationcode",
-  "clientsecret",
-  "codeverifier",
-  "credential",
-  "cookie",
-  "databaseurl",
-  "dsn",
-  "idtoken",
-  "jwt",
-  "keypairid",
-  "oauthcode",
-  "oauthverifier",
-  "password",
-  "previewtoken",
-  "privatekey",
-  "refreshtoken",
-  "secret",
-  "session",
-  "sessionid",
-  "signature",
-  "token",
-];
-const sensitiveUrlParameterKeys = new Set([
-  "policy",
-  "sig",
-  ...sensitiveUrlParameterKeySuffixes,
-]);
 const urlParameterPattern = /(?:^|[?&#;])([^=\s&#;]+)=/g;
 
 export function isSafeHref(value: string): boolean {
@@ -165,15 +135,4 @@ function readDecodedParameterKey(key: string): string {
   } catch {
     return key;
   }
-}
-
-function isSensitiveUrlParameterKey(key: string): boolean {
-  const normalized = key.replace(/[-_\s]/g, "").toLowerCase();
-  return (
-    normalized.startsWith("xamz") ||
-    sensitiveUrlParameterKeys.has(normalized) ||
-    sensitiveUrlParameterKeySuffixes.some((suffix) =>
-      normalized.endsWith(suffix),
-    )
-  );
 }

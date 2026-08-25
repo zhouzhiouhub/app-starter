@@ -13,11 +13,17 @@
     }
   },
   "scripts": {
+    "prebuild": "pnpm --filter @app-starter/schema build",
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch --preserveWatchOutput",
+    "pretypecheck": "pnpm --filter @app-starter/schema build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
+    "pretest": "pnpm --filter @app-starter/schema build",
     "test": "node --test"
+  },
+  "dependencies": {
+    "@app-starter/schema": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.6.0"
