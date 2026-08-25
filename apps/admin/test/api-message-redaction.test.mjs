@@ -12,6 +12,8 @@ test("API message redaction removes secrets from JSON-like fragments", () => {
       '"databaseUrl":"postgresql://db-user:db-secret@db.example.com/app"',
       '"previewApiUrl":"https://api.example.com/api/v1/public/preview/payload.signature"',
       "'privateKeyPem':'private-key-body'",
+      "Authorization: Basic dXNlcjpwYXNz",
+      "Authorization=ApiKey admin-api-key-value",
       "rawPem=-----BEGIN PRIVATE KEY-----\nraw-private-key-body\n-----END PRIVATE KEY-----",
     ].join(" "),
   );
@@ -23,6 +25,8 @@ test("API message redaction removes secrets from JSON-like fragments", () => {
   assert.equal(message.includes("db-user"), false);
   assert.equal(message.includes("db-secret"), false);
   assert.equal(message.includes("payload.signature"), false);
+  assert.equal(message.includes("dXNlcjpwYXNz"), false);
+  assert.equal(message.includes("admin-api-key-value"), false);
   assert.equal(message.includes("private-key-body"), false);
   assert.equal(message.includes("raw-private-key-body"), false);
   assert.match(message, /"accessToken":"\[redacted\]"/);
@@ -35,6 +39,8 @@ test("API message redaction removes secrets from JSON-like fragments", () => {
     /"previewApiUrl":"https:\/\/api\.example\.com\/api\/v1\/public\/preview\/\[redacted\]"/,
   );
   assert.match(message, /'privateKeyPem':'\[redacted\]'/);
+  assert.match(message, /Authorization: Basic \[redacted\]/);
+  assert.match(message, /Authorization=ApiKey \[redacted\]/);
   assert.match(message, /rawPem=\[redacted-pem\]/);
 });
 

@@ -44,7 +44,11 @@ export function redactApiMessageSecrets(value: string): string {
       "$1[redacted]",
     )
     .replace(
-      /(\bAuthorization\s*[=:]\s*)(?!Bearer\s+\[redacted\])[^&#\s)"'<]+/gi,
+      /(\bAuthorization\s*[:=]?\s*(?:AWS4-HMAC-SHA256|Api-?Key|Basic|Digest|Negotiate|NTLM|OAuth|Token)\s+)[^&#\s)"'<;,]+/gi,
+      "$1[redacted]",
+    )
+    .replace(
+      /(\bAuthorization\s*[=:]\s*)(?![a-z][a-z0-9+.-]*\s+\[redacted\])[^&#\s)"'<]+/gi,
       "$1[redacted]",
     )
     .replace(/(\bBearer\s+)[a-zA-Z0-9._-]+/gi, "$1[redacted]")

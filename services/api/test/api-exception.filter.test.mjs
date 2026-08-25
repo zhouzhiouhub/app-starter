@@ -48,6 +48,7 @@ test("API exception filter redacts secrets from internal error logs", () => {
   const error = new Error(
     [
       "Upstream failed Authorization: Bearer header.payload.signature",
+      "Authorization: Basic dXNlcjpwYXNz",
       "databaseUrl=postgresql://db-user:db-secret@db.example.com/app",
       '"accessToken":"json-token-value"',
       "rawPem=-----BEGIN PRIVATE KEY-----\nprivate-key-body\n-----END PRIVATE KEY-----",
@@ -61,6 +62,7 @@ test("API exception filter redacts secrets from internal error logs", () => {
   assert.equal(response.statusCode, 500);
   assert.equal(response.body.error.message, "Internal server error.");
   assert.equal(logged.includes("header.payload.signature"), false);
+  assert.equal(logged.includes("dXNlcjpwYXNz"), false);
   assert.equal(logged.includes("db-user"), false);
   assert.equal(logged.includes("db-secret"), false);
   assert.equal(logged.includes("json-token-value"), false);
@@ -68,6 +70,7 @@ test("API exception filter redacts secrets from internal error logs", () => {
   assert.equal(logged.includes("signed-value"), false);
   assert.equal(logged.includes("fragment-token"), false);
   assert.match(logged, /Authorization: Bearer \[redacted\]/);
+  assert.match(logged, /Authorization: Basic \[redacted\]/);
   assert.match(logged, /databaseUrl=\[redacted\]/);
   assert.match(logged, /"accessToken":"\[redacted\]"/);
   assert.match(logged, /rawPem=\[redacted-pem\]/);
@@ -150,6 +153,7 @@ test("API exception filter redacts secrets from client error responses", () => {
       details: {
         attempts: [
           "Authorization: Bearer header.payload.signature",
+          "Authorization: Basic client-basic-secret",
           { secretAccessKey: "r2-secret" },
         ],
         callbackUrl:
@@ -183,7 +187,11 @@ test("API exception filter redacts secrets from client error responses", () => {
     "Authorization: Bearer [redacted]",
   );
   assert.equal(
-    response.body.error.details.attempts[1].secretAccessKey,
+    response.body.error.details.attempts[1],
+    "Authorization: Basic [redacted]",
+  );
+  assert.equal(
+    response.body.error.details.attempts[2].secretAccessKey,
     "[redacted]",
   );
   const serialized = JSON.stringify(response.body);
@@ -193,6 +201,7 @@ test("API exception filter redacts secrets from client error responses", () => {
   assert.equal(serialized.includes("db-secret"), false);
   assert.equal(serialized.includes("fragment-token"), false);
   assert.equal(serialized.includes("header.payload.signature"), false);
+  assert.equal(serialized.includes("client-basic-secret"), false);
   assert.equal(serialized.includes("r2-secret"), false);
 });
 

@@ -15,6 +15,8 @@ test("smoke secret redaction removes tokens from common failure shapes", () => {
       '"clientSecret":"oauth-client-secret"',
       "Authorization Bearer header.payload.signature",
       "Authorization: Bearer colon.header.payload",
+      "Authorization: Basic dXNlcjpwYXNz",
+      "Authorization=ApiKey smoke-api-key-value",
       "client_secret=oauth-client-secret-query",
       "databaseUrl=postgresql://db-user:db-secret@db.example.com:5432/app",
       "jwt=header.payload.signature",
@@ -34,6 +36,8 @@ test("smoke secret redaction removes tokens from common failure shapes", () => {
 
   assert.equal(message.includes("payload.signature"), false);
   assert.equal(message.includes("colon.header.payload"), false);
+  assert.equal(message.includes("dXNlcjpwYXNz"), false);
+  assert.equal(message.includes("smoke-api-key-value"), false);
   assert.equal(message.includes("access-token-value"), false);
   assert.equal(message.includes("api-key-value"), false);
   assert.equal(message.includes("fragment-access-token"), false);
@@ -77,6 +81,8 @@ test("smoke secret redaction removes tokens from common failure shapes", () => {
   assert.match(message, /"password":"\[redacted\]"/);
   assert.match(message, /Authorization Bearer \[redacted\]/);
   assert.match(message, /Authorization: Bearer \[redacted\]/);
+  assert.match(message, /Authorization: Basic \[redacted\]/);
+  assert.match(message, /Authorization=ApiKey \[redacted\]/);
   assert.match(message, /refreshToken=\[redacted\]/);
   assert.match(message, /postgresql:\/\/\[redacted\]@db\.example\.com:5432\/app/);
   assert.match(message, /redis:\/\/\[redacted\]@redis\.example\.com:6379\/0/);
