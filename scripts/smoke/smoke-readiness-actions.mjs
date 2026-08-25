@@ -23,6 +23,7 @@ import {
   readRevalidationUrlAction,
 } from "./smoke-readiness-url-actions.mjs";
 import { readMigrationAction } from "./smoke-readiness-database-actions.mjs";
+import { redactSmokeSecrets } from "./smoke-secrets.mjs";
 
 export function createSmokeReadinessNextActions(blockers, warnings = []) {
   return dedupeActions([
@@ -250,7 +251,20 @@ function readWarningActions(warning) {
 }
 
 function createAction(area, action) {
-  return { action, area };
+  return {
+    action: redactSmokeSecrets(readActionMessage(action)),
+    area: readActionArea(area),
+  };
+}
+
+function readActionMessage(action) {
+  return typeof action === "string" && action.length > 0
+    ? action
+    : "Review the production readiness blocker and add a specific remediation action.";
+}
+
+function readActionArea(area) {
+  return typeof area === "string" && area.length > 0 ? area : "unknown";
 }
 
 function dedupeActions(actions) {
