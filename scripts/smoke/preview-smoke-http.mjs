@@ -6,7 +6,10 @@ import {
   isOversizedResponseBodyError,
   readBoundedResponseText,
 } from "./bounded-response-text.mjs";
-import { cancelResponseBody } from "./http-response-summary.mjs";
+import {
+  cancelResponseBody,
+  readRedirectLocation,
+} from "./http-response-summary.mjs";
 import { redactSmokeSecrets } from "./smoke-secrets.mjs";
 
 export { fetchJson, readHttpError, redactSmokeSecrets };
@@ -39,16 +42,6 @@ export function readErrorMessage(error) {
   return redactSmokeSecrets(
     error instanceof Error ? error.message : String(error),
   );
-}
-
-function readRedirectLocation(response) {
-  if (response.status < 300 || response.status >= 400) {
-    return null;
-  }
-
-  const location = response.headers.get("location")?.trim();
-
-  return location ? redactSmokeSecrets(location) : null;
 }
 
 async function readPreviewResponseBody(response, url) {

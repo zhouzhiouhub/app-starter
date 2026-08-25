@@ -1,5 +1,8 @@
 import { readBoundedResponseText } from "./bounded-response-text.mjs";
-import { cancelResponseBody } from "./http-response-summary.mjs";
+import {
+  cancelResponseBody,
+  readRedirectLocation,
+} from "./http-response-summary.mjs";
 import { redactSmokeSecrets } from "./smoke-secrets.mjs";
 
 export async function assertJsonReachable(url, label) {
@@ -72,14 +75,4 @@ async function readJsonResponseBody(response, url) {
   }
 
   return parseJson(text, url);
-}
-
-function readRedirectLocation(response) {
-  if (response.status < 300 || response.status >= 400) {
-    return null;
-  }
-
-  const location = response.headers.get("location")?.trim();
-
-  return location ? redactSmokeSecrets(location) : null;
 }
