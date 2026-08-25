@@ -1,4 +1,7 @@
-import { safeHrefSchema } from "@app-starter/schema";
+import {
+  hasSensitiveUrlParameters,
+  safeHrefSchema,
+} from "@app-starter/schema";
 
 export interface SafeHrefFeedback {
   help?: string;
@@ -7,6 +10,8 @@ export interface SafeHrefFeedback {
 
 const safeHrefHelp =
   "Use /path, #anchor, https://, mailto:, or tel: links.";
+const sensitiveHrefParameterHelp =
+  "Remove token, secret, credential, or signature parameters before publishing.";
 
 export function readSafeHrefFeedback(
   value: string | undefined,
@@ -23,7 +28,9 @@ export function readSafeHrefFeedback(
   }
 
   return {
-    help: safeHrefHelp,
+    help: hasSensitiveUrlParameters(href)
+      ? sensitiveHrefParameterHelp
+      : safeHrefHelp,
     status: "error",
   };
 }

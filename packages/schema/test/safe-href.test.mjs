@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { isSafeHref, safeHrefSchema } from "../dist/index.js";
+import {
+  hasSensitiveUrlParameters,
+  isSafeHref,
+  safeHrefSchema,
+} from "../dist/index.js";
 
 test("safe href schema accepts supported link forms", () => {
   assert.equal(safeHrefSchema.parse(" /en/contact "), "/en/contact");
@@ -33,4 +37,11 @@ test("safe href schema rejects sensitive URL parameters", () => {
     assert.equal(isSafeHref(href), false, href);
     assert.throws(() => safeHrefSchema.parse(href));
   }
+});
+
+test("safe href helper detects sensitive URL parameters", () => {
+  assert.equal(hasSensitiveUrlParameters("/en/contact?utm_source=email"), false);
+  assert.equal(hasSensitiveUrlParameters("/en/contact?api_key=secret"), true);
+  assert.equal(hasSensitiveUrlParameters("#access_token=fragment-token"), true);
+  assert.equal(hasSensitiveUrlParameters("/en/contact?access%5Ftoken=secret"), true);
 });

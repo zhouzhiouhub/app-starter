@@ -148,7 +148,7 @@ function hasSensitiveRelativeSeoQueryParameters(value: string): boolean {
   }
 }
 
-function hasSensitiveUrlParameters(value: string): boolean {
+export function hasSensitiveUrlParameters(value: string): boolean {
   return Array.from(value.matchAll(urlParameterPattern)).some((match) =>
     isSensitiveUrlParameterKey(readDecodedParameterKey(match[1] ?? "")),
   );

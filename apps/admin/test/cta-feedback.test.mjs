@@ -22,3 +22,13 @@ test("CTA feedback rejects unsafe CTA links", () => {
     "error",
   );
 });
+
+test("CTA feedback explains sensitive link parameters", () => {
+  const feedback = readCtaHrefFeedback(
+    "Start",
+    "https://example.com/signup?api_key=secret",
+  );
+
+  assert.equal(feedback.status, "error");
+  assert.match(feedback.help ?? "", /Remove token, secret, credential/);
+});

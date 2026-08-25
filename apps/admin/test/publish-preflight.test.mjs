@@ -110,6 +110,27 @@ test("publish preflight blocks unsafe chrome links", () => {
   assert.equal(blocker?.field, "chrome.header.content.navigation[0].href");
 });
 
+test("publish preflight explains sensitive link parameters", () => {
+  const schema = structuredClone(exampleLandingPage);
+
+  schema.chrome.header.content.navigation[0].href =
+    "https://example.com/private?token=secret";
+  schema.sections[0].props.ctaHref =
+    "https://example.com/signup?api_key=secret";
+
+  const issues = collectPublishPreflightIssues(schema);
+
+  assert.deepEqual(
+    issues.map((issue) => [issue.field, issue.severity]),
+    [
+      ["chrome.header.content.navigation[0].href", "error"],
+      ["sections[0].props.ctaHref", "error"],
+    ],
+  );
+  assert.match(issues[0].message, /Remove token, secret, credential/);
+  assert.match(issues[1].message, /Remove token, secret, credential/);
+});
+
 test("publish preflight distinguishes SEO errors from warnings", () => {
   const schema = structuredClone(exampleLandingPage);
 
