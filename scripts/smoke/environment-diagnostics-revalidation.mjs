@@ -47,18 +47,18 @@ function readRevalidationSecret(env) {
     };
   }
 
-  if (value.length > maxRevalidationSecretLength) {
-    return {
-      configured: true,
-      issue: "oversized-secret",
-      safe: false,
-    };
-  }
-
   if (hasControlCharacter(value)) {
     return {
       configured: true,
       issue: "control-character",
+      safe: false,
+    };
+  }
+
+  if (value.length > maxRevalidationSecretLength) {
+    return {
+      configured: true,
+      issue: "oversized-secret",
       safe: false,
     };
   }
@@ -209,8 +209,18 @@ function readBooleanEnv(env, name, fallback) {
 }
 
 function readEnv(env, name) {
-  const value = env[name]?.trim();
-  return value ? value : null;
+  const value = env[name];
+
+  if (!value) {
+    return null;
+  }
+
+  if (hasControlCharacter(value)) {
+    return value;
+  }
+
+  const trimmed = value.trim();
+  return trimmed ? trimmed : null;
 }
 
 function readUrlEnv(env, name) {

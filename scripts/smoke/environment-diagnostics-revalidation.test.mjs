@@ -76,6 +76,8 @@ test("smoke environment diagnostics rejects unexpected revalidation paths", () =
 test("smoke environment diagnostics rejects unsafe revalidation secrets", () => {
   for (const [secret, issue] of [
     ["secret-1\r\nx-secret: leaked", "control-character"],
+    ["secret-value\n", "control-character"],
+    ["\t", "control-character"],
     ["a".repeat(1025), "oversized-secret"],
   ]) {
     const diagnostics = createSmokeEnvironmentDiagnostics({

@@ -263,13 +263,15 @@ function readStorefrontRevalidationTags(
 }
 
 function readStorefrontRevalidationSecret(): string | null {
-  const secret = process.env.STOREFRONT_REVALIDATE_SECRET?.trim();
+  const raw = process.env.STOREFRONT_REVALIDATE_SECRET;
 
-  if (
-    !secret ||
-    secret.length > maxStorefrontRevalidationSecretLength ||
-    hasControlCharacter(secret)
-  ) {
+  if (!raw || hasControlCharacter(raw)) {
+    return null;
+  }
+
+  const secret = raw.trim();
+
+  if (!secret || secret.length > maxStorefrontRevalidationSecretLength) {
     return null;
   }
 

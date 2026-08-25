@@ -80,6 +80,8 @@ test("storefront revalidation skips when secret is missing", async () => {
 test("storefront revalidation skips unsafe secrets before fetching", async () => {
   for (const secret of [
     "secret-1\r\nx-secret: leaked",
+    "secret-1\n",
+    "secret-1\t",
     "a".repeat(1025),
   ]) {
     await withEnv(
