@@ -14,8 +14,13 @@ const defaultMigrationsDirectory = fileURLToPath(
 export function createDatabaseDiagnostics(env = process.env, options = {}) {
   const value = readEnv(env, "DATABASE_URL");
   const configured = Boolean(value);
-  const url = value ? readDatabaseUrl(value) : null;
-  const urlIssue = readDatabaseUrlIssue({ configured, url });
+  const hasControlCharacters = value ? hasControlCharacter(value) : false;
+  const url = value && !hasControlCharacters ? readDatabaseUrl(value) : null;
+  const urlIssue = readDatabaseUrlIssue({
+    configured,
+    hasControlCharacters,
+    url,
+  });
   const migrations = createPrismaMigrationDiagnostics(options);
 
   return {
@@ -57,6 +62,10 @@ function readDatabaseUrlIssue(input) {
     return "missing-url";
   }
 
+  if (input.hasControlCharacters) {
+    return "control-character";
+  }
+
   if (!input.url) {
     return "invalid-url";
   }
@@ -82,15 +91,22 @@ function readDatabaseUrlIssue(input) {
 
 function readDatabaseUrl(value) {
   try {
-    return new URL(value);
+    return new URL(value.trim());
   } catch {
     return null;
   }
 }
 
 function readEnv(env, name) {
-  const value = env[name]?.trim();
-  return value ? value : null;
+  const value = env[name];
+  return typeof value === "string" && value.trim() ? value : null;
+}
+
+function hasControlCharacter(value) {
+  return Array.from(value).some((character) => {
+    const codePoint = character.codePointAt(0) ?? 0;
+    return codePoint <= 0x1f || codePoint === 0x7f;
+  });
 }
 
 function readMigrationsDirectoryState(directory) {

@@ -133,3 +133,20 @@ test("smoke environment diagnostics reports unsafe database URLs", () => {
   assert.equal(mappedDocumentationIpv4.database.urlIssue, "placeholder-host");
   assert.equal(mappedDocumentationIpv4.database.productionReady, false);
 });
+
+test("smoke environment diagnostics rejects control characters in database URLs", () => {
+  for (const value of [
+    "postgresql://postgres:secret@db.brand-platform.com\t:5432/app",
+    "postgresql://postgres:secret@db.brand-platform.com\n.evil.com:5432/app",
+  ]) {
+    const diagnostics = createSmokeEnvironmentDiagnostics({
+      DATABASE_URL: value,
+    });
+
+    assert.equal(diagnostics.database.configured, true);
+    assert.equal(diagnostics.database.host, null);
+    assert.equal(diagnostics.database.productionReady, false);
+    assert.equal(diagnostics.database.urlIssue, "control-character");
+    assert.equal(diagnostics.database.urlSafe, false);
+  }
+});

@@ -31,6 +31,8 @@ export function readDatabaseUrlAction(blocker) {
   return readCommonUrlAction(blocker.issue, {
     fallback:
       "Set DATABASE_URL to a production PostgreSQL connection URL outside local or placeholder hosts.",
+    controlCharacter:
+      "Remove control characters from DATABASE_URL before rerunning production smoke.",
     localHost:
       "Replace local or private DATABASE_URL hosts with a managed production PostgreSQL hostname.",
     placeholderHost:
