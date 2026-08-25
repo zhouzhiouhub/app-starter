@@ -37,6 +37,10 @@ test("smoke report path config validates report output paths", () => {
     /SMOKE_REPORT_PATH must use safe path segments without traversal/,
   );
   assert.throws(
+    () => normalizeSmokeReportPath("reports/smoke.json/final.json"),
+    /SMOKE_REPORT_PATH must use safe path segments without traversal/,
+  );
+  assert.throws(
     () => normalizeSmokeReportPath("tmp/smoke-report.txt"),
     /SMOKE_REPORT_PATH must end with .json/,
   );
@@ -65,6 +69,10 @@ test("smoke report path config exposes stable issue codes", () => {
   assert.equal(readSmokeReportPathIssue("tmp/prn.json"), "unsafe-segments");
   assert.equal(
     readSmokeReportPathIssue("tmp/com1/report.json"),
+    "unsafe-segments",
+  );
+  assert.equal(
+    readSmokeReportPathIssue("reports/smoke.JSON/final.json"),
     "unsafe-segments",
   );
   assert.equal(
