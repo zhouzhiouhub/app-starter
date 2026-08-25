@@ -30,8 +30,11 @@ test("safe href schema rejects sensitive URL parameters", () => {
   for (const href of [
     "/en/contact?token=secret",
     "/en/contact?access%5Ftoken=secret",
+    "https://example.com/callback?authorization_code=oauth-code",
+    "https://example.com/callback?code_verifier=pkce-secret",
     "https://example.com/signup?X-Amz-Signature=signed-value",
     "https://example.com/callback#access_token=fragment-token",
+    "https://example.com/callback#oauth_verifier=oauth-secret",
     "#preview_token=fragment-token",
   ]) {
     assert.equal(isSafeHref(href), false, href);
@@ -42,6 +45,7 @@ test("safe href schema rejects sensitive URL parameters", () => {
 test("safe href helper detects sensitive URL parameters", () => {
   assert.equal(hasSensitiveUrlParameters("/en/contact?utm_source=email"), false);
   assert.equal(hasSensitiveUrlParameters("/en/contact?api_key=secret"), true);
+  assert.equal(hasSensitiveUrlParameters("/callback?auth_code=oauth-code"), true);
   assert.equal(hasSensitiveUrlParameters("#access_token=fragment-token"), true);
   assert.equal(hasSensitiveUrlParameters("/en/contact?access%5Ftoken=secret"), true);
 });

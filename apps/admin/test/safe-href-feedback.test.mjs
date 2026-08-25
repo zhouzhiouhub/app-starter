@@ -16,12 +16,15 @@ test("safe href feedback rejects unsafe links", () => {
 });
 
 test("safe href feedback explains sensitive URL parameters", () => {
-  const feedback = readSafeHrefFeedback(
+  for (const href of [
     "https://example.com/callback#access_token=fragment-token",
-  );
+    "https://example.com/callback?authorization_code=oauth-code",
+  ]) {
+    const feedback = readSafeHrefFeedback(href);
 
-  assert.equal(feedback.status, "error");
-  assert.match(feedback.help ?? "", /Remove token, secret, credential/);
+    assert.equal(feedback.status, "error");
+    assert.match(feedback.help ?? "", /Remove token, secret, credential/);
+  }
 });
 
 test("safe href feedback can allow optional empty links", () => {

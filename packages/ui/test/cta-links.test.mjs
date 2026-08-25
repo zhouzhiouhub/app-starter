@@ -65,9 +65,19 @@ test("CTA components do not expose blocked href values", () => {
 });
 
 test("CTA components block sensitive href parameters", () => {
-  for (const ctaHref of [
-    "https://example.com/signup?api_key=secret-value",
-    "https://example.com/callback#access_token=fragment-token",
+  for (const { ctaHref, leakedValue } of [
+    {
+      ctaHref: "https://example.com/signup?api_key=secret-value",
+      leakedValue: "secret-value",
+    },
+    {
+      ctaHref: "https://example.com/callback?authorization_code=oauth-code",
+      leakedValue: "oauth-code",
+    },
+    {
+      ctaHref: "https://example.com/callback#access_token=fragment-token",
+      leakedValue: "fragment-token",
+    },
   ]) {
     const cta = CtaBar({
       ctaHref,
@@ -79,8 +89,7 @@ test("CTA components block sensitive href parameters", () => {
 
     assert.equal(findFirstElement(cta, "a"), null);
     assert.equal(blocked?.props["data-cta-href-blocked"], "unsafe");
-    assert.equal(rendered.includes("secret-value"), false);
-    assert.equal(rendered.includes("fragment-token"), false);
+    assert.equal(rendered.includes(leakedValue), false);
   }
 });
 

@@ -116,7 +116,7 @@ test("publish preflight explains sensitive link parameters", () => {
   schema.chrome.header.content.navigation[0].href =
     "https://example.com/private?token=secret";
   schema.sections[0].props.ctaHref =
-    "https://example.com/signup?api_key=secret";
+    "https://example.com/signup?authorization_code=oauth-code";
 
   const issues = collectPublishPreflightIssues(schema);
 

@@ -140,6 +140,10 @@ test("storefront chrome links block sensitive href parameters", () => {
           href: "https://example.com/callback#access_token=fragment-token",
           label: "Callback",
         },
+        {
+          href: "https://example.com/callback?oauth_verifier=oauth-verifier",
+          label: "Verifier",
+        },
       ],
     },
   });
@@ -155,10 +159,11 @@ test("storefront chrome links block sensitive href parameters", () => {
       (node) =>
         node.props["data-chrome-navigation-href-blocked"] === "unsafe",
     ).length,
-    2,
+    3,
   );
   assert.equal(rendered.includes("secret-value"), false);
   assert.equal(rendered.includes("fragment-token"), false);
+  assert.equal(rendered.includes("oauth-verifier"), false);
 });
 
 function findElements(node, type) {
