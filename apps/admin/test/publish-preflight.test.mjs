@@ -79,6 +79,24 @@ test("publish preflight blocks duplicate section ids", () => {
   assert.equal(blocker?.field, "sections[2].id");
 });
 
+test("publish preflight blocks hidden viewport content", () => {
+  const schema = structuredClone(exampleLandingPage);
+
+  for (const section of schema.sections) {
+    section.visibility.desktop = false;
+  }
+
+  const issues = collectPublishPreflightIssues(schema);
+  const blocker = findBlockingPublishPreflightIssue(schema);
+
+  assert.deepEqual(
+    issues.map((issue) => [issue.field, issue.severity]),
+    [["sections[0].visibility.desktop", "error"]],
+  );
+  assert.match(issues[0].message, /Desktop has no visible sections/);
+  assert.equal(blocker?.field, "sections[0].visibility.desktop");
+});
+
 test("publish preflight warns about stale section order data", () => {
   const schema = structuredClone(exampleLandingPage);
   schema.layout.desktop.sectionOrder = ["copy", "missing", "copy"];

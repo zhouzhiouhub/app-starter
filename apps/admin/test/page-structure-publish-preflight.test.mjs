@@ -20,6 +20,26 @@ test("page structure preflight blocks empty pages", () => {
   ]);
 });
 
+test("page structure preflight blocks viewports without visible sections", () => {
+  const schema = structuredClone(exampleLandingPage);
+
+  for (const section of schema.sections) {
+    section.visibility.mobile = false;
+  }
+
+  assert.deepEqual(collectPageStructurePreflightIssues(schema), [
+    {
+      field: "sections[0].visibility.mobile",
+      message:
+        "Mobile has no visible sections. Make at least one section visible for Mobile before publishing.",
+      severity: "error",
+    },
+  ]);
+
+  schema.sections[1].visibility.mobile = true;
+  assert.deepEqual(collectPageStructurePreflightIssues(schema), []);
+});
+
 test("page structure preflight blocks duplicate section ids", () => {
   const schema = structuredClone(exampleLandingPage);
 

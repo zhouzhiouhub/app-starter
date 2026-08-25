@@ -8,6 +8,7 @@ export function collectPageStructurePreflightIssues(
 ): PublishPreflightIssue[] {
   return [
     ...collectEmptyPageIssues(schema),
+    ...collectEmptyViewportIssues(schema),
     ...collectDuplicateSectionIdIssues(schema),
     ...collectSectionOrderIssues(schema),
   ];
@@ -25,6 +26,32 @@ function collectEmptyPageIssues(schema: PageSchema): PublishPreflightIssue[] {
       severity: "error",
     },
   ];
+}
+
+function collectEmptyViewportIssues(schema: PageSchema): PublishPreflightIssue[] {
+  if (schema.sections.length === 0) {
+    return [];
+  }
+
+  return orderedViewports.flatMap((viewport) =>
+    hasVisibleSection(schema, viewport)
+      ? []
+      : [
+          {
+            field: `sections[0].visibility.${viewport}`,
+            message: `${formatViewportLabel(
+              viewport,
+            )} has no visible sections. Make at least one section visible for ${formatViewportLabel(
+              viewport,
+            )} before publishing.`,
+            severity: "error",
+          },
+        ],
+  );
+}
+
+function hasVisibleSection(schema: PageSchema, viewport: Viewport): boolean {
+  return schema.sections.some((section) => section.visibility?.[viewport] !== false);
 }
 
 function collectDuplicateSectionIdIssues(
