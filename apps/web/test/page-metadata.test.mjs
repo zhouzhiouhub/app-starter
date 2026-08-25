@@ -24,6 +24,25 @@ test("page metadata resolves relative canonical URLs with the site origin", () =
     metadata.alternates?.canonical,
     "https://store.brand-platform.com/campaign",
   );
+  assert.equal(
+    metadata.openGraph?.url,
+    "https://store.brand-platform.com/campaign",
+  );
+});
+
+test("page metadata exposes Open Graph URLs from fallback canonical paths", () => {
+  const schema = structuredClone(exampleLandingPage);
+  delete schema.seo.canonical;
+  schema.meta.slug = "launch/summer";
+
+  const metadata = buildPageMetadata(schema, {
+    origin: "https://store.brand-platform.com",
+  });
+
+  assert.equal(
+    metadata.openGraph?.url,
+    "https://store.brand-platform.com/en/launch/summer",
+  );
 });
 
 test("page metadata ignores non-local HTTP origins", () => {

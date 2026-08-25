@@ -8,6 +8,7 @@ import {
   parseSitemapUrls,
   readCanonicalHref,
   readExpectedCanonicalUrl,
+  readOpenGraphUrl,
 } from "./storefront-smoke.mjs";
 import {
   createStorefrontSmokeRequestInit,
@@ -92,6 +93,23 @@ test("storefront smoke helpers read canonical links", () => {
   );
   assert.equal(
     readCanonicalHref('<link rel="stylesheet" href="/app.css" />'),
+    null,
+  );
+});
+
+test("storefront smoke helpers read Open Graph URLs", () => {
+  assert.equal(
+    readOpenGraphUrl(
+      '<meta content="https://web.example.com/en" property="og:url" />',
+    ),
+    "https://web.example.com/en",
+  );
+  assert.equal(
+    readOpenGraphUrl("<meta PROPERTY='og:url' CONTENT='/en/legal/terms'>"),
+    "/en/legal/terms",
+  );
+  assert.equal(
+    readOpenGraphUrl('<meta property="og:title" content="Campaign" />'),
     null,
   );
 });

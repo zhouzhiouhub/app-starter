@@ -85,7 +85,11 @@ const storefrontFailureActions = new Map([
 const storefrontSeoFailureActions = new Map([
   [
     "canonical-mismatch",
-    "Check SMOKE_STOREFRONT_HOST / WEB_URL and storefront canonical metadata generation.",
+    "Check SMOKE_STOREFRONT_HOST / WEB_URL and storefront canonical/Open Graph URL metadata generation.",
+  ],
+  [
+    "open-graph-url-mismatch",
+    "Check SMOKE_STOREFRONT_HOST / WEB_URL and storefront canonical/Open Graph URL metadata generation.",
   ],
   [
     "noindex-page",

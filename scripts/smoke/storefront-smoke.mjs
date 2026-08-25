@@ -17,10 +17,13 @@ export {
   hasNoIndexRobots,
   joinUrl,
   parseSitemapUrls,
-  readCanonicalHref,
   readExpectedCanonicalUrl,
   readNotFoundAttempt,
   readRobotsAttempt,
   readSitemapAttempt,
   readStorefrontPageAttempt,
 } from "./storefront-smoke-diagnostics.mjs";
+export {
+  readCanonicalHref,
+  readOpenGraphUrl,
+} from "./storefront-metadata-readers.mjs";

@@ -1,12 +1,15 @@
 import {
   formatStorefrontPageAttempt,
   getStorefrontPath,
-  readCanonicalHref,
   readExpectedCanonicalUrl,
   hasNoIndexRobots,
   joinUrl,
   readStorefrontPageAttempt,
 } from "./storefront-smoke-diagnostics.mjs";
+import {
+  readCanonicalHref,
+  readOpenGraphUrl,
+} from "./storefront-metadata-readers.mjs";
 import {
   delayStorefrontSmoke,
   fetchStorefrontText,
@@ -73,6 +76,7 @@ export function assertIndexableStorefrontPage(html, input) {
 
   if (input) {
     assertStorefrontCanonical(html, input);
+    assertStorefrontOpenGraphUrl(html, input);
   }
 
   console.log("Storefront page SEO metadata passed.");
@@ -107,6 +111,29 @@ function assertStorefrontCanonical(html, input) {
       canonicalHref,
       diagnosis: "canonical-mismatch",
       expectedCanonicalUrl,
+      url: joinUrl(input.webUrl, getStorefrontPath(input.locale, input.slug)),
+    },
+  };
+
+  throw error;
+}
+
+function assertStorefrontOpenGraphUrl(html, input) {
+  const openGraphUrl = readOpenGraphUrl(html);
+  const expectedCanonicalUrl = readExpectedCanonicalUrl(input);
+
+  if (openGraphUrl === expectedCanonicalUrl) {
+    return;
+  }
+
+  const error = new Error(
+    `Storefront page Open Graph URL mismatch: expected ${expectedCanonicalUrl}, received ${openGraphUrl ?? "none"}.`,
+  );
+  error.smokeDetails = {
+    storefrontSeo: {
+      diagnosis: "open-graph-url-mismatch",
+      expectedOpenGraphUrl: expectedCanonicalUrl,
+      openGraphUrl,
       url: joinUrl(input.webUrl, getStorefrontPath(input.locale, input.slug)),
     },
   };

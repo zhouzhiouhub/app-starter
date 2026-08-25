@@ -94,7 +94,7 @@ test("smoke report CLI suggests fixes for storefront SEO diagnostics", () => {
   );
   assert.equal(
     lines.includes(
-      "    - Check SMOKE_STOREFRONT_HOST / WEB_URL and storefront canonical metadata generation.",
+      "    - Check SMOKE_STOREFRONT_HOST / WEB_URL and storefront canonical/Open Graph URL metadata generation.",
     ),
     true,
   );

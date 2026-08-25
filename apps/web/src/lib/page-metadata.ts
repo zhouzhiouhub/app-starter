@@ -41,6 +41,7 @@ export function buildPageMetadata(
       description,
       images: ogImage ? [ogImage] : undefined,
       title,
+      url: canonical,
     },
     robots: createRobots(schema.seo.noIndex),
     title,
