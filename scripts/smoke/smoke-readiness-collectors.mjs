@@ -270,7 +270,7 @@ function collectMediaReadiness(blockers, media, config) {
       blockers,
       "media.cdn",
       media?.cdnUrlIssue ?? "cdn-not-production-ready",
-      "MEDIA_CDN_BASE_URL must be a production HTTPS CDN origin.",
+      "MEDIA_CDN_BASE_URL must be a production HTTPS CDN origin or directory prefix.",
     );
   }
 }

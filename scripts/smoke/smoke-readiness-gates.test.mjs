@@ -89,6 +89,34 @@ test("smoke readiness reports CDN blockers even when R2 upload smoke is omitted"
   );
 });
 
+test("smoke readiness reports file-like CDN base path blockers", () => {
+  const environment = createReadyEnvironment();
+  environment.media.cdnProductionReady = false;
+  environment.media.cdnUrlIssue = "file-path";
+
+  const readiness = createSmokeProductionReadiness(
+    environment,
+    createReadyConfig(),
+  );
+
+  assert.deepEqual(readiness.blockers, [
+    {
+      area: "media.cdn",
+      issue: "file-path",
+      message:
+        "MEDIA_CDN_BASE_URL must be a production HTTPS CDN origin or directory prefix.",
+    },
+  ]);
+  assert.deepEqual(readiness.nextActions, [
+    {
+      action:
+        "Replace file-like MEDIA_CDN_BASE_URL paths with the CDN origin or a directory prefix such as /media.",
+      area: "media.cdn",
+    },
+  ]);
+  assert.equal(readiness.productionReady, false);
+});
+
 test("smoke readiness requires an archived report path", () => {
   const readiness = createSmokeProductionReadiness(createReadyEnvironment(), {
     ...createReadyConfig(),

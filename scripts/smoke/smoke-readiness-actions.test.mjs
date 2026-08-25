@@ -212,6 +212,11 @@ test("smoke readiness next actions explain CDN readiness blockers", () => {
       },
       {
         area: "media.cdn",
+        issue: "file-path",
+        message: "MEDIA_CDN_BASE_URL must not point at a file.",
+      },
+      {
+        area: "media.cdn",
         issue: "placeholder-host",
         message: "MEDIA_CDN_BASE_URL must not use placeholder hosts.",
       },
@@ -230,6 +235,11 @@ test("smoke readiness next actions explain CDN readiness blockers", () => {
       {
         action:
           "Remove query strings and fragments from MEDIA_CDN_BASE_URL; keep only the HTTPS CDN origin or path prefix.",
+        area: "media.cdn",
+      },
+      {
+        action:
+          "Replace file-like MEDIA_CDN_BASE_URL paths with the CDN origin or a directory prefix such as /media.",
         area: "media.cdn",
       },
       {

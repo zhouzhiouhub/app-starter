@@ -1,6 +1,9 @@
 import { isUnsafeProductionHostname } from "@app-starter/schema";
 import { encodeMediaObjectKey } from "./media.object-key.js";
 
+const mediaBaseUrlFilePathPattern =
+  /\.(?:avif|bmp|css|gif|html?|ico|jpe?g|js|json|m4v|mov|mp4|pdf|png|svg|txt|webm|webp|xml|zip)$/i;
+
 export function createMediaObjectUrl(input: {
   allowFallback?: boolean;
   baseUrls: Array<string | undefined>;
@@ -66,6 +69,7 @@ function readSafeHttpUrl(
         isUnsafeProductionHostname(url.hostname)) ||
       url.username ||
       url.password ||
+      hasFileLikeBaseUrlPath(url.pathname) ||
       url.search ||
       url.hash
     ) {
@@ -81,6 +85,27 @@ function readSafeHttpUrl(
 function trimTrailingSlashes(value: string): string {
   const trimmed = value.replace(/\/+$/g, "");
   return trimmed || "/";
+}
+
+function hasFileLikeBaseUrlPath(pathname: string): boolean {
+  const trimmed = pathname.replace(/\/+$/g, "");
+
+  if (!trimmed || trimmed === "/") {
+    return false;
+  }
+
+  const lastSegment = trimmed.split("/").pop() ?? "";
+  const decodedSegment = decodePathSegment(lastSegment);
+
+  return mediaBaseUrlFilePathPattern.test(decodedSegment);
+}
+
+function decodePathSegment(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
 }
 
 function isHttpProtocol(protocol: string): boolean {

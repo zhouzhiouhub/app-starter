@@ -2,6 +2,7 @@ import {
   isLocalHostname,
   isPlaceholderHostname,
 } from "./cdn-hostname.mjs";
+import { readCdnDiagnostics } from "./environment-diagnostics-media-cdn.mjs";
 
 const defaultMediaCdnBaseUrl = "https://cdn.local.invalid";
 const r2RequiredVariables = [
@@ -103,69 +104,6 @@ function readR2Issue(variable) {
   }
 
   return "invalid-credential";
-}
-
-function readCdnDiagnostics(value) {
-  let url;
-
-  try {
-    url = new URL(value);
-  } catch {
-    return {
-      host: null,
-      issue: "invalid-url",
-      localHost: false,
-      productionReady: false,
-      safe: false,
-    };
-  }
-
-  const host = url.hostname || null;
-
-  if (url.protocol !== "https:") {
-    return {
-      host,
-      issue: "unsupported-protocol",
-      localHost: isLocalHostname(url.hostname),
-      productionReady: false,
-      safe: false,
-    };
-  }
-
-  if (url.username || url.password) {
-    return {
-      host,
-      issue: "embedded-credentials",
-      localHost: isLocalHostname(url.hostname),
-      productionReady: false,
-      safe: false,
-    };
-  }
-
-  if (url.search || url.hash) {
-    return {
-      host,
-      issue: "unsupported-url-parts",
-      localHost: isLocalHostname(url.hostname),
-      productionReady: false,
-      safe: false,
-    };
-  }
-
-  const localHost = isLocalHostname(url.hostname);
-  const placeholderHost = isPlaceholderHostname(url.hostname);
-
-  return {
-    host,
-    issue: localHost
-      ? "local-host"
-      : placeholderHost
-        ? "placeholder-host"
-        : null,
-    localHost,
-    productionReady: !localHost && !placeholderHost,
-    safe: !localHost && !placeholderHost,
-  };
 }
 
 function readExternalUrlHostDiagnostics(value) {

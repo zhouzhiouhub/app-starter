@@ -198,6 +198,7 @@ test("createMediaCdnUrl requires safe CDN base URLs in production", () => {
     "https://cdn.local.invalid/media",
     "https://cdn.example/media",
     "https://cdn.example.com/media",
+    "https://media.brand-platform.com/assets/hero.png",
   ]) {
     assert.throws(
       () =>
@@ -227,6 +228,13 @@ test("createMediaCdnUrl accepts production HTTPS CDN hosts", () => {
       NODE_ENV: "production",
     }),
     "https://media.brand-platform.com/assets/tenant-1/folder/hero%20image.png",
+  );
+  assert.equal(
+    createMediaCdnUrl("tenant-1/folder/hero image.png", {
+      MEDIA_CDN_BASE_URL: "https://media.brand-platform.com/assets/v1.2/",
+      NODE_ENV: "production",
+    }),
+    "https://media.brand-platform.com/assets/v1.2/tenant-1/folder/hero%20image.png",
   );
 });
 

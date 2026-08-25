@@ -27,6 +27,10 @@ export function readCdnAction(blocker) {
     return "Remove query strings and fragments from MEDIA_CDN_BASE_URL; keep only the HTTPS CDN origin or path prefix.";
   }
 
+  if (blocker.issue === "file-path") {
+    return "Replace file-like MEDIA_CDN_BASE_URL paths with the CDN origin or a directory prefix such as /media.";
+  }
+
   if (blocker.issue === "local-host") {
     return "Replace local or private MEDIA_CDN_BASE_URL hosts with a public production HTTPS CDN host.";
   }
