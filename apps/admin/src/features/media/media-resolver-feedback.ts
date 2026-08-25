@@ -1,4 +1,5 @@
 import type { MediaAssetReference } from "@app-starter/schema";
+import { readMissingMediaReferences } from "./media-reference-resolution.ts";
 
 export type MediaResolverFeedbackType = "error" | "info" | "warning";
 
@@ -29,7 +30,7 @@ export function readMediaResolverFeedback(input: {
     };
   }
 
-  const missingReferences = readMissingReferences(
+  const missingReferences = readMissingMediaReferences(
     input.references,
     input.urlsByReference,
   );
@@ -43,15 +44,6 @@ export function readMediaResolverFeedback(input: {
     message: "Some media references are unavailable.",
     type: "warning",
   };
-}
-
-function readMissingReferences(
-  references: MediaAssetReference[],
-  urlsByReference: Record<string, string>,
-): MediaAssetReference[] {
-  return [...new Set(references)].filter(
-    (reference) => !urlsByReference[reference],
-  );
 }
 
 function formatMissingReferences(

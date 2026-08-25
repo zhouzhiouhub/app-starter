@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MediaAssetReference } from "@app-starter/schema";
 import { formatRequestError } from "../../../lib/api-error";
 import { listAllActiveMediaAssets } from "../api";
@@ -6,6 +6,7 @@ import { listAllActiveMediaAssets } from "../api";
 export interface MediaResolverState {
   error: string | null;
   isLoading: boolean;
+  refresh: () => Promise<void>;
   resolveMediaUrl: (reference: MediaAssetReference) => string;
   urlsByReference: Record<string, string>;
 }
@@ -16,46 +17,50 @@ export function useMediaResolver(): MediaResolverState {
   >({});
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const mountedRef = useRef(false);
+  const requestIdRef = useRef(0);
 
-  useEffect(() => {
-    let active = true;
+  const refresh = useCallback(async () => {
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
 
     setError(null);
     setIsLoading(true);
 
-    listAllActiveMediaAssets()
-      .then((assets) => {
-        if (!active) {
-          return;
-        }
+    try {
+      const assets = await listAllActiveMediaAssets();
 
-        setUrlsByReference(
-          Object.fromEntries(
-            assets.map((asset) => [asset.reference, asset.url]),
-          ),
-        );
-        setError(null);
-      })
-      .catch((caught: unknown) => {
-        if (!active) {
-          return;
-        }
+      if (!mountedRef.current || requestIdRef.current !== requestId) {
+        return;
+      }
 
-        setUrlsByReference({});
-        setError(formatRequestError(caught));
-      })
-      .finally(() => {
-        if (!active) {
-          return;
-        }
+      setUrlsByReference(
+        Object.fromEntries(assets.map((asset) => [asset.reference, asset.url])),
+      );
+      setError(null);
+    } catch (caught: unknown) {
+      if (!mountedRef.current || requestIdRef.current !== requestId) {
+        return;
+      }
 
+      setUrlsByReference({});
+      setError(formatRequestError(caught));
+    } finally {
+      if (mountedRef.current && requestIdRef.current === requestId) {
         setIsLoading(false);
-      });
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    void refresh();
 
     return () => {
-      active = false;
+      mountedRef.current = false;
+      requestIdRef.current += 1;
     };
-  }, []);
+  }, [refresh]);
 
   const resolveMediaUrl = useCallback(
     (reference: MediaAssetReference) => urlsByReference[reference] ?? reference,
@@ -66,9 +71,10 @@ export function useMediaResolver(): MediaResolverState {
     () => ({
       error,
       isLoading,
+      refresh,
       resolveMediaUrl,
       urlsByReference,
     }),
-    [error, isLoading, resolveMediaUrl, urlsByReference],
+    [error, isLoading, refresh, resolveMediaUrl, urlsByReference],
   );
 }
