@@ -4,6 +4,7 @@ import {
   createMediaSmokeDetails,
   isCdnUrlForR2Key,
   isExpectedCdnHost,
+  isExpectedCdnPathPrefix,
   isMediaReference,
   isProductionCdnUrl,
 } from "./media-smoke-diagnostics.mjs";
@@ -38,6 +39,7 @@ export function assertMediaAssetShape(
   image,
   requireProductionCdn,
   expectedCdnHost = null,
+  expectedCdnPathPrefix = null,
 ) {
   if (!asset || typeof asset !== "object") {
     throw new Error("Media confirm did not return a data object.");
@@ -74,6 +76,7 @@ export function assertMediaAssetShape(
       asset,
       requireProductionCdn,
       expectedCdnHost,
+      expectedCdnPathPrefix,
     );
   }
 
@@ -84,6 +87,7 @@ export function assertMediaAssetShape(
       asset,
       requireProductionCdn,
       expectedCdnHost,
+      expectedCdnPathPrefix,
     );
   }
 
@@ -98,6 +102,22 @@ export function assertMediaAssetShape(
       asset,
       requireProductionCdn,
       expectedCdnHost,
+      expectedCdnPathPrefix,
+    );
+  }
+
+  if (
+    requireProductionCdn &&
+    expectedCdnPathPrefix !== null &&
+    !isExpectedCdnPathPrefix(asset.url, expectedCdnPathPrefix)
+  ) {
+    throw createMediaShapeError(
+      "Media confirm CDN path did not match MEDIA_CDN_BASE_URL.",
+      target,
+      asset,
+      requireProductionCdn,
+      expectedCdnHost,
+      expectedCdnPathPrefix,
     );
   }
 }
@@ -108,6 +128,7 @@ function createMediaShapeError(
   asset,
   requireProductionCdn,
   expectedCdnHost,
+  expectedCdnPathPrefix,
 ) {
   const error = new Error(message);
   error.smokeDetails = {
@@ -116,6 +137,7 @@ function createMediaShapeError(
       asset,
       requireProductionCdn,
       expectedCdnHost,
+      expectedCdnPathPrefix,
     ),
   };
   return error;

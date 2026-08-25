@@ -28,9 +28,11 @@ test("smoke helpers summarize media checks without signed upload URLs", () => {
       size: 68,
       status: "active",
       type: "image",
-      url: "https://cdn.brand-assets.com/tenant/2026/08/19/smoke.png",
+      url: "https://cdn.brand-assets.com/media/tenant/2026/08/19/smoke.png",
     },
     true,
+    "cdn.brand-assets.com",
+    "/media",
   );
 
   assert.deepEqual(details, {
@@ -39,10 +41,13 @@ test("smoke helpers summarize media checks without signed upload URLs", () => {
     assetStatus: "active",
     assetType: "image",
     cdnHost: "cdn.brand-assets.com",
-    cdnHostMatchesExpected: null,
+    cdnHostMatchesExpected: true,
+    cdnPathMatchesExpected: true,
+    cdnPathname: "/media/tenant/2026/08/19/smoke.png",
     cdnUrlMatchesR2Key: true,
     confirmPath: "/api/v1/media/confirm",
-    expectedCdnHost: null,
+    expectedCdnHost: "cdn.brand-assets.com",
+    expectedCdnPathPrefix: "/media",
     isR2UploadUrl: true,
     presignedUrlHost: "account.r2.cloudflarestorage.com",
     productionCdn: true,

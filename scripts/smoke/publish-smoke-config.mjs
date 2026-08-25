@@ -52,6 +52,9 @@ export function readConfig() {
     apiBaseUrl: normalizeApiBaseUrl(readEnv("API_URL", defaultApiUrl)),
     email,
     expectedMediaCdnHost: readOptionalUrlHostEnv("MEDIA_CDN_BASE_URL"),
+    expectedMediaCdnPathPrefix: readOptionalUrlPathPrefixEnv(
+      "MEDIA_CDN_BASE_URL",
+    ),
     locale: normalizeSmokeLocale(readEnv("SMOKE_LOCALE", defaultLocale)),
     market: normalizeSmokeMarket(readEnv("SMOKE_MARKET", defaultMarket)),
     password,
@@ -211,4 +214,22 @@ function readOptionalUrlHostEnv(name) {
   } catch {
     return null;
   }
+}
+
+function readOptionalUrlPathPrefixEnv(name) {
+  const value = process.env[name]?.trim();
+
+  if (!value) {
+    return null;
+  }
+
+  try {
+    return normalizeUrlPathPrefix(new URL(value).pathname);
+  } catch {
+    return null;
+  }
+}
+
+function normalizeUrlPathPrefix(pathname) {
+  return pathname.replace(/\/+$/, "");
 }

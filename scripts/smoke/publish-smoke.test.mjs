@@ -127,6 +127,7 @@ test("readConfig uses seeded defaults and explicit smoke overrides", async () =>
       assert.equal(config.apiBaseUrl, "http://api.example.com/api/v1");
       assert.equal(config.email, "owner@example.com");
       assert.equal(config.expectedMediaCdnHost, "cdn.brand-assets.com");
+      assert.equal(config.expectedMediaCdnPathPrefix, "/media");
       assert.equal(config.password, "ChangeMe456!");
       assert.equal(config.requireAdminApp, true);
       assert.equal(config.requireR2Upload, true);

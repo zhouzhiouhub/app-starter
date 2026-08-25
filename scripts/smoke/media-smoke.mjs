@@ -8,6 +8,7 @@ export {
   isCdnUrlForR2Key,
   isMediaListResponseContainingAsset,
   isMediaReference,
+  isExpectedCdnPathPrefix,
   isProductionCdnUrl,
   isR2UploadUrl,
   isR2UploadUrlForKey,
@@ -28,5 +29,6 @@ export async function assertMediaUploadTarget(input, accessToken) {
     asset,
     input.requireR2Upload,
     input.expectedMediaCdnHost ?? null,
+    input.expectedMediaCdnPathPrefix ?? null,
   );
 }

@@ -158,6 +158,12 @@ function readMediaFailureActions(details) {
     );
   }
 
+  if (media.cdnPathMatchesExpected === false) {
+    actions.push(
+      "Check API MEDIA_CDN_BASE_URL path prefix matches the CDN URL path used in media confirm responses.",
+    );
+  }
+
   return actions;
 }
 

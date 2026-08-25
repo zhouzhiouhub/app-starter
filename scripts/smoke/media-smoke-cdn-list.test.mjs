@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   formatMediaListFilterDiagnostic,
   isCdnUrlForR2Key,
+  isExpectedCdnPathPrefix,
   isMediaListResponseContainingAsset,
   isMediaReference,
   isProductionCdnUrl,
@@ -45,6 +46,30 @@ test("smoke helpers validate CDN URLs and media references", () => {
   );
   assert.equal(isMediaReference("media://asset_123"), true);
   assert.equal(isMediaReference("https://cdn.example.com/asset_123"), false);
+});
+
+test("smoke helpers validate expected CDN path prefixes", () => {
+  assert.equal(
+    isExpectedCdnPathPrefix(
+      "https://cdn.brand-assets.com/media/tenant/smoke.png",
+      "media",
+    ),
+    true,
+  );
+  assert.equal(
+    isExpectedCdnPathPrefix(
+      "https://cdn.brand-assets.com/media-other/tenant/smoke.png",
+      "/media",
+    ),
+    false,
+  );
+  assert.equal(
+    isExpectedCdnPathPrefix(
+      "https://cdn.brand-assets.com/tenant/smoke.png",
+      "",
+    ),
+    true,
+  );
 });
 
 test("smoke helpers validate media list filter responses", () => {

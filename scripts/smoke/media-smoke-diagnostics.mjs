@@ -69,6 +69,21 @@ export function isExpectedCdnHost(value, expectedCdnHost) {
   return Boolean(host && expectedCdnHost && host === expectedCdnHost);
 }
 
+export function isExpectedCdnPathPrefix(value, expectedCdnPathPrefix) {
+  const pathname = readUrlPathname(value);
+  const pathPrefix = normalizeUrlPathPrefix(expectedCdnPathPrefix);
+
+  if (pathname === null || pathPrefix === null) {
+    return false;
+  }
+
+  return (
+    !pathPrefix ||
+    pathname === pathPrefix ||
+    pathname.startsWith(`${pathPrefix}/`)
+  );
+}
+
 export function isMediaReference(value) {
   return typeof value === "string" && /^media:\/\/[a-zA-Z0-9_-]+$/.test(value);
 }
@@ -109,8 +124,13 @@ export function createMediaSmokeDetails(
   asset,
   requireR2Upload,
   expectedCdnHost = null,
+  expectedCdnPathPrefix = null,
 ) {
   const cdnHost = readUrlHost(asset.url);
+  const cdnPathname = readUrlPathname(asset.url);
+  const normalizedExpectedCdnPathPrefix = normalizeUrlPathPrefix(
+    expectedCdnPathPrefix,
+  );
 
   return {
     assetId: asset.id,
@@ -119,9 +139,15 @@ export function createMediaSmokeDetails(
     assetType: asset.type ?? null,
     cdnHost,
     cdnHostMatchesExpected: expectedCdnHost ? cdnHost === expectedCdnHost : null,
+    cdnPathMatchesExpected:
+      normalizedExpectedCdnPathPrefix === null
+        ? null
+        : isExpectedCdnPathPrefix(asset.url, normalizedExpectedCdnPathPrefix),
+    cdnPathname,
     cdnUrlMatchesR2Key: isCdnUrlForR2Key(asset.url, target.r2Key),
     confirmPath: target.confirmPath,
     expectedCdnHost,
+    expectedCdnPathPrefix: normalizedExpectedCdnPathPrefix,
     isR2UploadUrl: isR2UploadUrl(target.uploadUrl),
     presignedUrlHost: readUrlHost(target.uploadUrl),
     productionCdn: isProductionCdnUrl(asset.url),
@@ -170,6 +196,29 @@ function readUrlHost(value) {
   } catch {
     return null;
   }
+}
+
+function readUrlPathname(value) {
+  try {
+    return new URL(value).pathname;
+  } catch {
+    return null;
+  }
+}
+
+function normalizeUrlPathPrefix(value) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  const normalized = trimmed.replace(/\/+$/, "");
+
+  if (!normalized) {
+    return "";
+  }
+
+  return normalized.startsWith("/") ? normalized : `/${normalized}`;
 }
 
 function hasSafeExpiresQuery(value) {
