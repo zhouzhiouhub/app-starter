@@ -13,6 +13,7 @@ import {
   readJwtAction,
   readPreviewSecretAction,
   readReportPathAction,
+  readRevalidationGateAction,
   readRevalidationSecretAction,
 } from "./smoke-readiness-runtime-actions.mjs";
 import {
@@ -182,7 +183,7 @@ function readBlockerActions(blocker) {
     return [
       createAction(
         blocker.area,
-        "Keep SMOKE_REQUIRE_REVALIDATION=true and configure storefront revalidation.",
+        readRevalidationGateAction(),
       ),
     ];
   }

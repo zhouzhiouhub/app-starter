@@ -56,6 +56,10 @@ export function readRevalidationSecretAction(blocker) {
   return "Set STOREFRONT_REVALIDATE_SECRET in both API and Web runtimes.";
 }
 
+export function readRevalidationGateAction() {
+  return "Set SMOKE_REQUIRE_REVALIDATION=true, configure STOREFRONT_REVALIDATE_SECRET in both API and Web runtimes, and set STOREFRONT_REVALIDATE_URL to the deployed storefront /api/revalidate endpoint.";
+}
+
 export function readReportPathAction(blocker) {
   if (blocker.issue === "report-path-not-configured") {
     return `Set SMOKE_REPORT_PATH to archive a JSON report under ${reportPathRoots}.`;

@@ -50,7 +50,7 @@ test("smoke readiness marks omitted production gates as blockers", () => {
       ],
       [
         "revalidation",
-        "Keep SMOKE_REQUIRE_REVALIDATION=true and configure storefront revalidation.",
+        "Set SMOKE_REQUIRE_REVALIDATION=true, configure STOREFRONT_REVALIDATE_SECRET in both API and Web runtimes, and set STOREFRONT_REVALIDATE_URL to the deployed storefront /api/revalidate endpoint.",
       ],
     ],
   );
