@@ -94,7 +94,10 @@ function formatFailureDetailLines(details) {
   const visible = details.slice(0, maxFailureDetailCount);
   const remainingCount = details.length - visible.length;
   const lines = visible.map((detail) => {
-    const message = truncateText(detail.message, maxFailureMessageLength);
+    const message = truncateText(
+      redactSmokeSecrets(detail.message),
+      maxFailureMessageLength,
+    );
     const diagnosis = readFailureDiagnosis(detail.details);
     const suffix =
       diagnosis && !message.includes(diagnosis)

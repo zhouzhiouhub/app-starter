@@ -124,6 +124,34 @@ test("smoke report CLI includes failed check diagnostics and suggested fixes", (
   ]);
 });
 
+test("smoke report CLI redacts failure details before truncating", () => {
+  const secretValue = `client-secret-${"x".repeat(120)}`;
+  const lines = formatSmokeReportSummary({
+    schemaVersion: "smoke-report.v3",
+    summary: {
+      blockerCount: 0,
+      checkCount: 2,
+      failedCheckCount: 1,
+      failedCheckDetails: [
+        {
+          details: {},
+          message: `${"x".repeat(180)} {"clientSecret":"${secretValue}"}`,
+          name: "api.health",
+        },
+      ],
+      failedChecks: ["api.health"],
+      passedCheckCount: 1,
+      productionReady: true,
+      status: "failed",
+      warningCount: 0,
+    },
+  });
+  const failureLine = lines.find((line) => line.includes("api.health:"));
+
+  assert.equal(failureLine?.includes(secretValue), false);
+  assert.match(failureLine ?? "", /"clientSecret":"\[redacted\]"/);
+});
+
 test("smoke report CLI suggests fixes for media diagnostics", () => {
   const lines = formatSmokeReportSummary({
     schemaVersion: "smoke-report.v3",
