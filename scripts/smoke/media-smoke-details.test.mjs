@@ -37,6 +37,7 @@ test("smoke helpers summarize media checks without signed upload URLs", () => {
 
   assert.deepEqual(details, {
     assetId: "asset-1",
+    assetR2KeyMatchesTarget: true,
     assetSize: 68,
     assetStatus: "active",
     assetType: "image",
@@ -53,6 +54,7 @@ test("smoke helpers summarize media checks without signed upload URLs", () => {
     productionCdn: true,
     r2Key: "tenant/2026/08/19/smoke.png",
     reference: "media://asset-1",
+    targetR2Key: "tenant/2026/08/19/smoke.png",
     uploadContentType: "image/png",
     uploadExpiresAt: "2026-08-19T10:00:00.000Z",
     uploadMaxSize: 26214400,

@@ -58,7 +58,14 @@ export function assertMediaAssetShape(
   }
 
   if (asset.r2Key !== target.r2Key) {
-    throw new Error("Media confirm returned an unexpected R2 key.");
+    throw createMediaShapeError(
+      "Media confirm returned an unexpected R2 key.",
+      target,
+      asset,
+      requireProductionCdn,
+      expectedCdnHost,
+      expectedCdnPathPrefix,
+    );
   }
 
   if (asset.size !== image.body.byteLength) {

@@ -150,6 +150,10 @@ function readMediaFailureActions(details) {
     );
   }
 
+  if (media.assetR2KeyMatchesTarget === false) {
+    actions.push("Check media confirm persistence so the returned r2Key matches the upload target r2Key.");
+  }
+
   if (media.cdnUrlMatchesR2Key === false) {
     actions.push(
       "Check media confirm URL generation so the CDN URL points to the confirmed R2 key.",

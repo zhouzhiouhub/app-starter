@@ -126,14 +126,19 @@ export function createMediaSmokeDetails(
   expectedCdnHost = null,
   expectedCdnPathPrefix = null,
 ) {
+  const assetR2Key = typeof asset.r2Key === "string" ? asset.r2Key : null;
   const cdnHost = readUrlHost(asset.url);
   const cdnPathname = readUrlPathname(asset.url);
   const normalizedExpectedCdnPathPrefix = normalizeUrlPathPrefix(
     expectedCdnPathPrefix,
   );
+  const targetR2Key = typeof target.r2Key === "string" ? target.r2Key : null;
 
   return {
     assetId: asset.id,
+    assetR2KeyMatchesTarget: Boolean(
+      assetR2Key && targetR2Key && assetR2Key === targetR2Key,
+    ),
     assetSize: asset.size ?? null,
     assetStatus: asset.status ?? null,
     assetType: asset.type ?? null,
@@ -144,20 +149,25 @@ export function createMediaSmokeDetails(
         ? null
         : isExpectedCdnPathPrefix(asset.url, normalizedExpectedCdnPathPrefix),
     cdnPathname,
-    cdnUrlMatchesR2Key: isCdnUrlForR2Key(asset.url, target.r2Key),
+    cdnUrlMatchesR2Key: targetR2Key
+      ? isCdnUrlForR2Key(asset.url, targetR2Key)
+      : false,
     confirmPath: target.confirmPath,
     expectedCdnHost,
     expectedCdnPathPrefix: normalizedExpectedCdnPathPrefix,
     isR2UploadUrl: isR2UploadUrl(target.uploadUrl),
     presignedUrlHost: readUrlHost(target.uploadUrl),
     productionCdn: isProductionCdnUrl(asset.url),
-    r2Key: asset.r2Key,
+    r2Key: assetR2Key,
     reference: asset.reference,
+    targetR2Key,
     uploadContentType: target.headers?.["Content-Type"] ?? null,
     uploadExpiresAt: target.expiresAt,
     uploadMaxSize: target.maxSize,
     uploadMethod: target.method,
-    uploadUrlMatchesR2Key: isR2UploadUrlForKey(target.uploadUrl, target.r2Key),
+    uploadUrlMatchesR2Key: targetR2Key
+      ? isR2UploadUrlForKey(target.uploadUrl, targetR2Key)
+      : false,
     uploadedObject: Boolean(requireR2Upload),
   };
 }
