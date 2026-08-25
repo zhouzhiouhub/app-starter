@@ -1,10 +1,9 @@
 import { randomUUID } from "node:crypto";
-import {
-  getPublishedPageRevalidationPaths,
-  getStorefrontRevalidationCacheTags,
-} from "../../packages/schema/dist/index.js";
 import { fetchJson, readHttpError } from "./http-json-smoke.mjs";
-import { createRevalidationSmokeDetails } from "./revalidation-smoke.mjs";
+import {
+  assertRevalidationSmokeTargets,
+  createRevalidationSmokeDetails,
+} from "./revalidation-smoke.mjs";
 
 export async function publishPage(input, accessToken, pageId, schema) {
   const response = await fetchJson(
@@ -42,7 +41,7 @@ export function assertPublishedResponse(response, input, title) {
   }
 
   if (input.requireRevalidation) {
-    assertRevalidationTargets(revalidation, input);
+    assertRevalidationSmokeTargets(revalidation, input);
   }
 
   if (revalidation?.triggered === true) {
@@ -51,36 +50,6 @@ export function assertPublishedResponse(response, input, title) {
     );
   } else {
     console.log("Storefront revalidation skipped by configuration.");
-  }
-}
-
-function assertRevalidationTargets(revalidation, input) {
-  const paths = Array.isArray(revalidation?.paths) ? revalidation.paths : [];
-  const tags = Array.isArray(revalidation?.tags) ? revalidation.tags : [];
-  const expectedPaths = getPublishedPageRevalidationPaths(input);
-  const expectedTags = getStorefrontRevalidationCacheTags(input);
-  const missingPaths = expectedPaths.filter((path) => !paths.includes(path));
-  const missingTags = expectedTags.filter((tag) => !tags.includes(tag));
-
-  if (missingPaths.length > 0 || missingTags.length > 0) {
-    const details = createRevalidationSmokeDetails(revalidation, input);
-    const error = new Error(
-      [
-        "Storefront revalidation did not include the expected page targets",
-        `(missing paths: ${formatList(missingPaths)},`,
-        `missing tags: ${formatList(missingTags)},`,
-        `diagnosis: ${details.diagnosis}).`,
-      ].join(" "),
-    );
-    error.smokeDetails = {
-      revalidation: {
-        ...details,
-        missingPaths,
-        missingTags,
-      },
-    };
-
-    throw error;
   }
 }
 
@@ -107,8 +76,4 @@ function formatPublishRevalidationDetails(details) {
     `paths: ${details.pathCount},`,
     `tags: ${details.tagCount}).`,
   ].join(" ");
-}
-
-function formatList(values) {
-  return values.length > 0 ? values.join(", ") : "none";
 }

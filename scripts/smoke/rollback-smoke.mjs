@@ -1,6 +1,9 @@
 import { randomUUID } from "node:crypto";
 import { fetchJson, readHttpError } from "./http-json-smoke.mjs";
-import { createRevalidationSmokeDetails } from "./revalidation-smoke.mjs";
+import {
+  assertRevalidationSmokeTargets,
+  createRevalidationSmokeDetails,
+} from "./revalidation-smoke.mjs";
 import { buildSmokePageSchema } from "./smoke-page-schema.mjs";
 
 export async function assertRollbackFlow(input, accessToken, options) {
@@ -159,9 +162,15 @@ function writeHeaders(accessToken) {
 }
 
 function assertRollbackRevalidation(revalidation, input) {
-  if (input.requireRevalidation && revalidation?.triggered !== true) {
+  if (!input.requireRevalidation) {
+    return;
+  }
+
+  if (revalidation?.triggered !== true) {
     throw createRollbackRevalidationFailure(revalidation, input);
   }
+
+  assertRevalidationSmokeTargets(revalidation, input);
 }
 
 export function createRollbackRevalidationFailure(revalidation, input) {

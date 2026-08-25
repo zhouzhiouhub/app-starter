@@ -208,6 +208,68 @@ test("rollback smoke flow returns revalidation diagnostics for reports", async (
   );
 });
 
+test("rollback smoke rejects revalidation without page path and tags", async () => {
+  await withFetch(async (url) => {
+    if (url === "https://api.example.com/api/v1/pages/page-1") {
+      return jsonResponse({
+        data: {
+          publishedVersionId: "version-1",
+        },
+      });
+    }
+
+    if (url === "https://api.example.com/api/v1/pages/page-1/publish") {
+      return jsonResponse({
+        data: {
+          meta: {
+            slug: "smoke-page",
+            title: "Smoke Page rollback candidate",
+          },
+        },
+      });
+    }
+
+    if (url === "https://api.example.com/api/v1/pages/page-1/rollback") {
+      return jsonResponse({
+        data: {
+          meta: {
+            slug: "smoke-page",
+            title: "Smoke Page",
+          },
+        },
+        meta: {
+          revalidation: {
+            paths: ["/en/other"],
+            tags: ["published-page"],
+            triggered: true,
+          },
+        },
+      });
+    }
+
+    throw new Error(`Unexpected fetch URL: ${url}`);
+  }, async () => {
+    await assert.rejects(
+      () =>
+        assertRollbackFlow(
+          {
+            apiBaseUrl: "https://api.example.com/api/v1",
+            locale: "en-US",
+            market: "us",
+            requireRevalidation: true,
+            slug: "smoke-page",
+          },
+          "access-token",
+          {
+            pageId: "page-1",
+            title: "Smoke Page",
+          },
+        ),
+      /missing paths: \/en\/smoke-page, missing tags: published-page:us:en-US, published-page:us:en-US:smoke-page/,
+    );
+  });
+});
+
 async function withFetch(fetchImpl, fn) {
   const previous = globalThis.fetch;
   globalThis.fetch = fetchImpl;

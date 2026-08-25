@@ -115,6 +115,25 @@ test("smoke config treats Admin URL as optional unless Admin smoke is required",
   );
 });
 
+test("smoke config includes default fallback context for revalidation targets", async () => {
+  await withEnv(
+    {
+      API_URL: "https://api.example.com",
+      SMOKE_LOCALE: "de-DE",
+      SMOKE_MARKET: "eu",
+      WEB_URL: "https://web.example.com",
+    },
+    async () => {
+      const config = readConfig();
+
+      assert.equal(config.fallbackLocale, "en-US");
+      assert.equal(config.fallbackMarket, "us");
+      assert.equal(config.locale, "de-DE");
+      assert.equal(config.market, "eu");
+    },
+  );
+});
+
 test("smoke config rejects documented local admin credentials in production", async () => {
   assert.equal(isProductionSmokeEnvironment({ APP_ENV: " production " }), true);
   assert.equal(

@@ -55,6 +55,8 @@ export function readConfig() {
     expectedMediaCdnPathPrefix: readOptionalUrlPathPrefixEnv(
       "MEDIA_CDN_BASE_URL",
     ),
+    fallbackLocale: defaultLocale,
+    fallbackMarket: defaultMarket,
     locale: normalizeSmokeLocale(readEnv("SMOKE_LOCALE", defaultLocale)),
     market: normalizeSmokeMarket(readEnv("SMOKE_MARKET", defaultMarket)),
     password,

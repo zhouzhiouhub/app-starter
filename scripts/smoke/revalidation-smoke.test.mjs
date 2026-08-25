@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createRevalidationSmokeDetails } from "./revalidation-smoke.mjs";
+import {
+  assertRevalidationSmokeTargets,
+  createRevalidationSmokeDetails,
+} from "./revalidation-smoke.mjs";
 
 test("smoke helpers summarize revalidation results for reports", () => {
   assert.deepEqual(
@@ -128,4 +131,49 @@ test("smoke helpers classify revalidation HTTP failures", () => {
     ).diagnosis,
     "web-revalidation-failed",
   );
+});
+
+test("smoke helpers reject revalidation results missing expected targets", () => {
+  let error;
+
+  try {
+    assertRevalidationSmokeTargets(
+      {
+        paths: ["/de/other"],
+        tags: [
+          "published-page",
+          "published-page:eu:de-DE",
+          "public-translation",
+        ],
+        triggered: true,
+      },
+      {
+        fallbackLocale: "en-US",
+        fallbackMarket: "us",
+        locale: "de-DE",
+        market: "eu",
+        requireRevalidation: true,
+        slug: "contact",
+      },
+    );
+  } catch (caught) {
+    error = caught;
+  }
+
+  assert.ok(error);
+  assert.match(
+    error.message,
+    /missing paths: \/de\/contact, missing tags: published-page:eu:de-DE:contact, published-page:us:en-US, published-page:us:en-US:contact, public-translation:de-DE, public-translation:en-US/,
+  );
+  assert.equal(error.smokeDetails.revalidation.diagnosis, "triggered");
+  assert.deepEqual(error.smokeDetails.revalidation.missingPaths, [
+    "/de/contact",
+  ]);
+  assert.deepEqual(error.smokeDetails.revalidation.missingTags, [
+    "published-page:eu:de-DE:contact",
+    "published-page:us:en-US",
+    "published-page:us:en-US:contact",
+    "public-translation:de-DE",
+    "public-translation:en-US",
+  ]);
 });

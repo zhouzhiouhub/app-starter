@@ -1,3 +1,8 @@
+import {
+  getPublishedPageRevalidationPaths,
+  getStorefrontRevalidationCacheTags,
+} from "../../packages/schema/dist/index.js";
+
 export function createRevalidationSmokeDetails(revalidation, input) {
   const paths = readStringArray(revalidation?.paths);
   const tags = readStringArray(revalidation?.tags);
@@ -24,6 +29,24 @@ export function createRevalidationSmokeDetails(revalidation, input) {
     tags,
     triggered,
   };
+}
+
+export function assertRevalidationSmokeTargets(revalidation, input) {
+  const paths = readStringArray(revalidation?.paths);
+  const tags = readStringArray(revalidation?.tags);
+  const expectedPaths = getPublishedPageRevalidationPaths(input);
+  const expectedTags = getStorefrontRevalidationCacheTags(input);
+  const missingPaths = expectedPaths.filter((path) => !paths.includes(path));
+  const missingTags = expectedTags.filter((tag) => !tags.includes(tag));
+
+  if (missingPaths.length > 0 || missingTags.length > 0) {
+    throw createMissingRevalidationTargetsError({
+      input,
+      missingPaths,
+      missingTags,
+      revalidation,
+    });
+  }
 }
 
 function readRevalidationDiagnosis(input) {
@@ -82,8 +105,33 @@ function readFailedRequestDiagnosis(status) {
   return "request-failed-or-timeout";
 }
 
+function createMissingRevalidationTargetsError(input) {
+  const details = createRevalidationSmokeDetails(input.revalidation, input.input);
+  const error = new Error(
+    [
+      "Storefront revalidation did not include the expected page targets",
+      `(missing paths: ${formatList(input.missingPaths)},`,
+      `missing tags: ${formatList(input.missingTags)},`,
+      `diagnosis: ${details.diagnosis}).`,
+    ].join(" "),
+  );
+  error.smokeDetails = {
+    revalidation: {
+      ...details,
+      missingPaths: input.missingPaths,
+      missingTags: input.missingTags,
+    },
+  };
+
+  return error;
+}
+
 function readStringArray(value) {
   return Array.isArray(value)
     ? value.filter((item) => typeof item === "string")
     : [];
+}
+
+function formatList(values) {
+  return values.length > 0 ? values.join(", ") : "none";
 }
