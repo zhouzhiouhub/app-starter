@@ -58,6 +58,25 @@ test("page structure preflight warns about mobile layout overflow", () => {
   assert.deepEqual(collectPageStructurePreflightIssues(schema), []);
 });
 
+test("page structure preflight warns when visible viewport layouts are missing", () => {
+  const schema = structuredClone(exampleLandingPage);
+  delete schema.sections[0].layout.mobile;
+  delete schema.sections[1].layout.desktop;
+  schema.sections[1].visibility.desktop = false;
+
+  assert.deepEqual(collectPageStructurePreflightIssues(schema), [
+    {
+      field: "sections[0].layout.mobile",
+      message:
+        "Mobile layout is missing for section 1. Save a Mobile layout edit before publishing so preview and storefront rendering stay consistent.",
+      severity: "warning",
+    },
+  ]);
+
+  schema.sections[0].layout.mobile = { width: 390, x: 0, y: 0 };
+  assert.deepEqual(collectPageStructurePreflightIssues(schema), []);
+});
+
 test("page structure preflight blocks duplicate section ids", () => {
   const schema = structuredClone(exampleLandingPage);
 

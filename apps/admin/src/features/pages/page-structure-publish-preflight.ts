@@ -1,4 +1,4 @@
-import type { PageSchema, Viewport } from "@app-starter/schema";
+import type { PageSchema, SectionNode, Viewport } from "@app-starter/schema";
 import type { PublishPreflightIssue } from "./publish-preflight-types";
 
 const orderedViewports: Viewport[] = ["desktop", "mobile"];
@@ -10,6 +10,7 @@ export function collectPageStructurePreflightIssues(
   return [
     ...collectEmptyPageIssues(schema),
     ...collectEmptyViewportIssues(schema),
+    ...collectMissingViewportLayoutIssues(schema),
     ...collectMobileLayoutOverflowIssues(schema),
     ...collectDuplicateSectionIdIssues(schema),
     ...collectSectionOrderIssues(schema),
@@ -53,14 +54,42 @@ function collectEmptyViewportIssues(schema: PageSchema): PublishPreflightIssue[]
 }
 
 function hasVisibleSection(schema: PageSchema, viewport: Viewport): boolean {
-  return schema.sections.some((section) => section.visibility?.[viewport] !== false);
+  return schema.sections.some((section) => isSectionVisible(section, viewport));
+}
+
+function isSectionVisible(section: SectionNode, viewport: Viewport): boolean {
+  return section.visibility?.[viewport] !== false;
+}
+
+function collectMissingViewportLayoutIssues(
+  schema: PageSchema,
+): PublishPreflightIssue[] {
+  return schema.sections.flatMap((section, sectionIndex) =>
+    orderedViewports.flatMap((viewport) => {
+      if (!isSectionVisible(section, viewport) || section.layout[viewport]) {
+        return [];
+      }
+
+      return [
+        {
+          field: `sections[${sectionIndex}].layout.${viewport}`,
+          message: `${formatViewportLabel(
+            viewport,
+          )} layout is missing for section ${sectionIndex + 1}. Save a ${formatViewportLabel(
+            viewport,
+          )} layout edit before publishing so preview and storefront rendering stay consistent.`,
+          severity: "warning",
+        },
+      ];
+    }),
+  );
 }
 
 function collectMobileLayoutOverflowIssues(
   schema: PageSchema,
 ): PublishPreflightIssue[] {
   return schema.sections.flatMap((section, sectionIndex) => {
-    if (section.visibility?.mobile === false) {
+    if (!isSectionVisible(section, "mobile")) {
       return [];
     }
 
