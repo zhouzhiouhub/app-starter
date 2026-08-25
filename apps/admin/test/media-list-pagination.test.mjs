@@ -38,6 +38,42 @@ test("media list pagination loads all active assets for resolver use", async () 
   ]);
 });
 
+test("media list pagination continues past stale low totals while pages are full", async () => {
+  const calls = [];
+  const assets = await listAllMediaAssetPages(async (page, limit) => {
+    calls.push({ limit, page });
+
+    if (page === 1) {
+      return {
+        data: [createAsset("asset-1"), createAsset("asset-2")],
+        meta: {
+          limit,
+          page,
+          total: 1,
+        },
+      };
+    }
+
+    return {
+      data: [createAsset("asset-3")],
+      meta: {
+        limit,
+        page,
+        total: 1,
+      },
+    };
+  }, 2);
+
+  assert.deepEqual(
+    assets.map((asset) => asset.reference),
+    ["media://asset-1", "media://asset-2", "media://asset-3"],
+  );
+  assert.deepEqual(calls, [
+    { limit: 2, page: 1 },
+    { limit: 2, page: 2 },
+  ]);
+});
+
 function createAsset(id) {
   return {
     archivedAt: null,

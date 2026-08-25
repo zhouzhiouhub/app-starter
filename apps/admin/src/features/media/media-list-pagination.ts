@@ -17,10 +17,26 @@ export async function listAllMediaAssetPages(
 
     assets.push(...result.data);
 
-    if (result.data.length === 0 || assets.length >= result.meta.total) {
+    if (!shouldLoadNextMediaAssetPage(result, assets.length, limit)) {
       return assets;
     }
 
     page += 1;
   }
+}
+
+function shouldLoadNextMediaAssetPage(
+  result: Awaited<ReturnType<MediaAssetPageLoader>>,
+  loadedCount: number,
+  limit: number,
+): boolean {
+  if (result.data.length === 0) {
+    return false;
+  }
+
+  if (loadedCount < result.meta.total) {
+    return true;
+  }
+
+  return result.data.length >= limit;
 }
