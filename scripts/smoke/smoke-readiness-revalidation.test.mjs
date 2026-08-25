@@ -84,7 +84,7 @@ test("smoke readiness blocks unsafe revalidation secrets", () => {
   assert.deepEqual(readiness.nextActions, [
     {
       action:
-        "Set STOREFRONT_REVALIDATE_SECRET in both API and Web runtimes.",
+        "Set STOREFRONT_REVALIDATE_SECRET in both API and Web runtimes without control characters.",
       area: "revalidation.secret",
     },
   ]);

@@ -107,7 +107,7 @@ test("smoke readiness requires an archived report path", () => {
   assert.deepEqual(readiness.nextActions, [
     {
       action:
-        "Set SMOKE_REPORT_PATH to a relative JSON path under tmp/, reports/, artifacts/, or .tmp/.",
+        "Set SMOKE_REPORT_PATH to archive a JSON report under tmp/, reports/, artifacts/, or .tmp/.",
       area: "report.path",
     },
   ]);
@@ -130,7 +130,7 @@ test("smoke readiness validates archived report paths", () => {
   assert.deepEqual(readiness.nextActions, [
     {
       action:
-        "Set SMOKE_REPORT_PATH to a relative JSON path under tmp/, reports/, artifacts/, or .tmp/.",
+        "Use a relative SMOKE_REPORT_PATH under tmp/, reports/, artifacts/, or .tmp/; do not use absolute paths or null bytes.",
       area: "report.path",
     },
   ]);

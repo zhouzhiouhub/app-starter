@@ -183,3 +183,66 @@ test("smoke readiness next actions explain R2 readiness blockers", () => {
     ],
   );
 });
+
+test("smoke readiness next actions explain runtime secret and report blockers", () => {
+  assert.deepEqual(
+    createSmokeReadinessNextActions([
+      {
+        area: "identity.jwt.private",
+        issue: "invalid-pem",
+        message: "JWT_PRIVATE_KEY must be valid.",
+        variable: "JWT_PRIVATE_KEY",
+      },
+      {
+        area: "preview.secret",
+        issue: "short-secret",
+        message: "PREVIEW_TOKEN_SECRET is too short.",
+        variable: "PREVIEW_TOKEN_SECRET",
+      },
+      {
+        area: "preview.previous-secret",
+        issue: "control-character",
+        message: "PREVIEW_TOKEN_PREVIOUS_SECRET is unsafe.",
+        variable: "PREVIEW_TOKEN_PREVIOUS_SECRET",
+      },
+      {
+        area: "revalidation.secret",
+        issue: "oversized-secret",
+        message: "STOREFRONT_REVALIDATE_SECRET is too long.",
+        variable: "STOREFRONT_REVALIDATE_SECRET",
+      },
+      {
+        area: "report.path",
+        issue: "unsafe-root",
+        message: "SMOKE_REPORT_PATH has an unsafe root.",
+      },
+    ]),
+    [
+      {
+        action:
+          "Fix JWT_PRIVATE_KEY PEM formatting, including BEGIN/END PRIVATE KEY lines and escaped \\n line breaks in env storage.",
+        area: "identity.jwt.private",
+      },
+      {
+        action:
+          "Set PREVIEW_TOKEN_SECRET to a 32-1024 character production signing secret; current value is too short.",
+        area: "preview.secret",
+      },
+      {
+        action:
+          "Remove PREVIEW_TOKEN_PREVIOUS_SECRET unless rotating preview secrets; if rotating, remove control characters and keep it 32-1024 characters.",
+        area: "preview.previous-secret",
+      },
+      {
+        action:
+          "Set STOREFRONT_REVALIDATE_SECRET in both API and Web runtimes; keep it at 1024 characters or fewer.",
+        area: "revalidation.secret",
+      },
+      {
+        action:
+          "Move SMOKE_REPORT_PATH under tmp/, reports/, artifacts/, or .tmp/.",
+        area: "report.path",
+      },
+    ],
+  );
+});

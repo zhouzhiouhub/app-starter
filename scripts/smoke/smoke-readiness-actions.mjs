@@ -3,6 +3,12 @@ import {
   readR2Action,
 } from "./smoke-readiness-media-actions.mjs";
 import {
+  readJwtAction,
+  readPreviewSecretAction,
+  readReportPathAction,
+  readRevalidationSecretAction,
+} from "./smoke-readiness-runtime-actions.mjs";
+import {
   readDatabaseUrlAction,
   readDeploymentAction,
   readRedisAction,
@@ -153,7 +159,7 @@ function readBlockerActions(blocker) {
       return [
         createAction(
           blocker.area,
-          "Replace JWT_PRIVATE_KEY and JWT_PUBLIC_KEY with a matching RS256 PEM key pair in the API runtime.",
+          readJwtAction(blocker),
         ),
       ];
     }
@@ -161,9 +167,7 @@ function readBlockerActions(blocker) {
     return [
       createAction(
         blocker.area,
-        blocker.variable
-          ? `Set ${blocker.variable} to a production PEM key in the API runtime.`
-          : "Set JWT_PRIVATE_KEY and JWT_PUBLIC_KEY to production PEM keys in the API runtime.",
+        readJwtAction(blocker),
       ),
     ];
   }
@@ -181,7 +185,7 @@ function readBlockerActions(blocker) {
     return [
       createAction(
         blocker.area,
-        "Set PREVIEW_TOKEN_SECRET to a 32-1024 character production signing secret in the API runtime.",
+        readPreviewSecretAction(blocker),
       ),
     ];
   }
@@ -190,7 +194,7 @@ function readBlockerActions(blocker) {
     return [
       createAction(
         blocker.area,
-        "Remove PREVIEW_TOKEN_PREVIOUS_SECRET or set it to the previous production-safe signing secret.",
+        readPreviewSecretAction(blocker),
       ),
     ];
   }
@@ -199,7 +203,7 @@ function readBlockerActions(blocker) {
     return [
       createAction(
         blocker.area,
-        "Set STOREFRONT_REVALIDATE_SECRET in both API and Web runtimes.",
+        readRevalidationSecretAction(blocker),
       ),
     ];
   }
@@ -217,7 +221,7 @@ function readBlockerActions(blocker) {
     return [
       createAction(
         blocker.area,
-        "Set SMOKE_REPORT_PATH to a relative JSON path under tmp/, reports/, artifacts/, or .tmp/.",
+        readReportPathAction(blocker),
       ),
     ];
   }

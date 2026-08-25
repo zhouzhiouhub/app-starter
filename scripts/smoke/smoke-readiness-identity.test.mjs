@@ -40,12 +40,12 @@ test("smoke readiness requires production JWT keys", () => {
   assert.deepEqual(readiness.nextActions, [
     {
       action:
-        "Set JWT_PRIVATE_KEY to a production PEM key in the API runtime.",
+        "Fix JWT_PRIVATE_KEY PEM formatting, including BEGIN/END PRIVATE KEY lines and escaped \\n line breaks in env storage.",
       area: "identity.jwt.private",
     },
     {
       action:
-        "Set JWT_PUBLIC_KEY to a production PEM key in the API runtime.",
+        "Set JWT_PUBLIC_KEY to a production RS256 PUBLIC KEY PEM in the API runtime.",
       area: "identity.jwt.public",
     },
   ]);
@@ -86,7 +86,7 @@ test("smoke readiness blocks mismatched JWT key pairs", () => {
   assert.deepEqual(readiness.nextActions, [
     {
       action:
-        "Replace JWT_PRIVATE_KEY and JWT_PUBLIC_KEY with a matching RS256 PEM key pair in the API runtime.",
+        "Regenerate JWT_PUBLIC_KEY from JWT_PRIVATE_KEY or replace both with one matching RS256 PEM key pair.",
       area: "identity.jwt.pair",
     },
   ]);
