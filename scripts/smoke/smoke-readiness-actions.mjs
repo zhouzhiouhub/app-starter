@@ -241,7 +241,7 @@ function readWarningActions(warning) {
     return [
       createAction(
         warning.area,
-        "Optionally set STOREFRONT_REVALIDATE_URL explicitly instead of relying on WEB_URL fallback.",
+        "Optionally set STOREFRONT_REVALIDATE_URL to the deployed storefront /api/revalidate endpoint so API revalidation does not rely on WEB_URL fallback.",
       ),
     ];
   }

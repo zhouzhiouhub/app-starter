@@ -33,7 +33,7 @@ test("smoke readiness next actions preserve the public helper export", () => {
       },
       {
         action:
-          "Optionally set STOREFRONT_REVALIDATE_URL explicitly instead of relying on WEB_URL fallback.",
+          "Optionally set STOREFRONT_REVALIDATE_URL to the deployed storefront /api/revalidate endpoint so API revalidation does not rely on WEB_URL fallback.",
         area: "revalidation.url",
       },
     ],
