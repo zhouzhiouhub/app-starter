@@ -1,4 +1,5 @@
 import {
+  collectMediaReferences,
   createFallbackPage,
   getPublishedPageCacheTags,
   pageSchema,
@@ -209,17 +210,23 @@ function readMatchingPublishedSchema(
   }
 
   if (schema.meta.locale === input.locale) {
-    return schema;
+    return readResolvedPublishedSchema(schema);
   }
 
   if (
     schema.meta.locale === input.defaultLocale &&
     isDeclaredLocaleFallback(result.meta, input.defaultLocale)
   ) {
-    return schema;
+    return readResolvedPublishedSchema(schema);
   }
 
   return null;
+}
+
+function readResolvedPublishedSchema(schema: PageSchema): PageSchema | null {
+  return collectMediaReferences(schema, { maxCount: 1 }).length === 0
+    ? schema
+    : null;
 }
 
 function isDeclaredLocaleFallback(

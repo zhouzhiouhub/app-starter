@@ -144,6 +144,24 @@ test("published page lookup rejects schema context mismatches", async () => {
   assert.equal(requests.length, 3);
 });
 
+test("published page lookup rejects unresolved media references", async () => {
+  const schema = createFallbackPage({ slug: "home" });
+  schema.sections[0].props.image = "media://asset-missing";
+
+  await withFetch(
+    async () => jsonResponse({ data: schema }),
+    async () => {
+      assert.equal(
+        await getPublishedPage({
+          locale: "en-US",
+          slug: "home",
+        }),
+        null,
+      );
+    },
+  );
+});
+
 test("published page lookup accepts declared locale fallback responses", async () => {
   const requests = [];
 
