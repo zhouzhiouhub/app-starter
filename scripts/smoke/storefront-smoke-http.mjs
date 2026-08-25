@@ -6,7 +6,7 @@ import {
   cancelResponseBody,
   readRedirectLocation,
 } from "./http-response-summary.mjs";
-import { redactSmokeSecrets } from "./smoke-secrets.mjs";
+import { readErrorMessage as readStorefrontSmokeErrorMessage } from "./smoke-error-message.mjs";
 import { readSmokeStorefrontHost } from "./storefront-smoke-host.mjs";
 
 const storefrontHostHeaderName = "x-storefront-host";
@@ -59,9 +59,7 @@ export function delayStorefrontSmoke(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export function readStorefrontSmokeErrorMessage(error) {
-  return redactSmokeSecrets(error instanceof Error ? error.message : error);
-}
+export { readStorefrontSmokeErrorMessage };
 
 function readHeaderObject(headers) {
   if (!headers) {

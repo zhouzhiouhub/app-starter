@@ -6,6 +6,7 @@ import {
   cancelResponseBody,
   readRedirectLocation,
 } from "./http-response-summary.mjs";
+import { readErrorMessage as readUploadErrorMessage } from "./smoke-error-message.mjs";
 import { redactSmokeSecrets } from "./smoke-secrets.mjs";
 
 export async function uploadSmokeImage(target, image) {
@@ -59,8 +60,4 @@ async function readUploadFailureBody(response, url) {
       text: "",
     };
   }
-}
-
-function readUploadErrorMessage(error) {
-  return redactSmokeSecrets(error instanceof Error ? error.message : error);
 }
