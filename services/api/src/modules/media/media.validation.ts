@@ -54,13 +54,25 @@ const r2KeySchema = z
     message: "R2 key contains unsupported characters.",
   });
 
-const mediaUrlSchema = z
+const httpMediaUrlSchema = z
   .string()
-  .trim()
   .url()
   .refine((value) => /^https?:\/\//.test(value), {
     message: "Media URL must be http(s).",
   });
+
+const mediaUrlSchema = z
+  .string()
+  .superRefine((value, context) => {
+    if (hasControlCharacter(value)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Media URL must not contain control characters.",
+      });
+    }
+  })
+  .transform((value) => value.trim())
+  .pipe(httpMediaUrlSchema);
 const reservedMediaMetadataFields = new Set(["archivedAt", "archivedBy"]);
 const mediaMetadataSchema = z
   .record(z.unknown())
@@ -166,4 +178,11 @@ function parseOrThrow<T>(fn: () => T): T {
 
     throw error;
   }
+}
+
+function hasControlCharacter(value: string): boolean {
+  return Array.from(value).some((character) => {
+    const codePoint = character.codePointAt(0) ?? 0;
+    return codePoint <= 0x1f || codePoint === 0x7f;
+  });
 }

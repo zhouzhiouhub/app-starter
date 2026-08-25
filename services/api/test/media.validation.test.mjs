@@ -46,6 +46,32 @@ test("parseConfirmMediaInput rejects reserved metadata fields", () => {
   );
 });
 
+test("parseConfirmMediaInput rejects media URLs with control characters", () => {
+  const input = {
+    filename: "hero.webp",
+    mimeType: "image/webp",
+    r2Key: "tenant-1/imports/hero.webp",
+    size: 4096,
+  };
+
+  assert.throws(
+    () =>
+      parseConfirmMediaInput({
+        ...input,
+        url: "https://images.example.com/hero.webp\n",
+      }),
+    /Media URL must not contain control characters/,
+  );
+  assert.throws(
+    () =>
+      parseConfirmMediaInput({
+        ...input,
+        url: "https://images.example.com/he\tro.webp",
+      }),
+    /Media URL must not contain control characters/,
+  );
+});
+
 test("media URL allowlist includes configured CDN hosts", () => {
   const hosts = readAllowedMediaUrlHosts({
     CDN_BASE_URL: "https://legacy-cdn.example.com/assets",
@@ -65,6 +91,19 @@ test("media URL allowlist ignores unsafe configured CDN hosts", () => {
   assert.equal(hosts.has("cdn.example.com"), false);
   assert.equal(hosts.has("legacy-cdn.example.com"), false);
   assert.equal(hosts.has("cdn.local.invalid"), true);
+});
+
+test("media URL allowlist rejects configured hosts with control characters", () => {
+  const managedHosts = readAllowedMediaUrlHosts({
+    MEDIA_CDN_BASE_URL: "https://cdn.example.com\n",
+  });
+  const externalHosts = readExternalMediaUrlHosts({
+    MEDIA_EXTERNAL_URL_HOSTS:
+      "images.example.com\t, https://assets.example.com\n, media.example.com",
+  });
+
+  assert.equal(managedHosts.has("cdn.example.com"), false);
+  assert.deepEqual([...externalHosts], ["media.example.com"]);
 });
 
 test("media URL allowlist requires explicit safe managed CDN hosts in production", () => {
@@ -252,6 +291,26 @@ test("media URL allowlist rejects embedded credentials", () => {
     {
       name: "BadRequestException",
     },
+  );
+});
+
+test("media URL allowlist rejects URL values with control characters", () => {
+  const env = {
+    MEDIA_CDN_BASE_URL: "https://cdn.example.com",
+    MEDIA_EXTERNAL_URL_HOSTS: "images.example.com",
+  };
+
+  assert.throws(
+    () => assertAllowedMediaUrl("https://cdn.example.com/he\nro.webp", env),
+    /Media URL must not contain control characters/,
+  );
+  assert.throws(
+    () =>
+      assertAllowedExternalMediaUrl(
+        "https://images.example.com/hero.webp\t?width=1200",
+        env,
+      ),
+    /Media URL must not contain control characters/,
   );
 });
 

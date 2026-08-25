@@ -97,7 +97,7 @@ function readHostsFromList(
 
   return value
     .split(",")
-    .map((item) => readHostFromUrlOrHost(item.trim(), options))
+    .map((item) => readHostFromUrlOrHost(item, options))
     .filter((host): host is string => Boolean(host));
 }
 
@@ -109,13 +109,15 @@ function readHostFromUrlOrHost(
     requireHttps?: boolean;
   },
 ): string | undefined {
-  if (!value) {
+  const trimmed = readControlSafeTrimmedValue(value);
+
+  if (!trimmed) {
     return undefined;
   }
 
   return (
-    readSafeHostFromHttpUrl(value, options) ??
-    readHostFromBareValue(value, options)
+    readSafeHostFromHttpUrl(trimmed, options) ??
+    readHostFromBareValue(trimmed, options)
   );
 }
 
@@ -138,7 +140,7 @@ function readSafeSourceFromHttpUrl(
     requireHttps?: boolean;
   },
 ): MediaUrlSource | undefined {
-  const trimmed = value?.trim();
+  const trimmed = readControlSafeTrimmedValue(value);
 
   if (!trimmed) {
     return undefined;
@@ -177,7 +179,7 @@ function readHostFromBareValue(
   value: string,
   options: { rejectUnsafeProductionHost?: boolean },
 ): string | undefined {
-  if (!value || /[/?#\\@]/.test(value)) {
+  if (!value || hasControlCharacter(value) || /[/?#\\@]/.test(value)) {
     return undefined;
   }
 
@@ -211,4 +213,22 @@ function normalizeUrlPathPrefix(pathname: string): string {
 
 function trimTrailingSlashes(pathname: string): string {
   return pathname.replace(/\/+$/, "");
+}
+
+function readControlSafeTrimmedValue(
+  value: string | undefined,
+): string | undefined {
+  if (!value || hasControlCharacter(value)) {
+    return undefined;
+  }
+
+  const trimmed = value.trim();
+  return trimmed || undefined;
+}
+
+function hasControlCharacter(value: string): boolean {
+  return Array.from(value).some((character) => {
+    const codePoint = character.codePointAt(0) ?? 0;
+    return codePoint <= 0x1f || codePoint === 0x7f;
+  });
 }

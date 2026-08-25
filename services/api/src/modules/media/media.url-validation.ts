@@ -67,6 +67,13 @@ function readSafeMediaUrl(
   url: string,
   input: { requireHttps?: boolean },
 ): URL {
+  if (hasControlCharacter(url)) {
+    throw new BadRequestException({
+      code: apiErrorCodes.VALIDATION_ERROR,
+      message: "Media URL must not contain control characters.",
+    });
+  }
+
   const parsed = new URL(url);
 
   if (!["http:", "https:"].includes(parsed.protocol)) {
@@ -153,4 +160,11 @@ function hasSensitiveMediaUrlQueryParameters(url: URL): boolean {
 
 function isSensitiveMediaUrlQueryKey(key: string): boolean {
   return isSensitiveUrlParameterKey(key);
+}
+
+function hasControlCharacter(value: string): boolean {
+  return Array.from(value).some((character) => {
+    const codePoint = character.codePointAt(0) ?? 0;
+    return codePoint <= 0x1f || codePoint === 0x7f;
+  });
 }
