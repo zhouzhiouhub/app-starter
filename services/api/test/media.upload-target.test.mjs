@@ -146,6 +146,24 @@ test("createMediaUploadTarget rejects malformed R2 configuration", () => {
     },
     {
       R2_ACCOUNT_ID: "account-1",
+      R2_ACCESS_KEY_ID: "access-key",
+      R2_BUCKET: "Media-Bucket",
+      R2_SECRET_ACCESS_KEY: "secret-key",
+    },
+    {
+      R2_ACCOUNT_ID: "account-1",
+      R2_ACCESS_KEY_ID: "access-key",
+      R2_BUCKET: "media.-bucket",
+      R2_SECRET_ACCESS_KEY: "secret-key",
+    },
+    {
+      R2_ACCOUNT_ID: "account-1",
+      R2_ACCESS_KEY_ID: "access-key",
+      R2_BUCKET: "192.168.0.1",
+      R2_SECRET_ACCESS_KEY: "secret-key",
+    },
+    {
+      R2_ACCOUNT_ID: "account-1",
       R2_ACCESS_KEY_ID: "access key",
       R2_BUCKET: "media-bucket",
       R2_SECRET_ACCESS_KEY: "secret-key",

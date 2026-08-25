@@ -291,7 +291,7 @@ test("smoke readiness next actions explain R2 readiness blockers", () => {
       },
       {
         action:
-          "Fix invalid R2 variables: R2_ACCOUNT_ID must be a DNS-safe account label up to 63 characters; R2_BUCKET must be 3-63 characters using letters, numbers, dots, or hyphens; R2_SECRET_ACCESS_KEY must not contain whitespace or control characters; R2_REGION must be a DNS-safe region label such as auto.",
+          "Fix invalid R2 variables: R2_ACCOUNT_ID must be a DNS-safe account label up to 63 characters; R2_BUCKET must be 3-63 characters using lowercase letters, numbers, dots, or hyphens, without adjacent dot/hyphen pairs or IP address format; R2_SECRET_ACCESS_KEY must not contain whitespace or control characters; R2_REGION must be a DNS-safe region label such as auto.",
         area: "media.r2",
       },
     ],

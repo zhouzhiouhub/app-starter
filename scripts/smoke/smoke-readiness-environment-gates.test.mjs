@@ -371,7 +371,7 @@ test("smoke readiness blocks unsafe R2 configuration values", () => {
   assert.deepEqual(readiness.nextActions, [
     {
       action:
-        "Fix invalid R2 variables: R2_ACCOUNT_ID must be a DNS-safe account label up to 63 characters; R2_BUCKET must be 3-63 characters using letters, numbers, dots, or hyphens.",
+        "Fix invalid R2 variables: R2_ACCOUNT_ID must be a DNS-safe account label up to 63 characters; R2_BUCKET must be 3-63 characters using lowercase letters, numbers, dots, or hyphens, without adjacent dot/hyphen pairs or IP address format.",
       area: "media.r2",
     },
   ]);

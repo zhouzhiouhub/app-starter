@@ -37,3 +37,31 @@ test("smoke environment diagnostics reports unsafe R2 configuration", () => {
     },
   ]);
 });
+
+test("smoke environment diagnostics rejects unsafe R2 bucket names", () => {
+  for (const bucket of [
+    "Media-Bucket",
+    "media.-bucket",
+    "media-.bucket",
+    "192.168.0.1",
+  ]) {
+    const diagnostics = createSmokeEnvironmentDiagnostics({
+      R2_ACCESS_KEY_ID: "access-key",
+      R2_ACCOUNT_ID: "account-1",
+      R2_BUCKET: bucket,
+      R2_SECRET_ACCESS_KEY: "secret-key",
+    });
+
+    assert.equal(diagnostics.media.r2.configured, false, bucket);
+    assert.deepEqual(
+      diagnostics.media.r2.issues,
+      [
+        {
+          issue: "invalid-bucket",
+          variable: "R2_BUCKET",
+        },
+      ],
+      bucket,
+    );
+  }
+});

@@ -166,9 +166,16 @@ function isSafeR2Bucket(value: string | null): value is string {
     value &&
       value.length >= 3 &&
       value.length <= 63 &&
-      /^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/i.test(value) &&
-      !value.includes(".."),
+      /^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/.test(value) &&
+      !value.includes("..") &&
+      !value.includes(".-") &&
+      !value.includes("-.") &&
+      !isIpv4AddressLike(value),
   );
+}
+
+function isIpv4AddressLike(value: string): boolean {
+  return /^\d{1,3}(?:\.\d{1,3}){3}$/.test(value);
 }
 
 function isSafeR2Credential(value: string | null): value is string {

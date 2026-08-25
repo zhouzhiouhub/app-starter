@@ -119,7 +119,7 @@ function readR2IssueAction(issue) {
   }
 
   if (issue.issue === "invalid-bucket") {
-    return "R2_BUCKET must be 3-63 characters using letters, numbers, dots, or hyphens";
+    return "R2_BUCKET must be 3-63 characters using lowercase letters, numbers, dots, or hyphens, without adjacent dot/hyphen pairs or IP address format";
   }
 
   if (issue.issue === "invalid-region") {

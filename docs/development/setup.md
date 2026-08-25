@@ -57,8 +57,9 @@ instead of returning `.local.invalid` placeholders. Media production mode is
 detected from `NODE_ENV`, `APP_ENV`, or `VERCEL_ENV`.
 Production R2 readiness validates the configuration before issuing presigned
 URLs: `R2_ACCOUNT_ID` must be a DNS-safe label, `R2_BUCKET` must be 3 to 63
-characters using letters, numbers, dots, or hyphens, and R2 credentials plus
-`R2_REGION` must not contain whitespace or control characters.
+characters using lowercase letters, numbers, dots, or hyphens, without adjacent
+dot/hyphen pairs or IP address format, and R2 credentials plus `R2_REGION` must
+not contain whitespace or control characters.
 
 For storefront ISR, set the same secret in the API and Web runtimes. The API
 uses `STOREFRONT_REVALIDATE_URL` to call the Web app after publish or rollback:

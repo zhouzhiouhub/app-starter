@@ -60,7 +60,7 @@ test("smoke readiness CLI formats blockers with remediation context", () => {
       },
       {
         action:
-          "Fix invalid R2 variables: R2_ACCOUNT_ID must be a DNS-safe account label up to 63 characters; R2_BUCKET must be 3-63 characters using letters, numbers, dots, or hyphens.",
+          "Fix invalid R2 variables: R2_ACCOUNT_ID must be a DNS-safe account label up to 63 characters; R2_BUCKET must be 3-63 characters using lowercase letters, numbers, dots, or hyphens, without adjacent dot/hyphen pairs or IP address format.",
         area: "media.r2",
       },
     ],
@@ -77,7 +77,7 @@ test("smoke readiness CLI formats blockers with remediation context", () => {
     "Next actions:",
     "  - [deployment.api] Set API_URL to the deployed API HTTPS origin.",
     "  - [media.r2] Set missing R2 variables: R2_SECRET_ACCESS_KEY.",
-    "  - [media.r2] Fix invalid R2 variables: R2_ACCOUNT_ID must be a DNS-safe account label up to 63 characters; R2_BUCKET must be 3-63 characters using letters, numbers, dots, or hyphens.",
+    "  - [media.r2] Fix invalid R2 variables: R2_ACCOUNT_ID must be a DNS-safe account label up to 63 characters; R2_BUCKET must be 3-63 characters using lowercase letters, numbers, dots, or hyphens, without adjacent dot/hyphen pairs or IP address format.",
   ]);
 });
 
