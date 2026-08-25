@@ -76,6 +76,8 @@ export function readRevalidationUrlAction(blocker) {
       "Remove usernames and passwords from STOREFRONT_REVALIDATE_URL.",
     unsupportedUrlParts:
       "Remove query strings and fragments from STOREFRONT_REVALIDATE_URL.",
+    unsupportedPath:
+      "Set STOREFRONT_REVALIDATE_URL to the deployed storefront origin or exact /api/revalidate endpoint.",
     missingHost:
       "Include the deployed storefront hostname in STOREFRONT_REVALIDATE_URL.",
   });

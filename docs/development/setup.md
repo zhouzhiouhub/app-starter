@@ -76,6 +76,7 @@ control-character secrets as unsafe instead of configured.
 
 `STOREFRONT_REVALIDATE_URL` can be the full Web revalidation route. If it is
 set to the Web origin only, the API normalizes it to `/api/revalidate`.
+Explicit revalidation URLs with any other path are rejected before publish.
 In production, both the explicit revalidation URL and the `WEB_URL` fallback
 must resolve to an HTTPS endpoint outside local, private, Docker-local, or
 reserved placeholder hosts. Revalidation production mode is detected from

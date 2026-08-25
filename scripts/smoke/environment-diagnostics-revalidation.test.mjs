@@ -51,6 +51,28 @@ test("smoke environment diagnostics reports unsafe revalidation URLs", () => {
   });
 });
 
+test("smoke environment diagnostics rejects unexpected revalidation paths", () => {
+  const diagnostics = createSmokeEnvironmentDiagnostics({
+    STOREFRONT_REVALIDATE_SECRET: "secret-value",
+    STOREFRONT_REVALIDATE_URL: "https://web.brand.com/login/",
+  });
+
+  assert.deepEqual(diagnostics.revalidation, {
+    configured: false,
+    endpointHost: "web.brand.com",
+    endpointPath: "/login",
+    requireRevalidation: true,
+    secretConfigured: true,
+    secretIssue: null,
+    secretSafe: true,
+    urlConfigured: true,
+    urlIssue: "unexpected-path",
+    urlSafe: false,
+    urlSource: "STOREFRONT_REVALIDATE_URL",
+    usesWebUrlFallback: false,
+  });
+});
+
 test("smoke environment diagnostics rejects unsafe revalidation secrets", () => {
   for (const [secret, issue] of [
     ["secret-1\r\nx-secret: leaked", "control-character"],

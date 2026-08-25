@@ -146,6 +146,18 @@ function readRevalidationEndpoint(value, source) {
     };
   }
 
+  if (
+    source !== "WEB_URL" &&
+    !isSupportedRevalidatePath(url.pathname)
+  ) {
+    return {
+      host: url.hostname,
+      issue: "unexpected-path",
+      path: createRevalidateEndpointPath(url.pathname),
+      safe: false,
+    };
+  }
+
   return {
     host: url.hostname,
     issue: null,
@@ -161,6 +173,11 @@ function createRevalidateEndpointPath(pathname) {
   const trimmed = pathname.replace(/\/+$/, "");
 
   return trimmed ? trimmed : defaultRevalidatePath;
+}
+
+function isSupportedRevalidatePath(pathname) {
+  const normalized = createRevalidateEndpointPath(pathname);
+  return normalized === defaultRevalidatePath;
 }
 
 function readBooleanEnv(env, name, fallback) {

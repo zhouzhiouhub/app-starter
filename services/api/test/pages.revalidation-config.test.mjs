@@ -99,6 +99,10 @@ test("storefront revalidation URL resolver rejects unsafe URLs", () => {
       WEB_URL: "",
     },
     {
+      STOREFRONT_REVALIDATE_URL: "https://web.brand-platform.com/login",
+      WEB_URL: "",
+    },
+    {
       STOREFRONT_REVALIDATE_URL: "",
       WEB_URL: "ftp://web.example.com",
     },

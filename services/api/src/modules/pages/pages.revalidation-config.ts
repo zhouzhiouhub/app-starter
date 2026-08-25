@@ -17,6 +17,7 @@ export function resolveStorefrontRevalidateUrl(
   const configured = readSafeHttpUrl(
     env.STOREFRONT_REVALIDATE_URL,
     requireProductionUrl,
+    "revalidate-endpoint",
   );
 
   if (configured) {
@@ -27,7 +28,7 @@ export function resolveStorefrontRevalidateUrl(
     return null;
   }
 
-  const webUrl = readSafeHttpUrl(env.WEB_URL, requireProductionUrl);
+  const webUrl = readSafeHttpUrl(env.WEB_URL, requireProductionUrl, "any");
 
   if (!webUrl) {
     return null;
@@ -75,6 +76,7 @@ function createRevalidateEndpointUrl(url: URL): string {
 function readSafeHttpUrl(
   value: string | undefined,
   requireProductionUrl: boolean,
+  pathPolicy: "any" | "revalidate-endpoint",
 ): URL | null {
   const trimmed = value?.trim();
 
@@ -92,7 +94,9 @@ function readSafeHttpUrl(
       url.username ||
       url.password ||
       url.search ||
-      url.hash
+      url.hash ||
+      (pathPolicy === "revalidate-endpoint" &&
+        !isSupportedRevalidatePath(url.pathname))
     ) {
       return null;
     }
@@ -101,6 +105,11 @@ function readSafeHttpUrl(
   } catch {
     return null;
   }
+}
+
+function isSupportedRevalidatePath(pathname: string): boolean {
+  const normalized = trimTrailingSlashes(pathname);
+  return normalized === "/" || normalized === "/api/revalidate";
 }
 
 function trimTrailingSlashes(value: string): string {
