@@ -73,12 +73,24 @@ export async function listPublishedPages(input?: {
       return [];
     }
 
-    return result.data
-      .slice(0, publicPublishedPageListMaxCount)
-      .flatMap(readPublishedPageSummary);
+    return readPublishedPageSummaries(result.data);
   } catch {
     return [];
   }
+}
+
+function readPublishedPageSummaries(values: unknown[]): PublishedPageSummary[] {
+  const summaries: PublishedPageSummary[] = [];
+
+  for (const value of values) {
+    summaries.push(...readPublishedPageSummary(value));
+
+    if (summaries.length >= publicPublishedPageListMaxCount) {
+      return summaries;
+    }
+  }
+
+  return summaries;
 }
 
 function readPublishedPageSummary(value: unknown): PublishedPageSummary[] {

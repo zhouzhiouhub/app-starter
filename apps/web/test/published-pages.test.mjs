@@ -231,6 +231,41 @@ test("published pages list drops summaries with malformed noIndex flags", async 
   );
 });
 
+test("published pages list caps after filtering invalid summaries", async () => {
+  await withFetch(
+    async () =>
+      jsonResponse({
+        data: [
+          {
+            noIndex: false,
+            slug: "../admin",
+            title: "Bad",
+            updatedAt: "2026-08-21T00:00:00.000Z",
+          },
+          ...Array.from(
+            { length: publicPublishedPageListMaxCount },
+            (_value, index) => ({
+              noIndex: false,
+              slug: index === 0 ? "home" : `campaign-${index}`,
+              title: `Campaign ${index}`,
+              updatedAt: "2026-08-21T00:00:00.000Z",
+            }),
+          ),
+        ],
+      }),
+    async () => {
+      const pages = await listPublishedPages({
+        locale: "en-US",
+        market: "us",
+      });
+
+      assert.equal(pages.length, publicPublishedPageListMaxCount);
+      assert.equal(pages[0].slug, "home");
+      assert.equal(pages.at(-1).slug, "campaign-999");
+    },
+  );
+});
+
 test("published pages list caps oversized API responses", async () => {
   await withFetch(
     async () =>
