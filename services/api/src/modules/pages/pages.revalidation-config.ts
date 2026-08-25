@@ -12,7 +12,9 @@ export function resolveStorefrontRevalidateUrl(
     WEB_URL?: string;
   } = process.env,
 ): string | null {
-  const rawConfigured = env.STOREFRONT_REVALIDATE_URL?.trim();
+  const hasConfiguredUrl = hasExplicitConfiguredUrl(
+    env.STOREFRONT_REVALIDATE_URL,
+  );
   const requireProductionUrl = isProductionRevalidationEnvironment(env);
   const configured = readSafeHttpUrl(
     env.STOREFRONT_REVALIDATE_URL,
@@ -24,7 +26,7 @@ export function resolveStorefrontRevalidateUrl(
     return createRevalidateEndpointUrl(configured);
   }
 
-  if (rawConfigured) {
+  if (hasConfiguredUrl) {
     return null;
   }
 
@@ -78,7 +80,7 @@ function readSafeHttpUrl(
   requireProductionUrl: boolean,
   pathPolicy: "any" | "revalidate-endpoint",
 ): URL | null {
-  const trimmed = value?.trim();
+  const trimmed = readControlSafeTrimmedValue(value);
 
   if (!trimmed) {
     return null;
@@ -119,4 +121,25 @@ function trimTrailingSlashes(value: string): string {
 
 function isHttpProtocol(protocol: string): boolean {
   return protocol === "http:" || protocol === "https:";
+}
+
+function hasExplicitConfiguredUrl(value: string | undefined): boolean {
+  return Boolean(
+    value && (hasControlCharacter(value) || value.trim().length > 0),
+  );
+}
+
+function readControlSafeTrimmedValue(value: string | undefined): string | null {
+  if (!value || hasControlCharacter(value)) {
+    return null;
+  }
+
+  return value.trim() || null;
+}
+
+function hasControlCharacter(value: string): boolean {
+  return Array.from(value).some((character) => {
+    const codePoint = character.codePointAt(0) ?? 0;
+    return codePoint <= 0x1f || codePoint === 0x7f;
+  });
 }

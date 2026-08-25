@@ -110,6 +110,24 @@ test("storefront revalidation URL resolver rejects unsafe URLs", () => {
       STOREFRONT_REVALIDATE_URL: "",
       WEB_URL: "https://user:pass@web.example.com",
     },
+    {
+      STOREFRONT_REVALIDATE_URL:
+        "https://web.example.com/api/revalidate\n",
+      WEB_URL: "https://fallback.example.com/",
+    },
+    {
+      STOREFRONT_REVALIDATE_URL:
+        "https://web.example.com/api/re\tvalidate",
+      WEB_URL: "",
+    },
+    {
+      STOREFRONT_REVALIDATE_URL: "",
+      WEB_URL: "https://web.example.com/\t",
+    },
+    {
+      STOREFRONT_REVALIDATE_URL: "\n",
+      WEB_URL: "https://fallback.example.com/",
+    },
   ]) {
     assert.equal(resolveStorefrontRevalidateUrl(values), null);
   }
