@@ -87,8 +87,11 @@ test("site domain header helper reads one safe storefront host", () => {
   for (const value of [
     "",
     ["store.brand-platform.com", "other.brand-platform.com"],
+    ["store.brand-platform.com\n"],
     "store.brand-platform.com, other.brand-platform.com",
+    "store.brand-platform.com\n",
     "store.brand-platform.com\nx-forwarded-host: other.brand-platform.com",
+    "\tstore.brand-platform.com",
     "store.brand-platform.com\tother.brand-platform.com",
     "store.brand-platform.com\x7f",
     "https://store.brand-platform.com",

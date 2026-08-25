@@ -299,6 +299,44 @@ test("public pages preserve duplicate storefront host headers for lookup rejecti
   assert.equal(response.meta.requestId, "request-public-duplicate-host");
 });
 
+test("public pages preserve control-character hosts for lookup rejection", async () => {
+  const seenHosts = [];
+  const controller = new PublicController({
+    listPublished(input) {
+      seenHosts.push(input.siteHost);
+
+      return Promise.resolve({
+        data: [],
+        meta: { requestId: "local-dev" },
+      });
+    },
+  });
+
+  await controller.listPages(
+    "en-US",
+    "us",
+    {
+      host: "store.brand-platform.com",
+      "x-storefront-host": "store.brand-platform.com\n",
+    },
+    "request-public-control-host",
+  );
+  await controller.listPages(
+    "en-US",
+    "us",
+    {
+      host: "store.brand-platform.com",
+      "x-storefront-host": ["store.brand-platform.com\t"],
+    },
+    "request-public-control-host-array",
+  );
+
+  assert.deepEqual(seenHosts, [
+    "store.brand-platform.com\n",
+    "store.brand-platform.com\t",
+  ]);
+});
+
 test("public pages preserve unsafe request hosts for lookup rejection", async () => {
   const controller = new PublicController({
     listPublished(input) {

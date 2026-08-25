@@ -115,7 +115,13 @@ test("public site lookup rejects explicit unsafe hosts before fallback", async (
     },
   };
 
-  assert.equal(await getPublicSite(prisma, "store.example.com"), null);
+  for (const siteHost of [
+    "store.example.com",
+    "store.brand-platform.com\n",
+    "store.brand-platform.com\t",
+  ]) {
+    assert.equal(await getPublicSite(prisma, siteHost), null);
+  }
 });
 
 test("public site lookup keeps local development fallback", async () => {

@@ -28,7 +28,7 @@ export function readSiteDomainHeader(
 ): string | null {
   const raw = readSingleHeaderValue(value);
 
-  if (!raw || hasUnsafeHeaderValueCharacter(raw)) {
+  if (!raw) {
     return null;
   }
 
@@ -108,14 +108,26 @@ function readSingleHeaderValue(
   value: readonly string[] | string | null | undefined,
 ): string | null {
   if (Array.isArray(value)) {
-    return value.length === 1 ? value[0]?.trim() || null : null;
+    return value.length === 1
+      ? readSingleHeaderStringValue(value[0])
+      : null;
   }
 
   if (typeof value !== "string") {
     return null;
   }
 
-  return value?.trim() || null;
+  return readSingleHeaderStringValue(value);
+}
+
+function readSingleHeaderStringValue(
+  value: string | undefined,
+): string | null {
+  if (!value || hasUnsafeHeaderValueCharacter(value)) {
+    return null;
+  }
+
+  return value.trim() || null;
 }
 
 function hasUnsafeHeaderValueCharacter(value: string): boolean {

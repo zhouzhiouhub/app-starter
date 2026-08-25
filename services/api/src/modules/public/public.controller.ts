@@ -192,7 +192,7 @@ function readSiteHostHeader(
     headers?.[toHeaderCase(name)];
 
   if (Array.isArray(value)) {
-    const rawValue = value.map((item) => item.trim()).filter(Boolean).join(",");
+    const rawValue = value.filter((item) => item.trim()).join(",");
     return rawValue ? { found: true, value: rawValue } : { found: false };
   }
 
@@ -200,8 +200,7 @@ function readSiteHostHeader(
     return { found: false };
   }
 
-  const rawValue = value.trim();
-  return rawValue ? { found: true, value: rawValue } : { found: false };
+  return value.trim() ? { found: true, value } : { found: false };
 }
 
 function toHeaderCase(name: string) {
