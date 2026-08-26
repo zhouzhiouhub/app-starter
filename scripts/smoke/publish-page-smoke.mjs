@@ -4,7 +4,7 @@ import {
   assertRevalidationSmokeTargets,
   createRevalidationSmokeDetails,
 } from "./revalidation-smoke.mjs";
-import { redactSmokeSecrets } from "./smoke-secrets.mjs";
+import { formatSmokeText } from "./smoke-text.mjs";
 
 const maxRevalidationLogLineLength = 220;
 const maxRevalidationLogPathLength = 96;
@@ -82,9 +82,9 @@ function formatPublishRevalidationDetails(details) {
 }
 
 function formatRevalidationSuccessLog(paths) {
-  return truncateText(
+  return formatSmokeText(
     `Storefront revalidation passed: ${formatRevalidationLogPaths(paths)}`,
-    maxRevalidationLogLineLength,
+    { maxLength: maxRevalidationLogLineLength },
   );
 }
 
@@ -109,27 +109,5 @@ function formatRevalidationLogPath(value) {
     return null;
   }
 
-  return truncateText(
-    normalizeLogText(redactSmokeSecrets(value)),
-    maxRevalidationLogPathLength,
-  );
-}
-
-function normalizeLogText(value) {
-  return replaceControlCharacters(value).replace(/\s+/g, " ").trim();
-}
-
-function replaceControlCharacters(value) {
-  let result = "";
-
-  for (const character of String(value)) {
-    const code = character.charCodeAt(0);
-    result += code <= 31 || code === 127 ? " " : character;
-  }
-
-  return result;
-}
-
-function truncateText(value, limit) {
-  return value.length > limit ? `${value.slice(0, limit - 3)}...` : value;
+  return formatSmokeText(value, { maxLength: maxRevalidationLogPathLength });
 }
