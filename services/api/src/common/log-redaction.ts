@@ -54,7 +54,7 @@ export function redactLogSecrets(value: unknown): string {
     )
     .replace(
       new RegExp(
-        `(\\b(?:${logSecretKeyPattern})\\b\\s*[=:]\\s*)[^&#\\s)"'<;,]+`,
+        `(\\b(?:${logSecretKeyPattern})\\b\\s*[=:]\\s*)(?!\\[redacted(?:-pem)?\\])[^&#\\s)"'<;,]+`,
         "gi",
       ),
       `$1${redactedValue}`,

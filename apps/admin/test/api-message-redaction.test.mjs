@@ -19,6 +19,9 @@ test("API message redaction removes secrets from JSON-like fragments", () => {
       "secretAccessKey=aws-secret-key",
       "callback=https://auth.example.com/callback?oauth_verifier=oauth-verifier-secret",
       "download=https://cdn.example.com/object?Policy=policy-secret&sig=sig-secret",
+      "storefrontRevalidateSecret=storefront-secret",
+      "webhookSignature=webhook-signature",
+      '"stripeWebhookSignature":"stripe-signature"',
       "rawPem=-----BEGIN PRIVATE KEY-----\nraw-private-key-body\n-----END PRIVATE KEY-----",
     ].join(" "),
   );
@@ -37,6 +40,9 @@ test("API message redaction removes secrets from JSON-like fragments", () => {
   assert.equal(message.includes("payload.signature"), false);
   assert.equal(message.includes("dXNlcjpwYXNz"), false);
   assert.equal(message.includes("admin-api-key-value"), false);
+  assert.equal(message.includes("storefront-secret"), false);
+  assert.equal(message.includes("webhook-signature"), false);
+  assert.equal(message.includes("stripe-signature"), false);
   assert.equal(message.includes("private-key-body"), false);
   assert.equal(message.includes("aws-secret-key"), false);
   assert.equal(message.includes("raw-private-key-body"), false);
@@ -58,6 +64,9 @@ test("API message redaction removes secrets from JSON-like fragments", () => {
   assert.match(message, /oauth_verifier=\[redacted\]/);
   assert.match(message, /Policy=\[redacted\]/);
   assert.match(message, /sig=\[redacted\]/);
+  assert.match(message, /storefrontRevalidateSecret=\[redacted\]/);
+  assert.match(message, /webhookSignature=\[redacted\]/);
+  assert.match(message, /"stripeWebhookSignature":"\[redacted\]"/);
   assert.match(message, /rawPem=\[redacted-pem\]/);
 });
 

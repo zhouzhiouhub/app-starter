@@ -38,6 +38,9 @@ const sensitiveCredentialKeyPatterns = [
 
 const sensitiveUrlOnlyKeyPatterns = ["policy"];
 
+const compoundSensitiveCredentialKeyPatterns =
+  sensitiveCredentialKeyPatterns.map((pattern) => `[a-z0-9_-]*${pattern}`);
+
 const sensitiveCredentialKeySuffixes = [
   "accesskeyid",
   "accesstoken",
@@ -92,10 +95,14 @@ const sensitiveUrlParameterKeys = new Set([
 ]);
 
 export const sensitiveCredentialKeyPatternSource =
-  sensitiveCredentialKeyPatterns.join("|");
+  [
+    ...sensitiveCredentialKeyPatterns,
+    ...compoundSensitiveCredentialKeyPatterns,
+  ].join("|");
 
 export const sensitiveUrlParameterKeyPatternSource = [
   ...sensitiveCredentialKeyPatterns,
+  ...compoundSensitiveCredentialKeyPatterns,
   ...sensitiveUrlOnlyKeyPatterns,
 ].join("|");
 

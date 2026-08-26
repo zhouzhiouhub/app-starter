@@ -35,8 +35,10 @@ test("sensitive secret helper avoids URL-only policy keys", () => {
     "authorization",
     "clientSecret",
     "oauth_verifier",
+    "storefrontRevalidateSecret",
     "secretAccessKey",
     "sentryDsn",
+    "stripeWebhookSignature",
     "x-amz-credential",
     "uploadSig",
   ]) {
@@ -53,7 +55,10 @@ test("sensitive regex sources separate URL-only query parameters", () => {
 
   assert.equal(secretPattern.test("authorizationCode"), true);
   assert.equal(secretPattern.test("secretAccessKey"), true);
+  assert.equal(secretPattern.test("storefrontRevalidateSecret"), true);
+  assert.equal(secretPattern.test("stripeWebhookSignature"), true);
   assert.equal(urlPattern.test("Key-Pair-Id"), true);
+  assert.equal(urlPattern.test("storefrontRevalidateSecret"), true);
   assert.equal(secretPattern.test("policy"), false);
   assert.equal(urlPattern.test("authorization_code"), true);
   assert.equal(urlPattern.test("Policy"), true);

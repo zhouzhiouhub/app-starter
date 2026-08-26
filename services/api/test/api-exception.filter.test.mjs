@@ -56,6 +56,9 @@ test("API exception filter redacts secrets from internal error logs", () => {
       "https://auth.example.com/callback?authorization_code=oauth-code&code_verifier=pkce-secret",
       "https://cdn.example.com/object?Policy=policy-secret&sig=sig-secret",
       "https://uploads.example.com/object?X-Amz-Signature=signed-value#access_token=fragment-token",
+      "storefrontRevalidateSecret=storefront-secret",
+      "webhookSignature=webhook-signature",
+      '"stripeWebhookSignature":"stripe-signature"',
     ].join(" "),
   );
   error.stack = `Error: ${error.message}\n    at handler (C:\\internal\\api.ts:1:1)`;
@@ -77,6 +80,9 @@ test("API exception filter redacts secrets from internal error logs", () => {
   assert.equal(logged.includes("sig-secret"), false);
   assert.equal(logged.includes("signed-value"), false);
   assert.equal(logged.includes("fragment-token"), false);
+  assert.equal(logged.includes("storefront-secret"), false);
+  assert.equal(logged.includes("webhook-signature"), false);
+  assert.equal(logged.includes("stripe-signature"), false);
   assert.match(logged, /Authorization: Bearer \[redacted\]/);
   assert.match(logged, /Authorization: Basic \[redacted\]/);
   assert.match(logged, /databaseUrl=\[redacted\]/);
@@ -89,6 +95,9 @@ test("API exception filter redacts secrets from internal error logs", () => {
   assert.match(logged, /sig=\[redacted\]/);
   assert.match(logged, /X-Amz-Signature=\[redacted\]/);
   assert.match(logged, /#access_token=\[redacted\]/);
+  assert.match(logged, /storefrontRevalidateSecret=\[redacted\]/);
+  assert.match(logged, /webhookSignature=\[redacted\]/);
+  assert.match(logged, /"stripeWebhookSignature":"\[redacted\]"/);
 });
 
 test("API exception filter keeps client validation details", () => {

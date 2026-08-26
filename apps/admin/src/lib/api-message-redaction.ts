@@ -53,7 +53,7 @@ export function redactApiMessageSecrets(value: string): string {
     )
     .replace(
       new RegExp(
-        `(\\b(?:${apiSecretKeyPattern})\\b\\s*[=:]\\s*)[^&#\\s)"'<;,]+`,
+        `(\\b(?:${apiSecretKeyPattern})\\b\\s*[=:]\\s*)(?!\\[redacted(?:-pem)?\\])[^&#\\s)"'<;,]+`,
         "gi",
       ),
       "$1[redacted]",
