@@ -1,8 +1,12 @@
 import "reflect-metadata";
 import assert from "node:assert/strict";
 import test from "node:test";
-import { BadRequestException } from "@nestjs/common";
-import { GUARDS_METADATA } from "@nestjs/common/constants.js";
+import { BadRequestException, RequestMethod } from "@nestjs/common";
+import {
+  GUARDS_METADATA,
+  METHOD_METADATA,
+  PATH_METADATA,
+} from "@nestjs/common/constants.js";
 import { apiErrorCodes } from "../../../packages/schema/dist/index.js";
 import { AdminApiGuard } from "../dist/common/admin-api.guard.js";
 import { REQUIRE_SCOPES_KEY } from "../dist/common/require-scopes.decorator.js";
@@ -35,6 +39,9 @@ test("localization admin routes require guard and read or write scopes", () => {
   assert.deepEqual(readScopes("getLocales"), ["locale:read"]);
   assert.deepEqual(readScopes("getTranslations"), ["translation:read"]);
   assert.deepEqual(readScopes("upsertTranslation"), ["translation:write"]);
+  assert.deepEqual(readScopes("updateTranslation"), ["translation:write"]);
+  assert.equal(readRouteMethod("updateTranslation"), RequestMethod.PATCH);
+  assert.equal(readRoutePath("updateTranslation"), "translations/:id");
   assert.deepEqual(readScopes("createTranslationImport"), [
     "translation:write",
   ]);
@@ -263,6 +270,20 @@ test("translation upsert controller requires idempotency keys", () => {
 function readScopes(methodName) {
   return Reflect.getMetadata(
     REQUIRE_SCOPES_KEY,
+    LocalizationController.prototype[methodName],
+  );
+}
+
+function readRouteMethod(methodName) {
+  return Reflect.getMetadata(
+    METHOD_METADATA,
+    LocalizationController.prototype[methodName],
+  );
+}
+
+function readRoutePath(methodName) {
+  return Reflect.getMetadata(
+    PATH_METADATA,
     LocalizationController.prototype[methodName],
   );
 }

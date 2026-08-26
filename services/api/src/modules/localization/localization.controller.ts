@@ -4,6 +4,8 @@ import {
   Controller,
   Get,
   Headers,
+  Param,
+  Patch,
   Post,
   Query,
   UseGuards,
@@ -89,6 +91,24 @@ export class LocalizationController {
     @CurrentRequestId() requestId = "local-dev",
   ) {
     return this.localization.upsertTranslation(
+      body,
+      requireIdempotencyKey(idempotencyKey),
+      actor,
+      requestId,
+    );
+  }
+
+  @Patch("translations/:id")
+  @RequireScopes("translation:write")
+  updateTranslation(
+    @CurrentUser() actor: Actor,
+    @Param("id") id: string,
+    @Body() body: unknown,
+    @Headers("idempotency-key") idempotencyKey?: string,
+    @CurrentRequestId() requestId = "local-dev",
+  ) {
+    return this.localization.updateTranslation(
+      id,
       body,
       requireIdempotencyKey(idempotencyKey),
       actor,

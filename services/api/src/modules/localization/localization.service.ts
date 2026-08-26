@@ -11,6 +11,7 @@ import {
 } from "./localization.validation.js";
 import { previewTranslationExport } from "./use-cases/preview-translation-export.js";
 import { previewTranslationImport } from "./use-cases/preview-translation-import.js";
+import { updateTranslation } from "./use-cases/update-translation.js";
 import { upsertTranslation } from "./use-cases/upsert-translation.js";
 
 @Injectable()
@@ -74,6 +75,23 @@ export class LocalizationService {
   ) {
     return upsertTranslation(
       this.prisma,
+      body,
+      idempotencyKey,
+      actor,
+      requestId,
+    );
+  }
+
+  async updateTranslation(
+    id: string,
+    body: unknown,
+    idempotencyKey: string | undefined,
+    actor: Actor,
+    requestId = "local-dev",
+  ) {
+    return updateTranslation(
+      this.prisma,
+      id,
       body,
       idempotencyKey,
       actor,

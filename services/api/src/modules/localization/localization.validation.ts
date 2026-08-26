@@ -64,9 +64,46 @@ const upsertTranslationInputSchema = z.object({
       "Value must not contain control characters.",
     ),
 });
+const translationIdSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(128)
+  .regex(/^[a-zA-Z0-9_.:-]+$/, {
+    message:
+      "Translation id may only contain letters, numbers, dots, colons, dashes, and underscores.",
+  });
+const updateTranslationInputSchema = z
+  .object({
+    context: z
+      .string()
+      .max(translationContextMaxLength)
+      .refine(
+        (value) => !hasControlCharacter(value),
+        "Context must not contain control characters.",
+      )
+      .nullable()
+      .optional(),
+    value: z
+      .string()
+      .min(1)
+      .max(publicTranslationMessageMaxLength)
+      .refine(
+        (value) => !hasControlCharacter(value),
+        "Value must not contain control characters.",
+      )
+      .optional(),
+  })
+  .refine(
+    (input) => input.context !== undefined || input.value !== undefined,
+    "At least one translation field must be provided.",
+  );
 
 export type CreateLocaleInput = z.infer<typeof createLocaleInputSchema>;
 export type ListTranslationsQuery = z.infer<typeof listTranslationsQuerySchema>;
+export type UpdateTranslationInput = z.infer<
+  typeof updateTranslationInputSchema
+>;
 export type UpsertTranslationInput = z.infer<
   typeof upsertTranslationInputSchema
 >;
@@ -88,6 +125,18 @@ export function parseUpsertTranslationInput(
 ): UpsertTranslationInput {
   return parseOrThrow(() =>
     upsertTranslationInputSchema.parse(unwrapBodyData(body)),
+  );
+}
+
+export function parseTranslationId(id: string): string {
+  return parseOrThrow(() => translationIdSchema.parse(id));
+}
+
+export function parseUpdateTranslationInput(
+  body: unknown,
+): UpdateTranslationInput {
+  return parseOrThrow(() =>
+    updateTranslationInputSchema.parse(unwrapBodyData(body)),
   );
 }
 
