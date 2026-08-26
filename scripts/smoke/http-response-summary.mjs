@@ -1,4 +1,6 @@
-import { redactSmokeSecrets } from "./smoke-secrets.mjs";
+import { formatSmokeText } from "./smoke-text.mjs";
+
+const maxSmokeRedirectLocationLength = 512;
 
 export async function cancelResponseBody(response) {
   try {
@@ -13,7 +15,10 @@ export function readRedirectLocation(response) {
     return null;
   }
 
-  const location = response.headers.get("location")?.trim();
+  const location = response.headers.get("location");
 
-  return location ? redactSmokeSecrets(location) : null;
+  return location
+    ? formatSmokeText(location, { maxLength: maxSmokeRedirectLocationLength }) ||
+        null
+    : null;
 }
