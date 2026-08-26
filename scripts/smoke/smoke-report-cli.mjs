@@ -99,8 +99,9 @@ function formatFailureDetailLines(details) {
   const visible = details.slice(0, maxFailureDetailCount);
   const remainingCount = details.length - visible.length;
   const lines = visible.map((detail) => {
-    const message = truncateText(
-      redactSmokeSecrets(detail.message),
+    const message = formatCliText(
+      detail.message,
+      "No error message captured.",
       maxFailureMessageLength,
     );
     const diagnosis = formatCliLabel(
@@ -132,7 +133,29 @@ function formatText(value, fallback) {
 }
 
 function formatCliLabel(value, fallback, maxLength) {
-  return truncateText(redactSmokeSecrets(formatText(value, fallback)), maxLength);
+  return formatCliText(value, fallback, maxLength);
+}
+
+function formatCliText(value, fallback, maxLength) {
+  return truncateText(
+    normalizeCliText(redactSmokeSecrets(formatText(value, fallback))),
+    maxLength,
+  );
+}
+
+function normalizeCliText(value) {
+  return replaceControlCharacters(value).replace(/\s+/g, " ").trim();
+}
+
+function replaceControlCharacters(value) {
+  let result = "";
+
+  for (const character of String(value)) {
+    const code = character.charCodeAt(0);
+    result += code <= 31 || code === 127 ? " " : character;
+  }
+
+  return result;
 }
 
 function readPlainRecord(value) {
