@@ -12,6 +12,11 @@ export function createReadyEnvironment() {
     analytics: {
       productionReady: true,
     },
+    commerce: {
+      stripe: {
+        productionReady: true,
+      },
+    },
     database: {
       productionReady: true,
     },

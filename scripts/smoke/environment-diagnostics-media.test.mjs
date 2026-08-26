@@ -63,6 +63,24 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
         },
       },
     },
+    commerce: {
+      stripe: {
+        configured: false,
+        productionReady: true,
+        secretKey: {
+          configured: false,
+          issue: null,
+          safe: true,
+          variable: "STRIPE_SECRET_KEY",
+        },
+        webhookSecret: {
+          configured: false,
+          issue: null,
+          safe: true,
+          variable: "STRIPE_WEBHOOK_SECRET",
+        },
+      },
+    },
     database: {
       configured: true,
       host: "db.brand-platform.com",
@@ -233,6 +251,7 @@ test("smoke environment diagnostics reports missing R2 and CDN fallback", () => 
   assert.deepEqual(diagnostics.media.externalUrlHostIssues, []);
   assert.deepEqual(diagnostics.media.externalUrlHosts, []);
   assert.equal(diagnostics.media.externalUrlHostsProductionReady, true);
+  assert.equal(diagnostics.commerce.stripe.productionReady, true);
   assert.equal(diagnostics.analytics.productionReady, true);
   assert.equal(diagnostics.database.configured, false);
   assert.equal(diagnostics.database.productionReady, false);
@@ -344,47 +363,6 @@ test("smoke environment diagnostics reports unsafe CDN configuration", () => {
   assert.equal(placeholderHost.media.cdnUsesLocalFallback, false);
 });
 
-test("smoke environment diagnostics reports unsafe external media hosts", () => {
-  const diagnostics = createSmokeEnvironmentDiagnostics({
-    MEDIA_EXTERNAL_URL_HOSTS:
-      "images.brand-assets.com, http://assets.brand-assets.com, https://user:secret@private.brand-assets.com, https://cdn.brand-assets.com/path?token=1, localhost, cdn.example.com, bad host",
-  });
-
-  assert.deepEqual(diagnostics.media.externalUrlHosts, [
-    "images.brand-assets.com",
-  ]);
-  assert.equal(diagnostics.media.externalUrlHostsProductionReady, false);
-  assert.deepEqual(diagnostics.media.externalUrlHostIssues, [
-    {
-      host: "assets.brand-assets.com",
-      issue: "unsupported-protocol",
-    },
-    {
-      host: "private.brand-assets.com",
-      issue: "embedded-credentials",
-    },
-    {
-      host: "cdn.brand-assets.com",
-      issue: "unsupported-url-parts",
-    },
-    {
-      host: "localhost",
-      issue: "local-host",
-    },
-    {
-      host: "cdn.example.com",
-      issue: "placeholder-host",
-    },
-    {
-      host: null,
-      issue: "invalid-host",
-    },
-  ]);
-
-  const serialized = JSON.stringify(diagnostics.media);
-  assert.equal(serialized.includes("secret"), false);
-  assert.equal(serialized.includes("token=1"), false);
-});
 function createRsaPemPair() {
   return generateKeyPairSync("rsa", {
     modulusLength: 2048,

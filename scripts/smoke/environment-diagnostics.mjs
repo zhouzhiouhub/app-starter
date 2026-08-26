@@ -7,6 +7,7 @@ import { createMediaDiagnostics } from "./environment-diagnostics-media.mjs";
 import { createPreviewDiagnostics } from "./environment-diagnostics-preview.mjs";
 import { createRevalidationDiagnostics } from "./environment-diagnostics-revalidation.mjs";
 import { createRedisDiagnostics } from "./environment-diagnostics-redis.mjs";
+import { createStripeDiagnostics } from "./environment-diagnostics-stripe.mjs";
 
 export function createSmokeEnvironmentDiagnostics(
   env = process.env,
@@ -14,6 +15,9 @@ export function createSmokeEnvironmentDiagnostics(
 ) {
   return {
     analytics: createAnalyticsDiagnostics(env),
+    commerce: {
+      stripe: createStripeDiagnostics(env),
+    },
     database: createDatabaseDiagnostics(env, options),
     deployment: createDeploymentDiagnostics(env, options),
     featureFlags: createFeatureFlagDiagnostics(env),

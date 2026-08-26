@@ -298,7 +298,12 @@ summary. Analytics diagnostics
 record whether the runtime gates are valid and whether an enabled analytics
 setup has consent plus at least one valid provider. Feature flag diagnostics
 record whether `COMMERCE_ENABLED` and `MULTI_LOCALE_ENABLED` are explicitly
-configured and disabled. Database diagnostics record only non-secret
+configured and disabled. Stripe diagnostics treat `STRIPE_SECRET_KEY` and
+`STRIPE_WEBHOOK_SECRET` as optional while Commerce is disabled, but configured
+values must use production-safe formats and must not be test keys, placeholder
+values, whitespace-padded values, or control-character values; diagnostics
+record only readiness metadata and issue codes, never secret values. Database
+diagnostics record only non-secret
 `DATABASE_URL` readiness metadata: whether it is configured, the database host,
 URL safety, committed migration readiness, and whether it is production-ready.
 Redis diagnostics record only non-secret `REDIS_URL` readiness metadata: whether it is configured, the Redis

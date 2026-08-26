@@ -3,6 +3,7 @@ import {
   appendDisabledFeatureFlagBlocker,
   appendUrlBlocker,
 } from "./smoke-readiness-blockers.mjs";
+import { collectCommerceReadiness } from "./smoke-readiness-commerce.mjs";
 import { collectDatabaseReadiness } from "./smoke-readiness-database.mjs";
 import { collectIdentityReadiness } from "./smoke-readiness-identity.mjs";
 import { collectRedisReadiness } from "./smoke-readiness-redis.mjs";
@@ -14,6 +15,7 @@ export function collectSmokeReadinessFindings(environment, config) {
   const warnings = [];
 
   collectAnalyticsReadiness(blockers, environment.analytics);
+  collectCommerceReadiness(blockers, environment.commerce);
   collectDatabaseReadiness(blockers, environment.database);
   collectDeploymentReadiness(blockers, environment.deployment, config);
   collectFeatureFlagReadiness(blockers, environment.featureFlags);

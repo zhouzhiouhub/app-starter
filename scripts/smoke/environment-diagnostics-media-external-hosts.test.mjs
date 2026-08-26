@@ -27,3 +27,45 @@ test("smoke environment diagnostics rejects control characters in external media
     },
   ]);
 });
+
+test("smoke environment diagnostics reports unsafe external media hosts", () => {
+  const diagnostics = createSmokeEnvironmentDiagnostics({
+    MEDIA_EXTERNAL_URL_HOSTS:
+      "images.brand-assets.com, http://assets.brand-assets.com, https://user:secret@private.brand-assets.com, https://cdn.brand-assets.com/path?token=1, localhost, cdn.example.com, bad host",
+  });
+
+  assert.deepEqual(diagnostics.media.externalUrlHosts, [
+    "images.brand-assets.com",
+  ]);
+  assert.equal(diagnostics.media.externalUrlHostsProductionReady, false);
+  assert.deepEqual(diagnostics.media.externalUrlHostIssues, [
+    {
+      host: "assets.brand-assets.com",
+      issue: "unsupported-protocol",
+    },
+    {
+      host: "private.brand-assets.com",
+      issue: "embedded-credentials",
+    },
+    {
+      host: "cdn.brand-assets.com",
+      issue: "unsupported-url-parts",
+    },
+    {
+      host: "localhost",
+      issue: "local-host",
+    },
+    {
+      host: "cdn.example.com",
+      issue: "placeholder-host",
+    },
+    {
+      host: null,
+      issue: "invalid-host",
+    },
+  ]);
+
+  const serialized = JSON.stringify(diagnostics.media);
+  assert.equal(serialized.includes("secret"), false);
+  assert.equal(serialized.includes("token=1"), false);
+});
