@@ -42,6 +42,24 @@ export class AdminCommerceController {
     return throwAdminProductUnavailable(requestId);
   }
 
+  @Get("products/:id/variants")
+  @RequireScopes("product:read")
+  getProductVariants(@CurrentRequestId() requestId = "local-dev") {
+    return createCommerceReadPlaceholder("variants", requestId);
+  }
+
+  @Get("products/:id/prices")
+  @RequireScopes("product:read")
+  getProductPrices(@CurrentRequestId() requestId = "local-dev") {
+    return createCommerceReadPlaceholder("prices", requestId);
+  }
+
+  @Get("products/:id/inventory")
+  @RequireScopes("product:read")
+  getProductInventory(@CurrentRequestId() requestId = "local-dev") {
+    return createCommerceReadPlaceholder("inventory", requestId);
+  }
+
   @Patch("products/:id")
   @RequireScopes("product:write")
   updateProduct(

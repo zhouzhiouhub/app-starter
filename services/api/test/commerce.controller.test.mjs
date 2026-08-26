@@ -39,13 +39,25 @@ test("commerce read placeholders carry the current request id", () => {
     () => {
       const controller = new AdminCommerceController();
       const products = controller.getProducts("request-products");
+      const variants = controller.getProductVariants("request-variants");
+      const prices = controller.getProductPrices("request-prices");
+      const inventory = controller.getProductInventory("request-inventory");
       const orders = controller.getOrders("request-orders");
       const payments = controller.getPayments("request-payments");
 
       assert.deepEqual(products.data, []);
+      assert.deepEqual(variants.data, []);
+      assert.deepEqual(prices.data, []);
+      assert.deepEqual(inventory.data, []);
       assert.deepEqual(orders.data, []);
       assert.deepEqual(payments.data, []);
       assert.deepEqual(products.meta, readCommercePlaceholderMeta("products"));
+      assert.deepEqual(variants.meta, readCommercePlaceholderMeta("variants"));
+      assert.deepEqual(prices.meta, readCommercePlaceholderMeta("prices"));
+      assert.deepEqual(
+        inventory.meta,
+        readCommercePlaceholderMeta("inventory"),
+      );
       assert.deepEqual(orders.meta, readCommercePlaceholderMeta("orders"));
       assert.deepEqual(payments.meta, readCommercePlaceholderMeta("payments"));
     },
@@ -90,6 +102,18 @@ test("commerce read placeholders require admin guard and read scopes", () => {
     REQUIRE_SCOPES_KEY,
     AdminCommerceController.prototype.createProduct,
   );
+  const productVariantScopes = Reflect.getMetadata(
+    REQUIRE_SCOPES_KEY,
+    AdminCommerceController.prototype.getProductVariants,
+  );
+  const productPriceScopes = Reflect.getMetadata(
+    REQUIRE_SCOPES_KEY,
+    AdminCommerceController.prototype.getProductPrices,
+  );
+  const productInventoryScopes = Reflect.getMetadata(
+    REQUIRE_SCOPES_KEY,
+    AdminCommerceController.prototype.getProductInventory,
+  );
   const productUpdateScopes = Reflect.getMetadata(
     REQUIRE_SCOPES_KEY,
     AdminCommerceController.prototype.updateProduct,
@@ -107,6 +131,9 @@ test("commerce read placeholders require admin guard and read scopes", () => {
   assert.deepEqual(productScopes, ["product:read"]);
   assert.deepEqual(productDetailScopes, ["product:read"]);
   assert.deepEqual(productCreateScopes, ["product:write"]);
+  assert.deepEqual(productVariantScopes, ["product:read"]);
+  assert.deepEqual(productPriceScopes, ["product:read"]);
+  assert.deepEqual(productInventoryScopes, ["product:read"]);
   assert.deepEqual(productUpdateScopes, ["product:write"]);
   assert.deepEqual(orderScopes, ["order:read"]);
   assert.deepEqual(paymentScopes, ["payment:read"]);
@@ -128,6 +155,18 @@ test("commerce admin product reserved routes keep explicit HTTP contracts", () =
   assertRoute(AdminCommerceController.prototype.getProduct, {
     method: RequestMethod.GET,
     path: "products/:id",
+  });
+  assertRoute(AdminCommerceController.prototype.getProductVariants, {
+    method: RequestMethod.GET,
+    path: "products/:id/variants",
+  });
+  assertRoute(AdminCommerceController.prototype.getProductPrices, {
+    method: RequestMethod.GET,
+    path: "products/:id/prices",
+  });
+  assertRoute(AdminCommerceController.prototype.getProductInventory, {
+    method: RequestMethod.GET,
+    path: "products/:id/inventory",
   });
   assertRoute(AdminCommerceController.prototype.updateProduct, {
     method: RequestMethod.PATCH,

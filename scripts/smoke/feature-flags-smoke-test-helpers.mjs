@@ -84,6 +84,9 @@ export function createFeatureFlagSmokeFetch(options = {}) {
     if (
       (!init.method || init.method === "GET") &&
       (url.endsWith("/products") ||
+        url.endsWith("/products/smoke-product/variants") ||
+        url.endsWith("/products/smoke-product/prices") ||
+        url.endsWith("/products/smoke-product/inventory") ||
         url.endsWith("/orders") ||
         url.endsWith("/payments"))
     ) {

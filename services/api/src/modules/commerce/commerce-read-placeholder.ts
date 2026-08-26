@@ -2,7 +2,8 @@ import { apiErrorCodes } from "@app-starter/schema";
 import { readApiFeatureFlags } from "../../common/feature-flags.js";
 import { readApiRuntimeDefaults } from "../../common/runtime-defaults.js";
 
-type CommerceReadResource = "orders" | "payments" | "products";
+type CommerceReadResource =
+  "inventory" | "orders" | "payments" | "prices" | "products" | "variants";
 
 export function createCommerceReadPlaceholder(
   resource: CommerceReadResource,

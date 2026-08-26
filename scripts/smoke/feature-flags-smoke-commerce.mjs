@@ -9,6 +9,24 @@ export async function assertCommerceReadPlaceholders(input, accessToken) {
     "products",
   );
   await assertEmptyListResponse(
+    `${input.apiBaseUrl}/products/${smokeProductId}/variants`,
+    accessToken,
+    "Product variants placeholder",
+    "variants",
+  );
+  await assertEmptyListResponse(
+    `${input.apiBaseUrl}/products/${smokeProductId}/prices`,
+    accessToken,
+    "Product prices placeholder",
+    "prices",
+  );
+  await assertEmptyListResponse(
+    `${input.apiBaseUrl}/products/${smokeProductId}/inventory`,
+    accessToken,
+    "Product inventory placeholder",
+    "inventory",
+  );
+  await assertEmptyListResponse(
     `${input.apiBaseUrl}/orders`,
     accessToken,
     "Orders placeholder",

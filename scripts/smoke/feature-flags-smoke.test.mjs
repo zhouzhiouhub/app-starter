@@ -176,6 +176,9 @@ test("feature flag smoke checks disabled feature placeholders", async () => {
     "/translations/import",
     "/translations/export",
     "/products",
+    "/products/smoke-product/variants",
+    "/products/smoke-product/prices",
+    "/products/smoke-product/inventory",
     "/orders",
     "/payments",
   ]) {
@@ -246,6 +249,31 @@ test("feature flag smoke rejects non-empty commerce placeholders", async () => {
             "access-token",
           ),
         /Products placeholder expected an empty data array\./,
+      );
+    },
+  );
+});
+
+test("feature flag smoke rejects non-empty product subresource placeholders", async () => {
+  await withFetch(
+    createFeatureFlagSmokeFetch({
+      overrides: {
+        "/products/smoke-product/variants": () =>
+          jsonResponse({
+            data: [{ id: "variant-should-not-exist" }],
+          }),
+      },
+    }),
+    async () => {
+      await assert.rejects(
+        () =>
+          assertFeatureFlagsDisabled(
+            {
+              apiBaseUrl: "https://api.example.com/api/v1",
+            },
+            "access-token",
+          ),
+        /Product variants placeholder expected an empty data array\./,
       );
     },
   );
