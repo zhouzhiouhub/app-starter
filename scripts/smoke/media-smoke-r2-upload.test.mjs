@@ -99,3 +99,30 @@ test("R2 smoke upload reports oversized error bodies safely", async () => {
     );
   });
 });
+
+test("R2 smoke upload redacts failure bodies before truncating", async () => {
+  await withFetch(async () => {
+    return new Response(
+      [
+        "rawPem=-----BEGIN PRIVATE KEY-----",
+        "private-key-body-secret",
+        "x".repeat(180),
+        "-----END PRIVATE KEY-----",
+      ].join("\n"),
+      {
+        status: 500,
+        statusText: "Internal Server Error",
+      },
+    );
+  }, async () => {
+    await assert.rejects(
+      () => uploadSmokeImage(target, image),
+      (error) => {
+        assert.match(error.message, /R2 object upload failed\. 500/);
+        assert.match(error.message, /rawPem=\[redacted-pem\]/);
+        assert.equal(error.message.includes("private-key-body-secret"), false);
+        return true;
+      },
+    );
+  });
+});

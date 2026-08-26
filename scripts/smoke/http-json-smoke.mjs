@@ -3,7 +3,10 @@ import {
   cancelResponseBody,
   readRedirectLocation,
 } from "./http-response-summary.mjs";
-import { redactSmokeSecrets } from "./smoke-secrets.mjs";
+import {
+  readRedactedSmokeSnippet,
+  redactSmokeSecrets,
+} from "./smoke-secrets.mjs";
 
 export async function assertJsonReachable(url, label) {
   const response = await fetchJson(url);
@@ -58,7 +61,10 @@ function parseJson(text, url) {
   } catch {
     throw new Error(
       redactSmokeSecrets(
-        `${url} returned non-JSON content: ${text.slice(0, 160)}`,
+        `${url} returned non-JSON content: ${readRedactedSmokeSnippet(
+          text,
+          160,
+        )}`,
       ),
     );
   }

@@ -126,3 +126,30 @@ test("JSON smoke fetch redacts non-JSON response snippets", async () => {
     },
   );
 });
+
+test("JSON smoke fetch redacts non-JSON snippets before truncating", async () => {
+  await withFetch(
+    async () =>
+      new Response(
+        [
+          "rawPem=-----BEGIN PRIVATE KEY-----",
+          "private-key-body-secret",
+          "x".repeat(180),
+          "-----END PRIVATE KEY-----",
+        ].join("\n"),
+        {
+          status: 502,
+          statusText: "Bad Gateway",
+        },
+      ),
+    async () => {
+      await assert.rejects(
+        fetchJson("https://api.example.com/api/v1/public/config"),
+        (error) =>
+          error instanceof Error &&
+          !error.message.includes("private-key-body-secret") &&
+          error.message.includes("rawPem=[redacted-pem]"),
+      );
+    },
+  );
+});

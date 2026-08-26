@@ -7,7 +7,10 @@ import {
   readRedirectLocation,
 } from "./http-response-summary.mjs";
 import { readErrorMessage as readUploadErrorMessage } from "./smoke-error-message.mjs";
-import { redactSmokeSecrets } from "./smoke-secrets.mjs";
+import {
+  readRedactedSmokeSnippet,
+  redactSmokeSecrets,
+} from "./smoke-secrets.mjs";
 
 export async function uploadSmokeImage(target, image) {
   const response = await fetch(target.uploadUrl, {
@@ -31,7 +34,10 @@ export async function uploadSmokeImage(target, image) {
 
 function readUploadError(response, failureBody, redirectLocation) {
   const text = failureBody.text ?? "";
-  const message = text.slice(0, 160) || response.statusText || "Unknown error";
+  const message =
+    readRedactedSmokeSnippet(text, 160) ||
+    response.statusText ||
+    "Unknown error";
   const bodyReadError = failureBody.bodyReadError
     ? ` body read error: ${failureBody.bodyReadError}`
     : "";
