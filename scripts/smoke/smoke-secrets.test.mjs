@@ -26,6 +26,9 @@ test("smoke secret redaction removes tokens from common failure shapes", () => {
       "refreshToken=refresh-token-value",
       "secretAccessKey=aws-secret-key",
       "sentryDsn=https://public:dsn-secret@sentry.example.com/1",
+      "storefrontRevalidateSecret=storefront-secret",
+      "webhookSignature=webhook-signature",
+      '"stripeWebhookSignature":"stripe-signature"',
       "postgresql://db-user:db-secret@db.example.com:5432/app",
       "redis://cache-user:cache-secret@redis.example.com:6379/0",
       "https://admin-user:admin-secret@admin.example.com",
@@ -57,6 +60,9 @@ test("smoke secret redaction removes tokens from common failure shapes", () => {
   assert.equal(message.includes("dsn-secret"), false);
   assert.equal(message.includes("refresh-token-value"), false);
   assert.equal(message.includes("aws-secret-key"), false);
+  assert.equal(message.includes("storefront-secret"), false);
+  assert.equal(message.includes("webhook-signature"), false);
+  assert.equal(message.includes("stripe-signature"), false);
   assert.equal(message.includes("db-user"), false);
   assert.equal(message.includes("db-secret"), false);
   assert.equal(message.includes("cache-user"), false);
@@ -97,6 +103,9 @@ test("smoke secret redaction removes tokens from common failure shapes", () => {
   assert.match(message, /Authorization=ApiKey \[redacted\]/);
   assert.match(message, /refreshToken=\[redacted\]/);
   assert.match(message, /secretAccessKey=\[redacted\]/);
+  assert.match(message, /storefrontRevalidateSecret=\[redacted\]/);
+  assert.match(message, /webhookSignature=\[redacted\]/);
+  assert.match(message, /"stripeWebhookSignature":"\[redacted\]"/);
   assert.match(message, /postgresql:\/\/\[redacted\]@db\.example\.com:5432\/app/);
   assert.match(message, /redis:\/\/\[redacted\]@redis\.example\.com:6379\/0/);
   assert.match(message, /https:\/\/\[redacted\]@admin\.example\.com/);
@@ -130,6 +139,8 @@ test("smoke report value redaction sanitizes nested details", () => {
           privateKeyPem: "private-key-value",
           sentryDsn: "https://public:dsn-secret@sentry.example.com/1",
           sig: "edge-signature-value",
+          storefrontRevalidateSecret: "storefront-secret",
+          webhookSignature: "webhook-signature",
           uploadUrl:
             "https://uploads.example.com/object.png?Policy=signed-policy-value&sig=upload-signature-value&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Signature=signature-value",
         },
@@ -153,6 +164,8 @@ test("smoke report value redaction sanitizes nested details", () => {
           privateKeyPem: "[redacted]",
           sentryDsn: "[redacted]",
           sig: "[redacted]",
+          storefrontRevalidateSecret: "[redacted]",
+          webhookSignature: "[redacted]",
           uploadUrl:
             "https://uploads.example.com/object.png?Policy=[redacted]&sig=[redacted]&X-Amz-Algorithm=[redacted]&X-Amz-Signature=[redacted]",
         },
