@@ -46,6 +46,24 @@ test("feature flag smoke helpers summarize disabled endpoint responses", () => {
     formatDisabledEndpointDiagnostic(diagnostic),
     "409 Conflict COMMERCE_DISABLED: Commerce is disabled.",
   );
+  const unsafeDiagnostic = readDisabledEndpointDiagnostic({
+    body: {
+      error: {
+        code: "COMMERCE_DISABLED",
+        message: `Commerce disabled\u0000token=payload.signature ${"x".repeat(
+          260,
+        )}`,
+      },
+    },
+    status: 409,
+    statusText: "Conflict",
+  });
+
+  assert.equal(unsafeDiagnostic.message.length, 240);
+  assert.equal(unsafeDiagnostic.message.endsWith("..."), true);
+  assert.equal(unsafeDiagnostic.message.includes("\u0000"), false);
+  assert.equal(unsafeDiagnostic.message.includes("payload.signature"), false);
+  assert.match(unsafeDiagnostic.message, /token=\[redacted\]/);
   assert.equal(
     formatDisabledEndpointDiagnostic(
       readDisabledEndpointDiagnostic({

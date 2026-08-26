@@ -1,5 +1,7 @@
 import { fetchJson, readHttpError } from "./http-json-smoke.mjs";
-import { redactSmokeSecrets } from "./smoke-secrets.mjs";
+import { formatSmokeText } from "./smoke-text.mjs";
+
+const maxDisabledEndpointMessageLength = 240;
 
 const expectedConfig = {
   commerceEnabled: false,
@@ -268,5 +270,7 @@ export function formatDisabledEndpointDiagnostic(diagnostic) {
 }
 
 function redactOptionalSmokeMessage(value) {
-  return value === null ? null : redactSmokeSecrets(value);
+  return value === null
+    ? null
+    : formatSmokeText(value, { maxLength: maxDisabledEndpointMessageLength });
 }
