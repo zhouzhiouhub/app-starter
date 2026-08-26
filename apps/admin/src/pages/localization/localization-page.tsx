@@ -1,14 +1,33 @@
 import { useState } from "react";
 import { Alert, Button, Spin, Space, Typography } from "antd";
+import { translationListDefaultLimit } from "@app-starter/schema";
 import { LocalizationStatusPanel } from "../../features/localization/components/localization-status-panel";
 import { useLocalizationSummary } from "../../features/localization/hooks/use-localization-summary";
 import type { TranslationListFilters } from "../../features/localization/types";
 
 export function LocalizationPage() {
   const [translationFilters, setTranslationFilters] =
-    useState<TranslationListFilters>({});
+    useState<TranslationListFilters>({
+      limit: translationListDefaultLimit,
+      page: 1,
+    });
   const { error, isLoading, load, summary } =
     useLocalizationSummary(translationFilters);
+  const updateTranslationFilters = (filters: TranslationListFilters) => {
+    setTranslationFilters((current) => ({
+      limit: current.limit,
+      namespace: filters.namespace,
+      page: 1,
+      query: filters.query,
+    }));
+  };
+  const updateTranslationPage = (page: number, limit: number) => {
+    setTranslationFilters((current) => ({
+      ...current,
+      limit,
+      page,
+    }));
+  };
 
   return (
     <div>
@@ -39,7 +58,8 @@ export function LocalizationPage() {
           <LocalizationStatusPanel
             filters={translationFilters}
             isFiltering={isLoading}
-            onFiltersChange={setTranslationFilters}
+            onFiltersChange={updateTranslationFilters}
+            onPageChange={updateTranslationPage}
             onTranslationSaved={load}
             summary={summary}
           />

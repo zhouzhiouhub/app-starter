@@ -13,13 +13,20 @@ export interface LocalizationLocale {
 
 export interface LocalizationTranslationsMeta {
   entryLimit: number;
+  expectedKeyCount: number;
   fallbackLocale: string;
   isFallback: boolean;
+  limit: number;
   locale: string;
+  missingKeyCount: number;
+  missingKeyPreviewLimit: number;
+  missingKeys: string[];
   namespace?: string;
+  page: number;
   query?: string;
   requestedLocale: string;
   requestId?: string;
+  total: number;
 }
 
 export interface LocalizationTranslationEntry {
@@ -43,7 +50,9 @@ export interface UpsertDefaultTranslationResult {
 }
 
 export interface TranslationListFilters {
+  limit?: number;
   namespace?: string;
+  page?: number;
   query?: string;
 }
 

@@ -9,6 +9,7 @@ import type {
   TranslationListFilters,
 } from "../types";
 import { DefaultTranslationEntryForm } from "./default-translation-entry-form";
+import { MissingTranslationKeysAlert } from "./missing-translation-keys-alert";
 import { TranslationListFilterBar } from "./translation-list-filter-bar";
 
 const marketColumns: ColumnsType<LocalizationMarket> = [
@@ -87,6 +88,7 @@ export function LocalizationStatusPanel(props: {
   filters: TranslationListFilters;
   isFiltering?: boolean;
   onFiltersChange: (filters: TranslationListFilters) => void;
+  onPageChange: (page: number, limit: number) => void;
   onTranslationSaved?: () => Promise<void> | void;
   summary: LocalizationSummary;
 }) {
@@ -123,11 +125,16 @@ export function LocalizationStatusPanel(props: {
         </Descriptions.Item>
         <Descriptions.Item label="Translation entries">
           <Space size={4}>
-            <span>{state.translationCount}</span>
+            <span>{state.translationTotal}</span>
             <Typography.Text type="secondary">
               / {state.translationEntryLimit}
             </Typography.Text>
           </Space>
+        </Descriptions.Item>
+        <Descriptions.Item label="Page keys missing">
+          <Tag color={state.missingKeyCount > 0 ? "orange" : "green"}>
+            {state.missingKeyCount}
+          </Tag>
         </Descriptions.Item>
         <Descriptions.Item label="Fallback probe">
           <Space size={4}>
@@ -167,6 +174,7 @@ export function LocalizationStatusPanel(props: {
         isLoading={props.isFiltering}
         onChange={props.onFiltersChange}
       />
+      <MissingTranslationKeysAlert meta={props.summary.translationsMeta} />
       <Table<LocalizationTranslationEntry>
         columns={translationColumns}
         dataSource={props.summary.translations}
@@ -175,7 +183,13 @@ export function LocalizationStatusPanel(props: {
             ? "No default locale entries match the current filters."
             : "No translation entries are stored for this fallback probe.",
         }}
-        pagination={false}
+        pagination={{
+          current: state.translationPage,
+          onChange: props.onPageChange,
+          pageSize: state.translationLimit,
+          showSizeChanger: false,
+          total: state.translationTotal,
+        }}
         rowKey={(record) => `${record.locale}:${record.key}`}
         size="small"
       />

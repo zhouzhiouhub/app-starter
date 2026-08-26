@@ -5,6 +5,8 @@ import {
   publicTranslationMessageMaxLength,
   translationContextMaxLength,
   translationNamespaceSchema,
+  translationListDefaultLimit,
+  translationListMaxLimit,
   translationSearchMaxLength,
   translationKeySchema,
 } from "@app-starter/schema";
@@ -27,11 +29,18 @@ const optionalTranslationSearchSchema = z.preprocess(
     .optional(),
 );
 const listTranslationsQuerySchema = z.object({
+  limit: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(translationListMaxLimit)
+    .default(translationListDefaultLimit),
   locale: z.preprocess(normalizeOptionalText, localeCodeSchema.optional()),
   namespace: z.preprocess(
     normalizeOptionalText,
     translationNamespaceSchema.optional(),
   ),
+  page: z.coerce.number().int().min(1).default(1),
   q: optionalTranslationSearchSchema,
 });
 const upsertTranslationInputSchema = z.object({

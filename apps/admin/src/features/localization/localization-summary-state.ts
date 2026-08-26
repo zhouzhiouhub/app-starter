@@ -10,11 +10,15 @@ export interface LocalizationSummaryState {
   fallbackLocale: string;
   isFallback: boolean;
   marketCurrency: string;
+  missingKeyCount: number;
   status: "active" | "fallback" | "missing";
   translationCount: number;
   translationEntryLimit: number;
+  translationLimit: number;
+  translationPage: number;
   translationRequestedLocale: string;
   translationResolvedLocale: string;
+  translationTotal: number;
 }
 
 export function readLocalizationSummaryState(
@@ -33,24 +37,32 @@ export function readLocalizationSummaryState(
     fallbackLocale,
     isFallback: summary.translationsMeta.isFallback,
     marketCurrency: market?.currency ?? "USD",
+    missingKeyCount: summary.translationsMeta.missingKeyCount,
     status: readStatus(summary, market, locale),
     translationCount: summary.translations.length,
     translationEntryLimit: summary.translationsMeta.entryLimit,
+    translationLimit: summary.translationsMeta.limit,
+    translationPage: summary.translationsMeta.page,
     translationRequestedLocale: summary.translationsMeta.requestedLocale,
     translationResolvedLocale: summary.translationsMeta.locale,
+    translationTotal: summary.translationsMeta.total,
   };
 }
 
 function readPrimaryMarket(
   markets: LocalizationMarket[],
 ): LocalizationMarket | null {
-  return markets.find((market) => market.status === "active") ?? markets[0] ?? null;
+  return (
+    markets.find((market) => market.status === "active") ?? markets[0] ?? null
+  );
 }
 
 function readPrimaryLocale(
   locales: LocalizationLocale[],
 ): LocalizationLocale | null {
-  return locales.find((locale) => locale.status === "active") ?? locales[0] ?? null;
+  return (
+    locales.find((locale) => locale.status === "active") ?? locales[0] ?? null
+  );
 }
 
 function readStatus(

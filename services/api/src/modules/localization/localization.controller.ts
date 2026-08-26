@@ -69,11 +69,13 @@ export class LocalizationController {
     @Query("locale") locale?: string,
     @Query("namespace") namespace?: string,
     @Query("q") query?: string,
+    @Query("page") page?: string,
+    @Query("limit") limit?: string,
     @CurrentRequestId() requestId = "local-dev",
   ) {
     return this.localization.listTranslations(
       actor,
-      { locale, namespace, q: query },
+      { limit, locale, namespace, page, q: query },
       requestId,
     );
   }

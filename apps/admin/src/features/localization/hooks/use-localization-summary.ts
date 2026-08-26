@@ -10,10 +10,12 @@ export function useLocalizationSummary(filters: TranslationListFilters = {}) {
   const [error, setError] = useState<string | null>(null);
   const normalizedFilters = useMemo(
     () => ({
+      limit: filters.limit,
       namespace: filters.namespace,
+      page: filters.page,
       query: filters.query,
     }),
-    [filters.namespace, filters.query],
+    [filters.limit, filters.namespace, filters.page, filters.query],
   );
 
   const load = useCallback(async () => {

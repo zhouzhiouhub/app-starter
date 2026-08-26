@@ -90,28 +90,45 @@ test("localization API forwards translation list filters", async () => {
         data: [],
         meta: {
           entryLimit: 2000,
+          expectedKeyCount: 2,
           fallbackLocale: "en-US",
           isFallback: true,
+          limit: 10,
           locale: "en-US",
+          missingKeyCount: 1,
+          missingKeyPreviewLimit: 50,
+          missingKeys: ["page.home.hero.body"],
           namespace: "page.home",
+          page: 2,
           query: "hero",
+          total: 21,
         },
       });
     },
     async () => {
       const summary = await getLocalizationSummary({
+        limit: 10,
         namespace: "page.home",
+        page: 2,
         query: "hero",
       });
 
+      assert.equal(summary.translationsMeta.expectedKeyCount, 2);
+      assert.equal(summary.translationsMeta.limit, 10);
+      assert.equal(summary.translationsMeta.missingKeyCount, 1);
+      assert.deepEqual(summary.translationsMeta.missingKeys, [
+        "page.home.hero.body",
+      ]);
       assert.equal(summary.translationsMeta.namespace, "page.home");
+      assert.equal(summary.translationsMeta.page, 2);
       assert.equal(summary.translationsMeta.query, "hero");
+      assert.equal(summary.translationsMeta.total, 21);
     },
   );
 
   assert.equal(
     requests.find((url) => url.includes("/translations?")),
-    "/api/v1/translations?locale=de-DE&namespace=page.home&q=hero",
+    "/api/v1/translations?locale=de-DE&page=2&limit=10&namespace=page.home&q=hero",
   );
 });
 

@@ -197,10 +197,11 @@ Open `http://localhost:5173/settings` to manage the default site name and
 domain, and to inspect the MVP default market, locale, currency, and feature
 flags.
 Open `http://localhost:5173/localization` to inspect the default Market /
-Locale data, save and filter default Locale Translation entries, see repeated
-key updates, review the non-default Translation fallback probe, the
-multi-locale write-disabled state, the current Translation empty state, and the
-bulk import/export reserved contracts.
+Locale data, save, paginate, and filter default Locale Translation entries, see
+repeated key updates, review missing default Translation keys from page schemas,
+the non-default Translation fallback probe, the multi-locale write-disabled
+state, the current Translation empty state, and the bulk import/export reserved
+contracts.
 Open `http://localhost:5173/audit-logs` to review tenant-scoped Preview Token,
 publish, and rollback audit logs. The Page Builder toolbar also has an Audit
 logs action that opens this page filtered to the current page target.

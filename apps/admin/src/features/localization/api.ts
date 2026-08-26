@@ -1,6 +1,7 @@
 import { adminRequest } from "../auth/api.ts";
 import { readApiResponseJson } from "../../lib/api-response.ts";
 import { createIdempotencyKey } from "../../lib/idempotency-key.ts";
+import { translationListDefaultLimit } from "@app-starter/schema";
 import type {
   LocalizationLocale,
   LocalizationMarket,
@@ -90,6 +91,14 @@ async function getTranslations(
 }> {
   const query = new URLSearchParams({ locale });
 
+  if (filters.page) {
+    query.set("page", String(filters.page));
+  }
+
+  if (filters.limit) {
+    query.set("limit", String(filters.limit));
+  }
+
   if (filters.namespace) {
     query.set("namespace", filters.namespace);
   }
@@ -107,13 +116,20 @@ async function getTranslations(
     entries: result.data ?? [],
     meta: {
       entryLimit: result.meta?.entryLimit ?? result.data?.length ?? 0,
+      expectedKeyCount: result.meta?.expectedKeyCount ?? 0,
       fallbackLocale: result.meta?.fallbackLocale ?? locale,
       isFallback: result.meta?.isFallback === true,
+      limit: result.meta?.limit ?? filters.limit ?? translationListDefaultLimit,
       locale: result.meta?.locale ?? locale,
+      missingKeyCount: result.meta?.missingKeyCount ?? 0,
+      missingKeyPreviewLimit: result.meta?.missingKeyPreviewLimit ?? 0,
+      missingKeys: result.meta?.missingKeys ?? [],
       namespace: result.meta?.namespace ?? filters.namespace,
+      page: result.meta?.page ?? filters.page ?? 1,
       query: result.meta?.query ?? filters.query,
       requestedLocale: locale,
       requestId: result.meta?.requestId,
+      total: result.meta?.total ?? result.data?.length ?? 0,
     },
   };
 }

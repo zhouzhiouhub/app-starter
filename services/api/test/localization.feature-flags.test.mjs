@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   apiErrorCodes,
   translationEntryMaxCount,
+  translationListDefaultLimit,
 } from "../../../packages/schema/dist/index.js";
 import { LocalizationController } from "../dist/modules/localization/localization.controller.js";
 import { LocalizationService } from "../dist/modules/localization/localization.service.js";
@@ -111,6 +112,8 @@ test("admin locales ignore invalid default locale environment values", async () 
         undefined,
         undefined,
         undefined,
+        undefined,
+        undefined,
         "request-admin-translations",
       );
 
@@ -190,9 +193,20 @@ test("admin translations reject invalid locale format", () => {
 });
 
 test("admin translations read tenant-scoped stored entries", async () => {
+  const countQueries = [];
   const queries = [];
   const service = createService({
+    page: {
+      findMany: async () => [],
+    },
+    pageVersion: {
+      findMany: async () => [],
+    },
     translation: {
+      count: async (query) => {
+        countQueries.push(query);
+        return 1;
+      },
       findMany: async (query) => {
         queries.push(query);
         return [
@@ -214,10 +228,19 @@ test("admin translations read tenant-scoped stored entries", async () => {
     "request-translations-list",
   );
 
+  assert.deepEqual(countQueries, [
+    {
+      where: {
+        locale: "en-US",
+        tenantId: "tenant-1",
+      },
+    },
+  ]);
   assert.deepEqual(queries, [
     {
       orderBy: { key: "asc" },
-      take: translationEntryMaxCount,
+      skip: 0,
+      take: translationListDefaultLimit,
       where: {
         locale: "en-US",
         tenantId: "tenant-1",
@@ -235,6 +258,9 @@ test("admin translations read tenant-scoped stored entries", async () => {
   ]);
   assert.equal(response.meta.tenantId, "tenant-1");
   assert.equal(response.meta.entryLimit, translationEntryMaxCount);
+  assert.equal(response.meta.total, 1);
+  assert.equal(response.meta.page, 1);
+  assert.equal(response.meta.limit, translationListDefaultLimit);
   assert.equal(response.meta.requestId, "request-translations-list");
 });
 
@@ -247,7 +273,14 @@ test("admin translations query the fallback default locale while disabled", asyn
     async () => {
       let queryLocale = null;
       const service = createService({
+        page: {
+          findMany: async () => [],
+        },
+        pageVersion: {
+          findMany: async () => [],
+        },
         translation: {
+          count: async () => 0,
           findMany: async (query) => {
             queryLocale = query.where.locale;
             return [];
@@ -276,7 +309,14 @@ function createService(prisma) {
 
 function createEmptyPrisma() {
   return {
+    page: {
+      findMany: async () => [],
+    },
+    pageVersion: {
+      findMany: async () => [],
+    },
     translation: {
+      count: async () => 0,
       findMany: async () => [],
     },
   };

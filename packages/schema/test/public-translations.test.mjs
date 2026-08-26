@@ -9,6 +9,9 @@ import {
   translationKeyMaxLength,
   translationKeyPattern,
   translationKeySchema,
+  translationListDefaultLimit,
+  translationListMaxLimit,
+  translationMissingKeyPreviewMaxCount,
   translationNamespaceMaxLength,
   translationNamespacePattern,
   translationNamespaceSchema,
@@ -18,6 +21,9 @@ import {
 
 test("public translation limits keep bounded positive values", () => {
   assert.equal(translationEntryMaxCount, 2_000);
+  assert.equal(translationListDefaultLimit, 20);
+  assert.equal(translationListMaxLimit, 100);
+  assert.equal(translationMissingKeyPreviewMaxCount, 50);
   assert.equal(publicTranslationEntryMaxCount, 2_000);
   assert.equal(publicTranslationKeyMaxLength, 256);
   assert.equal(publicTranslationMessageMaxLength, 20_000);
