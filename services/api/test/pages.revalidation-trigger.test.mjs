@@ -169,8 +169,13 @@ test("storefront revalidation headers forward only safe request ids", () => {
     "X-Request-Id" in
       createStorefrontRevalidationHeaders(
         "secret-1",
-        "request-1\r\nx-secret: leaked",
+        "request-1\r",
       ),
+    false,
+  );
+  assert.equal(
+    "X-Request-Id" in
+      createStorefrontRevalidationHeaders("secret-1", "\trequest-2"),
     false,
   );
 });

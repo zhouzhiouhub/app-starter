@@ -231,6 +231,8 @@ test("request id helper accepts only compact safe request identifiers", () => {
     "request-1.alpha:beta_2",
   );
   assert.equal(readRequestId({ "x-request-id": " " }), "local-dev");
+  assert.equal(readRequestId({ "x-request-id": "request-1\n" }), "local-dev");
+  assert.equal(readRequestId({ "x-request-id": "\trequest-2" }), "local-dev");
   assert.equal(
     readRequestId({ "x-request-id": "request-1\nset-cookie: secret=1" }),
     "local-dev",
@@ -241,7 +243,7 @@ test("request id helper accepts only compact safe request identifiers", () => {
   );
   assert.equal(
     readRequestId(
-      { "x-request-id": "request-1\nset-cookie: secret=1" },
+      { "x-request-id": "request-1\n" },
       "generated-request-1",
     ),
     "generated-request-1",
@@ -284,6 +286,23 @@ test("request id middleware replaces unsafe request ids before downstream use", 
 
   assert.equal(response.headers[requestIdHeaderName], "generated-request-2");
   assert.equal(request.headers["x-request-id"], "generated-request-2");
+});
+
+test("request id middleware replaces edge control characters", () => {
+  const middleware = createRequestIdHeaderMiddleware(
+    () => "generated-request-3",
+  );
+  const request = {
+    headers: {
+      "x-request-id": "\trequest-1",
+    },
+  };
+  const response = createHeaderResponse();
+
+  middleware(request, response, () => undefined);
+
+  assert.equal(response.headers[requestIdHeaderName], "generated-request-3");
+  assert.equal(request.headers["x-request-id"], "generated-request-3");
 });
 
 test("API exception filter sanitizes unsafe request ids", () => {

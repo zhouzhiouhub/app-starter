@@ -12,6 +12,8 @@ test("revalidate request id helper accepts compact safe identifiers", () => {
 test("revalidate request id helper rejects unsafe identifiers", () => {
   assert.equal(readRevalidateRequestId(null), "local-dev");
   assert.equal(readRevalidateRequestId(" "), "local-dev");
+  assert.equal(readRevalidateRequestId("request-1\n"), "local-dev");
+  assert.equal(readRevalidateRequestId("\trequest-2"), "local-dev");
   assert.equal(
     readRevalidateRequestId("request-1\nx-secret: leaked"),
     "local-dev",

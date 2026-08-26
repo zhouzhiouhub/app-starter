@@ -35,6 +35,10 @@ export function readRequestId(
     return fallback;
   }
 
+  if (hasControlCharacter(candidate)) {
+    return fallback;
+  }
+
   const trimmed = candidate.trim();
 
   if (
@@ -66,4 +70,12 @@ export const requestIdHeaderMiddleware = createRequestIdHeaderMiddleware();
 
 function createGeneratedRequestId(): string {
   return randomUUID();
+}
+
+function hasControlCharacter(value: string): boolean {
+  return Array.from(value).some((character) => {
+    const codePoint = character.codePointAt(0) ?? 0;
+
+    return codePoint <= 0x1f || codePoint === 0x7f;
+  });
 }
