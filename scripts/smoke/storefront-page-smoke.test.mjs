@@ -85,6 +85,31 @@ test("smoke helpers summarize storefront page attempts", () => {
   );
 });
 
+test("storefront page smoke bounds diagnostic title and body snippets", () => {
+  const text = `<html><head><title>Previous\u0000token=payload.signature ${"x".repeat(
+    220,
+  )}</title></head><body>Fallback page ${"y".repeat(220)}</body></html>`;
+  const attempt = readStorefrontPageAttempt(
+    {
+      ok: true,
+      status: 200,
+      statusText: "OK",
+      text,
+    },
+    "Published title",
+  );
+
+  assert.equal(attempt.bodySnippet.length, 160);
+  assert.equal(attempt.bodySnippet.endsWith("..."), true);
+  assert.equal(attempt.bodySnippet.includes("\u0000"), false);
+  assert.equal(attempt.bodySnippet.includes("payload.signature"), false);
+  assert.equal(attempt.documentTitle.length, 160);
+  assert.equal(attempt.documentTitle.endsWith("..."), true);
+  assert.equal(attempt.documentTitle.includes("\u0000"), false);
+  assert.equal(attempt.documentTitle.includes("payload.signature"), false);
+  assert.match(attempt.documentTitle, /token=\[redacted\]/);
+});
+
 test("storefront smoke requests disable automatic redirects", () => {
   assert.deepEqual(createStorefrontSmokeRequestInit({}), {
     redirect: "manual",

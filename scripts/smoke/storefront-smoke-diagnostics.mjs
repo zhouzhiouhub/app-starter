@@ -1,6 +1,10 @@
 import { getStorefrontHref } from "../../packages/schema/dist/index.js";
-import { redactSmokeSecrets } from "./smoke-secrets.mjs";
+import { formatSmokeText } from "./smoke-text.mjs";
 import { readSmokeStorefrontOrigin } from "./storefront-smoke-host.mjs";
+
+const maxStorefrontDiagnosticBodySnippetLength = 160;
+const maxStorefrontDiagnosticUrlLength = 240;
+const maxStorefrontDocumentTitleLength = 160;
 
 export function readStorefrontPageAttempt(response, title) {
   const bodyReadError = response.bodyReadError ?? null;
@@ -92,7 +96,9 @@ export function readSitemapAttempt(response, expectedUrl) {
     ...(bodyReadError ? { bodyReadError } : {}),
     expectedUrlPresent: urls.includes(expectedUrl),
     firstOffOriginUrl: offOriginUrls[0]
-      ? redactSmokeSecrets(offOriginUrls[0])
+      ? formatSmokeText(offOriginUrls[0], {
+          maxLength: maxStorefrontDiagnosticUrlLength,
+        })
       : null,
     notFoundUrlPresent: urls.some(isNotFoundSitemapUrl),
     offOriginUrlCount: offOriginUrls.length,
@@ -182,16 +188,18 @@ export function readExpectedCanonicalUrl(input) {
 }
 
 function readBodySnippet(text) {
-  const snippet = redactSmokeSecrets(text)
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 160);
+  const snippet = formatSmokeText(text, {
+    maxLength: maxStorefrontDiagnosticBodySnippetLength,
+  });
+
   return snippet || null;
 }
 
 function readDocumentTitle(html) {
   const title = html.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)?.[1];
-  const normalized = title?.replace(/\s+/g, " ").trim();
+  const normalized = formatSmokeText(title, {
+    maxLength: maxStorefrontDocumentTitleLength,
+  });
 
   return normalized || null;
 }

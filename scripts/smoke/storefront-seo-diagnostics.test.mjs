@@ -90,3 +90,36 @@ test("smoke helpers summarize robots, sitemap, and 404 attempts", () => {
     'status 404 Not Found, noindex: false, body: "<html><body>Missing page template</body></html>"',
   );
 });
+
+test("smoke helpers bound SEO diagnostic snippets and off-origin URLs", () => {
+  const robots = readRobotsAttempt(
+    {
+      ok: false,
+      status: 500,
+      statusText: "Internal Server Error",
+      text: `User-agent:\u0000* token=payload.signature ${"x".repeat(220)}`,
+    },
+    "https://web.example.com",
+  );
+  const sitemap = readSitemapAttempt(
+    {
+      ok: true,
+      status: 200,
+      statusText: "OK",
+      text: `<urlset><url><loc>https://cdn.example.com/sitemap?token=payload.signature ${"x".repeat(
+        260,
+      )}</loc></url></urlset>`,
+    },
+    "https://web.example.com/en/smoke-page",
+  );
+
+  assert.equal(robots.bodySnippet.length, 160);
+  assert.equal(robots.bodySnippet.endsWith("..."), true);
+  assert.equal(robots.bodySnippet.includes("\u0000"), false);
+  assert.equal(robots.bodySnippet.includes("payload.signature"), false);
+  assert.match(robots.bodySnippet, /token=\[redacted\]/);
+  assert.equal(sitemap.firstOffOriginUrl.length, 240);
+  assert.equal(sitemap.firstOffOriginUrl.endsWith("..."), true);
+  assert.equal(sitemap.firstOffOriginUrl.includes("payload.signature"), false);
+  assert.match(sitemap.firstOffOriginUrl, /token=\[redacted\]/);
+});
