@@ -1,0 +1,106 @@
+import { SaveOutlined } from "@ant-design/icons";
+import { Alert, Button, Form, Input, Space, Typography } from "antd";
+import { useState } from "react";
+import {
+  publicTranslationMessageMaxLength,
+  translationContextMaxLength,
+  translationKeyMaxLength,
+  translationKeyPattern,
+} from "@app-starter/schema";
+import { formatRequestError } from "../../../lib/api-error";
+import { upsertDefaultTranslationEntry } from "../api";
+
+interface TranslationEntryFormValues {
+  context?: string;
+  key: string;
+  value: string;
+}
+
+export function DefaultTranslationEntryForm(props: {
+  defaultLocale: string;
+  onSaved?: () => Promise<void> | void;
+}) {
+  const [form] = Form.useForm<TranslationEntryFormValues>();
+  const [feedback, setFeedback] = useState<{
+    message: string;
+    type: "error" | "success";
+  } | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  async function handleFinish(values: TranslationEntryFormValues) {
+    setFeedback(null);
+    setIsSaving(true);
+
+    try {
+      await upsertDefaultTranslationEntry({
+        context: readOptionalText(values.context),
+        key: values.key,
+        locale: props.defaultLocale,
+        value: values.value,
+      });
+      form.resetFields();
+      setFeedback({
+        message: `Saved ${values.key} for ${props.defaultLocale}.`,
+        type: "success",
+      });
+      await props.onSaved?.();
+    } catch (error) {
+      setFeedback({
+        message: formatRequestError(error),
+        type: "error",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  return (
+    <Space direction="vertical" size={12} style={{ width: "100%" }}>
+      <Typography.Title level={5}>Default locale entries</Typography.Title>
+      {feedback ? (
+        <Alert message={feedback.message} showIcon type={feedback.type} />
+      ) : null}
+      <Form form={form} layout="vertical" onFinish={handleFinish}>
+        <Form.Item
+          label="Translation key"
+          name="key"
+          rules={[
+            { required: true },
+            { max: translationKeyMaxLength },
+            {
+              message: "Use lowercase dot-separated keys.",
+              pattern: translationKeyPattern,
+            },
+          ]}
+        >
+          <Input placeholder="page.home.hero.title" />
+        </Form.Item>
+        <Form.Item
+          label={`Value (${props.defaultLocale})`}
+          name="value"
+          rules={[
+            { required: true },
+            { max: publicTranslationMessageMaxLength },
+          ]}
+        >
+          <Input.TextArea autoSize={{ minRows: 2, maxRows: 5 }} />
+        </Form.Item>
+        <Form.Item
+          label="Context"
+          name="context"
+          rules={[{ max: translationContextMaxLength }]}
+        >
+          <Input placeholder="Homepage hero" />
+        </Form.Item>
+        <Button htmlType="submit" icon={<SaveOutlined />} loading={isSaving}>
+          Save default translation
+        </Button>
+      </Form>
+    </Space>
+  );
+}
+
+function readOptionalText(value: string | undefined): string | null {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : null;
+}

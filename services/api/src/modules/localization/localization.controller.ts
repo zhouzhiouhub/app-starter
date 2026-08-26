@@ -72,6 +72,22 @@ export class LocalizationController {
     return this.localization.listTranslations(actor, locale, requestId);
   }
 
+  @Post("translations")
+  @RequireScopes("translation:write")
+  upsertTranslation(
+    @CurrentUser() actor: Actor,
+    @Body() body: unknown,
+    @Headers("idempotency-key") idempotencyKey?: string,
+    @CurrentRequestId() requestId = "local-dev",
+  ) {
+    return this.localization.upsertTranslation(
+      body,
+      requireIdempotencyKey(idempotencyKey),
+      actor,
+      requestId,
+    );
+  }
+
   @Post("locales")
   @RequireScopes("locale:write")
   createLocale(

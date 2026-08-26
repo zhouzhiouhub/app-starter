@@ -1,8 +1,8 @@
 import {
   getPublicTranslationCacheTags,
   publishedPageRevalidateSeconds,
-  publicTranslationKeyMaxLength,
   publicTranslationMessageMaxLength,
+  translationKeySchema,
 } from "@app-starter/schema";
 import {
   readWebRuntimeDefaults,
@@ -168,19 +168,9 @@ function isExpectedTranslationLocale(
 
 function isSafePublicTranslationKey(key: string) {
   return (
-    key.trim() === key &&
-    key.length > 0 &&
-    key.length <= publicTranslationKeyMaxLength &&
-    !forbiddenPublicTranslationMessageKeys.has(key.toLowerCase()) &&
-    !hasControlCharacter(key)
+    translationKeySchema.safeParse(key).success &&
+    !forbiddenPublicTranslationMessageKeys.has(key.toLowerCase())
   );
-}
-
-function hasControlCharacter(value: string) {
-  return Array.from(value).some((character) => {
-    const codePoint = character.codePointAt(0) ?? 0;
-    return codePoint <= 0x1f || codePoint === 0x7f;
-  });
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

@@ -31,7 +31,10 @@ export function LocalizationPage() {
             <Spin />
           </div>
         ) : summary ? (
-          <LocalizationStatusPanel summary={summary} />
+          <LocalizationStatusPanel
+            onTranslationSaved={load}
+            summary={summary}
+          />
         ) : null}
       </Space>
     </div>

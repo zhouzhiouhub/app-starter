@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import {
   publicTranslationEntryMaxCount,
-  publicTranslationKeyMaxLength,
   publicTranslationMessageMaxLength,
+  translationKeySchema,
 } from "@app-starter/schema";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { PagesService } from "../pages/pages.service.js";
@@ -110,17 +110,7 @@ function isSafePublicTranslationEntry(translation: {
 
 function isSafePublicTranslationKey(key: string) {
   return (
-    key.trim() === key &&
-    key.length > 0 &&
-    key.length <= publicTranslationKeyMaxLength &&
-    !forbiddenPublicTranslationMessageKeys.has(key.toLowerCase()) &&
-    !hasControlCharacter(key)
+    translationKeySchema.safeParse(key).success &&
+    !forbiddenPublicTranslationMessageKeys.has(key.toLowerCase())
   );
-}
-
-function hasControlCharacter(value: string) {
-  return Array.from(value).some((character) => {
-    const codePoint = character.codePointAt(0) ?? 0;
-    return codePoint <= 0x1f || codePoint === 0x7f;
-  });
 }

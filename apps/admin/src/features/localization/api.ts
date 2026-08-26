@@ -1,17 +1,20 @@
-import { adminRequest } from "../auth/api";
+import { adminRequest } from "../auth/api.ts";
 import { readApiResponseJson } from "../../lib/api-response.ts";
+import { createIdempotencyKey } from "../../lib/idempotency-key.ts";
 import type {
   LocalizationLocale,
   LocalizationMarket,
   LocalizationSummary,
   LocalizationTranslationEntry,
   LocalizationTranslationsMeta,
-} from "./types";
-import { readFallbackProbeLocale } from "./localization-fallback-probe";
+  UpsertDefaultTranslationInput,
+} from "./types.ts";
+import { readFallbackProbeLocale } from "./localization-fallback-probe.ts";
 
 export async function getLocalizationSummary(): Promise<LocalizationSummary> {
   const [markets, locales] = await Promise.all([getMarkets(), getLocales()]);
-  const defaultLocale = locales[0]?.code ?? markets[0]?.defaultLocale ?? "en-US";
+  const defaultLocale =
+    locales[0]?.code ?? markets[0]?.defaultLocale ?? "en-US";
   const translations = await getTranslations(
     readFallbackProbeLocale(defaultLocale),
   );
@@ -22,6 +25,31 @@ export async function getLocalizationSummary(): Promise<LocalizationSummary> {
     translations: translations.entries,
     translationsMeta: translations.meta,
   };
+}
+
+export async function upsertDefaultTranslationEntry(
+  input: UpsertDefaultTranslationInput,
+): Promise<LocalizationTranslationEntry> {
+  const result = await readAdminJson<{ data?: LocalizationTranslationEntry }>(
+    "/translations",
+    {
+      body: JSON.stringify({
+        context: input.context ?? null,
+        key: input.key,
+        locale: input.locale,
+        value: input.value,
+      }),
+      headers: jsonHeaders(),
+      method: "POST",
+    },
+    "Translation entry could not be saved.",
+  );
+
+  if (!result.data?.key) {
+    throw new Error("Translation entry could not be saved.");
+  }
+
+  return result.data;
 }
 
 async function getMarkets(): Promise<LocalizationMarket[]> {
@@ -65,7 +93,24 @@ async function getTranslations(locale: string): Promise<{
   };
 }
 
-async function readAdminJson<T>(path: string, fallback: string): Promise<T> {
-  const response = await adminRequest(path);
-  return readApiResponseJson<T>(response, fallback);
+function jsonHeaders(): HeadersInit {
+  return {
+    "Content-Type": "application/json",
+    "Idempotency-Key": createIdempotencyKey(),
+  };
+}
+
+async function readAdminJson<T>(
+  path: string,
+  initOrFallback: RequestInit | string,
+  fallback?: string,
+): Promise<T> {
+  const init = typeof initOrFallback === "string" ? {} : initOrFallback;
+  const fallbackMessage =
+    typeof initOrFallback === "string" ? initOrFallback : fallback;
+  const response = await adminRequest(path, init);
+  return readApiResponseJson<T>(
+    response,
+    fallbackMessage ?? "Request could not be completed.",
+  );
 }

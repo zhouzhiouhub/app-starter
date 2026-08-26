@@ -4,6 +4,7 @@ import type { Actor } from "../identity/identity.types.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { toTranslationResponse } from "./localization.mapper.js";
 import { resolveTranslationLocale } from "./localization.validation.js";
+import { upsertTranslation } from "./use-cases/upsert-translation.js";
 
 @Injectable()
 export class LocalizationService {
@@ -35,5 +36,20 @@ export class LocalizationService {
         isFallback: localeContext.isFallback,
       },
     };
+  }
+
+  async upsertTranslation(
+    body: unknown,
+    idempotencyKey: string | undefined,
+    actor: Actor,
+    requestId = "local-dev",
+  ) {
+    return upsertTranslation(
+      this.prisma,
+      body,
+      idempotencyKey,
+      actor,
+      requestId,
+    );
   }
 }

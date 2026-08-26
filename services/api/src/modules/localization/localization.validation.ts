@@ -1,5 +1,11 @@
-import { BadRequestException } from "@nestjs/common";
-import { apiErrorCodes, localeCodeSchema } from "@app-starter/schema";
+import { BadRequestException, ConflictException } from "@nestjs/common";
+import {
+  apiErrorCodes,
+  localeCodeSchema,
+  publicTranslationMessageMaxLength,
+  translationContextMaxLength,
+  translationKeySchema,
+} from "@app-starter/schema";
 import { z, ZodError } from "zod";
 import { isMultiLocaleEnabled } from "../../common/feature-flags.js";
 import { readApiRuntimeDefaults } from "../../common/runtime-defaults.js";
@@ -7,12 +13,44 @@ import { readApiRuntimeDefaults } from "../../common/runtime-defaults.js";
 const createLocaleInputSchema = z.object({
   code: localeCodeSchema,
 });
+const upsertTranslationInputSchema = z.object({
+  context: z
+    .string()
+    .max(translationContextMaxLength)
+    .refine(
+      (value) => !hasControlCharacter(value),
+      "Context must not contain control characters.",
+    )
+    .nullable()
+    .optional(),
+  key: translationKeySchema,
+  locale: localeCodeSchema.optional(),
+  value: z
+    .string()
+    .min(1)
+    .max(publicTranslationMessageMaxLength)
+    .refine(
+      (value) => !hasControlCharacter(value),
+      "Value must not contain control characters.",
+    ),
+});
 
 export type CreateLocaleInput = z.infer<typeof createLocaleInputSchema>;
+export type UpsertTranslationInput = z.infer<
+  typeof upsertTranslationInputSchema
+>;
 
 export function parseCreateLocaleInput(body: unknown): CreateLocaleInput {
   return parseOrThrow(() =>
     createLocaleInputSchema.parse(unwrapBodyData(body)),
+  );
+}
+
+export function parseUpsertTranslationInput(
+  body: unknown,
+): UpsertTranslationInput {
+  return parseOrThrow(() =>
+    upsertTranslationInputSchema.parse(unwrapBodyData(body)),
   );
 }
 
@@ -60,6 +98,37 @@ export function resolveTranslationLocale(
   };
 }
 
+export function resolveWritableTranslationLocale(
+  locale: string | undefined,
+  env: Record<string, string | undefined> = process.env,
+) {
+  const defaults = readApiRuntimeDefaults(env);
+  const defaultLocale = defaults.locale;
+  const requestedLocale = locale ?? defaultLocale;
+  const parsed = localeCodeSchema.safeParse(requestedLocale);
+
+  if (!parsed.success) {
+    throw new BadRequestException({
+      code: apiErrorCodes.VALIDATION_ERROR,
+      message: "Locale must look like en-US.",
+    });
+  }
+
+  if (!isMultiLocaleEnabled(env) && parsed.data !== defaultLocale) {
+    throw new ConflictException({
+      code: apiErrorCodes.MULTI_LOCALE_DISABLED,
+      message:
+        "Cannot write non-default Locale translations while multi-locale is disabled.",
+    });
+  }
+
+  return {
+    defaultLocale,
+    fallbackLocale: defaults.fallbackLocale,
+    locale: parsed.data,
+  };
+}
+
 function unwrapBodyData(body: unknown): Record<string, unknown> {
   if (!body || typeof body !== "object") {
     throw new Error("Request body must be an object.");
@@ -96,4 +165,11 @@ function parseOrThrow<T>(fn: () => T): T {
 
     throw error;
   }
+}
+
+function hasControlCharacter(value: string) {
+  return Array.from(value).some((character) => {
+    const codePoint = character.codePointAt(0) ?? 0;
+    return codePoint <= 0x1f || codePoint === 0x7f;
+  });
 }

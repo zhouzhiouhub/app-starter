@@ -7,6 +7,7 @@ import type {
   LocalizationSummary,
   LocalizationTranslationEntry,
 } from "../types";
+import { DefaultTranslationEntryForm } from "./default-translation-entry-form";
 
 const marketColumns: ColumnsType<LocalizationMarket> = [
   {
@@ -81,6 +82,7 @@ const translationColumns: ColumnsType<LocalizationTranslationEntry> = [
 ];
 
 export function LocalizationStatusPanel(props: {
+  onTranslationSaved?: () => Promise<void> | void;
   summary: LocalizationSummary;
 }) {
   const state = readLocalizationSummaryState(props.summary);
@@ -147,6 +149,10 @@ export function LocalizationStatusPanel(props: {
         pagination={false}
         rowKey="code"
         size="small"
+      />
+      <DefaultTranslationEntryForm
+        defaultLocale={state.defaultLocale}
+        onSaved={props.onTranslationSaved}
       />
       <Table<LocalizationTranslationEntry>
         columns={translationColumns}

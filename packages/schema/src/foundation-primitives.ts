@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { translationKeySchema } from "./foundation-translations.js";
 
 export const viewportSchema = z.enum(["desktop", "mobile"]);
 export type Viewport = z.infer<typeof viewportSchema>;
@@ -18,7 +19,7 @@ export const pageSlugSchema = z
 export type PageSlug = z.infer<typeof pageSlugSchema>;
 
 export const i18nTextSchema = z.object({
-  i18nKey: z.string().min(1).optional(),
+  i18nKey: translationKeySchema.optional(),
   defaultValue: z.string(),
 });
 export type I18nText = z.infer<typeof i18nTextSchema>;

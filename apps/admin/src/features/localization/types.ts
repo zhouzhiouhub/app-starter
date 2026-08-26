@@ -28,6 +28,13 @@ export interface LocalizationTranslationEntry {
   value: string;
 }
 
+export interface UpsertDefaultTranslationInput {
+  context?: string | null;
+  key: string;
+  locale: string;
+  value: string;
+}
+
 export interface LocalizationSummary {
   locales: LocalizationLocale[];
   markets: LocalizationMarket[];

@@ -25,6 +25,7 @@ const TENANT_ADMIN_PERMISSIONS = [
   "locale:read",
   "locale:write",
   "translation:read",
+  "translation:write",
   "product:read",
   "order:read",
   "payment:read",
@@ -200,13 +201,15 @@ async function seedTenantAdmin(prisma, tenantId, credentials) {
 }
 
 export function readSeedAdminCredentials(env = process.env) {
-  const email = (
-    env.SEED_ADMIN_EMAIL ?? DEFAULT_SEED_ADMIN_EMAIL
-  ).trim().toLowerCase();
+  const email = (env.SEED_ADMIN_EMAIL ?? DEFAULT_SEED_ADMIN_EMAIL)
+    .trim()
+    .toLowerCase();
   const password = env.SEED_ADMIN_PASSWORD ?? DEFAULT_SEED_ADMIN_PASSWORD;
 
   if (!email || !password.trim()) {
-    throw new Error("SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD cannot be empty.");
+    throw new Error(
+      "SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD cannot be empty.",
+    );
   }
 
   if (!isSafeSeedAdminEmail(email)) {
@@ -265,7 +268,9 @@ function isProductionSeedEnvironment(env) {
 function isDirectExecution() {
   const entrypoint = process.argv[1];
 
-  return Boolean(entrypoint && pathToFileURL(entrypoint).href === import.meta.url);
+  return Boolean(
+    entrypoint && pathToFileURL(entrypoint).href === import.meta.url,
+  );
 }
 
 if (isDirectExecution()) {
