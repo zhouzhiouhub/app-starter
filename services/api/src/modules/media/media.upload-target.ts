@@ -149,8 +149,7 @@ function readR2UploadConfig(env: R2UploadEnv): R2UploadConfig | null {
 }
 
 function readR2EnvValue(value: string | undefined): string | null {
-  const trimmed = value?.trim();
-  return trimmed ? trimmed : null;
+  return value && value.trim().length > 0 ? value : null;
 }
 
 function isSafeR2AccountId(value: string | null): value is string {

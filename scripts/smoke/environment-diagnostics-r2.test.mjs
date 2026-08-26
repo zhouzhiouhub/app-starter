@@ -65,3 +65,38 @@ test("smoke environment diagnostics rejects unsafe R2 bucket names", () => {
     );
   }
 });
+
+test("smoke environment diagnostics rejects R2 values with surrounding whitespace", () => {
+  const diagnostics = createSmokeEnvironmentDiagnostics({
+    R2_ACCESS_KEY_ID: "access-key ",
+    R2_ACCOUNT_ID: " account-id",
+    R2_BUCKET: "bucket-name ",
+    R2_REGION: " auto",
+    R2_SECRET_ACCESS_KEY: " secret-key",
+  });
+
+  assert.equal(diagnostics.media.r2.configured, false);
+  assert.deepEqual(diagnostics.media.r2.missingRequired, []);
+  assert.deepEqual(diagnostics.media.r2.issues, [
+    {
+      issue: "invalid-account-id",
+      variable: "R2_ACCOUNT_ID",
+    },
+    {
+      issue: "invalid-credential",
+      variable: "R2_ACCESS_KEY_ID",
+    },
+    {
+      issue: "invalid-bucket",
+      variable: "R2_BUCKET",
+    },
+    {
+      issue: "invalid-credential",
+      variable: "R2_SECRET_ACCESS_KEY",
+    },
+    {
+      issue: "invalid-region",
+      variable: "R2_REGION",
+    },
+  ]);
+});

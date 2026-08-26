@@ -49,12 +49,14 @@ export function createMediaDiagnostics(env = process.env) {
 }
 
 function readR2Diagnostics(env) {
-  const accountId = readEnv(env, "R2_ACCOUNT_ID");
-  const accessKeyId = readEnv(env, "R2_ACCESS_KEY_ID");
-  const bucket = readEnv(env, "R2_BUCKET");
-  const region = readEnv(env, "R2_REGION");
-  const secretAccessKey = readEnv(env, "R2_SECRET_ACCESS_KEY");
-  const missingRequired = r2RequiredVariables.filter((name) => !readEnv(env, name));
+  const accountId = readR2Env(env, "R2_ACCOUNT_ID");
+  const accessKeyId = readR2Env(env, "R2_ACCESS_KEY_ID");
+  const bucket = readR2Env(env, "R2_BUCKET");
+  const region = readR2Env(env, "R2_REGION");
+  const secretAccessKey = readR2Env(env, "R2_SECRET_ACCESS_KEY");
+  const missingRequired = r2RequiredVariables.filter(
+    (name) => !readR2Env(env, name),
+  );
   const issues = [];
 
   appendR2Issue(issues, "R2_ACCOUNT_ID", accountId, isSafeR2AccountId);
@@ -202,6 +204,12 @@ function readProductionHostSafety(host) {
 function readEnv(env, name) {
   const value = env[name]?.trim();
   return value ? value : null;
+}
+
+function readR2Env(env, name) {
+  const value = env[name];
+
+  return typeof value === "string" && value.trim().length > 0 ? value : null;
 }
 
 function isSafeR2AccountId(value) {

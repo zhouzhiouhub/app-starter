@@ -193,6 +193,57 @@ test("createMediaUploadTarget rejects malformed R2 configuration", () => {
   }
 });
 
+test("createMediaUploadTarget rejects R2 configuration with surrounding whitespace", () => {
+  const baseInput = {
+    mimeType: "image/png",
+    now: new Date("2026-08-18T00:00:00.000Z"),
+    r2Key: "tenant-1/folder/hero.png",
+  };
+
+  for (const env of [
+    {
+      R2_ACCOUNT_ID: " account-1",
+      R2_ACCESS_KEY_ID: "access-key",
+      R2_BUCKET: "media-bucket",
+      R2_SECRET_ACCESS_KEY: "secret-key",
+    },
+    {
+      R2_ACCOUNT_ID: "account-1",
+      R2_ACCESS_KEY_ID: "access-key ",
+      R2_BUCKET: "media-bucket",
+      R2_SECRET_ACCESS_KEY: "secret-key",
+    },
+    {
+      R2_ACCOUNT_ID: "account-1",
+      R2_ACCESS_KEY_ID: "access-key",
+      R2_BUCKET: "media-bucket ",
+      R2_SECRET_ACCESS_KEY: "secret-key",
+    },
+    {
+      R2_ACCOUNT_ID: "account-1",
+      R2_ACCESS_KEY_ID: "access-key",
+      R2_BUCKET: "media-bucket",
+      R2_REGION: " auto",
+      R2_SECRET_ACCESS_KEY: "secret-key",
+    },
+    {
+      R2_ACCOUNT_ID: "account-1",
+      R2_ACCESS_KEY_ID: "access-key",
+      R2_BUCKET: "media-bucket",
+      R2_SECRET_ACCESS_KEY: " secret-key",
+    },
+  ]) {
+    assert.throws(
+      () =>
+        createMediaUploadTarget({
+          ...baseInput,
+          env,
+        }),
+      /R2 upload configuration is invalid/,
+    );
+  }
+});
+
 test("createMediaUploadTarget rejects unsafe upload base URLs", () => {
   const target = createMediaUploadTarget({
     mimeType: "image/png",
