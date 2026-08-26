@@ -57,14 +57,6 @@ export function redactSmokeSecrets(value) {
     );
 }
 
-export function readRedactedSmokeSnippet(value, maxLength) {
-  const redacted = redactSmokeSecrets(value);
-
-  return redacted.length > maxLength
-    ? redacted.slice(0, maxLength)
-    : redacted;
-}
-
 export function redactSmokeReportValue(value) {
   if (typeof value === "string") {
     return redactSmokeSecrets(value);

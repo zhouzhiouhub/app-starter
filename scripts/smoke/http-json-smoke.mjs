@@ -3,10 +3,10 @@ import {
   cancelResponseBody,
   readRedirectLocation,
 } from "./http-response-summary.mjs";
-import { readRedactedSmokeSnippet } from "./smoke-secrets.mjs";
 import { formatSmokeText } from "./smoke-text.mjs";
 
 const maxHttpErrorMessageLength = 520;
+const maxNonJsonBodySnippetLength = 160;
 
 export async function assertJsonReachable(url, label) {
   const response = await fetchJson(url);
@@ -67,10 +67,9 @@ function parseJson(text, url) {
   } catch {
     throw new Error(
       formatSmokeText(
-        `${url} returned non-JSON content: ${readRedactedSmokeSnippet(
-          text,
-          160,
-        )}`,
+        `${url} returned non-JSON content: ${formatSmokeText(text, {
+          maxLength: maxNonJsonBodySnippetLength,
+        })}`,
         { maxLength: 260 },
       ),
     );

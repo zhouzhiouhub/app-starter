@@ -130,11 +130,11 @@ test("R2 smoke upload redacts failure bodies before truncating", async () => {
 test("R2 smoke upload normalizes dynamic failure body snippets", async () => {
   await withFetch(async () => {
     return new Response(
-      [
-        "upload failed",
-        "Authorization Bearer a.b.c",
-        "token=payload.signature",
-        "x".repeat(900),
+        [
+          "upload failed\u0000",
+          "Authorization Bearer a.b.c",
+          "token=payload.signature",
+          "x".repeat(900),
       ].join("\n"),
       {
         status: 500,
@@ -148,10 +148,23 @@ test("R2 smoke upload normalizes dynamic failure body snippets", async () => {
         assert.match(error.message, /R2 object upload failed\. 500/);
         assert.equal(error.message.includes("payload.signature"), false);
         assert.equal(error.message.includes("a.b.c"), false);
+        assert.equal(hasAsciiControlCharacter(error.message), false);
         assert.doesNotMatch(error.message, /[\r\n]/);
+        assert.match(error.message, /\.\.\./);
         assert.equal(error.message.length <= 520, true);
         return true;
       },
     );
   });
 });
+
+function hasAsciiControlCharacter(value) {
+  for (const character of value) {
+    const code = character.charCodeAt(0);
+    if (code <= 31 || code === 127) {
+      return true;
+    }
+  }
+
+  return false;
+}

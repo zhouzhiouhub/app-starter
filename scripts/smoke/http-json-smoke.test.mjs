@@ -159,7 +159,7 @@ test("JSON smoke fetch normalizes non-JSON response snippets", async () => {
     async () =>
       new Response(
         [
-          "<html><body>upstream failed",
+          "<html><body>upstream failed\u0000",
           "Authorization Bearer a.b.c",
           "token=payload.signature",
           "x".repeat(900),
@@ -177,8 +177,10 @@ test("JSON smoke fetch normalizes non-JSON response snippets", async () => {
           assert.equal(error instanceof Error, true);
           assert.equal(error.message.includes("payload.signature"), false);
           assert.equal(error.message.includes("a.b.c"), false);
+          assert.equal(hasAsciiControlCharacter(error.message), false);
           assert.doesNotMatch(error.message, /[\r\n]/);
           assert.match(error.message, /returned non-JSON content/);
+          assert.match(error.message, /\.\.\./);
           assert.equal(error.message.length <= 260, true);
           return true;
         },
@@ -186,6 +188,17 @@ test("JSON smoke fetch normalizes non-JSON response snippets", async () => {
     },
   );
 });
+
+function hasAsciiControlCharacter(value) {
+  for (const character of value) {
+    const code = character.charCodeAt(0);
+    if (code <= 31 || code === 127) {
+      return true;
+    }
+  }
+
+  return false;
+}
 
 test("JSON smoke HTTP errors normalize and cap dynamic messages", () => {
   const errorMessage = [
