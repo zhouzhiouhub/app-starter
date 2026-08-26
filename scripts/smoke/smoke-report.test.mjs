@@ -96,6 +96,30 @@ test("smoke report helpers capture pass and failure state without secrets", () =
   assert.equal(report.error.message, "boom");
 });
 
+test("smoke report normalizes and caps failure messages in memory", () => {
+  const report = createTestSmokeReport();
+  const error = new Error(
+    [
+      "Public page failed",
+      "Authorization Bearer a.b.c",
+      "token=payload.signature",
+      "x".repeat(1400),
+    ].join("\n"),
+  );
+
+  recordSmokeCheckFailure(report, "public-page.api", error);
+  failSmokeReport(report, error);
+
+  assert.equal(report.checks[0].error.message.includes("payload.signature"), false);
+  assert.equal(report.error.message.includes("a.b.c"), false);
+  assert.doesNotMatch(report.checks[0].error.message, /[\r\n]/);
+  assert.doesNotMatch(report.error.message, /[\r\n]/);
+  assert.match(report.checks[0].error.message, /^Public page failed/);
+  assert.match(report.error.message, /\.\.\.$/);
+  assert.equal(report.checks[0].error.message.length <= 1024, true);
+  assert.equal(report.error.message.length <= 1024, true);
+});
+
 test("smoke report validates required fields before writing", () => {
   const report = createTestSmokeReport();
 

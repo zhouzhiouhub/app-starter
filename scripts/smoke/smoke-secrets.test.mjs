@@ -125,6 +125,26 @@ test("smoke CLI error reader redacts secrets", () => {
   );
 });
 
+test("smoke CLI error reader normalizes and caps dynamic failures", () => {
+  const message = readErrorMessage(
+    new Error(
+      [
+        "request failed",
+        "Authorization Bearer a.b.c",
+        "token=payload.signature",
+        "x".repeat(900),
+      ].join("\r\n"),
+    ),
+  );
+
+  assert.equal(message.includes("payload.signature"), false);
+  assert.equal(message.includes("a.b.c"), false);
+  assert.doesNotMatch(message, /[\r\n]/);
+  assert.match(message, /^request failed/);
+  assert.match(message, /\.\.\.$/);
+  assert.equal(message.length <= 520, true);
+});
+
 test("smoke report value redaction sanitizes nested details", () => {
   assert.deepEqual(
     redactSmokeReportValue({

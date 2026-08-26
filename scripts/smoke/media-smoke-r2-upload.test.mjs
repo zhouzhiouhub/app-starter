@@ -126,3 +126,32 @@ test("R2 smoke upload redacts failure bodies before truncating", async () => {
     );
   });
 });
+
+test("R2 smoke upload normalizes dynamic failure body snippets", async () => {
+  await withFetch(async () => {
+    return new Response(
+      [
+        "upload failed",
+        "Authorization Bearer a.b.c",
+        "token=payload.signature",
+        "x".repeat(900),
+      ].join("\n"),
+      {
+        status: 500,
+        statusText: "Internal Server Error",
+      },
+    );
+  }, async () => {
+    await assert.rejects(
+      () => uploadSmokeImage(target, image),
+      (error) => {
+        assert.match(error.message, /R2 object upload failed\. 500/);
+        assert.equal(error.message.includes("payload.signature"), false);
+        assert.equal(error.message.includes("a.b.c"), false);
+        assert.doesNotMatch(error.message, /[\r\n]/);
+        assert.equal(error.message.length <= 520, true);
+        return true;
+      },
+    );
+  });
+});

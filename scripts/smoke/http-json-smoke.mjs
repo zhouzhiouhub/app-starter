@@ -3,10 +3,7 @@ import {
   cancelResponseBody,
   readRedirectLocation,
 } from "./http-response-summary.mjs";
-import {
-  readRedactedSmokeSnippet,
-  redactSmokeSecrets,
-} from "./smoke-secrets.mjs";
+import { readRedactedSmokeSnippet } from "./smoke-secrets.mjs";
 import { formatSmokeText } from "./smoke-text.mjs";
 
 const maxHttpErrorMessageLength = 520;
@@ -69,11 +66,12 @@ function parseJson(text, url) {
     return JSON.parse(text);
   } catch {
     throw new Error(
-      redactSmokeSecrets(
+      formatSmokeText(
         `${url} returned non-JSON content: ${readRedactedSmokeSnippet(
           text,
           160,
         )}`,
+        { maxLength: 260 },
       ),
     );
   }

@@ -7,10 +7,10 @@ import {
   readRedirectLocation,
 } from "./http-response-summary.mjs";
 import { readErrorMessage as readUploadErrorMessage } from "./smoke-error-message.mjs";
-import {
-  readRedactedSmokeSnippet,
-  redactSmokeSecrets,
-} from "./smoke-secrets.mjs";
+import { readRedactedSmokeSnippet } from "./smoke-secrets.mjs";
+import { formatSmokeText } from "./smoke-text.mjs";
+
+const maxUploadErrorMessageLength = 520;
 
 export async function uploadSmokeImage(target, image) {
   const response = await fetch(target.uploadUrl, {
@@ -43,8 +43,12 @@ function readUploadError(response, failureBody, redirectLocation) {
     : "";
   const redirect = redirectLocation ? ` redirect: ${redirectLocation}` : "";
 
-  return redactSmokeSecrets(
+  return formatSmokeText(
     `R2 object upload failed. ${response.status}: ${message}${bodyReadError}${redirect}`,
+    {
+      fallback: "R2 object upload failed.",
+      maxLength: maxUploadErrorMessageLength,
+    },
   );
 }
 

@@ -154,6 +154,39 @@ test("JSON smoke fetch redacts non-JSON snippets before truncating", async () =>
   );
 });
 
+test("JSON smoke fetch normalizes non-JSON response snippets", async () => {
+  await withFetch(
+    async () =>
+      new Response(
+        [
+          "<html><body>upstream failed",
+          "Authorization Bearer a.b.c",
+          "token=payload.signature",
+          "x".repeat(900),
+          "</body></html>",
+        ].join("\n"),
+        {
+          status: 502,
+          statusText: "Bad Gateway",
+        },
+      ),
+    async () => {
+      await assert.rejects(
+        fetchJson("https://api.example.com/api/v1/public/config"),
+        (error) => {
+          assert.equal(error instanceof Error, true);
+          assert.equal(error.message.includes("payload.signature"), false);
+          assert.equal(error.message.includes("a.b.c"), false);
+          assert.doesNotMatch(error.message, /[\r\n]/);
+          assert.match(error.message, /returned non-JSON content/);
+          assert.equal(error.message.length <= 260, true);
+          return true;
+        },
+      );
+    },
+  );
+});
+
 test("JSON smoke HTTP errors normalize and cap dynamic messages", () => {
   const errorMessage = [
     "Forbidden",

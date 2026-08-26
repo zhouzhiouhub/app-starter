@@ -1,9 +1,13 @@
-import { redactSmokeSecrets } from "./smoke-secrets.mjs";
+import { formatSmokeText } from "./smoke-text.mjs";
 
 const fallbackSmokeErrorMessage = "Unknown smoke failure.";
+const maxSmokeReportErrorMessageLength = 1024;
 
 export function readSmokeErrorMessage(error) {
-  return redactSmokeSecrets(readSmokeErrorMessageValue(error));
+  return formatSmokeText(readSmokeErrorMessageValue(error), {
+    fallback: fallbackSmokeErrorMessage,
+    maxLength: maxSmokeReportErrorMessageLength,
+  });
 }
 
 export function readSmokeFailureDetails(error, details = {}) {
