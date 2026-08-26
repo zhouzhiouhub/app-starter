@@ -30,6 +30,7 @@ export interface ApiResponseMeta {
   locale?: string;
   fallbackLocale?: string;
   isFallback?: boolean;
+  writeMode?: "created" | "updated";
   revalidation?: StorefrontRevalidationResult;
 }
 

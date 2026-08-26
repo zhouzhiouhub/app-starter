@@ -63,7 +63,7 @@
 - Page Builder 已具备区块库、区块排序、属性面板、Desktop / Mobile 布局编辑、Undo / Redo。
 - 媒体库已具备列表、登记外部媒体、上传目标生成、归档和 `media://` 引用解析。
 - Settings 已具备默认站点名称与域名管理，并展示 MVP 默认市场、Locale、Currency、功能开关和 Analytics 配置。
-- Localization 已具备默认 Market / Locale / Translation fallback 检查视图，支持默认 `en-US` 翻译条目保存入口；非默认 Locale 会明确显示回退到 `en-US` 的关闭态，并展示多语言写入禁用和 Translation 空态。
+- Localization 已具备默认 Market / Locale / Translation fallback 检查视图，支持默认 `en-US` 翻译条目保存、列表筛选和重复保存提示；非默认 Locale 会明确显示回退到 `en-US` 的关闭态，并展示多语言写入禁用、Translation 空态和导入/导出占位契约。
 
 ### 当前还没有完成
 
@@ -533,6 +533,8 @@ GET  /api/v1/markets
 GET  /api/v1/locales
 GET  /api/v1/translations
 POST /api/v1/translations
+POST /api/v1/translations/export
+POST /api/v1/translations/import
 POST /api/v1/locales
 
 GET  /api/v1/products
@@ -548,8 +550,9 @@ POST /api/v1/webhooks/stripe
 - 后台页面、Localization 和商品/订单列表接口需要 `Authorization: Bearer {accessToken}`。
 - `POST /api/v1/pages`、`PUT /api/v1/pages/:id/schema`、发布接口需要 `Idempotency-Key`。
 - `GET /api/v1/audit-logs` 需要 `audit:read`，只返回当前登录 Tenant 的审计日志，支持按 action、actorId、targetType、targetId 过滤。
-- `GET /api/v1/translations` 需要 `translation:read`，按当前登录 Tenant 读取默认 Locale 翻译条目；`MULTI_LOCALE_ENABLED=false` 时请求非默认 Locale 会回退到默认 Locale，并在 meta 标记 `isFallback=true`。
-- `POST /api/v1/translations` 需要 `translation:write` 和 `Idempotency-Key`；MVP 只允许保存默认 Locale 条目，非默认 Locale 在 `MULTI_LOCALE_ENABLED=false` 时返回 `MULTI_LOCALE_DISABLED`。
+- `GET /api/v1/translations` 需要 `translation:read`，按当前登录 Tenant 读取默认 Locale 翻译条目，支持 `namespace` 前缀和 `q` 搜索筛选；`MULTI_LOCALE_ENABLED=false` 时请求非默认 Locale 会回退到默认 Locale，并在 meta 标记 `isFallback=true`。
+- `POST /api/v1/translations` 需要 `translation:write` 和 `Idempotency-Key`；MVP 只允许保存默认 Locale 条目，并在 meta 返回 `writeMode=created|updated`，非默认 Locale 在 `MULTI_LOCALE_ENABLED=false` 时返回 `MULTI_LOCALE_DISABLED`。
+- `POST /api/v1/translations/import` 和 `POST /api/v1/translations/export` 是后续批量导入/导出能力的受保护占位契约，MVP 返回 `CONFLICT`。
 - `GET /api/v1/public/pages` 返回已发布页面摘要，用于前台 sitemap。
 - `GET /api/v1/public/pages/:slug` 只返回已发布版本；未发布或不存在时返回 `NOT_FOUND`。
 - `GET /api/v1/public/translations/:locale` 按公开店面域名解析 Tenant，返回对应 Tenant 的安全翻译消息包；多语言关闭时非默认 Locale 会回退默认 Locale。
@@ -639,7 +642,7 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 - Audit Logs 后台页面、审计日志只读查询 API 与 `audit:read` 权限。
 - 区块库、区块排序、区块属性面板、Undo / Redo。
 - 媒体库列表、上传目标、外部媒体登记、归档和 `media://` 选择。
-- Localization 默认 Market / Locale / Translation fallback 只读视图、写入关闭态和 Translation 空态。
+- Localization 默认 Market / Locale / Translation fallback 视图、默认 Locale 翻译保存、列表筛选、重复保存提示、写入关闭态、Translation 空态和批量导入/导出占位契约。
 - Settings 默认站点名称、域名与 Analytics 配置展示页。
 - Publish 按钮，发布结果写入 PostgreSQL。
 - 启动时尝试加载已发布的 `home` 页面。
@@ -687,5 +690,5 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 1. 在真实 R2 / CDN 环境配置 `MEDIA_CDN_BASE_URL`、R2 凭据和 CDN 域名，确认不是 `example` / `test` / `invalid` / 本地 / 私网域名，执行 `pnpm smoke:publish` 并归档 `SMOKE_REPORT_PATH`。
 2. 补齐部署 Smoke Test：前台 Vercel、API 独立 Node 服务、Admin 静态托管、Redis 生产连接、环境变量清单和回滚步骤。
 3. 做 Page Builder 视觉验收：Desktop / Mobile 双端检查、核心区块与设计稿差异记录、媒体解析异常态。
-4. 继续完善 Translation Key 管理体验：默认 Locale 列表筛选、重复保存提示、批量导入/导出前的契约测试；非默认 Locale 仍保持关闭态。
+4. 继续完善 Translation Key 管理体验：默认 Locale 分页、缺失 key 检查、批量导入/导出真实实现前的预览和错误报告；非默认 Locale 仍保持关闭态。
 5. 保持 Commerce 关闭态，只继续完善 Products / Orders / Payments 空列表、Stripe Webhook 占位和 `COMMERCE_DISABLED` 错误分支测试；不进入真实交易。

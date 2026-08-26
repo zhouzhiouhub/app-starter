@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { upsertDefaultTranslationEntry } from "../src/features/localization/api.ts";
+import {
+  getLocalizationSummary,
+  upsertDefaultTranslationEntry,
+} from "../src/features/localization/api.ts";
 
 test("localization API upserts default translation entries with idempotency", async () => {
   const requests = [];
@@ -25,7 +28,10 @@ test("localization API upserts default translation entries with idempotency", as
           locale: "en-US",
           value: "Build better storefronts",
         }),
-        entry,
+        {
+          entry,
+          writeMode: "updated",
+        },
       );
     },
   );
@@ -45,6 +51,67 @@ test("localization API upserts default translation entries with idempotency", as
   assert.match(
     requests[0].init.headers.get("Idempotency-Key"),
     /^[0-9a-f-]{36}$/,
+  );
+});
+
+test("localization API forwards translation list filters", async () => {
+  const requests = [];
+
+  await withFetch(
+    async (url) => {
+      requests.push(String(url));
+
+      if (String(url).endsWith("/markets")) {
+        return jsonResponse({
+          data: [
+            {
+              code: "us",
+              currency: "USD",
+              defaultLocale: "en-US",
+              status: "active",
+            },
+          ],
+        });
+      }
+
+      if (String(url).endsWith("/locales")) {
+        return jsonResponse({
+          data: [
+            {
+              code: "en-US",
+              fallbackLocale: "en-US",
+              status: "active",
+            },
+          ],
+        });
+      }
+
+      return jsonResponse({
+        data: [],
+        meta: {
+          entryLimit: 2000,
+          fallbackLocale: "en-US",
+          isFallback: true,
+          locale: "en-US",
+          namespace: "page.home",
+          query: "hero",
+        },
+      });
+    },
+    async () => {
+      const summary = await getLocalizationSummary({
+        namespace: "page.home",
+        query: "hero",
+      });
+
+      assert.equal(summary.translationsMeta.namespace, "page.home");
+      assert.equal(summary.translationsMeta.query, "hero");
+    },
+  );
+
+  assert.equal(
+    requests.find((url) => url.includes("/translations?")),
+    "/api/v1/translations?locale=de-DE&namespace=page.home&q=hero",
   );
 });
 

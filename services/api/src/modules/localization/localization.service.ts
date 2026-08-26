@@ -1,9 +1,13 @@
-import { Injectable } from "@nestjs/common";
-import { translationEntryMaxCount } from "@app-starter/schema";
+import { ConflictException, Injectable } from "@nestjs/common";
+import type { Prisma } from "@prisma/client";
+import { apiErrorCodes, translationEntryMaxCount } from "@app-starter/schema";
 import type { Actor } from "../identity/identity.types.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { toTranslationResponse } from "./localization.mapper.js";
-import { resolveTranslationLocale } from "./localization.validation.js";
+import {
+  parseListTranslationsQuery,
+  resolveTranslationLocale,
+} from "./localization.validation.js";
 import { upsertTranslation } from "./use-cases/upsert-translation.js";
 
 @Injectable()
@@ -12,17 +16,21 @@ export class LocalizationService {
 
   async listTranslations(
     actor: Actor,
-    locale?: string,
+    query?: unknown,
     requestId = "local-dev",
   ) {
-    const localeContext = resolveTranslationLocale(locale);
+    const input = parseListTranslationsQuery(query);
+    const localeContext = resolveTranslationLocale(input.locale);
+    const where = createTranslationWhere({
+      locale: localeContext.locale,
+      namespace: input.namespace,
+      query: input.q,
+      tenantId: actor.tenantId,
+    });
     const translations = await this.prisma.translation.findMany({
       orderBy: { key: "asc" },
       take: translationEntryMaxCount,
-      where: {
-        locale: localeContext.locale,
-        tenantId: actor.tenantId,
-      },
+      where,
     });
 
     return {
@@ -34,6 +42,8 @@ export class LocalizationService {
         locale: localeContext.locale,
         fallbackLocale: localeContext.fallbackLocale,
         isFallback: localeContext.isFallback,
+        namespace: input.namespace,
+        query: input.q,
       },
     };
   }
@@ -52,4 +62,49 @@ export class LocalizationService {
       requestId,
     );
   }
+
+  rejectTranslationBulkOperation(
+    operation: "export" | "import",
+    requestId = "local-dev",
+  ): never {
+    throw new ConflictException({
+      code: apiErrorCodes.CONFLICT,
+      message: `Translation ${operation} is reserved for a later localization phase.`,
+      requestId,
+    });
+  }
+}
+
+function createTranslationWhere(input: {
+  locale: string;
+  namespace?: string;
+  query?: string;
+  tenantId: string;
+}): Prisma.TranslationWhereInput {
+  const filters: Prisma.TranslationWhereInput[] = [];
+
+  if (input.namespace) {
+    filters.push({
+      OR: [
+        { key: input.namespace },
+        { key: { startsWith: `${input.namespace}.` } },
+      ],
+    });
+  }
+
+  if (input.query) {
+    filters.push({
+      OR: [
+        { key: { contains: input.query } },
+        { value: { contains: input.query } },
+        { context: { contains: input.query } },
+      ],
+    });
+  }
+
+  return {
+    ...(filters.length ? { AND: filters } : {}),
+    locale: input.locale,
+    tenantId: input.tenantId,
+  };
 }

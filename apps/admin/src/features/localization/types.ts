@@ -16,6 +16,8 @@ export interface LocalizationTranslationsMeta {
   fallbackLocale: string;
   isFallback: boolean;
   locale: string;
+  namespace?: string;
+  query?: string;
   requestedLocale: string;
   requestId?: string;
 }
@@ -33,6 +35,16 @@ export interface UpsertDefaultTranslationInput {
   key: string;
   locale: string;
   value: string;
+}
+
+export interface UpsertDefaultTranslationResult {
+  entry: LocalizationTranslationEntry;
+  writeMode: "created" | "updated";
+}
+
+export interface TranslationListFilters {
+  namespace?: string;
+  query?: string;
 }
 
 export interface LocalizationSummary {

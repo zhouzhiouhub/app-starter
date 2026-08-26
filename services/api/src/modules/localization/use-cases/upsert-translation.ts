@@ -30,6 +30,16 @@ export async function upsertTranslation(
     scope: `translations:${localeContext.locale}:${input.key}:upsert`,
     tenantId: actor.tenantId,
     operation: async () => {
+      const existingTranslation = await prisma.translation.findUnique({
+        where: {
+          tenantId_key_locale: {
+            key: input.key,
+            locale: localeContext.locale,
+            tenantId: actor.tenantId,
+          },
+        },
+      });
+      const writeMode = existingTranslation ? "updated" : "created";
       const translation = await prisma.translation.upsert({
         create: {
           context: input.context ?? null,
@@ -59,6 +69,7 @@ export async function upsertTranslation(
             contextConfigured: translation.context !== null,
             key: input.key,
             locale: localeContext.locale,
+            writeMode,
           } as Prisma.InputJsonValue,
           requestId,
           targetId: translation.id,
@@ -75,6 +86,7 @@ export async function upsertTranslation(
           locale: localeContext.locale,
           fallbackLocale: localeContext.fallbackLocale,
           isFallback: false,
+          writeMode,
         },
       };
     },

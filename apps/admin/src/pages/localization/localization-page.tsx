@@ -1,9 +1,14 @@
+import { useState } from "react";
 import { Alert, Button, Spin, Space, Typography } from "antd";
 import { LocalizationStatusPanel } from "../../features/localization/components/localization-status-panel";
 import { useLocalizationSummary } from "../../features/localization/hooks/use-localization-summary";
+import type { TranslationListFilters } from "../../features/localization/types";
 
 export function LocalizationPage() {
-  const { error, isLoading, load, summary } = useLocalizationSummary();
+  const [translationFilters, setTranslationFilters] =
+    useState<TranslationListFilters>({});
+  const { error, isLoading, load, summary } =
+    useLocalizationSummary(translationFilters);
 
   return (
     <div>
@@ -26,12 +31,15 @@ export function LocalizationPage() {
       </div>
       <Space direction="vertical" size={16} style={{ width: "100%" }}>
         {error ? <Alert message={error} showIcon type="error" /> : null}
-        {isLoading ? (
+        {isLoading && !summary ? (
           <div style={{ padding: 48, textAlign: "center" }}>
             <Spin />
           </div>
         ) : summary ? (
           <LocalizationStatusPanel
+            filters={translationFilters}
+            isFiltering={isLoading}
+            onFiltersChange={setTranslationFilters}
             onTranslationSaved={load}
             summary={summary}
           />

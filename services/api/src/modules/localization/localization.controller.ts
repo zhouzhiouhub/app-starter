@@ -67,9 +67,15 @@ export class LocalizationController {
   getTranslations(
     @CurrentUser() actor: Actor,
     @Query("locale") locale?: string,
+    @Query("namespace") namespace?: string,
+    @Query("q") query?: string,
     @CurrentRequestId() requestId = "local-dev",
   ) {
-    return this.localization.listTranslations(actor, locale, requestId);
+    return this.localization.listTranslations(
+      actor,
+      { locale, namespace, q: query },
+      requestId,
+    );
   }
 
   @Post("translations")
@@ -84,6 +90,24 @@ export class LocalizationController {
       body,
       requireIdempotencyKey(idempotencyKey),
       actor,
+      requestId,
+    );
+  }
+
+  @Post("translations/import")
+  @RequireScopes("translation:write")
+  createTranslationImport(@CurrentRequestId() requestId = "local-dev") {
+    return this.localization.rejectTranslationBulkOperation(
+      "import",
+      requestId,
+    );
+  }
+
+  @Post("translations/export")
+  @RequireScopes("translation:read")
+  createTranslationExport(@CurrentRequestId() requestId = "local-dev") {
+    return this.localization.rejectTranslationBulkOperation(
+      "export",
       requestId,
     );
   }

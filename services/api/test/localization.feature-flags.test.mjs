@@ -109,6 +109,8 @@ test("admin locales ignore invalid default locale environment values", async () 
       const translations = await controller.getTranslations(
         actor,
         undefined,
+        undefined,
+        undefined,
         "request-admin-translations",
       );
 
@@ -135,7 +137,12 @@ test("admin translations expose configured fallback locale metadata", async () =
     },
     async () => {
       const controller = createController();
-      const response = await controller.getTranslations(actor, "fr-FR");
+      const response = await controller.getTranslations(
+        actor,
+        "fr-FR",
+        undefined,
+        undefined,
+      );
 
       assert.equal(response.meta.locale, "en-US");
       assert.equal(response.meta.fallbackLocale, "de-DE");
@@ -154,7 +161,12 @@ test("admin translations expose default locale fallback metadata", async () => {
     async () => {
       const controller = createController();
       const defaultResponse = await controller.getTranslations(actor);
-      const fallbackResponse = await controller.getTranslations(actor, "de-DE");
+      const fallbackResponse = await controller.getTranslations(
+        actor,
+        "de-DE",
+        undefined,
+        undefined,
+      );
 
       assert.equal(defaultResponse.meta.locale, "en-US");
       assert.equal(defaultResponse.meta.fallbackLocale, "en-US");
@@ -170,7 +182,7 @@ test("admin translations reject invalid locale format", () => {
   const controller = createController();
 
   return assert.rejects(
-    () => controller.getTranslations(actor, "bad_locale"),
+    () => controller.getTranslations(actor, "bad_locale", undefined, undefined),
     (error) =>
       error.getStatus?.() === 400 &&
       error.getResponse?.().code === apiErrorCodes.VALIDATION_ERROR,
@@ -198,7 +210,7 @@ test("admin translations read tenant-scoped stored entries", async () => {
 
   const response = await service.listTranslations(
     actor,
-    "en-US",
+    { locale: "en-US" },
     "request-translations-list",
   );
 
@@ -243,7 +255,9 @@ test("admin translations query the fallback default locale while disabled", asyn
         },
       });
 
-      const response = await service.listTranslations(actor, "de-DE");
+      const response = await service.listTranslations(actor, {
+        locale: "de-DE",
+      });
 
       assert.equal(queryLocale, "en-US");
       assert.equal(response.meta.locale, "en-US");

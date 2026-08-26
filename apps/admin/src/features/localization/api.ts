@@ -7,16 +7,21 @@ import type {
   LocalizationSummary,
   LocalizationTranslationEntry,
   LocalizationTranslationsMeta,
+  TranslationListFilters,
   UpsertDefaultTranslationInput,
+  UpsertDefaultTranslationResult,
 } from "./types.ts";
 import { readFallbackProbeLocale } from "./localization-fallback-probe.ts";
 
-export async function getLocalizationSummary(): Promise<LocalizationSummary> {
+export async function getLocalizationSummary(
+  filters: TranslationListFilters = {},
+): Promise<LocalizationSummary> {
   const [markets, locales] = await Promise.all([getMarkets(), getLocales()]);
   const defaultLocale =
     locales[0]?.code ?? markets[0]?.defaultLocale ?? "en-US";
   const translations = await getTranslations(
     readFallbackProbeLocale(defaultLocale),
+    filters,
   );
 
   return {
@@ -29,8 +34,11 @@ export async function getLocalizationSummary(): Promise<LocalizationSummary> {
 
 export async function upsertDefaultTranslationEntry(
   input: UpsertDefaultTranslationInput,
-): Promise<LocalizationTranslationEntry> {
-  const result = await readAdminJson<{ data?: LocalizationTranslationEntry }>(
+): Promise<UpsertDefaultTranslationResult> {
+  const result = await readAdminJson<{
+    data?: LocalizationTranslationEntry;
+    meta?: { writeMode?: "created" | "updated" };
+  }>(
     "/translations",
     {
       body: JSON.stringify({
@@ -49,7 +57,10 @@ export async function upsertDefaultTranslationEntry(
     throw new Error("Translation entry could not be saved.");
   }
 
-  return result.data;
+  return {
+    entry: result.data,
+    writeMode: result.meta?.writeMode ?? "updated",
+  };
 }
 
 async function getMarkets(): Promise<LocalizationMarket[]> {
@@ -70,11 +81,23 @@ async function getLocales(): Promise<LocalizationLocale[]> {
   return result.data ?? [];
 }
 
-async function getTranslations(locale: string): Promise<{
+async function getTranslations(
+  locale: string,
+  filters: TranslationListFilters,
+): Promise<{
   entries: LocalizationTranslationEntry[];
   meta: LocalizationTranslationsMeta;
 }> {
   const query = new URLSearchParams({ locale });
+
+  if (filters.namespace) {
+    query.set("namespace", filters.namespace);
+  }
+
+  if (filters.query) {
+    query.set("q", filters.query);
+  }
+
   const result = await readAdminJson<{
     data?: LocalizationTranslationEntry[];
     meta?: Partial<LocalizationTranslationsMeta>;
@@ -87,6 +110,8 @@ async function getTranslations(locale: string): Promise<{
       fallbackLocale: result.meta?.fallbackLocale ?? locale,
       isFallback: result.meta?.isFallback === true,
       locale: result.meta?.locale ?? locale,
+      namespace: result.meta?.namespace ?? filters.namespace,
+      query: result.meta?.query ?? filters.query,
       requestedLocale: locale,
       requestId: result.meta?.requestId,
     },

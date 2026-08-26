@@ -32,7 +32,7 @@ export function DefaultTranslationEntryForm(props: {
     setIsSaving(true);
 
     try {
-      await upsertDefaultTranslationEntry({
+      const result = await upsertDefaultTranslationEntry({
         context: readOptionalText(values.context),
         key: values.key,
         locale: props.defaultLocale,
@@ -40,7 +40,10 @@ export function DefaultTranslationEntryForm(props: {
       });
       form.resetFields();
       setFeedback({
-        message: `Saved ${values.key} for ${props.defaultLocale}.`,
+        message:
+          result.writeMode === "updated"
+            ? `Updated existing ${result.entry.key} for ${props.defaultLocale}.`
+            : `Saved new ${result.entry.key} for ${props.defaultLocale}.`,
         type: "success",
       });
       await props.onSaved?.();

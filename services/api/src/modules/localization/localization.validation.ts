@@ -4,6 +4,8 @@ import {
   localeCodeSchema,
   publicTranslationMessageMaxLength,
   translationContextMaxLength,
+  translationNamespaceSchema,
+  translationSearchMaxLength,
   translationKeySchema,
 } from "@app-starter/schema";
 import { z, ZodError } from "zod";
@@ -12,6 +14,25 @@ import { readApiRuntimeDefaults } from "../../common/runtime-defaults.js";
 
 const createLocaleInputSchema = z.object({
   code: localeCodeSchema,
+});
+const optionalTranslationSearchSchema = z.preprocess(
+  normalizeOptionalText,
+  z
+    .string()
+    .max(translationSearchMaxLength)
+    .refine(
+      (value) => !hasControlCharacter(value),
+      "Search query must not contain control characters.",
+    )
+    .optional(),
+);
+const listTranslationsQuerySchema = z.object({
+  locale: z.preprocess(normalizeOptionalText, localeCodeSchema.optional()),
+  namespace: z.preprocess(
+    normalizeOptionalText,
+    translationNamespaceSchema.optional(),
+  ),
+  q: optionalTranslationSearchSchema,
 });
 const upsertTranslationInputSchema = z.object({
   context: z
@@ -36,6 +57,7 @@ const upsertTranslationInputSchema = z.object({
 });
 
 export type CreateLocaleInput = z.infer<typeof createLocaleInputSchema>;
+export type ListTranslationsQuery = z.infer<typeof listTranslationsQuerySchema>;
 export type UpsertTranslationInput = z.infer<
   typeof upsertTranslationInputSchema
 >;
@@ -44,6 +66,12 @@ export function parseCreateLocaleInput(body: unknown): CreateLocaleInput {
   return parseOrThrow(() =>
     createLocaleInputSchema.parse(unwrapBodyData(body)),
   );
+}
+
+export function parseListTranslationsQuery(
+  query: unknown,
+): ListTranslationsQuery {
+  return parseOrThrow(() => listTranslationsQuerySchema.parse(query ?? {}));
 }
 
 export function parseUpsertTranslationInput(
@@ -142,6 +170,15 @@ function unwrapBodyData(body: unknown): Record<string, unknown> {
   }
 
   return data as Record<string, unknown>;
+}
+
+function normalizeOptionalText(value: unknown) {
+  if (typeof value !== "string") {
+    return value;
+  }
+
+  const trimmed = value.trim();
+  return trimmed ? trimmed : undefined;
 }
 
 function parseOrThrow<T>(fn: () => T): T {

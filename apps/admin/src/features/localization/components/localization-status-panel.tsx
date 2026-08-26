@@ -6,8 +6,10 @@ import type {
   LocalizationMarket,
   LocalizationSummary,
   LocalizationTranslationEntry,
+  TranslationListFilters,
 } from "../types";
 import { DefaultTranslationEntryForm } from "./default-translation-entry-form";
+import { TranslationListFilterBar } from "./translation-list-filter-bar";
 
 const marketColumns: ColumnsType<LocalizationMarket> = [
   {
@@ -82,10 +84,16 @@ const translationColumns: ColumnsType<LocalizationTranslationEntry> = [
 ];
 
 export function LocalizationStatusPanel(props: {
+  filters: TranslationListFilters;
+  isFiltering?: boolean;
+  onFiltersChange: (filters: TranslationListFilters) => void;
   onTranslationSaved?: () => Promise<void> | void;
   summary: LocalizationSummary;
 }) {
   const state = readLocalizationSummaryState(props.summary);
+  const hasTranslationFilters = Boolean(
+    props.filters.namespace || props.filters.query,
+  );
 
   return (
     <Space direction="vertical" size={16} style={{ width: "100%" }}>
@@ -154,12 +162,18 @@ export function LocalizationStatusPanel(props: {
         defaultLocale={state.defaultLocale}
         onSaved={props.onTranslationSaved}
       />
+      <TranslationListFilterBar
+        filters={props.filters}
+        isLoading={props.isFiltering}
+        onChange={props.onFiltersChange}
+      />
       <Table<LocalizationTranslationEntry>
         columns={translationColumns}
         dataSource={props.summary.translations}
         locale={{
-          emptyText:
-            "No translation entries are stored for this fallback probe.",
+          emptyText: hasTranslationFilters
+            ? "No default locale entries match the current filters."
+            : "No translation entries are stored for this fallback probe.",
         }}
         pagination={false}
         rowKey={(record) => `${record.locale}:${record.key}`}
