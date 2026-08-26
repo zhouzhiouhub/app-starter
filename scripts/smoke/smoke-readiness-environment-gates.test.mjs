@@ -140,6 +140,13 @@ test("smoke readiness requires coherent analytics config when enabled", () => {
     invalidProviders: ["GTM_CONTAINER_ID"],
     productionReady: false,
     providerConfigured: false,
+    providers: {
+      GTM_CONTAINER_ID: {
+        configured: true,
+        issue: "surrounding-whitespace",
+        valid: false,
+      },
+    },
   };
   const readiness = createSmokeProductionReadiness(
     environment,
@@ -158,6 +165,10 @@ test("smoke readiness requires coherent analytics config when enabled", () => {
       ["analytics.provider", "invalid-provider", "GTM_CONTAINER_ID"],
     ],
   );
+  assert.equal(
+    readiness.blockers[2]?.providerIssue,
+    "surrounding-whitespace",
+  );
   assert.equal(readiness.productionReady, false);
   assert.deepEqual(readiness.nextActions, [
     {
@@ -172,7 +183,7 @@ test("smoke readiness requires coherent analytics config when enabled", () => {
     },
     {
       action:
-        "Fix GTM_CONTAINER_ID to match GTM container ID such as GTM-XXXXXXX, or remove it and disable analytics.",
+        "Remove leading and trailing whitespace from GTM_CONTAINER_ID, or remove it and disable analytics.",
       area: "analytics.provider",
     },
   ]);

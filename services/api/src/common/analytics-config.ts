@@ -29,15 +29,23 @@ function readProviderId(
   value: string | undefined,
   pattern: RegExp,
 ): string | null {
-  const trimmed = value?.trim();
-
   if (
-    !trimmed ||
-    trimmed.length > maxAnalyticsProviderIdLength ||
-    !pattern.test(trimmed)
+    !value ||
+    value.trim().length === 0 ||
+    value.trim() !== value ||
+    hasControlCharacter(value) ||
+    value.length > maxAnalyticsProviderIdLength ||
+    !pattern.test(value)
   ) {
     return null;
   }
 
-  return trimmed;
+  return value;
+}
+
+function hasControlCharacter(value: string): boolean {
+  return Array.from(value).some((character) => {
+    const codePoint = character.codePointAt(0) ?? 0;
+    return codePoint <= 0x1f || codePoint === 0x7f;
+  });
 }

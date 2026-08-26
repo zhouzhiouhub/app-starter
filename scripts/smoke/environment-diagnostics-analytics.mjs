@@ -68,17 +68,37 @@ function readBooleanDiagnostic(env, name) {
 }
 
 function readProviderDiagnostic(env, name, rule) {
-  const value = env[name]?.trim();
-  const configured = Boolean(value);
+  const value = env[name];
+  const configured =
+    typeof value === "string" &&
+    (hasControlCharacter(value) || value.trim().length > 0);
+  const issue = configured ? readProviderIssue(value, rule) : null;
 
   return {
     configured,
-    valid: configured ? isValidProviderId(value, rule) : false,
+    issue,
+    valid: configured && issue === null,
   };
 }
 
-function isValidProviderId(value, rule) {
-  return value.length <= rule.maxLength && rule.pattern.test(value);
+function readProviderIssue(value, rule) {
+  if (hasControlCharacter(value)) {
+    return "control-character";
+  }
+
+  if (value.trim() !== value) {
+    return "surrounding-whitespace";
+  }
+
+  if (value.length > rule.maxLength) {
+    return "too-long";
+  }
+
+  if (!rule.pattern.test(value)) {
+    return "invalid-format";
+  }
+
+  return null;
 }
 
 function readBooleanValue(value) {
@@ -93,4 +113,11 @@ function readBooleanValue(value) {
   }
 
   return null;
+}
+
+function hasControlCharacter(value) {
+  return Array.from(value).some((character) => {
+    const codePoint = character.codePointAt(0) ?? 0;
+    return codePoint <= 0x1f || codePoint === 0x7f;
+  });
 }

@@ -48,14 +48,17 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
       providers: {
         CLARITY_PROJECT_ID: {
           configured: false,
+          issue: null,
           valid: false,
         },
         GA4_MEASUREMENT_ID: {
           configured: false,
+          issue: null,
           valid: false,
         },
         GTM_CONTAINER_ID: {
           configured: false,
+          issue: null,
           valid: false,
         },
       },
@@ -382,7 +385,6 @@ test("smoke environment diagnostics reports unsafe external media hosts", () => 
   assert.equal(serialized.includes("secret"), false);
   assert.equal(serialized.includes("token=1"), false);
 });
-
 function createRsaPemPair() {
   return generateKeyPairSync("rsa", {
     modulusLength: 2048,

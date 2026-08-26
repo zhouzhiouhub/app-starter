@@ -28,6 +28,12 @@ export function readAnalyticsConsentAction(blocker) {
 
 export function readAnalyticsProviderAction(blocker) {
   if (blocker.issue === "invalid-provider" && blocker.variable) {
+    const specificAction = readProviderIssueAction(blocker);
+
+    if (specificAction) {
+      return specificAction;
+    }
+
     return `Fix ${blocker.variable} to match ${readProviderFormat(blocker.variable)}, or remove it and disable analytics.`;
   }
 
@@ -40,4 +46,20 @@ export function readAnalyticsProviderAction(blocker) {
 
 function readProviderFormat(variable) {
   return providerFormats[variable] ?? "the documented analytics provider format";
+}
+
+function readProviderIssueAction(blocker) {
+  if (blocker.providerIssue === "control-character") {
+    return `Remove control characters from ${blocker.variable}, or remove it and disable analytics.`;
+  }
+
+  if (blocker.providerIssue === "surrounding-whitespace") {
+    return `Remove leading and trailing whitespace from ${blocker.variable}, or remove it and disable analytics.`;
+  }
+
+  if (blocker.providerIssue === "too-long") {
+    return `Shorten ${blocker.variable} to 64 characters or fewer, or remove it and disable analytics.`;
+  }
+
+  return null;
 }

@@ -132,6 +132,51 @@ test("smoke readiness next actions explain analytics readiness blockers", () => 
   );
 });
 
+test("smoke readiness next actions explain analytics provider issue reasons", () => {
+  assert.deepEqual(
+    createSmokeReadinessNextActions([
+      {
+        area: "analytics.provider",
+        issue: "invalid-provider",
+        message: "GA4_MEASUREMENT_ID is not a valid analytics provider ID.",
+        providerIssue: "control-character",
+        variable: "GA4_MEASUREMENT_ID",
+      },
+      {
+        area: "analytics.provider",
+        issue: "invalid-provider",
+        message: "GTM_CONTAINER_ID is not a valid analytics provider ID.",
+        providerIssue: "surrounding-whitespace",
+        variable: "GTM_CONTAINER_ID",
+      },
+      {
+        area: "analytics.provider",
+        issue: "invalid-provider",
+        message: "CLARITY_PROJECT_ID is not a valid analytics provider ID.",
+        providerIssue: "too-long",
+        variable: "CLARITY_PROJECT_ID",
+      },
+    ]),
+    [
+      {
+        action:
+          "Remove control characters from GA4_MEASUREMENT_ID, or remove it and disable analytics.",
+        area: "analytics.provider",
+      },
+      {
+        action:
+          "Remove leading and trailing whitespace from GTM_CONTAINER_ID, or remove it and disable analytics.",
+        area: "analytics.provider",
+      },
+      {
+        action:
+          "Shorten CLARITY_PROJECT_ID to 64 characters or fewer, or remove it and disable analytics.",
+        area: "analytics.provider",
+      },
+    ],
+  );
+});
+
 test("smoke readiness next actions explain MVP feature flag blockers", () => {
   assert.deepEqual(
     createSmokeReadinessNextActions([

@@ -90,15 +90,36 @@ function collectAnalyticsReadiness(blockers, analytics) {
     );
   }
 
-  for (const provider of analytics.invalidProviders ?? []) {
+  for (const provider of readInvalidAnalyticsProviders(analytics)) {
     appendBlocker(
       blockers,
       "analytics.provider",
       "invalid-provider",
-      `${provider} is not a valid analytics provider ID.`,
-      { variable: provider },
+      `${provider.variable} is not a valid analytics provider ID.`,
+      {
+        providerIssue: provider.issue,
+        variable: provider.variable,
+      },
     );
   }
+}
+
+function readInvalidAnalyticsProviders(analytics) {
+  const providers = analytics.providers;
+
+  if (providers && typeof providers === "object" && !Array.isArray(providers)) {
+    return Object.entries(providers)
+      .filter(([, provider]) => provider?.configured && !provider.valid)
+      .map(([variable, provider]) => ({
+        issue: provider.issue ?? "invalid-format",
+        variable,
+      }));
+  }
+
+  return (analytics.invalidProviders ?? []).map((variable) => ({
+    issue: "invalid-format",
+    variable,
+  }));
 }
 
 function collectFeatureFlagReadiness(blockers, featureFlags) {

@@ -9,7 +9,7 @@ test("web analytics config parses explicit boolean gates", () => {
   const config = readAnalyticsRuntimeConfig({
     ANALYTICS_CONSENT_GRANTED: " yes ",
     ANALYTICS_ENABLED: " TRUE ",
-    GTM_CONTAINER_ID: " GTM-ABC1234 ",
+    GTM_CONTAINER_ID: "GTM-ABC1234",
   });
 
   assert.equal(config.enabled, true);
@@ -25,6 +25,21 @@ test("web analytics config parses explicit boolean gates", () => {
       false,
     );
   }
+});
+
+test("web analytics config ignores provider ids with unsafe characters", () => {
+  const config = readAnalyticsRuntimeConfig({
+    ANALYTICS_CONSENT_GRANTED: "true",
+    ANALYTICS_ENABLED: "true",
+    CLARITY_PROJECT_ID: " clarity123 ",
+    GA4_MEASUREMENT_ID: "G-ABC1234567\n",
+    GTM_CONTAINER_ID: "\tGTM-ABC1234",
+  });
+
+  assert.equal(config.clarityProjectId, null);
+  assert.equal(config.ga4MeasurementId, null);
+  assert.equal(config.gtmContainerId, null);
+  assert.equal(shouldLoadAnalyticsScripts(config), false);
 });
 
 test("web analytics config rejects misspelled boolean gates", () => {
