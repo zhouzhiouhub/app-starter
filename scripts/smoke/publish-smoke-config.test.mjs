@@ -70,8 +70,12 @@ test("smoke config rejects misspelled boolean environment values", async () => {
 
 test("smoke config normalizes Admin app origin", async () => {
   assert.equal(
-    normalizeAdminOrigin(" https://admin.example.com/ "),
+    normalizeAdminOrigin("https://admin.example.com/"),
     "https://admin.example.com",
+  );
+  assert.throws(
+    () => normalizeAdminOrigin(" https://admin.example.com/ "),
+    /ADMIN_URL must not include leading or trailing whitespace/,
   );
   assert.throws(
     () => normalizeAdminOrigin("https://admin.example.com/app"),

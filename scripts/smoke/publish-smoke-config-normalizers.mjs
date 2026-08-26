@@ -117,11 +117,14 @@ function readSmokeUrl(value, name) {
     throw new Error(`${name} must not contain control characters.`);
   }
 
-  const trimmed = value.trim();
+  if (value.trim() !== value) {
+    throw new Error(`${name} must not include leading or trailing whitespace.`);
+  }
+
   let url;
 
   try {
-    url = new URL(trimmed);
+    url = new URL(value);
   } catch {
     throw new Error(`${name} must be an absolute http(s) URL.`);
   }

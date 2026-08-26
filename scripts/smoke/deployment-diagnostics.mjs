@@ -57,11 +57,18 @@ function readDeploymentUrl(value, pathPolicy) {
     };
   }
 
-  const trimmed = value.trim();
+  if (value.trim() !== value) {
+    return {
+      host: null,
+      issue: "surrounding-whitespace",
+      path: null,
+    };
+  }
+
   let url;
 
   try {
-    url = new URL(trimmed);
+    url = new URL(value);
   } catch {
     return {
       host: null,

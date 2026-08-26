@@ -93,6 +93,21 @@ test("smoke environment diagnostics rejects control characters in deployment URL
   });
 });
 
+test("smoke environment diagnostics rejects deployment URLs with surrounding whitespace", () => {
+  const diagnostics = createSmokeEnvironmentDiagnostics({
+    ADMIN_URL: " https://admin.brand.com",
+    API_URL: "https://api.brand.com/api/v1 ",
+    WEB_URL: " https://store.brand.com ",
+  });
+
+  assert.equal(diagnostics.deployment.admin.urlIssue, "surrounding-whitespace");
+  assert.equal(diagnostics.deployment.admin.host, null);
+  assert.equal(diagnostics.deployment.api.urlIssue, "surrounding-whitespace");
+  assert.equal(diagnostics.deployment.api.host, null);
+  assert.equal(diagnostics.deployment.web.urlIssue, "surrounding-whitespace");
+  assert.equal(diagnostics.deployment.web.host, null);
+});
+
 test("smoke environment diagnostics rejects private and documentation IPv6 deployment hosts", () => {
   const diagnostics = createSmokeEnvironmentDiagnostics({
     ADMIN_URL: "https://[fd00::1]",

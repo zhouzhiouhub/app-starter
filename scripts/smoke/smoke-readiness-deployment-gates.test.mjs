@@ -168,3 +168,26 @@ test("smoke readiness explains control characters in deployment URLs", () => {
     },
   ]);
 });
+
+test("smoke readiness explains deployment URLs with surrounding whitespace", () => {
+  const environment = createReadyEnvironment();
+  environment.deployment.web = {
+    host: null,
+    path: null,
+    productionReady: false,
+    urlIssue: "surrounding-whitespace",
+    variable: "WEB_URL",
+  };
+
+  const readiness = createSmokeProductionReadiness(
+    environment,
+    createReadyConfig(),
+  );
+
+  assert.deepEqual(readiness.nextActions, [
+    {
+      action: "Remove leading and trailing whitespace from WEB_URL.",
+      area: "deployment.web",
+    },
+  ]);
+});

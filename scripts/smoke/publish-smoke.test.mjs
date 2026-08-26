@@ -75,6 +75,10 @@ test("smoke helpers reject unsafe publish URLs", async () => {
     () => normalizeApiBaseUrl("https://api.example.com\t/api/v1"),
     /API_URL must not contain control characters/,
   );
+  assert.throws(
+    () => normalizeApiBaseUrl(" https://api.example.com/api/v1"),
+    /API_URL must not include leading or trailing whitespace/,
+  );
   assert.equal(
     normalizeWebOrigin("https://web.example.com/"),
     "https://web.example.com",
@@ -98,6 +102,10 @@ test("smoke helpers reject unsafe publish URLs", async () => {
   assert.throws(
     () => normalizeAdminOrigin("https://admin.example.com\t"),
     /ADMIN_URL must not contain control characters/,
+  );
+  assert.throws(
+    () => normalizeWebOrigin("https://web.example.com "),
+    /WEB_URL must not include leading or trailing whitespace/,
   );
 
   await withEnv(

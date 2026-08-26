@@ -15,6 +15,8 @@ export function readDeploymentAction(blocker) {
       `Replace local or private ${variable} hosts with the deployed public HTTPS ${label}.`,
     placeholderHost:
       `Replace placeholder ${variable} hosts with the real production ${label}.`,
+    surroundingWhitespace:
+      `Remove leading and trailing whitespace from ${variable}.`,
     unsupportedPath: readDeploymentPathAction(blocker.area, variable),
     unsupportedProtocol:
       `Use an https:// ${variable}; deployment URLs cannot use non-HTTP protocols.`,
@@ -94,6 +96,14 @@ export function readRevalidationUrlAction(blocker) {
 function readCommonUrlAction(issue, actions) {
   if (issue === "control-character") {
     return actions.controlCharacter ?? actions.invalidUrl ?? actions.fallback;
+  }
+
+  if (issue === "surrounding-whitespace") {
+    return (
+      actions.surroundingWhitespace ??
+      actions.invalidUrl ??
+      actions.fallback
+    );
   }
 
   if (issue === "invalid-url") {
