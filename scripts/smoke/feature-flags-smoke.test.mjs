@@ -139,10 +139,27 @@ test("feature flag smoke checks disabled feature placeholders", async () => {
   const productCall = calls.find((call) =>
     call.url.endsWith("/public/products/smoke-product"),
   );
+  const adminProductDetailCall = calls.find(
+    (call) =>
+      call.url.endsWith("/products/smoke-product") &&
+      !call.url.endsWith("/public/products/smoke-product") &&
+      call.init.method === "GET",
+  );
+  const adminProductCreateCall = calls.find(
+    (call) => call.url.endsWith("/products") && call.init.method === "POST",
+  );
+  const adminProductUpdateCall = calls.find(
+    (call) =>
+      call.url.endsWith("/products/smoke-product") &&
+      call.init.method === "PATCH",
+  );
 
   assert.ok(productCall);
   assert.equal(productCall.init.method, "GET");
   assert.equal(productCall.init.redirect, "manual");
+  assertAdminProductPlaceholderCall(adminProductDetailCall, "GET");
+  assertAdminProductPlaceholderCall(adminProductCreateCall, "POST");
+  assertAdminProductPlaceholderCall(adminProductUpdateCall, "PATCH");
   assert.ok(webhookCall);
   assert.equal(webhookCall.init.method, "POST");
   assert.equal(webhookCall.init.redirect, "manual");
@@ -297,3 +314,86 @@ test("feature flag smoke rejects public product placeholder drift", async () => 
     },
   );
 });
+
+test("feature flag smoke rejects admin product detail placeholder drift", async () => {
+  await withFetch(
+    createFeatureFlagSmokeFetch({
+      overrides: {
+        "/products/smoke-product": () =>
+          jsonResponse({
+            data: {
+              id: "smoke-product",
+              name: "Leaked Product",
+            },
+          }),
+      },
+    }),
+    async () => {
+      await assert.rejects(
+        () =>
+          assertFeatureFlagsDisabled(
+            {
+              apiBaseUrl: "https://api.example.com/api/v1",
+            },
+            "access-token",
+          ),
+        /products\/smoke-product expected 404 NOT_FOUND/,
+      );
+    },
+  );
+});
+
+test("feature flag smoke rejects admin product write placeholder drift", async () => {
+  await withFetch(
+    createFeatureFlagSmokeFetch({
+      overrides: {
+        "/products": (_url, init) =>
+          init.method === "POST"
+            ? jsonResponse({
+                data: {
+                  id: "created-product",
+                },
+              })
+            : jsonResponse({
+                data: [],
+                meta: {
+                  commerceEnabled: false,
+                  currency: "USD",
+                  market: "us",
+                  reservedPhase: "phase-2",
+                  resource: "products",
+                  total: 0,
+                  writeDisabledCode: "COMMERCE_DISABLED",
+                  writable: false,
+                },
+              }),
+      },
+    }),
+    async () => {
+      await assert.rejects(
+        () =>
+          assertFeatureFlagsDisabled(
+            {
+              apiBaseUrl: "https://api.example.com/api/v1",
+            },
+            "access-token",
+          ),
+        /products expected 409 COMMERCE_DISABLED/,
+      );
+    },
+  );
+});
+
+function assertAdminProductPlaceholderCall(call, method) {
+  assert.ok(call);
+  assert.equal(call.init.method, method);
+  assert.equal(call.init.redirect, "manual");
+  assert.equal(call.init.headers.Authorization, "Bearer access-token");
+
+  if (method !== "GET") {
+    assert.match(
+      call.init.headers["Idempotency-Key"],
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+    );
+  }
+}

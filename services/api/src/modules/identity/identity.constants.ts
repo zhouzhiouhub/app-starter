@@ -21,6 +21,7 @@ export const TENANT_ADMIN_PERMISSIONS = [
   "translation:read",
   "translation:write",
   "product:read",
+  "product:write",
   "order:read",
   "payment:read",
   "audit:read",

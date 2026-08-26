@@ -82,9 +82,10 @@ export function createFeatureFlagSmokeFetch(options = {}) {
     }
 
     if (
-      url.endsWith("/products") ||
-      url.endsWith("/orders") ||
-      url.endsWith("/payments")
+      (!init.method || init.method === "GET") &&
+      (url.endsWith("/products") ||
+        url.endsWith("/orders") ||
+        url.endsWith("/payments"))
     ) {
       return jsonResponse({
         data: [],
@@ -102,6 +103,8 @@ export function createFeatureFlagSmokeFetch(options = {}) {
     }
 
     if (
+      url.endsWith("/products/smoke-product") ||
+      (url.endsWith("/products") && init.method === "POST") ||
       url.endsWith("/public/products/smoke-product") ||
       url.endsWith("/public/cart") ||
       url.endsWith("/public/checkout") ||
@@ -114,6 +117,29 @@ export function createFeatureFlagSmokeFetch(options = {}) {
             message: "Public product pages are reserved.",
           },
           { status: 404, statusText: "Not Found" },
+        );
+      }
+
+      if (url.endsWith("/products/smoke-product") && init.method === "GET") {
+        return jsonResponse(
+          {
+            code: "NOT_FOUND",
+            message: "Product details are reserved.",
+          },
+          { status: 404, statusText: "Not Found" },
+        );
+      }
+
+      if (
+        (url.endsWith("/products/smoke-product") && init.method === "PATCH") ||
+        (url.endsWith("/products") && init.method === "POST")
+      ) {
+        return jsonResponse(
+          {
+            code: "COMMERCE_DISABLED",
+            message: "Product writes are reserved.",
+          },
+          { status: 409, statusText: "Conflict" },
         );
       }
 

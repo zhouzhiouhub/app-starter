@@ -1,8 +1,12 @@
 import "reflect-metadata";
 import assert from "node:assert/strict";
 import test from "node:test";
-import { Module } from "@nestjs/common";
-import { GUARDS_METADATA } from "@nestjs/common/constants.js";
+import { Module, RequestMethod } from "@nestjs/common";
+import {
+  GUARDS_METADATA,
+  METHOD_METADATA,
+  PATH_METADATA,
+} from "@nestjs/common/constants.js";
 import { NestFactory } from "@nestjs/core";
 import { apiErrorCodes } from "../../../packages/schema/dist/index.js";
 import { AdminApiGuard } from "../dist/common/admin-api.guard.js";
@@ -11,8 +15,13 @@ import { AdminCommerceController } from "../dist/modules/commerce/admin-commerce
 import { PublicCommerceController } from "../dist/modules/commerce/public-commerce.controller.js";
 import { StripeWebhookController } from "../dist/modules/commerce/stripe-webhook.controller.js";
 import { TENANT_ADMIN_PERMISSIONS } from "../dist/modules/identity/identity.constants.js";
-import { assertApiConflict } from "./api-error-test-assertions.mjs";
+import {
+  assertApiBadRequest,
+  assertApiConflict,
+} from "./api-error-test-assertions.mjs";
 import { withEnv } from "./env-helper.mjs";
+
+const validIdempotencyKey = "7f10f6d3-02d9-4f3d-a69d-49b26ec63132";
 
 class PublicCommerceRouteTestModule {}
 
@@ -73,6 +82,18 @@ test("commerce read placeholders require admin guard and read scopes", () => {
     REQUIRE_SCOPES_KEY,
     AdminCommerceController.prototype.getProducts,
   );
+  const productDetailScopes = Reflect.getMetadata(
+    REQUIRE_SCOPES_KEY,
+    AdminCommerceController.prototype.getProduct,
+  );
+  const productCreateScopes = Reflect.getMetadata(
+    REQUIRE_SCOPES_KEY,
+    AdminCommerceController.prototype.createProduct,
+  );
+  const productUpdateScopes = Reflect.getMetadata(
+    REQUIRE_SCOPES_KEY,
+    AdminCommerceController.prototype.updateProduct,
+  );
   const orderScopes = Reflect.getMetadata(
     REQUIRE_SCOPES_KEY,
     AdminCommerceController.prototype.getOrders,
@@ -84,11 +105,61 @@ test("commerce read placeholders require admin guard and read scopes", () => {
 
   assert.deepEqual(guards, [AdminApiGuard]);
   assert.deepEqual(productScopes, ["product:read"]);
+  assert.deepEqual(productDetailScopes, ["product:read"]);
+  assert.deepEqual(productCreateScopes, ["product:write"]);
+  assert.deepEqual(productUpdateScopes, ["product:write"]);
   assert.deepEqual(orderScopes, ["order:read"]);
   assert.deepEqual(paymentScopes, ["payment:read"]);
   assert.equal(TENANT_ADMIN_PERMISSIONS.includes("product:read"), true);
+  assert.equal(TENANT_ADMIN_PERMISSIONS.includes("product:write"), true);
   assert.equal(TENANT_ADMIN_PERMISSIONS.includes("order:read"), true);
   assert.equal(TENANT_ADMIN_PERMISSIONS.includes("payment:read"), true);
+});
+
+test("commerce admin product reserved routes keep explicit HTTP contracts", () => {
+  assertRoute(AdminCommerceController.prototype.getProducts, {
+    method: RequestMethod.GET,
+    path: "products",
+  });
+  assertRoute(AdminCommerceController.prototype.createProduct, {
+    method: RequestMethod.POST,
+    path: "products",
+  });
+  assertRoute(AdminCommerceController.prototype.getProduct, {
+    method: RequestMethod.GET,
+    path: "products/:id",
+  });
+  assertRoute(AdminCommerceController.prototype.updateProduct, {
+    method: RequestMethod.PATCH,
+    path: "products/:id",
+  });
+});
+
+test("admin product reserved routes keep stable MVP errors", () => {
+  const controller = new AdminCommerceController();
+  const detailError = assertApiNotFound(
+    () => controller.getProduct("request-product-detail"),
+    apiErrorCodes.NOT_FOUND,
+  );
+  const createError = assertApiConflict(
+    () =>
+      controller.createProduct(validIdempotencyKey, "request-product-create"),
+    apiErrorCodes.COMMERCE_DISABLED,
+  );
+  const updateError = assertApiConflict(
+    () =>
+      controller.updateProduct(validIdempotencyKey, "request-product-update"),
+    apiErrorCodes.COMMERCE_DISABLED,
+  );
+  const missingKeyError = assertApiBadRequest(
+    () => controller.createProduct(undefined, "request-product-missing-key"),
+    apiErrorCodes.VALIDATION_ERROR,
+  );
+
+  assert.equal(detailError.getResponse()?.requestId, "request-product-detail");
+  assert.equal(createError.getResponse()?.requestId, "request-product-create");
+  assert.equal(updateError.getResponse()?.requestId, "request-product-update");
+  assert.equal(missingKeyError.getResponse()?.requestId, undefined);
 });
 
 test("commerce endpoints reject writes while commerce is disabled", () => {
@@ -235,4 +306,24 @@ function readCommercePlaceholderMeta(resource) {
     writeDisabledCode: apiErrorCodes.COMMERCE_DISABLED,
     writable: false,
   };
+}
+
+function assertApiNotFound(fn, expectedCode) {
+  let caught;
+
+  assert.throws(fn, (error) => {
+    caught = error;
+    return (
+      typeof error.getStatus === "function" &&
+      error.getStatus() === 404 &&
+      error.getResponse()?.code === expectedCode
+    );
+  });
+
+  return caught;
+}
+
+function assertRoute(handler, expected) {
+  assert.equal(Reflect.getMetadata(PATH_METADATA, handler), expected.path);
+  assert.equal(Reflect.getMetadata(METHOD_METADATA, handler), expected.method);
 }

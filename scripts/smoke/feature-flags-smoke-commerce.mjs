@@ -22,7 +22,48 @@ export async function assertCommerceReadPlaceholders(input, accessToken) {
   );
 }
 
-export async function assertCommerceDisabled(input) {
+const smokeProductId = "smoke-product";
+const smokeProductCreateIdempotencyKey = "7f10f6d3-02d9-4f3d-a69d-49b26ec63132";
+const smokeProductUpdateIdempotencyKey = "4d3a1fc5-3d10-4bb8-91ef-c8a8fef3c61a";
+
+export async function assertCommerceDisabled(input, accessToken) {
+  await assertErrorResponse(
+    `${input.apiBaseUrl}/products/${smokeProductId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      method: "GET",
+    },
+    "NOT_FOUND",
+    404,
+  );
+  await assertErrorResponse(
+    `${input.apiBaseUrl}/products`,
+    {
+      body: JSON.stringify({ name: "Smoke Product", slug: smokeProductId }),
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+        "Idempotency-Key": smokeProductCreateIdempotencyKey,
+      },
+      method: "POST",
+    },
+    "COMMERCE_DISABLED",
+  );
+  await assertErrorResponse(
+    `${input.apiBaseUrl}/products/${smokeProductId}`,
+    {
+      body: JSON.stringify({ name: "Smoke Product Updated" }),
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+        "Idempotency-Key": smokeProductUpdateIdempotencyKey,
+      },
+      method: "PATCH",
+    },
+    "COMMERCE_DISABLED",
+  );
   await assertErrorResponse(
     `${input.apiBaseUrl}/public/products/smoke-product`,
     {

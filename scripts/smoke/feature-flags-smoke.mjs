@@ -20,7 +20,7 @@ export async function assertFeatureFlagsDisabled(input, accessToken) {
   await assertLocalizationReadPlaceholders(input, accessToken);
   await assertTranslationBulkReserved(input, accessToken);
   await assertCommerceReadPlaceholders(input, accessToken);
-  await assertCommerceDisabled(input);
+  await assertCommerceDisabled(input, accessToken);
   await assertLocaleCreationDisabled(input, accessToken);
 
   console.log("MVP feature flags passed.");
