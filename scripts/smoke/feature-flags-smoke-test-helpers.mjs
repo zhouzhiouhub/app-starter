@@ -107,6 +107,8 @@ export function createFeatureFlagSmokeFetch(options = {}) {
 
     if (
       url.endsWith("/products/smoke-product") ||
+      url.endsWith("/orders/smoke-order") ||
+      url.endsWith("/payments/smoke-payment") ||
       (url.endsWith("/products") && init.method === "POST") ||
       url.endsWith("/public/products/smoke-product") ||
       url.endsWith("/public/cart") ||
@@ -118,6 +120,26 @@ export function createFeatureFlagSmokeFetch(options = {}) {
           {
             code: "NOT_FOUND",
             message: "Public product pages are reserved.",
+          },
+          { status: 404, statusText: "Not Found" },
+        );
+      }
+
+      if (url.endsWith("/orders/smoke-order")) {
+        return jsonResponse(
+          {
+            code: "NOT_FOUND",
+            message: "Order details are reserved.",
+          },
+          { status: 404, statusText: "Not Found" },
+        );
+      }
+
+      if (url.endsWith("/payments/smoke-payment")) {
+        return jsonResponse(
+          {
+            code: "NOT_FOUND",
+            message: "Payment details are reserved.",
           },
           { status: 404, statusText: "Not Found" },
         );

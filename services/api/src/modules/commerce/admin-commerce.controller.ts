@@ -10,6 +10,7 @@ import { AdminApiGuard } from "../../common/admin-api.guard.js";
 import { requireIdempotencyKey } from "../../common/idempotency-key.js";
 import { CurrentRequestId } from "../../common/request-id.decorator.js";
 import { RequireScopes } from "../../common/require-scopes.decorator.js";
+import { throwAdminCommerceDetailUnavailable } from "./admin-commerce-detail-placeholder.js";
 import {
   throwAdminProductUnavailable,
   throwAdminProductWriteDisabled,
@@ -77,9 +78,21 @@ export class AdminCommerceController {
     return createCommerceReadPlaceholder("orders", requestId);
   }
 
+  @Get("orders/:id")
+  @RequireScopes("order:read")
+  getOrder(@CurrentRequestId() requestId = "local-dev") {
+    return throwAdminCommerceDetailUnavailable("order", requestId);
+  }
+
   @Get("payments")
   @RequireScopes("payment:read")
   getPayments(@CurrentRequestId() requestId = "local-dev") {
     return createCommerceReadPlaceholder("payments", requestId);
+  }
+
+  @Get("payments/:id")
+  @RequireScopes("payment:read")
+  getPayment(@CurrentRequestId() requestId = "local-dev") {
+    return throwAdminCommerceDetailUnavailable("payment", requestId);
   }
 }

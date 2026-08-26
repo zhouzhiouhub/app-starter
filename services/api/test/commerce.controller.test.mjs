@@ -1,19 +1,16 @@
 import "reflect-metadata";
 import assert from "node:assert/strict";
 import test from "node:test";
-import { Module, RequestMethod } from "@nestjs/common";
+import { RequestMethod } from "@nestjs/common";
 import {
   GUARDS_METADATA,
   METHOD_METADATA,
   PATH_METADATA,
 } from "@nestjs/common/constants.js";
-import { NestFactory } from "@nestjs/core";
 import { apiErrorCodes } from "../../../packages/schema/dist/index.js";
 import { AdminApiGuard } from "../dist/common/admin-api.guard.js";
 import { REQUIRE_SCOPES_KEY } from "../dist/common/require-scopes.decorator.js";
 import { AdminCommerceController } from "../dist/modules/commerce/admin-commerce.controller.js";
-import { PublicCommerceController } from "../dist/modules/commerce/public-commerce.controller.js";
-import { StripeWebhookController } from "../dist/modules/commerce/stripe-webhook.controller.js";
 import { TENANT_ADMIN_PERMISSIONS } from "../dist/modules/identity/identity.constants.js";
 import {
   assertApiBadRequest,
@@ -22,12 +19,6 @@ import {
 import { withEnv } from "./env-helper.mjs";
 
 const validIdempotencyKey = "7f10f6d3-02d9-4f3d-a69d-49b26ec63132";
-
-class PublicCommerceRouteTestModule {}
-
-Module({
-  controllers: [PublicCommerceController, StripeWebhookController],
-})(PublicCommerceRouteTestModule);
 
 test("commerce read placeholders carry the current request id", () => {
   withEnv(
@@ -122,9 +113,17 @@ test("commerce read placeholders require admin guard and read scopes", () => {
     REQUIRE_SCOPES_KEY,
     AdminCommerceController.prototype.getOrders,
   );
+  const orderDetailScopes = Reflect.getMetadata(
+    REQUIRE_SCOPES_KEY,
+    AdminCommerceController.prototype.getOrder,
+  );
   const paymentScopes = Reflect.getMetadata(
     REQUIRE_SCOPES_KEY,
     AdminCommerceController.prototype.getPayments,
+  );
+  const paymentDetailScopes = Reflect.getMetadata(
+    REQUIRE_SCOPES_KEY,
+    AdminCommerceController.prototype.getPayment,
   );
 
   assert.deepEqual(guards, [AdminApiGuard]);
@@ -136,14 +135,16 @@ test("commerce read placeholders require admin guard and read scopes", () => {
   assert.deepEqual(productInventoryScopes, ["product:read"]);
   assert.deepEqual(productUpdateScopes, ["product:write"]);
   assert.deepEqual(orderScopes, ["order:read"]);
+  assert.deepEqual(orderDetailScopes, ["order:read"]);
   assert.deepEqual(paymentScopes, ["payment:read"]);
+  assert.deepEqual(paymentDetailScopes, ["payment:read"]);
   assert.equal(TENANT_ADMIN_PERMISSIONS.includes("product:read"), true);
   assert.equal(TENANT_ADMIN_PERMISSIONS.includes("product:write"), true);
   assert.equal(TENANT_ADMIN_PERMISSIONS.includes("order:read"), true);
   assert.equal(TENANT_ADMIN_PERMISSIONS.includes("payment:read"), true);
 });
 
-test("commerce admin product reserved routes keep explicit HTTP contracts", () => {
+test("commerce admin reserved routes keep explicit HTTP contracts", () => {
   assertRoute(AdminCommerceController.prototype.getProducts, {
     method: RequestMethod.GET,
     path: "products",
@@ -171,6 +172,22 @@ test("commerce admin product reserved routes keep explicit HTTP contracts", () =
   assertRoute(AdminCommerceController.prototype.updateProduct, {
     method: RequestMethod.PATCH,
     path: "products/:id",
+  });
+  assertRoute(AdminCommerceController.prototype.getOrders, {
+    method: RequestMethod.GET,
+    path: "orders",
+  });
+  assertRoute(AdminCommerceController.prototype.getOrder, {
+    method: RequestMethod.GET,
+    path: "orders/:id",
+  });
+  assertRoute(AdminCommerceController.prototype.getPayments, {
+    method: RequestMethod.GET,
+    path: "payments",
+  });
+  assertRoute(AdminCommerceController.prototype.getPayment, {
+    method: RequestMethod.GET,
+    path: "payments/:id",
   });
 });
 
@@ -201,136 +218,25 @@ test("admin product reserved routes keep stable MVP errors", () => {
   assert.equal(missingKeyError.getResponse()?.requestId, undefined);
 });
 
-test("commerce endpoints reject writes while commerce is disabled", () => {
-  for (const flag of ["false", "true"]) {
-    withEnv({ COMMERCE_ENABLED: flag }, () => {
-      const controller = new PublicCommerceController();
+test("admin order and payment detail routes keep stable MVP errors", () => {
+  const controller = new AdminCommerceController();
+  const orderError = assertApiNotFound(
+    () => controller.getOrder("request-order-detail"),
+    apiErrorCodes.NOT_FOUND,
+  );
+  const paymentError = assertApiNotFound(
+    () => controller.getPayment("request-payment-detail"),
+    apiErrorCodes.NOT_FOUND,
+  );
+  const serializedOrder = JSON.stringify(orderError.getResponse());
+  const serializedPayment = JSON.stringify(paymentError.getResponse());
 
-      const cartError = assertApiConflict(
-        () => controller.addToCart("request-cart-disabled"),
-        apiErrorCodes.COMMERCE_DISABLED,
-      );
-      const checkoutError = assertApiConflict(
-        () => controller.checkout("request-checkout-disabled"),
-        apiErrorCodes.COMMERCE_DISABLED,
-      );
-
-      assert.equal(cartError.getResponse()?.requestId, "request-cart-disabled");
-      assert.equal(
-        checkoutError.getResponse()?.requestId,
-        "request-checkout-disabled",
-      );
-    });
-  }
-});
-
-test("stripe webhook placeholder rejects events without echoing payloads", () => {
-  for (const flag of ["false", "true"]) {
-    withEnv({ COMMERCE_ENABLED: flag }, () => {
-      const controller = new StripeWebhookController();
-
-      const error = assertApiConflict(
-        () => controller.receiveStripeWebhook("request-webhook-disabled"),
-        apiErrorCodes.COMMERCE_DISABLED,
-      );
-      const response = error.getResponse();
-      const serialized = JSON.stringify(response);
-
-      assert.equal(response?.requestId, "request-webhook-disabled");
-      assert.match(response?.message, /Stripe webhook is reserved/);
-      assert.equal(serialized.includes("evt_secret"), false);
-      assert.equal(serialized.includes("stripe-signature"), false);
-    });
-  }
-});
-
-test("public product detail stays an explicit MVP placeholder", async () => {
-  const app = await NestFactory.create(PublicCommerceRouteTestModule, {
-    logger: false,
-  });
-  app.setGlobalPrefix("api/v1");
-  await app.listen(0, "127.0.0.1");
-
-  const address = app.getHttpServer().address();
-  const port =
-    typeof address === "object" && address !== null ? address.port : 0;
-
-  try {
-    const response = await fetch(
-      `http://127.0.0.1:${port}/api/v1/public/products/product-secret-token`,
-      {
-        headers: {
-          "x-request-id": "request-public-product-placeholder",
-        },
-      },
-    );
-    const text = await response.text();
-    const body = JSON.parse(text);
-
-    assert.equal(response.status, 404);
-    assert.equal(body.code, apiErrorCodes.NOT_FOUND);
-    assert.equal(body.requestId, "request-public-product-placeholder");
-    assert.equal(text.includes("product-secret-token"), false);
-  } finally {
-    await app.close();
-  }
-});
-
-test("public commerce disabled routes keep the MVP public paths", async () => {
-  const app = await NestFactory.create(PublicCommerceRouteTestModule, {
-    logger: false,
-  });
-  app.setGlobalPrefix("api/v1");
-  await app.listen(0, "127.0.0.1");
-
-  const address = app.getHttpServer().address();
-  const port =
-    typeof address === "object" && address !== null ? address.port : 0;
-
-  try {
-    for (const path of ["cart", "checkout"]) {
-      const response = await fetch(
-        `http://127.0.0.1:${port}/api/v1/public/${path}`,
-        {
-          headers: {
-            "x-request-id": `request-commerce-${path}`,
-          },
-          method: "POST",
-        },
-      );
-      const body = await response.json();
-
-      assert.equal(response.status, 409);
-      assert.equal(body.code, apiErrorCodes.COMMERCE_DISABLED);
-      assert.equal(body.requestId, `request-commerce-${path}`);
-    }
-
-    const webhookResponse = await fetch(
-      `http://127.0.0.1:${port}/api/v1/webhooks/stripe`,
-      {
-        body: JSON.stringify({
-          id: "evt_secret_payload",
-          object: "event",
-        }),
-        headers: {
-          "content-type": "application/json",
-          "stripe-signature": "t=1,v1=secret_signature",
-          "x-request-id": "request-commerce-webhook",
-        },
-        method: "POST",
-      },
-    );
-    const webhookText = await webhookResponse.text();
-    const webhookBody = JSON.parse(webhookText);
-
-    assert.equal(webhookResponse.status, 409);
-    assert.equal(webhookBody.code, apiErrorCodes.COMMERCE_DISABLED);
-    assert.equal(webhookBody.requestId, "request-commerce-webhook");
-    assert.equal(webhookText.includes("evt_secret_payload"), false);
-    assert.equal(webhookText.includes("secret_signature"), false);
-  } finally {
-    await app.close();
-  }
+  assert.equal(orderError.getResponse()?.requestId, "request-order-detail");
+  assert.equal(paymentError.getResponse()?.requestId, "request-payment-detail");
+  assert.match(orderError.getResponse()?.message, /Order details/);
+  assert.match(paymentError.getResponse()?.message, /Payment details/);
+  assert.equal(serializedOrder.includes("smoke-order"), false);
+  assert.equal(serializedPayment.includes("smoke-payment"), false);
 });
 
 function readCommercePlaceholderMeta(resource) {

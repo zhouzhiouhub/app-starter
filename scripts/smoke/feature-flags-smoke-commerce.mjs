@@ -1,5 +1,8 @@
 import { fetchJson, readHttpError } from "./http-json-smoke.mjs";
-import { assertErrorResponse } from "./feature-flags-smoke-disabled-endpoint.mjs";
+import {
+  assertErrorResponse,
+  readApiErrorCode,
+} from "./feature-flags-smoke-disabled-endpoint.mjs";
 
 export async function assertCommerceReadPlaceholders(input, accessToken) {
   await assertEmptyListResponse(
@@ -41,6 +44,8 @@ export async function assertCommerceReadPlaceholders(input, accessToken) {
 }
 
 const smokeProductId = "smoke-product";
+const smokeOrderId = "smoke-order";
+const smokePaymentId = "smoke-payment";
 const smokeProductCreateIdempotencyKey = "7f10f6d3-02d9-4f3d-a69d-49b26ec63132";
 const smokeProductUpdateIdempotencyKey = "4d3a1fc5-3d10-4bb8-91ef-c8a8fef3c61a";
 
@@ -81,6 +86,28 @@ export async function assertCommerceDisabled(input, accessToken) {
       method: "PATCH",
     },
     "COMMERCE_DISABLED",
+  );
+  await assertNotFoundPlaceholderResponse(
+    `${input.apiBaseUrl}/orders/${smokeOrderId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      method: "GET",
+    },
+    "Order detail placeholder",
+    smokeOrderId,
+  );
+  await assertNotFoundPlaceholderResponse(
+    `${input.apiBaseUrl}/payments/${smokePaymentId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      method: "GET",
+    },
+    "Payment detail placeholder",
+    smokePaymentId,
   );
   await assertErrorResponse(
     `${input.apiBaseUrl}/public/products/smoke-product`,
@@ -152,5 +179,30 @@ function assertCommercePlaceholderMeta(meta, label, resource) {
     meta?.writable !== false
   ) {
     throw new Error(`${label} did not expose disabled Commerce metadata.`);
+  }
+}
+
+async function assertNotFoundPlaceholderResponse(
+  url,
+  init,
+  label,
+  placeholderIdentifier,
+) {
+  const response = await fetchJson(url, init);
+  const code = readApiErrorCode(response.body);
+
+  if (response.status !== 404 || code !== "NOT_FOUND") {
+    throw new Error(
+      `${url} expected 404 NOT_FOUND, got ${readHttpError(
+        response,
+        `${label} failed.`,
+      )}`,
+    );
+  }
+
+  const serializedBody = JSON.stringify(response.body ?? {});
+
+  if (serializedBody.includes(placeholderIdentifier)) {
+    throw new Error(`${label} leaked the placeholder identifier.`);
   }
 }
