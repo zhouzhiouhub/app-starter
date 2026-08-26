@@ -2,12 +2,20 @@ import {
   getPublishedPageRevalidationPaths,
   getStorefrontRevalidationCacheTags,
 } from "../../packages/schema/dist/index.js";
+import { formatSmokeText } from "./smoke-text.mjs";
+
+const maxRevalidationDetailItems = 20;
+const maxRevalidationDetailMessageLength = 520;
+const maxRevalidationDetailValueLength = 160;
 
 export function createRevalidationSmokeDetails(revalidation, input) {
-  const paths = readStringArray(revalidation?.paths);
-  const tags = readStringArray(revalidation?.tags);
-  const reason =
+  const rawPaths = readStringArray(revalidation?.paths);
+  const rawTags = readStringArray(revalidation?.tags);
+  const rawReason =
     typeof revalidation?.reason === "string" ? revalidation.reason : null;
+  const paths = formatRevalidationDetailList(rawPaths);
+  const tags = formatRevalidationDetailList(rawTags);
+  const reason = formatRevalidationDetailValue(rawReason);
   const status = Number.isInteger(revalidation?.status)
     ? revalidation.status
     : null;
@@ -15,17 +23,17 @@ export function createRevalidationSmokeDetails(revalidation, input) {
 
   return {
     diagnosis: readRevalidationDiagnosis({
-      reason,
+      reason: rawReason,
       required: Boolean(input.requireRevalidation),
       status,
       triggered,
     }),
-    pathCount: paths.length,
+    pathCount: rawPaths.length,
     paths,
     reason,
     required: Boolean(input.requireRevalidation),
     status,
-    tagCount: tags.length,
+    tagCount: rawTags.length,
     tags,
     triggered,
   };
@@ -107,19 +115,24 @@ function readFailedRequestDiagnosis(status) {
 
 function createMissingRevalidationTargetsError(input) {
   const details = createRevalidationSmokeDetails(input.revalidation, input.input);
+  const missingPaths = formatRevalidationDetailList(input.missingPaths);
+  const missingTags = formatRevalidationDetailList(input.missingTags);
   const error = new Error(
-    [
-      "Storefront revalidation did not include the expected page targets",
-      `(missing paths: ${formatList(input.missingPaths)},`,
-      `missing tags: ${formatList(input.missingTags)},`,
-      `diagnosis: ${details.diagnosis}).`,
-    ].join(" "),
+    formatSmokeText(
+      [
+        "Storefront revalidation did not include the expected page targets",
+        `(missing paths: ${formatList(missingPaths)},`,
+        `missing tags: ${formatList(missingTags)},`,
+        `diagnosis: ${details.diagnosis}).`,
+      ].join(" "),
+      { maxLength: maxRevalidationDetailMessageLength },
+    ),
   );
   error.smokeDetails = {
     revalidation: {
       ...details,
-      missingPaths: input.missingPaths,
-      missingTags: input.missingTags,
+      missingPaths,
+      missingTags,
     },
   };
 
@@ -130,6 +143,19 @@ function readStringArray(value) {
   return Array.isArray(value)
     ? value.filter((item) => typeof item === "string")
     : [];
+}
+
+function formatRevalidationDetailList(values) {
+  return values
+    .slice(0, maxRevalidationDetailItems)
+    .map((value) => formatRevalidationDetailValue(value))
+    .filter(Boolean);
+}
+
+function formatRevalidationDetailValue(value) {
+  return typeof value === "string" && value.length > 0
+    ? formatSmokeText(value, { maxLength: maxRevalidationDetailValueLength })
+    : null;
 }
 
 function formatList(values) {

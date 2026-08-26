@@ -133,6 +133,40 @@ test("smoke helpers classify revalidation HTTP failures", () => {
   );
 });
 
+test("smoke helpers bound revalidation diagnostic fields", () => {
+  const longPath = `/en/contact?token=payload.signature&next=${"x".repeat(
+    500,
+  )}\nAuthorization Bearer a.b.c`;
+  const longTag = `published-page:us:en-US:contact:${"y".repeat(
+    500,
+  )}\ntoken=payload.signature`;
+  const details = createRevalidationSmokeDetails(
+    {
+      paths: Array.from({ length: 30 }, () => longPath),
+      reason: `request-failed\nAuthorization Bearer a.b.c ${"z".repeat(500)}`,
+      tags: Array.from({ length: 30 }, () => longTag),
+      triggered: false,
+    },
+    { requireRevalidation: true },
+  );
+
+  assert.equal(details.pathCount, 30);
+  assert.equal(details.tagCount, 30);
+  assert.equal(details.paths.length <= 20, true);
+  assert.equal(details.tags.length <= 20, true);
+  assert.equal(details.reason.includes("a.b.c"), false);
+  assert.doesNotMatch(details.reason, /[\r\n]/);
+  assert.match(details.reason, /\.\.\.$/);
+  assert.equal(details.reason.length <= 160, true);
+  for (const value of [...details.paths, ...details.tags]) {
+    assert.equal(value.includes("payload.signature"), false);
+    assert.equal(value.includes("a.b.c"), false);
+    assert.doesNotMatch(value, /[\r\n]/);
+    assert.match(value, /\.\.\.$/);
+    assert.equal(value.length <= 160, true);
+  }
+});
+
 test("smoke helpers reject revalidation results missing expected targets", () => {
   let error;
 
