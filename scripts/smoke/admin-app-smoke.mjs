@@ -20,7 +20,10 @@ import {
   readRedirectLocation,
 } from "./http-response-summary.mjs";
 import { readErrorMessage } from "./smoke-error-message.mjs";
-import { redactSmokeSecrets } from "./smoke-secrets.mjs";
+import { formatSmokeText } from "./smoke-text.mjs";
+
+const maxAdminAppReportUrlLength = 240;
+const maxAdminAppBodySnippetLength = 240;
 
 export async function assertAdminApp(input) {
   if (!input.adminUrl) {
@@ -123,7 +126,7 @@ export async function readAdminAppAttempt(url) {
       stylesheetOk: stylesheet.ok,
       stylesheetUrlIssues: stylesheet.urlIssues,
       stylesheetUrls: stylesheet.urls,
-      url: redactSmokeSecrets(url),
+      url: formatAdminAppReportUrl(url),
     };
 
     return {
@@ -161,7 +164,7 @@ export async function readAdminAppAttempt(url) {
       stylesheetOk: false,
       stylesheetUrlIssues: [],
       stylesheetUrls: [],
-      url: redactSmokeSecrets(url),
+      url: formatAdminAppReportUrl(url),
     };
   }
 }
@@ -240,9 +243,15 @@ function isHtmlContentType(value) {
 }
 
 function readBodySnippet(text) {
-  const normalized = redactSmokeSecrets(text).replace(/\s+/g, " ").trim();
+  const snippet = formatSmokeText(text, {
+    maxLength: maxAdminAppBodySnippetLength,
+  });
 
-  return normalized ? normalized.slice(0, 240) : null;
+  return snippet || null;
+}
+
+function formatAdminAppReportUrl(url) {
+  return formatSmokeText(url, { maxLength: maxAdminAppReportUrlLength });
 }
 
 async function readAdminAppResponseBody(response, url) {

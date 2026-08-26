@@ -241,29 +241,31 @@ test("admin app smoke rejects unreachable or non-JavaScript module assets", asyn
 });
 
 test("admin app smoke keeps structured diagnostics on failures", async () => {
+  const body = `<html>\u0000<body>Not the admin shell token=payload.signature ${"x".repeat(
+    260,
+  )}</body></html>`;
+
   await withFetch(
     async () =>
-      new Response(
-        "<html><body>Not the admin shell token=payload.signature</body></html>",
-        {
-          headers: { "content-type": "text/html" },
-          status: 200,
-          statusText: "OK",
-        },
-      ),
+      new Response(body, {
+        headers: { "content-type": "text/html" },
+        status: 200,
+        statusText: "OK",
+      }),
     async () => {
       await assert.rejects(
         () => assertAdminApp({ adminUrl: "https://admin.example.com" }),
         (error) => {
+          const { bodySnippet } = error.smokeDetails.adminApp;
+
           assert.equal(error.smokeDetails.adminApp.hasRootElement, false);
           assert.equal(error.smokeDetails.adminApp.hasModuleScript, false);
           assert.equal(error.smokeDetails.adminApp.status, 200);
-          assert.equal(
-            error.smokeDetails.adminApp.bodySnippet.includes(
-              "payload.signature",
-            ),
-            false,
-          );
+          assert.equal(bodySnippet.length, 240);
+          assert.equal(bodySnippet.endsWith("..."), true);
+          assert.equal(bodySnippet.includes("\u0000"), false);
+          assert.equal(bodySnippet.includes("payload.signature"), false);
+          assert.match(bodySnippet, /token=\[redacted\]/);
           return true;
         },
       );
