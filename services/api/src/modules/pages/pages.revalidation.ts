@@ -265,17 +265,18 @@ function readStorefrontRevalidationTags(
 function readStorefrontRevalidationSecret(): string | null {
   const raw = process.env.STOREFRONT_REVALIDATE_SECRET;
 
-  if (!raw || hasControlCharacter(raw)) {
+  if (!raw || raw.trim().length === 0 || hasControlCharacter(raw)) {
     return null;
   }
 
-  const secret = raw.trim();
-
-  if (!secret || secret.length > maxStorefrontRevalidationSecretLength) {
+  if (
+    raw.length > maxStorefrontRevalidationSecretLength ||
+    raw.trim() !== raw
+  ) {
     return null;
   }
 
-  return secret;
+  return raw;
 }
 
 function hasControlCharacter(value: string): boolean {

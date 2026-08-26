@@ -5,12 +5,18 @@ import {
   readConfiguredRevalidateSecret,
 } from "../src/lib/revalidate-secret.ts";
 
-test("revalidate secret helper reads trimmed configured secrets", () => {
+test("revalidate secret helper reads configured secrets without rewriting", () => {
+  assert.equal(
+    readConfiguredRevalidateSecret({
+      STOREFRONT_REVALIDATE_SECRET: "shared-secret",
+    }),
+    "shared-secret",
+  );
   assert.equal(
     readConfiguredRevalidateSecret({
       STOREFRONT_REVALIDATE_SECRET: " shared-secret ",
     }),
-    "shared-secret",
+    "",
   );
   assert.equal(readConfiguredRevalidateSecret({}), "");
 });
@@ -85,6 +91,23 @@ test("revalidate secret helper rejects oversized secrets before comparing", () =
     hasValidRevalidateSecret({
       configuredSecret: "a".repeat(1025),
       providedSecret: "a".repeat(1025),
+    }),
+    false,
+  );
+});
+
+test("revalidate secret helper rejects surrounding whitespace before comparing", () => {
+  assert.equal(
+    hasValidRevalidateSecret({
+      configuredSecret: " shared-secret",
+      providedSecret: "shared-secret",
+    }),
+    false,
+  );
+  assert.equal(
+    hasValidRevalidateSecret({
+      configuredSecret: "shared-secret",
+      providedSecret: "shared-secret ",
     }),
     false,
   );

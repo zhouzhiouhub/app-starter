@@ -37,7 +37,7 @@ export function createRevalidationDiagnostics(env = process.env, options = {}) {
 }
 
 function readRevalidationSecret(env) {
-  const value = readEnv(env, "STOREFRONT_REVALIDATE_SECRET");
+  const value = readSecretEnv(env, "STOREFRONT_REVALIDATE_SECRET");
 
   if (!value) {
     return {
@@ -51,6 +51,14 @@ function readRevalidationSecret(env) {
     return {
       configured: true,
       issue: "control-character",
+      safe: false,
+    };
+  }
+
+  if (value.trim() !== value) {
+    return {
+      configured: true,
+      issue: "surrounding-whitespace",
       safe: false,
     };
   }
@@ -208,10 +216,10 @@ function readBooleanEnv(env, name, fallback) {
   throw new Error(`${name} must be true or false.`);
 }
 
-function readEnv(env, name) {
+function readSecretEnv(env, name) {
   const value = env[name];
 
-  if (!value) {
+  if (typeof value !== "string" || value.length === 0) {
     return null;
   }
 
@@ -219,8 +227,7 @@ function readEnv(env, name) {
     return value;
   }
 
-  const trimmed = value.trim();
-  return trimmed ? trimmed : null;
+  return value.trim().length > 0 ? value : null;
 }
 
 function readUrlEnv(env, name) {

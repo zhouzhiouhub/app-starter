@@ -5,9 +5,7 @@ const maxRevalidateSecretLength = 1024;
 export function readConfiguredRevalidateSecret(
   env: Record<string, string | undefined> = process.env,
 ): string {
-  const secret = readControlSafeTrimmedSecret(
-    env.STOREFRONT_REVALIDATE_SECRET,
-  );
+  const secret = readControlSafeSecret(env.STOREFRONT_REVALIDATE_SECRET);
 
   return isSafeRevalidateSecret(secret) ? secret : "";
 }
@@ -16,9 +14,7 @@ export function hasValidRevalidateSecret(input: {
   configuredSecret: string;
   providedSecret: string | null;
 }): boolean {
-  const configuredSecret = readControlSafeTrimmedSecret(
-    input.configuredSecret,
-  );
+  const configuredSecret = readControlSafeSecret(input.configuredSecret);
   const providedSecret = input.providedSecret ?? "";
 
   if (
@@ -42,16 +38,17 @@ function isSafeRevalidateSecret(value: string): boolean {
   return (
     value.length > 0 &&
     value.length <= maxRevalidateSecretLength &&
+    value.trim() === value &&
     !hasControlCharacter(value)
   );
 }
 
-function readControlSafeTrimmedSecret(value: string | undefined): string {
+function readControlSafeSecret(value: string | undefined): string {
   if (!value || hasControlCharacter(value)) {
     return "";
   }
 
-  return value.trim();
+  return value;
 }
 
 function hasControlCharacter(value: string): boolean {

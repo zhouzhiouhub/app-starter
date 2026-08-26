@@ -143,3 +143,33 @@ test("smoke readiness blocks unsafe revalidation secrets", () => {
     },
   ]);
 });
+
+test("smoke readiness explains revalidation secrets with surrounding whitespace", () => {
+  const environment = createReadyEnvironment();
+  environment.revalidation.secretConfigured = true;
+  environment.revalidation.secretIssue = "surrounding-whitespace";
+  environment.revalidation.secretSafe = false;
+
+  const readiness = createSmokeProductionReadiness(
+    environment,
+    createReadyConfig(),
+  );
+
+  assert.deepEqual(readiness.blockers, [
+    {
+      area: "revalidation.secret",
+      issue: "surrounding-whitespace",
+      message:
+        "STOREFRONT_REVALIDATE_SECRET must be a safe bounded value before production smoke.",
+      variable: "STOREFRONT_REVALIDATE_SECRET",
+    },
+  ]);
+  assert.equal(readiness.productionReady, false);
+  assert.deepEqual(readiness.nextActions, [
+    {
+      action:
+        "Remove leading and trailing whitespace from STOREFRONT_REVALIDATE_SECRET in both API and Web runtimes.",
+      area: "revalidation.secret",
+    },
+  ]);
+});

@@ -53,6 +53,10 @@ export function readRevalidationSecretAction(blocker) {
     return "Set STOREFRONT_REVALIDATE_SECRET in both API and Web runtimes without control characters.";
   }
 
+  if (blocker.issue === "surrounding-whitespace") {
+    return "Remove leading and trailing whitespace from STOREFRONT_REVALIDATE_SECRET in both API and Web runtimes.";
+  }
+
   return "Set STOREFRONT_REVALIDATE_SECRET in both API and Web runtimes.";
 }
 
