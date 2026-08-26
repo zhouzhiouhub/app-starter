@@ -21,17 +21,50 @@ Module({
 })(PublicCommerceRouteTestModule);
 
 test("commerce read placeholders carry the current request id", () => {
-  const controller = new AdminCommerceController();
-  const products = controller.getProducts("request-products");
-  const orders = controller.getOrders("request-orders");
-  const payments = controller.getPayments("request-payments");
+  withEnv(
+    {
+      COMMERCE_ENABLED: "false",
+      DEFAULT_CURRENCY: "USD",
+      DEFAULT_MARKET: "us",
+    },
+    () => {
+      const controller = new AdminCommerceController();
+      const products = controller.getProducts("request-products");
+      const orders = controller.getOrders("request-orders");
+      const payments = controller.getPayments("request-payments");
 
-  assert.deepEqual(products.data, []);
-  assert.deepEqual(orders.data, []);
-  assert.deepEqual(payments.data, []);
-  assert.equal(products.meta.requestId, "request-products");
-  assert.equal(orders.meta.requestId, "request-orders");
-  assert.equal(payments.meta.requestId, "request-payments");
+      assert.deepEqual(products.data, []);
+      assert.deepEqual(orders.data, []);
+      assert.deepEqual(payments.data, []);
+      assert.deepEqual(products.meta, readCommercePlaceholderMeta("products"));
+      assert.deepEqual(orders.meta, readCommercePlaceholderMeta("orders"));
+      assert.deepEqual(payments.meta, readCommercePlaceholderMeta("payments"));
+    },
+  );
+});
+
+test("commerce read placeholders expose normalized reserved state", () => {
+  withEnv(
+    {
+      COMMERCE_ENABLED: " TRUE ",
+      DEFAULT_CURRENCY: " EUR ",
+      DEFAULT_MARKET: " eu ",
+    },
+    () => {
+      const controller = new AdminCommerceController();
+      const response = controller.getProducts("request-products-phase-2");
+
+      assert.equal(response.meta.commerceEnabled, true);
+      assert.equal(response.meta.currency, "EUR");
+      assert.equal(response.meta.market, "eu");
+      assert.equal(response.meta.requestId, "request-products-phase-2");
+      assert.equal(
+        response.meta.writeDisabledCode,
+        apiErrorCodes.COMMERCE_DISABLED,
+      );
+      assert.equal(response.meta.writable, false);
+    },
+  );
 });
 
 test("commerce read placeholders require admin guard and read scopes", () => {
@@ -157,3 +190,17 @@ test("public commerce disabled routes keep the MVP public paths", async () => {
     await app.close();
   }
 });
+
+function readCommercePlaceholderMeta(resource) {
+  return {
+    commerceEnabled: false,
+    currency: "USD",
+    market: "us",
+    requestId: `request-${resource}`,
+    reservedPhase: "phase-2",
+    resource,
+    total: 0,
+    writeDisabledCode: apiErrorCodes.COMMERCE_DISABLED,
+    writable: false,
+  };
+}

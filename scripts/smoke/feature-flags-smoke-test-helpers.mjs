@@ -86,7 +86,19 @@ export function createFeatureFlagSmokeFetch(options = {}) {
       url.endsWith("/orders") ||
       url.endsWith("/payments")
     ) {
-      return jsonResponse({ data: [] });
+      return jsonResponse({
+        data: [],
+        meta: {
+          commerceEnabled: false,
+          currency: "USD",
+          market: "us",
+          reservedPhase: "phase-2",
+          resource: url.split("/").at(-1),
+          total: 0,
+          writeDisabledCode: "COMMERCE_DISABLED",
+          writable: false,
+        },
+      });
     }
 
     if (

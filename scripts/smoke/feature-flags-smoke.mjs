@@ -1,7 +1,9 @@
 import { fetchJson, readHttpError } from "./http-json-smoke.mjs";
-import { formatSmokeText } from "./smoke-text.mjs";
-
-const maxDisabledEndpointMessageLength = 240;
+import {
+  assertCommerceDisabled,
+  assertCommerceReadPlaceholders,
+} from "./feature-flags-smoke-commerce.mjs";
+import { assertErrorResponse } from "./feature-flags-smoke-disabled-endpoint.mjs";
 
 const expectedConfig = {
   commerceEnabled: false,
@@ -24,9 +26,11 @@ export async function assertFeatureFlagsDisabled(input, accessToken) {
   console.log("MVP feature flags passed.");
 }
 
-export function readApiErrorCode(body) {
-  return body?.error?.code ?? body?.code ?? null;
-}
+export {
+  formatDisabledEndpointDiagnostic,
+  readApiErrorCode,
+  readDisabledEndpointDiagnostic,
+} from "./feature-flags-smoke-disabled-endpoint.mjs";
 
 async function assertPublicConfig(input) {
   const response = await fetchJson(`${input.apiBaseUrl}/public/config`);
@@ -142,73 +146,6 @@ async function assertTranslationBulkReserved(input, accessToken) {
   );
 }
 
-async function assertCommerceReadPlaceholders(input, accessToken) {
-  await assertEmptyListResponse(
-    `${input.apiBaseUrl}/products`,
-    accessToken,
-    "Products placeholder",
-  );
-  await assertEmptyListResponse(
-    `${input.apiBaseUrl}/orders`,
-    accessToken,
-    "Orders placeholder",
-  );
-  await assertEmptyListResponse(
-    `${input.apiBaseUrl}/payments`,
-    accessToken,
-    "Payments placeholder",
-  );
-}
-
-async function assertCommerceDisabled(input) {
-  await assertErrorResponse(
-    `${input.apiBaseUrl}/public/cart`,
-    {
-      body: JSON.stringify({ sku: "smoke-sku", quantity: 1 }),
-      headers: { "Content-Type": "application/json" },
-      method: "POST",
-    },
-    "COMMERCE_DISABLED",
-  );
-  await assertErrorResponse(
-    `${input.apiBaseUrl}/public/checkout`,
-    {
-      body: JSON.stringify({ cartId: "smoke-cart" }),
-      headers: { "Content-Type": "application/json" },
-      method: "POST",
-    },
-    "COMMERCE_DISABLED",
-  );
-  await assertErrorResponse(
-    `${input.apiBaseUrl}/webhooks/stripe`,
-    {
-      body: JSON.stringify({ id: "evt_smoke_webhook", object: "event" }),
-      headers: {
-        "Content-Type": "application/json",
-        "Stripe-Signature": "t=1,v1=smoke-signature",
-      },
-      method: "POST",
-    },
-    "COMMERCE_DISABLED",
-  );
-}
-
-async function assertEmptyListResponse(url, accessToken, label) {
-  const response = await fetchJson(url, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(readHttpError(response, `${label} failed.`));
-  }
-
-  if (!Array.isArray(response.body?.data) || response.body.data.length !== 0) {
-    throw new Error(`${label} expected an empty data array.`);
-  }
-}
-
 async function fetchAdminJson(url, accessToken, label) {
   const response = await fetchJson(url, {
     headers: {
@@ -244,51 +181,4 @@ async function assertLocaleCreationDisabled(input, accessToken) {
     },
     "MULTI_LOCALE_DISABLED",
   );
-}
-
-async function assertErrorResponse(url, init, expectedCode) {
-  const response = await fetchJson(url, init);
-  const diagnostic = readDisabledEndpointDiagnostic(response);
-
-  if (diagnostic.status !== 409 || diagnostic.code !== expectedCode) {
-    throw new Error(
-      `${url} expected 409 ${expectedCode}, got ${formatDisabledEndpointDiagnostic(
-        diagnostic,
-      )}.`,
-    );
-  }
-}
-
-export function readDisabledEndpointDiagnostic(response) {
-  return {
-    code: readApiErrorCode(response.body),
-    message: redactOptionalSmokeMessage(
-      response.body?.error?.message ??
-        response.body?.message ??
-        response.statusText ??
-        null,
-    ),
-    ...(response.redirectLocation
-      ? { redirectLocation: response.redirectLocation }
-      : {}),
-    status: response.status,
-    statusText: response.statusText || "",
-  };
-}
-
-export function formatDisabledEndpointDiagnostic(diagnostic) {
-  const statusText = diagnostic.statusText ? ` ${diagnostic.statusText}` : "";
-  const code = diagnostic.code ?? "NO_CODE";
-  const message = diagnostic.message ? `: ${diagnostic.message}` : "";
-  const redirect = diagnostic.redirectLocation
-    ? ` redirect: ${diagnostic.redirectLocation}`
-    : "";
-
-  return `${diagnostic.status}${statusText} ${code}${message}${redirect}`;
-}
-
-function redactOptionalSmokeMessage(value) {
-  return value === null
-    ? null
-    : formatSmokeText(value, { maxLength: maxDisabledEndpointMessageLength });
 }

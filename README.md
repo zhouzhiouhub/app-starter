@@ -557,6 +557,7 @@ POST /api/v1/webhooks/stripe
 - `POST /api/v1/translations/import/preview` 需要 `translation:write`，只做导入前校验和差异预览，按行返回 `create` / `update` / `duplicate` / `error` / `blocked` 与 summary，不写入数据。
 - `POST /api/v1/translations/export/preview` 需要 `translation:read`，只返回当前筛选下的可导出数量、样例 key 和缺失 key 摘要，不生成文件。
 - `POST /api/v1/translations/import` 和 `POST /api/v1/translations/export` 是后续真实批量导入/导出能力的受保护占位契约，MVP 返回 `CONFLICT`。
+- `GET /api/v1/products`、`GET /api/v1/orders` 和 `GET /api/v1/payments` 是后台 Commerce 只读占位契约，MVP 返回空列表，并在 meta 标记 `commerceEnabled`、默认 `market` / `currency`、`writable=false`、`writeDisabledCode=COMMERCE_DISABLED` 和 `reservedPhase=phase-2`。
 - `GET /api/v1/public/pages` 返回已发布页面摘要，用于前台 sitemap。
 - `GET /api/v1/public/pages/:slug` 只返回已发布版本；未发布或不存在时返回 `NOT_FOUND`。
 - `GET /api/v1/public/translations/:locale` 按公开店面域名解析 Tenant，返回对应 Tenant 的安全翻译消息包；多语言关闭时非默认 Locale 会回退默认 Locale。
@@ -647,6 +648,7 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 - 区块库、区块排序、区块属性面板、Undo / Redo。
 - 媒体库列表、上传目标、外部媒体登记、归档和 `media://` 选择。
 - Localization 默认 Market / Locale / Translation fallback 视图、默认 Locale 翻译保存、分页列表、列表筛选、缺失 key 检查、重复保存提示、写入关闭态、Translation 空态、批量导入/导出预览报告和真实执行占位契约。
+- Commerce Products / Orders / Payments 只读空列表占位，响应 meta 会明确关闭态、默认市场/币种、不可写和 Phase 2 预留。
 - Settings 默认站点名称、域名与 Analytics 配置展示页。
 - Publish 按钮，发布结果写入 PostgreSQL。
 - 启动时尝试加载已发布的 `home` 页面。
@@ -695,4 +697,4 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 2. 补齐部署 Smoke Test：前台 Vercel、API 独立 Node 服务、Admin 静态托管、Redis 生产连接、环境变量清单和回滚步骤。
 3. 做 Page Builder 视觉验收：Desktop / Mobile 双端检查、核心区块与设计稿差异记录、媒体解析异常态。
 4. 继续完善 Translation Key 管理真实执行能力：批量导入/导出写入、导入幂等、审计日志和导出文件生成；非默认 Locale 仍保持关闭态。
-5. 保持 Commerce 关闭态，只继续完善 Products / Orders / Payments 空列表、Stripe Webhook 占位和 `COMMERCE_DISABLED` 错误分支测试；不进入真实交易。
+5. 保持 Commerce 关闭态，继续补 Product / Variant / Price / Inventory 接口预留、Stripe Webhook 安全占位和 `COMMERCE_DISABLED` 错误分支测试；不进入真实交易。

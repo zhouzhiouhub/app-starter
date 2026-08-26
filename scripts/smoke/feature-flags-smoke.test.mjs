@@ -227,3 +227,38 @@ test("feature flag smoke rejects non-empty commerce placeholders", async () => {
     },
   );
 });
+
+test("feature flag smoke rejects commerce placeholder metadata drift", async () => {
+  await withFetch(
+    createFeatureFlagSmokeFetch({
+      overrides: {
+        "/orders": () =>
+          jsonResponse({
+            data: [],
+            meta: {
+              commerceEnabled: true,
+              currency: "USD",
+              market: "us",
+              reservedPhase: "phase-2",
+              resource: "orders",
+              total: 0,
+              writeDisabledCode: "COMMERCE_DISABLED",
+              writable: false,
+            },
+          }),
+      },
+    }),
+    async () => {
+      await assert.rejects(
+        () =>
+          assertFeatureFlagsDisabled(
+            {
+              apiBaseUrl: "https://api.example.com/api/v1",
+            },
+            "access-token",
+          ),
+        /Orders placeholder did not expose disabled Commerce metadata\./,
+      );
+    },
+  );
+});
