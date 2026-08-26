@@ -63,6 +63,61 @@ test("publish page smoke accepts revalidation targets for the published page", (
   );
 });
 
+test("publish page smoke redacts and caps revalidation success logs", () => {
+  const lines = [];
+  const originalLog = console.log;
+  const longPath = `/en/contact?token=payload.signature&next=${"x".repeat(
+    600,
+  )}`;
+
+  try {
+    console.log = (line) => lines.push(line);
+
+    assertPublishedResponse(
+      {
+        data: {
+          meta: {
+            slug: "contact",
+            title: "Contact",
+          },
+        },
+        meta: {
+          revalidation: {
+            paths: ["/en/contact", `${longPath}\nAuthorization Bearer a.b.c`],
+            tags: [
+              "published-page",
+              "published-page:us:en-US",
+              "published-page:us:en-US:contact",
+              "public-translation",
+              "public-translation:en-US",
+            ],
+            triggered: true,
+          },
+        },
+      },
+      {
+        locale: "en-US",
+        market: "us",
+        requireRevalidation: true,
+        slug: "contact",
+      },
+      "Contact",
+    );
+  } finally {
+    console.log = originalLog;
+  }
+
+  const line = lines.find((item) =>
+    item.startsWith("Storefront revalidation passed:"),
+  );
+
+  assert.equal(line?.includes("payload.signature"), false);
+  assert.equal(line?.includes("a.b.c"), false);
+  assert.doesNotMatch(line ?? "", /[\r\n]/);
+  assert.match(line ?? "", /\.\.\.$/);
+  assert.equal((line?.length ?? 0) <= 220, true);
+});
+
 test("publish page smoke rejects revalidation without page path and tags", () => {
   assert.throws(
     () =>

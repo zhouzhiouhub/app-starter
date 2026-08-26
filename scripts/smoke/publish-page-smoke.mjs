@@ -4,6 +4,11 @@ import {
   assertRevalidationSmokeTargets,
   createRevalidationSmokeDetails,
 } from "./revalidation-smoke.mjs";
+import { redactSmokeSecrets } from "./smoke-secrets.mjs";
+
+const maxRevalidationLogLineLength = 220;
+const maxRevalidationLogPathLength = 96;
+const maxRevalidationLogPathCount = 3;
 
 export async function publishPage(input, accessToken, pageId, schema) {
   const response = await fetchJson(
@@ -45,9 +50,7 @@ export function assertPublishedResponse(response, input, title) {
   }
 
   if (revalidation?.triggered === true) {
-    console.log(
-      `Storefront revalidation passed: ${revalidation.paths?.join(", ") ?? "paths unavailable"}`,
-    );
+    console.log(formatRevalidationSuccessLog(revalidation.paths));
   } else {
     console.log("Storefront revalidation skipped by configuration.");
   }
@@ -76,4 +79,57 @@ function formatPublishRevalidationDetails(details) {
     `paths: ${details.pathCount},`,
     `tags: ${details.tagCount}).`,
   ].join(" ");
+}
+
+function formatRevalidationSuccessLog(paths) {
+  return truncateText(
+    `Storefront revalidation passed: ${formatRevalidationLogPaths(paths)}`,
+    maxRevalidationLogLineLength,
+  );
+}
+
+function formatRevalidationLogPaths(value) {
+  const paths = Array.isArray(value)
+    ? value.map((item) => formatRevalidationLogPath(item)).filter(Boolean)
+    : [];
+
+  if (paths.length === 0) {
+    return "paths unavailable";
+  }
+
+  const visiblePaths = paths.slice(0, maxRevalidationLogPathCount);
+  const hiddenCount = paths.length - visiblePaths.length;
+  const suffix = hiddenCount > 0 ? `, ... (${hiddenCount} more)` : "";
+
+  return `${visiblePaths.join(", ")}${suffix}`;
+}
+
+function formatRevalidationLogPath(value) {
+  if (typeof value !== "string" || value.length === 0) {
+    return null;
+  }
+
+  return truncateText(
+    normalizeLogText(redactSmokeSecrets(value)),
+    maxRevalidationLogPathLength,
+  );
+}
+
+function normalizeLogText(value) {
+  return replaceControlCharacters(value).replace(/\s+/g, " ").trim();
+}
+
+function replaceControlCharacters(value) {
+  let result = "";
+
+  for (const character of String(value)) {
+    const code = character.charCodeAt(0);
+    result += code <= 31 || code === 127 ? " " : character;
+  }
+
+  return result;
+}
+
+function truncateText(value, limit) {
+  return value.length > limit ? `${value.slice(0, limit - 3)}...` : value;
 }

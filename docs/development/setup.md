@@ -286,7 +286,8 @@ production-ready, and free of query strings or embedded credentials, but never
 record R2 account IDs, access keys, secret keys, or bucket names. Publish and
 rollback revalidation details include a `diagnosis` field for triggered,
 missing secret, missing URL, HTTP request failure, and network or timeout-style
-failures. Analytics diagnostics
+failures. Publish revalidation success logs print only a redacted, bounded path
+summary. Analytics diagnostics
 record whether the runtime gates are valid and whether an enabled analytics
 setup has consent plus at least one valid provider. Feature flag diagnostics
 record whether `COMMERCE_ENABLED` and `MULTI_LOCALE_ENABLED` are explicitly
