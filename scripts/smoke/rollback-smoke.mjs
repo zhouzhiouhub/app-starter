@@ -5,6 +5,9 @@ import {
   createRevalidationSmokeDetails,
 } from "./revalidation-smoke.mjs";
 import { buildSmokePageSchema } from "./smoke-page-schema.mjs";
+import { formatSmokeText } from "./smoke-text.mjs";
+
+const maxRollbackReportDetailLength = 160;
 
 export async function assertRollbackFlow(input, accessToken, options) {
   const firstPublishedVersionId = await readPublishedVersionId(
@@ -52,9 +55,9 @@ export async function assertRollbackFlow(input, accessToken, options) {
       rollback?.meta?.revalidation,
       input,
     ),
-    rollbackVersionId,
-    targetVersionId: firstPublishedVersionId,
-    title: rollback?.data?.meta?.title,
+    rollbackVersionId: formatRollbackReportDetail(rollbackVersionId),
+    targetVersionId: formatRollbackReportDetail(firstPublishedVersionId),
+    title: formatRollbackReportDetail(rollback?.data?.meta?.title),
   };
 }
 
@@ -189,4 +192,10 @@ export function formatRollbackRevalidationFailure(revalidation, input) {
 
 function formatRollbackRevalidationDetails(details) {
   return `Rollback revalidation was not triggered (diagnosis: ${details.diagnosis}, reason: ${details.reason ?? "unknown"}, status: ${details.status ?? "none"}, paths: ${details.pathCount}, tags: ${details.tagCount}).`;
+}
+
+function formatRollbackReportDetail(value) {
+  return typeof value === "string" && value.length > 0
+    ? formatSmokeText(value, { maxLength: maxRollbackReportDetailLength })
+    : null;
 }

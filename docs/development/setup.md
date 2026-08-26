@@ -315,7 +315,9 @@ cannot inflate CI artifacts with multi-line or oversized values. The CLI summary
 also normalizes dynamic failure labels and messages before printing them. API
 HTTP, network, and upload failure messages are normalized and bounded before
 they enter smoke failures. Revalidation diagnostics keep total `pathCount` and
-`tagCount` values while bounding path/tag list fields to safe samples.
+`tagCount` values while bounding path/tag list fields to safe samples. Rollback
+report details also bound version and title fields before they enter the smoke
+report.
 
 By default the script requires `meta.revalidation.triggered=true`, so keep
 `STOREFRONT_REVALIDATE_SECRET` configured in both API and Web. To test only the

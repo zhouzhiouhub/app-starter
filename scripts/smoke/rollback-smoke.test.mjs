@@ -208,6 +208,100 @@ test("rollback smoke flow returns revalidation diagnostics for reports", async (
   );
 });
 
+test("rollback smoke flow bounds dynamic report details without changing rollback input", async () => {
+  const initialVersionId = `version-1\nAuthorization Bearer a.b.c ${"x".repeat(
+    500,
+  )}`;
+  const finalVersionId = `version-2?token=payload.signature&next=${"y".repeat(
+    500,
+  )}`;
+  const title = `Smoke Page token=payload.signature\nAuthorization Bearer a.b.c ${"z".repeat(
+    500,
+  )}`;
+  let detailReads = 0;
+  let rollbackRequestBody = null;
+
+  await withFetch(async (url, init = {}) => {
+    const method = init.method ?? "GET";
+
+    if (url === "https://api.example.com/api/v1/pages/page-1" && method === "GET") {
+      detailReads += 1;
+      return jsonResponse({
+        data: {
+          publishedVersionId:
+            detailReads === 1 ? initialVersionId : finalVersionId,
+        },
+      });
+    }
+
+    if (url === "https://api.example.com/api/v1/pages/page-1/publish") {
+      return jsonResponse({
+        data: {
+          meta: {
+            slug: "smoke-page",
+            title: `${title} rollback candidate`,
+          },
+        },
+      });
+    }
+
+    if (url === "https://api.example.com/api/v1/pages/page-1/rollback") {
+      rollbackRequestBody = JSON.parse(init.body);
+      return jsonResponse({
+        data: {
+          meta: {
+            slug: "smoke-page",
+            title,
+          },
+        },
+        meta: {
+          revalidation: {
+            paths: ["/en/smoke-page"],
+            tags: [
+              "published-page",
+              "published-page:us:en-US",
+              "published-page:us:en-US:smoke-page",
+              "public-translation",
+              "public-translation:en-US",
+            ],
+            triggered: true,
+          },
+        },
+      });
+    }
+
+    throw new Error(`Unexpected fetch URL: ${url}`);
+  }, async () => {
+    const result = await assertRollbackFlow(
+      {
+        apiBaseUrl: "https://api.example.com/api/v1",
+        locale: "en-US",
+        market: "us",
+        requireRevalidation: true,
+        slug: "smoke-page",
+      },
+      "access-token",
+      {
+        pageId: "page-1",
+        title,
+      },
+    );
+
+    assert.equal(rollbackRequestBody.versionId, initialVersionId);
+    for (const value of [
+      result.rollbackVersionId,
+      result.targetVersionId,
+      result.title,
+    ]) {
+      assert.equal(value.includes("payload.signature"), false);
+      assert.equal(value.includes("a.b.c"), false);
+      assert.doesNotMatch(value, /[\r\n]/);
+      assert.match(value, /\.\.\.$/);
+      assert.equal(value.length <= 160, true);
+    }
+  });
+});
+
 test("rollback smoke rejects revalidation without page path and tags", async () => {
   await withFetch(async (url) => {
     if (url === "https://api.example.com/api/v1/pages/page-1") {
