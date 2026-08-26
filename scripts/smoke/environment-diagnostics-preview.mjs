@@ -35,6 +35,14 @@ function readPreviewSecret(env, name) {
     };
   }
 
+  if (value.trim() !== value) {
+    return {
+      configured: true,
+      issue: "surrounding-whitespace",
+      safe: false,
+    };
+  }
+
   if (value.length < minPreviewTokenSecretLength) {
     return {
       configured: true,
@@ -69,8 +77,7 @@ function readEnv(env, name) {
     return value;
   }
 
-  const trimmed = value.trim();
-  return trimmed ? trimmed : null;
+  return value.trim().length > 0 ? value : null;
 }
 
 function hasControlCharacter(value) {

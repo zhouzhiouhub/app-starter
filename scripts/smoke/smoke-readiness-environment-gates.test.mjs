@@ -35,10 +35,10 @@ test("smoke readiness blocks unsafe preview token secrets", () => {
   const environment = createReadyEnvironment();
   environment.preview = {
     previousSecretConfigured: true,
-    previousSecretIssue: "control-character",
+    previousSecretIssue: "surrounding-whitespace",
     previousSecretSafe: false,
     secretConfigured: true,
-    secretIssue: "short-secret",
+    secretIssue: "surrounding-whitespace",
     secretSafe: false,
   };
   const readiness = createSmokeProductionReadiness(
@@ -53,10 +53,10 @@ test("smoke readiness blocks unsafe preview token secrets", () => {
       blocker.variable,
     ]),
     [
-      ["preview.secret", "short-secret", "PREVIEW_TOKEN_SECRET"],
+      ["preview.secret", "surrounding-whitespace", "PREVIEW_TOKEN_SECRET"],
       [
         "preview.previous-secret",
-        "control-character",
+        "surrounding-whitespace",
         "PREVIEW_TOKEN_PREVIOUS_SECRET",
       ],
     ],
@@ -65,12 +65,12 @@ test("smoke readiness blocks unsafe preview token secrets", () => {
   assert.deepEqual(readiness.nextActions, [
     {
       action:
-        "Set PREVIEW_TOKEN_SECRET to a 32-1024 character production signing secret; current value is too short.",
+        "Remove leading and trailing whitespace from PREVIEW_TOKEN_SECRET; keep it 32-1024 characters.",
       area: "preview.secret",
     },
     {
       action:
-        "Remove PREVIEW_TOKEN_PREVIOUS_SECRET unless rotating preview secrets; if rotating, remove control characters and keep it 32-1024 characters.",
+        "Remove PREVIEW_TOKEN_PREVIOUS_SECRET unless rotating preview secrets; if rotating, remove leading and trailing whitespace.",
       area: "preview.previous-secret",
     },
   ]);

@@ -166,12 +166,10 @@ function readConfiguredPreviewTokenSecret(
     return null;
   }
 
-  const configured = raw.trim();
-
-  if (!configured) {
+  if (raw.trim().length === 0) {
     if (isProductionPreviewTokenEnvironment(env) && hasControlCharacter(raw)) {
       throw new PreviewTokenConfigurationError(
-        `${name} must be 32 to 1024 characters and must not contain control characters in production.`,
+        `${name} must be 32 to 1024 characters, must not contain control characters, and must not include leading or trailing whitespace in production.`,
       );
     }
 
@@ -180,20 +178,21 @@ function readConfiguredPreviewTokenSecret(
 
   if (
     isProductionPreviewTokenEnvironment(env) &&
-    (hasControlCharacter(raw) || !isSafePreviewTokenSecret(configured))
+    !isSafePreviewTokenSecret(raw)
   ) {
     throw new PreviewTokenConfigurationError(
-      `${name} must be 32 to 1024 characters and must not contain control characters in production.`,
+      `${name} must be 32 to 1024 characters, must not contain control characters, and must not include leading or trailing whitespace in production.`,
     );
   }
 
-  return configured;
+  return raw;
 }
 
 function isSafePreviewTokenSecret(value: string): boolean {
   return (
     value.length >= minPreviewTokenSecretLength &&
     value.length <= maxPreviewTokenSecretLength &&
+    value.trim() === value &&
     !hasControlCharacter(value)
   );
 }

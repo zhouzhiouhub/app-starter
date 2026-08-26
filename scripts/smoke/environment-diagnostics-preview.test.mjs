@@ -56,6 +56,23 @@ test("smoke environment diagnostics reports unsafe preview token secrets", () =>
   });
 });
 
+test("smoke environment diagnostics reports preview token surrounding whitespace", () => {
+  const diagnostics = createSmokeEnvironmentDiagnostics({
+    PREVIEW_TOKEN_PREVIOUS_SECRET: ` ${"b".repeat(32)}`,
+    PREVIEW_TOKEN_SECRET: `${"a".repeat(32)} `,
+  });
+
+  assert.deepEqual(diagnostics.preview, {
+    configured: false,
+    previousSecretConfigured: true,
+    previousSecretIssue: "surrounding-whitespace",
+    previousSecretSafe: false,
+    secretConfigured: true,
+    secretIssue: "surrounding-whitespace",
+    secretSafe: false,
+  });
+});
+
 test("smoke environment diagnostics reports trimmed preview control characters", () => {
   const diagnostics = createSmokeEnvironmentDiagnostics({
     PREVIEW_TOKEN_PREVIOUS_SECRET: `${"b".repeat(32)}\t`,

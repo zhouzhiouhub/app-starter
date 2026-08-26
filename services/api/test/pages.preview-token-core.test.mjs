@@ -96,6 +96,8 @@ test("preview token secrets require safe production values", () => {
 
   for (const PREVIEW_TOKEN_SECRET of [
     "short-preview-secret",
+    ` ${"a".repeat(32)}`,
+    `${"a".repeat(32)} `,
     "a".repeat(1025),
     `${"a".repeat(32)}\n`,
     `safe-preview-token-secret-value-1\r\nx-secret: leaked`,
@@ -133,12 +135,58 @@ test("preview token secrets require safe production values", () => {
       verifyPagePreviewToken(`payload.${"a".repeat(43)}`, {
         env: {
           APP_ENV: "production",
+          PREVIEW_TOKEN_PREVIOUS_SECRET: ` ${"b".repeat(32)}`,
+          PREVIEW_TOKEN_SECRET: safeSecret,
+        },
+        now,
+      }),
+    /PREVIEW_TOKEN_PREVIOUS_SECRET must be 32 to 1024 characters/,
+  );
+  assert.throws(
+    () =>
+      verifyPagePreviewToken(`payload.${"a".repeat(43)}`, {
+        env: {
+          APP_ENV: "production",
           PREVIEW_TOKEN_PREVIOUS_SECRET: `${"b".repeat(32)}\t`,
           PREVIEW_TOKEN_SECRET: safeSecret,
         },
         now,
       }),
     /PREVIEW_TOKEN_PREVIOUS_SECRET must be 32 to 1024 characters/,
+  );
+});
+
+test("preview token secrets are not rewritten before signing", () => {
+  const now = new Date("2026-08-19T00:00:00.000Z");
+  const spacedEnv = {
+    PREVIEW_TOKEN_SECRET: " preview-secret ",
+    PREVIEW_TOKEN_TTL_SECONDS: "60",
+  };
+  const trimmedEnv = {
+    PREVIEW_TOKEN_SECRET: "preview-secret",
+    PREVIEW_TOKEN_TTL_SECONDS: "60",
+  };
+  const token = createPagePreviewToken({
+    env: spacedEnv,
+    now,
+    pageId: "page-1",
+    slug: "campaign",
+    tenantId: "tenant-1",
+  }).token;
+
+  assert.equal(
+    verifyPagePreviewToken(token, {
+      env: spacedEnv,
+      now: new Date("2026-08-19T00:00:30.000Z"),
+    })?.pageId,
+    "page-1",
+  );
+  assert.equal(
+    verifyPagePreviewToken(token, {
+      env: trimmedEnv,
+      now: new Date("2026-08-19T00:00:30.000Z"),
+    }),
+    null,
   );
 });
 

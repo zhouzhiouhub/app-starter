@@ -41,6 +41,10 @@ export function readPreviewSecretAction(blocker) {
     return "Remove control characters from PREVIEW_TOKEN_SECRET; keep it 32-1024 characters.";
   }
 
+  if (blocker.issue === "surrounding-whitespace") {
+    return "Remove leading and trailing whitespace from PREVIEW_TOKEN_SECRET; keep it 32-1024 characters.";
+  }
+
   return "Set PREVIEW_TOKEN_SECRET to a 32-1024 character production signing secret in the API runtime.";
 }
 
@@ -128,6 +132,10 @@ function readPreviousPreviewSecretAction(issue) {
 
   if (issue === "control-character") {
     return "Remove PREVIEW_TOKEN_PREVIOUS_SECRET unless rotating preview secrets; if rotating, remove control characters and keep it 32-1024 characters.";
+  }
+
+  if (issue === "surrounding-whitespace") {
+    return "Remove PREVIEW_TOKEN_PREVIOUS_SECRET unless rotating preview secrets; if rotating, remove leading and trailing whitespace.";
   }
 
   return "Remove PREVIEW_TOKEN_PREVIOUS_SECRET or set it to the previous 32-1024 character production-safe signing secret.";
