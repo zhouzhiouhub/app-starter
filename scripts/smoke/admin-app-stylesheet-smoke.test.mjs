@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readStylesheetReferences } from "./admin-app-assets.mjs";
 import { assertAdminApp } from "./admin-app-smoke.mjs";
 
 test("admin app smoke rejects cross-origin stylesheet assets", async () => {
@@ -57,6 +58,22 @@ test("admin app smoke rejects cross-origin stylesheet assets", async () => {
     "https://admin.example.com",
     "https://admin.example.com/assets/admin.js",
   ]);
+});
+
+test("admin app smoke bounds stylesheet href diagnostics", () => {
+  const [reference] = readStylesheetReferences(
+    `<link rel="stylesheet" href="https://user:secret@cdn.example.com/${"x".repeat(
+      700,
+    )}">`,
+    "https://admin.example.com",
+  );
+
+  assert.equal(reference.href.length, 512);
+  assert.equal(reference.href.endsWith("..."), true);
+  assert.equal(reference.href.includes("user:secret"), false);
+  assert.match(reference.href, /https:\/\/\[redacted\]@cdn\.example\.com/);
+  assert.equal(reference.issue, "embedded-credentials");
+  assert.equal(reference.url, null);
 });
 
 test("admin app smoke rejects unreachable or non-CSS stylesheet assets", async () => {

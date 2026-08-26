@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readModulePreloadReferences } from "./admin-app-modulepreload-assets.mjs";
 import { assertAdminApp } from "./admin-app-smoke.mjs";
 
 test("admin app smoke rejects cross-origin modulepreload assets", async () => {
@@ -70,6 +71,22 @@ test("admin app smoke rejects cross-origin modulepreload assets", async () => {
     "https://admin.example.com/assets/admin.js",
     "https://admin.example.com/assets/admin.css",
   ]);
+});
+
+test("admin app smoke bounds modulepreload href diagnostics", () => {
+  const [reference] = readModulePreloadReferences(
+    `<link rel="modulepreload" href="https://user:secret@cdn.example.com/${"x".repeat(
+      700,
+    )}">`,
+    "https://admin.example.com",
+  );
+
+  assert.equal(reference.href.length, 512);
+  assert.equal(reference.href.endsWith("..."), true);
+  assert.equal(reference.href.includes("user:secret"), false);
+  assert.match(reference.href, /https:\/\/\[redacted\]@cdn\.example\.com/);
+  assert.equal(reference.issue, "embedded-credentials");
+  assert.equal(reference.url, null);
 });
 
 test("admin app smoke rejects unreachable or non-JavaScript modulepreload assets", async () => {

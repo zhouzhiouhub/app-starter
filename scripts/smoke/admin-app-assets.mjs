@@ -1,4 +1,4 @@
-import { redactSmokeSecrets } from "./smoke-secrets.mjs";
+import { formatAdminAppAssetHref } from "./admin-app-asset-diagnostics.mjs";
 import {
   cancelResponseBody,
   readRedirectLocation,
@@ -221,7 +221,7 @@ function readStylesheetReference(tag, baseUrl) {
     }
 
     return {
-      href: redactSmokeSecrets(href),
+      href: formatAdminAppAssetHref(href),
       issue: null,
       url: url.toString(),
     };
@@ -232,7 +232,7 @@ function readStylesheetReference(tag, baseUrl) {
 
 function createInvalidStylesheetReference(href, issue) {
   return {
-    href: href ? redactSmokeSecrets(href) : null,
+    href: formatAdminAppAssetHref(href),
     issue,
     url: null,
   };

@@ -1,5 +1,5 @@
 import { readModuleScriptAttempt } from "./admin-app-assets.mjs";
-import { redactSmokeSecrets } from "./smoke-secrets.mjs";
+import { formatAdminAppAssetHref } from "./admin-app-asset-diagnostics.mjs";
 
 export async function readModulePreloadSummary(references) {
   const attempts = await Promise.all(
@@ -116,7 +116,7 @@ function readModulePreloadReference(tag, baseUrl) {
     }
 
     return {
-      href: redactSmokeSecrets(href),
+      href: formatAdminAppAssetHref(href),
       issue: null,
       url: url.toString(),
     };
@@ -127,7 +127,7 @@ function readModulePreloadReference(tag, baseUrl) {
 
 function createInvalidModulePreloadReference(href, issue) {
   return {
-    href: href ? redactSmokeSecrets(href) : null,
+    href: formatAdminAppAssetHref(href),
     issue,
     url: null,
   };
