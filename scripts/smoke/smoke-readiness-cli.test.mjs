@@ -100,6 +100,52 @@ test("smoke readiness CLI formats warnings and redacts secrets", () => {
   assert.match(lines[1], /preview_token=\[redacted\]/);
 });
 
+test("smoke readiness CLI caps and normalizes dynamic output", () => {
+  const longArea = `custom.runtime.${"a".repeat(240)}`;
+  const longIssue = `unsafe-value-${"b".repeat(240)}`;
+  const longHost = `api.${"h".repeat(360)}.brand.com`;
+  const longPath = `/health?token=payload.signature&next=${"p".repeat(360)}`;
+  const longVariable = `SMOKE_${"v".repeat(360)}`;
+  const longMessage = `Fix token=payload.signature before release.\n${"m".repeat(
+    720,
+  )}`;
+  const longAction = `Rotate Authorization Bearer abc.def.ghi.\r\n${"a".repeat(
+    720,
+  )}`;
+  const lines = formatSmokeProductionReadiness({
+    blockers: [
+      {
+        area: longArea,
+        host: longHost,
+        issue: longIssue,
+        message: longMessage,
+        missingRequired: [longVariable, longHost, longPath],
+        path: longPath,
+        variable: longVariable,
+      },
+    ],
+    nextActions: [
+      {
+        action: longAction,
+        area: longArea,
+      },
+    ],
+    productionReady: false,
+    warnings: [],
+  });
+  const blockerLine = lines[2] ?? "";
+  const actionLine = lines[4] ?? "";
+
+  assert.equal(lines.join("\n").includes("payload.signature"), false);
+  assert.equal(lines.join("\n").includes("abc.def.ghi"), false);
+  assert.doesNotMatch(blockerLine, /[\r\n]/);
+  assert.doesNotMatch(actionLine, /[\r\n]/);
+  assert.match(blockerLine, /\.\.\.$/);
+  assert.match(actionLine, /\.\.\.$/);
+  assert.equal(blockerLine.length <= 380, true);
+  assert.equal(actionLine.length <= 320, true);
+});
+
 test("smoke readiness CLI writes blocked reports to warning output", () => {
   const logLines = [];
   const warnLines = [];

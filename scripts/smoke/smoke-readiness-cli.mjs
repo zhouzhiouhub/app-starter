@@ -1,5 +1,13 @@
 import { redactSmokeSecrets } from "./smoke-secrets.mjs";
 
+const maxActionLineLength = 300;
+const maxContextItemCount = 6;
+const maxContextValueLength = 96;
+const maxIssueAreaLength = 96;
+const maxIssueCodeLength = 80;
+const maxIssueLineLength = 360;
+const maxIssueMessageLength = 220;
+
 export function printSmokeProductionReadiness(readiness, writer = console) {
   const lines = formatSmokeProductionReadiness(readiness);
   const write =
@@ -59,21 +67,31 @@ function formatNextActionLines(actions) {
 }
 
 function formatIssue(issue) {
-  const area = issue?.area ?? "unknown";
-  const code = issue?.issue ?? "unknown";
-  const message = issue?.message ?? "No remediation message provided.";
+  const area = formatCliValue(issue?.area, "unknown", maxIssueAreaLength);
+  const code = formatCliValue(issue?.issue, "unknown", maxIssueCodeLength);
+  const message = formatCliValue(
+    issue?.message,
+    "No remediation message provided.",
+    maxIssueMessageLength,
+  );
   const context = formatIssueContext(issue);
 
-  return redactSmokeSecrets(
+  return formatCliValue(
     `[${area}/${code}] ${message}${context ? ` (${context})` : ""}`,
+    "",
+    maxIssueLineLength,
   );
 }
 
 function formatAction(action) {
-  const area = action?.area ?? "unknown";
-  const message = action?.action ?? "Review the production readiness blocker.";
+  const area = formatCliValue(action?.area, "unknown", maxIssueAreaLength);
+  const message = formatCliValue(
+    action?.action,
+    "Review the production readiness blocker.",
+    maxActionLineLength,
+  );
 
-  return redactSmokeSecrets(`[${area}] ${message}`);
+  return formatCliValue(`[${area}] ${message}`, "", maxActionLineLength);
 }
 
 function formatIssueContext(issue) {
@@ -89,15 +107,19 @@ function formatIssueContext(issue) {
 }
 
 function formatField(name, value) {
-  return value === null || value === undefined || value === ""
-    ? null
-    : `${name}: ${String(value)}`;
+  const formatted = formatContextValue(value);
+
+  return formatted ? `${name}: ${formatted}` : null;
 }
 
 function formatListField(name, value) {
-  return Array.isArray(value) && value.length > 0
-    ? `${name}: ${value.join(", ")}`
-    : null;
+  if (!Array.isArray(value) || value.length === 0) {
+    return null;
+  }
+
+  const items = value.map((item) => formatContextValue(item)).filter(Boolean);
+
+  return formatContextListField(name, items);
 }
 
 function formatIssueListField(name, value) {
@@ -107,11 +129,55 @@ function formatIssueListField(name, value) {
 
   const items = value
     .map((issue) => {
-      const variable = issue?.variable;
-      const code = issue?.issue;
+      const variable = formatContextValue(issue?.variable);
+      const code = formatContextValue(issue?.issue);
       return variable && code ? `${variable} ${code}` : null;
     })
     .filter(Boolean);
 
-  return items.length > 0 ? `${name}: ${items.join(", ")}` : null;
+  return formatContextListField(name, items);
+}
+
+function formatContextListField(name, items) {
+  if (items.length === 0) {
+    return null;
+  }
+
+  const visibleItems = items.slice(0, maxContextItemCount);
+  const hiddenCount = items.length - visibleItems.length;
+  const suffix = hiddenCount > 0 ? `, ... (${hiddenCount} more)` : "";
+
+  return `${name}: ${visibleItems.join(", ")}${suffix}`;
+}
+
+function formatContextValue(value) {
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
+
+  return formatCliValue(String(value), "", maxContextValueLength);
+}
+
+function formatCliValue(value, fallback, maxLength) {
+  const text = typeof value === "string" && value.length > 0 ? value : fallback;
+  return truncateText(normalizeCliText(redactSmokeSecrets(text)), maxLength);
+}
+
+function normalizeCliText(value) {
+  return replaceControlCharacters(value).replace(/\s+/g, " ").trim();
+}
+
+function replaceControlCharacters(value) {
+  let result = "";
+
+  for (const character of String(value)) {
+    const code = character.charCodeAt(0);
+    result += code <= 31 || code === 127 ? " " : character;
+  }
+
+  return result;
+}
+
+function truncateText(value, limit) {
+  return value.length > limit ? `${value.slice(0, limit - 3)}...` : value;
 }
