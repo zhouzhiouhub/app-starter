@@ -101,8 +101,8 @@ export function completeSmokeReport(report, input) {
 }
 
 export function recordSmokeStorefrontUrls(report, input) {
-  report.storefrontRequestUrl = input.storefrontRequestUrl ?? null;
-  report.storefrontUrl = input.storefrontUrl ?? null;
+  report.storefrontRequestUrl = readSmokeReportUrl(input.storefrontRequestUrl);
+  report.storefrontUrl = readSmokeReportUrl(input.storefrontUrl);
 }
 
 export function failSmokeReport(report, error) {
@@ -112,4 +112,13 @@ export function failSmokeReport(report, error) {
   report.finishedAt = new Date().toISOString();
   report.status = "failed";
   refreshSmokeReportSummary(report);
+}
+
+function readSmokeReportUrl(value) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const redacted = redactSmokeReportValue(value);
+  return typeof redacted === "string" ? redacted : null;
 }

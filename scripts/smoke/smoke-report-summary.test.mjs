@@ -59,15 +59,22 @@ test("smoke report summarizes completed pass status", () => {
   recordSmokeCheck(report, "page.publish");
   completeSmokeReport(report, {
     pageId: "page_1",
-    storefrontRequestUrl: "http://localhost:3000/en/smoke-page",
-    storefrontUrl: "https://web.example.com/en/smoke-page",
+    storefrontRequestUrl:
+      "http://localhost:3000/en/smoke-page?preview_token=payload.signature",
+    storefrontUrl:
+      "https://web.example.com/en/smoke-page#access_token=fragment-token",
   });
 
   assert.equal(
     report.storefrontRequestUrl,
-    "http://localhost:3000/en/smoke-page",
+    "http://localhost:3000/en/smoke-page?preview_token=[redacted]",
   );
-  assert.equal(report.storefrontUrl, "https://web.example.com/en/smoke-page");
+  assert.equal(
+    report.storefrontUrl,
+    "https://web.example.com/en/smoke-page#access_token=[redacted]",
+  );
+  assert.equal(JSON.stringify(report).includes("payload.signature"), false);
+  assert.equal(JSON.stringify(report).includes("fragment-token"), false);
   assert.equal(report.summary.status, "passed");
   assert.equal(report.summary.checkCount, 1);
   assert.equal(report.summary.passedCheckCount, 1);
