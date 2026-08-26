@@ -81,6 +81,12 @@ test("storefront smoke helpers detect noindex robots metadata", () => {
 });
 
 test("storefront smoke helpers read canonical links", () => {
+  const unsafeHref = readCanonicalHref(
+    `<link rel="canonical" href="https://web.example.com/en?token=payload.signature \u0000${"x".repeat(
+      600,
+    )}" />`,
+  );
+
   assert.equal(
     readCanonicalHref(
       '<link href="https://web.example.com/en" rel="alternate canonical" />',
@@ -95,9 +101,20 @@ test("storefront smoke helpers read canonical links", () => {
     readCanonicalHref('<link rel="stylesheet" href="/app.css" />'),
     null,
   );
+  assert.equal(unsafeHref.length, 512);
+  assert.equal(unsafeHref.endsWith("..."), true);
+  assert.equal(unsafeHref.includes("\u0000"), false);
+  assert.equal(unsafeHref.includes("payload.signature"), false);
+  assert.match(unsafeHref, /token=\[redacted\]/);
 });
 
 test("storefront smoke helpers read Open Graph URLs", () => {
+  const unsafeOpenGraphUrl = readOpenGraphUrl(
+    `<meta property="og:url" content="https://web.example.com/en?token=payload.signature \u0000${"x".repeat(
+      600,
+    )}" />`,
+  );
+
   assert.equal(
     readOpenGraphUrl(
       '<meta content="https://web.example.com/en" property="og:url" />',
@@ -112,6 +129,11 @@ test("storefront smoke helpers read Open Graph URLs", () => {
     readOpenGraphUrl('<meta property="og:title" content="Campaign" />'),
     null,
   );
+  assert.equal(unsafeOpenGraphUrl.length, 512);
+  assert.equal(unsafeOpenGraphUrl.endsWith("..."), true);
+  assert.equal(unsafeOpenGraphUrl.includes("\u0000"), false);
+  assert.equal(unsafeOpenGraphUrl.includes("payload.signature"), false);
+  assert.match(unsafeOpenGraphUrl, /token=\[redacted\]/);
 });
 
 test("storefront smoke helpers build the expected canonical URL", () => {

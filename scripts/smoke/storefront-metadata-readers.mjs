@@ -1,3 +1,7 @@
+import { formatSmokeText } from "./smoke-text.mjs";
+
+const maxStorefrontMetadataAttributeLength = 512;
+
 export function readCanonicalHref(html) {
   for (const match of html.matchAll(/<link\b[^>]*>/gi)) {
     const tag = match[0];
@@ -39,7 +43,9 @@ function readHtmlAttribute(tag, name) {
   );
   const match = pattern.exec(tag);
   const value = match?.[1] ?? match?.[2] ?? match?.[3];
-  const normalized = value?.replace(/\s+/g, " ").trim();
+  const normalized = formatSmokeText(value, {
+    maxLength: maxStorefrontMetadataAttributeLength,
+  });
 
   return normalized || null;
 }
