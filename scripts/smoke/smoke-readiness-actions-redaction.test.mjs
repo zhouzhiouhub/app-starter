@@ -30,3 +30,22 @@ test("smoke readiness fallback next actions redact secrets", () => {
     },
   ]);
 });
+
+test("smoke readiness fallback next actions normalize and cap dynamic messages", () => {
+  const actions = createSmokeReadinessNextActions([
+    {
+      area: "custom.runtime",
+      issue: "unsafe-value",
+      message: `Fix https://api.brand.com/health?token=payload.signature \u0000 ${"x".repeat(
+        700,
+      )}`,
+    },
+  ]);
+  const [{ action }] = actions;
+
+  assert.equal(action.length, 520);
+  assert.equal(action.endsWith("..."), true);
+  assert.equal(action.includes("\u0000"), false);
+  assert.equal(action.includes("payload.signature"), false);
+  assert.match(action, /token=\[redacted\]/);
+});
