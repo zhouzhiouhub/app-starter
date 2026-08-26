@@ -11,6 +11,7 @@ import {
   readModulePreloadReferences,
   readModulePreloadSummary,
 } from "./admin-app-modulepreload-assets.mjs";
+import { formatAdminAppAssetUrl } from "./admin-app-asset-diagnostics.mjs";
 import {
   isOversizedResponseBodyError,
   readBoundedResponseText,
@@ -110,7 +111,7 @@ export async function readAdminAppAttempt(url) {
         : {}),
       moduleScriptStatus: moduleScript.status,
       moduleScriptStatusText: moduleScript.statusText,
-      moduleScriptUrl: moduleScriptReference.url,
+      moduleScriptUrl: formatAdminAppAssetUrl(moduleScriptReference.url),
       moduleScriptUrlIssue: moduleScriptReference.issue,
       modulePreloadCount: modulePreload.count,
       modulePreloadFailures: modulePreload.failures,

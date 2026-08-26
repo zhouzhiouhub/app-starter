@@ -1,4 +1,7 @@
-import { formatAdminAppAssetHref } from "./admin-app-asset-diagnostics.mjs";
+import {
+  formatAdminAppAssetHref,
+  formatAdminAppAssetUrl,
+} from "./admin-app-asset-diagnostics.mjs";
 import {
   cancelResponseBody,
   readRedirectLocation,
@@ -68,7 +71,7 @@ export async function readStylesheetSummary(references) {
         ...(redirectLocation ? { redirectLocation } : {}),
         status,
         statusText,
-        url,
+        url: formatAdminAppAssetUrl(url),
       }),
     );
   const urlIssues = references
@@ -82,7 +85,7 @@ export async function readStylesheetSummary(references) {
     urlIssues,
     urls: references
       .filter((reference) => reference.url)
-      .map((reference) => reference.url),
+      .map((reference) => formatAdminAppAssetUrl(reference.url)),
   };
 }
 

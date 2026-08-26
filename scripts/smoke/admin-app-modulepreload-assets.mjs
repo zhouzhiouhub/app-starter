@@ -1,5 +1,8 @@
 import { readModuleScriptAttempt } from "./admin-app-assets.mjs";
-import { formatAdminAppAssetHref } from "./admin-app-asset-diagnostics.mjs";
+import {
+  formatAdminAppAssetHref,
+  formatAdminAppAssetUrl,
+} from "./admin-app-asset-diagnostics.mjs";
 
 export async function readModulePreloadSummary(references) {
   const attempts = await Promise.all(
@@ -25,7 +28,7 @@ export async function readModulePreloadSummary(references) {
         ...(redirectLocation ? { redirectLocation } : {}),
         status,
         statusText,
-        url,
+        url: formatAdminAppAssetUrl(url),
       }),
     );
   const urlIssues = references
@@ -39,7 +42,7 @@ export async function readModulePreloadSummary(references) {
     urlIssues,
     urls: references
       .filter((reference) => reference.url)
-      .map((reference) => reference.url),
+      .map((reference) => formatAdminAppAssetUrl(reference.url)),
   };
 }
 
