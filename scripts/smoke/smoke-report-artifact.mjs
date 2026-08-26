@@ -1,5 +1,6 @@
 import { createSmokeReportSummary } from "./smoke-report-summary.mjs";
 import { redactSmokeReportValue } from "./smoke-secrets.mjs";
+import { formatSmokeText } from "./smoke-text.mjs";
 
 const defaultFailureStringLength = 1024;
 const defaultReadinessStringLength = 512;
@@ -64,10 +65,7 @@ function boundFailureArtifactValue(value) {
 
 function boundArtifactValue(value, key, readStringLength) {
   if (typeof value === "string") {
-    return truncateText(
-      normalizeArtifactText(value),
-      readStringLength(key),
-    );
+    return formatSmokeText(value, { maxLength: readStringLength(key) });
   }
 
   if (Array.isArray(value)) {
@@ -92,25 +90,6 @@ function readFailureStringLength(key) {
 
 function readReadinessStringLength(key) {
   return readinessStringLengths.get(key) ?? defaultReadinessStringLength;
-}
-
-function normalizeArtifactText(value) {
-  return replaceControlCharacters(value).replace(/\s+/g, " ").trim();
-}
-
-function replaceControlCharacters(value) {
-  let result = "";
-
-  for (const character of String(value)) {
-    const code = character.charCodeAt(0);
-    result += code <= 31 || code === 127 ? " " : character;
-  }
-
-  return result;
-}
-
-function truncateText(value, limit) {
-  return value.length > limit ? `${value.slice(0, limit - 3)}...` : value;
 }
 
 function isPlainRecord(value) {
