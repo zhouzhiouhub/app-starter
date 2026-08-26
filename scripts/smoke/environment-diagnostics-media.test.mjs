@@ -70,7 +70,7 @@ test("smoke environment diagnostics reports media readiness without secrets", ()
         directory: "services/api/prisma/migrations",
         hasMigrationLock: true,
         issue: null,
-        migrationCount: 1,
+        migrationCount: 2,
         productionReady: true,
       },
       productionReady: true,

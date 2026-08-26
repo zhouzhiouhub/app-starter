@@ -18,7 +18,7 @@ test("smoke environment diagnostics reports database readiness without secrets",
       directory: "services/api/prisma/migrations",
       hasMigrationLock: true,
       issue: null,
-      migrationCount: 1,
+      migrationCount: 2,
       productionReady: true,
     },
     productionReady: true,
@@ -87,8 +87,7 @@ test("smoke environment diagnostics reports unsafe database URLs", () => {
     DATABASE_URL: "postgresql://postgres:secret@[fd00::1]:5432/app",
   });
   const dockerHost = createSmokeEnvironmentDiagnostics({
-    DATABASE_URL:
-      "postgresql://postgres:secret@host.docker.internal:5432/app",
+    DATABASE_URL: "postgresql://postgres:secret@host.docker.internal:5432/app",
   });
   const placeholder = createSmokeEnvironmentDiagnostics({
     DATABASE_URL: "postgresql://postgres:secret@db.example.com:5432/app",
