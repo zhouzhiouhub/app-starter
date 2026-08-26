@@ -1,5 +1,6 @@
 import { fetchJson, readHttpError } from "./http-json-smoke.mjs";
 import { redactSmokeSecrets } from "./smoke-secrets.mjs";
+import { formatSmokeText } from "./smoke-text.mjs";
 
 const defaultAuditActions = ["preview_token.created", "page.published"];
 const maxAuditErrorIdentifierLength = 120;
@@ -163,31 +164,7 @@ function formatMissingAuditLogError(options, diagnostic) {
 }
 
 function formatAuditErrorText(value, fallback, maxLength) {
-  const text = typeof value === "string" && value.length > 0 ? value : fallback;
-
-  return truncateText(
-    normalizeAuditErrorText(redactSmokeSecrets(text)),
-    maxLength,
-  );
-}
-
-function normalizeAuditErrorText(value) {
-  return replaceControlCharacters(value).replace(/\s+/g, " ").trim();
-}
-
-function replaceControlCharacters(value) {
-  let result = "";
-
-  for (const character of String(value)) {
-    const code = character.charCodeAt(0);
-    result += code <= 31 || code === 127 ? " " : character;
-  }
-
-  return result;
-}
-
-function truncateText(value, limit) {
-  return value.length > limit ? `${value.slice(0, limit - 3)}...` : value;
+  return formatSmokeText(value, { fallback, maxLength });
 }
 
 function readDataType(value) {

@@ -7,6 +7,9 @@ import {
   readRedactedSmokeSnippet,
   redactSmokeSecrets,
 } from "./smoke-secrets.mjs";
+import { formatSmokeText } from "./smoke-text.mjs";
+
+const maxHttpErrorMessageLength = 520;
 
 export async function assertJsonReachable(url, label) {
   const response = await fetchJson(url);
@@ -52,7 +55,13 @@ export function readHttpError(response, fallback) {
     ? ` redirect: ${response.redirectLocation}`
     : "";
 
-  return redactSmokeSecrets(`${fallback} ${response.status}: ${message}${redirect}`);
+  return formatSmokeText(
+    `${fallback} ${response.status}: ${message}${redirect}`,
+    {
+      fallback: "HTTP request failed.",
+      maxLength: maxHttpErrorMessageLength,
+    },
+  );
 }
 
 function parseJson(text, url) {

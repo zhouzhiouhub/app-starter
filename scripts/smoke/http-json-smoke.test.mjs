@@ -153,3 +153,35 @@ test("JSON smoke fetch redacts non-JSON snippets before truncating", async () =>
     },
   );
 });
+
+test("JSON smoke HTTP errors normalize and cap dynamic messages", () => {
+  const errorMessage = [
+    "Forbidden",
+    "Authorization Bearer a.b.c",
+    "token=payload.signature",
+    "x".repeat(900),
+  ].join("\n");
+  const redirectLocation =
+    "https://api.example.com/login?token=payload.signature\nSet-Cookie: session=secret";
+
+  const message = readHttpError(
+    {
+      body: {
+        error: {
+          message: errorMessage,
+        },
+      },
+      redirectLocation,
+      status: 403,
+      statusText: "Forbidden",
+    },
+    "Public config failed.\nAuthorization: Bearer a.b.c",
+  );
+
+  assert.equal(message.includes("payload.signature"), false);
+  assert.equal(message.includes("a.b.c"), false);
+  assert.doesNotMatch(message, /[\r\n]/);
+  assert.match(message, /^Public config failed\./);
+  assert.match(message, /\.\.\.$/);
+  assert.equal(message.length <= 520, true);
+});
