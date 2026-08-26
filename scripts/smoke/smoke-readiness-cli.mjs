@@ -1,4 +1,4 @@
-import { redactSmokeSecrets } from "./smoke-secrets.mjs";
+import { formatSmokeText } from "./smoke-text.mjs";
 
 const maxActionLineLength = 300;
 const maxContextItemCount = 6;
@@ -160,24 +160,5 @@ function formatContextValue(value) {
 
 function formatCliValue(value, fallback, maxLength) {
   const text = typeof value === "string" && value.length > 0 ? value : fallback;
-  return truncateText(normalizeCliText(redactSmokeSecrets(text)), maxLength);
-}
-
-function normalizeCliText(value) {
-  return replaceControlCharacters(value).replace(/\s+/g, " ").trim();
-}
-
-function replaceControlCharacters(value) {
-  let result = "";
-
-  for (const character of String(value)) {
-    const code = character.charCodeAt(0);
-    result += code <= 31 || code === 127 ? " " : character;
-  }
-
-  return result;
-}
-
-function truncateText(value, limit) {
-  return value.length > limit ? `${value.slice(0, limit - 3)}...` : value;
+  return formatSmokeText(text, { maxLength });
 }

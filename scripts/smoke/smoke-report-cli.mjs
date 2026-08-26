@@ -1,12 +1,14 @@
-import { redactSmokeSecrets } from "./smoke-secrets.mjs";
 import {
   readFailureActions,
   readFailureDiagnosis,
 } from "./smoke-report-diagnostics.mjs";
+import { formatSmokeText } from "./smoke-text.mjs";
 
 const maxFailureDetailCount = 3;
 const maxFailureLabelLength = 96;
 const maxFailureMessageLength = 220;
+const maxSummaryLineLength = 360;
+const maxSummaryValueLength = 96;
 
 export function printSmokeReportSummary(report, writer = console) {
   const lines = formatSmokeReportSummary(report);
@@ -24,8 +26,16 @@ export function formatSmokeReportSummary(report) {
   const failedChecks = readFailedChecks(summary.failedChecks);
   const failedCheckDetails = readFailedCheckDetails(summary.failedCheckDetails);
   const lines = [
-    `\nSmoke report summary (${formatText(report?.schemaVersion, "unknown")}):`,
-    `  Status: ${formatText(summary.status, "unknown")}`,
+    `\nSmoke report summary (${formatCliText(
+      report?.schemaVersion,
+      "unknown",
+      maxSummaryValueLength,
+    )}):`,
+    `  Status: ${formatCliText(
+      summary.status,
+      "unknown",
+      maxSummaryValueLength,
+    )}`,
     `  Checks: ${readCount(summary.passedCheckCount)}/${readCount(summary.checkCount)} passed, ${readCount(summary.failedCheckCount)} failed`,
     `  Smoke passed: ${isSmokeSummaryPassed(summary) ? "yes" : "no"}`,
     `  Production gates: ${summary.productionReady === true ? "passed" : "blocked"}`,
@@ -52,7 +62,7 @@ export function formatSmokeReportSummary(report) {
     lines.push(...failureActions.map((action) => `    - ${action}`));
   }
 
-  return lines.map((line) => redactSmokeSecrets(line));
+  return lines.map((line) => formatCliOutputLine(line));
 }
 
 function readSummary(report) {
@@ -137,33 +147,20 @@ function formatCliLabel(value, fallback, maxLength) {
 }
 
 function formatCliText(value, fallback, maxLength) {
-  return truncateText(
-    normalizeCliText(redactSmokeSecrets(formatText(value, fallback))),
+  return formatSmokeText(formatText(value, fallback), { maxLength });
+}
+
+function formatCliOutputLine(line) {
+  const prefix = line.match(/^\n? */u)?.[0] ?? "";
+  const maxLength = Math.max(3, maxSummaryLineLength - prefix.length);
+
+  return `${prefix}${formatSmokeText(line.slice(prefix.length), {
     maxLength,
-  );
-}
-
-function normalizeCliText(value) {
-  return replaceControlCharacters(value).replace(/\s+/g, " ").trim();
-}
-
-function replaceControlCharacters(value) {
-  let result = "";
-
-  for (const character of String(value)) {
-    const code = character.charCodeAt(0);
-    result += code <= 31 || code === 127 ? " " : character;
-  }
-
-  return result;
+  })}`;
 }
 
 function readPlainRecord(value) {
   return value && typeof value === "object" && !Array.isArray(value)
     ? value
     : {};
-}
-
-function truncateText(value, limit) {
-  return value.length > limit ? `${value.slice(0, limit - 3)}...` : value;
 }
