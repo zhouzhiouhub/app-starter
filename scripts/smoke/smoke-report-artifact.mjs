@@ -1,6 +1,25 @@
+import { createSmokeReportSummary } from "./smoke-report-summary.mjs";
 import { redactSmokeReportValue } from "./smoke-secrets.mjs";
 
+const defaultFailureStringLength = 1024;
 const defaultReadinessStringLength = 512;
+const failureStringLengths = new Map([
+  ["body", 2048],
+  ["bodyReadError", 1024],
+  ["bodySnippet", 2048],
+  ["canonicalHref", 2048],
+  ["diagnosis", 256],
+  ["documentTitle", 512],
+  ["expectedCanonicalUrl", 2048],
+  ["expectedOpenGraphUrl", 2048],
+  ["expectedUrl", 2048],
+  ["message", 1024],
+  ["name", 160],
+  ["openGraphUrl", 2048],
+  ["redirectLocation", 2048],
+  ["responseBody", 2048],
+  ["url", 2048],
+]);
 const readinessStringLengths = new Map([
   ["action", 512],
   ["area", 160],
@@ -14,41 +33,61 @@ const readinessStringLengths = new Map([
 
 export function createWritableSmokeReportArtifact(report) {
   const artifact = redactSmokeReportValue(report);
-
-  return {
+  const boundedArtifact = {
     ...artifact,
+    checks: boundChecksArtifact(artifact.checks),
+    error: boundFailureArtifactValue(artifact.error),
     productionReadiness: boundProductionReadinessArtifact(
       artifact.productionReadiness,
     ),
   };
+
+  return {
+    ...boundedArtifact,
+    summary: createSmokeReportSummary(boundedArtifact),
+  };
+}
+
+function boundChecksArtifact(checks) {
+  return Array.isArray(checks)
+    ? checks.map((check) => boundFailureArtifactValue(check))
+    : checks;
 }
 
 function boundProductionReadinessArtifact(value) {
-  return boundReadinessArtifactValue(value);
+  return boundArtifactValue(value, "", readReadinessStringLength);
 }
 
-function boundReadinessArtifactValue(value, key = "") {
+function boundFailureArtifactValue(value) {
+  return boundArtifactValue(value, "", readFailureStringLength);
+}
+
+function boundArtifactValue(value, key, readStringLength) {
   if (typeof value === "string") {
     return truncateText(
       normalizeArtifactText(value),
-      readReadinessStringLength(key),
+      readStringLength(key),
     );
   }
 
   if (Array.isArray(value)) {
-    return value.map((item) => boundReadinessArtifactValue(item, key));
+    return value.map((item) => boundArtifactValue(item, key, readStringLength));
   }
 
   if (isPlainRecord(value)) {
     return Object.fromEntries(
       Object.entries(value).map(([childKey, childValue]) => [
         childKey,
-        boundReadinessArtifactValue(childValue, childKey),
+        boundArtifactValue(childValue, childKey, readStringLength),
       ]),
     );
   }
 
   return value;
+}
+
+function readFailureStringLength(key) {
+  return failureStringLengths.get(key) ?? defaultFailureStringLength;
 }
 
 function readReadinessStringLength(key) {

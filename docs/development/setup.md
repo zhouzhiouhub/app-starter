@@ -306,9 +306,10 @@ rotation secret are configured, whether configured values are production-safe,
 and any safety issue code. Smoke report details and failure messages
 redact preview token paths, sensitive query parameters, JSON credential fields,
 R2 signed URL parameters, and Bearer tokens before they are written to the
-report or printed by the CLI. Production readiness blocker and action strings
-are also normalized and bounded in the written report artifact so malformed
-diagnostics cannot inflate CI artifacts with multi-line or oversized values.
+report or printed by the CLI. Failed check names, failure messages, structured
+failure details, and production readiness blocker/action strings are also
+normalized and bounded in the written report artifact so malformed diagnostics
+cannot inflate CI artifacts with multi-line or oversized values.
 
 By default the script requires `meta.revalidation.triggered=true`, so keep
 `STOREFRONT_REVALIDATE_SECRET` configured in both API and Web. To test only the
