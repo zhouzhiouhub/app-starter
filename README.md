@@ -380,6 +380,7 @@ CLARITY_PROJECT_ID=xxxxxxxxxx
 - 生产 `PREVIEW_TOKEN_SECRET` 必须是 32 到 1024 字符、不包含控制字符且不带首尾空白的签名密钥；如果配置 `PREVIEW_TOKEN_PREVIOUS_SECRET` 做轮换，也必须满足同样边界。
 - `PREVIEW_TOKEN_TTL_SECONDS` 只接受 1 到 3600 秒，非法或更长配置会回退到 3600 秒，保持预览链接 1 小时有效。
 - `STOREFRONT_REVALIDATE_SECRET` 必须是不超过 1024 字符、不包含控制字符且不带首尾空白的非空值；生产 smoke readiness 会把超长、含控制字符或首尾空白的值判定为不安全配置。
+- `STOREFRONT_REVALIDATE_URL` 必须是前台 origin 或精确的 `/api/revalidate` endpoint，不能带首尾空白、账号密码、query、fragment 或控制字符。
 - `STOREFRONT_REVALIDATE_TIMEOUT_MS` 只接受 1 到 30000 毫秒，非法或更长配置会回退到 5000 毫秒，避免发布请求被异常超时值拖住。
 - 轮换 Preview Token 密钥时，先把旧值放入 `PREVIEW_TOKEN_PREVIOUS_SECRET`，再更新 `PREVIEW_TOKEN_SECRET`；等待超过 `PREVIEW_TOKEN_TTL_SECONDS` 后再移除旧值。
 - 如果数据库服务商提供 pooled connection string 和 direct connection string，API 运行时优先使用 pooled connection string，数据库迁移任务按服务商要求使用 direct connection string。

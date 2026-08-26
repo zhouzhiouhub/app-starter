@@ -9,7 +9,7 @@ import {
 test("storefront revalidation URL resolver normalizes safe URLs", () => {
   assert.equal(
     resolveStorefrontRevalidateUrl({
-      STOREFRONT_REVALIDATE_URL: " https://web.example.com/api/revalidate/ ",
+      STOREFRONT_REVALIDATE_URL: "https://web.example.com/api/revalidate/",
       WEB_URL: "https://fallback.example.com/",
     }),
     "https://web.example.com/api/revalidate",
@@ -23,7 +23,7 @@ test("storefront revalidation URL resolver normalizes safe URLs", () => {
   );
   assert.equal(
     resolveStorefrontRevalidateUrl({
-      STOREFRONT_REVALIDATE_URL: " https://web.example.com/ ",
+      STOREFRONT_REVALIDATE_URL: "https://web.example.com/",
       WEB_URL: "",
     }),
     "https://web.example.com/api/revalidate",
@@ -35,7 +35,7 @@ test("storefront revalidation URL resolver accepts production HTTPS endpoints", 
     resolveStorefrontRevalidateUrl({
       NODE_ENV: "production",
       STOREFRONT_REVALIDATE_URL:
-        " https://store.brand-platform.com/api/revalidate/ ",
+        "https://store.brand-platform.com/api/revalidate/",
       WEB_URL: "https://fallback.brand-platform.com/",
     }),
     "https://store.brand-platform.com/api/revalidate",
@@ -109,6 +109,20 @@ test("storefront revalidation URL resolver rejects unsafe URLs", () => {
     {
       STOREFRONT_REVALIDATE_URL: "",
       WEB_URL: "https://user:pass@web.example.com",
+    },
+    {
+      STOREFRONT_REVALIDATE_URL:
+        " https://web.example.com/api/revalidate",
+      WEB_URL: "https://fallback.example.com/",
+    },
+    {
+      STOREFRONT_REVALIDATE_URL:
+        "https://web.example.com/api/revalidate ",
+      WEB_URL: "https://fallback.example.com/",
+    },
+    {
+      STOREFRONT_REVALIDATE_URL: "",
+      WEB_URL: " https://web.example.com/",
     },
     {
       STOREFRONT_REVALIDATE_URL:

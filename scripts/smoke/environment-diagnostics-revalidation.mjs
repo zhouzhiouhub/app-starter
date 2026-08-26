@@ -97,10 +97,18 @@ function readRevalidationEndpoint(value, source) {
     };
   }
 
-  const trimmed = value.trim();
+  if (value.trim() !== value) {
+    return {
+      host: null,
+      issue: "surrounding-whitespace",
+      path: null,
+      safe: false,
+    };
+  }
+
   let url;
   try {
-    url = new URL(trimmed);
+    url = new URL(value);
   } catch {
     return {
       host: null,
@@ -232,7 +240,10 @@ function readSecretEnv(env, name) {
 
 function readUrlEnv(env, name) {
   const value = env[name];
-  return typeof value === "string" && value.trim() ? value : null;
+  return typeof value === "string" &&
+    (hasControlCharacter(value) || value.trim().length > 0)
+    ? value
+    : null;
 }
 
 function hasControlCharacter(value) {

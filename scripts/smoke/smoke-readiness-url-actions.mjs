@@ -76,6 +76,8 @@ export function readRevalidationUrlAction(blocker) {
       "Replace local or private STOREFRONT_REVALIDATE_URL hosts with the deployed storefront HTTPS host.",
     placeholderHost:
       "Replace placeholder STOREFRONT_REVALIDATE_URL hosts with the real storefront HTTPS host.",
+    surroundingWhitespace:
+      "Remove leading and trailing whitespace from STOREFRONT_REVALIDATE_URL or WEB_URL before rerunning production smoke.",
     unsupportedProtocol:
       "Use an https:// STOREFRONT_REVALIDATE_URL; revalidation URLs cannot use non-HTTP protocols.",
     insecureProtocol:

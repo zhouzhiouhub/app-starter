@@ -80,14 +80,14 @@ function readSafeHttpUrl(
   requireProductionUrl: boolean,
   pathPolicy: "any" | "revalidate-endpoint",
 ): URL | null {
-  const trimmed = readControlSafeTrimmedValue(value);
+  const configuredUrl = readControlSafeUrlValue(value);
 
-  if (!trimmed) {
+  if (!configuredUrl) {
     return null;
   }
 
   try {
-    const url = new URL(trimmed);
+    const url = new URL(configuredUrl);
 
     if (
       !isHttpProtocol(url.protocol) ||
@@ -129,12 +129,16 @@ function hasExplicitConfiguredUrl(value: string | undefined): boolean {
   );
 }
 
-function readControlSafeTrimmedValue(value: string | undefined): string | null {
+function readControlSafeUrlValue(value: string | undefined): string | null {
   if (!value || hasControlCharacter(value)) {
     return null;
   }
 
-  return value.trim() || null;
+  if (value.trim().length === 0 || value.trim() !== value) {
+    return null;
+  }
+
+  return value;
 }
 
 function hasControlCharacter(value: string): boolean {

@@ -114,6 +114,25 @@ test("smoke readiness explains control characters in revalidation URLs", () => {
   ]);
 });
 
+test("smoke readiness explains revalidation URLs with surrounding whitespace", () => {
+  const environment = createReadyEnvironment();
+  environment.revalidation.urlSafe = false;
+  environment.revalidation.urlIssue = "surrounding-whitespace";
+
+  const readiness = createSmokeProductionReadiness(
+    environment,
+    createReadyConfig(),
+  );
+
+  assert.deepEqual(readiness.nextActions, [
+    {
+      action:
+        "Remove leading and trailing whitespace from STOREFRONT_REVALIDATE_URL or WEB_URL before rerunning production smoke.",
+      area: "revalidation.url",
+    },
+  ]);
+});
+
 test("smoke readiness blocks unsafe revalidation secrets", () => {
   const environment = createReadyEnvironment();
   environment.revalidation.secretConfigured = true;

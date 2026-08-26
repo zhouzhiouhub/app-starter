@@ -132,6 +132,44 @@ test("smoke environment diagnostics rejects control characters in revalidation U
   }
 });
 
+test("smoke environment diagnostics rejects revalidation URLs with surrounding whitespace", () => {
+  for (const [source, env] of [
+    [
+      "STOREFRONT_REVALIDATE_URL",
+      {
+        STOREFRONT_REVALIDATE_URL:
+          " https://web.brand-platform.com/api/revalidate",
+      },
+    ],
+    [
+      "WEB_URL",
+      {
+        WEB_URL: "https://web.brand-platform.com ",
+      },
+    ],
+  ]) {
+    const diagnostics = createSmokeEnvironmentDiagnostics({
+      STOREFRONT_REVALIDATE_SECRET: "secret-value",
+      ...env,
+    });
+
+    assert.deepEqual(diagnostics.revalidation, {
+      configured: false,
+      endpointHost: null,
+      endpointPath: null,
+      requireRevalidation: true,
+      secretConfigured: true,
+      secretIssue: null,
+      secretSafe: true,
+      urlConfigured: true,
+      urlIssue: "surrounding-whitespace",
+      urlSafe: false,
+      urlSource: source,
+      usesWebUrlFallback: source === "WEB_URL",
+    });
+  }
+});
+
 test("smoke environment diagnostics requires production revalidation URLs", () => {
   for (const [value, issue] of [
     ["http://web.brand.com/api/revalidate", "insecure-protocol"],
