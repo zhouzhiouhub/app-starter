@@ -104,6 +104,21 @@ test("runtime URL resolver accepts production API URLs", () => {
   );
 });
 
+test("runtime URL resolver rejects production API URLs with surrounding whitespace", () => {
+  assert.throws(
+    () =>
+      resolveApiBaseUrl({
+        configuredUrl: " https://api.brand-platform.com/ ",
+        deploymentEnv: "production",
+      }),
+    {
+      message:
+        "API_URL or NEXT_PUBLIC_API_URL must be configured as a safe API URL in production.",
+      name: "WebRuntimeUrlConfigurationError",
+    },
+  );
+});
+
 test("runtime URL resolver accepts safe web origins", () => {
   assert.equal(
     resolveWebOrigin({
@@ -111,6 +126,21 @@ test("runtime URL resolver accepts safe web origins", () => {
       webUrl: " https://web.example.com/ ",
     }),
     "https://web.example.com",
+  );
+});
+
+test("runtime URL resolver rejects production Web origins with surrounding whitespace", () => {
+  assert.throws(
+    () =>
+      resolveWebOrigin({
+        deploymentEnv: "production",
+        webUrl: " https://store.brand-platform.com/ ",
+      }),
+    {
+      message:
+        "WEB_URL or NEXT_PUBLIC_WEB_URL must be configured as a safe Web origin in production.",
+      name: "WebRuntimeUrlConfigurationError",
+    },
   );
 });
 

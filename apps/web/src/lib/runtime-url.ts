@@ -104,6 +104,10 @@ function readSafeHttpUrl(
     return null;
   }
 
+  if (requireProductionUrl && trimmed !== value) {
+    return null;
+  }
+
   try {
     const url = new URL(trimmed);
 

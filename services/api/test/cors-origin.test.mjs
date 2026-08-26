@@ -79,6 +79,14 @@ test("CORS origin config rejects unsafe configured origins", () => {
 test("CORS origin config rejects unsafe production origins", () => {
   assert.deepEqual(
     readConfiguredCorsOrigins({
+      ADMIN_URL: "https://admin.brand-platform.com ",
+      NODE_ENV: "production",
+      WEB_URL: " https://store.brand-platform.com",
+    }),
+    [],
+  );
+  assert.deepEqual(
+    readConfiguredCorsOrigins({
       ADMIN_URL: "https://admin.brand-platform.com/settings",
       NODE_ENV: "production",
       WEB_URL: "http://store.brand-platform.com",

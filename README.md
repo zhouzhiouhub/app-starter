@@ -374,7 +374,7 @@ CLARITY_PROJECT_ID=xxxxxxxxxx
 - 不要把线上 `REDIS_URL` 写成 `localhost` 或未加密的 `redis://`，也不要带首尾空白或控制字符；生产 smoke readiness 期望使用云端 `rediss://` Redis。
 - 不要把本机 PostgreSQL 密码用于生产环境。
 - 不要把生产数据库连接串提交到 Git。
-- 生产 `API_URL`、`WEB_URL`、`ADMIN_URL` 不能带首尾空白、账号密码、query、fragment、控制字符或异常路径；`API_URL` 只允许 API origin 或精确的 `/api/v1` base，`WEB_URL` / `ADMIN_URL` 只允许 origin。
+- 生产运行时和 smoke readiness 都会拒绝带首尾空白、账号密码、query、fragment、控制字符或异常路径的 `API_URL`、`WEB_URL`、`ADMIN_URL`；`API_URL` 只允许 API origin 或精确的 `/api/v1` base，`WEB_URL` / `ADMIN_URL` 只允许 origin。
 - Analytics 脚本只有在 `ANALYTICS_ENABLED=true` 且 `ANALYTICS_CONSENT_GRANTED=true` 时才会加载；未接入 Consent 机制前保持关闭。
 - R2 生产配置必须使用 DNS 安全的 `R2_ACCOUNT_ID`、3 到 63 字符的安全 bucket 名称，以及不含空白或控制字符的凭据和 region；生产 smoke readiness 会把格式错误的 R2 变量判定为 `invalid-config`。
 - 生产 `PREVIEW_TOKEN_SECRET` 必须是 32 到 1024 字符、不包含控制字符且不带首尾空白的签名密钥；如果配置 `PREVIEW_TOKEN_PREVIOUS_SECRET` 做轮换，也必须满足同样边界。

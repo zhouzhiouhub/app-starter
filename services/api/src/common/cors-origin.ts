@@ -106,7 +106,10 @@ function readConfiguredHttpOrigin(
   fallback: string | undefined,
   requireProductionOrigin: boolean,
 ): string | null {
-  const configured = readControlSafeTrimmedValue(value);
+  const configured = readControlSafeTrimmedValue(
+    value,
+    requireProductionOrigin,
+  );
 
   if (configured) {
     return readHttpOrigin(configured, requireProductionOrigin);
@@ -162,12 +165,23 @@ function hasExplicitConfiguredOrigin(value: string | undefined): boolean {
 
 function readControlSafeTrimmedValue(
   value: string | undefined,
+  rejectSurroundingWhitespace: boolean,
 ): string | null {
   if (!value || hasControlCharacter(value)) {
     return null;
   }
 
-  return value.trim() || null;
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  if (rejectSurroundingWhitespace && trimmed !== value) {
+    return null;
+  }
+
+  return trimmed;
 }
 
 function hasControlCharacter(value: string): boolean {

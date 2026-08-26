@@ -51,6 +51,10 @@ function readConfiguredApiBaseUrl(
     return null;
   }
 
+  if (requireProductionUrl && trimmed !== value) {
+    return null;
+  }
+
   if (trimmed.startsWith("/")) {
     return readRelativeApiBaseUrl(trimmed);
   }

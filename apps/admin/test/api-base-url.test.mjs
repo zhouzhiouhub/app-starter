@@ -36,7 +36,7 @@ test("API base URL resolver accepts safe configured bases", () => {
 test("API base URL resolver accepts production-safe bases", () => {
   assert.equal(
     resolveApiBaseUrl({
-      configured: " https://api.brand-platform.com/ ",
+      configured: "https://api.brand-platform.com/",
       isProd: true,
     }),
     "https://api.brand-platform.com/api/v1",
@@ -47,6 +47,25 @@ test("API base URL resolver accepts production-safe bases", () => {
       isProd: true,
     }),
     "/api/v1",
+  );
+});
+
+test("API base URL resolver rejects production bases with surrounding whitespace", () => {
+  assert.equal(
+    resolveApiBaseUrl({
+      configured: " https://api.brand-platform.com/ ",
+      fallbackConfigured: "https://fallback.brand-platform.com/api/v1",
+      isProd: true,
+    }),
+    "https://fallback.brand-platform.com/api/v1",
+  );
+  assert.equal(
+    resolveApiBaseUrl({
+      configured: " /api/v1 ",
+      fallbackConfigured: "https://fallback.brand-platform.com/",
+      isProd: true,
+    }),
+    "https://fallback.brand-platform.com/api/v1",
   );
 });
 
