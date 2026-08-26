@@ -9,7 +9,7 @@ import {
   createSmokeReportSummary,
   refreshSmokeReportSummary,
 } from "./smoke-report-summary.mjs";
-import { redactSmokeReportValue } from "./smoke-secrets.mjs";
+import { createWritableSmokeReportArtifact } from "./smoke-report-artifact.mjs";
 
 export async function writeSmokeReportIfConfigured(input, report) {
   if (!input.reportPath) {
@@ -23,7 +23,7 @@ export async function writeSmokeReportIfConfigured(input, report) {
   await mkdir(dirname(input.reportPath), { recursive: true });
   await writeFile(
     input.reportPath,
-    `${JSON.stringify(redactSmokeReportValue(report), null, 2)}\n`,
+    `${JSON.stringify(createWritableSmokeReportArtifact(report), null, 2)}\n`,
     "utf8",
   );
   console.log(`Smoke report written: ${input.reportPath}`);

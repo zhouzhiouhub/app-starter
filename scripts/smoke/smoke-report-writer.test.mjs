@@ -127,6 +127,62 @@ test("smoke report helper writes JSON when configured", async () => {
   }
 });
 
+test("smoke report writer bounds production readiness artifact fields", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "app-smoke-readiness-"));
+
+  try {
+    const reportPath = join(directory, "report.json");
+    const report = createTestSmokeReport();
+    const longValue = "x".repeat(1200);
+
+    report.productionReadiness = {
+      blockers: [
+        {
+          area: `custom.runtime.${longValue}`,
+          host: `api.${longValue}.brand.com`,
+          issue: `unsafe-value-${longValue}`,
+          message: `Fix token=payload.signature.\n${longValue}`,
+          missingRequired: [
+            `SMOKE_${longValue}`,
+            `https://api.example.com/health?token=payload.signature&next=${longValue}`,
+          ],
+        },
+      ],
+      nextActions: [
+        {
+          action: `Rotate Authorization Bearer abc.def.ghi.\r\n${longValue}`,
+          area: `custom.runtime.${longValue}`,
+        },
+      ],
+      productionReady: false,
+      warnings: [],
+    };
+    completeSmokeReport(report, {
+      pageId: "page-1",
+      storefrontRequestUrl: "https://web.example.com/en/smoke-page",
+      storefrontUrl: "https://web.example.com/en/smoke-page",
+    });
+
+    await writeSmokeReportIfConfigured({ reportPath }, report);
+    const written = await readFile(reportPath, "utf8");
+    const artifact = JSON.parse(written);
+    const blocker = artifact.productionReadiness.blockers[0];
+    const action = artifact.productionReadiness.nextActions[0];
+
+    assert.equal(written.includes("payload.signature"), false);
+    assert.equal(written.includes("abc.def.ghi"), false);
+    assert.doesNotMatch(blocker.message, /[\r\n]/);
+    assert.doesNotMatch(action.action, /[\r\n]/);
+    assert.match(blocker.message, /\.\.\.$/);
+    assert.match(action.action, /\.\.\.$/);
+    assert.equal(blocker.message.length <= 512, true);
+    assert.equal(blocker.area.length <= 160, true);
+    assert.equal(action.action.length <= 512, true);
+  } finally {
+    await rm(directory, { force: true, recursive: true });
+  }
+});
+
 test("smoke report keeps structured failure diagnostics from errors", () => {
   const report = createTestSmokeReport();
   const error = new Error("Revalidation failed with token=payload.signature");
