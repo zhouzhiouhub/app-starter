@@ -542,6 +542,7 @@ POST /api/v1/locales
 GET  /api/v1/products
 GET  /api/v1/orders
 GET  /api/v1/payments
+GET  /api/v1/public/products/:slug
 POST /api/v1/public/cart
 POST /api/v1/public/checkout
 POST /api/v1/webhooks/stripe
@@ -560,6 +561,7 @@ POST /api/v1/webhooks/stripe
 - `GET /api/v1/products`、`GET /api/v1/orders` 和 `GET /api/v1/payments` 是后台 Commerce 只读占位契约，MVP 返回空列表，并在 meta 标记 `commerceEnabled`、默认 `market` / `currency`、`writable=false`、`writeDisabledCode=COMMERCE_DISABLED` 和 `reservedPhase=phase-2`。
 - `GET /api/v1/public/pages` 返回已发布页面摘要，用于前台 sitemap。
 - `GET /api/v1/public/pages/:slug` 只返回已发布版本；未发布或不存在时返回 `NOT_FOUND`。
+- `GET /api/v1/public/products/:slug` 是前台商品详情占位契约，MVP 显式返回 `NOT_FOUND` 和 request id，不回显商品 slug。
 - `GET /api/v1/public/translations/:locale` 按公开店面域名解析 Tenant，返回对应 Tenant 的安全翻译消息包；多语言关闭时非默认 Locale 会回退默认 Locale。
 - `GET /api/v1/public/preview/:token` 返回短期预览 Token 对应的草稿 Schema，并显式设置 `Cache-Control: no-store`。
 - 前台只渲染已发布页面；未发布或不存在的 slug 进入 404 页面。
@@ -601,7 +603,7 @@ pnpm --filter @app-starter/renderer build
 pnpm smoke:publish
 ```
 
-该脚本会登录默认管理员，先验证 `COMMERCE_ENABLED=false`、`MULTI_LOCALE_ENABLED=false` 的关闭态，包括默认 Market / Locale / Translation 预留读接口、Products / Orders / Payments 空列表和 Stripe Webhook 占位路由，再生成媒体上传目标、确认媒体入库并校验 CDN URL，保存草稿、生成 Preview Token、验证公共预览 API 与前台 `/preview?token=`，随后发布一个唯一 slug 的测试页，验证回滚、Preview Token / 页面发布 / 回滚审计日志、公共页面 API、前台 HTML、`robots.txt`、`sitemap.xml` 和 404/noindex 是否读取到同一份已发布内容并满足 SEO 发布门禁。执行账号需要 `audit:read`；设置 `SMOKE_REPORT_PATH=tmp/smoke-report.json` 可输出 JSON 验收报告。生产环境如果要强制验证 R2 Presigned URL、真实 PUT 上传和生产 CDN URL，可设置 `SMOKE_REQUIRE_R2_UPLOAD=true`；如果要把 Admin 静态托管也纳入部署验收，可设置 `SMOKE_REQUIRE_ADMIN_APP=true` 并配置 `ADMIN_URL`。生产 CDN URL 不能继续使用 `cdn.example.com` 或任何 `example` / `test` / `invalid` / 本地 / 私网 / 保留网段域名或 IP；这些会被 smoke 诊断判定为非生产可用。若只想验证发布与前台读取、暂不强制 ISR 回调，可临时设置：
+该脚本会登录默认管理员，先验证 `COMMERCE_ENABLED=false`、`MULTI_LOCALE_ENABLED=false` 的关闭态，包括默认 Market / Locale / Translation 预留读接口、Products / Orders / Payments 空列表、前台商品详情 404 占位和 Stripe Webhook 占位路由，再生成媒体上传目标、确认媒体入库并校验 CDN URL，保存草稿、生成 Preview Token、验证公共预览 API 与前台 `/preview?token=`，随后发布一个唯一 slug 的测试页，验证回滚、Preview Token / 页面发布 / 回滚审计日志、公共页面 API、前台 HTML、`robots.txt`、`sitemap.xml` 和 404/noindex 是否读取到同一份已发布内容并满足 SEO 发布门禁。执行账号需要 `audit:read`；设置 `SMOKE_REPORT_PATH=tmp/smoke-report.json` 可输出 JSON 验收报告。生产环境如果要强制验证 R2 Presigned URL、真实 PUT 上传和生产 CDN URL，可设置 `SMOKE_REQUIRE_R2_UPLOAD=true`；如果要把 Admin 静态托管也纳入部署验收，可设置 `SMOKE_REQUIRE_ADMIN_APP=true` 并配置 `ADMIN_URL`。生产 CDN URL 不能继续使用 `cdn.example.com` 或任何 `example` / `test` / `invalid` / 本地 / 私网 / 保留网段域名或 IP；这些会被 smoke 诊断判定为非生产可用。若只想验证发布与前台读取、暂不强制 ISR 回调，可临时设置：
 
 `API_URL` 必须是 API origin 或精确的 `/api/v1` base，`WEB_URL` 必须是前台 origin，`ADMIN_URL` 必须是后台静态应用 origin；Smoke Runner 会在发起登录、发布或 Admin 静态页请求前拒绝首尾空白、嵌入账号密码、query、fragment、异常路径和非 HTTP(S) 协议，并且登录请求会禁用自动重定向，避免管理员凭据被错误代理或旧域名跳转带走。
 前台页面、robots、sitemap 和 404 smoke 请求会禁用自动重定向；如果生产托管返回 30x，会在报告里记录脱敏后的 `Location` 并提示检查 `WEB_URL`、店面域名路由和托管 rewrite 规则。
@@ -648,7 +650,7 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 - 区块库、区块排序、区块属性面板、Undo / Redo。
 - 媒体库列表、上传目标、外部媒体登记、归档和 `media://` 选择。
 - Localization 默认 Market / Locale / Translation fallback 视图、默认 Locale 翻译保存、分页列表、列表筛选、缺失 key 检查、重复保存提示、写入关闭态、Translation 空态、批量导入/导出预览报告和真实执行占位契约。
-- Commerce Products / Orders / Payments 只读空列表占位，响应 meta 会明确关闭态、默认市场/币种、不可写和 Phase 2 预留。
+- Commerce Products / Orders / Payments 只读空列表占位，响应 meta 会明确关闭态、默认市场/币种、不可写和 Phase 2 预留；前台商品详情路由显式返回 `NOT_FOUND` 占位。
 - Settings 默认站点名称、域名与 Analytics 配置展示页。
 - Publish 按钮，发布结果写入 PostgreSQL。
 - 启动时尝试加载已发布的 `home` 页面。

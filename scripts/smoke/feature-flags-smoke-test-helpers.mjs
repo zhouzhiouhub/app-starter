@@ -102,10 +102,21 @@ export function createFeatureFlagSmokeFetch(options = {}) {
     }
 
     if (
+      url.endsWith("/public/products/smoke-product") ||
       url.endsWith("/public/cart") ||
       url.endsWith("/public/checkout") ||
       url.endsWith("/webhooks/stripe")
     ) {
+      if (url.endsWith("/public/products/smoke-product")) {
+        return jsonResponse(
+          {
+            code: "NOT_FOUND",
+            message: "Public product pages are reserved.",
+          },
+          { status: 404, statusText: "Not Found" },
+        );
+      }
+
       return jsonResponse(
         {
           code: "COMMERCE_DISABLED",

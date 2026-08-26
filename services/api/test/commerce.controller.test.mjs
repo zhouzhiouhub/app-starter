@@ -134,6 +134,38 @@ test("stripe webhook placeholder rejects events without echoing payloads", () =>
   }
 });
 
+test("public product detail stays an explicit MVP placeholder", async () => {
+  const app = await NestFactory.create(PublicCommerceRouteTestModule, {
+    logger: false,
+  });
+  app.setGlobalPrefix("api/v1");
+  await app.listen(0, "127.0.0.1");
+
+  const address = app.getHttpServer().address();
+  const port =
+    typeof address === "object" && address !== null ? address.port : 0;
+
+  try {
+    const response = await fetch(
+      `http://127.0.0.1:${port}/api/v1/public/products/product-secret-token`,
+      {
+        headers: {
+          "x-request-id": "request-public-product-placeholder",
+        },
+      },
+    );
+    const text = await response.text();
+    const body = JSON.parse(text);
+
+    assert.equal(response.status, 404);
+    assert.equal(body.code, apiErrorCodes.NOT_FOUND);
+    assert.equal(body.requestId, "request-public-product-placeholder");
+    assert.equal(text.includes("product-secret-token"), false);
+  } finally {
+    await app.close();
+  }
+});
+
 test("public commerce disabled routes keep the MVP public paths", async () => {
   const app = await NestFactory.create(PublicCommerceRouteTestModule, {
     logger: false,

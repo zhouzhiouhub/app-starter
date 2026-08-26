@@ -3,13 +3,21 @@ import { fetchJson } from "./http-json-smoke.mjs";
 
 const maxDisabledEndpointMessageLength = 240;
 
-export async function assertErrorResponse(url, init, expectedCode) {
+export async function assertErrorResponse(
+  url,
+  init,
+  expectedCode,
+  expectedStatus = 409,
+) {
   const response = await fetchJson(url, init);
   const diagnostic = readDisabledEndpointDiagnostic(response);
 
-  if (diagnostic.status !== 409 || diagnostic.code !== expectedCode) {
+  if (
+    diagnostic.status !== expectedStatus ||
+    diagnostic.code !== expectedCode
+  ) {
     throw new Error(
-      `${url} expected 409 ${expectedCode}, got ${formatDisabledEndpointDiagnostic(
+      `${url} expected ${expectedStatus} ${expectedCode}, got ${formatDisabledEndpointDiagnostic(
         diagnostic,
       )}.`,
     );

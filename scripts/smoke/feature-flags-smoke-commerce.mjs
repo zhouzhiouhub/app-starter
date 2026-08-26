@@ -24,6 +24,14 @@ export async function assertCommerceReadPlaceholders(input, accessToken) {
 
 export async function assertCommerceDisabled(input) {
   await assertErrorResponse(
+    `${input.apiBaseUrl}/public/products/smoke-product`,
+    {
+      method: "GET",
+    },
+    "NOT_FOUND",
+    404,
+  );
+  await assertErrorResponse(
     `${input.apiBaseUrl}/public/cart`,
     {
       body: JSON.stringify({ sku: "smoke-sku", quantity: 1 }),

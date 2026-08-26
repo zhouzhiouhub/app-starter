@@ -136,7 +136,13 @@ test("feature flag smoke checks disabled feature placeholders", async () => {
   const webhookCall = calls.find((call) =>
     call.url.endsWith("/webhooks/stripe"),
   );
+  const productCall = calls.find((call) =>
+    call.url.endsWith("/public/products/smoke-product"),
+  );
 
+  assert.ok(productCall);
+  assert.equal(productCall.init.method, "GET");
+  assert.equal(productCall.init.redirect, "manual");
   assert.ok(webhookCall);
   assert.equal(webhookCall.init.method, "POST");
   assert.equal(webhookCall.init.redirect, "manual");
@@ -258,6 +264,35 @@ test("feature flag smoke rejects commerce placeholder metadata drift", async () 
             "access-token",
           ),
         /Orders placeholder did not expose disabled Commerce metadata\./,
+      );
+    },
+  );
+});
+
+test("feature flag smoke rejects public product placeholder drift", async () => {
+  await withFetch(
+    createFeatureFlagSmokeFetch({
+      overrides: {
+        "/public/products/smoke-product": () =>
+          jsonResponse(
+            {
+              code: "COMMERCE_DISABLED",
+              message: "Product page leaked a commerce disabled response.",
+            },
+            { status: 409, statusText: "Conflict" },
+          ),
+      },
+    }),
+    async () => {
+      await assert.rejects(
+        () =>
+          assertFeatureFlagsDisabled(
+            {
+              apiBaseUrl: "https://api.example.com/api/v1",
+            },
+            "access-token",
+          ),
+        /public\/products\/smoke-product expected 404 NOT_FOUND/,
       );
     },
   );
