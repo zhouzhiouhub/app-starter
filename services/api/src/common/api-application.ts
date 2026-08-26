@@ -10,6 +10,10 @@ import {
   requestIdHeaderMiddleware,
   requestIdHeaderName,
 } from "./request-id.js";
+import {
+  createRouteRawBodyCapture,
+  stripeWebhookRawBodyRoutePath,
+} from "./raw-body.js";
 
 export const apiRequestBodyLimit = "100kb";
 
@@ -31,7 +35,10 @@ export function configureApiApplication(app: NestExpressApplication) {
       isProduction: isProductionCorsEnvironment(process.env),
     }),
   });
-  app.useBodyParser("json", { limit: apiRequestBodyLimit });
+  app.useBodyParser("json", {
+    limit: apiRequestBodyLimit,
+    verify: createRouteRawBodyCapture(stripeWebhookRawBodyRoutePath),
+  });
   app.useBodyParser("urlencoded", {
     extended: true,
     limit: apiRequestBodyLimit,

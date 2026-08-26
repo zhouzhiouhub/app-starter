@@ -4,8 +4,13 @@ import test from "node:test";
 import { Module } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { apiErrorCodes } from "../../../packages/schema/dist/index.js";
+import {
+  createRouteRawBodyCapture,
+  stripeWebhookRawBodyRoutePath,
+} from "../dist/common/raw-body.js";
 import { PublicCommerceController } from "../dist/modules/commerce/public-commerce.controller.js";
 import { StripeWebhookController } from "../dist/modules/commerce/stripe-webhook.controller.js";
+import { readStripeWebhookPlaceholderContract } from "../dist/modules/commerce/stripe-webhook-placeholder.js";
 import { assertApiConflict } from "./api-error-test-assertions.mjs";
 import { withEnv } from "./env-helper.mjs";
 
@@ -56,6 +61,34 @@ test("stripe webhook placeholder rejects events without echoing payloads", () =>
       assert.equal(serialized.includes("stripe-signature"), false);
     });
   }
+});
+
+test("stripe webhook placeholder records raw body and signature shape only", () => {
+  const capture = createRouteRawBodyCapture(stripeWebhookRawBodyRoutePath);
+  const request = {
+    method: "POST",
+    originalUrl: "/api/v1/webhooks/stripe",
+  };
+  const payload = Buffer.from('{"id":"evt_secret_payload"}');
+
+  capture(request, {}, payload);
+
+  const contract = readStripeWebhookPlaceholderContract({
+    request,
+    requestId: "request-webhook-contract",
+    stripeSignature: "t=1,v1=secret_signature",
+  });
+  const serialized = JSON.stringify(contract);
+
+  assert.deepEqual(contract, {
+    rawBodyBytes: payload.byteLength,
+    rawBodyCaptured: true,
+    signatureHasTimestamp: true,
+    signatureHasV1: true,
+    signatureProvided: true,
+  });
+  assert.equal(serialized.includes("evt_secret_payload"), false);
+  assert.equal(serialized.includes("secret_signature"), false);
 });
 
 test("public product detail stays an explicit MVP placeholder", async () => {
