@@ -228,3 +228,73 @@ test("audit smoke requests reject redirects without leaking tokens", async () =>
     );
   });
 });
+
+test("audit smoke missing log errors normalize dynamic identifiers", async () => {
+  const longPageId = `page-1\nAuthorization Bearer a.b.c ${"x".repeat(400)}`;
+  const longAction = `page.published?token=payload.signature${"y".repeat(400)}`;
+
+  await withFetch(async () => jsonResponse({ data: [] }), async () => {
+    await assert.rejects(
+      () =>
+        assertAuditLogs(
+          {
+            apiBaseUrl: "https://api.example.com/api/v1",
+            slug: "smoke-page",
+          },
+          "access-token",
+          longPageId,
+          [longAction],
+        ),
+      (error) => {
+        assert.equal(error.message.includes("payload.signature"), false);
+        assert.equal(error.message.includes("a.b.c"), false);
+        assert.doesNotMatch(error.message, /[\r\n]/);
+        assert.match(error.message, /\.\.\./);
+        assert.equal(error.message.length <= 420, true);
+        return true;
+      },
+    );
+  });
+});
+
+test("audit smoke request errors normalize dynamic labels", async () => {
+  const longAction = `page.published\nAuthorization Bearer a.b.c?token=payload.signature${"x".repeat(400)}`;
+
+  await withFetch(
+    async () =>
+      jsonResponse(
+        { error: { message: "Forbidden" } },
+        { status: 403, statusText: "Forbidden" },
+      ),
+    async () => {
+      await assert.rejects(
+        () =>
+          assertAuditLogs(
+            {
+              apiBaseUrl: "https://api.example.com/api/v1",
+              slug: "smoke-page",
+            },
+            "access-token",
+            "page-1",
+            [longAction],
+          ),
+        (error) => {
+          assert.equal(error.message.includes("payload.signature"), false);
+          assert.equal(error.message.includes("a.b.c"), false);
+          assert.doesNotMatch(error.message, /[\r\n]/);
+          assert.match(error.message, /^page\.published/);
+          assert.equal(error.message.length <= 460, true);
+          return true;
+        },
+      );
+    },
+  );
+});
+
+function jsonResponse(body, init = {}) {
+  return new Response(JSON.stringify(body), {
+    headers: { "Content-Type": "application/json" },
+    status: init.status ?? 200,
+    statusText: init.statusText ?? "OK",
+  });
+}

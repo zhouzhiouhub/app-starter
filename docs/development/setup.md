@@ -248,8 +248,9 @@ empty placeholders, and the Stripe Webhook placeholder, saves a draft, creates
 a Preview Token, checks the public preview API and Web `/preview` route,
 publishes a unique page through the Admin API, publishes a rollback candidate,
 rolls back to the first published version, verifies
-`preview_token.created`, `page.published`, and `page.rolled_back` audit logs,
-checks `GET /api/v1/public/pages/:slug`, then checks the media upload target,
+`preview_token.created`, `page.published`, and `page.rolled_back` audit logs
+with redacted and bounded audit error identifiers, checks
+`GET /api/v1/public/pages/:slug`, then checks the media upload target,
 media confirmation, media list filters, storefront HTML, canonical metadata,
 `robots.txt` host/sitemap directives, `sitemap.xml`, and 404/noindex
 behavior. Set `SMOKE_REQUIRE_R2_UPLOAD=true` in production if the deployment

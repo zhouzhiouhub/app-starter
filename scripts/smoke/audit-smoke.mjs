@@ -2,6 +2,9 @@ import { fetchJson, readHttpError } from "./http-json-smoke.mjs";
 import { redactSmokeSecrets } from "./smoke-secrets.mjs";
 
 const defaultAuditActions = ["preview_token.created", "page.published"];
+const maxAuditErrorIdentifierLength = 120;
+const maxAuditErrorLabelLength = 160;
+const maxAuditErrorMessageLength = 420;
 
 export async function assertAuditLogs(
   input,
@@ -73,8 +76,14 @@ async function assertAuditLog(input, accessToken, options) {
   );
 
   if (!response.ok) {
+    const label = formatAuditErrorText(
+      options.label,
+      "Audit log",
+      maxAuditErrorLabelLength,
+    );
+
     throw new Error(
-      readHttpError(response, `${options.label} request failed.`),
+      readHttpError(response, `${label} request failed.`),
     );
   }
 
@@ -94,11 +103,7 @@ async function assertAuditLog(input, accessToken, options) {
       slug: input.slug,
     });
 
-    throw new Error(
-      `${options.label} was not found for page ${options.pageId} (${formatPageAuditLogDiagnostic(
-        diagnostic,
-      )}).`,
-    );
+    throw new Error(formatMissingAuditLogError(options, diagnostic));
   }
 }
 
@@ -134,6 +139,55 @@ function buildAuditQuery(options) {
     targetId: options.pageId,
     targetType: "page",
   }).toString();
+}
+
+function formatMissingAuditLogError(options, diagnostic) {
+  const label = formatAuditErrorText(
+    options.label,
+    "Audit log",
+    maxAuditErrorLabelLength,
+  );
+  const pageId = formatAuditErrorText(
+    options.pageId,
+    "unknown",
+    maxAuditErrorIdentifierLength,
+  );
+
+  return formatAuditErrorText(
+    `${label} was not found for page ${pageId} (${formatPageAuditLogDiagnostic(
+      diagnostic,
+    )}).`,
+    "Audit log was not found.",
+    maxAuditErrorMessageLength,
+  );
+}
+
+function formatAuditErrorText(value, fallback, maxLength) {
+  const text = typeof value === "string" && value.length > 0 ? value : fallback;
+
+  return truncateText(
+    normalizeAuditErrorText(redactSmokeSecrets(text)),
+    maxLength,
+  );
+}
+
+function normalizeAuditErrorText(value) {
+  return replaceControlCharacters(value).replace(/\s+/g, " ").trim();
+}
+
+function replaceControlCharacters(value) {
+  let result = "";
+
+  for (const character of String(value)) {
+    const code = character.charCodeAt(0);
+    result += code <= 31 || code === 127 ? " " : character;
+  }
+
+  return result;
+}
+
+function truncateText(value, limit) {
+  return value.length > limit ? `${value.slice(0, limit - 3)}...` : value;
 }
 
 function readDataType(value) {
