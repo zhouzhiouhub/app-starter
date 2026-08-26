@@ -10,6 +10,7 @@ import type {
 } from "../types";
 import { DefaultTranslationEntryForm } from "./default-translation-entry-form";
 import { MissingTranslationKeysAlert } from "./missing-translation-keys-alert";
+import { TranslationBulkPreviewPanel } from "./translation-bulk-preview-panel";
 import { TranslationListFilterBar } from "./translation-list-filter-bar";
 
 const marketColumns: ColumnsType<LocalizationMarket> = [
@@ -168,6 +169,10 @@ export function LocalizationStatusPanel(props: {
       <DefaultTranslationEntryForm
         defaultLocale={state.defaultLocale}
         onSaved={props.onTranslationSaved}
+      />
+      <TranslationBulkPreviewPanel
+        filters={props.filters}
+        meta={props.summary.translationsMeta}
       />
       <TranslationListFilterBar
         filters={props.filters}

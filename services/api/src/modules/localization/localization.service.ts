@@ -1,14 +1,16 @@
 import { ConflictException, Injectable } from "@nestjs/common";
-import type { Prisma } from "@prisma/client";
 import { apiErrorCodes, translationEntryMaxCount } from "@app-starter/schema";
 import type { Actor } from "../identity/identity.types.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { toTranslationResponse } from "./localization.mapper.js";
+import { createTranslationWhere } from "./localization.translation-filters.js";
 import { readTranslationCoverage } from "./localization.translation-coverage.js";
 import {
   parseListTranslationsQuery,
   resolveTranslationLocale,
 } from "./localization.validation.js";
+import { previewTranslationExport } from "./use-cases/preview-translation-export.js";
+import { previewTranslationImport } from "./use-cases/preview-translation-import.js";
 import { upsertTranslation } from "./use-cases/upsert-translation.js";
 
 @Injectable()
@@ -79,6 +81,22 @@ export class LocalizationService {
     );
   }
 
+  previewTranslationImport(
+    body: unknown,
+    actor: Actor,
+    requestId = "local-dev",
+  ) {
+    return previewTranslationImport(this.prisma, body, actor, requestId);
+  }
+
+  previewTranslationExport(
+    body: unknown,
+    actor: Actor,
+    requestId = "local-dev",
+  ) {
+    return previewTranslationExport(this.prisma, body, actor, requestId);
+  }
+
   rejectTranslationBulkOperation(
     operation: "export" | "import",
     requestId = "local-dev",
@@ -89,38 +107,4 @@ export class LocalizationService {
       requestId,
     });
   }
-}
-
-function createTranslationWhere(input: {
-  locale: string;
-  namespace?: string;
-  query?: string;
-  tenantId: string;
-}): Prisma.TranslationWhereInput {
-  const filters: Prisma.TranslationWhereInput[] = [];
-
-  if (input.namespace) {
-    filters.push({
-      OR: [
-        { key: input.namespace },
-        { key: { startsWith: `${input.namespace}.` } },
-      ],
-    });
-  }
-
-  if (input.query) {
-    filters.push({
-      OR: [
-        { key: { contains: input.query } },
-        { value: { contains: input.query } },
-        { context: { contains: input.query } },
-      ],
-    });
-  }
-
-  return {
-    ...(filters.length ? { AND: filters } : {}),
-    locale: input.locale,
-    tenantId: input.tenantId,
-  };
 }

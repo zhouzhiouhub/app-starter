@@ -96,6 +96,26 @@ export class LocalizationController {
     );
   }
 
+  @Post("translations/import/preview")
+  @RequireScopes("translation:write")
+  previewTranslationImport(
+    @CurrentUser() actor: Actor,
+    @Body() body: unknown,
+    @CurrentRequestId() requestId = "local-dev",
+  ) {
+    return this.localization.previewTranslationImport(body, actor, requestId);
+  }
+
+  @Post("translations/export/preview")
+  @RequireScopes("translation:read")
+  previewTranslationExport(
+    @CurrentUser() actor: Actor,
+    @Body() body: unknown,
+    @CurrentRequestId() requestId = "local-dev",
+  ) {
+    return this.localization.previewTranslationExport(body, actor, requestId);
+  }
+
   @Post("translations/import")
   @RequireScopes("translation:write")
   createTranslationImport(@CurrentRequestId() requestId = "local-dev") {

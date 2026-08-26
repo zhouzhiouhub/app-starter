@@ -8,6 +8,8 @@ import type {
   LocalizationSummary,
   LocalizationTranslationEntry,
   LocalizationTranslationsMeta,
+  TranslationExportPreviewResult,
+  TranslationImportPreviewResult,
   TranslationListFilters,
   UpsertDefaultTranslationInput,
   UpsertDefaultTranslationResult,
@@ -62,6 +64,59 @@ export async function upsertDefaultTranslationEntry(
     entry: result.data,
     writeMode: result.meta?.writeMode ?? "updated",
   };
+}
+
+export async function previewTranslationImport(
+  body: unknown,
+): Promise<TranslationImportPreviewResult> {
+  const result = await readAdminJson<{
+    data?: TranslationImportPreviewResult;
+  }>(
+    "/translations/import/preview",
+    {
+      body: JSON.stringify(body),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    },
+    "Translation import preview could not be prepared.",
+  );
+
+  if (!result.data?.summary || !Array.isArray(result.data.entries)) {
+    throw new Error("Translation import preview could not be prepared.");
+  }
+
+  return result.data;
+}
+
+export async function previewTranslationExport(
+  filters: TranslationListFilters,
+  locale: string,
+): Promise<TranslationExportPreviewResult> {
+  const result = await readAdminJson<{
+    data?: TranslationExportPreviewResult;
+  }>(
+    "/translations/export/preview",
+    {
+      body: JSON.stringify({
+        locale,
+        namespace: filters.namespace,
+        q: filters.query,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    },
+    "Translation export preview could not be prepared.",
+  );
+
+  if (!result.data) {
+    throw new Error("Translation export preview could not be prepared.");
+  }
+
+  return result.data;
 }
 
 async function getMarkets(): Promise<LocalizationMarket[]> {

@@ -5,7 +5,9 @@ import {
   publicTranslationEntryMaxCount,
   publicTranslationKeyMaxLength,
   publicTranslationMessageMaxLength,
+  translationBulkPreviewMaxEntries,
   translationEntryMaxCount,
+  translationExportPreviewKeyMaxCount,
   translationKeyMaxLength,
   translationKeyPattern,
   translationKeySchema,
@@ -23,6 +25,8 @@ test("public translation limits keep bounded positive values", () => {
   assert.equal(translationEntryMaxCount, 2_000);
   assert.equal(translationListDefaultLimit, 20);
   assert.equal(translationListMaxLimit, 100);
+  assert.equal(translationBulkPreviewMaxEntries, 200);
+  assert.equal(translationExportPreviewKeyMaxCount, 50);
   assert.equal(translationMissingKeyPreviewMaxCount, 50);
   assert.equal(publicTranslationEntryMaxCount, 2_000);
   assert.equal(publicTranslationKeyMaxLength, 256);

@@ -3,6 +3,8 @@ import { z } from "zod";
 export const translationEntryMaxCount = 2_000;
 export const translationListDefaultLimit = 20;
 export const translationListMaxLimit = 100;
+export const translationBulkPreviewMaxEntries = 200;
+export const translationExportPreviewKeyMaxCount = 50;
 export const translationMissingKeyPreviewMaxCount = 50;
 export const publicTranslationEntryMaxCount = translationEntryMaxCount;
 export const publicTranslationKeyMaxLength = 256;

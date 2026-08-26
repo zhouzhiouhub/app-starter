@@ -49,6 +49,48 @@ export interface UpsertDefaultTranslationResult {
   writeMode: "created" | "updated";
 }
 
+export type TranslationImportPreviewAction =
+  "blocked" | "create" | "duplicate" | "error" | "update";
+
+export interface TranslationPreviewIssue {
+  code: string;
+  field?: string;
+  message: string;
+}
+
+export interface TranslationImportPreviewEntry {
+  action: TranslationImportPreviewAction;
+  index: number;
+  issues: TranslationPreviewIssue[];
+  key?: string;
+  locale?: string;
+}
+
+export interface TranslationImportPreviewSummary {
+  blockedCount: number;
+  createCount: number;
+  duplicateCount: number;
+  errorCount: number;
+  totalEntries: number;
+  updateCount: number;
+}
+
+export interface TranslationImportPreviewResult {
+  entries: TranslationImportPreviewEntry[];
+  summary: TranslationImportPreviewSummary;
+}
+
+export interface TranslationExportPreviewResult {
+  exportableEntryCount: number;
+  expectedKeyCount: number;
+  locale: string;
+  missingKeyCount: number;
+  missingKeyPreviewLimit: number;
+  missingKeys: string[];
+  sampleKeyLimit: number;
+  sampleKeys: string[];
+}
+
 export interface TranslationListFilters {
   limit?: number;
   namespace?: string;

@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   getLocalizationSummary,
+  previewTranslationExport,
+  previewTranslationImport,
   upsertDefaultTranslationEntry,
 } from "../src/features/localization/api.ts";
 
@@ -130,6 +132,88 @@ test("localization API forwards translation list filters", async () => {
     requests.find((url) => url.includes("/translations?")),
     "/api/v1/translations?locale=de-DE&page=2&limit=10&namespace=page.home&q=hero",
   );
+});
+
+test("localization API previews translation import and export payloads", async () => {
+  const requests = [];
+  const importPreview = {
+    entries: [
+      {
+        action: "create",
+        index: 0,
+        issues: [],
+        key: "page.home.hero.title",
+        locale: "en-US",
+      },
+    ],
+    summary: {
+      blockedCount: 0,
+      createCount: 1,
+      duplicateCount: 0,
+      errorCount: 0,
+      totalEntries: 1,
+      updateCount: 0,
+    },
+  };
+  const exportPreview = {
+    exportableEntryCount: 1,
+    expectedKeyCount: 1,
+    locale: "en-US",
+    missingKeyCount: 0,
+    missingKeyPreviewLimit: 50,
+    missingKeys: [],
+    sampleKeyLimit: 50,
+    sampleKeys: ["page.home.hero.title"],
+  };
+
+  await withFetch(
+    async (url, init) => {
+      requests.push({ init, url: String(url) });
+
+      if (String(url).endsWith("/translations/import/preview")) {
+        return jsonResponse({ data: importPreview });
+      }
+
+      return jsonResponse({ data: exportPreview });
+    },
+    async () => {
+      assert.deepEqual(
+        await previewTranslationImport({
+          entries: [
+            {
+              key: "page.home.hero.title",
+              value: "Build better storefronts",
+            },
+          ],
+        }),
+        importPreview,
+      );
+      assert.deepEqual(
+        await previewTranslationExport(
+          { namespace: "page.home", query: "hero" },
+          "de-DE",
+        ),
+        exportPreview,
+      );
+    },
+  );
+
+  assert.equal(requests[0].url, "/api/v1/translations/import/preview");
+  assert.equal(requests[0].init.method, "POST");
+  assert.deepEqual(JSON.parse(requests[0].init.body), {
+    entries: [
+      {
+        key: "page.home.hero.title",
+        value: "Build better storefronts",
+      },
+    ],
+  });
+  assert.equal(requests[1].url, "/api/v1/translations/export/preview");
+  assert.deepEqual(JSON.parse(requests[1].init.body), {
+    locale: "de-DE",
+    namespace: "page.home",
+    q: "hero",
+  });
 });
 
 test("localization API rejects malformed translation responses", async () => {
