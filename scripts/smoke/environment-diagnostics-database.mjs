@@ -15,10 +15,15 @@ export function createDatabaseDiagnostics(env = process.env, options = {}) {
   const value = readEnv(env, "DATABASE_URL");
   const configured = Boolean(value);
   const hasControlCharacters = value ? hasControlCharacter(value) : false;
-  const url = value && !hasControlCharacters ? readDatabaseUrl(value) : null;
+  const hasSurroundingWhitespace = value ? value.trim() !== value : false;
+  const url =
+    value && !hasControlCharacters && !hasSurroundingWhitespace
+      ? readDatabaseUrl(value)
+      : null;
   const urlIssue = readDatabaseUrlIssue({
     configured,
     hasControlCharacters,
+    hasSurroundingWhitespace,
     url,
   });
   const migrations = createPrismaMigrationDiagnostics(options);
@@ -66,6 +71,10 @@ function readDatabaseUrlIssue(input) {
     return "control-character";
   }
 
+  if (input.hasSurroundingWhitespace) {
+    return "surrounding-whitespace";
+  }
+
   if (!input.url) {
     return "invalid-url";
   }
@@ -91,7 +100,7 @@ function readDatabaseUrlIssue(input) {
 
 function readDatabaseUrl(value) {
   try {
-    return new URL(value.trim());
+    return new URL(value);
   } catch {
     return null;
   }

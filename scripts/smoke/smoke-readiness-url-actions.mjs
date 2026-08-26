@@ -39,6 +39,8 @@ export function readDatabaseUrlAction(blocker) {
       "Replace local or private DATABASE_URL hosts with a managed production PostgreSQL hostname.",
     placeholderHost:
       "Replace placeholder DATABASE_URL hosts with the real managed PostgreSQL hostname.",
+    surroundingWhitespace:
+      "Remove leading and trailing whitespace from DATABASE_URL before rerunning production smoke.",
     unsupportedProtocol:
       "Use postgres:// or postgresql:// for DATABASE_URL.",
     invalidUrl:
@@ -57,6 +59,8 @@ export function readRedisAction(blocker) {
       "Replace local or private REDIS_URL hosts with a managed production Redis hostname.",
     placeholderHost:
       "Replace placeholder REDIS_URL hosts with the real managed Redis hostname.",
+    surroundingWhitespace:
+      "Remove leading and trailing whitespace from REDIS_URL before rerunning production smoke.",
     unsupportedProtocol:
       "Use redis:// or rediss:// for REDIS_URL; production readiness requires rediss://.",
     insecureProtocol:

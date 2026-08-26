@@ -94,3 +94,21 @@ test("smoke environment diagnostics rejects control characters in Redis URLs", (
     assert.equal(diagnostics.redis.usesTls, false);
   }
 });
+
+test("smoke environment diagnostics rejects surrounding whitespace in Redis URLs", () => {
+  for (const value of [
+    " rediss://cache-user:secret@redis.brand-cache.com:6379/0",
+    "rediss://cache-user:secret@redis.brand-cache.com:6379/0 ",
+  ]) {
+    const diagnostics = createSmokeEnvironmentDiagnostics({
+      REDIS_URL: value,
+    });
+
+    assert.equal(diagnostics.redis.configured, true);
+    assert.equal(diagnostics.redis.host, null);
+    assert.equal(diagnostics.redis.productionReady, false);
+    assert.equal(diagnostics.redis.urlIssue, "surrounding-whitespace");
+    assert.equal(diagnostics.redis.urlSafe, false);
+    assert.equal(diagnostics.redis.usesTls, false);
+  }
+});

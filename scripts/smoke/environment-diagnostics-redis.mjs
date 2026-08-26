@@ -7,10 +7,15 @@ export function createRedisDiagnostics(env = process.env) {
   const value = readEnv(env, "REDIS_URL");
   const configured = Boolean(value);
   const hasControlCharacters = value ? hasControlCharacter(value) : false;
-  const url = value && !hasControlCharacters ? readRedisUrl(value) : null;
+  const hasSurroundingWhitespace = value ? value.trim() !== value : false;
+  const url =
+    value && !hasControlCharacters && !hasSurroundingWhitespace
+      ? readRedisUrl(value)
+      : null;
   const urlIssue = readRedisUrlIssue({
     configured,
     hasControlCharacters,
+    hasSurroundingWhitespace,
     url,
   });
 
@@ -32,6 +37,10 @@ function readRedisUrlIssue(input) {
 
   if (input.hasControlCharacters) {
     return "control-character";
+  }
+
+  if (input.hasSurroundingWhitespace) {
+    return "surrounding-whitespace";
   }
 
   if (!input.url) {
@@ -63,7 +72,7 @@ function readRedisUrlIssue(input) {
 
 function readRedisUrl(value) {
   try {
-    return new URL(value.trim());
+    return new URL(value);
   } catch {
     return null;
   }

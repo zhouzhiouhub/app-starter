@@ -370,8 +370,8 @@ CLARITY_PROJECT_ID=xxxxxxxxxx
 
 线上注意事项：
 
-- 不要把线上 `DATABASE_URL` 写成 `localhost`。
-- 不要把线上 `REDIS_URL` 写成 `localhost` 或未加密的 `redis://`；生产 smoke readiness 期望使用云端 `rediss://` Redis。
+- 不要把线上 `DATABASE_URL` 写成 `localhost`，也不要带首尾空白或控制字符。
+- 不要把线上 `REDIS_URL` 写成 `localhost` 或未加密的 `redis://`，也不要带首尾空白或控制字符；生产 smoke readiness 期望使用云端 `rediss://` Redis。
 - 不要把本机 PostgreSQL 密码用于生产环境。
 - 不要把生产数据库连接串提交到 Git。
 - 生产 `API_URL`、`WEB_URL`、`ADMIN_URL` 不能带首尾空白、账号密码、query、fragment、控制字符或异常路径；`API_URL` 只允许 API origin 或精确的 `/api/v1` base，`WEB_URL` / `ADMIN_URL` 只允许 origin。

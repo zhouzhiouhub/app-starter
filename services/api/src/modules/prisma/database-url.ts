@@ -21,11 +21,17 @@ export function assertDatabaseRuntimeConfig(
     return;
   }
 
-  const value = env.DATABASE_URL?.trim();
+  const value = env.DATABASE_URL;
 
-  if (!value) {
+  if (!value || value.trim().length === 0) {
     throw new DatabaseRuntimeConfigurationError(
       "DATABASE_URL is required in production.",
+    );
+  }
+
+  if (value.trim() !== value) {
+    throw new DatabaseRuntimeConfigurationError(
+      "DATABASE_URL must not include leading or trailing whitespace in production.",
     );
   }
 

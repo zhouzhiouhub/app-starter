@@ -45,6 +45,22 @@ test("database runtime config rejects missing production URLs", () => {
   );
 });
 
+test("database runtime config rejects production URLs with surrounding whitespace", () => {
+  for (const databaseUrl of [
+    " postgresql://user:secret@db.brand-platform.com:5432/app",
+    "postgresql://user:secret@db.brand-platform.com:5432/app ",
+  ]) {
+    assert.throws(
+      () =>
+        assertDatabaseRuntimeConfig({
+          DATABASE_URL: databaseUrl,
+          NODE_ENV: "production",
+        }),
+      /DATABASE_URL must not include leading or trailing whitespace in production/,
+    );
+  }
+});
+
 test("database runtime config treats deployment production markers as production", () => {
   assert.equal(
     isProductionDatabaseEnvironment({ APP_ENV: " production " }),
