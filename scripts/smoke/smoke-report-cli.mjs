@@ -5,6 +5,7 @@ import {
 } from "./smoke-report-diagnostics.mjs";
 
 const maxFailureDetailCount = 3;
+const maxFailureLabelLength = 96;
 const maxFailureMessageLength = 220;
 
 export function printSmokeReportSummary(report, writer = console) {
@@ -72,7 +73,7 @@ function readFailedChecks(value) {
   return Array.isArray(value)
     ? value
         .filter((item) => typeof item === "string" && item.length > 0)
-        .map((item) => formatText(item, "unknown"))
+        .map((item) => formatCliLabel(item, "unknown", maxFailureLabelLength))
     : [];
 }
 
@@ -86,7 +87,11 @@ function readFailedCheckDetails(value) {
     .map((item, index) => ({
       details: readPlainRecord(item.details),
       message: formatText(item.message, "No error message captured."),
-      name: formatText(item.name, `unnamed-check-${index + 1}`),
+      name: formatCliLabel(
+        item.name,
+        `unnamed-check-${index + 1}`,
+        maxFailureLabelLength,
+      ),
     }));
 }
 
@@ -98,7 +103,11 @@ function formatFailureDetailLines(details) {
       redactSmokeSecrets(detail.message),
       maxFailureMessageLength,
     );
-    const diagnosis = readFailureDiagnosis(detail.details);
+    const diagnosis = formatCliLabel(
+      readFailureDiagnosis(detail.details),
+      "",
+      maxFailureLabelLength,
+    );
     const suffix =
       diagnosis && !message.includes(diagnosis)
         ? ` (diagnosis: ${diagnosis})`
@@ -120,6 +129,10 @@ function readCount(value) {
 
 function formatText(value, fallback) {
   return typeof value === "string" && value.length > 0 ? value : fallback;
+}
+
+function formatCliLabel(value, fallback, maxLength) {
+  return truncateText(redactSmokeSecrets(formatText(value, fallback)), maxLength);
 }
 
 function readPlainRecord(value) {

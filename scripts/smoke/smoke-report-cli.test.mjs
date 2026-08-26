@@ -152,6 +152,50 @@ test("smoke report CLI redacts failure details before truncating", () => {
   assert.match(failureLine ?? "", /"clientSecret":"\[redacted\]"/);
 });
 
+test("smoke report CLI caps dynamic failure labels", () => {
+  const longName = `api.health.${"x".repeat(600)}`;
+  const longDiagnosis = `custom-diagnosis-${"y".repeat(
+    600,
+  )}-token=payload.signature`;
+  const lines = formatSmokeReportSummary({
+    schemaVersion: "smoke-report.v3",
+    summary: {
+      blockerCount: 0,
+      checkCount: 1,
+      failedCheckCount: 1,
+      failedCheckDetails: [
+        {
+          details: {
+            revalidation: {
+              diagnosis: longDiagnosis,
+            },
+          },
+          message: "Failed with token=payload.signature",
+          name: longName,
+        },
+      ],
+      failedChecks: [longName],
+      passedCheckCount: 0,
+      productionReady: true,
+      status: "failed",
+      warningCount: 0,
+    },
+  });
+  const failedChecksLine = lines.find((line) =>
+    line.includes("Failed checks:"),
+  );
+  const failureDetailLine = lines.find((line) =>
+    line.startsWith("    - api.health."),
+  );
+
+  assert.equal(lines.join("\n").includes("payload.signature"), false);
+  assert.match(failedChecksLine ?? "", /\.\.\.$/);
+  assert.equal((failedChecksLine?.length ?? 0) <= 120, true);
+  assert.match(failureDetailLine ?? "", /diagnosis: custom-diagnosis-/);
+  assert.match(failureDetailLine ?? "", /\.\.\.\)$/);
+  assert.equal((failureDetailLine?.length ?? 0) <= 360, true);
+});
+
 test("smoke report CLI suggests fixes for media diagnostics", () => {
   const lines = formatSmokeReportSummary({
     schemaVersion: "smoke-report.v3",
