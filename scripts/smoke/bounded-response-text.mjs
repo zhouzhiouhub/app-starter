@@ -1,9 +1,10 @@
-import { redactSmokeSecrets } from "./smoke-secrets.mjs";
 import { cancelResponseBody } from "./http-response-summary.mjs";
+import { formatSmokeText } from "./smoke-text.mjs";
 
 export const maxSmokeResponseBodyBytes = 1_000_000;
 
 const oversizedResponseBodyCode = "SMOKE_RESPONSE_BODY_TOO_LARGE";
+const maxOversizedResponseBodyMessageLength = 520;
 
 export async function readBoundedResponseText(
   response,
@@ -90,8 +91,12 @@ function assertResponseBodySize(byteLength, options) {
 
 function createOversizedResponseBodyError({ label, maxBytes, url }) {
   const error = new Error(
-    redactSmokeSecrets(
+    formatSmokeText(
       `${url} returned a ${label} response body larger than ${maxBytes} bytes.`,
+      {
+        fallback: "Response body is too large.",
+        maxLength: maxOversizedResponseBodyMessageLength,
+      },
     ),
   );
   error.code = oversizedResponseBodyCode;
