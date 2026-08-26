@@ -38,6 +38,27 @@ test("preview smoke helpers summarize oversized web preview attempts", () => {
   );
 });
 
+test("preview smoke helpers bound web preview body snippets", () => {
+  const body = `<html>\u0000<body>token=payload.signature ${"x".repeat(
+    220,
+  )}</body></html>`;
+  const attempt = readWebPreviewAttempt(
+    {
+      ok: false,
+      status: 500,
+      statusText: "Internal Server Error",
+      text: body,
+    },
+    "Draft title",
+  );
+
+  assert.equal(attempt.bodySnippet.length, 160);
+  assert.equal(attempt.bodySnippet.endsWith("..."), true);
+  assert.equal(attempt.bodySnippet.includes("\u0000"), false);
+  assert.equal(attempt.bodySnippet.includes("payload.signature"), false);
+  assert.match(attempt.bodySnippet, /token=\[redacted\]/);
+});
+
 test("web preview smoke reports oversized preview responses", async () => {
   await withFetch(
     async () =>

@@ -3,10 +3,13 @@ import {
   fetchText,
   readErrorMessage,
   readHttpError,
-  redactSmokeSecrets,
 } from "./preview-smoke-http.mjs";
+import { formatSmokeText } from "./smoke-text.mjs";
 import { hasNoIndexRobots, joinUrl } from "./storefront-smoke.mjs";
 import { createStorefrontSmokeRequestInit } from "./storefront-smoke-http.mjs";
+
+const maxWebPreviewReportUrlLength = 240;
+const maxWebPreviewBodySnippetLength = 160;
 
 export async function assertPublicPreview(input, token, title) {
   const response = await fetchJson(
@@ -137,7 +140,7 @@ function createWebPreviewFailure(url, expectedTitle, message, attempt) {
     webPreview: {
       ...(attempt ?? {}),
       expectedTitle,
-      url: redactSmokeSecrets(url),
+      url: formatSmokeText(url, { maxLength: maxWebPreviewReportUrlLength }),
     },
   };
 
@@ -149,9 +152,9 @@ function delay(ms) {
 }
 
 function readBodySnippet(text) {
-  const snippet = redactSmokeSecrets(text)
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 160);
+  const snippet = formatSmokeText(text, {
+    maxLength: maxWebPreviewBodySnippetLength,
+  });
+
   return snippet || null;
 }

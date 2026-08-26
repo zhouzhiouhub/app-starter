@@ -24,6 +24,7 @@ import {
 } from "./smoke-report.mjs";
 import { printSmokeReportSummary } from "./smoke-report-cli.mjs";
 import { readErrorMessage } from "./smoke-error-message.mjs";
+import { formatSmokeText } from "./smoke-text.mjs";
 import {
   assertIndexableStorefrontPage,
   assertNotFoundPage,
@@ -58,6 +59,8 @@ export {
   printHelp,
   readConfig,
 } from "./publish-smoke-config.mjs";
+
+const maxSmokeReportPageIdLength = 160;
 
 export async function runSmokeTest(input) {
   const title = `Smoke Publish ${new Date().toISOString()}`;
@@ -105,7 +108,7 @@ export async function runSmokeTest(input) {
       report,
       "page.preview",
       () => assertPreviewFlow(input, accessToken, schema, title),
-      (result) => ({ pageId: result.id }),
+      (result) => ({ pageId: formatSmokeReportPageId(result.id) }),
     );
     await runSmokeStep(
       report,
@@ -166,7 +169,7 @@ export async function runSmokeTest(input) {
     );
 
     completeSmokeReport(report, {
-      pageId: page.id,
+      pageId: formatSmokeReportPageId(page.id),
       ...storefrontUrls,
     });
     await writeSmokeReportIfConfigured(input, report);
@@ -194,6 +197,13 @@ export function createSmokeStorefrontUrls(input) {
     storefrontRequestUrl: joinUrl(input.webUrl, path),
     storefrontUrl: joinUrl(getExpectedStorefrontOrigin(input), path),
   };
+}
+
+export function formatSmokeReportPageId(pageId) {
+  return formatSmokeText(pageId, {
+    fallback: "unknown",
+    maxLength: maxSmokeReportPageIdLength,
+  });
 }
 
 async function writeFailureReport(input, report) {

@@ -5,6 +5,7 @@ import { join } from "node:path";
 import test from "node:test";
 import {
   createSmokeStorefrontUrls,
+  formatSmokeReportPageId,
   normalizeAdminOrigin,
   normalizeApiBaseUrl,
   normalizeSmokeLocale,
@@ -219,6 +220,20 @@ test("smoke helpers distinguish request and public storefront URLs", () => {
       storefrontUrl: "https://store.brand-platform.com/en/smoke-page",
     },
   );
+});
+
+test("smoke helpers bound page IDs before reporting", () => {
+  const pageId = `page-1\nAuthorization Bearer header.payload.signature token=payload.signature ${"x".repeat(
+    220,
+  )}`;
+  const reported = formatSmokeReportPageId(pageId);
+
+  assert.equal(reported.length, 160);
+  assert.equal(reported.endsWith("..."), true);
+  assert.equal(reported.includes("\n"), false);
+  assert.equal(reported.includes("payload.signature"), false);
+  assert.match(reported, /Bearer \[redacted\]/);
+  assert.match(reported, /token=\[redacted\]/);
 });
 
 test("failed publish smoke reports include storefront URLs", async () => {
