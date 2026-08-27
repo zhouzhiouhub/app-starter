@@ -53,10 +53,19 @@ export function useTranslationBulkPreview(input: {
   const missingKeyDraftState = useMemo(
     () =>
       createMissingTranslationImportDraftState({
+        filters: {
+          namespace: input.filters.namespace,
+          query: input.filters.query,
+        },
         keys: input.missingKeys ?? [],
         locale: input.meta.locale,
       }),
-    [input.meta.locale, input.missingKeys],
+    [
+      input.filters.namespace,
+      input.filters.query,
+      input.meta.locale,
+      input.missingKeys,
+    ],
   );
   const repairConfirmation = useTranslationBulkRepairConfirmation({
     locale: input.meta.locale,

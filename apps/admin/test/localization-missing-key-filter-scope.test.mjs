@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  formatMissingTranslationKeyEmptyActionMessage,
   formatMissingTranslationKeyFilterRestoreMessage,
   formatMissingTranslationKeyFilterScopeMessage,
+  hasMissingTranslationKeyFilters,
 } from "../src/features/localization/missing-translation-key-filter-scope.ts";
 
 test("missing translation key filter scope message explains active filters", () => {
@@ -19,6 +21,19 @@ test("missing translation key filter scope message stays hidden without filters"
   assert.equal(formatMissingTranslationKeyFilterScopeMessage({}), null);
 });
 
+test("missing translation key empty action message follows filter scope", () => {
+  assert.equal(
+    formatMissingTranslationKeyEmptyActionMessage({
+      namespace: "page.home",
+    }),
+    "Filtered missing key queue is complete. Clear filters to continue with the wider repair queue, or refresh missing keys to confirm server coverage.",
+  );
+  assert.equal(
+    formatMissingTranslationKeyEmptyActionMessage({}),
+    "Visible missing key queue is complete. Refresh missing keys to confirm server coverage.",
+  );
+});
+
 test("missing translation key filter restore message explains hidden selected keys", () => {
   assert.equal(
     formatMissingTranslationKeyFilterRestoreMessage({
@@ -29,6 +44,23 @@ test("missing translation key filter restore message explains hidden selected ke
       selectedKey: "page.home.hero.title",
     }),
     "Selected missing key page.home.hero.title is outside the current filtered queue. Clear filters to restore the wider queue before continuing repairs.",
+  );
+});
+
+test("missing translation key filter detection trims empty values", () => {
+  assert.equal(
+    hasMissingTranslationKeyFilters({
+      namespace: " ",
+      query: "hero",
+    }),
+    true,
+  );
+  assert.equal(
+    hasMissingTranslationKeyFilters({
+      namespace: " ",
+      query: "",
+    }),
+    false,
   );
 });
 

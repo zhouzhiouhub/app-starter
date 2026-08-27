@@ -14,6 +14,17 @@ export function formatMissingTranslationKeyFilterScopeMessage(input: {
   return `Missing key pages follow current translation filters (${filters.join(", ")}). Clear filters to review every visible missing key; remembered page is clamped when filters change.`;
 }
 
+export function formatMissingTranslationKeyEmptyActionMessage(input: {
+  namespace?: string;
+  query?: string;
+}): string {
+  if (!hasMissingTranslationKeyFilters(input)) {
+    return "Visible missing key queue is complete. Refresh missing keys to confirm server coverage.";
+  }
+
+  return "Filtered missing key queue is complete. Clear filters to continue with the wider repair queue, or refresh missing keys to confirm server coverage.";
+}
+
 export function formatMissingTranslationKeyFilterRestoreMessage(input: {
   missingKeys: string[];
   namespace?: string;
@@ -23,7 +34,7 @@ export function formatMissingTranslationKeyFilterRestoreMessage(input: {
 }): string | null {
   const selectedKey = input.selectedKey?.trim();
 
-  if (!selectedKey || !hasActiveFilters(input)) {
+  if (!selectedKey || !hasMissingTranslationKeyFilters(input)) {
     return null;
   }
 
@@ -38,6 +49,13 @@ export function formatMissingTranslationKeyFilterRestoreMessage(input: {
   return `Selected missing key ${selectedKey} is outside the current filtered queue. Clear filters to restore the wider queue before continuing repairs.`;
 }
 
+export function hasMissingTranslationKeyFilters(input: {
+  namespace?: string;
+  query?: string;
+}): boolean {
+  return Boolean(input.namespace?.trim() || input.query?.trim());
+}
+
 function formatScopePart(
   label: string,
   value: string | undefined,
@@ -46,11 +64,6 @@ function formatScopePart(
 
   return text ? `${label}=${text}` : null;
 }
-
-function hasActiveFilters(input: { namespace?: string; query?: string }) {
-  return Boolean(input.namespace?.trim() || input.query?.trim());
-}
-
 function readTrimmedSet(values: string[]): Set<string> {
   return new Set(values.map((value) => value.trim()).filter(Boolean));
 }

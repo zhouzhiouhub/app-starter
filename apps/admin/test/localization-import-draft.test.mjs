@@ -14,6 +14,7 @@ import {
   createHistoryTranslationImportDraftState,
   createMissingTranslationImportDraftState,
   createResultTranslationImportDraftState,
+  formatMissingTranslationImportDraftFilterNotice,
 } from "../src/features/localization/translation-import-draft-state.ts";
 import { createTranslationImportResultHistoryEntry } from "../src/features/localization/translation-import-result-history.ts";
 
@@ -137,6 +138,35 @@ test("translation import draft notices explain reset preview state", () => {
   );
 });
 
+test("missing translation import draft notices explain filtered focus", () => {
+  assert.equal(
+    formatMissingTranslationImportDraftFilterNotice({
+      entryCount: 2,
+      filters: {
+        namespace: "page.home",
+        query: "hero",
+      },
+    }),
+    "Draft uses current translation filters (namespace=page.home, q=hero). After import, the translations table will focus the first repaired key and may update filters to that key.",
+  );
+  assert.equal(
+    formatMissingTranslationImportDraftFilterNotice({
+      entryCount: 2,
+      filters: {},
+    }),
+    null,
+  );
+  assert.equal(
+    formatMissingTranslationImportDraftFilterNotice({
+      entryCount: 0,
+      filters: {
+        query: "hero",
+      },
+    }),
+    null,
+  );
+});
+
 test("translation import draft clear messages explain follow-up actions", () => {
   assert.equal(
     formatTranslationImportDraftClearSuggestion({ importedCount: 2 }),
@@ -181,6 +211,17 @@ test("translation import draft states carry text and notices", () => {
         },
       ],
     },
+  );
+  assert.equal(
+    createMissingTranslationImportDraftState({
+      filters: {
+        namespace: "page.home",
+        query: "hero",
+      },
+      keys: ["page.home.hero.title"],
+      locale: "en-US",
+    }).notice,
+    "Draft rebuilt from 1 missing key. Import preview is reset. Draft uses current translation filters (namespace=page.home, q=hero). After import, the translations table will focus the first repaired key and may update filters to that key.",
   );
   assert.equal(
     createResultTranslationImportDraftState(resultEntries).notice,

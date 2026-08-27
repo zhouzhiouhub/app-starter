@@ -1,15 +1,15 @@
 import {
-  ArrowLeftOutlined,
-  ArrowRightOutlined,
   EditOutlined,
-  PlayCircleOutlined,
+  FilterOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
 import { Alert, Button, Pagination, Space, Tag, Typography } from "antd";
 import { useEffect, useState } from "react";
 import {
+  formatMissingTranslationKeyEmptyActionMessage,
   formatMissingTranslationKeyFilterRestoreMessage,
   formatMissingTranslationKeyFilterScopeMessage,
+  hasMissingTranslationKeyFilters,
 } from "../missing-translation-key-filter-scope";
 import {
   readBrowserMissingTranslationKeyPage,
@@ -20,6 +20,7 @@ import {
 import { readMissingTranslationKeyQueueState } from "../missing-translation-key-queue";
 import { groupMissingTranslationKeys } from "../missing-translation-key-groups";
 import type { LocalizationTranslationsMeta } from "../types";
+import { MissingTranslationKeyQueueControls } from "./missing-translation-key-queue-controls";
 
 const missingTranslationKeyPageSize = 10;
 
@@ -27,6 +28,7 @@ export function MissingTranslationKeysAlert(props: {
   isRefreshing?: boolean;
   isSelectingKey?: boolean;
   meta: LocalizationTranslationsMeta;
+  onClearFilters?: () => void;
   onRefreshMissingKeys?: () => Promise<void> | void;
   onSelectKey?: (key: string) => void;
   resolvedKeys?: string[];
@@ -45,6 +47,14 @@ export function MissingTranslationKeysAlert(props: {
     namespace: props.meta.namespace,
     query: props.meta.query,
   });
+  const hasActiveFilters = hasMissingTranslationKeyFilters({
+    namespace: props.meta.namespace,
+    query: props.meta.query,
+  });
+  const emptyActionMessage = formatMissingTranslationKeyEmptyActionMessage({
+    namespace: props.meta.namespace,
+    query: props.meta.query,
+  });
   const filterRestoreMessage = formatMissingTranslationKeyFilterRestoreMessage({
     missingKeys: props.meta.missingKeys,
     namespace: props.meta.namespace,
@@ -59,6 +69,7 @@ export function MissingTranslationKeysAlert(props: {
   });
   const groups = groupMissingTranslationKeys(pageState.keys);
   const isVisibleQueueComplete = queue.totalCount === 0;
+  const canClearFilters = hasActiveFilters && Boolean(props.onClearFilters);
   const suffix =
     props.meta.missingKeyCount > props.meta.missingKeyPreviewLimit
       ? ` Showing first ${props.meta.missingKeyPreviewLimit}.`
@@ -107,46 +118,29 @@ export function MissingTranslationKeysAlert(props: {
     <Alert
       description={
         <Space direction="vertical" size={6}>
-          {props.onSelectKey && queue.currentKey ? (
-            <Space size={6} wrap>
-              <Typography.Text type="secondary">
-                Queue{" "}
-                {queue.currentIndex >= 0
-                  ? `${queue.currentIndex + 1}/${queue.totalCount}`
-                  : `0/${queue.totalCount}`}
-              </Typography.Text>
-              <Button
-                disabled={props.isSelectingKey}
-                icon={<PlayCircleOutlined />}
-                onClick={() => selectQueuedKey(queue.currentKey)}
-                size="small"
-              >
-                {props.selectedKey === queue.currentKey ? "Current" : "Start"}
-              </Button>
-              <Button
-                disabled={props.isSelectingKey || !queue.previousKey}
-                icon={<ArrowLeftOutlined />}
-                onClick={() => selectQueuedKey(queue.previousKey)}
-                size="small"
-              >
-                Previous
-              </Button>
-              <Button
-                disabled={props.isSelectingKey || !queue.nextKey}
-                icon={<ArrowRightOutlined />}
-                onClick={() => selectQueuedKey(queue.nextKey)}
-                size="small"
-              >
-                Next
-              </Button>
-            </Space>
+          {props.onSelectKey ? (
+            <MissingTranslationKeyQueueControls
+              isSelectingKey={props.isSelectingKey}
+              onSelectKey={selectQueuedKey}
+              queue={queue}
+              selectedKey={props.selectedKey}
+            />
           ) : null}
           {isVisibleQueueComplete ? (
             <Space size={8} wrap>
               <Typography.Text type="secondary">
-                Visible missing key queue is complete. Refresh missing keys to
-                confirm server coverage.
+                {emptyActionMessage}
               </Typography.Text>
+              {canClearFilters ? (
+                <Button
+                  icon={<FilterOutlined />}
+                  loading={props.isSelectingKey}
+                  onClick={() => props.onClearFilters?.()}
+                  size="small"
+                >
+                  Clear filters
+                </Button>
+              ) : null}
               {props.onRefreshMissingKeys ? (
                 <Button
                   icon={<ReloadOutlined />}
@@ -171,9 +165,21 @@ export function MissingTranslationKeysAlert(props: {
             </Typography.Text>
           ) : null}
           {filterRestoreMessage ? (
-            <Typography.Text type="warning">
-              {filterRestoreMessage}
-            </Typography.Text>
+            <Space size={8} wrap>
+              <Typography.Text type="warning">
+                {filterRestoreMessage}
+              </Typography.Text>
+              {canClearFilters ? (
+                <Button
+                  icon={<FilterOutlined />}
+                  loading={props.isSelectingKey}
+                  onClick={() => props.onClearFilters?.()}
+                  size="small"
+                >
+                  Clear filters
+                </Button>
+              ) : null}
+            </Space>
           ) : null}
           {groups.map((group) => (
             <Space align="start" key={group.namespace} size={8}>

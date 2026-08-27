@@ -45,6 +45,16 @@ export function clearTranslationImportResultHistory(): TranslationImportResultHi
   return [];
 }
 
+export function formatTranslationImportHistoryClearConfirmation(input: {
+  historyCount: number;
+}): string | null {
+  if (input.historyCount <= 0) {
+    return null;
+  }
+
+  return `Clear ${input.historyCount} recent import ${input.historyCount === 1 ? "result" : "results"}? Saved translations stay unchanged; only local replay and draft history is removed.`;
+}
+
 export function filterTranslationImportResultHistoryEntries(
   entries: TranslationImportResultHistoryEntry[],
   filter: TranslationImportResultHistoryFilter,

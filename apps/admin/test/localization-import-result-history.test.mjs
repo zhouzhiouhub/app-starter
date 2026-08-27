@@ -10,6 +10,7 @@ import {
   formatTranslationBulkRepairServerConfirmationMessage,
   formatTranslationBulkRepairCompletionMessage,
   formatTranslationBulkRetryError,
+  formatTranslationImportHistoryClearConfirmation,
   formatTranslationImportHistoryFilterEmptyMessage,
   formatTranslationImportHistoryDraftMessage,
   formatTranslationImportHistoryReplayCleanupSuggestion,
@@ -81,6 +82,21 @@ test("translation import result history replaces matching ids", () => {
 
 test("translation import result history can be cleared", () => {
   assert.deepEqual(clearTranslationImportResultHistory(), []);
+});
+
+test("translation import result history clear confirmation explains local scope", () => {
+  assert.equal(
+    formatTranslationImportHistoryClearConfirmation({ historyCount: 2 }),
+    "Clear 2 recent import results? Saved translations stay unchanged; only local replay and draft history is removed.",
+  );
+  assert.equal(
+    formatTranslationImportHistoryClearConfirmation({ historyCount: 1 }),
+    "Clear 1 recent import result? Saved translations stay unchanged; only local replay and draft history is removed.",
+  );
+  assert.equal(
+    formatTranslationImportHistoryClearConfirmation({ historyCount: 0 }),
+    null,
+  );
 });
 
 test("translation import result history filters entries by details", () => {

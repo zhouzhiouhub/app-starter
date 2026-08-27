@@ -3,10 +3,19 @@ import {
   EyeOutlined,
   FileAddOutlined,
 } from "@ant-design/icons";
-import { Alert, Button, Segmented, Space, Table, Typography } from "antd";
+import {
+  Alert,
+  Button,
+  Popconfirm,
+  Segmented,
+  Space,
+  Table,
+  Typography,
+} from "antd";
 import { useMemo, useState } from "react";
 import {
   filterTranslationImportResultHistoryEntries,
+  formatTranslationImportHistoryClearConfirmation,
   formatTranslationImportHistoryFilterEmptyMessage,
   readTranslationImportResultHistoryFilterOptions,
   type TranslationImportResultHistoryEntry,
@@ -39,6 +48,9 @@ export function TranslationImportResultHistoryView(props: {
     filter,
     totalCount: props.entries.length,
   });
+  const clearConfirmation = formatTranslationImportHistoryClearConfirmation({
+    historyCount: props.entries.length,
+  });
 
   if (props.entries.length === 0) {
     return null;
@@ -50,14 +62,18 @@ export function TranslationImportResultHistoryView(props: {
         <Typography.Title level={5} style={{ margin: 0 }}>
           Recent import results
         </Typography.Title>
-        {props.onClear ? (
-          <Button
-            icon={<DeleteOutlined />}
-            onClick={props.onClear}
-            size="small"
+        {props.onClear && clearConfirmation ? (
+          <Popconfirm
+            cancelText="Keep history"
+            okText="Clear"
+            onConfirm={props.onClear}
+            title="Clear recent import history?"
+            description={clearConfirmation}
           >
-            Clear history
-          </Button>
+            <Button icon={<DeleteOutlined />} size="small">
+              Clear history
+            </Button>
+          </Popconfirm>
         ) : null}
       </Space>
       <Segmented

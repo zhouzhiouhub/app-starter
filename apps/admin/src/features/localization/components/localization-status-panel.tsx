@@ -118,6 +118,13 @@ export function LocalizationStatusPanel(props: {
     );
   }
 
+  function clearTranslationFilters() {
+    props.onFiltersChange({
+      limit: props.filters.limit,
+      page: 1,
+    });
+  }
+
   async function handleImportResultFocus(key: string) {
     const focusFilters = readTranslationImportFocusFiltersForKey(
       key,
@@ -195,6 +202,9 @@ export function LocalizationStatusPanel(props: {
         isRefreshing={props.isFiltering}
         isSelectingKey={props.isFiltering}
         meta={props.summary.translationsMeta}
+        onClearFilters={
+          hasTranslationFilters ? clearTranslationFilters : undefined
+        }
         onRefreshMissingKeys={props.onRefreshMissingKeys}
         onSelectKey={selectMissingTranslationKey}
         resolvedKeys={recentlyResolvedKeys}
