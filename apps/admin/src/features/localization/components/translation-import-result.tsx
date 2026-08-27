@@ -1,14 +1,27 @@
-import { Descriptions, Space, Table, Tag, Typography } from "antd";
+import { Alert, Descriptions, Space, Table, Tag, Typography } from "antd";
 import type {
   TranslationImportResult,
   TranslationImportResultEntry,
 } from "../types";
 
 export function TranslationImportResultView(props: {
+  focusedKey?: string | null;
   result: TranslationImportResult;
 }) {
   return (
     <Space direction="vertical" size={12} style={{ width: "100%" }}>
+      {props.focusedKey ? (
+        <Alert
+          message={
+            <span>
+              Imported rows saved. The translations table is focused on{" "}
+              <Typography.Text code>{props.focusedKey}</Typography.Text>.
+            </span>
+          }
+          showIcon
+          type="success"
+        />
+      ) : null}
       <Descriptions bordered column={{ md: 4, xs: 1 }} size="small">
         <Descriptions.Item label="Imported">
           {props.result.summary.importedCount}

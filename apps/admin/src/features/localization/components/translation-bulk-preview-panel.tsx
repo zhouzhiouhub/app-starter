@@ -19,6 +19,7 @@ import {
 } from "../translation-import-draft";
 import { readTranslationImportErrorDetails } from "../translation-import-error-details";
 import { downloadTranslationExport } from "../translation-export-file";
+import { readTranslationImportFocusKey } from "../translation-import-focus";
 import type {
   LocalizationTranslationsMeta,
   TranslationExportPreviewResult,
@@ -49,7 +50,7 @@ export function TranslationBulkPreviewPanel(props: {
   filters: TranslationListFilters;
   meta: LocalizationTranslationsMeta;
   missingKeys?: string[];
-  onImported?: () => Promise<void> | void;
+  onImported?: (result: TranslationImportResult) => Promise<void> | void;
 }) {
   const [importText, setImportText] = useState(defaultImportPreviewText);
   const [importPreview, setImportPreview] =
@@ -106,7 +107,7 @@ export function TranslationBulkPreviewPanel(props: {
     try {
       const result = await importTranslations(JSON.parse(importText));
       setImportResult(result);
-      await props.onImported?.();
+      await props.onImported?.(result);
     } catch (caught) {
       setError(formatPreviewError(caught));
       setImportErrorDetails(readTranslationImportErrorDetails(caught));
@@ -209,7 +210,10 @@ export function TranslationBulkPreviewPanel(props: {
         <TranslationImportErrorDetailsView details={importErrorDetails} />
       ) : null}
       {importResult ? (
-        <TranslationImportResultView result={importResult} />
+        <TranslationImportResultView
+          focusedKey={readTranslationImportFocusKey(importResult)}
+          result={importResult}
+        />
       ) : null}
       {importPreview ? (
         <TranslationImportPreviewResultView preview={importPreview} />

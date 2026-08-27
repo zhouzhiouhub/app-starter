@@ -1,4 +1,4 @@
-import { Descriptions, Space, Tag, Typography } from "antd";
+import { Alert, Descriptions, Space, Tag, Typography } from "antd";
 import { useMemo } from "react";
 import { translationBulkPreviewMaxEntries } from "@app-starter/schema";
 import {
@@ -33,6 +33,14 @@ export function TranslationImportTemplateGuide(props: {
           <Typography.Text code>{props.defaultLocale}</Typography.Text>.
         </Typography.Text>
       </Space>
+      {summary.nonDefaultLocaleCount > 0 ? (
+        <Alert
+          description={`${summary.nonDefaultLocaleCount} row(s) target a non-default Locale. MVP import keeps MULTI_LOCALE_ENABLED=false, so those rows will return MULTI_LOCALE_DISABLED.`}
+          message="Non-default Locale rows are blocked"
+          showIcon
+          type="warning"
+        />
+      ) : null}
       <Descriptions bordered column={{ md: 4, xs: 1 }} size="small">
         <Descriptions.Item label="Rows">{summary.entryCount}</Descriptions.Item>
         <Descriptions.Item label="Missing draft">
