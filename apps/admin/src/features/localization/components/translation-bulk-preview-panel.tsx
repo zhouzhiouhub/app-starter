@@ -19,7 +19,7 @@ import {
 } from "../translation-import-draft";
 import { readTranslationImportErrorDetails } from "../translation-import-error-details";
 import { downloadTranslationExport } from "../translation-export-file";
-import { readTranslationImportFocusKey } from "../translation-import-focus";
+import { readTranslationImportFocusedResultKey } from "../translation-import-focus";
 import type {
   LocalizationTranslationsMeta,
   TranslationExportPreviewResult,
@@ -47,9 +47,11 @@ const defaultImportPreviewText = JSON.stringify(
 );
 
 export function TranslationBulkPreviewPanel(props: {
+  focusedKey?: string | null;
   filters: TranslationListFilters;
   meta: LocalizationTranslationsMeta;
   missingKeys?: string[];
+  onFocusKey?: (key: string) => Promise<void> | void;
   onImported?: (result: TranslationImportResult) => Promise<void> | void;
 }) {
   const [importText, setImportText] = useState(defaultImportPreviewText);
@@ -211,7 +213,11 @@ export function TranslationBulkPreviewPanel(props: {
       ) : null}
       {importResult ? (
         <TranslationImportResultView
-          focusedKey={readTranslationImportFocusKey(importResult)}
+          focusedKey={readTranslationImportFocusedResultKey(
+            importResult,
+            props.focusedKey,
+          )}
+          onFocusKey={props.onFocusKey}
           result={importResult}
         />
       ) : null}

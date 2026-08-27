@@ -1,7 +1,10 @@
 import { Alert, Descriptions, Space, Table, Tag, Typography } from "antd";
 import { useState } from "react";
 import { readLocalizationSummaryState } from "../localization-summary-state";
-import { readTranslationImportFocusFilters } from "../translation-import-focus";
+import {
+  readTranslationImportFocusFilters,
+  readTranslationImportFocusFiltersForKey,
+} from "../translation-import-focus";
 import {
   areTranslationListFiltersEqual,
   readTranslationKeyRepairFilters,
@@ -73,6 +76,23 @@ export function LocalizationStatusPanel(props: {
     }
 
     await props.onTranslationSaved?.();
+  }
+
+  async function handleImportResultFocus(key: string) {
+    const focusFilters = readTranslationImportFocusFiltersForKey(
+      key,
+      props.filters,
+    );
+
+    if (
+      focusFilters &&
+      !areTranslationListFiltersEqual(props.filters, focusFilters)
+    ) {
+      props.onFiltersChange(focusFilters);
+      return;
+    }
+
+    await props.onTranslationsImported?.();
   }
 
   async function handleTranslationsImported(result: TranslationImportResult) {
@@ -177,9 +197,11 @@ export function LocalizationStatusPanel(props: {
         onSaved={handleTranslationSaved}
       />
       <TranslationBulkPreviewPanel
+        focusedKey={props.filters.query}
         filters={props.filters}
         missingKeys={props.summary.translationsMeta.missingKeys}
         meta={props.summary.translationsMeta}
+        onFocusKey={handleImportResultFocus}
         onImported={handleTranslationsImported}
       />
       <TranslationListFilterBar

@@ -1,4 +1,20 @@
-import { Alert, Descriptions, Space, Table, Tag, Typography } from "antd";
+import { SearchOutlined } from "@ant-design/icons";
+import {
+  Alert,
+  Button,
+  Descriptions,
+  Segmented,
+  Space,
+  Table,
+  Tag,
+  Typography,
+} from "antd";
+import { useMemo, useState } from "react";
+import {
+  filterTranslationImportResultEntries,
+  readTranslationImportResultActionOptions,
+  type TranslationImportResultActionFilter,
+} from "../translation-import-result-filter";
 import type {
   TranslationImportResult,
   TranslationImportResultEntry,
@@ -6,8 +22,24 @@ import type {
 
 export function TranslationImportResultView(props: {
   focusedKey?: string | null;
+  onFocusKey?: (key: string) => Promise<void> | void;
   result: TranslationImportResult;
 }) {
+  const [actionFilter, setActionFilter] =
+    useState<TranslationImportResultActionFilter>("all");
+  const filteredEntries = useMemo(
+    () => filterTranslationImportResultEntries(props.result, actionFilter),
+    [actionFilter, props.result],
+  );
+  const actionOptions = useMemo(
+    () =>
+      readTranslationImportResultActionOptions(props.result).map((option) => ({
+        label: `${option.label} ${option.count}`,
+        value: option.value,
+      })),
+    [props.result],
+  );
+
   return (
     <Space direction="vertical" size={12} style={{ width: "100%" }}>
       {props.focusedKey ? (
@@ -36,6 +68,13 @@ export function TranslationImportResultView(props: {
           {props.result.summary.totalEntries}
         </Descriptions.Item>
       </Descriptions>
+      <Segmented
+        onChange={(value) =>
+          setActionFilter(value as TranslationImportResultActionFilter)
+        }
+        options={actionOptions}
+        value={actionFilter}
+      />
       <Table<TranslationImportResultEntry>
         columns={[
           { dataIndex: "index", key: "index", title: "#", width: 72 },
@@ -66,13 +105,30 @@ export function TranslationImportResultView(props: {
             width: 120,
           },
           {
+            key: "focus",
+            render: (_, record) =>
+              props.onFocusKey ? (
+                <Button
+                  disabled={props.focusedKey === record.key}
+                  icon={<SearchOutlined />}
+                  onClick={() => void props.onFocusKey?.(record.key)}
+                  size="small"
+                >
+                  {props.focusedKey === record.key ? "Focused" : "Focus"}
+                </Button>
+              ) : null,
+            title: "Focus",
+            width: 120,
+          },
+          {
             dataIndex: "value",
             ellipsis: true,
             key: "value",
             title: "Value",
           },
         ]}
-        dataSource={props.result.entries}
+        dataSource={filteredEntries}
+        locale={{ emptyText: "No imported rows match the current action." }}
         pagination={false}
         rowKey={(record) => `${record.index}:${record.locale}:${record.key}`}
         size="small"

@@ -1,5 +1,11 @@
-import { EditOutlined } from "@ant-design/icons";
+import {
+  ArrowLeftOutlined,
+  ArrowRightOutlined,
+  EditOutlined,
+  PlayCircleOutlined,
+} from "@ant-design/icons";
 import { Alert, Button, Space, Tag, Typography } from "antd";
+import { readMissingTranslationKeyQueueState } from "../missing-translation-key-queue";
 import { groupMissingTranslationKeys } from "../missing-translation-key-groups";
 import type { LocalizationTranslationsMeta } from "../types";
 
@@ -14,15 +20,59 @@ export function MissingTranslationKeysAlert(props: {
   }
 
   const groups = groupMissingTranslationKeys(props.meta.missingKeys);
+  const queue = readMissingTranslationKeyQueueState(
+    props.meta.missingKeys,
+    props.selectedKey,
+  );
   const suffix =
     props.meta.missingKeyCount > props.meta.missingKeyPreviewLimit
       ? ` Showing first ${props.meta.missingKeyPreviewLimit}.`
       : "";
 
+  function selectQueuedKey(key: string | null) {
+    if (key) {
+      props.onSelectKey?.(key);
+    }
+  }
+
   return (
     <Alert
       description={
         <Space direction="vertical" size={6}>
+          {props.onSelectKey && queue.currentKey ? (
+            <Space size={6} wrap>
+              <Typography.Text type="secondary">
+                Queue{" "}
+                {queue.currentIndex >= 0
+                  ? `${queue.currentIndex + 1}/${queue.totalCount}`
+                  : `0/${queue.totalCount}`}
+              </Typography.Text>
+              <Button
+                disabled={props.isSelectingKey}
+                icon={<PlayCircleOutlined />}
+                onClick={() => selectQueuedKey(queue.currentKey)}
+                size="small"
+              >
+                {props.selectedKey === queue.currentKey ? "Current" : "Start"}
+              </Button>
+              <Button
+                disabled={props.isSelectingKey || !queue.previousKey}
+                icon={<ArrowLeftOutlined />}
+                onClick={() => selectQueuedKey(queue.previousKey)}
+                size="small"
+              >
+                Previous
+              </Button>
+              <Button
+                disabled={props.isSelectingKey || !queue.nextKey}
+                icon={<ArrowRightOutlined />}
+                onClick={() => selectQueuedKey(queue.nextKey)}
+                size="small"
+              >
+                Next
+              </Button>
+            </Space>
+          ) : null}
           {groups.map((group) => (
             <Space align="start" key={group.namespace} size={8}>
               <Tag>{group.namespace}</Tag>

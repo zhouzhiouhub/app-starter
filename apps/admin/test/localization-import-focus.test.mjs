@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  readTranslationImportFocusedResultKey,
   readTranslationImportFocusFilters,
+  readTranslationImportFocusFiltersForKey,
   readTranslationImportFocusKey,
 } from "../src/features/localization/translation-import-focus.ts";
 
@@ -49,6 +51,17 @@ test("translation import focus reads the first imported key", () => {
   );
 });
 
+test("translation import focus keeps a selected imported result key", () => {
+  assert.equal(
+    readTranslationImportFocusedResultKey(importResult, "section.faq.answer"),
+    "section.faq.answer",
+  );
+  assert.equal(
+    readTranslationImportFocusedResultKey(importResult, "page.missing.title"),
+    "page.home.hero.title",
+  );
+});
+
 test("translation import focus builds repair filters for the imported key", () => {
   assert.deepEqual(
     readTranslationImportFocusFilters(importResult, {
@@ -62,6 +75,20 @@ test("translation import focus builds repair filters for the imported key", () =
       namespace: "page.home",
       page: 1,
       query: "page.home.hero.title",
+    },
+  );
+});
+
+test("translation import focus builds repair filters for a selected result row", () => {
+  assert.deepEqual(
+    readTranslationImportFocusFiltersForKey("section.faq.answer", {
+      limit: 20,
+    }),
+    {
+      limit: 20,
+      namespace: "section.faq",
+      page: 1,
+      query: "section.faq.answer",
     },
   );
 });
