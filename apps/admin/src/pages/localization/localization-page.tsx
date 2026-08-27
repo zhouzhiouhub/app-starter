@@ -76,6 +76,7 @@ export function LocalizationPage() {
             isFiltering={isLoading}
             onFiltersChange={updateTranslationFilters}
             onPageChange={updateTranslationPage}
+            onRefreshMissingKeys={load}
             onTranslationsImported={load}
             onTranslationSaved={load}
             summary={summary}

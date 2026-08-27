@@ -4,6 +4,7 @@ import {
   mergeResolvedTranslationKeys,
   readMissingTranslationKeyAdvanceTarget,
   readMissingTranslationKeyQueueState,
+  syncResolvedTranslationKeysWithMissingKeys,
 } from "../src/features/localization/missing-translation-key-queue.ts";
 
 test("missing translation key queue starts at the first valid key", () => {
@@ -125,5 +126,20 @@ test("missing translation key queue does not advance unrelated saves", () => {
       resolvedKey: "settings.footer.note",
     }),
     null,
+  );
+});
+
+test("resolved translation keys sync with refreshed server missing keys", () => {
+  assert.deepEqual(
+    syncResolvedTranslationKeysWithMissingKeys(
+      [
+        "page.home.hero.title",
+        "section.faq.answer",
+        " Invalid.Key ",
+        "section.faq.answer",
+      ],
+      ["page.home.hero.title"],
+    ),
+    ["section.faq.answer"],
   );
 });

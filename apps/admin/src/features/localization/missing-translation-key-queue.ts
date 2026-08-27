@@ -37,6 +37,17 @@ export function mergeResolvedTranslationKeys(
   return readUniqueValidKeys([...currentKeys, ...nextKeys]);
 }
 
+export function syncResolvedTranslationKeysWithMissingKeys(
+  resolvedKeys: string[],
+  missingKeys: string[],
+): string[] {
+  const serverMissingKeys = new Set(readUniqueValidKeys(missingKeys));
+
+  return readUniqueValidKeys(resolvedKeys).filter(
+    (key) => !serverMissingKeys.has(key),
+  );
+}
+
 export function readMissingTranslationKeyAdvanceTarget(input: {
   keys: string[];
   resolvedKey: string;

@@ -93,6 +93,7 @@ export function TranslationBulkPreviewPanel(props: {
       ) : null}
       <TranslationImportResultHistoryView
         entries={bulkPreview.importResultHistory}
+        onClear={bulkPreview.clearImportResultHistory}
         onSelect={bulkPreview.restoreImportResult}
       />
     </Space>

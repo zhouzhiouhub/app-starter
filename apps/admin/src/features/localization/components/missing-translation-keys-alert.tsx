@@ -3,6 +3,7 @@ import {
   ArrowRightOutlined,
   EditOutlined,
   PlayCircleOutlined,
+  ReloadOutlined,
 } from "@ant-design/icons";
 import { Alert, Button, Space, Tag, Typography } from "antd";
 import { readMissingTranslationKeyQueueState } from "../missing-translation-key-queue";
@@ -10,8 +11,10 @@ import { groupMissingTranslationKeys } from "../missing-translation-key-groups";
 import type { LocalizationTranslationsMeta } from "../types";
 
 export function MissingTranslationKeysAlert(props: {
+  isRefreshing?: boolean;
   isSelectingKey?: boolean;
   meta: LocalizationTranslationsMeta;
+  onRefreshMissingKeys?: () => Promise<void> | void;
   onSelectKey?: (key: string) => void;
   resolvedKeys?: string[];
   selectedKey?: string;
@@ -77,10 +80,22 @@ export function MissingTranslationKeysAlert(props: {
             </Space>
           ) : null}
           {isVisibleQueueComplete ? (
-            <Typography.Text type="secondary">
-              Visible missing key queue is complete. Server coverage will be
-              confirmed on the next refresh.
-            </Typography.Text>
+            <Space size={8} wrap>
+              <Typography.Text type="secondary">
+                Visible missing key queue is complete. Refresh missing keys to
+                confirm server coverage.
+              </Typography.Text>
+              {props.onRefreshMissingKeys ? (
+                <Button
+                  icon={<ReloadOutlined />}
+                  loading={props.isRefreshing}
+                  onClick={() => void props.onRefreshMissingKeys?.()}
+                  size="small"
+                >
+                  Refresh missing keys
+                </Button>
+              ) : null}
+            </Space>
           ) : null}
           {groups.map((group) => (
             <Space align="start" key={group.namespace} size={8}>

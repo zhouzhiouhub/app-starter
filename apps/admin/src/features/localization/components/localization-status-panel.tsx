@@ -1,9 +1,10 @@
 import { Space, Table } from "antd";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { readLocalizationSummaryState } from "../localization-summary-state";
 import {
   mergeResolvedTranslationKeys,
   readMissingTranslationKeyAdvanceTarget,
+  syncResolvedTranslationKeysWithMissingKeys,
 } from "../missing-translation-key-queue";
 import {
   readTranslationImportFocusFilters,
@@ -38,6 +39,7 @@ export function LocalizationStatusPanel(props: {
   isFiltering?: boolean;
   onFiltersChange: (filters: TranslationListFilters) => void;
   onPageChange: (page: number, limit: number) => void;
+  onRefreshMissingKeys?: () => Promise<void> | void;
   onTranslationsImported?: () => Promise<void> | void;
   onTranslationSaved?: () => Promise<void> | void;
   summary: LocalizationSummary;
@@ -53,6 +55,17 @@ export function LocalizationStatusPanel(props: {
   const hasTranslationFilters = Boolean(
     props.filters.namespace || props.filters.query,
   );
+
+  useEffect(() => {
+    setRecentlyResolvedKeys((current) => {
+      const syncedKeys = syncResolvedTranslationKeysWithMissingKeys(
+        current,
+        props.summary.translationsMeta.missingKeys,
+      );
+
+      return areStringListsEqual(current, syncedKeys) ? current : syncedKeys;
+    });
+  }, [props.summary]);
 
   function selectMissingTranslationKey(key: string) {
     setTranslationDraft((current) => ({
@@ -179,8 +192,10 @@ export function LocalizationStatusPanel(props: {
         onChange={props.onFiltersChange}
       />
       <MissingTranslationKeysAlert
+        isRefreshing={props.isFiltering}
         isSelectingKey={props.isFiltering}
         meta={props.summary.translationsMeta}
+        onRefreshMissingKeys={props.onRefreshMissingKeys}
         onSelectKey={selectMissingTranslationKey}
         resolvedKeys={recentlyResolvedKeys}
         selectedKey={translationDraft?.key}
@@ -204,5 +219,12 @@ export function LocalizationStatusPanel(props: {
         size="small"
       />
     </Space>
+  );
+}
+
+function areStringListsEqual(first: string[], second: string[]): boolean {
+  return (
+    first.length === second.length &&
+    first.every((value, index) => value === second[index])
   );
 }

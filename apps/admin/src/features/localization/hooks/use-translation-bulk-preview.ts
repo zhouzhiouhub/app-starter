@@ -17,6 +17,7 @@ import { readTranslationImportErrorDetails } from "../translation-import-error-d
 import { downloadTranslationExport } from "../translation-export-file";
 import {
   addTranslationImportResultHistoryEntry,
+  clearTranslationImportResultHistory,
   createTranslationImportResultHistoryEntry,
   formatTranslationBulkRepairCompletionMessage,
   type TranslationImportResultHistoryEntry,
@@ -191,6 +192,10 @@ export function useTranslationBulkPreview(input: {
     setRepairCompletionNotice(null);
   }
 
+  function clearImportResultHistory() {
+    setImportResultHistory(clearTranslationImportResultHistory());
+  }
+
   function recordImportResult(result: TranslationImportResult) {
     importSequenceRef.current += 1;
     const entry = createTranslationImportResultHistoryEntry(
@@ -204,6 +209,7 @@ export function useTranslationBulkPreview(input: {
   }
 
   return {
+    clearImportResultHistory,
     draftNotice,
     error,
     exportPreview,

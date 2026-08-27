@@ -28,6 +28,10 @@ export function addTranslationImportResultHistoryEntry(
   );
 }
 
+export function clearTranslationImportResultHistory(): TranslationImportResultHistoryEntry[] {
+  return [];
+}
+
 export function formatTranslationBulkRepairCompletionMessage(input: {
   locale: string;
   missingKeys?: string[];

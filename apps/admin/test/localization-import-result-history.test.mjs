@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   addTranslationImportResultHistoryEntry,
+  clearTranslationImportResultHistory,
   createTranslationImportResultHistoryEntry,
   formatTranslationBulkRepairCompletionMessage,
 } from "../src/features/localization/translation-import-result-history.ts";
@@ -64,6 +65,10 @@ test("translation import result history replaces matching ids", () => {
     ),
     ["page.home.hero.body"],
   );
+});
+
+test("translation import result history can be cleared", () => {
+  assert.deepEqual(clearTranslationImportResultHistory(), []);
 });
 
 test("translation bulk repair completion confirms full visible coverage", () => {
