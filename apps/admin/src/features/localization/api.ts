@@ -11,6 +11,7 @@ import type {
   TranslationExportPreviewResult,
   TranslationExportResult,
   TranslationImportPreviewResult,
+  TranslationImportResult,
   TranslationListFilters,
   UpsertDefaultTranslationInput,
   UpsertDefaultTranslationResult,
@@ -86,6 +87,28 @@ export async function previewTranslationImport(
 
   if (!result.data?.summary || !Array.isArray(result.data.entries)) {
     throw new Error("Translation import preview could not be prepared.");
+  }
+
+  return result.data;
+}
+
+export async function importTranslations(
+  body: unknown,
+): Promise<TranslationImportResult> {
+  const result = await readAdminJson<{
+    data?: TranslationImportResult;
+  }>(
+    "/translations/import",
+    {
+      body: JSON.stringify(body),
+      headers: jsonHeaders(),
+      method: "POST",
+    },
+    "Translation import could not be completed.",
+  );
+
+  if (!result.data?.summary || !Array.isArray(result.data.entries)) {
+    throw new Error("Translation import could not be completed.");
   }
 
   return result.data;

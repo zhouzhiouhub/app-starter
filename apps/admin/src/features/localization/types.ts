@@ -80,6 +80,25 @@ export interface TranslationImportPreviewResult {
   summary: TranslationImportPreviewSummary;
 }
 
+export type TranslationImportResultAction = "create" | "update";
+
+export interface TranslationImportResultEntry extends LocalizationTranslationEntry {
+  action: TranslationImportResultAction;
+  index: number;
+}
+
+export interface TranslationImportResultSummary {
+  createdCount: number;
+  importedCount: number;
+  totalEntries: number;
+  updatedCount: number;
+}
+
+export interface TranslationImportResult {
+  entries: TranslationImportResultEntry[];
+  summary: TranslationImportResultSummary;
+}
+
 export interface TranslationExportPreviewResult {
   exportableEntryCount: number;
   expectedKeyCount: number;

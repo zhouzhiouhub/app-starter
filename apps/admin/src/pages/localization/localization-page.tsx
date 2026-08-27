@@ -60,6 +60,7 @@ export function LocalizationPage() {
             isFiltering={isLoading}
             onFiltersChange={updateTranslationFilters}
             onPageChange={updateTranslationPage}
+            onTranslationsImported={load}
             onTranslationSaved={load}
             summary={summary}
           />

@@ -90,6 +90,7 @@ export function LocalizationStatusPanel(props: {
   isFiltering?: boolean;
   onFiltersChange: (filters: TranslationListFilters) => void;
   onPageChange: (page: number, limit: number) => void;
+  onTranslationsImported?: () => Promise<void> | void;
   onTranslationSaved?: () => Promise<void> | void;
   summary: LocalizationSummary;
 }) {
@@ -173,6 +174,7 @@ export function LocalizationStatusPanel(props: {
       <TranslationBulkPreviewPanel
         filters={props.filters}
         meta={props.summary.translationsMeta}
+        onImported={props.onTranslationsImported}
       />
       <TranslationListFilterBar
         filters={props.filters}

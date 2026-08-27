@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   exportTranslations,
   getLocalizationSummary,
+  importTranslations,
   previewTranslationExport,
   previewTranslationImport,
   upsertDefaultTranslationEntry,
@@ -217,6 +218,60 @@ test("localization API previews translation import and export payloads", async (
   });
 });
 
+test("localization API imports translation payloads with idempotency", async () => {
+  const requests = [];
+  const importResult = {
+    entries: [
+      {
+        action: "create",
+        context: "Homepage hero",
+        index: 0,
+        key: "page.home.hero.title",
+        locale: "en-US",
+        updatedAt: "2026-08-27T00:00:00.000Z",
+        value: "Build better storefronts",
+      },
+    ],
+    summary: {
+      createdCount: 1,
+      importedCount: 1,
+      totalEntries: 1,
+      updatedCount: 0,
+    },
+  };
+  const payload = {
+    entries: [
+      {
+        context: "Homepage hero",
+        key: "page.home.hero.title",
+        value: "Build better storefronts",
+      },
+    ],
+  };
+
+  await withFetch(
+    async (url, init) => {
+      requests.push({ init, url: String(url) });
+      return jsonResponse({ data: importResult });
+    },
+    async () => {
+      assert.deepEqual(await importTranslations(payload), importResult);
+    },
+  );
+
+  assert.equal(requests[0].url, "/api/v1/translations/import");
+  assert.equal(requests[0].init.method, "POST");
+  assert.deepEqual(JSON.parse(requests[0].init.body), payload);
+  assert.equal(
+    requests[0].init.headers.get("Content-Type"),
+    "application/json",
+  );
+  assert.match(
+    requests[0].init.headers.get("Idempotency-Key"),
+    /^[0-9a-f-]{36}$/,
+  );
+});
+
 test("localization API exports translation JSON payloads", async () => {
   const requests = [];
   const exportResult = {
@@ -298,6 +353,20 @@ test("localization API rejects malformed translation export responses", async ()
         await assert.rejects(
           () => exportTranslations({}, "en-US"),
           /Translation export could not be prepared/,
+        );
+      },
+    );
+  }
+});
+
+test("localization API rejects malformed translation import responses", async () => {
+  for (const body of [{}, { data: null }, { data: { entries: [] } }]) {
+    await withFetch(
+      async () => jsonResponse(body),
+      async () => {
+        await assert.rejects(
+          () => importTranslations({ entries: [] }),
+          /Translation import could not be completed/,
         );
       },
     );

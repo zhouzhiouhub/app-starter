@@ -1,17 +1,13 @@
-import { DownloadOutlined, FileSearchOutlined } from "@ant-design/icons";
 import {
-  Alert,
-  Button,
-  Descriptions,
-  Input,
-  Space,
-  Table,
-  Tag,
-  Typography,
-} from "antd";
+  DownloadOutlined,
+  FileSearchOutlined,
+  UploadOutlined,
+} from "@ant-design/icons";
+import { Alert, Button, Input, Space } from "antd";
 import { useState } from "react";
 import {
   exportTranslations,
+  importTranslations,
   previewTranslationExport,
   previewTranslationImport,
 } from "../api";
@@ -20,11 +16,13 @@ import { downloadTranslationExport } from "../translation-export-file";
 import type {
   LocalizationTranslationsMeta,
   TranslationExportPreviewResult,
-  TranslationImportPreviewEntry,
   TranslationImportPreviewResult,
+  TranslationImportResult,
   TranslationListFilters,
 } from "../types";
 import { TranslationExportPreviewResultView } from "./translation-export-preview-result";
+import { TranslationImportPreviewResultView } from "./translation-import-preview-result";
+import { TranslationImportResultView } from "./translation-import-result";
 
 const defaultImportPreviewText = JSON.stringify(
   {
@@ -42,23 +40,40 @@ const defaultImportPreviewText = JSON.stringify(
 export function TranslationBulkPreviewPanel(props: {
   filters: TranslationListFilters;
   meta: LocalizationTranslationsMeta;
+  onImported?: () => Promise<void> | void;
 }) {
   const [importText, setImportText] = useState(defaultImportPreviewText);
   const [importPreview, setImportPreview] =
     useState<TranslationImportPreviewResult | null>(null);
+  const [importResult, setImportResult] =
+    useState<TranslationImportResult | null>(null);
   const [exportPreview, setExportPreview] =
     useState<TranslationExportPreviewResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loadingAction, setLoadingAction] = useState<
-    "download" | "export" | "import" | null
+    "download" | "export" | "import" | "preview-import" | null
   >(null);
 
   const runImportPreview = async () => {
-    setLoadingAction("import");
+    setLoadingAction("preview-import");
     setError(null);
 
     try {
       setImportPreview(await previewTranslationImport(JSON.parse(importText)));
+    } catch (caught) {
+      setError(formatPreviewError(caught));
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+  const runImport = async () => {
+    setLoadingAction("import");
+    setError(null);
+
+    try {
+      const result = await importTranslations(JSON.parse(importText));
+      setImportResult(result);
+      await props.onImported?.();
     } catch (caught) {
       setError(formatPreviewError(caught));
     } finally {
@@ -108,10 +123,17 @@ export function TranslationBulkPreviewPanel(props: {
       <Space wrap>
         <Button
           icon={<FileSearchOutlined />}
-          loading={loadingAction === "import"}
+          loading={loadingAction === "preview-import"}
           onClick={() => void runImportPreview()}
         >
           Preview import
+        </Button>
+        <Button
+          icon={<UploadOutlined />}
+          loading={loadingAction === "import"}
+          onClick={() => void runImport()}
+        >
+          Import default locale
         </Button>
         <Button
           icon={<FileSearchOutlined />}
@@ -128,96 +150,17 @@ export function TranslationBulkPreviewPanel(props: {
           Export JSON
         </Button>
       </Space>
-      {importPreview ? <ImportPreviewResult preview={importPreview} /> : null}
+      {importResult ? (
+        <TranslationImportResultView result={importResult} />
+      ) : null}
+      {importPreview ? (
+        <TranslationImportPreviewResultView preview={importPreview} />
+      ) : null}
       {exportPreview ? (
         <TranslationExportPreviewResultView preview={exportPreview} />
       ) : null}
     </Space>
   );
-}
-
-function ImportPreviewResult(props: {
-  preview: TranslationImportPreviewResult;
-}) {
-  return (
-    <Space direction="vertical" size={12} style={{ width: "100%" }}>
-      <Descriptions bordered column={{ md: 3, xs: 1 }} size="small">
-        <Descriptions.Item label="Create">
-          {props.preview.summary.createCount}
-        </Descriptions.Item>
-        <Descriptions.Item label="Update">
-          {props.preview.summary.updateCount}
-        </Descriptions.Item>
-        <Descriptions.Item label="Blocked">
-          {props.preview.summary.blockedCount}
-        </Descriptions.Item>
-        <Descriptions.Item label="Duplicate">
-          {props.preview.summary.duplicateCount}
-        </Descriptions.Item>
-        <Descriptions.Item label="Error">
-          {props.preview.summary.errorCount}
-        </Descriptions.Item>
-        <Descriptions.Item label="Rows">
-          {props.preview.summary.totalEntries}
-        </Descriptions.Item>
-      </Descriptions>
-      <Table<TranslationImportPreviewEntry>
-        columns={[
-          { dataIndex: "index", key: "index", title: "#", width: 72 },
-          {
-            dataIndex: "action",
-            key: "action",
-            render: (value: TranslationImportPreviewEntry["action"]) => (
-              <Tag color={readActionColor(value)}>{value}</Tag>
-            ),
-            title: "Action",
-            width: 120,
-          },
-          {
-            dataIndex: "key",
-            key: "key",
-            render: (value?: string) =>
-              value ? <Typography.Text code>{value}</Typography.Text> : "",
-            title: "Key",
-          },
-          {
-            dataIndex: "locale",
-            key: "locale",
-            render: (value?: string) =>
-              value ? <Typography.Text code>{value}</Typography.Text> : "",
-            title: "Locale",
-            width: 120,
-          },
-          {
-            key: "issues",
-            render: (_, record) =>
-              record.issues.map((issue) => issue.message).join("; "),
-            title: "Issues",
-          },
-        ]}
-        dataSource={props.preview.entries}
-        pagination={false}
-        rowKey={(record) => String(record.index)}
-        size="small"
-      />
-    </Space>
-  );
-}
-
-function readActionColor(action: TranslationImportPreviewEntry["action"]) {
-  if (action === "create") {
-    return "green";
-  }
-
-  if (action === "update") {
-    return "blue";
-  }
-
-  if (action === "blocked" || action === "duplicate") {
-    return "orange";
-  }
-
-  return "red";
 }
 
 function formatPreviewError(error: unknown): string {
