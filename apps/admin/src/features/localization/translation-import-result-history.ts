@@ -1,3 +1,4 @@
+import type { TranslationBulkLoadingAction } from "./translation-bulk-action.ts";
 import type { TranslationImportResult } from "./types.ts";
 
 export interface TranslationImportResultHistoryEntry {
@@ -32,29 +33,88 @@ export function clearTranslationImportResultHistory(): TranslationImportResultHi
   return [];
 }
 
-export function formatTranslationBulkRepairCompletionMessage(input: {
-  locale: string;
+export function formatTranslationImportHistoryReplayMessage(
+  entry: TranslationImportResultHistoryEntry,
+): string {
+  return `Viewing ${entry.label} from recent import history. This only replays the result table and does not re-import data.`;
+}
+
+export function readTranslationBulkRepairCoveredMissingKeys(input: {
   missingKeys?: string[];
   result: TranslationImportResult;
-}): string | null {
+}): string[] {
   const missingKeys = readUniqueKeys(input.missingKeys ?? []);
 
   if (missingKeys.length === 0) {
-    return null;
+    return [];
   }
 
   const importedKeys = new Set(
     input.result.entries.map((entry) => entry.key.trim()),
   );
-  const coveredCount = missingKeys.filter((key) =>
-    importedKeys.has(key),
-  ).length;
+  const coveredKeys = missingKeys.filter((key) => importedKeys.has(key));
 
-  if (coveredCount !== missingKeys.length) {
+  return coveredKeys.length === missingKeys.length ? coveredKeys : [];
+}
+
+export function formatTranslationBulkRepairCompletionMessage(input: {
+  locale: string;
+  missingKeys?: string[];
+  result: TranslationImportResult;
+}): string | null {
+  const coveredKeys = readTranslationBulkRepairCoveredMissingKeys(input);
+
+  if (coveredKeys.length === 0) {
     return null;
   }
 
-  return `Bulk repair covered all ${missingKeys.length} visible missing keys for default ${input.locale}. Refresh will confirm server coverage.`;
+  return `Bulk repair covered all ${coveredKeys.length} visible missing keys for default ${input.locale}. Refresh will confirm server coverage.`;
+}
+
+export function formatTranslationBulkRepairServerConfirmationMessage(input: {
+  focusKey?: string | null;
+  locale: string;
+  missingKeys?: string[];
+  repairedKeys: string[];
+}): string | null {
+  const repairedKeys = readUniqueKeys(input.repairedKeys);
+
+  if (repairedKeys.length === 0) {
+    return null;
+  }
+
+  const remainingKeys = readTranslationBulkRepairRemainingKeys({
+    missingKeys: input.missingKeys,
+    repairedKeys,
+  });
+
+  if (remainingKeys.length > 0) {
+    return `Server still reports ${remainingKeys.length} repaired ${formatKeyLabel(remainingKeys.length)} as missing for default ${input.locale}. Refresh again or retry the import after checking the payload.`;
+  }
+
+  const focusHint = input.focusKey
+    ? ` Translations table is focused on ${input.focusKey}.`
+    : "";
+
+  return `Server confirmed ${repairedKeys.length} repaired ${formatKeyLabel(repairedKeys.length)} for default ${input.locale}.${focusHint}`;
+}
+
+export function readTranslationBulkRepairRemainingKeys(input: {
+  missingKeys?: string[];
+  repairedKeys: string[];
+}): string[] {
+  const missingKeys = new Set(readUniqueKeys(input.missingKeys ?? []));
+
+  return readUniqueKeys(input.repairedKeys).filter((key) =>
+    missingKeys.has(key),
+  );
+}
+
+export function formatTranslationBulkRetryError(input: {
+  action: TranslationBulkLoadingAction;
+  message: string;
+}): string {
+  return `${input.message} ${readRetryHint(input.action)}`;
 }
 
 function readUniqueKeys(keys: string[]): string[] {
@@ -73,4 +133,24 @@ function readUniqueKeys(keys: string[]): string[] {
   }
 
   return uniqueKeys;
+}
+
+function formatKeyLabel(count: number): string {
+  return count === 1 ? "key" : "keys";
+}
+
+function readRetryHint(action: TranslationBulkLoadingAction): string {
+  if (action === "preview-import") {
+    return "Check the JSON, then retry Preview import.";
+  }
+
+  if (action === "import") {
+    return "Check the import payload, then retry Import default locale.";
+  }
+
+  if (action === "export") {
+    return "Refresh filters, then retry Preview export.";
+  }
+
+  return "Refresh filters, then retry Export JSON.";
 }

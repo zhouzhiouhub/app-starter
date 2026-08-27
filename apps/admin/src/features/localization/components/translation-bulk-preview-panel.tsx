@@ -42,11 +42,21 @@ export function TranslationBulkPreviewPanel(props: {
       {bulkPreview.draftNotice ? (
         <Alert message={bulkPreview.draftNotice} showIcon type="info" />
       ) : null}
+      {bulkPreview.historyReplayNotice ? (
+        <Alert message={bulkPreview.historyReplayNotice} showIcon type="info" />
+      ) : null}
       {bulkPreview.repairCompletionNotice ? (
         <Alert
           message={bulkPreview.repairCompletionNotice}
           showIcon
           type="success"
+        />
+      ) : null}
+      {bulkPreview.repairServerNotice ? (
+        <Alert
+          message={bulkPreview.repairServerNotice.message}
+          showIcon
+          type={bulkPreview.repairServerNotice.type}
         />
       ) : null}
       <Input.TextArea

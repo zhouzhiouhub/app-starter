@@ -20,8 +20,12 @@ import {
   clearTranslationImportResultHistory,
   createTranslationImportResultHistoryEntry,
   formatTranslationBulkRepairCompletionMessage,
+  formatTranslationBulkRetryError,
+  formatTranslationImportHistoryReplayMessage,
+  readTranslationBulkRepairCoveredMissingKeys,
   type TranslationImportResultHistoryEntry,
 } from "../translation-import-result-history";
+import { useTranslationBulkRepairConfirmation } from "./use-translation-bulk-repair-confirmation";
 import type { TranslationBulkLoadingAction } from "../translation-bulk-action";
 import type {
   LocalizationTranslationsMeta,
@@ -49,6 +53,9 @@ export function useTranslationBulkPreview(input: {
     useState<TranslationExportPreviewResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [draftNotice, setDraftNotice] = useState<string | null>(null);
+  const [historyReplayNotice, setHistoryReplayNotice] = useState<string | null>(
+    null,
+  );
   const [repairCompletionNotice, setRepairCompletionNotice] = useState<
     string | null
   >(null);
@@ -66,6 +73,11 @@ export function useTranslationBulkPreview(input: {
       ),
     [input.meta.locale, input.missingKeys],
   );
+  const repairConfirmation = useTranslationBulkRepairConfirmation({
+    locale: input.meta.locale,
+    missingKeys: input.missingKeys,
+    requestId: input.meta.requestId,
+  });
 
   function useMissingKeyDraft() {
     useImportDraft(
@@ -96,12 +108,15 @@ export function useTranslationBulkPreview(input: {
     setImportPreview(null);
     setImportResult(null);
     setDraftNotice(notice);
+    setHistoryReplayNotice(null);
     setRepairCompletionNotice(null);
+    repairConfirmation.clear();
     setImportText(text);
   }
 
   function handleImportTextChange(value: string) {
     setDraftNotice(null);
+    setHistoryReplayNotice(null);
     setImportText(value);
   }
 
@@ -111,12 +126,14 @@ export function useTranslationBulkPreview(input: {
     setImportErrorDetails(null);
     setImportResult(null);
     setDraftNotice(null);
+    setHistoryReplayNotice(null);
     setRepairCompletionNotice(null);
+    repairConfirmation.clear();
 
     try {
       setImportPreview(await previewTranslationImport(JSON.parse(importText)));
     } catch (caught) {
-      setError(formatPreviewError(caught));
+      setError(readActionError("preview-import", caught));
     } finally {
       setLoadingAction(null);
     }
@@ -127,12 +144,18 @@ export function useTranslationBulkPreview(input: {
     setImportErrorDetails(null);
     setImportResult(null);
     setDraftNotice(null);
+    setHistoryReplayNotice(null);
     setRepairCompletionNotice(null);
+    repairConfirmation.clear();
 
     try {
       const result = await importTranslations(JSON.parse(importText));
       setImportResult(result);
       recordImportResult(result);
+      const repairedKeys = readTranslationBulkRepairCoveredMissingKeys({
+        missingKeys: input.missingKeys,
+        result,
+      });
       setRepairCompletionNotice(
         formatTranslationBulkRepairCompletionMessage({
           locale: input.meta.locale,
@@ -141,8 +164,9 @@ export function useTranslationBulkPreview(input: {
         }),
       );
       await input.onImported?.(result);
+      repairConfirmation.begin(repairedKeys, result.entries[0]?.key ?? null);
     } catch (caught) {
-      setError(formatPreviewError(caught));
+      setError(readActionError("import", caught));
       setImportErrorDetails(readTranslationImportErrorDetails(caught));
     } finally {
       setLoadingAction(null);
@@ -152,6 +176,7 @@ export function useTranslationBulkPreview(input: {
     setLoadingAction("export");
     setError(null);
     setImportErrorDetails(null);
+    setHistoryReplayNotice(null);
 
     try {
       setExportPreview(
@@ -161,7 +186,7 @@ export function useTranslationBulkPreview(input: {
         ),
       );
     } catch (caught) {
-      setError(formatPreviewError(caught));
+      setError(readActionError("export", caught));
     } finally {
       setLoadingAction(null);
     }
@@ -170,13 +195,14 @@ export function useTranslationBulkPreview(input: {
     setLoadingAction("download");
     setError(null);
     setImportErrorDetails(null);
+    setHistoryReplayNotice(null);
 
     try {
       downloadTranslationExport(
         await exportTranslations(input.filters, input.meta.requestedLocale),
       );
     } catch (caught) {
-      setError(formatPreviewError(caught));
+      setError(readActionError("download", caught));
     } finally {
       setLoadingAction(null);
     }
@@ -189,7 +215,9 @@ export function useTranslationBulkPreview(input: {
     setImportPreview(null);
     setImportResult(entry.result);
     setDraftNotice(null);
+    setHistoryReplayNotice(formatTranslationImportHistoryReplayMessage(entry));
     setRepairCompletionNotice(null);
+    repairConfirmation.clear();
   }
 
   function clearImportResultHistory() {
@@ -214,6 +242,7 @@ export function useTranslationBulkPreview(input: {
     error,
     exportPreview,
     hasMissingKeyDraft: missingKeyDraft.entries.length > 0,
+    historyReplayNotice,
     importErrorDetails,
     importPreview,
     importResult,
@@ -221,6 +250,7 @@ export function useTranslationBulkPreview(input: {
     importText,
     loadingAction,
     repairCompletionNotice,
+    repairServerNotice: repairConfirmation.notice,
     restoreImportResult,
     runExportDownload,
     runExportPreview,
@@ -230,6 +260,16 @@ export function useTranslationBulkPreview(input: {
     useResultDraft,
     handleImportTextChange,
   };
+}
+
+function readActionError(
+  action: TranslationBulkLoadingAction,
+  error: unknown,
+): string {
+  return formatTranslationBulkRetryError({
+    action,
+    message: formatPreviewError(error),
+  });
 }
 
 function formatPreviewError(error: unknown): string {

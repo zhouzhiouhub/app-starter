@@ -4,7 +4,12 @@ import {
   addTranslationImportResultHistoryEntry,
   clearTranslationImportResultHistory,
   createTranslationImportResultHistoryEntry,
+  formatTranslationBulkRepairServerConfirmationMessage,
   formatTranslationBulkRepairCompletionMessage,
+  formatTranslationBulkRetryError,
+  formatTranslationImportHistoryReplayMessage,
+  readTranslationBulkRepairCoveredMissingKeys,
+  readTranslationBulkRepairRemainingKeys,
 } from "../src/features/localization/translation-import-result-history.ts";
 
 function createImportResult(keys) {
@@ -71,6 +76,38 @@ test("translation import result history can be cleared", () => {
   assert.deepEqual(clearTranslationImportResultHistory(), []);
 });
 
+test("translation import result history explains replayed results", () => {
+  assert.equal(
+    formatTranslationImportHistoryReplayMessage(
+      createTranslationImportResultHistoryEntry(
+        createImportResult(["page.home.hero.title"]),
+        2,
+      ),
+    ),
+    "Viewing Import #2 from recent import history. This only replays the result table and does not re-import data.",
+  );
+});
+
+test("translation bulk repair coverage returns visible missing keys only when complete", () => {
+  assert.deepEqual(
+    readTranslationBulkRepairCoveredMissingKeys({
+      missingKeys: ["page.home.hero.title", "section.faq.answer"],
+      result: createImportResult([
+        "page.home.hero.title",
+        "section.faq.answer",
+      ]),
+    }),
+    ["page.home.hero.title", "section.faq.answer"],
+  );
+  assert.deepEqual(
+    readTranslationBulkRepairCoveredMissingKeys({
+      missingKeys: ["page.home.hero.title", "section.faq.answer"],
+      result: createImportResult(["page.home.hero.title"]),
+    }),
+    [],
+  );
+});
+
 test("translation bulk repair completion confirms full visible coverage", () => {
   assert.equal(
     formatTranslationBulkRepairCompletionMessage({
@@ -93,5 +130,52 @@ test("translation bulk repair completion ignores partial coverage", () => {
       result: createImportResult(["page.home.hero.title"]),
     }),
     null,
+  );
+});
+
+test("translation bulk repair server confirmation reports focused success", () => {
+  assert.equal(
+    formatTranslationBulkRepairServerConfirmationMessage({
+      focusKey: "page.home.hero.title",
+      locale: "en-US",
+      missingKeys: [],
+      repairedKeys: ["page.home.hero.title", "section.faq.answer"],
+    }),
+    "Server confirmed 2 repaired keys for default en-US. Translations table is focused on page.home.hero.title.",
+  );
+});
+
+test("translation bulk repair server confirmation reports retryable leftovers", () => {
+  assert.deepEqual(
+    readTranslationBulkRepairRemainingKeys({
+      missingKeys: ["section.faq.answer"],
+      repairedKeys: ["page.home.hero.title", "section.faq.answer"],
+    }),
+    ["section.faq.answer"],
+  );
+  assert.equal(
+    formatTranslationBulkRepairServerConfirmationMessage({
+      locale: "en-US",
+      missingKeys: ["section.faq.answer"],
+      repairedKeys: ["page.home.hero.title", "section.faq.answer"],
+    }),
+    "Server still reports 1 repaired key as missing for default en-US. Refresh again or retry the import after checking the payload.",
+  );
+});
+
+test("translation bulk action errors include retry hints", () => {
+  assert.equal(
+    formatTranslationBulkRetryError({
+      action: "preview-import",
+      message: "Import preview JSON could not be parsed.",
+    }),
+    "Import preview JSON could not be parsed. Check the JSON, then retry Preview import.",
+  );
+  assert.equal(
+    formatTranslationBulkRetryError({
+      action: "download",
+      message: "Export failed.",
+    }),
+    "Export failed. Refresh filters, then retry Export JSON.",
   );
 });
