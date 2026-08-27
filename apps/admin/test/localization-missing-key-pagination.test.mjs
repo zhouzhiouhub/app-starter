@@ -1,8 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  missingTranslationKeyPageStorageKey,
   readMissingTranslationKeyPageForKey,
   readMissingTranslationKeyPaginationState,
+  readStoredMissingTranslationKeyPage,
+  writeStoredMissingTranslationKeyPage,
 } from "../src/features/localization/missing-translation-key-pagination.ts";
 
 const keys = Array.from(
@@ -72,5 +75,48 @@ test("missing translation key pagination handles empty lists", () => {
       totalCount: 0,
       totalPages: 1,
     },
+  );
+});
+
+test("missing translation key pagination remembers valid stored pages", () => {
+  const values = new Map([[missingTranslationKeyPageStorageKey, "3"]]);
+  const storage = {
+    getItem: (key) => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, value),
+  };
+
+  assert.equal(readStoredMissingTranslationKeyPage(storage), 3);
+  writeStoredMissingTranslationKeyPage(storage, 2.9);
+  assert.equal(values.get(missingTranslationKeyPageStorageKey), "2");
+});
+
+test("missing translation key pagination ignores invalid or blocked storage", () => {
+  assert.equal(
+    readStoredMissingTranslationKeyPage({
+      getItem: () => "0",
+      setItem: () => {},
+    }),
+    null,
+  );
+  assert.equal(
+    readStoredMissingTranslationKeyPage({
+      getItem: () => {
+        throw new Error("blocked");
+      },
+      setItem: () => {},
+    }),
+    null,
+  );
+
+  assert.doesNotThrow(() =>
+    writeStoredMissingTranslationKeyPage(
+      {
+        getItem: () => null,
+        setItem: () => {
+          throw new Error("blocked");
+        },
+      },
+      2,
+    ),
   );
 });

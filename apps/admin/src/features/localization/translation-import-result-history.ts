@@ -84,6 +84,14 @@ export function formatTranslationImportHistoryReplayMessage(
   return `Viewing ${entry.label} from recent import history. This only replays the result table and does not re-import data.`;
 }
 
+export function formatTranslationImportHistoryDraftMessage(
+  entry: TranslationImportResultHistoryEntry,
+): string {
+  const entryCount = entry.result.entries.length;
+
+  return `Draft rebuilt from ${entry.label} with ${entryCount} imported ${entryCount === 1 ? "row" : "rows"}. Import preview is reset.`;
+}
+
 export function formatTranslationBulkRepairCleanupSuggestion(input: {
   historyCount: number;
 }): string | null {

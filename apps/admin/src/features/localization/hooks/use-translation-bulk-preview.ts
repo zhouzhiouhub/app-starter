@@ -5,14 +5,17 @@ import {
   previewTranslationExport,
   previewTranslationImport,
 } from "../api";
-import { formatRequestError } from "../../../lib/api-error";
 import {
-  createMissingTranslationImportDraft,
-  createTranslationImportDraftFromEntries,
   defaultTranslationImportText,
-  formatTranslationImportDraft,
-  formatTranslationImportDraftNotice,
+  emptyTranslationImportText,
+  formatTranslationImportDraftClearedNotice,
+  formatTranslationImportDraftClearSuggestion,
 } from "../translation-import-draft";
+import {
+  createHistoryTranslationImportDraftState,
+  createMissingTranslationImportDraftState,
+  createResultTranslationImportDraftState,
+} from "../translation-import-draft-state";
 import { readTranslationImportErrorDetails } from "../translation-import-error-details";
 import { downloadTranslationExport } from "../translation-export-file";
 import {
@@ -21,11 +24,11 @@ import {
   createTranslationImportResultHistoryEntry,
   formatTranslationBulkRepairCleanupSuggestion,
   formatTranslationBulkRepairCompletionMessage,
-  formatTranslationBulkRetryError,
   formatTranslationImportHistoryReplayMessage,
   readTranslationBulkRepairCoveredMissingKeys,
   type TranslationImportResultHistoryEntry,
 } from "../translation-import-result-history";
+import { readTranslationBulkActionError } from "../translation-bulk-action-error";
 import { useTranslationBulkRepairConfirmation } from "./use-translation-bulk-repair-confirmation";
 import type { TranslationBulkLoadingAction } from "../translation-bulk-action";
 import type {
@@ -54,6 +57,9 @@ export function useTranslationBulkPreview(input: {
     useState<TranslationExportPreviewResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [draftNotice, setDraftNotice] = useState<string | null>(null);
+  const [draftClearSuggestion, setDraftClearSuggestion] = useState<
+    string | null
+  >(null);
   const [historyReplayNotice, setHistoryReplayNotice] = useState<string | null>(
     null,
   );
@@ -66,12 +72,12 @@ export function useTranslationBulkPreview(input: {
   const [loadingAction, setLoadingAction] =
     useState<TranslationBulkLoadingAction | null>(null);
   const importSequenceRef = useRef(0);
-  const missingKeyDraft = useMemo(
+  const missingKeyDraftState = useMemo(
     () =>
-      createMissingTranslationImportDraft(
-        input.missingKeys ?? [],
-        input.meta.locale,
-      ),
+      createMissingTranslationImportDraftState({
+        keys: input.missingKeys ?? [],
+        locale: input.meta.locale,
+      }),
     [input.meta.locale, input.missingKeys],
   );
   const repairConfirmation = useTranslationBulkRepairConfirmation({
@@ -81,25 +87,19 @@ export function useTranslationBulkPreview(input: {
   });
 
   function useMissingKeyDraft() {
-    useImportDraft(
-      formatTranslationImportDraft(missingKeyDraft),
-      formatTranslationImportDraftNotice({
-        entryCount: missingKeyDraft.entries.length,
-        source: "missing-keys",
-      }),
-    );
+    useImportDraft(missingKeyDraftState.text, missingKeyDraftState.notice);
   }
 
   function useResultDraft(entries: TranslationImportResultEntry[]) {
-    useImportDraft(
-      formatTranslationImportDraft(
-        createTranslationImportDraftFromEntries(entries),
-      ),
-      formatTranslationImportDraftNotice({
-        entryCount: entries.length,
-        source: "import-result",
-      }),
-    );
+    const draftState = createResultTranslationImportDraftState(entries);
+
+    useImportDraft(draftState.text, draftState.notice);
+  }
+
+  function useHistoryDraft(entry: TranslationImportResultHistoryEntry) {
+    const draftState = createHistoryTranslationImportDraftState(entry);
+
+    useImportDraft(draftState.text, draftState.notice);
   }
 
   function useImportDraft(text: string, notice: string) {
@@ -109,6 +109,7 @@ export function useTranslationBulkPreview(input: {
     setImportPreview(null);
     setImportResult(null);
     setDraftNotice(notice);
+    setDraftClearSuggestion(null);
     setHistoryReplayNotice(null);
     setRepairCompletionNotice(null);
     repairConfirmation.clear();
@@ -117,6 +118,7 @@ export function useTranslationBulkPreview(input: {
 
   function handleImportTextChange(value: string) {
     setDraftNotice(null);
+    setDraftClearSuggestion(null);
     setHistoryReplayNotice(null);
     setImportText(value);
   }
@@ -127,6 +129,7 @@ export function useTranslationBulkPreview(input: {
     setImportErrorDetails(null);
     setImportResult(null);
     setDraftNotice(null);
+    setDraftClearSuggestion(null);
     setHistoryReplayNotice(null);
     setRepairCompletionNotice(null);
     repairConfirmation.clear();
@@ -134,7 +137,7 @@ export function useTranslationBulkPreview(input: {
     try {
       setImportPreview(await previewTranslationImport(JSON.parse(importText)));
     } catch (caught) {
-      setError(readActionError("preview-import", caught));
+      setError(readTranslationBulkActionError("preview-import", caught));
     } finally {
       setLoadingAction(null);
     }
@@ -145,6 +148,7 @@ export function useTranslationBulkPreview(input: {
     setImportErrorDetails(null);
     setImportResult(null);
     setDraftNotice(null);
+    setDraftClearSuggestion(null);
     setHistoryReplayNotice(null);
     setRepairCompletionNotice(null);
     repairConfirmation.clear();
@@ -164,10 +168,15 @@ export function useTranslationBulkPreview(input: {
           result,
         }),
       );
+      setDraftClearSuggestion(
+        formatTranslationImportDraftClearSuggestion({
+          importedCount: result.summary.importedCount,
+        }),
+      );
       await input.onImported?.(result);
       repairConfirmation.begin(repairedKeys, result.entries[0]?.key ?? null);
     } catch (caught) {
-      setError(readActionError("import", caught));
+      setError(readTranslationBulkActionError("import", caught));
       setImportErrorDetails(readTranslationImportErrorDetails(caught));
     } finally {
       setLoadingAction(null);
@@ -177,6 +186,7 @@ export function useTranslationBulkPreview(input: {
     setLoadingAction("export");
     setError(null);
     setImportErrorDetails(null);
+    setDraftClearSuggestion(null);
     setHistoryReplayNotice(null);
 
     try {
@@ -187,7 +197,7 @@ export function useTranslationBulkPreview(input: {
         ),
       );
     } catch (caught) {
-      setError(readActionError("export", caught));
+      setError(readTranslationBulkActionError("export", caught));
     } finally {
       setLoadingAction(null);
     }
@@ -196,6 +206,7 @@ export function useTranslationBulkPreview(input: {
     setLoadingAction("download");
     setError(null);
     setImportErrorDetails(null);
+    setDraftClearSuggestion(null);
     setHistoryReplayNotice(null);
 
     try {
@@ -203,7 +214,7 @@ export function useTranslationBulkPreview(input: {
         await exportTranslations(input.filters, input.meta.requestedLocale),
       );
     } catch (caught) {
-      setError(readActionError("download", caught));
+      setError(readTranslationBulkActionError("download", caught));
     } finally {
       setLoadingAction(null);
     }
@@ -216,9 +227,25 @@ export function useTranslationBulkPreview(input: {
     setImportPreview(null);
     setImportResult(entry.result);
     setDraftNotice(null);
+    setDraftClearSuggestion(null);
     setHistoryReplayNotice(formatTranslationImportHistoryReplayMessage(entry));
     setRepairCompletionNotice(null);
     repairConfirmation.clear();
+  }
+
+  function clearImportDraftAfterSuccess() {
+    setError(null);
+    setExportPreview(null);
+    setImportErrorDetails(null);
+    setImportPreview(null);
+    setDraftNotice(
+      formatTranslationImportDraftClearedNotice({
+        locale: input.meta.locale,
+      }),
+    );
+    setDraftClearSuggestion(null);
+    setHistoryReplayNotice(null);
+    setImportText(emptyTranslationImportText);
   }
 
   function clearImportResultHistory() {
@@ -238,11 +265,13 @@ export function useTranslationBulkPreview(input: {
   }
 
   return {
+    clearImportDraftAfterSuccess,
     clearImportResultHistory,
+    draftClearSuggestion,
     draftNotice,
     error,
     exportPreview,
-    hasMissingKeyDraft: missingKeyDraft.entries.length > 0,
+    hasMissingKeyDraft: missingKeyDraftState.entryCount > 0,
     historyReplayNotice,
     importErrorDetails,
     importPreview,
@@ -265,24 +294,7 @@ export function useTranslationBulkPreview(input: {
     runImportPreview,
     useMissingKeyDraft,
     useResultDraft,
+    useHistoryDraft,
     handleImportTextChange,
   };
-}
-
-function readActionError(
-  action: TranslationBulkLoadingAction,
-  error: unknown,
-): string {
-  return formatTranslationBulkRetryError({
-    action,
-    message: formatPreviewError(error),
-  });
-}
-
-function formatPreviewError(error: unknown): string {
-  if (error instanceof SyntaxError) {
-    return "Import preview JSON could not be parsed.";
-  }
-
-  return formatRequestError(error);
 }

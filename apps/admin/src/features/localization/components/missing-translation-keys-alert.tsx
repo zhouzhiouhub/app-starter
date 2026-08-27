@@ -8,8 +8,10 @@ import {
 import { Alert, Button, Pagination, Space, Tag, Typography } from "antd";
 import { useEffect, useState } from "react";
 import {
+  readBrowserMissingTranslationKeyPage,
   readMissingTranslationKeyPageForKey,
   readMissingTranslationKeyPaginationState,
+  writeBrowserMissingTranslationKeyPage,
 } from "../missing-translation-key-pagination";
 import { readMissingTranslationKeyQueueState } from "../missing-translation-key-queue";
 import { groupMissingTranslationKeys } from "../missing-translation-key-groups";
@@ -26,7 +28,9 @@ export function MissingTranslationKeysAlert(props: {
   resolvedKeys?: string[];
   selectedKey?: string;
 }) {
-  const [visiblePage, setVisiblePage] = useState(1);
+  const [visiblePage, setVisiblePage] = useState(
+    readBrowserMissingTranslationKeyPage,
+  );
   const queue = readMissingTranslationKeyQueueState(
     props.meta.missingKeys,
     props.selectedKey,
@@ -62,6 +66,10 @@ export function MissingTranslationKeysAlert(props: {
         }).currentPage,
     );
   }, [props.selectedKey, queueFingerprint]);
+
+  useEffect(() => {
+    writeBrowserMissingTranslationKeyPage(pageState.currentPage);
+  }, [pageState.currentPage]);
 
   if (props.meta.missingKeyCount === 0) {
     return null;

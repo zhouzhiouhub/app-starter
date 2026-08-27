@@ -72,6 +72,22 @@ export function TranslationBulkPreviewPanel(props: {
           type={bulkPreview.repairServerNotice.type}
         />
       ) : null}
+      {bulkPreview.draftClearSuggestion ? (
+        <Alert
+          action={
+            <Button
+              icon={<DeleteOutlined />}
+              onClick={bulkPreview.clearImportDraftAfterSuccess}
+              size="small"
+            >
+              Clear draft
+            </Button>
+          }
+          message={bulkPreview.draftClearSuggestion}
+          showIcon
+          type="success"
+        />
+      ) : null}
       <Input.TextArea
         autoSize={{ maxRows: 8, minRows: 5 }}
         onChange={(event) =>
@@ -118,6 +134,7 @@ export function TranslationBulkPreviewPanel(props: {
         entries={bulkPreview.importResultHistory}
         onClear={bulkPreview.clearImportResultHistory}
         onSelect={bulkPreview.restoreImportResult}
+        onUseDraft={bulkPreview.useHistoryDraft}
       />
     </Space>
   );

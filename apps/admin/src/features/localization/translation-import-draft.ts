@@ -25,6 +25,10 @@ export const defaultTranslationImportText = formatTranslationImportDraft({
   ],
 });
 
+export const emptyTranslationImportText = formatTranslationImportDraft({
+  entries: [],
+});
+
 export function createMissingTranslationImportDraft(
   keys: string[],
   locale: string,
@@ -92,6 +96,20 @@ export function formatTranslationImportDraftNotice(input: {
   const plural = input.entryCount === 1 ? "" : "s";
 
   return `Draft rebuilt from ${input.entryCount} ${sourceLabel}${plural}. Import preview is reset.`;
+}
+
+export function formatTranslationImportDraftClearSuggestion(input: {
+  importedCount: number;
+}): string {
+  const rowLabel = input.importedCount === 1 ? "row" : "rows";
+
+  return `Import succeeded for ${input.importedCount} ${rowLabel}. Clear the draft when you no longer need this payload.`;
+}
+
+export function formatTranslationImportDraftClearedNotice(input: {
+  locale: string;
+}): string {
+  return `Import draft was cleared after the successful default ${input.locale} import.`;
 }
 
 export function formatTranslationImportDraft(

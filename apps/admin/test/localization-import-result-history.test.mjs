@@ -9,6 +9,7 @@ import {
   formatTranslationBulkRepairServerConfirmationMessage,
   formatTranslationBulkRepairCompletionMessage,
   formatTranslationBulkRetryError,
+  formatTranslationImportHistoryDraftMessage,
   formatTranslationImportHistoryReplayMessage,
   readTranslationBulkRepairCoveredMissingKeys,
   readTranslationBulkRepairRemainingKeys,
@@ -131,6 +132,18 @@ test("translation import result history explains replayed results", () => {
       ),
     ),
     "Viewing Import #2 from recent import history. This only replays the result table and does not re-import data.",
+  );
+});
+
+test("translation import result history explains draft rebuilds", () => {
+  assert.equal(
+    formatTranslationImportHistoryDraftMessage(
+      createTranslationImportResultHistoryEntry(
+        createImportResult(["page.home.hero.title", "section.faq.answer"]),
+        2,
+      ),
+    ),
+    "Draft rebuilt from Import #2 with 2 imported rows. Import preview is reset.",
   );
 });
 

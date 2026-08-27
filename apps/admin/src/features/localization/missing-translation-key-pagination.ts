@@ -8,6 +8,14 @@ export interface MissingTranslationKeyPaginationState {
   totalPages: number;
 }
 
+export interface MissingTranslationKeyPageStorage {
+  getItem(key: string): string | null;
+  setItem(key: string, value: string): void;
+}
+
+export const missingTranslationKeyPageStorageKey =
+  "localization.missingTranslationKeys.page";
+
 export function readMissingTranslationKeyPaginationState(input: {
   currentPage?: number;
   keys: string[];
@@ -53,10 +61,61 @@ export function readMissingTranslationKeyPageForKey(input: {
   return Math.floor(index / pageSize) + 1;
 }
 
+export function readStoredMissingTranslationKeyPage(
+  storage: MissingTranslationKeyPageStorage | null | undefined,
+): number | null {
+  if (!storage) {
+    return null;
+  }
+
+  try {
+    const rawValue = storage.getItem(missingTranslationKeyPageStorageKey);
+    const page = rawValue ? Number(rawValue) : NaN;
+
+    return Number.isInteger(page) && page > 0 ? page : null;
+  } catch {
+    return null;
+  }
+}
+
+export function writeStoredMissingTranslationKeyPage(
+  storage: MissingTranslationKeyPageStorage | null | undefined,
+  page: number,
+) {
+  if (!storage || !Number.isFinite(page) || page < 1) {
+    return;
+  }
+
+  try {
+    storage.setItem(
+      missingTranslationKeyPageStorageKey,
+      String(Math.floor(page)),
+    );
+  } catch {
+    // Storage can be unavailable in restricted browser modes.
+  }
+}
+
+export function readBrowserMissingTranslationKeyPage(): number {
+  return readStoredMissingTranslationKeyPage(readBrowserSessionStorage()) ?? 1;
+}
+
+export function writeBrowserMissingTranslationKeyPage(page: number) {
+  writeStoredMissingTranslationKeyPage(readBrowserSessionStorage(), page);
+}
+
 function clampPage(page: number, totalPages: number): number {
   if (!Number.isFinite(page)) {
     return 1;
   }
 
   return Math.min(Math.max(1, Math.floor(page)), totalPages);
+}
+
+function readBrowserSessionStorage(): MissingTranslationKeyPageStorage | null {
+  try {
+    return globalThis.sessionStorage ?? null;
+  } catch {
+    return null;
+  }
 }

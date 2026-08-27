@@ -4,6 +4,9 @@ import {
   createMissingTranslationImportDraft,
   createTranslationImportDraftFromEntries,
   defaultTranslationImportText,
+  emptyTranslationImportText,
+  formatTranslationImportDraftClearedNotice,
+  formatTranslationImportDraftClearSuggestion,
   formatTranslationImportDraftNotice,
   formatTranslationImportDraft,
 } from "../src/features/localization/translation-import-draft.ts";
@@ -105,6 +108,12 @@ test("default translation import text stays importable", () => {
   });
 });
 
+test("empty translation import text can clear successful payload drafts", () => {
+  assert.deepEqual(JSON.parse(emptyTranslationImportText), {
+    entries: [],
+  });
+});
+
 test("translation import draft notices explain reset preview state", () => {
   assert.equal(
     formatTranslationImportDraftNotice({
@@ -119,5 +128,20 @@ test("translation import draft notices explain reset preview state", () => {
       source: "missing-keys",
     }),
     "Draft rebuilt from 1 missing key. Import preview is reset.",
+  );
+});
+
+test("translation import draft clear messages explain follow-up actions", () => {
+  assert.equal(
+    formatTranslationImportDraftClearSuggestion({ importedCount: 2 }),
+    "Import succeeded for 2 rows. Clear the draft when you no longer need this payload.",
+  );
+  assert.equal(
+    formatTranslationImportDraftClearSuggestion({ importedCount: 1 }),
+    "Import succeeded for 1 row. Clear the draft when you no longer need this payload.",
+  );
+  assert.equal(
+    formatTranslationImportDraftClearedNotice({ locale: "en-US" }),
+    "Import draft was cleared after the successful default en-US import.",
   );
 });

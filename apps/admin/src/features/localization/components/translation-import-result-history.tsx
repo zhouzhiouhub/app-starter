@@ -1,4 +1,8 @@
-import { DeleteOutlined, EyeOutlined } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  EyeOutlined,
+  FileAddOutlined,
+} from "@ant-design/icons";
 import { Button, Segmented, Space, Table, Typography } from "antd";
 import { useMemo, useState } from "react";
 import {
@@ -12,6 +16,7 @@ export function TranslationImportResultHistoryView(props: {
   entries: TranslationImportResultHistoryEntry[];
   onClear?: () => void;
   onSelect: (entry: TranslationImportResultHistoryEntry) => void;
+  onUseDraft?: (entry: TranslationImportResultHistoryEntry) => void;
 }) {
   const [filter, setFilter] =
     useState<TranslationImportResultHistoryFilter>("all");
@@ -76,16 +81,27 @@ export function TranslationImportResultHistoryView(props: {
           {
             key: "view",
             render: (_, record) => (
-              <Button
-                icon={<EyeOutlined />}
-                onClick={() => props.onSelect(record)}
-                size="small"
-              >
-                View
-              </Button>
+              <Space size={6} wrap>
+                <Button
+                  icon={<EyeOutlined />}
+                  onClick={() => props.onSelect(record)}
+                  size="small"
+                >
+                  View
+                </Button>
+                {props.onUseDraft ? (
+                  <Button
+                    icon={<FileAddOutlined />}
+                    onClick={() => props.onUseDraft?.(record)}
+                    size="small"
+                  >
+                    Draft
+                  </Button>
+                ) : null}
+              </Space>
             ),
             title: "Result",
-            width: 120,
+            width: 180,
           },
         ]}
         dataSource={filteredEntries}
