@@ -13,10 +13,13 @@ export interface LocalizationSummaryState {
   missingKeyCount: number;
   status: "active" | "fallback" | "missing";
   translationCount: number;
+  translationCoveragePercent: number;
   translationEntryLimit: number;
+  translationExpectedKeyCount: number;
   translationLimit: number;
   translationPage: number;
   translationRequestedLocale: string;
+  translationResolvedKeyCount: number;
   translationResolvedLocale: string;
   translationTotal: number;
 }
@@ -30,6 +33,12 @@ export function readLocalizationSummaryState(
     locale?.code ?? market?.defaultLocale ?? summary.translationsMeta.locale;
   const fallbackLocale =
     locale?.fallbackLocale ?? summary.translationsMeta.fallbackLocale;
+  const expectedKeyCount = Math.max(
+    0,
+    summary.translationsMeta.expectedKeyCount,
+  );
+  const missingKeyCount = Math.max(0, summary.translationsMeta.missingKeyCount);
+  const resolvedKeyCount = Math.max(0, expectedKeyCount - missingKeyCount);
 
   return {
     defaultLocale,
@@ -37,13 +46,19 @@ export function readLocalizationSummaryState(
     fallbackLocale,
     isFallback: summary.translationsMeta.isFallback,
     marketCurrency: market?.currency ?? "USD",
-    missingKeyCount: summary.translationsMeta.missingKeyCount,
+    missingKeyCount,
     status: readStatus(summary, market, locale),
     translationCount: summary.translations.length,
+    translationCoveragePercent: readTranslationCoveragePercent({
+      expectedKeyCount,
+      resolvedKeyCount,
+    }),
     translationEntryLimit: summary.translationsMeta.entryLimit,
+    translationExpectedKeyCount: expectedKeyCount,
     translationLimit: summary.translationsMeta.limit,
     translationPage: summary.translationsMeta.page,
     translationRequestedLocale: summary.translationsMeta.requestedLocale,
+    translationResolvedKeyCount: resolvedKeyCount,
     translationResolvedLocale: summary.translationsMeta.locale,
     translationTotal: summary.translationsMeta.total,
   };
@@ -75,4 +90,15 @@ function readStatus(
   }
 
   return summary.translationsMeta.isFallback ? "fallback" : "active";
+}
+
+function readTranslationCoveragePercent(input: {
+  expectedKeyCount: number;
+  resolvedKeyCount: number;
+}): number {
+  if (input.expectedKeyCount === 0) {
+    return 100;
+  }
+
+  return Math.round((input.resolvedKeyCount / input.expectedKeyCount) * 100);
 }

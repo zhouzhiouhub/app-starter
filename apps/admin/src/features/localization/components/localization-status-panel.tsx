@@ -12,6 +12,7 @@ import type {
 import { DefaultTranslationEntryForm } from "./default-translation-entry-form";
 import { MissingTranslationKeysAlert } from "./missing-translation-keys-alert";
 import { TranslationBulkPreviewPanel } from "./translation-bulk-preview-panel";
+import { TranslationCoverageProgress } from "./translation-coverage-progress";
 import { TranslationListFilterBar } from "./translation-list-filter-bar";
 
 const marketColumns: ColumnsType<LocalizationMarket> = [
@@ -150,6 +151,14 @@ export function LocalizationStatusPanel(props: {
             {state.missingKeyCount}
           </Tag>
         </Descriptions.Item>
+        <Descriptions.Item label="Page key coverage">
+          <TranslationCoverageProgress
+            expectedKeyCount={state.translationExpectedKeyCount}
+            missingKeyCount={state.missingKeyCount}
+            percent={state.translationCoveragePercent}
+            resolvedKeyCount={state.translationResolvedKeyCount}
+          />
+        </Descriptions.Item>
         <Descriptions.Item label="Fallback probe">
           <Space size={4}>
             <Typography.Text code>
@@ -188,6 +197,7 @@ export function LocalizationStatusPanel(props: {
       />
       <TranslationBulkPreviewPanel
         filters={props.filters}
+        missingKeys={props.summary.translationsMeta.missingKeys}
         meta={props.summary.translationsMeta}
         onImported={props.onTranslationsImported}
       />
@@ -229,13 +239,9 @@ function renderStatusTag(value: string) {
 function readStateTagColor(
   status: ReturnType<typeof readLocalizationSummaryState>["status"],
 ): string {
-  if (status === "active") {
-    return "green";
-  }
-
-  if (status === "fallback") {
-    return "orange";
-  }
-
-  return "red";
+  return status === "active"
+    ? "green"
+    : status === "fallback"
+      ? "orange"
+      : "red";
 }

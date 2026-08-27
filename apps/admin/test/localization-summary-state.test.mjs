@@ -51,10 +51,13 @@ test("localization summary state reads the active MVP defaults", () => {
     missingKeyCount: 0,
     status: "active",
     translationCount: 0,
+    translationCoveragePercent: 100,
     translationEntryLimit: 2000,
+    translationExpectedKeyCount: 0,
     translationLimit: 20,
     translationPage: 1,
     translationRequestedLocale: "en-US",
+    translationResolvedKeyCount: 0,
     translationResolvedLocale: "en-US",
     translationTotal: 0,
   });
@@ -108,9 +111,12 @@ test("localization summary exposes non-default translation fallback entries", ()
   assert.equal(state.status, "fallback");
   assert.equal(state.translationCount, 1);
   assert.equal(state.translationEntryLimit, 2000);
+  assert.equal(state.translationCoveragePercent, 50);
+  assert.equal(state.translationExpectedKeyCount, 2);
   assert.equal(state.translationLimit, 20);
   assert.equal(state.translationPage, 1);
   assert.equal(state.translationRequestedLocale, "de-DE");
+  assert.equal(state.translationResolvedKeyCount, 1);
   assert.equal(state.translationResolvedLocale, "en-US");
   assert.equal(state.translationTotal, 1);
   assert.equal(state.missingKeyCount, 1);

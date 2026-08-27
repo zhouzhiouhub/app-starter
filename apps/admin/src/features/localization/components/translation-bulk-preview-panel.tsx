@@ -1,10 +1,11 @@
 import {
   DownloadOutlined,
+  FileAddOutlined,
   FileSearchOutlined,
   UploadOutlined,
 } from "@ant-design/icons";
 import { Alert, Button, Input, Popconfirm, Space } from "antd";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   exportTranslations,
   importTranslations,
@@ -12,6 +13,10 @@ import {
   previewTranslationImport,
 } from "../api";
 import { formatRequestError } from "../../../lib/api-error";
+import {
+  createMissingTranslationImportDraft,
+  formatTranslationImportDraft,
+} from "../translation-import-draft";
 import { readTranslationImportErrorDetails } from "../translation-import-error-details";
 import { downloadTranslationExport } from "../translation-export-file";
 import type {
@@ -42,6 +47,7 @@ const defaultImportPreviewText = JSON.stringify(
 export function TranslationBulkPreviewPanel(props: {
   filters: TranslationListFilters;
   meta: LocalizationTranslationsMeta;
+  missingKeys?: string[];
   onImported?: () => Promise<void> | void;
 }) {
   const [importText, setImportText] = useState(defaultImportPreviewText);
@@ -57,6 +63,24 @@ export function TranslationBulkPreviewPanel(props: {
   const [loadingAction, setLoadingAction] = useState<
     "download" | "export" | "import" | "preview-import" | null
   >(null);
+  const missingKeyDraft = useMemo(
+    () =>
+      createMissingTranslationImportDraft(
+        props.missingKeys ?? [],
+        props.meta.locale,
+      ),
+    [props.meta.locale, props.missingKeys],
+  );
+  const hasMissingKeyDraft = missingKeyDraft.entries.length > 0;
+
+  function useMissingKeyDraft() {
+    setError(null);
+    setExportPreview(null);
+    setImportErrorDetails(null);
+    setImportPreview(null);
+    setImportResult(null);
+    setImportText(formatTranslationImportDraft(missingKeyDraft));
+  }
 
   const runImportPreview = async () => {
     setLoadingAction("preview-import");
@@ -132,6 +156,13 @@ export function TranslationBulkPreviewPanel(props: {
         value={importText}
       />
       <Space wrap>
+        <Button
+          disabled={!hasMissingKeyDraft}
+          icon={<FileAddOutlined />}
+          onClick={useMissingKeyDraft}
+        >
+          Use missing key draft
+        </Button>
         <Button
           icon={<FileSearchOutlined />}
           loading={loadingAction === "preview-import"}
