@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   buildTranslationListSearch,
+  readTranslationKeyRepairFilters,
   readTranslationListFilters,
 } from "../src/features/localization/translation-list-query.ts";
 
@@ -54,4 +55,20 @@ test("translation list search preserves useful filters and omits defaults", () =
     }),
     "namespace=page.home&q=title&page=2&limit=40",
   );
+});
+
+test("translation key repair filters locate a selected missing key", () => {
+  assert.deepEqual(
+    readTranslationKeyRepairFilters("page.home.hero.title", {
+      limit: 40,
+      page: 3,
+    }),
+    {
+      limit: 40,
+      namespace: "page.home",
+      page: 1,
+      query: "page.home.hero.title",
+    },
+  );
+  assert.equal(readTranslationKeyRepairFilters("Page.Home.Title"), null);
 });

@@ -4,6 +4,7 @@ import {
   translationNamespaceMaxLength,
   translationNamespacePattern,
   translationSearchMaxLength,
+  translationKeyPattern,
 } from "@app-starter/schema";
 import type { TranslationListFilters } from "./types.ts";
 
@@ -54,6 +55,24 @@ export function buildTranslationListSearch(
   return searchParams.toString();
 }
 
+export function readTranslationKeyRepairFilters(
+  key: string,
+  currentFilters: TranslationListFilters = {},
+): TranslationListFilters | null {
+  const normalizedKey = key.trim();
+
+  if (!translationKeyPattern.test(normalizedKey)) {
+    return null;
+  }
+
+  return {
+    limit: currentFilters.limit ?? translationListDefaultLimit,
+    namespace: readTranslationKeyNamespace(normalizedKey),
+    page: defaultPage,
+    query: normalizedKey,
+  };
+}
+
 function readTranslationListPage(searchParams: URLSearchParams): number {
   return readBoundedInteger(Number(searchParams.get("page")), defaultPage);
 }
@@ -74,6 +93,12 @@ function readTranslationNamespace(value: unknown): string | undefined {
 
 function readTranslationSearch(value: unknown): string | undefined {
   return readTrimmedText(value, translationSearchMaxLength);
+}
+
+function readTranslationKeyNamespace(key: string): string {
+  const segments = key.split(".");
+
+  return segments.slice(0, 2).join(".");
 }
 
 function readTrimmedText(
