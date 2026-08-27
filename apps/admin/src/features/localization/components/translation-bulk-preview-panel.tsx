@@ -3,7 +3,7 @@ import {
   FileSearchOutlined,
   UploadOutlined,
 } from "@ant-design/icons";
-import { Alert, Button, Input, Space } from "antd";
+import { Alert, Button, Input, Popconfirm, Space } from "antd";
 import { useState } from "react";
 import {
   exportTranslations,
@@ -12,6 +12,7 @@ import {
   previewTranslationImport,
 } from "../api";
 import { formatRequestError } from "../../../lib/api-error";
+import { readTranslationImportErrorDetails } from "../translation-import-error-details";
 import { downloadTranslationExport } from "../translation-export-file";
 import type {
   LocalizationTranslationsMeta,
@@ -21,6 +22,7 @@ import type {
   TranslationListFilters,
 } from "../types";
 import { TranslationExportPreviewResultView } from "./translation-export-preview-result";
+import { TranslationImportErrorDetailsView } from "./translation-import-error-details";
 import { TranslationImportPreviewResultView } from "./translation-import-preview-result";
 import { TranslationImportResultView } from "./translation-import-result";
 
@@ -47,6 +49,8 @@ export function TranslationBulkPreviewPanel(props: {
     useState<TranslationImportPreviewResult | null>(null);
   const [importResult, setImportResult] =
     useState<TranslationImportResult | null>(null);
+  const [importErrorDetails, setImportErrorDetails] =
+    useState<TranslationImportPreviewResult | null>(null);
   const [exportPreview, setExportPreview] =
     useState<TranslationExportPreviewResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -57,6 +61,8 @@ export function TranslationBulkPreviewPanel(props: {
   const runImportPreview = async () => {
     setLoadingAction("preview-import");
     setError(null);
+    setImportErrorDetails(null);
+    setImportResult(null);
 
     try {
       setImportPreview(await previewTranslationImport(JSON.parse(importText)));
@@ -69,6 +75,8 @@ export function TranslationBulkPreviewPanel(props: {
   const runImport = async () => {
     setLoadingAction("import");
     setError(null);
+    setImportErrorDetails(null);
+    setImportResult(null);
 
     try {
       const result = await importTranslations(JSON.parse(importText));
@@ -76,6 +84,7 @@ export function TranslationBulkPreviewPanel(props: {
       await props.onImported?.();
     } catch (caught) {
       setError(formatPreviewError(caught));
+      setImportErrorDetails(readTranslationImportErrorDetails(caught));
     } finally {
       setLoadingAction(null);
     }
@@ -83,6 +92,7 @@ export function TranslationBulkPreviewPanel(props: {
   const runExportPreview = async () => {
     setLoadingAction("export");
     setError(null);
+    setImportErrorDetails(null);
 
     try {
       setExportPreview(
@@ -100,6 +110,7 @@ export function TranslationBulkPreviewPanel(props: {
   const runExportDownload = async () => {
     setLoadingAction("download");
     setError(null);
+    setImportErrorDetails(null);
 
     try {
       downloadTranslationExport(
@@ -128,13 +139,20 @@ export function TranslationBulkPreviewPanel(props: {
         >
           Preview import
         </Button>
-        <Button
-          icon={<UploadOutlined />}
-          loading={loadingAction === "import"}
-          onClick={() => void runImport()}
+        <Popconfirm
+          cancelText="Cancel"
+          description="Rows marked error, duplicate, or blocked will stop the import."
+          okText="Import"
+          onConfirm={() => void runImport()}
+          title="Import default locale?"
         >
-          Import default locale
-        </Button>
+          <Button
+            icon={<UploadOutlined />}
+            loading={loadingAction === "import"}
+          >
+            Import default locale
+          </Button>
+        </Popconfirm>
         <Button
           icon={<FileSearchOutlined />}
           loading={loadingAction === "export"}
@@ -150,6 +168,9 @@ export function TranslationBulkPreviewPanel(props: {
           Export JSON
         </Button>
       </Space>
+      {importErrorDetails ? (
+        <TranslationImportErrorDetailsView details={importErrorDetails} />
+      ) : null}
       {importResult ? (
         <TranslationImportResultView result={importResult} />
       ) : null}

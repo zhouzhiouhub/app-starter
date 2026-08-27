@@ -72,7 +72,7 @@
 - Page Builder 已具备区块库、区块排序、属性面板、Desktop / Mobile 布局编辑、Undo / Redo。
 - 媒体库已具备列表、登记外部媒体、上传目标生成、归档和 `media://` 引用解析。
 - Settings 已具备默认站点名称与域名管理，并展示 MVP 默认市场、Locale、Currency、功能开关和 Analytics 配置。
-- Localization 已具备默认 Market / Locale / Translation fallback 检查视图，支持默认 `en-US` 翻译条目保存、按 ID 更新、分页列表、筛选、缺失 key 检查、重复保存提示、批量导入/导出预览报告、默认 Locale 批量导入写入、Admin 导入执行结果展示和 Admin 默认 Locale JSON 下载；非默认 Locale 会明确显示回退到 `en-US` 的关闭态，并展示 Locale 创建/更新禁用与 Translation 空态。
+- Localization 已具备默认 Market / Locale / Translation fallback 检查视图，支持默认 `en-US` 翻译条目保存、按 ID 更新、分页列表、筛选、缺失 key 检查、重复保存提示、批量导入/导出预览报告、默认 Locale 批量导入写入、Admin 导入前确认、导入执行结果展示、导入失败行定位、错误详情面板和 Admin 默认 Locale JSON 下载；非默认 Locale 会明确显示回退到 `en-US` 的关闭态，并展示 Locale 创建/更新禁用与 Translation 空态。
 
 ### 当前还没有完成
 
@@ -735,5 +735,5 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 1. 在真实 R2 / CDN 环境配置 `MEDIA_CDN_BASE_URL`、R2 凭据和 CDN 域名，确认不是 `example` / `test` / `invalid` / 本地 / 私网域名，执行 `pnpm smoke:publish` 并归档 `SMOKE_REPORT_PATH`。
 2. 补齐部署 Smoke Test：前台 Vercel、API 独立 Node 服务、Admin 静态托管、Redis 生产连接、环境变量清单和回滚步骤。
 3. 做 Page Builder 视觉验收：Desktop / Mobile 双端检查、核心区块与设计稿差异记录、媒体解析异常态。
-4. 继续完善 Translation Key 管理后台体验：导入失败行定位、错误详情面板和导入前确认态；非默认 Locale 仍保持关闭态。
+4. 继续完善 Translation Key 管理后台体验：筛选条件保留、键名命名辅助和更细的缺失 key 分组；非默认 Locale 仍保持关闭态。
 5. 保持 Commerce 关闭态，继续强化订单 / 支付关闭态分支、Phase 2 Webhook 验签设计和 `COMMERCE_DISABLED` 错误分支测试；不进入真实交易。
