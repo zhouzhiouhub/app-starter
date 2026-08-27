@@ -73,6 +73,19 @@ export function readTranslationKeyRepairFilters(
   };
 }
 
+export function areTranslationListFiltersEqual(
+  first: TranslationListFilters,
+  second: TranslationListFilters,
+): boolean {
+  return (
+    (first.limit ?? translationListDefaultLimit) ===
+      (second.limit ?? translationListDefaultLimit) &&
+    (first.namespace ?? undefined) === (second.namespace ?? undefined) &&
+    (first.page ?? defaultPage) === (second.page ?? defaultPage) &&
+    (first.query ?? undefined) === (second.query ?? undefined)
+  );
+}
+
 function readTranslationListPage(searchParams: URLSearchParams): number {
   return readBoundedInteger(Number(searchParams.get("page")), defaultPage);
 }

@@ -17,10 +17,12 @@ import {
 } from "@app-starter/schema";
 import { formatRequestError } from "../../../lib/api-error";
 import { upsertDefaultTranslationEntry } from "../api";
+import { formatDefaultTranslationSaveMessage } from "../translation-save-feedback";
 import {
   createTranslationKeyDraft,
   readTranslationKeyOptions,
 } from "../translation-key-draft";
+import type { UpsertDefaultTranslationResult } from "../types";
 
 interface TranslationEntryFormValues {
   context?: string;
@@ -33,7 +35,8 @@ export function DefaultTranslationEntryForm(props: {
   draftKey?: string;
   draftVersion?: number;
   keyOptions?: string[];
-  onSaved?: () => Promise<void> | void;
+  locateSavedEntry?: boolean;
+  onSaved?: (result: UpsertDefaultTranslationResult) => Promise<void> | void;
 }) {
   const [form] = Form.useForm<TranslationEntryFormValues>();
   const [feedback, setFeedback] = useState<{
@@ -73,15 +76,16 @@ export function DefaultTranslationEntryForm(props: {
         locale: props.defaultLocale,
         value: values.value,
       });
+      await props.onSaved?.(result);
       form.resetFields();
       setFeedback({
-        message:
-          result.writeMode === "updated"
-            ? `Updated existing ${result.entry.key} for ${props.defaultLocale}.`
-            : `Saved new ${result.entry.key} for ${props.defaultLocale}.`,
+        message: formatDefaultTranslationSaveMessage({
+          locale: props.defaultLocale,
+          result,
+          willLocateEntry: props.locateSavedEntry,
+        }),
         type: "success",
       });
-      await props.onSaved?.();
     } catch (error) {
       setFeedback({
         message: formatRequestError(error),

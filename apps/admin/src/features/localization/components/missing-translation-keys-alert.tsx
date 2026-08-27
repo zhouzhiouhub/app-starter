@@ -4,8 +4,10 @@ import { groupMissingTranslationKeys } from "../missing-translation-key-groups";
 import type { LocalizationTranslationsMeta } from "../types";
 
 export function MissingTranslationKeysAlert(props: {
+  isSelectingKey?: boolean;
   meta: LocalizationTranslationsMeta;
   onSelectKey?: (key: string) => void;
+  selectedKey?: string;
 }) {
   if (props.meta.missingKeyCount === 0) {
     return null;
@@ -32,7 +34,13 @@ export function MissingTranslationKeysAlert(props: {
                     </Typography.Text>
                     {props.onSelectKey ? (
                       <Button
+                        disabled={
+                          props.isSelectingKey && props.selectedKey !== key
+                        }
                         icon={<EditOutlined />}
+                        loading={
+                          props.isSelectingKey && props.selectedKey === key
+                        }
                         onClick={() => props.onSelectKey?.(key)}
                         size="small"
                       >

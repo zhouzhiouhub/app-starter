@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  areTranslationListFiltersEqual,
   buildTranslationListSearch,
   readTranslationKeyRepairFilters,
   readTranslationListFilters,
@@ -71,4 +72,21 @@ test("translation key repair filters locate a selected missing key", () => {
     },
   );
   assert.equal(readTranslationKeyRepairFilters("Page.Home.Title"), null);
+});
+
+test("translation list filter equality applies default paging values", () => {
+  assert.equal(
+    areTranslationListFiltersEqual(
+      { namespace: "page.home", query: "hero" },
+      { limit: 20, namespace: "page.home", page: 1, query: "hero" },
+    ),
+    true,
+  );
+  assert.equal(
+    areTranslationListFiltersEqual(
+      { namespace: "page.home", query: "hero" },
+      { namespace: "page.home", query: "title" },
+    ),
+    false,
+  );
 });

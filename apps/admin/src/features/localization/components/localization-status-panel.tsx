@@ -1,13 +1,17 @@
 import { Alert, Descriptions, Space, Table, Tag, Typography } from "antd";
 import { useState } from "react";
 import { readLocalizationSummaryState } from "../localization-summary-state";
-import { readTranslationKeyRepairFilters } from "../translation-list-query";
+import {
+  areTranslationListFiltersEqual,
+  readTranslationKeyRepairFilters,
+} from "../translation-list-query";
 import type {
   LocalizationLocale,
   LocalizationMarket,
   LocalizationSummary,
   LocalizationTranslationEntry,
   TranslationListFilters,
+  UpsertDefaultTranslationResult,
 } from "../types";
 import { DefaultTranslationEntryForm } from "./default-translation-entry-form";
 import {
@@ -48,6 +52,25 @@ export function LocalizationStatusPanel(props: {
     if (repairFilters) {
       props.onFiltersChange(repairFilters);
     }
+  }
+
+  async function handleTranslationSaved(
+    result: UpsertDefaultTranslationResult,
+  ) {
+    const repairFilters = readTranslationKeyRepairFilters(
+      result.entry.key,
+      props.filters,
+    );
+
+    if (
+      repairFilters &&
+      !areTranslationListFiltersEqual(props.filters, repairFilters)
+    ) {
+      props.onFiltersChange(repairFilters);
+      return;
+    }
+
+    await props.onTranslationSaved?.();
   }
 
   return (
@@ -131,7 +154,8 @@ export function LocalizationStatusPanel(props: {
         draftKey={translationDraft?.key}
         draftVersion={translationDraft?.version}
         keyOptions={props.summary.translationsMeta.missingKeys}
-        onSaved={props.onTranslationSaved}
+        locateSavedEntry
+        onSaved={handleTranslationSaved}
       />
       <TranslationBulkPreviewPanel
         filters={props.filters}
@@ -145,8 +169,10 @@ export function LocalizationStatusPanel(props: {
         onChange={props.onFiltersChange}
       />
       <MissingTranslationKeysAlert
+        isSelectingKey={props.isFiltering}
         meta={props.summary.translationsMeta}
         onSelectKey={selectMissingTranslationKey}
+        selectedKey={translationDraft?.key}
       />
       <Table<LocalizationTranslationEntry>
         columns={translationColumns}
