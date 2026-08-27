@@ -78,6 +78,19 @@ export function readTranslationImportResultHistoryFilterOptions(
   ];
 }
 
+export function formatTranslationImportHistoryFilterEmptyMessage(input: {
+  filter: TranslationImportResultHistoryFilter;
+  totalCount: number;
+}): string | null {
+  if (input.totalCount <= 0 || input.filter === "all") {
+    return null;
+  }
+
+  const actionLabel = input.filter === "create" ? "created" : "updated";
+
+  return `No recent import results include ${actionLabel} rows. Switch to All to replay another result or rebuild a draft from it.`;
+}
+
 export function formatTranslationImportHistoryReplayMessage(
   entry: TranslationImportResultHistoryEntry,
   options: { focusKey?: string | null } = {},
@@ -105,6 +118,16 @@ export function formatTranslationImportHistoryReplayCleanupSuggestion(input: {
   }
 
   return `History replay is visible. Clear ${input.historyCount} recent import ${input.historyCount === 1 ? "result" : "results"} and the replayed result after confirming the table focus.`;
+}
+
+export function formatTranslationBulkRepairHistoryRetentionMessage(input: {
+  historyCount: number;
+}): string | null {
+  if (input.historyCount <= 0) {
+    return null;
+  }
+
+  return `Recent import history is retained after bulk repair for replay, follow-up drafts, and server confirmation. Clear ${input.historyCount} ${input.historyCount === 1 ? "result" : "results"} after checking the repaired rows.`;
 }
 
 export function formatTranslationBulkRepairCleanupSuggestion(input: {

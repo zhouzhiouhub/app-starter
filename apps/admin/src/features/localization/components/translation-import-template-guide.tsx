@@ -1,6 +1,7 @@
 import { Alert, Descriptions, Space, Tag, Typography } from "antd";
 import { useMemo } from "react";
 import { translationBulkPreviewMaxEntries } from "@app-starter/schema";
+import { formatTranslationImportFilterDifferenceMessage } from "../translation-import-filter-difference";
 import {
   readTranslationImportTemplateEmptyStateMessage,
   readTranslationImportTemplateSeverity,
@@ -9,6 +10,7 @@ import {
 
 export function TranslationImportTemplateGuide(props: {
   defaultLocale: string;
+  filters?: { namespace?: string; query?: string };
   importText: string;
   missingKeys?: string[];
 }) {
@@ -26,6 +28,12 @@ export function TranslationImportTemplateGuide(props: {
     defaultLocale: props.defaultLocale,
     summary,
   });
+  const filterDifferenceMessage =
+    formatTranslationImportFilterDifferenceMessage({
+      importText: props.importText,
+      namespace: props.filters?.namespace,
+      query: props.filters?.query,
+    });
 
   return (
     <Space direction="vertical" size={8} style={{ width: "100%" }}>
@@ -53,6 +61,9 @@ export function TranslationImportTemplateGuide(props: {
           showIcon
           type="info"
         />
+      ) : null}
+      {filterDifferenceMessage ? (
+        <Alert message={filterDifferenceMessage} showIcon type="warning" />
       ) : null}
       <Descriptions bordered column={{ md: 4, xs: 1 }} size="small">
         <Descriptions.Item label="Rows">{summary.entryCount}</Descriptions.Item>

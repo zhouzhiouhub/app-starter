@@ -22,6 +22,7 @@ import { readTranslationImportFocusKey } from "../translation-import-focus";
 import {
   formatTranslationBulkRepairCleanupSuggestion,
   formatTranslationBulkRepairCompletionMessage,
+  formatTranslationBulkRepairHistoryRetentionMessage,
   formatTranslationImportHistoryReplayCleanupSuggestion,
   formatTranslationImportHistoryReplayMessage,
   readTranslationBulkRepairCoveredMissingKeys,
@@ -261,6 +262,11 @@ export function useTranslationBulkPreview(input: {
           })
         : null,
     repairCompletionNotice: feedback.repairCompletionNotice,
+    repairHistoryRetentionMessage: feedback.repairCompletionNotice
+      ? formatTranslationBulkRepairHistoryRetentionMessage({
+          historyCount: importResultHistoryState.importResultHistory.length,
+        })
+      : null,
     repairServerNotice: repairConfirmation.notice,
     restoreImportResult,
     runExportDownload,

@@ -6,9 +6,11 @@ import {
   createTranslationImportResultHistoryEntry,
   filterTranslationImportResultHistoryEntries,
   formatTranslationBulkRepairCleanupSuggestion,
+  formatTranslationBulkRepairHistoryRetentionMessage,
   formatTranslationBulkRepairServerConfirmationMessage,
   formatTranslationBulkRepairCompletionMessage,
   formatTranslationBulkRetryError,
+  formatTranslationImportHistoryFilterEmptyMessage,
   formatTranslationImportHistoryDraftMessage,
   formatTranslationImportHistoryReplayCleanupSuggestion,
   formatTranslationImportHistoryReplayMessage,
@@ -124,6 +126,23 @@ test("translation import result history filters entries by details", () => {
   );
 });
 
+test("translation import result history explains empty action filters", () => {
+  assert.equal(
+    formatTranslationImportHistoryFilterEmptyMessage({
+      filter: "create",
+      totalCount: 2,
+    }),
+    "No recent import results include created rows. Switch to All to replay another result or rebuild a draft from it.",
+  );
+  assert.equal(
+    formatTranslationImportHistoryFilterEmptyMessage({
+      filter: "all",
+      totalCount: 2,
+    }),
+    null,
+  );
+});
+
 test("translation import result history explains replayed results", () => {
   assert.equal(
     formatTranslationImportHistoryReplayMessage(
@@ -176,6 +195,17 @@ test("translation bulk repair cleanup suggestion follows history availability", 
   );
   assert.equal(
     formatTranslationBulkRepairCleanupSuggestion({ historyCount: 0 }),
+    null,
+  );
+});
+
+test("translation bulk repair retention explains why history remains", () => {
+  assert.equal(
+    formatTranslationBulkRepairHistoryRetentionMessage({ historyCount: 2 }),
+    "Recent import history is retained after bulk repair for replay, follow-up drafts, and server confirmation. Clear 2 results after checking the repaired rows.",
+  );
+  assert.equal(
+    formatTranslationBulkRepairHistoryRetentionMessage({ historyCount: 0 }),
     null,
   );
 });

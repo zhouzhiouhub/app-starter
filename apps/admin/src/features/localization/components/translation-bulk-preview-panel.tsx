@@ -47,6 +47,7 @@ export function TranslationBulkPreviewPanel(props: {
       ) : null}
       <TranslationImportTemplateGuide
         defaultLocale={props.meta.locale}
+        filters={props.filters}
         importText={bulkPreview.importText}
         missingKeys={props.missingKeys}
       />
@@ -77,6 +78,7 @@ export function TranslationBulkPreviewPanel(props: {
       ) : null}
       {bulkPreview.repairCompletionNotice ? (
         <Alert
+          description={bulkPreview.repairHistoryRetentionMessage}
           message={bulkPreview.repairCompletionNotice}
           showIcon
           type="success"

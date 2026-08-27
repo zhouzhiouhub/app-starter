@@ -3,10 +3,11 @@ import {
   EyeOutlined,
   FileAddOutlined,
 } from "@ant-design/icons";
-import { Button, Segmented, Space, Table, Typography } from "antd";
+import { Alert, Button, Segmented, Space, Table, Typography } from "antd";
 import { useMemo, useState } from "react";
 import {
   filterTranslationImportResultHistoryEntries,
+  formatTranslationImportHistoryFilterEmptyMessage,
   readTranslationImportResultHistoryFilterOptions,
   type TranslationImportResultHistoryEntry,
   type TranslationImportResultHistoryFilter,
@@ -34,6 +35,10 @@ export function TranslationImportResultHistoryView(props: {
     () => filterTranslationImportResultHistoryEntries(props.entries, filter),
     [filter, props.entries],
   );
+  const filterEmptyMessage = formatTranslationImportHistoryFilterEmptyMessage({
+    filter,
+    totalCount: props.entries.length,
+  });
 
   if (props.entries.length === 0) {
     return null;
@@ -62,6 +67,18 @@ export function TranslationImportResultHistoryView(props: {
         options={filterOptions}
         value={filter}
       />
+      {filterEmptyMessage && filteredEntries.length === 0 ? (
+        <Alert
+          action={
+            <Button onClick={() => setFilter("all")} size="small">
+              Show all
+            </Button>
+          }
+          message={filterEmptyMessage}
+          showIcon
+          type="info"
+        />
+      ) : null}
       <Table<TranslationImportResultHistoryEntry>
         columns={[
           {
@@ -105,7 +122,10 @@ export function TranslationImportResultHistoryView(props: {
           },
         ]}
         dataSource={filteredEntries}
-        locale={{ emptyText: "No recent import results match this filter." }}
+        locale={{
+          emptyText:
+            filterEmptyMessage ?? "No recent import results match this filter.",
+        }}
         pagination={false}
         rowKey="id"
         size="small"
