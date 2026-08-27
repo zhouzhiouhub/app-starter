@@ -1,4 +1,5 @@
-import { Alert, Typography } from "antd";
+import { Alert, Space, Tag, Typography } from "antd";
+import { groupMissingTranslationKeys } from "../missing-translation-key-groups";
 import type { LocalizationTranslationsMeta } from "../types";
 
 export function MissingTranslationKeysAlert(props: {
@@ -8,7 +9,7 @@ export function MissingTranslationKeysAlert(props: {
     return null;
   }
 
-  const preview = props.meta.missingKeys.join(", ");
+  const groups = groupMissingTranslationKeys(props.meta.missingKeys);
   const suffix =
     props.meta.missingKeyCount > props.meta.missingKeyPreviewLimit
       ? ` Showing first ${props.meta.missingKeyPreviewLimit}.`
@@ -17,10 +18,19 @@ export function MissingTranslationKeysAlert(props: {
   return (
     <Alert
       description={
-        <Typography.Text code>
-          {preview}
-          {suffix}
-        </Typography.Text>
+        <Space direction="vertical" size={6}>
+          {groups.map((group) => (
+            <Space align="start" key={group.namespace} size={8}>
+              <Tag>{group.namespace}</Tag>
+              <Typography.Text code style={{ wordBreak: "break-word" }}>
+                {group.keys.join(", ")}
+              </Typography.Text>
+            </Space>
+          ))}
+          {suffix ? (
+            <Typography.Text type="secondary">{suffix}</Typography.Text>
+          ) : null}
+        </Space>
       }
       message={`${props.meta.missingKeyCount} page translation keys are missing default ${props.meta.locale} entries.`}
       showIcon

@@ -1,33 +1,49 @@
-import { useState } from "react";
 import { Alert, Button, Spin, Space, Typography } from "antd";
-import { translationListDefaultLimit } from "@app-starter/schema";
+import { useCallback, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import { LocalizationStatusPanel } from "../../features/localization/components/localization-status-panel";
 import { useLocalizationSummary } from "../../features/localization/hooks/use-localization-summary";
+import {
+  buildTranslationListSearch,
+  readTranslationListFilters,
+} from "../../features/localization/translation-list-query";
 import type { TranslationListFilters } from "../../features/localization/types";
 
 export function LocalizationPage() {
-  const [translationFilters, setTranslationFilters] =
-    useState<TranslationListFilters>({
-      limit: translationListDefaultLimit,
-      page: 1,
-    });
+  const [searchParams, setSearchParams] = useSearchParams();
+  const translationFilters = useMemo(
+    () => readTranslationListFilters(searchParams),
+    [searchParams],
+  );
   const { error, isLoading, load, summary } =
     useLocalizationSummary(translationFilters);
-  const updateTranslationFilters = (filters: TranslationListFilters) => {
-    setTranslationFilters((current) => ({
-      limit: current.limit,
-      namespace: filters.namespace,
-      page: 1,
-      query: filters.query,
-    }));
-  };
-  const updateTranslationPage = (page: number, limit: number) => {
-    setTranslationFilters((current) => ({
-      ...current,
-      limit,
-      page,
-    }));
-  };
+  const updateTranslationFilters = useCallback(
+    (filters: TranslationListFilters) => {
+      setSearchParams(
+        buildTranslationListSearch({
+          limit: translationFilters.limit,
+          namespace: filters.namespace,
+          page: 1,
+          query: filters.query,
+        }),
+        { replace: true },
+      );
+    },
+    [setSearchParams, translationFilters.limit],
+  );
+  const updateTranslationPage = useCallback(
+    (page: number, limit: number) => {
+      setSearchParams(
+        buildTranslationListSearch({
+          ...translationFilters,
+          limit,
+          page,
+        }),
+        { replace: true },
+      );
+    },
+    [setSearchParams, translationFilters],
+  );
 
   return (
     <div>

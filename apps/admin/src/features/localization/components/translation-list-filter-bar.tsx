@@ -1,5 +1,6 @@
 import { ClearOutlined, SearchOutlined } from "@ant-design/icons";
 import { Button, Form, Input, Space } from "antd";
+import { useEffect } from "react";
 import {
   translationNamespaceMaxLength,
   translationNamespacePattern,
@@ -19,6 +20,13 @@ export function TranslationListFilterBar(props: {
 }) {
   const [form] = Form.useForm<TranslationListFilterValues>();
   const hasFilters = Boolean(props.filters.namespace || props.filters.query);
+
+  useEffect(() => {
+    form.setFieldsValue({
+      namespace: props.filters.namespace,
+      query: props.filters.query,
+    });
+  }, [form, props.filters.namespace, props.filters.query]);
 
   function handleFinish(values: TranslationListFilterValues) {
     props.onChange({
