@@ -30,6 +30,7 @@ import { TranslationExportPreviewResultView } from "./translation-export-preview
 import { TranslationImportErrorDetailsView } from "./translation-import-error-details";
 import { TranslationImportPreviewResultView } from "./translation-import-preview-result";
 import { TranslationImportResultView } from "./translation-import-result";
+import { TranslationImportTemplateGuide } from "./translation-import-template-guide";
 
 const defaultImportPreviewText = JSON.stringify(
   {
@@ -150,6 +151,11 @@ export function TranslationBulkPreviewPanel(props: {
   return (
     <Space direction="vertical" size={12} style={{ width: "100%" }}>
       {error ? <Alert message={error} showIcon type="error" /> : null}
+      <TranslationImportTemplateGuide
+        defaultLocale={props.meta.locale}
+        importText={importText}
+        missingKeys={props.missingKeys}
+      />
       <Input.TextArea
         autoSize={{ maxRows: 8, minRows: 5 }}
         onChange={(event) => setImportText(event.target.value)}
