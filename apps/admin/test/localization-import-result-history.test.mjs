@@ -10,6 +10,7 @@ import {
   formatTranslationBulkRepairCompletionMessage,
   formatTranslationBulkRetryError,
   formatTranslationImportHistoryDraftMessage,
+  formatTranslationImportHistoryReplayCleanupSuggestion,
   formatTranslationImportHistoryReplayMessage,
   readTranslationBulkRepairCoveredMissingKeys,
   readTranslationBulkRepairRemainingKeys,
@@ -154,6 +155,17 @@ test("translation import result history explains draft rebuilds", () => {
       ),
     ),
     "Draft rebuilt from Import #2 with 2 imported rows. Import preview is reset.",
+  );
+});
+
+test("translation import result history explains replay cleanup", () => {
+  assert.equal(
+    formatTranslationImportHistoryReplayCleanupSuggestion({ historyCount: 2 }),
+    "History replay is visible. Clear 2 recent import results and the replayed result after confirming the table focus.",
+  );
+  assert.equal(
+    formatTranslationImportHistoryReplayCleanupSuggestion({ historyCount: 0 }),
+    null,
   );
 });
 

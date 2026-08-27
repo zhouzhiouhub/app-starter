@@ -22,18 +22,19 @@ import { readTranslationImportFocusKey } from "../translation-import-focus";
 import {
   formatTranslationBulkRepairCleanupSuggestion,
   formatTranslationBulkRepairCompletionMessage,
+  formatTranslationImportHistoryReplayCleanupSuggestion,
   formatTranslationImportHistoryReplayMessage,
   readTranslationBulkRepairCoveredMissingKeys,
   type TranslationImportResultHistoryEntry,
 } from "../translation-import-result-history";
 import { readTranslationBulkActionError } from "../translation-bulk-action-error";
+import { readTranslationImportDraftActionGuard } from "../translation-import-action-guard";
+import { useTranslationBulkPreviewFeedback } from "./use-translation-bulk-preview-feedback";
 import { useTranslationBulkRepairConfirmation } from "./use-translation-bulk-repair-confirmation";
 import { useTranslationImportResultHistory } from "./use-translation-import-result-history";
 import type { TranslationBulkLoadingAction } from "../translation-bulk-action";
 import type {
   LocalizationTranslationsMeta,
-  TranslationExportPreviewResult,
-  TranslationImportPreviewResult,
   TranslationImportResult,
   TranslationImportResultEntry,
   TranslationListFilters,
@@ -46,27 +47,7 @@ export function useTranslationBulkPreview(input: {
   onImported?: (result: TranslationImportResult) => Promise<void> | void;
 }) {
   const [importText, setImportText] = useState(defaultTranslationImportText);
-  const [importPreview, setImportPreview] =
-    useState<TranslationImportPreviewResult | null>(null);
-  const [importResult, setImportResult] =
-    useState<TranslationImportResult | null>(null);
-  const [importErrorDetails, setImportErrorDetails] =
-    useState<TranslationImportPreviewResult | null>(null);
-  const [exportPreview, setExportPreview] =
-    useState<TranslationExportPreviewResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [draftNotice, setDraftNotice] = useState<string | null>(null);
-  const [draftClearSuggestion, setDraftClearSuggestion] = useState<
-    string | null
-  >(null);
-  const [historyReplayNotice, setHistoryReplayNotice] = useState<string | null>(
-    null,
-  );
-  const [repairCompletionNotice, setRepairCompletionNotice] = useState<
-    string | null
-  >(null);
-  const [loadingAction, setLoadingAction] =
-    useState<TranslationBulkLoadingAction | null>(null);
+  const feedback = useTranslationBulkPreviewFeedback();
   const importResultHistoryState = useTranslationImportResultHistory();
   const missingKeyDraftState = useMemo(
     () =>
@@ -99,179 +80,187 @@ export function useTranslationBulkPreview(input: {
   }
 
   function useImportDraft(text: string, notice: string) {
-    setError(null);
-    setExportPreview(null);
-    setImportErrorDetails(null);
-    setImportPreview(null);
-    setImportResult(null);
-    setDraftNotice(notice);
-    setDraftClearSuggestion(null);
-    setHistoryReplayNotice(null);
-    setRepairCompletionNotice(null);
+    feedback.applyImportDraft(notice);
     repairConfirmation.clear();
     setImportText(text);
   }
 
   function handleImportTextChange(value: string) {
-    setDraftNotice(null);
-    setDraftClearSuggestion(null);
-    setHistoryReplayNotice(null);
+    feedback.clearTextChangeFeedback();
     setImportText(value);
   }
 
   const runImportPreview = async () => {
-    setLoadingAction("preview-import");
-    setError(null);
-    setImportErrorDetails(null);
-    setImportResult(null);
-    setDraftNotice(null);
-    setDraftClearSuggestion(null);
-    setHistoryReplayNotice(null);
-    setRepairCompletionNotice(null);
+    if (guardImportDraftAction("preview-import")) {
+      return;
+    }
+
+    feedback.beginImportAction("preview-import");
     repairConfirmation.clear();
 
     try {
-      setImportPreview(await previewTranslationImport(JSON.parse(importText)));
+      feedback.showImportPreview(
+        await previewTranslationImport(JSON.parse(importText)),
+      );
     } catch (caught) {
-      setError(readTranslationBulkActionError("preview-import", caught));
+      feedback.showActionError(
+        readTranslationBulkActionError("preview-import", caught),
+      );
     } finally {
-      setLoadingAction(null);
+      feedback.finishAction();
     }
   };
   const runImport = async () => {
-    setLoadingAction("import");
-    setError(null);
-    setImportErrorDetails(null);
-    setImportResult(null);
-    setDraftNotice(null);
-    setDraftClearSuggestion(null);
-    setHistoryReplayNotice(null);
-    setRepairCompletionNotice(null);
+    if (guardImportDraftAction("import")) {
+      return;
+    }
+
+    feedback.beginImportAction("import");
     repairConfirmation.clear();
 
     try {
       const result = await importTranslations(JSON.parse(importText));
-      setImportResult(result);
       importResultHistoryState.recordImportResult(result);
       const repairedKeys = readTranslationBulkRepairCoveredMissingKeys({
         missingKeys: input.missingKeys,
         result,
       });
-      setRepairCompletionNotice(
-        formatTranslationBulkRepairCompletionMessage({
+      feedback.showImportResult({
+        draftClearSuggestion: formatTranslationImportDraftClearSuggestion({
+          importedCount: result.summary.importedCount,
+        }),
+        repairCompletionNotice: formatTranslationBulkRepairCompletionMessage({
           locale: input.meta.locale,
           missingKeys: input.missingKeys,
           result,
         }),
-      );
-      setDraftClearSuggestion(
-        formatTranslationImportDraftClearSuggestion({
-          importedCount: result.summary.importedCount,
-        }),
-      );
+        result,
+      });
       await input.onImported?.(result);
       repairConfirmation.begin(repairedKeys, result.entries[0]?.key ?? null);
     } catch (caught) {
-      setError(readTranslationBulkActionError("import", caught));
-      setImportErrorDetails(readTranslationImportErrorDetails(caught));
+      feedback.showImportError(
+        readTranslationBulkActionError("import", caught),
+        readTranslationImportErrorDetails(caught),
+      );
     } finally {
-      setLoadingAction(null);
+      feedback.finishAction();
     }
   };
   const runExportPreview = async () => {
-    setLoadingAction("export");
-    setError(null);
-    setImportErrorDetails(null);
-    setDraftClearSuggestion(null);
-    setHistoryReplayNotice(null);
+    feedback.beginExportAction("export");
 
     try {
-      setExportPreview(
+      feedback.showExportPreview(
         await previewTranslationExport(
           input.filters,
           input.meta.requestedLocale,
         ),
       );
     } catch (caught) {
-      setError(readTranslationBulkActionError("export", caught));
+      feedback.showActionError(
+        readTranslationBulkActionError("export", caught),
+      );
     } finally {
-      setLoadingAction(null);
+      feedback.finishAction();
     }
   };
   const runExportDownload = async () => {
-    setLoadingAction("download");
-    setError(null);
-    setImportErrorDetails(null);
-    setDraftClearSuggestion(null);
-    setHistoryReplayNotice(null);
+    feedback.beginExportAction("download");
 
     try {
       downloadTranslationExport(
         await exportTranslations(input.filters, input.meta.requestedLocale),
       );
     } catch (caught) {
-      setError(readTranslationBulkActionError("download", caught));
+      feedback.showActionError(
+        readTranslationBulkActionError("download", caught),
+      );
     } finally {
-      setLoadingAction(null);
+      feedback.finishAction();
     }
   };
 
   function restoreImportResult(entry: TranslationImportResultHistoryEntry) {
     const focusKey = readTranslationImportFocusKey(entry.result);
 
-    setError(null);
-    setExportPreview(null);
-    setImportErrorDetails(null);
-    setImportPreview(null);
-    setImportResult(entry.result);
-    setDraftNotice(null);
-    setDraftClearSuggestion(null);
-    setHistoryReplayNotice(
-      formatTranslationImportHistoryReplayMessage(entry, { focusKey }),
-    );
-    setRepairCompletionNotice(null);
+    feedback.showHistoryReplay({
+      notice: formatTranslationImportHistoryReplayMessage(entry, { focusKey }),
+      result: entry.result,
+    });
     repairConfirmation.clear();
 
     return focusKey;
   }
 
   function clearImportDraftAfterSuccess() {
-    setError(null);
-    setExportPreview(null);
-    setImportErrorDetails(null);
-    setImportPreview(null);
-    setDraftNotice(
+    feedback.clearImportDraftAfterSuccess(
       formatTranslationImportDraftClearedNotice({
         locale: input.meta.locale,
       }),
     );
-    setDraftClearSuggestion(null);
-    setHistoryReplayNotice(null);
     setImportText(emptyTranslationImportText);
+  }
+
+  function clearImportResultHistory() {
+    importResultHistoryState.clearImportResultHistory();
+    feedback.clearImportResultHistoryFeedback();
+  }
+
+  function clearHistoryReplayAfterConfirmation() {
+    importResultHistoryState.clearImportResultHistory();
+    feedback.clearHistoryReplayAfterConfirmation();
+    repairConfirmation.clear();
+  }
+
+  function guardImportDraftAction(
+    action: Extract<TranslationBulkLoadingAction, "import" | "preview-import">,
+  ): boolean {
+    const message = readTranslationImportDraftActionGuard({
+      action,
+      defaultLocale: input.meta.locale,
+      importText,
+      missingKeys: input.missingKeys,
+    });
+
+    if (!message) {
+      return false;
+    }
+
+    feedback.showDraftActionGuard(message);
+    repairConfirmation.clear();
+
+    return true;
   }
 
   return {
     clearImportDraftAfterSuccess,
-    clearImportResultHistory: importResultHistoryState.clearImportResultHistory,
-    draftClearSuggestion,
-    draftNotice,
-    error,
-    exportPreview,
+    clearHistoryReplayAfterConfirmation,
+    clearImportResultHistory,
+    draftClearSuggestion: feedback.draftClearSuggestion,
+    draftNotice: feedback.draftNotice,
+    error: feedback.error,
+    exportPreview: feedback.exportPreview,
     hasMissingKeyDraft: missingKeyDraftState.entryCount > 0,
-    historyReplayNotice,
-    importErrorDetails,
-    importPreview,
-    importResult,
+    historyReplayNotice: feedback.historyReplayNotice,
+    historyReplayCleanupSuggestion: feedback.historyReplayNotice
+      ? formatTranslationImportHistoryReplayCleanupSuggestion({
+          historyCount: importResultHistoryState.importResultHistory.length,
+        })
+      : null,
+    importErrorDetails: feedback.importErrorDetails,
+    importPreview: feedback.importPreview,
+    importResult: feedback.importResult,
     importResultHistory: importResultHistoryState.importResultHistory,
     importText,
-    loadingAction,
+    loadingAction: feedback.loadingAction,
     repairCleanupSuggestion:
       repairConfirmation.notice?.type === "success"
         ? formatTranslationBulkRepairCleanupSuggestion({
             historyCount: importResultHistoryState.importResultHistory.length,
           })
         : null,
-    repairCompletionNotice,
+    repairCompletionNotice: feedback.repairCompletionNotice,
     repairServerNotice: repairConfirmation.notice,
     restoreImportResult,
     runExportDownload,

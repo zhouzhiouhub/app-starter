@@ -1,5 +1,5 @@
 import { DeleteOutlined } from "@ant-design/icons";
-import { Alert, Button, Input, Space } from "antd";
+import { Alert, Button, Input, Popconfirm, Space } from "antd";
 import { useTranslationBulkPreview } from "../hooks/use-translation-bulk-preview";
 import { readTranslationImportFocusedResultKey } from "../translation-import-focus";
 import type {
@@ -54,7 +54,26 @@ export function TranslationBulkPreviewPanel(props: {
         <Alert message={bulkPreview.draftNotice} showIcon type="info" />
       ) : null}
       {bulkPreview.historyReplayNotice ? (
-        <Alert message={bulkPreview.historyReplayNotice} showIcon type="info" />
+        <Alert
+          action={
+            bulkPreview.historyReplayCleanupSuggestion ? (
+              <Popconfirm
+                cancelText="Keep replay"
+                okText="Clear"
+                onConfirm={bulkPreview.clearHistoryReplayAfterConfirmation}
+                title="Clear replay and recent import history?"
+              >
+                <Button icon={<DeleteOutlined />} size="small">
+                  Clear replay
+                </Button>
+              </Popconfirm>
+            ) : undefined
+          }
+          description={bulkPreview.historyReplayCleanupSuggestion}
+          message={bulkPreview.historyReplayNotice}
+          showIcon
+          type="info"
+        />
       ) : null}
       {bulkPreview.repairCompletionNotice ? (
         <Alert

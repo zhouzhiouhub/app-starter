@@ -7,7 +7,10 @@ import {
 } from "@ant-design/icons";
 import { Alert, Button, Pagination, Space, Tag, Typography } from "antd";
 import { useEffect, useState } from "react";
-import { formatMissingTranslationKeyFilterScopeMessage } from "../missing-translation-key-filter-scope";
+import {
+  formatMissingTranslationKeyFilterRestoreMessage,
+  formatMissingTranslationKeyFilterScopeMessage,
+} from "../missing-translation-key-filter-scope";
 import {
   readBrowserMissingTranslationKeyPage,
   readMissingTranslationKeyPageForKey,
@@ -41,6 +44,13 @@ export function MissingTranslationKeysAlert(props: {
   const filterScopeMessage = formatMissingTranslationKeyFilterScopeMessage({
     namespace: props.meta.namespace,
     query: props.meta.query,
+  });
+  const filterRestoreMessage = formatMissingTranslationKeyFilterRestoreMessage({
+    missingKeys: props.meta.missingKeys,
+    namespace: props.meta.namespace,
+    query: props.meta.query,
+    resolvedKeys: props.resolvedKeys,
+    selectedKey: props.selectedKey,
   });
   const pageState = readMissingTranslationKeyPaginationState({
     currentPage: visiblePage,
@@ -158,6 +168,11 @@ export function MissingTranslationKeysAlert(props: {
           {filterScopeMessage ? (
             <Typography.Text type="secondary">
               {filterScopeMessage}
+            </Typography.Text>
+          ) : null}
+          {filterRestoreMessage ? (
+            <Typography.Text type="warning">
+              {filterRestoreMessage}
             </Typography.Text>
           ) : null}
           {groups.map((group) => (

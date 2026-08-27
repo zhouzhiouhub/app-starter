@@ -97,6 +97,16 @@ export function formatTranslationImportHistoryDraftMessage(
   return `Draft rebuilt from ${entry.label} with ${entryCount} imported ${entryCount === 1 ? "row" : "rows"}. Import preview is reset.`;
 }
 
+export function formatTranslationImportHistoryReplayCleanupSuggestion(input: {
+  historyCount: number;
+}): string | null {
+  if (input.historyCount <= 0) {
+    return null;
+  }
+
+  return `History replay is visible. Clear ${input.historyCount} recent import ${input.historyCount === 1 ? "result" : "results"} and the replayed result after confirming the table focus.`;
+}
+
 export function formatTranslationBulkRepairCleanupSuggestion(input: {
   historyCount: number;
 }): string | null {
