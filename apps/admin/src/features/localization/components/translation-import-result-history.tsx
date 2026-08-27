@@ -1,12 +1,35 @@
 import { DeleteOutlined, EyeOutlined } from "@ant-design/icons";
-import { Button, Space, Table, Typography } from "antd";
-import type { TranslationImportResultHistoryEntry } from "../translation-import-result-history";
+import { Button, Segmented, Space, Table, Typography } from "antd";
+import { useMemo, useState } from "react";
+import {
+  filterTranslationImportResultHistoryEntries,
+  readTranslationImportResultHistoryFilterOptions,
+  type TranslationImportResultHistoryEntry,
+  type TranslationImportResultHistoryFilter,
+} from "../translation-import-result-history";
 
 export function TranslationImportResultHistoryView(props: {
   entries: TranslationImportResultHistoryEntry[];
   onClear?: () => void;
   onSelect: (entry: TranslationImportResultHistoryEntry) => void;
 }) {
+  const [filter, setFilter] =
+    useState<TranslationImportResultHistoryFilter>("all");
+  const filterOptions = useMemo(
+    () =>
+      readTranslationImportResultHistoryFilterOptions(props.entries).map(
+        (option) => ({
+          label: `${option.label} ${option.count}`,
+          value: option.value,
+        }),
+      ),
+    [props.entries],
+  );
+  const filteredEntries = useMemo(
+    () => filterTranslationImportResultHistoryEntries(props.entries, filter),
+    [filter, props.entries],
+  );
+
   if (props.entries.length === 0) {
     return null;
   }
@@ -27,6 +50,13 @@ export function TranslationImportResultHistoryView(props: {
           </Button>
         ) : null}
       </Space>
+      <Segmented
+        onChange={(value) =>
+          setFilter(value as TranslationImportResultHistoryFilter)
+        }
+        options={filterOptions}
+        value={filter}
+      />
       <Table<TranslationImportResultHistoryEntry>
         columns={[
           {
@@ -58,7 +88,8 @@ export function TranslationImportResultHistoryView(props: {
             width: 120,
           },
         ]}
-        dataSource={props.entries}
+        dataSource={filteredEntries}
+        locale={{ emptyText: "No recent import results match this filter." }}
         pagination={false}
         rowKey="id"
         size="small"

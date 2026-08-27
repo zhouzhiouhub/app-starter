@@ -1,10 +1,22 @@
 import type { TranslationBulkLoadingAction } from "./translation-bulk-action.ts";
-import type { TranslationImportResult } from "./types.ts";
+import type {
+  TranslationImportResult,
+  TranslationImportResultAction,
+} from "./types.ts";
 
 export interface TranslationImportResultHistoryEntry {
   id: string;
   label: string;
   result: TranslationImportResult;
+}
+
+export type TranslationImportResultHistoryFilter =
+  "all" | TranslationImportResultAction;
+
+export interface TranslationImportResultHistoryFilterOption {
+  count: number;
+  label: string;
+  value: TranslationImportResultHistoryFilter;
 }
 
 export function createTranslationImportResultHistoryEntry(
@@ -33,10 +45,53 @@ export function clearTranslationImportResultHistory(): TranslationImportResultHi
   return [];
 }
 
+export function filterTranslationImportResultHistoryEntries(
+  entries: TranslationImportResultHistoryEntry[],
+  filter: TranslationImportResultHistoryFilter,
+): TranslationImportResultHistoryEntry[] {
+  if (filter === "all") {
+    return entries;
+  }
+
+  return entries.filter((entry) =>
+    entry.result.entries.some((resultEntry) => resultEntry.action === filter),
+  );
+}
+
+export function readTranslationImportResultHistoryFilterOptions(
+  entries: TranslationImportResultHistoryEntry[],
+): TranslationImportResultHistoryFilterOption[] {
+  return [
+    { count: entries.length, label: "All", value: "all" },
+    {
+      count: filterTranslationImportResultHistoryEntries(entries, "create")
+        .length,
+      label: "Created",
+      value: "create",
+    },
+    {
+      count: filterTranslationImportResultHistoryEntries(entries, "update")
+        .length,
+      label: "Updated",
+      value: "update",
+    },
+  ];
+}
+
 export function formatTranslationImportHistoryReplayMessage(
   entry: TranslationImportResultHistoryEntry,
 ): string {
   return `Viewing ${entry.label} from recent import history. This only replays the result table and does not re-import data.`;
+}
+
+export function formatTranslationBulkRepairCleanupSuggestion(input: {
+  historyCount: number;
+}): string | null {
+  if (input.historyCount <= 0) {
+    return null;
+  }
+
+  return `Server confirmation is complete. Clear ${input.historyCount} recent import ${input.historyCount === 1 ? "result" : "results"} when you no longer need replay.`;
 }
 
 export function readTranslationBulkRepairCoveredMissingKeys(input: {

@@ -1,4 +1,5 @@
-import { Alert, Input, Space } from "antd";
+import { DeleteOutlined } from "@ant-design/icons";
+import { Alert, Button, Input, Space } from "antd";
 import { useTranslationBulkPreview } from "../hooks/use-translation-bulk-preview";
 import { readTranslationImportFocusedResultKey } from "../translation-import-focus";
 import type {
@@ -54,6 +55,18 @@ export function TranslationBulkPreviewPanel(props: {
       ) : null}
       {bulkPreview.repairServerNotice ? (
         <Alert
+          action={
+            bulkPreview.repairCleanupSuggestion ? (
+              <Button
+                icon={<DeleteOutlined />}
+                onClick={bulkPreview.clearImportResultHistory}
+                size="small"
+              >
+                Clear history
+              </Button>
+            ) : undefined
+          }
+          description={bulkPreview.repairCleanupSuggestion}
           message={bulkPreview.repairServerNotice.message}
           showIcon
           type={bulkPreview.repairServerNotice.type}

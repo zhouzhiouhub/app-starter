@@ -19,6 +19,7 @@ import {
   addTranslationImportResultHistoryEntry,
   clearTranslationImportResultHistory,
   createTranslationImportResultHistoryEntry,
+  formatTranslationBulkRepairCleanupSuggestion,
   formatTranslationBulkRepairCompletionMessage,
   formatTranslationBulkRetryError,
   formatTranslationImportHistoryReplayMessage,
@@ -249,6 +250,12 @@ export function useTranslationBulkPreview(input: {
     importResultHistory,
     importText,
     loadingAction,
+    repairCleanupSuggestion:
+      repairConfirmation.notice?.type === "success"
+        ? formatTranslationBulkRepairCleanupSuggestion({
+            historyCount: importResultHistory.length,
+          })
+        : null,
     repairCompletionNotice,
     repairServerNotice: repairConfirmation.notice,
     restoreImportResult,

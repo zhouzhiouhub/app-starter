@@ -5,10 +5,17 @@ import {
   PlayCircleOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
-import { Alert, Button, Space, Tag, Typography } from "antd";
+import { Alert, Button, Pagination, Space, Tag, Typography } from "antd";
+import { useEffect, useState } from "react";
+import {
+  readMissingTranslationKeyPageForKey,
+  readMissingTranslationKeyPaginationState,
+} from "../missing-translation-key-pagination";
 import { readMissingTranslationKeyQueueState } from "../missing-translation-key-queue";
 import { groupMissingTranslationKeys } from "../missing-translation-key-groups";
 import type { LocalizationTranslationsMeta } from "../types";
+
+const missingTranslationKeyPageSize = 10;
 
 export function MissingTranslationKeysAlert(props: {
   isRefreshing?: boolean;
@@ -19,24 +26,56 @@ export function MissingTranslationKeysAlert(props: {
   resolvedKeys?: string[];
   selectedKey?: string;
 }) {
-  if (props.meta.missingKeyCount === 0) {
-    return null;
-  }
-
+  const [visiblePage, setVisiblePage] = useState(1);
   const queue = readMissingTranslationKeyQueueState(
     props.meta.missingKeys,
     props.selectedKey,
     props.resolvedKeys,
   );
-  const groups = groupMissingTranslationKeys(queue.keys);
+  const queueFingerprint = queue.keys.join("\n");
+  const pageState = readMissingTranslationKeyPaginationState({
+    currentPage: visiblePage,
+    keys: queue.keys,
+    pageSize: missingTranslationKeyPageSize,
+  });
+  const groups = groupMissingTranslationKeys(pageState.keys);
   const isVisibleQueueComplete = queue.totalCount === 0;
   const suffix =
     props.meta.missingKeyCount > props.meta.missingKeyPreviewLimit
       ? ` Showing first ${props.meta.missingKeyPreviewLimit}.`
       : "";
 
+  useEffect(() => {
+    const selectedPage = readMissingTranslationKeyPageForKey({
+      key: props.selectedKey,
+      keys: queue.keys,
+      pageSize: missingTranslationKeyPageSize,
+    });
+
+    setVisiblePage(
+      (current) =>
+        selectedPage ??
+        readMissingTranslationKeyPaginationState({
+          currentPage: current,
+          keys: queue.keys,
+          pageSize: missingTranslationKeyPageSize,
+        }).currentPage,
+    );
+  }, [props.selectedKey, queueFingerprint]);
+
+  if (props.meta.missingKeyCount === 0) {
+    return null;
+  }
+
   function selectQueuedKey(key: string | null) {
     if (key) {
+      setVisiblePage(
+        readMissingTranslationKeyPageForKey({
+          key,
+          keys: queue.keys,
+          pageSize: missingTranslationKeyPageSize,
+        }) ?? visiblePage,
+      );
       props.onSelectKey?.(key);
     }
   }
@@ -97,6 +136,12 @@ export function MissingTranslationKeysAlert(props: {
               ) : null}
             </Space>
           ) : null}
+          {!isVisibleQueueComplete ? (
+            <Typography.Text type="secondary">
+              Showing {pageState.startIndex}-{pageState.endIndex} of{" "}
+              {pageState.totalCount} visible missing keys.
+            </Typography.Text>
+          ) : null}
           {groups.map((group) => (
             <Space align="start" key={group.namespace} size={8}>
               <Tag>{group.namespace}</Tag>
@@ -128,6 +173,16 @@ export function MissingTranslationKeysAlert(props: {
           ))}
           {suffix ? (
             <Typography.Text type="secondary">{suffix}</Typography.Text>
+          ) : null}
+          {pageState.totalPages > 1 ? (
+            <Pagination
+              current={pageState.currentPage}
+              onChange={setVisiblePage}
+              pageSize={pageState.pageSize}
+              showSizeChanger={false}
+              size="small"
+              total={pageState.totalCount}
+            />
           ) : null}
         </Space>
       }

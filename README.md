@@ -72,7 +72,7 @@
 - Page Builder 已具备区块库、区块排序、属性面板、Desktop / Mobile 布局编辑、Undo / Redo。
 - 媒体库已具备列表、登记外部媒体、上传目标生成、归档和 `media://` 引用解析。
 - Settings 已具备默认站点名称与域名管理，并展示 MVP 默认市场、Locale、Currency、功能开关和 Analytics 配置。
-- Localization 已具备默认 Market / Locale / Translation fallback 检查视图，支持默认 `en-US` 翻译条目保存、按 ID 更新、分页列表、URL 筛选条件保留、筛选、缺失 key 分组检查、缺失 key 一键回填、缺失 key 修复队列、缺失 key 修复保存自动推进、修复队列跨刷新状态同步、键名补全与 context 辅助、修复进度提示、缺失 key 修复定位刷新、缺失 key 修复入口 loading / disabled 状态、保存后的成功定位提示、完成后缺失 key 刷新提示、缺失 key 批量导入草稿、批量编辑模板提示、缺失 key 批量修复校验摘要、导入模板引导、批量导入后的列表定位、成功导入后的修复进度聚焦、批量导入成功后的多 key 跳转、导入结果按 action 筛选、导入结果批量选择和选择保留、导入结果历史保留、导入历史结果清理入口、导入历史结果回放说明、从导入结果生成二次修复草稿、二次修复草稿预览提示、导入 / 缺失队列状态联动、缺失队列完成态反馈、批量修复完成确认、批量修复后服务端确认聚焦、异常重试提示、重复保存提示、批量导入/导出预览报告、默认 Locale 批量导入写入、Admin 导入前确认、导入执行结果展示、导入失败行定位、错误详情面板和 Admin 默认 Locale JSON 下载；非默认 Locale 会明确显示回退到 `en-US` 的关闭态，并展示 Locale 创建/更新禁用、Translation 空态和批量导入关闭态错误提示。
+- Localization 已具备默认 Market / Locale / Translation fallback 检查视图，支持默认 `en-US` 翻译条目保存、按 ID 更新、分页列表、URL 筛选条件保留、筛选、缺失 key 分组检查、缺失 key 一键回填、缺失 key 修复队列、缺失 key 修复保存自动推进、修复队列跨刷新状态同步、长列表缺失 key 分页、键名补全与 context 辅助、修复进度提示、缺失 key 修复定位刷新、缺失 key 修复入口 loading / disabled 状态、保存后的成功定位提示、完成后缺失 key 刷新提示、缺失 key 批量导入草稿、批量编辑模板提示、缺失 key 批量修复校验摘要、导入模板引导、批量导入后的列表定位、成功导入后的修复进度聚焦、批量导入成功后的多 key 跳转、导入结果按 action 筛选、导入结果批量选择和选择保留、导入结果历史保留、导入历史结果清理入口、导入历史结果回放说明、导入历史详情筛选、从导入结果生成二次修复草稿、二次修复草稿预览提示、导入 / 缺失队列状态联动、缺失队列完成态反馈、批量修复完成确认、批量修复后服务端确认聚焦、批量修复确认后的自动清理建议、异常重试提示、重复保存提示、批量导入/导出预览报告、默认 Locale 批量导入写入、Admin 导入前确认、导入执行结果展示、导入失败行定位、错误详情面板和 Admin 默认 Locale JSON 下载；非默认 Locale 会明确显示回退到 `en-US` 的关闭态，并展示 Locale 创建/更新禁用、Translation 空态和批量导入关闭态错误提示。
 
 ### 当前还没有完成
 
@@ -686,7 +686,7 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 - Audit Logs 后台页面、审计日志只读查询 API 与 `audit:read` 权限。
 - 区块库、区块排序、区块属性面板、Undo / Redo。
 - 媒体库列表、上传目标、外部媒体登记、归档和 `media://` 选择。
-- Localization 默认 Market / Locale / Translation fallback 视图、默认 Locale 翻译保存、按 ID 更新、分页列表、URL 筛选保留、列表筛选、缺失 key 分组检查、缺失 key 一键回填、缺失 key 修复队列、缺失 key 修复保存自动推进、修复队列跨刷新状态同步、键名补全与 context 辅助、修复进度提示、缺失 key 修复定位刷新、缺失 key 修复入口 loading / disabled 状态、保存后的成功定位提示、完成后缺失 key 刷新提示、缺失 key 批量导入草稿、批量编辑模板提示、缺失 key 批量修复校验摘要、导入模板引导、批量导入后的列表定位、成功导入后的修复进度聚焦、批量导入成功后的多 key 跳转、导入结果按 action 筛选、导入结果批量选择和选择保留、导入结果历史保留、导入历史结果清理入口、导入历史结果回放说明、从导入结果生成二次修复草稿、二次修复草稿预览提示、导入 / 缺失队列状态联动、缺失队列完成态反馈、批量修复完成确认、批量修复后服务端确认聚焦、异常重试提示、重复保存提示、写入关闭态、Translation 空态、批量导入/导出预览报告、默认 Locale 批量导入写入、Admin 导入执行结果展示和 Admin 默认 Locale JSON 下载。
+- Localization 默认 Market / Locale / Translation fallback 视图、默认 Locale 翻译保存、按 ID 更新、分页列表、URL 筛选保留、列表筛选、缺失 key 分组检查、缺失 key 一键回填、缺失 key 修复队列、缺失 key 修复保存自动推进、修复队列跨刷新状态同步、长列表缺失 key 分页、键名补全与 context 辅助、修复进度提示、缺失 key 修复定位刷新、缺失 key 修复入口 loading / disabled 状态、保存后的成功定位提示、完成后缺失 key 刷新提示、缺失 key 批量导入草稿、批量编辑模板提示、缺失 key 批量修复校验摘要、导入模板引导、批量导入后的列表定位、成功导入后的修复进度聚焦、批量导入成功后的多 key 跳转、导入结果按 action 筛选、导入结果批量选择和选择保留、导入结果历史保留、导入历史结果清理入口、导入历史结果回放说明、导入历史详情筛选、从导入结果生成二次修复草稿、二次修复草稿预览提示、导入 / 缺失队列状态联动、缺失队列完成态反馈、批量修复完成确认、批量修复后服务端确认聚焦、批量修复确认后的自动清理建议、异常重试提示、重复保存提示、写入关闭态、Translation 空态、批量导入/导出预览报告、默认 Locale 批量导入写入、Admin 导入执行结果展示和 Admin 默认 Locale JSON 下载。
 - Commerce 已补齐 Product / Variant / Price / Inventory / Order / Payment / WebhookEvent 数据库预留迁移；Products / Orders / Payments 只读空列表占位响应 meta 会明确关闭态、默认市场/币种、不可写和 Phase 2 预留；后台商品创建/详情/更新、商品子资源、订单 / 支付详情、前台商品详情路由、Stripe 可选密钥安全诊断和 Stripe Webhook raw body / 签名形状预留均为显式占位。
 - Settings 默认站点名称、域名与 Analytics 配置展示页。
 - Publish 按钮，发布结果写入 PostgreSQL。
@@ -735,5 +735,5 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 1. 在真实 R2 / CDN 环境配置 `MEDIA_CDN_BASE_URL`、R2 凭据和 CDN 域名，确认不是 `example` / `test` / `invalid` / 本地 / 私网域名，执行 `pnpm smoke:publish` 并归档 `SMOKE_REPORT_PATH`。
 2. 补齐部署 Smoke Test：前台 Vercel、API 独立 Node 服务、Admin 静态托管、Redis 生产连接、环境变量清单和回滚步骤。
 3. 做 Page Builder 视觉验收：Desktop / Mobile 双端检查、核心区块与设计稿差异记录、媒体解析异常态。
-4. 继续完善 Translation Key 管理后台体验：导入历史详情筛选、批量修复确认后的自动清理建议和长列表缺失 key 分页；非默认 Locale 仍保持关闭态。
+4. 继续完善 Translation Key 管理后台体验：缺失 key 分页页码记忆、导入历史详情批量生成草稿和批量修复成功后的草稿清空提示；非默认 Locale 仍保持关闭态。
 5. 保持 Commerce 关闭态，继续强化订单 / 支付关闭态分支、Phase 2 Webhook 验签设计和 `COMMERCE_DISABLED` 错误分支测试；不进入真实交易。

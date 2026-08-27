@@ -4,12 +4,15 @@ import {
   addTranslationImportResultHistoryEntry,
   clearTranslationImportResultHistory,
   createTranslationImportResultHistoryEntry,
+  filterTranslationImportResultHistoryEntries,
+  formatTranslationBulkRepairCleanupSuggestion,
   formatTranslationBulkRepairServerConfirmationMessage,
   formatTranslationBulkRepairCompletionMessage,
   formatTranslationBulkRetryError,
   formatTranslationImportHistoryReplayMessage,
   readTranslationBulkRepairCoveredMissingKeys,
   readTranslationBulkRepairRemainingKeys,
+  readTranslationImportResultHistoryFilterOptions,
 } from "../src/features/localization/translation-import-result-history.ts";
 
 function createImportResult(keys) {
@@ -76,6 +79,49 @@ test("translation import result history can be cleared", () => {
   assert.deepEqual(clearTranslationImportResultHistory(), []);
 });
 
+test("translation import result history filters entries by details", () => {
+  const created = createTranslationImportResultHistoryEntry(
+    createImportResult(["page.home.hero.title"]),
+    1,
+  );
+  const updated = createTranslationImportResultHistoryEntry(
+    {
+      entries: [
+        {
+          action: "update",
+          index: 0,
+          key: "page.home.hero.body",
+          locale: "en-US",
+          value: "Body",
+        },
+      ],
+      summary: {
+        createdCount: 0,
+        importedCount: 1,
+        totalEntries: 1,
+        updatedCount: 1,
+      },
+    },
+    2,
+  );
+
+  assert.deepEqual(
+    filterTranslationImportResultHistoryEntries(
+      [created, updated],
+      "create",
+    ).map((entry) => entry.label),
+    ["Import #1"],
+  );
+  assert.deepEqual(
+    readTranslationImportResultHistoryFilterOptions([created, updated]),
+    [
+      { count: 2, label: "All", value: "all" },
+      { count: 1, label: "Created", value: "create" },
+      { count: 1, label: "Updated", value: "update" },
+    ],
+  );
+});
+
 test("translation import result history explains replayed results", () => {
   assert.equal(
     formatTranslationImportHistoryReplayMessage(
@@ -85,6 +131,17 @@ test("translation import result history explains replayed results", () => {
       ),
     ),
     "Viewing Import #2 from recent import history. This only replays the result table and does not re-import data.",
+  );
+});
+
+test("translation bulk repair cleanup suggestion follows history availability", () => {
+  assert.equal(
+    formatTranslationBulkRepairCleanupSuggestion({ historyCount: 2 }),
+    "Server confirmation is complete. Clear 2 recent import results when you no longer need replay.",
+  );
+  assert.equal(
+    formatTranslationBulkRepairCleanupSuggestion({ historyCount: 0 }),
+    null,
   );
 });
 
