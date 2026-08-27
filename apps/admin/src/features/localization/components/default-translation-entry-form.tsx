@@ -1,6 +1,14 @@
 import { SaveOutlined } from "@ant-design/icons";
-import { Alert, Button, Form, Input, Space, Typography } from "antd";
-import { useState } from "react";
+import {
+  Alert,
+  AutoComplete,
+  Button,
+  Form,
+  Input,
+  Space,
+  Typography,
+} from "antd";
+import { useEffect, useState } from "react";
 import {
   publicTranslationMessageMaxLength,
   translationContextMaxLength,
@@ -9,6 +17,10 @@ import {
 } from "@app-starter/schema";
 import { formatRequestError } from "../../../lib/api-error";
 import { upsertDefaultTranslationEntry } from "../api";
+import {
+  createTranslationKeyDraft,
+  readTranslationKeyOptions,
+} from "../translation-key-draft";
 
 interface TranslationEntryFormValues {
   context?: string;
@@ -18,6 +30,9 @@ interface TranslationEntryFormValues {
 
 export function DefaultTranslationEntryForm(props: {
   defaultLocale: string;
+  draftKey?: string;
+  draftVersion?: number;
+  keyOptions?: string[];
   onSaved?: () => Promise<void> | void;
 }) {
   const [form] = Form.useForm<TranslationEntryFormValues>();
@@ -26,6 +41,26 @@ export function DefaultTranslationEntryForm(props: {
     type: "error" | "success";
   } | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const keyOptions = readTranslationKeyOptions(props.keyOptions ?? []);
+
+  useEffect(() => {
+    const draft = createTranslationKeyDraft(props.draftKey);
+
+    if (!draft) {
+      return;
+    }
+
+    form.setFieldsValue(draft);
+    setFeedback(null);
+  }, [form, props.draftKey, props.draftVersion]);
+
+  function handleKeySelect(key: string) {
+    const draft = createTranslationKeyDraft(key);
+
+    if (draft) {
+      form.setFieldsValue(draft);
+    }
+  }
 
   async function handleFinish(values: TranslationEntryFormValues) {
     setFeedback(null);
@@ -76,7 +111,14 @@ export function DefaultTranslationEntryForm(props: {
             },
           ]}
         >
-          <Input placeholder="page.home.hero.title" />
+          <AutoComplete
+            filterOption={(inputValue, option) =>
+              String(option?.value ?? "").includes(inputValue.trim())
+            }
+            onSelect={handleKeySelect}
+            options={keyOptions}
+            placeholder="page.home.hero.title"
+          />
         </Form.Item>
         <Form.Item
           label={`Value (${props.defaultLocale})`}

@@ -7,14 +7,16 @@ export function groupMissingTranslationKeys(
   keys: string[],
 ): MissingTranslationKeyGroup[] {
   const groups = new Map<string, MissingTranslationKeyGroup>();
+  const seen = new Set<string>();
 
   keys.forEach((key) => {
     const normalizedKey = key.trim();
 
-    if (!normalizedKey) {
+    if (!normalizedKey || seen.has(normalizedKey)) {
       return;
     }
 
+    seen.add(normalizedKey);
     const namespace = readMissingKeyNamespace(normalizedKey);
     const group = groups.get(namespace);
 

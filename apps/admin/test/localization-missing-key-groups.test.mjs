@@ -28,10 +28,13 @@ test("missing translation keys are grouped by leading namespace", () => {
 });
 
 test("missing translation key groups skip blank entries", () => {
-  assert.deepEqual(groupMissingTranslationKeys([" page.home.title ", " "]), [
-    {
-      keys: ["page.home.title"],
-      namespace: "page.home",
-    },
-  ]);
+  assert.deepEqual(
+    groupMissingTranslationKeys([" page.home.title ", "page.home.title", " "]),
+    [
+      {
+        keys: ["page.home.title"],
+        namespace: "page.home",
+      },
+    ],
+  );
 });

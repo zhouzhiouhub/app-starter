@@ -1,9 +1,11 @@
-import { Alert, Space, Tag, Typography } from "antd";
+import { EditOutlined } from "@ant-design/icons";
+import { Alert, Button, Space, Tag, Typography } from "antd";
 import { groupMissingTranslationKeys } from "../missing-translation-key-groups";
 import type { LocalizationTranslationsMeta } from "../types";
 
 export function MissingTranslationKeysAlert(props: {
   meta: LocalizationTranslationsMeta;
+  onSelectKey?: (key: string) => void;
 }) {
   if (props.meta.missingKeyCount === 0) {
     return null;
@@ -22,9 +24,24 @@ export function MissingTranslationKeysAlert(props: {
           {groups.map((group) => (
             <Space align="start" key={group.namespace} size={8}>
               <Tag>{group.namespace}</Tag>
-              <Typography.Text code style={{ wordBreak: "break-word" }}>
-                {group.keys.join(", ")}
-              </Typography.Text>
+              <Space direction="vertical" size={4}>
+                {group.keys.map((key) => (
+                  <Space key={key} size={6} wrap>
+                    <Typography.Text code style={{ wordBreak: "break-word" }}>
+                      {key}
+                    </Typography.Text>
+                    {props.onSelectKey ? (
+                      <Button
+                        icon={<EditOutlined />}
+                        onClick={() => props.onSelectKey?.(key)}
+                        size="small"
+                      >
+                        Fill
+                      </Button>
+                    ) : null}
+                  </Space>
+                ))}
+              </Space>
             </Space>
           ))}
           {suffix ? (

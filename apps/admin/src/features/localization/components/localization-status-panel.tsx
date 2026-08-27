@@ -1,5 +1,6 @@
 import { Alert, Descriptions, Space, Table, Tag, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
+import { useState } from "react";
 import { readLocalizationSummaryState } from "../localization-summary-state";
 import type {
   LocalizationLocale,
@@ -95,9 +96,20 @@ export function LocalizationStatusPanel(props: {
   summary: LocalizationSummary;
 }) {
   const state = readLocalizationSummaryState(props.summary);
+  const [translationDraft, setTranslationDraft] = useState<{
+    key: string;
+    version: number;
+  } | null>(null);
   const hasTranslationFilters = Boolean(
     props.filters.namespace || props.filters.query,
   );
+
+  function selectMissingTranslationKey(key: string) {
+    setTranslationDraft((current) => ({
+      key,
+      version: (current?.version ?? 0) + 1,
+    }));
+  }
 
   return (
     <Space direction="vertical" size={16} style={{ width: "100%" }}>
@@ -169,6 +181,9 @@ export function LocalizationStatusPanel(props: {
       />
       <DefaultTranslationEntryForm
         defaultLocale={state.defaultLocale}
+        draftKey={translationDraft?.key}
+        draftVersion={translationDraft?.version}
+        keyOptions={props.summary.translationsMeta.missingKeys}
         onSaved={props.onTranslationSaved}
       />
       <TranslationBulkPreviewPanel
@@ -181,7 +196,10 @@ export function LocalizationStatusPanel(props: {
         isLoading={props.isFiltering}
         onChange={props.onFiltersChange}
       />
-      <MissingTranslationKeysAlert meta={props.summary.translationsMeta} />
+      <MissingTranslationKeysAlert
+        meta={props.summary.translationsMeta}
+        onSelectKey={selectMissingTranslationKey}
+      />
       <Table<LocalizationTranslationEntry>
         columns={translationColumns}
         dataSource={props.summary.translations}
