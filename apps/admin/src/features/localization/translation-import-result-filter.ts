@@ -13,6 +13,12 @@ export interface TranslationImportResultActionOption {
   value: TranslationImportResultActionFilter;
 }
 
+export interface TranslationImportResultSelectionState {
+  hiddenSelectedCount: number;
+  selectedCount: number;
+  visibleSelectedCount: number;
+}
+
 export function filterTranslationImportResultEntries(
   result: TranslationImportResult,
   action: TranslationImportResultActionFilter,
@@ -39,6 +45,29 @@ export function readSelectedTranslationImportResultEntries(
   return result.entries.filter((entry) =>
     selectedKeys.has(readTranslationImportResultRowKey(entry)),
   );
+}
+
+export function readTranslationImportResultSelectionState(input: {
+  result: TranslationImportResult;
+  rowKeys: string[];
+  visibleEntries: TranslationImportResultEntry[];
+}): TranslationImportResultSelectionState {
+  const selectedEntries = readSelectedTranslationImportResultEntries(
+    input.result,
+    input.rowKeys,
+  );
+  const visibleKeys = new Set(
+    input.visibleEntries.map(readTranslationImportResultRowKey),
+  );
+  const visibleSelectedCount = selectedEntries.filter((entry) =>
+    visibleKeys.has(readTranslationImportResultRowKey(entry)),
+  ).length;
+
+  return {
+    hiddenSelectedCount: selectedEntries.length - visibleSelectedCount,
+    selectedCount: selectedEntries.length,
+    visibleSelectedCount,
+  };
 }
 
 export function readTranslationImportResultActionOptions(

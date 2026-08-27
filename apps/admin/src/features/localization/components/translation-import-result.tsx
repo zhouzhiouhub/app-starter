@@ -14,6 +14,7 @@ import {
   filterTranslationImportResultEntries,
   readTranslationImportResultActionOptions,
   readSelectedTranslationImportResultEntries,
+  readTranslationImportResultSelectionState,
   readTranslationImportResultRowKey,
   type TranslationImportResultActionFilter,
 } from "../translation-import-result-filter";
@@ -43,6 +44,15 @@ export function TranslationImportResultView(props: {
         selectedRowKeys.map(String),
       ),
     [props.result, selectedRowKeys],
+  );
+  const selectionState = useMemo(
+    () =>
+      readTranslationImportResultSelectionState({
+        result: props.result,
+        rowKeys: selectedRowKeys.map(String),
+        visibleEntries: filteredEntries,
+      }),
+    [filteredEntries, props.result, selectedRowKeys],
   );
   const actionOptions = useMemo(
     () =>
@@ -97,6 +107,12 @@ export function TranslationImportResultView(props: {
           >
             Use selected as draft {selectedEntries.length}
           </Button>
+        ) : null}
+        {selectionState.selectedCount > 0 ? (
+          <Typography.Text type="secondary">
+            Selected {selectionState.selectedCount};{" "}
+            {selectionState.hiddenSelectedCount} kept outside this filter.
+          </Typography.Text>
         ) : null}
       </Space>
       <Table<TranslationImportResultEntry>
@@ -159,6 +175,7 @@ export function TranslationImportResultView(props: {
           props.onUseDraft
             ? {
                 onChange: (keys) => setSelectedRowKeys(keys),
+                preserveSelectedRowKeys: true,
                 selectedRowKeys,
               }
             : undefined

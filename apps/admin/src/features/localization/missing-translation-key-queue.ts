@@ -3,6 +3,7 @@ import { translationKeyPattern } from "@app-starter/schema";
 export interface MissingTranslationKeyQueueState {
   currentIndex: number;
   currentKey: string | null;
+  keys: string[];
   nextKey: string | null;
   previousKey: string | null;
   totalCount: number;
@@ -22,6 +23,7 @@ export function readMissingTranslationKeyQueueState(
   return {
     currentIndex: currentKey ? currentIndex : -1,
     currentKey,
+    keys: queue,
     nextKey: queue[currentIndex + 1] ?? null,
     previousKey: currentIndex > 0 ? (queue[currentIndex - 1] ?? null) : null,
     totalCount: queue.length,

@@ -20,12 +20,13 @@ export function MissingTranslationKeysAlert(props: {
     return null;
   }
 
-  const groups = groupMissingTranslationKeys(props.meta.missingKeys);
   const queue = readMissingTranslationKeyQueueState(
     props.meta.missingKeys,
     props.selectedKey,
     props.resolvedKeys,
   );
+  const groups = groupMissingTranslationKeys(queue.keys);
+  const isVisibleQueueComplete = queue.totalCount === 0;
   const suffix =
     props.meta.missingKeyCount > props.meta.missingKeyPreviewLimit
       ? ` Showing first ${props.meta.missingKeyPreviewLimit}.`
@@ -75,6 +76,12 @@ export function MissingTranslationKeysAlert(props: {
               </Button>
             </Space>
           ) : null}
+          {isVisibleQueueComplete ? (
+            <Typography.Text type="secondary">
+              Visible missing key queue is complete. Server coverage will be
+              confirmed on the next refresh.
+            </Typography.Text>
+          ) : null}
           {groups.map((group) => (
             <Space align="start" key={group.namespace} size={8}>
               <Tag>{group.namespace}</Tag>
@@ -109,9 +116,13 @@ export function MissingTranslationKeysAlert(props: {
           ) : null}
         </Space>
       }
-      message={`${props.meta.missingKeyCount} page translation keys are missing default ${props.meta.locale} entries.`}
+      message={
+        isVisibleQueueComplete
+          ? `Visible missing key queue is complete for default ${props.meta.locale}.`
+          : `${props.meta.missingKeyCount} page translation keys are missing default ${props.meta.locale} entries.`
+      }
       showIcon
-      type="warning"
+      type={isVisibleQueueComplete ? "success" : "warning"}
     />
   );
 }

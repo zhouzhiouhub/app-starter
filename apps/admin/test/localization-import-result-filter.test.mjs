@@ -5,6 +5,7 @@ import {
   readSelectedTranslationImportResultEntries,
   readTranslationImportResultActionOptions,
   readTranslationImportResultRowKey,
+  readTranslationImportResultSelectionState,
 } from "../src/features/localization/translation-import-result-filter.ts";
 
 const importResult = {
@@ -66,5 +67,28 @@ test("translation import result row selection returns stable selected rows", () 
       (entry) => entry.key,
     ),
     ["page.home.hero.body"],
+  );
+});
+
+test("translation import result selection state keeps hidden selections", () => {
+  const selectedKeys = importResult.entries.map(
+    readTranslationImportResultRowKey,
+  );
+  const visibleEntries = filterTranslationImportResultEntries(
+    importResult,
+    "create",
+  );
+
+  assert.deepEqual(
+    readTranslationImportResultSelectionState({
+      result: importResult,
+      rowKeys: selectedKeys,
+      visibleEntries,
+    }),
+    {
+      hiddenSelectedCount: 1,
+      selectedCount: 2,
+      visibleSelectedCount: 1,
+    },
   );
 });

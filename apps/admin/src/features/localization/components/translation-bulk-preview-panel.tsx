@@ -1,10 +1,4 @@
-import {
-  DownloadOutlined,
-  FileAddOutlined,
-  FileSearchOutlined,
-  UploadOutlined,
-} from "@ant-design/icons";
-import { Alert, Button, Input, Popconfirm, Space } from "antd";
+import { Alert, Input, Space } from "antd";
 import { useMemo, useState } from "react";
 import {
   exportTranslations,
@@ -17,6 +11,7 @@ import {
   createMissingTranslationImportDraft,
   createTranslationImportDraftFromEntries,
   defaultTranslationImportText,
+  formatTranslationImportDraftNotice,
   formatTranslationImportDraft,
 } from "../translation-import-draft";
 import { readTranslationImportErrorDetails } from "../translation-import-error-details";
@@ -31,6 +26,10 @@ import type {
   TranslationListFilters,
 } from "../types";
 import { TranslationExportPreviewResultView } from "./translation-export-preview-result";
+import {
+  TranslationBulkActionBar,
+  type TranslationBulkLoadingAction,
+} from "./translation-bulk-action-bar";
 import { TranslationImportErrorDetailsView } from "./translation-import-error-details";
 import { TranslationImportPreviewResultView } from "./translation-import-preview-result";
 import { TranslationImportResultView } from "./translation-import-result";
@@ -54,9 +53,9 @@ export function TranslationBulkPreviewPanel(props: {
   const [exportPreview, setExportPreview] =
     useState<TranslationExportPreviewResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [loadingAction, setLoadingAction] = useState<
-    "download" | "export" | "import" | "preview-import" | null
-  >(null);
+  const [draftNotice, setDraftNotice] = useState<string | null>(null);
+  const [loadingAction, setLoadingAction] =
+    useState<TranslationBulkLoadingAction | null>(null);
   const missingKeyDraft = useMemo(
     () =>
       createMissingTranslationImportDraft(
@@ -68,7 +67,13 @@ export function TranslationBulkPreviewPanel(props: {
   const hasMissingKeyDraft = missingKeyDraft.entries.length > 0;
 
   function useMissingKeyDraft() {
-    useImportDraft(formatTranslationImportDraft(missingKeyDraft));
+    useImportDraft(
+      formatTranslationImportDraft(missingKeyDraft),
+      formatTranslationImportDraftNotice({
+        entryCount: missingKeyDraft.entries.length,
+        source: "missing-keys",
+      }),
+    );
   }
 
   function useResultDraft(entries: TranslationImportResultEntry[]) {
@@ -76,16 +81,26 @@ export function TranslationBulkPreviewPanel(props: {
       formatTranslationImportDraft(
         createTranslationImportDraftFromEntries(entries),
       ),
+      formatTranslationImportDraftNotice({
+        entryCount: entries.length,
+        source: "import-result",
+      }),
     );
   }
 
-  function useImportDraft(text: string) {
+  function useImportDraft(text: string, notice: string) {
     setError(null);
     setExportPreview(null);
     setImportErrorDetails(null);
     setImportPreview(null);
     setImportResult(null);
+    setDraftNotice(notice);
     setImportText(text);
+  }
+
+  function handleImportTextChange(value: string) {
+    setDraftNotice(null);
+    setImportText(value);
   }
 
   const runImportPreview = async () => {
@@ -93,6 +108,7 @@ export function TranslationBulkPreviewPanel(props: {
     setError(null);
     setImportErrorDetails(null);
     setImportResult(null);
+    setDraftNotice(null);
 
     try {
       setImportPreview(await previewTranslationImport(JSON.parse(importText)));
@@ -107,6 +123,7 @@ export function TranslationBulkPreviewPanel(props: {
     setError(null);
     setImportErrorDetails(null);
     setImportResult(null);
+    setDraftNotice(null);
 
     try {
       const result = await importTranslations(JSON.parse(importText));
@@ -161,55 +178,23 @@ export function TranslationBulkPreviewPanel(props: {
         importText={importText}
         missingKeys={props.missingKeys}
       />
+      {draftNotice ? (
+        <Alert message={draftNotice} showIcon type="info" />
+      ) : null}
       <Input.TextArea
         autoSize={{ maxRows: 8, minRows: 5 }}
-        onChange={(event) => setImportText(event.target.value)}
+        onChange={(event) => handleImportTextChange(event.target.value)}
         value={importText}
       />
-      <Space wrap>
-        <Button
-          disabled={!hasMissingKeyDraft}
-          icon={<FileAddOutlined />}
-          onClick={useMissingKeyDraft}
-        >
-          Use missing key draft
-        </Button>
-        <Button
-          icon={<FileSearchOutlined />}
-          loading={loadingAction === "preview-import"}
-          onClick={() => void runImportPreview()}
-        >
-          Preview import
-        </Button>
-        <Popconfirm
-          cancelText="Cancel"
-          description="Rows marked error, duplicate, or blocked will stop the import."
-          okText="Import"
-          onConfirm={() => void runImport()}
-          title="Import default locale?"
-        >
-          <Button
-            icon={<UploadOutlined />}
-            loading={loadingAction === "import"}
-          >
-            Import default locale
-          </Button>
-        </Popconfirm>
-        <Button
-          icon={<FileSearchOutlined />}
-          loading={loadingAction === "export"}
-          onClick={() => void runExportPreview()}
-        >
-          Preview export
-        </Button>
-        <Button
-          icon={<DownloadOutlined />}
-          loading={loadingAction === "download"}
-          onClick={() => void runExportDownload()}
-        >
-          Export JSON
-        </Button>
-      </Space>
+      <TranslationBulkActionBar
+        hasMissingKeyDraft={hasMissingKeyDraft}
+        loadingAction={loadingAction}
+        onExportDownload={() => void runExportDownload()}
+        onExportPreview={() => void runExportPreview()}
+        onImport={() => void runImport()}
+        onImportPreview={() => void runImportPreview()}
+        onUseMissingKeyDraft={useMissingKeyDraft}
+      />
       {importErrorDetails ? (
         <TranslationImportErrorDetailsView details={importErrorDetails} />
       ) : null}

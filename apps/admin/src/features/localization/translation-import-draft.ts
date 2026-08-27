@@ -12,6 +12,8 @@ export interface TranslationImportDraft {
   entries: TranslationImportDraftEntry[];
 }
 
+export type TranslationImportDraftSource = "import-result" | "missing-keys";
+
 export const defaultTranslationImportText = formatTranslationImportDraft({
   entries: [
     {
@@ -79,6 +81,17 @@ export function createTranslationImportDraftFromEntries(
       [],
     ),
   };
+}
+
+export function formatTranslationImportDraftNotice(input: {
+  entryCount: number;
+  source: TranslationImportDraftSource;
+}): string {
+  const sourceLabel =
+    input.source === "import-result" ? "imported row" : "missing key";
+  const plural = input.entryCount === 1 ? "" : "s";
+
+  return `Draft rebuilt from ${input.entryCount} ${sourceLabel}${plural}. Import preview is reset.`;
 }
 
 export function formatTranslationImportDraft(

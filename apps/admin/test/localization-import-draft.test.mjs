@@ -4,6 +4,7 @@ import {
   createMissingTranslationImportDraft,
   createTranslationImportDraftFromEntries,
   defaultTranslationImportText,
+  formatTranslationImportDraftNotice,
   formatTranslationImportDraft,
 } from "../src/features/localization/translation-import-draft.ts";
 
@@ -102,4 +103,21 @@ test("default translation import text stays importable", () => {
       },
     ],
   });
+});
+
+test("translation import draft notices explain reset preview state", () => {
+  assert.equal(
+    formatTranslationImportDraftNotice({
+      entryCount: 2,
+      source: "import-result",
+    }),
+    "Draft rebuilt from 2 imported rows. Import preview is reset.",
+  );
+  assert.equal(
+    formatTranslationImportDraftNotice({
+      entryCount: 1,
+      source: "missing-keys",
+    }),
+    "Draft rebuilt from 1 missing key. Import preview is reset.",
+  );
 });
