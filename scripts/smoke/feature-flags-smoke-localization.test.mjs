@@ -68,3 +68,31 @@ test("feature flag smoke accepts stored default translation entries", async () =
     },
   );
 });
+
+test("feature flag smoke rejects locale update placeholder drift", async () => {
+  await withFetch(
+    createFeatureFlagSmokeFetch({
+      overrides: {
+        "/locales/de-DE": () =>
+          jsonResponse({
+            data: {
+              code: "de-DE",
+              status: "active",
+            },
+          }),
+      },
+    }),
+    async () => {
+      await assert.rejects(
+        () =>
+          assertFeatureFlagsDisabled(
+            {
+              apiBaseUrl: "https://api.example.com/api/v1",
+            },
+            "access-token",
+          ),
+        /\/locales\/de-DE expected 409 MULTI_LOCALE_DISABLED/,
+      );
+    },
+  );
+});

@@ -187,6 +187,16 @@ export function createFeatureFlagSmokeFetch(options = {}) {
       );
     }
 
+    if (url.endsWith("/locales/de-DE") && init.method === "PATCH") {
+      return jsonResponse(
+        {
+          code: "MULTI_LOCALE_DISABLED",
+          message: "Multi-locale is disabled.",
+        },
+        { status: 409, statusText: "Conflict" },
+      );
+    }
+
     return jsonResponse({}, { status: 404, statusText: "Not Found" });
   };
 }

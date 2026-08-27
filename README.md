@@ -72,7 +72,7 @@
 - Page Builder 已具备区块库、区块排序、属性面板、Desktop / Mobile 布局编辑、Undo / Redo。
 - 媒体库已具备列表、登记外部媒体、上传目标生成、归档和 `media://` 引用解析。
 - Settings 已具备默认站点名称与域名管理，并展示 MVP 默认市场、Locale、Currency、功能开关和 Analytics 配置。
-- Localization 已具备默认 Market / Locale / Translation fallback 检查视图，支持默认 `en-US` 翻译条目保存、按 ID 更新、分页列表、筛选、缺失 key 检查、重复保存提示和批量导入/导出预览报告；非默认 Locale 会明确显示回退到 `en-US` 的关闭态，并展示多语言写入禁用、Translation 空态和真实导入/导出占位契约。
+- Localization 已具备默认 Market / Locale / Translation fallback 检查视图，支持默认 `en-US` 翻译条目保存、按 ID 更新、分页列表、筛选、缺失 key 检查、重复保存提示和批量导入/导出预览报告；非默认 Locale 会明确显示回退到 `en-US` 的关闭态，并展示 Locale 创建/更新禁用、Translation 空态和真实导入/导出占位契约。
 
 ### 当前还没有完成
 
@@ -552,11 +552,13 @@ GET  /api/v1/markets
 GET  /api/v1/locales
 GET  /api/v1/translations
 POST /api/v1/translations
+PATCH /api/v1/translations/:id
 POST /api/v1/translations/import/preview
 POST /api/v1/translations/export/preview
 POST /api/v1/translations/export
 POST /api/v1/translations/import
 POST /api/v1/locales
+PATCH /api/v1/locales/:id
 
 GET  /api/v1/products
 POST /api/v1/products
@@ -583,6 +585,8 @@ POST /api/v1/webhooks/stripe
 - `GET /api/v1/translations` 需要 `translation:read`，按当前登录 Tenant 读取默认 Locale 翻译条目，支持 `page` / `limit` 分页、`namespace` 前缀和 `q` 搜索筛选；响应 meta 返回 `{ total, page, limit }`，并基于当前 Tenant 页面最新草稿与已发布版本报告缺失默认 Locale 翻译 key；`MULTI_LOCALE_ENABLED=false` 时请求非默认 Locale 会回退到默认 Locale，并在 meta 标记 `isFallback=true`。
 - `POST /api/v1/translations` 需要 `translation:write` 和 `Idempotency-Key`；MVP 只允许保存默认 Locale 条目，并在 meta 返回 `writeMode=created|updated`，非默认 Locale 在 `MULTI_LOCALE_ENABLED=false` 时返回 `MULTI_LOCALE_DISABLED`。
 - `PATCH /api/v1/translations/:id` 需要 `translation:write` 和 `Idempotency-Key`；MVP 只允许更新当前 Tenant 下已存在的默认 Locale 条目，审计日志只记录 key、locale 和字段变化标记，不记录翻译正文。
+- `POST /api/v1/locales` 需要 `locale:write`；`MULTI_LOCALE_ENABLED=false` 时返回 `MULTI_LOCALE_DISABLED`，后续打开 Feature Flag 时仍会先走 Idempotency-Key 和 Locale code 校验，再进入真实持久化阶段。
+- `PATCH /api/v1/locales/:id` 需要 `locale:write`；`MULTI_LOCALE_ENABLED=false` 时返回 `MULTI_LOCALE_DISABLED` 且不回显请求体或 Locale ID，后续打开 Feature Flag 后在真实 Locale 持久化完成前返回受保护占位 `CONFLICT`。
 - `POST /api/v1/translations/import/preview` 需要 `translation:write`，只做导入前校验和差异预览，按行返回 `create` / `update` / `duplicate` / `error` / `blocked` 与 summary，不写入数据。
 - `POST /api/v1/translations/export/preview` 需要 `translation:read`，只返回当前筛选下的可导出数量、样例 key 和缺失 key 摘要，不生成文件。
 - `POST /api/v1/translations/import` 和 `POST /api/v1/translations/export` 是后续真实批量导入/导出能力的受保护占位契约，MVP 返回 `CONFLICT`。
@@ -635,7 +639,7 @@ pnpm --filter @app-starter/renderer build
 pnpm smoke:publish
 ```
 
-该脚本会登录默认管理员，先验证 `COMMERCE_ENABLED=false`、`MULTI_LOCALE_ENABLED=false` 的关闭态，包括默认 Market / Locale / Translation 预留读接口、Products / Orders / Payments 空列表、商品子资源空列表、订单 / 支付详情 404 占位、前台商品详情 404 占位和 Stripe Webhook 占位路由，再生成媒体上传目标、确认媒体入库并校验 CDN URL，保存草稿、生成 Preview Token、验证公共预览 API 与前台 `/preview?token=`，随后发布一个唯一 slug 的测试页，验证回滚、Preview Token / 页面发布 / 回滚审计日志、公共页面 API、前台 HTML、`robots.txt`、`sitemap.xml` 和 404/noindex 是否读取到同一份已发布内容并满足 SEO 发布门禁。执行账号需要 `audit:read`；设置 `SMOKE_REPORT_PATH=tmp/smoke-report.json` 可输出 JSON 验收报告。Stripe Webhook 在 MVP 只验证占位路由关闭态和敏感值不回显；raw body 与 `stripe-signature` 只作为 Phase 2 前置契约保留。Stripe 密钥在 MVP 可留空；如果配置了 `STRIPE_SECRET_KEY` 或 `STRIPE_WEBHOOK_SECRET`，生产 readiness 会验证它们不是测试 key、占位值、控制字符或首尾空白，且不会把明文写入报告。生产环境如果要强制验证 R2 Presigned URL、真实 PUT 上传和生产 CDN URL，可设置 `SMOKE_REQUIRE_R2_UPLOAD=true`；如果要把 Admin 静态托管也纳入部署验收，可设置 `SMOKE_REQUIRE_ADMIN_APP=true` 并配置 `ADMIN_URL`。生产 CDN URL 不能继续使用 `cdn.example.com` 或任何 `example` / `test` / `invalid` / 本地 / 私网 / 保留网段域名或 IP；这些会被 smoke 诊断判定为非生产可用。若只想验证发布与前台读取、暂不强制 ISR 回调，可临时设置：
+该脚本会登录默认管理员，先验证 `COMMERCE_ENABLED=false`、`MULTI_LOCALE_ENABLED=false` 的关闭态，包括默认 Market / Locale / Translation 预留读接口、Locale 创建/更新关闭态、Products / Orders / Payments 空列表、商品子资源空列表、订单 / 支付详情 404 占位、前台商品详情 404 占位和 Stripe Webhook 占位路由，再生成媒体上传目标、确认媒体入库并校验 CDN URL，保存草稿、生成 Preview Token、验证公共预览 API 与前台 `/preview?token=`，随后发布一个唯一 slug 的测试页，验证回滚、Preview Token / 页面发布 / 回滚审计日志、公共页面 API、前台 HTML、`robots.txt`、`sitemap.xml` 和 404/noindex 是否读取到同一份已发布内容并满足 SEO 发布门禁。执行账号需要 `audit:read`；设置 `SMOKE_REPORT_PATH=tmp/smoke-report.json` 可输出 JSON 验收报告。Stripe Webhook 在 MVP 只验证占位路由关闭态和敏感值不回显；raw body 与 `stripe-signature` 只作为 Phase 2 前置契约保留。Stripe 密钥在 MVP 可留空；如果配置了 `STRIPE_SECRET_KEY` 或 `STRIPE_WEBHOOK_SECRET`，生产 readiness 会验证它们不是测试 key、占位值、控制字符或首尾空白，且不会把明文写入报告。生产环境如果要强制验证 R2 Presigned URL、真实 PUT 上传和生产 CDN URL，可设置 `SMOKE_REQUIRE_R2_UPLOAD=true`；如果要把 Admin 静态托管也纳入部署验收，可设置 `SMOKE_REQUIRE_ADMIN_APP=true` 并配置 `ADMIN_URL`。生产 CDN URL 不能继续使用 `cdn.example.com` 或任何 `example` / `test` / `invalid` / 本地 / 私网 / 保留网段域名或 IP；这些会被 smoke 诊断判定为非生产可用。若只想验证发布与前台读取、暂不强制 ISR 回调，可临时设置：
 
 `API_URL` 必须是 API origin 或精确的 `/api/v1` base，`WEB_URL` 必须是前台 origin，`ADMIN_URL` 必须是后台静态应用 origin；Smoke Runner 会在发起登录、发布或 Admin 静态页请求前拒绝首尾空白、嵌入账号密码、query、fragment、异常路径和非 HTTP(S) 协议，并且登录请求会禁用自动重定向，避免管理员凭据被错误代理或旧域名跳转带走。
 前台页面、robots、sitemap 和 404 smoke 请求会禁用自动重定向；如果生产托管返回 30x，会在报告里记录脱敏后的 `Location` 并提示检查 `WEB_URL`、店面域名路由和托管 rewrite 规则。

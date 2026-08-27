@@ -57,6 +57,27 @@ test("locale creation does not echo disabled invalid locale input", () => {
   });
 });
 
+test("locale update rejects writes while multi-locale is disabled", () => {
+  withEnv({ MULTI_LOCALE_ENABLED: "false" }, () => {
+    const controller = createController();
+
+    const error = assertApiConflict(
+      () =>
+        controller.updateLocale(
+          "<script>alert(1)</script>",
+          "request-locale-update-disabled",
+        ),
+      apiErrorCodes.MULTI_LOCALE_DISABLED,
+    );
+
+    assert.equal(
+      error.getResponse()?.requestId,
+      "request-locale-update-disabled",
+    );
+    assert.equal(error.getResponse()?.message.includes("<script>"), false);
+  });
+});
+
 test("locale creation validates locale codes when multi-locale is enabled", () => {
   withEnv({ MULTI_LOCALE_ENABLED: " TRUE " }, () => {
     const controller = createController();
@@ -92,6 +113,31 @@ test("locale creation requires idempotency keys when multi-locale is enabled", (
       () => controller.createLocale({ code: "de-DE" }, "retry-me"),
       apiErrorCodes.VALIDATION_ERROR,
     );
+  });
+});
+
+test("locale update requires idempotency and remains reserved when enabled", () => {
+  withEnv({ MULTI_LOCALE_ENABLED: " TRUE " }, () => {
+    const controller = createController();
+
+    assertApiBadRequest(
+      () => controller.updateLocale(undefined, "request-locale-update-missing"),
+      apiErrorCodes.VALIDATION_ERROR,
+    );
+    const error = assertApiConflict(
+      () =>
+        controller.updateLocale(
+          idempotencyKey,
+          "request-locale-update-reserved",
+        ),
+      apiErrorCodes.CONFLICT,
+    );
+
+    assert.equal(
+      error.getResponse()?.requestId,
+      "request-locale-update-reserved",
+    );
+    assert.match(error.getResponse()?.message, /reserved/);
   });
 });
 

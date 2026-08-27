@@ -53,6 +53,9 @@ test("localization admin routes require guard and read or write scopes", () => {
     "translation:read",
   ]);
   assert.deepEqual(readScopes("createLocale"), ["locale:write"]);
+  assert.deepEqual(readScopes("updateLocale"), ["locale:write"]);
+  assert.equal(readRouteMethod("updateLocale"), RequestMethod.PATCH);
+  assert.equal(readRoutePath("updateLocale"), "locales/:id");
   assert.equal(TENANT_ADMIN_PERMISSIONS.includes("translation:write"), true);
 });
 

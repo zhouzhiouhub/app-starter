@@ -22,6 +22,7 @@ export async function assertFeatureFlagsDisabled(input, accessToken) {
   await assertCommerceReadPlaceholders(input, accessToken);
   await assertCommerceDisabled(input, accessToken);
   await assertLocaleCreationDisabled(input, accessToken);
+  await assertLocaleUpdateDisabled(input, accessToken);
 
   console.log("MVP feature flags passed.");
 }
@@ -178,6 +179,22 @@ async function assertLocaleCreationDisabled(input, accessToken) {
         "Content-Type": "application/json",
       },
       method: "POST",
+    },
+    "MULTI_LOCALE_DISABLED",
+  );
+}
+
+async function assertLocaleUpdateDisabled(input, accessToken) {
+  await assertErrorResponse(
+    `${input.apiBaseUrl}/locales/de-DE`,
+    {
+      body: JSON.stringify({ displayName: "German", status: "active" }),
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+        "Idempotency-Key": "f0ace319-8e0a-4bb8-82db-79c7bc00541e",
+      },
+      method: "PATCH",
     },
     "MULTI_LOCALE_DISABLED",
   );

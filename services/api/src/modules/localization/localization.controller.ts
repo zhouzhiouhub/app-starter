@@ -1,6 +1,5 @@
 import {
   Body,
-  ConflictException,
   Controller,
   Get,
   Headers,
@@ -10,7 +9,6 @@ import {
   Query,
   UseGuards,
 } from "@nestjs/common";
-import { apiErrorCodes } from "@app-starter/schema";
 import { AdminApiGuard } from "../../common/admin-api.guard.js";
 import { CurrentUser } from "../../common/current-user.decorator.js";
 import { isMultiLocaleEnabled } from "../../common/feature-flags.js";
@@ -19,6 +17,10 @@ import { CurrentRequestId } from "../../common/request-id.decorator.js";
 import { RequireScopes } from "../../common/require-scopes.decorator.js";
 import { readApiRuntimeDefaults } from "../../common/runtime-defaults.js";
 import type { Actor } from "../identity/identity.types.js";
+import {
+  throwLocaleMutationDisabled,
+  throwLocaleMutationReserved,
+} from "./localization-locale-placeholder.js";
 import { LocalizationService } from "./localization.service.js";
 import {
   parseCreateLocaleInput,
@@ -162,11 +164,7 @@ export class LocalizationController {
     @CurrentRequestId() requestId = "local-dev",
   ) {
     if (!isMultiLocaleEnabled()) {
-      throw new ConflictException({
-        code: apiErrorCodes.MULTI_LOCALE_DISABLED,
-        message: "Cannot create locales while multi-locale is disabled.",
-        requestId,
-      });
+      return throwLocaleMutationDisabled("create", requestId);
     }
 
     requireIdempotencyKey(idempotencyKey);
@@ -179,5 +177,20 @@ export class LocalizationController {
       },
       meta: { requestId },
     };
+  }
+
+  @Patch("locales/:id")
+  @RequireScopes("locale:write")
+  updateLocale(
+    @Headers("idempotency-key") idempotencyKey?: string,
+    @CurrentRequestId() requestId = "local-dev",
+  ) {
+    if (!isMultiLocaleEnabled()) {
+      return throwLocaleMutationDisabled("update", requestId);
+    }
+
+    requireIdempotencyKey(idempotencyKey);
+
+    return throwLocaleMutationReserved("update", requestId);
   }
 }
