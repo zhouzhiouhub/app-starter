@@ -1,7 +1,10 @@
 import { Space, Table } from "antd";
 import { useState } from "react";
 import { readLocalizationSummaryState } from "../localization-summary-state";
-import { mergeResolvedTranslationKeys } from "../missing-translation-key-queue";
+import {
+  mergeResolvedTranslationKeys,
+  readMissingTranslationKeyAdvanceTarget,
+} from "../missing-translation-key-queue";
 import {
   readTranslationImportFocusFilters,
   readTranslationImportFocusFiltersForKey,
@@ -66,7 +69,20 @@ export function LocalizationStatusPanel(props: {
   async function handleTranslationSaved(
     result: UpsertDefaultTranslationResult,
   ) {
+    const nextDraftKey = readMissingTranslationKeyAdvanceTarget({
+      keys: props.summary.translationsMeta.missingKeys,
+      resolvedKey: result.entry.key,
+      resolvedKeys: recentlyResolvedKeys,
+      selectedKey: translationDraft?.key,
+    });
+
     markResolvedKeys([result.entry.key]);
+    setTranslationDraft((current) =>
+      nextDraftKey
+        ? { key: nextDraftKey, version: (current?.version ?? 0) + 1 }
+        : null,
+    );
+
     const repairFilters = readTranslationKeyRepairFilters(
       result.entry.key,
       props.filters,

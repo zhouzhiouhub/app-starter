@@ -5,9 +5,7 @@ import {
   UploadOutlined,
 } from "@ant-design/icons";
 import { Button, Popconfirm, Space } from "antd";
-
-export type TranslationBulkLoadingAction =
-  "download" | "export" | "import" | "preview-import";
+import type { TranslationBulkLoadingAction } from "../translation-bulk-action";
 
 export function TranslationBulkActionBar(props: {
   hasMissingKeyDraft: boolean;

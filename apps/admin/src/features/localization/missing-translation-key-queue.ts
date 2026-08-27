@@ -37,6 +37,37 @@ export function mergeResolvedTranslationKeys(
   return readUniqueValidKeys([...currentKeys, ...nextKeys]);
 }
 
+export function readMissingTranslationKeyAdvanceTarget(input: {
+  keys: string[];
+  resolvedKey: string;
+  resolvedKeys?: string[];
+  selectedKey?: string | null;
+}): string | null {
+  const selectedKey = input.selectedKey ?? undefined;
+  const currentQueue = readMissingTranslationKeyQueueState(
+    input.keys,
+    selectedKey,
+    input.resolvedKeys,
+  ).keys;
+  const resolvedKey = input.resolvedKey.trim();
+  const resolvedIndex = currentQueue.indexOf(resolvedKey);
+  const nextQueue = readMissingTranslationKeyQueueState(
+    input.keys,
+    selectedKey,
+    mergeResolvedTranslationKeys(input.resolvedKeys ?? [], [resolvedKey]),
+  ).keys;
+
+  if (nextQueue.length === 0) {
+    return null;
+  }
+
+  if (resolvedIndex >= 0) {
+    return nextQueue[resolvedIndex] ?? nextQueue[0] ?? null;
+  }
+
+  return nextQueue.includes(selectedKey ?? "") ? (selectedKey ?? null) : null;
+}
+
 function readUniqueValidKeys(keys: string[]): string[] {
   const seen = new Set<string>();
   const queue: string[] = [];
