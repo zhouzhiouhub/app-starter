@@ -72,7 +72,7 @@
 - Page Builder 已具备区块库、区块排序、属性面板、Desktop / Mobile 布局编辑、Undo / Redo。
 - 媒体库已具备列表、登记外部媒体、上传目标生成、归档和 `media://` 引用解析。
 - Settings 已具备默认站点名称与域名管理，并展示 MVP 默认市场、Locale、Currency、功能开关和 Analytics 配置。
-- Localization 已具备默认 Market / Locale / Translation fallback 检查视图，支持默认 `en-US` 翻译条目保存、按 ID 更新、分页列表、筛选、缺失 key 检查、重复保存提示、批量导入/导出预览报告和 Admin 默认 Locale JSON 下载；非默认 Locale 会明确显示回退到 `en-US` 的关闭态，并展示 Locale 创建/更新禁用、Translation 空态和真实导入占位契约。
+- Localization 已具备默认 Market / Locale / Translation fallback 检查视图，支持默认 `en-US` 翻译条目保存、按 ID 更新、分页列表、筛选、缺失 key 检查、重复保存提示、批量导入/导出预览报告、默认 Locale 批量导入写入和 Admin 默认 Locale JSON 下载；非默认 Locale 会明确显示回退到 `en-US` 的关闭态，并展示 Locale 创建/更新禁用与 Translation 空态。
 
 ### 当前还没有完成
 
@@ -590,7 +590,7 @@ POST /api/v1/webhooks/stripe
 - `POST /api/v1/translations/import/preview` 需要 `translation:write`，只做导入前校验和差异预览，按行返回 `create` / `update` / `duplicate` / `error` / `blocked` 与 summary，不写入数据。
 - `POST /api/v1/translations/export/preview` 需要 `translation:read`，只返回当前筛选下的可导出数量、样例 key 和缺失 key 摘要，不生成文件。
 - `POST /api/v1/translations/export` 需要 `translation:read`；MVP 返回当前 Tenant、当前筛选条件下的默认 Locale JSON 导出 payload，非默认 Locale 请求仍回退默认 Locale，审计日志只记录条目数量、筛选条件和缺失 key 数量，不记录翻译正文。
-- `POST /api/v1/translations/import` 是后续真实批量导入写入能力的受保护占位契约，MVP 返回 `CONFLICT`。
+- `POST /api/v1/translations/import` 需要 `translation:write` 和 `Idempotency-Key`；MVP 只允许批量导入默认 Locale 条目，导入前复用预览契约校验重复、非法和非默认 Locale 行，审计日志只记录 create / update 数量，不记录翻译正文。
 - `GET /api/v1/products`、`GET /api/v1/orders` 和 `GET /api/v1/payments` 是后台 Commerce 只读占位契约，MVP 返回空列表，并在 meta 标记 `commerceEnabled`、默认 `market` / `currency`、`writable=false`、`writeDisabledCode=COMMERCE_DISABLED` 和 `reservedPhase=phase-2`。
 - `POST /api/v1/products` 和 `PATCH /api/v1/products/:id` 是受保护的商品写入占位契约，需要 `product:write` 与 `Idempotency-Key`，MVP 返回 `COMMERCE_DISABLED` 且不回显请求体或商品 ID。
 - `GET /api/v1/products/:id` 是受保护的后台商品详情占位契约，MVP 返回 `NOT_FOUND` 且不回显商品 ID。
@@ -640,7 +640,7 @@ pnpm --filter @app-starter/renderer build
 pnpm smoke:publish
 ```
 
-该脚本会登录默认管理员，先验证 `COMMERCE_ENABLED=false`、`MULTI_LOCALE_ENABLED=false` 的关闭态，包括默认 Market / Locale / Translation 预留读接口、默认 Locale JSON 导出、Translation 导入占位、Locale 创建/更新关闭态、Products / Orders / Payments 空列表、商品子资源空列表、订单 / 支付详情 404 占位、前台商品详情 404 占位和 Stripe Webhook 占位路由，再生成媒体上传目标、确认媒体入库并校验 CDN URL，保存草稿、生成 Preview Token、验证公共预览 API 与前台 `/preview?token=`，随后发布一个唯一 slug 的测试页，验证回滚、Preview Token / 页面发布 / 回滚审计日志、公共页面 API、前台 HTML、`robots.txt`、`sitemap.xml` 和 404/noindex 是否读取到同一份已发布内容并满足 SEO 发布门禁。执行账号需要 `audit:read`；设置 `SMOKE_REPORT_PATH=tmp/smoke-report.json` 可输出 JSON 验收报告。Stripe Webhook 在 MVP 只验证占位路由关闭态和敏感值不回显；raw body 与 `stripe-signature` 只作为 Phase 2 前置契约保留。Stripe 密钥在 MVP 可留空；如果配置了 `STRIPE_SECRET_KEY` 或 `STRIPE_WEBHOOK_SECRET`，生产 readiness 会验证它们不是测试 key、占位值、控制字符或首尾空白，且不会把明文写入报告。生产环境如果要强制验证 R2 Presigned URL、真实 PUT 上传和生产 CDN URL，可设置 `SMOKE_REQUIRE_R2_UPLOAD=true`；如果要把 Admin 静态托管也纳入部署验收，可设置 `SMOKE_REQUIRE_ADMIN_APP=true` 并配置 `ADMIN_URL`。生产 CDN URL 不能继续使用 `cdn.example.com` 或任何 `example` / `test` / `invalid` / 本地 / 私网 / 保留网段域名或 IP；这些会被 smoke 诊断判定为非生产可用。若只想验证发布与前台读取、暂不强制 ISR 回调，可临时设置：
+该脚本会登录默认管理员，先验证 `COMMERCE_ENABLED=false`、`MULTI_LOCALE_ENABLED=false` 的关闭态，包括默认 Market / Locale / Translation 预留读接口、默认 Locale JSON 导出、非默认 Translation 导入关闭态、Locale 创建/更新关闭态、Products / Orders / Payments 空列表、商品子资源空列表、订单 / 支付详情 404 占位、前台商品详情 404 占位和 Stripe Webhook 占位路由，再生成媒体上传目标、确认媒体入库并校验 CDN URL，保存草稿、生成 Preview Token、验证公共预览 API 与前台 `/preview?token=`，随后发布一个唯一 slug 的测试页，验证回滚、Preview Token / 页面发布 / 回滚审计日志、公共页面 API、前台 HTML、`robots.txt`、`sitemap.xml` 和 404/noindex 是否读取到同一份已发布内容并满足 SEO 发布门禁。执行账号需要 `audit:read`；设置 `SMOKE_REPORT_PATH=tmp/smoke-report.json` 可输出 JSON 验收报告。Stripe Webhook 在 MVP 只验证占位路由关闭态和敏感值不回显；raw body 与 `stripe-signature` 只作为 Phase 2 前置契约保留。Stripe 密钥在 MVP 可留空；如果配置了 `STRIPE_SECRET_KEY` 或 `STRIPE_WEBHOOK_SECRET`，生产 readiness 会验证它们不是测试 key、占位值、控制字符或首尾空白，且不会把明文写入报告。生产环境如果要强制验证 R2 Presigned URL、真实 PUT 上传和生产 CDN URL，可设置 `SMOKE_REQUIRE_R2_UPLOAD=true`；如果要把 Admin 静态托管也纳入部署验收，可设置 `SMOKE_REQUIRE_ADMIN_APP=true` 并配置 `ADMIN_URL`。生产 CDN URL 不能继续使用 `cdn.example.com` 或任何 `example` / `test` / `invalid` / 本地 / 私网 / 保留网段域名或 IP；这些会被 smoke 诊断判定为非生产可用。若只想验证发布与前台读取、暂不强制 ISR 回调，可临时设置：
 
 `API_URL` 必须是 API origin 或精确的 `/api/v1` base，`WEB_URL` 必须是前台 origin，`ADMIN_URL` 必须是后台静态应用 origin；Smoke Runner 会在发起登录、发布或 Admin 静态页请求前拒绝首尾空白、嵌入账号密码、query、fragment、异常路径和非 HTTP(S) 协议，并且登录请求会禁用自动重定向，避免管理员凭据被错误代理或旧域名跳转带走。
 前台页面、robots、sitemap 和 404 smoke 请求会禁用自动重定向；如果生产托管返回 30x，会在报告里记录脱敏后的 `Location` 并提示检查 `WEB_URL`、店面域名路由和托管 rewrite 规则。
@@ -686,7 +686,7 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 - Audit Logs 后台页面、审计日志只读查询 API 与 `audit:read` 权限。
 - 区块库、区块排序、区块属性面板、Undo / Redo。
 - 媒体库列表、上传目标、外部媒体登记、归档和 `media://` 选择。
-- Localization 默认 Market / Locale / Translation fallback 视图、默认 Locale 翻译保存、按 ID 更新、分页列表、列表筛选、缺失 key 检查、重复保存提示、写入关闭态、Translation 空态、批量导入/导出预览报告、Admin 默认 Locale JSON 下载和真实导入占位契约。
+- Localization 默认 Market / Locale / Translation fallback 视图、默认 Locale 翻译保存、按 ID 更新、分页列表、列表筛选、缺失 key 检查、重复保存提示、写入关闭态、Translation 空态、批量导入/导出预览报告、默认 Locale 批量导入写入和 Admin 默认 Locale JSON 下载。
 - Commerce 已补齐 Product / Variant / Price / Inventory / Order / Payment / WebhookEvent 数据库预留迁移；Products / Orders / Payments 只读空列表占位响应 meta 会明确关闭态、默认市场/币种、不可写和 Phase 2 预留；后台商品创建/详情/更新、商品子资源、订单 / 支付详情、前台商品详情路由、Stripe 可选密钥安全诊断和 Stripe Webhook raw body / 签名形状预留均为显式占位。
 - Settings 默认站点名称、域名与 Analytics 配置展示页。
 - Publish 按钮，发布结果写入 PostgreSQL。
@@ -735,5 +735,5 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 1. 在真实 R2 / CDN 环境配置 `MEDIA_CDN_BASE_URL`、R2 凭据和 CDN 域名，确认不是 `example` / `test` / `invalid` / 本地 / 私网域名，执行 `pnpm smoke:publish` 并归档 `SMOKE_REPORT_PATH`。
 2. 补齐部署 Smoke Test：前台 Vercel、API 独立 Node 服务、Admin 静态托管、Redis 生产连接、环境变量清单和回滚步骤。
 3. 做 Page Builder 视觉验收：Desktop / Mobile 双端检查、核心区块与设计稿差异记录、媒体解析异常态。
-4. 继续完善 Translation Key 管理真实执行能力：批量导入写入、导入幂等和导入审计日志；非默认 Locale 仍保持关闭态。
+4. 继续完善 Translation Key 管理后台体验：Admin 导入执行按钮、导入结果展示和失败行定位；非默认 Locale 仍保持关闭态。
 5. 保持 Commerce 关闭态，继续强化订单 / 支付关闭态分支、Phase 2 Webhook 验签设计和 `COMMERCE_DISABLED` 错误分支测试；不进入真实交易。

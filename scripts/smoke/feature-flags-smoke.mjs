@@ -126,14 +126,23 @@ async function assertTranslationBulkCapabilities(input, accessToken) {
   await assertErrorResponse(
     `${input.apiBaseUrl}/translations/import`,
     {
-      body: JSON.stringify({ entries: [] }),
+      body: JSON.stringify({
+        entries: [
+          {
+            key: "page.home.smoke.import",
+            locale: "de-DE",
+            value: "Smoke import",
+          },
+        ],
+      }),
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
+        "Idempotency-Key": "d59af848-cb88-4267-929f-65b14d9f8f30",
       },
       method: "POST",
     },
-    "CONFLICT",
+    "MULTI_LOCALE_DISABLED",
   );
   const exportResponse = await fetchAdminJson(
     `${input.apiBaseUrl}/translations/export`,

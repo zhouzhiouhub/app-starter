@@ -140,9 +140,16 @@ export class LocalizationController {
 
   @Post("translations/import")
   @RequireScopes("translation:write")
-  createTranslationImport(@CurrentRequestId() requestId = "local-dev") {
-    return this.localization.rejectTranslationBulkOperation(
-      "import",
+  createTranslationImport(
+    @CurrentUser() actor: Actor,
+    @Body() body: unknown,
+    @Headers("idempotency-key") idempotencyKey?: string,
+    @CurrentRequestId() requestId = "local-dev",
+  ) {
+    return this.localization.importTranslations(
+      body,
+      requireIdempotencyKey(idempotencyKey),
+      actor,
       requestId,
     );
   }

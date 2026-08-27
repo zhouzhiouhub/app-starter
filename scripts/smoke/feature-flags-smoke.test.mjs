@@ -153,6 +153,9 @@ test("feature flag smoke checks disabled feature placeholders", async () => {
   const translationExportCall = calls.find((call) =>
     call.url.endsWith("/translations/export"),
   );
+  const translationImportCall = calls.find((call) =>
+    call.url.endsWith("/translations/import"),
+  );
 
   assert.ok(productCall);
   assert.equal(productCall.init.method, "GET");
@@ -171,6 +174,13 @@ test("feature flag smoke checks disabled feature placeholders", async () => {
   assert.ok(translationExportCall);
   assert.equal(translationExportCall.init.method, "POST");
   assert.match(translationExportCall.init.body, /"locale":"de-DE"/);
+  assert.ok(translationImportCall);
+  assert.equal(translationImportCall.init.method, "POST");
+  assert.equal(
+    translationImportCall.init.headers["Idempotency-Key"],
+    "d59af848-cb88-4267-929f-65b14d9f8f30",
+  );
+  assert.match(translationImportCall.init.body, /"locale":"de-DE"/);
 
   for (const suffix of [
     "/markets",

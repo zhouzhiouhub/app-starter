@@ -71,8 +71,8 @@ export function createFeatureFlagSmokeFetch(options = {}) {
     if (url.endsWith("/translations/import")) {
       return jsonResponse(
         {
-          code: "CONFLICT",
-          message: "Translation import is reserved.",
+          code: "MULTI_LOCALE_DISABLED",
+          message: "Translation import is limited to the default locale.",
         },
         { status: 409, statusText: "Conflict" },
       );

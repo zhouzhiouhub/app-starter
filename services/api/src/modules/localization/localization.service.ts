@@ -1,5 +1,5 @@
-import { ConflictException, Injectable } from "@nestjs/common";
-import { apiErrorCodes, translationEntryMaxCount } from "@app-starter/schema";
+import { Injectable } from "@nestjs/common";
+import { translationEntryMaxCount } from "@app-starter/schema";
 import type { Actor } from "../identity/identity.types.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { toTranslationResponse } from "./localization.mapper.js";
@@ -10,6 +10,7 @@ import {
   resolveTranslationLocale,
 } from "./localization.validation.js";
 import { exportTranslations as exportTranslationsUseCase } from "./use-cases/export-translations.js";
+import { importTranslations as importTranslationsUseCase } from "./use-cases/import-translations.js";
 import { previewTranslationExport } from "./use-cases/preview-translation-export.js";
 import { previewTranslationImport } from "./use-cases/preview-translation-import.js";
 import { updateTranslation } from "./use-cases/update-translation.js";
@@ -108,6 +109,21 @@ export class LocalizationService {
     return previewTranslationImport(this.prisma, body, actor, requestId);
   }
 
+  importTranslations(
+    body: unknown,
+    idempotencyKey: string | undefined,
+    actor: Actor,
+    requestId = "local-dev",
+  ) {
+    return importTranslationsUseCase(
+      this.prisma,
+      body,
+      idempotencyKey,
+      actor,
+      requestId,
+    );
+  }
+
   previewTranslationExport(
     body: unknown,
     actor: Actor,
@@ -118,16 +134,5 @@ export class LocalizationService {
 
   exportTranslations(body: unknown, actor: Actor, requestId = "local-dev") {
     return exportTranslationsUseCase(this.prisma, body, actor, requestId);
-  }
-
-  rejectTranslationBulkOperation(
-    operation: "export" | "import",
-    requestId = "local-dev",
-  ): never {
-    throw new ConflictException({
-      code: apiErrorCodes.CONFLICT,
-      message: `Translation ${operation} is reserved for a later localization phase.`,
-      requestId,
-    });
   }
 }

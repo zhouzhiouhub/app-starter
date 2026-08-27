@@ -1,14 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { BadRequestException, ConflictException } from "@nestjs/common";
+import { BadRequestException } from "@nestjs/common";
 import {
-  apiErrorCodes,
   translationEntryMaxCount,
   translationListDefaultLimit,
 } from "../../../packages/schema/dist/index.js";
-import { LocalizationController } from "../dist/modules/localization/localization.controller.js";
 import { LocalizationService } from "../dist/modules/localization/localization.service.js";
-import { assertApiConflictRejects } from "./pages-test-helpers.mjs";
 
 const actor = {
   email: "admin@example.com",
@@ -358,26 +355,3 @@ test("admin translations validate namespace and search filters", async () => {
     );
   }
 });
-
-test("translation import stays an explicit reserved contract", async () => {
-  const controller = new LocalizationController(createForwardingService());
-
-  const error = await assertApiConflictRejects(
-    () => controller.createTranslationImport("request-translation-import"),
-    apiErrorCodes.CONFLICT,
-  );
-
-  assert.match(error.getResponse()?.message, /import/);
-});
-
-function createForwardingService() {
-  return {
-    rejectTranslationBulkOperation: async (operation, requestId) => {
-      throw new ConflictException({
-        code: apiErrorCodes.CONFLICT,
-        message: `Translation ${operation} is reserved for a later localization phase.`,
-        requestId,
-      });
-    },
-  };
-}
