@@ -359,26 +359,15 @@ test("admin translations validate namespace and search filters", async () => {
   }
 });
 
-test("translation import and export stay explicit reserved contracts", async () => {
+test("translation import stays an explicit reserved contract", async () => {
   const controller = new LocalizationController(createForwardingService());
 
-  for (const [callback, operation] of [
-    [
-      () => controller.createTranslationImport("request-translation-import"),
-      "import",
-    ],
-    [
-      () => controller.createTranslationExport("request-translation-export"),
-      "export",
-    ],
-  ]) {
-    const error = await assertApiConflictRejects(
-      callback,
-      apiErrorCodes.CONFLICT,
-    );
+  const error = await assertApiConflictRejects(
+    () => controller.createTranslationImport("request-translation-import"),
+    apiErrorCodes.CONFLICT,
+  );
 
-    assert.match(error.getResponse()?.message, new RegExp(operation));
-  }
+  assert.match(error.getResponse()?.message, /import/);
 });
 
 function createForwardingService() {

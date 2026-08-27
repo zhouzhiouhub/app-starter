@@ -18,7 +18,7 @@ export async function assertFeatureFlagsDisabled(input, accessToken) {
   await assertPublicConfig(input);
   await assertPublicTranslationFallback(input);
   await assertLocalizationReadPlaceholders(input, accessToken);
-  await assertTranslationBulkReserved(input, accessToken);
+  await assertTranslationBulkCapabilities(input, accessToken);
   await assertCommerceReadPlaceholders(input, accessToken);
   await assertCommerceDisabled(input, accessToken);
   await assertLocaleCreationDisabled(input, accessToken);
@@ -122,7 +122,7 @@ async function assertLocalizationReadPlaceholders(input, accessToken) {
   }
 }
 
-async function assertTranslationBulkReserved(input, accessToken) {
+async function assertTranslationBulkCapabilities(input, accessToken) {
   await assertErrorResponse(
     `${input.apiBaseUrl}/translations/import`,
     {
@@ -135,21 +135,42 @@ async function assertTranslationBulkReserved(input, accessToken) {
     },
     "CONFLICT",
   );
-  await assertErrorResponse(
+  const exportResponse = await fetchAdminJson(
     `${input.apiBaseUrl}/translations/export`,
+    accessToken,
+    "Translation export",
     {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+      body: JSON.stringify({ locale: "de-DE" }),
+      headers: { "Content-Type": "application/json" },
       method: "POST",
     },
-    "CONFLICT",
   );
+
+  if (
+    exportResponse.body?.data?.contentType !== "application/json" ||
+    exportResponse.body?.data?.format !== "json" ||
+    !Array.isArray(exportResponse.body?.data?.entries)
+  ) {
+    throw new Error("Translation export did not return a JSON payload.");
+  }
+
+  if (
+    exportResponse.body?.meta?.locale !== expectedConfig.defaultLocale ||
+    exportResponse.body?.meta?.fallbackLocale !==
+      expectedConfig.fallbackLocale ||
+    exportResponse.body?.meta?.isFallback !== true
+  ) {
+    throw new Error(
+      "Translation export did not fall back to the default locale.",
+    );
+  }
 }
 
-async function fetchAdminJson(url, accessToken, label) {
+async function fetchAdminJson(url, accessToken, label, init = {}) {
   const response = await fetchJson(url, {
+    ...init,
     headers: {
+      ...(init.headers ?? {}),
       Authorization: `Bearer ${accessToken}`,
     },
   });

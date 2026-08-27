@@ -149,11 +149,12 @@ export class LocalizationController {
 
   @Post("translations/export")
   @RequireScopes("translation:read")
-  createTranslationExport(@CurrentRequestId() requestId = "local-dev") {
-    return this.localization.rejectTranslationBulkOperation(
-      "export",
-      requestId,
-    );
+  createTranslationExport(
+    @CurrentUser() actor: Actor,
+    @Body() body: unknown,
+    @CurrentRequestId() requestId = "local-dev",
+  ) {
+    return this.localization.exportTranslations(body, actor, requestId);
   }
 
   @Post("locales")

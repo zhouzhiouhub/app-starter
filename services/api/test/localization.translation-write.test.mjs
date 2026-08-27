@@ -45,7 +45,11 @@ test("localization admin routes require guard and read or write scopes", () => {
   assert.deepEqual(readScopes("createTranslationImport"), [
     "translation:write",
   ]);
+  assert.equal(readRouteMethod("createTranslationImport"), RequestMethod.POST);
+  assert.equal(readRoutePath("createTranslationImport"), "translations/import");
   assert.deepEqual(readScopes("createTranslationExport"), ["translation:read"]);
+  assert.equal(readRouteMethod("createTranslationExport"), RequestMethod.POST);
+  assert.equal(readRoutePath("createTranslationExport"), "translations/export");
   assert.deepEqual(readScopes("previewTranslationImport"), [
     "translation:write",
   ]);

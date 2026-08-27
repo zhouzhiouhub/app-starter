@@ -68,17 +68,38 @@ export function createFeatureFlagSmokeFetch(options = {}) {
       });
     }
 
-    if (
-      url.endsWith("/translations/import") ||
-      url.endsWith("/translations/export")
-    ) {
+    if (url.endsWith("/translations/import")) {
       return jsonResponse(
         {
           code: "CONFLICT",
-          message: "Translation bulk operation is reserved.",
+          message: "Translation import is reserved.",
         },
         { status: 409, statusText: "Conflict" },
       );
+    }
+
+    if (url.endsWith("/translations/export")) {
+      return jsonResponse({
+        data: {
+          contentType: "application/json",
+          entries: [],
+          entryCount: 0,
+          expectedKeyCount: 0,
+          exportVersion: "translation-export.v1",
+          filename: "translations-en-US.json",
+          format: "json",
+          locale: "en-US",
+          missingKeyCount: 0,
+          missingKeyPreviewLimit: 50,
+          missingKeys: [],
+        },
+        meta: {
+          fallbackLocale: "en-US",
+          isFallback: true,
+          locale: "en-US",
+          preview: false,
+        },
+      });
     }
 
     if (

@@ -9,6 +9,7 @@ import {
   parseListTranslationsQuery,
   resolveTranslationLocale,
 } from "./localization.validation.js";
+import { exportTranslations as exportTranslationsUseCase } from "./use-cases/export-translations.js";
 import { previewTranslationExport } from "./use-cases/preview-translation-export.js";
 import { previewTranslationImport } from "./use-cases/preview-translation-import.js";
 import { updateTranslation } from "./use-cases/update-translation.js";
@@ -113,6 +114,10 @@ export class LocalizationService {
     requestId = "local-dev",
   ) {
     return previewTranslationExport(this.prisma, body, actor, requestId);
+  }
+
+  exportTranslations(body: unknown, actor: Actor, requestId = "local-dev") {
+    return exportTranslationsUseCase(this.prisma, body, actor, requestId);
   }
 
   rejectTranslationBulkOperation(

@@ -69,6 +69,40 @@ test("feature flag smoke accepts stored default translation entries", async () =
   );
 });
 
+test("feature flag smoke rejects translation export fallback drift", async () => {
+  await withFetch(
+    createFeatureFlagSmokeFetch({
+      overrides: {
+        "/translations/export": () =>
+          jsonResponse({
+            data: {
+              contentType: "application/json",
+              entries: [],
+              format: "json",
+            },
+            meta: {
+              fallbackLocale: "en-US",
+              isFallback: false,
+              locale: "de-DE",
+            },
+          }),
+      },
+    }),
+    async () => {
+      await assert.rejects(
+        () =>
+          assertFeatureFlagsDisabled(
+            {
+              apiBaseUrl: "https://api.example.com/api/v1",
+            },
+            "access-token",
+          ),
+        /Translation export did not fall back to the default locale\./,
+      );
+    },
+  );
+});
+
 test("feature flag smoke rejects locale update placeholder drift", async () => {
   await withFetch(
     createFeatureFlagSmokeFetch({

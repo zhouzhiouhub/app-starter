@@ -150,6 +150,9 @@ test("feature flag smoke checks disabled feature placeholders", async () => {
       call.url.endsWith("/products/smoke-product") &&
       call.init.method === "PATCH",
   );
+  const translationExportCall = calls.find((call) =>
+    call.url.endsWith("/translations/export"),
+  );
 
   assert.ok(productCall);
   assert.equal(productCall.init.method, "GET");
@@ -165,6 +168,9 @@ test("feature flag smoke checks disabled feature placeholders", async () => {
     "t=1,v1=smoke-signature",
   );
   assert.match(webhookCall.init.body, /evt_smoke_webhook/);
+  assert.ok(translationExportCall);
+  assert.equal(translationExportCall.init.method, "POST");
+  assert.match(translationExportCall.init.body, /"locale":"de-DE"/);
 
   for (const suffix of [
     "/markets",
