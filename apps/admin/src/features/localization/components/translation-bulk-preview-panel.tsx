@@ -10,8 +10,13 @@ import {
   Typography,
 } from "antd";
 import { useState } from "react";
-import { previewTranslationExport, previewTranslationImport } from "../api";
+import {
+  exportTranslations,
+  previewTranslationExport,
+  previewTranslationImport,
+} from "../api";
 import { formatRequestError } from "../../../lib/api-error";
+import { downloadTranslationExport } from "../translation-export-file";
 import type {
   LocalizationTranslationsMeta,
   TranslationExportPreviewResult,
@@ -19,6 +24,7 @@ import type {
   TranslationImportPreviewResult,
   TranslationListFilters,
 } from "../types";
+import { TranslationExportPreviewResultView } from "./translation-export-preview-result";
 
 const defaultImportPreviewText = JSON.stringify(
   {
@@ -44,7 +50,7 @@ export function TranslationBulkPreviewPanel(props: {
     useState<TranslationExportPreviewResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loadingAction, setLoadingAction] = useState<
-    "export" | "import" | null
+    "download" | "export" | "import" | null
   >(null);
 
   const runImportPreview = async () => {
@@ -76,6 +82,20 @@ export function TranslationBulkPreviewPanel(props: {
       setLoadingAction(null);
     }
   };
+  const runExportDownload = async () => {
+    setLoadingAction("download");
+    setError(null);
+
+    try {
+      downloadTranslationExport(
+        await exportTranslations(props.filters, props.meta.requestedLocale),
+      );
+    } catch (caught) {
+      setError(formatPreviewError(caught));
+    } finally {
+      setLoadingAction(null);
+    }
+  };
 
   return (
     <Space direction="vertical" size={12} style={{ width: "100%" }}>
@@ -94,15 +114,24 @@ export function TranslationBulkPreviewPanel(props: {
           Preview import
         </Button>
         <Button
-          icon={<DownloadOutlined />}
+          icon={<FileSearchOutlined />}
           loading={loadingAction === "export"}
           onClick={() => void runExportPreview()}
         >
           Preview export
         </Button>
+        <Button
+          icon={<DownloadOutlined />}
+          loading={loadingAction === "download"}
+          onClick={() => void runExportDownload()}
+        >
+          Export JSON
+        </Button>
       </Space>
       {importPreview ? <ImportPreviewResult preview={importPreview} /> : null}
-      {exportPreview ? <ExportPreviewResult preview={exportPreview} /> : null}
+      {exportPreview ? (
+        <TranslationExportPreviewResultView preview={exportPreview} />
+      ) : null}
     </Space>
   );
 }
@@ -172,32 +201,6 @@ function ImportPreviewResult(props: {
         size="small"
       />
     </Space>
-  );
-}
-
-function ExportPreviewResult(props: {
-  preview: TranslationExportPreviewResult;
-}) {
-  return (
-    <Descriptions bordered column={{ md: 2, xs: 1 }} size="small">
-      <Descriptions.Item label="Locale">
-        <Typography.Text code>{props.preview.locale}</Typography.Text>
-      </Descriptions.Item>
-      <Descriptions.Item label="Exportable">
-        {props.preview.exportableEntryCount}
-      </Descriptions.Item>
-      <Descriptions.Item label="Page keys">
-        {props.preview.expectedKeyCount}
-      </Descriptions.Item>
-      <Descriptions.Item label="Missing">
-        {props.preview.missingKeyCount}
-      </Descriptions.Item>
-      <Descriptions.Item label="Sample keys" span={2}>
-        <Typography.Text code>
-          {props.preview.sampleKeys.join(", ") || "none"}
-        </Typography.Text>
-      </Descriptions.Item>
-    </Descriptions>
   );
 }
 

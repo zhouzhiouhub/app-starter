@@ -9,6 +9,7 @@ import type {
   LocalizationTranslationEntry,
   LocalizationTranslationsMeta,
   TranslationExportPreviewResult,
+  TranslationExportResult,
   TranslationImportPreviewResult,
   TranslationListFilters,
   UpsertDefaultTranslationInput,
@@ -114,6 +115,41 @@ export async function previewTranslationExport(
 
   if (!result.data) {
     throw new Error("Translation export preview could not be prepared.");
+  }
+
+  return result.data;
+}
+
+export async function exportTranslations(
+  filters: TranslationListFilters,
+  locale: string,
+): Promise<TranslationExportResult> {
+  const result = await readAdminJson<{
+    data?: TranslationExportResult;
+  }>(
+    "/translations/export",
+    {
+      body: JSON.stringify({
+        locale,
+        namespace: filters.namespace,
+        q: filters.query,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    },
+    "Translation export could not be prepared.",
+  );
+
+  if (
+    !result.data ||
+    result.data.contentType !== "application/json" ||
+    result.data.format !== "json" ||
+    !result.data.filename ||
+    !Array.isArray(result.data.entries)
+  ) {
+    throw new Error("Translation export could not be prepared.");
   }
 
   return result.data;

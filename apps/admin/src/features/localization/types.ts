@@ -91,6 +91,20 @@ export interface TranslationExportPreviewResult {
   sampleKeys: string[];
 }
 
+export interface TranslationExportResult {
+  contentType: string;
+  entries: LocalizationTranslationEntry[];
+  entryCount: number;
+  expectedKeyCount: number;
+  exportVersion: string;
+  filename: string;
+  format: "json";
+  locale: string;
+  missingKeyCount: number;
+  missingKeyPreviewLimit: number;
+  missingKeys: string[];
+}
+
 export interface TranslationListFilters {
   limit?: number;
   namespace?: string;

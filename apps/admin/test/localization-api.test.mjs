@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  exportTranslations,
   getLocalizationSummary,
   previewTranslationExport,
   previewTranslationImport,
@@ -216,6 +217,55 @@ test("localization API previews translation import and export payloads", async (
   });
 });
 
+test("localization API exports translation JSON payloads", async () => {
+  const requests = [];
+  const exportResult = {
+    contentType: "application/json",
+    entries: [
+      {
+        context: "Homepage hero",
+        key: "page.home.hero.title",
+        locale: "en-US",
+        updatedAt: "2026-08-27T00:00:00.000Z",
+        value: "Build better storefronts",
+      },
+    ],
+    entryCount: 1,
+    expectedKeyCount: 1,
+    exportVersion: "translation-export.v1",
+    filename: "translations-en-US.json",
+    format: "json",
+    locale: "en-US",
+    missingKeyCount: 0,
+    missingKeyPreviewLimit: 50,
+    missingKeys: [],
+  };
+
+  await withFetch(
+    async (url, init) => {
+      requests.push({ init, url: String(url) });
+      return jsonResponse({ data: exportResult });
+    },
+    async () => {
+      assert.deepEqual(
+        await exportTranslations(
+          { namespace: "page.home", query: "hero" },
+          "de-DE",
+        ),
+        exportResult,
+      );
+    },
+  );
+
+  assert.equal(requests[0].url, "/api/v1/translations/export");
+  assert.equal(requests[0].init.method, "POST");
+  assert.deepEqual(JSON.parse(requests[0].init.body), {
+    locale: "de-DE",
+    namespace: "page.home",
+    q: "hero",
+  });
+});
+
 test("localization API rejects malformed translation responses", async () => {
   for (const body of [{}, { data: null }, { data: { locale: "en-US" } }]) {
     await withFetch(
@@ -229,6 +279,25 @@ test("localization API rejects malformed translation responses", async () => {
               value: "Build better storefronts",
             }),
           /Translation entry could not be saved/,
+        );
+      },
+    );
+  }
+});
+
+test("localization API rejects malformed translation export responses", async () => {
+  for (const body of [
+    {},
+    { data: null },
+    { data: { entries: [] } },
+    { data: { contentType: "text/plain", entries: [], format: "json" } },
+  ]) {
+    await withFetch(
+      async () => jsonResponse(body),
+      async () => {
+        await assert.rejects(
+          () => exportTranslations({}, "en-US"),
+          /Translation export could not be prepared/,
         );
       },
     );
