@@ -74,6 +74,21 @@ export function readTranslationImportTemplateSeverity(
   return "info";
 }
 
+export function readTranslationImportTemplateEmptyStateMessage(input: {
+  defaultLocale: string;
+  summary: TranslationImportTemplateSummary;
+}): string | null {
+  if (
+    input.summary.invalidJson ||
+    input.summary.invalidEnvelope ||
+    input.summary.entryCount > 0
+  ) {
+    return null;
+  }
+
+  return `No import rows are queued for default ${input.defaultLocale}. Add at least one entries[] item before previewing or importing.`;
+}
+
 function summarizeEntries(input: {
   defaultLocale: string;
   entries: unknown[];

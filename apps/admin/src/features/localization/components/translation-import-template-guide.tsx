@@ -2,6 +2,7 @@ import { Alert, Descriptions, Space, Tag, Typography } from "antd";
 import { useMemo } from "react";
 import { translationBulkPreviewMaxEntries } from "@app-starter/schema";
 import {
+  readTranslationImportTemplateEmptyStateMessage,
   readTranslationImportTemplateSeverity,
   summarizeTranslationImportTemplate,
 } from "../translation-import-template-summary";
@@ -21,6 +22,10 @@ export function TranslationImportTemplateGuide(props: {
     [props.defaultLocale, props.importText, props.missingKeys],
   );
   const severity = readTranslationImportTemplateSeverity(summary);
+  const emptyStateMessage = readTranslationImportTemplateEmptyStateMessage({
+    defaultLocale: props.defaultLocale,
+    summary,
+  });
 
   return (
     <Space direction="vertical" size={8} style={{ width: "100%" }}>
@@ -39,6 +44,14 @@ export function TranslationImportTemplateGuide(props: {
           message="Non-default Locale rows are blocked"
           showIcon
           type="warning"
+        />
+      ) : null}
+      {emptyStateMessage ? (
+        <Alert
+          description={emptyStateMessage}
+          message="Import draft is empty"
+          showIcon
+          type="info"
         />
       ) : null}
       <Descriptions bordered column={{ md: 4, xs: 1 }} size="small">

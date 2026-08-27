@@ -133,6 +133,16 @@ test("translation import result history explains replayed results", () => {
     ),
     "Viewing Import #2 from recent import history. This only replays the result table and does not re-import data.",
   );
+  assert.equal(
+    formatTranslationImportHistoryReplayMessage(
+      createTranslationImportResultHistoryEntry(
+        createImportResult(["page.home.hero.title"]),
+        3,
+      ),
+      { focusKey: "page.home.hero.title" },
+    ),
+    "Viewing Import #3 from recent import history. This only replays the result table and does not re-import data. Translations table is focused on page.home.hero.title.",
+  );
 });
 
 test("translation import result history explains draft rebuilds", () => {

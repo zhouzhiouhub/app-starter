@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   exportTranslations,
   importTranslations,
@@ -18,10 +18,8 @@ import {
 } from "../translation-import-draft-state";
 import { readTranslationImportErrorDetails } from "../translation-import-error-details";
 import { downloadTranslationExport } from "../translation-export-file";
+import { readTranslationImportFocusKey } from "../translation-import-focus";
 import {
-  addTranslationImportResultHistoryEntry,
-  clearTranslationImportResultHistory,
-  createTranslationImportResultHistoryEntry,
   formatTranslationBulkRepairCleanupSuggestion,
   formatTranslationBulkRepairCompletionMessage,
   formatTranslationImportHistoryReplayMessage,
@@ -30,6 +28,7 @@ import {
 } from "../translation-import-result-history";
 import { readTranslationBulkActionError } from "../translation-bulk-action-error";
 import { useTranslationBulkRepairConfirmation } from "./use-translation-bulk-repair-confirmation";
+import { useTranslationImportResultHistory } from "./use-translation-import-result-history";
 import type { TranslationBulkLoadingAction } from "../translation-bulk-action";
 import type {
   LocalizationTranslationsMeta,
@@ -66,12 +65,9 @@ export function useTranslationBulkPreview(input: {
   const [repairCompletionNotice, setRepairCompletionNotice] = useState<
     string | null
   >(null);
-  const [importResultHistory, setImportResultHistory] = useState<
-    TranslationImportResultHistoryEntry[]
-  >([]);
   const [loadingAction, setLoadingAction] =
     useState<TranslationBulkLoadingAction | null>(null);
-  const importSequenceRef = useRef(0);
+  const importResultHistoryState = useTranslationImportResultHistory();
   const missingKeyDraftState = useMemo(
     () =>
       createMissingTranslationImportDraftState({
@@ -156,7 +152,7 @@ export function useTranslationBulkPreview(input: {
     try {
       const result = await importTranslations(JSON.parse(importText));
       setImportResult(result);
-      recordImportResult(result);
+      importResultHistoryState.recordImportResult(result);
       const repairedKeys = readTranslationBulkRepairCoveredMissingKeys({
         missingKeys: input.missingKeys,
         result,
@@ -221,6 +217,8 @@ export function useTranslationBulkPreview(input: {
   };
 
   function restoreImportResult(entry: TranslationImportResultHistoryEntry) {
+    const focusKey = readTranslationImportFocusKey(entry.result);
+
     setError(null);
     setExportPreview(null);
     setImportErrorDetails(null);
@@ -228,9 +226,13 @@ export function useTranslationBulkPreview(input: {
     setImportResult(entry.result);
     setDraftNotice(null);
     setDraftClearSuggestion(null);
-    setHistoryReplayNotice(formatTranslationImportHistoryReplayMessage(entry));
+    setHistoryReplayNotice(
+      formatTranslationImportHistoryReplayMessage(entry, { focusKey }),
+    );
     setRepairCompletionNotice(null);
     repairConfirmation.clear();
+
+    return focusKey;
   }
 
   function clearImportDraftAfterSuccess() {
@@ -248,25 +250,9 @@ export function useTranslationBulkPreview(input: {
     setImportText(emptyTranslationImportText);
   }
 
-  function clearImportResultHistory() {
-    setImportResultHistory(clearTranslationImportResultHistory());
-  }
-
-  function recordImportResult(result: TranslationImportResult) {
-    importSequenceRef.current += 1;
-    const entry = createTranslationImportResultHistoryEntry(
-      result,
-      importSequenceRef.current,
-    );
-
-    setImportResultHistory((current) =>
-      addTranslationImportResultHistoryEntry(current, entry),
-    );
-  }
-
   return {
     clearImportDraftAfterSuccess,
-    clearImportResultHistory,
+    clearImportResultHistory: importResultHistoryState.clearImportResultHistory,
     draftClearSuggestion,
     draftNotice,
     error,
@@ -276,13 +262,13 @@ export function useTranslationBulkPreview(input: {
     importErrorDetails,
     importPreview,
     importResult,
-    importResultHistory,
+    importResultHistory: importResultHistoryState.importResultHistory,
     importText,
     loadingAction,
     repairCleanupSuggestion:
       repairConfirmation.notice?.type === "success"
         ? formatTranslationBulkRepairCleanupSuggestion({
-            historyCount: importResultHistory.length,
+            historyCount: importResultHistoryState.importResultHistory.length,
           })
         : null,
     repairCompletionNotice,

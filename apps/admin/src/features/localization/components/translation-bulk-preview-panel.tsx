@@ -30,6 +30,16 @@ export function TranslationBulkPreviewPanel(props: {
     onImported: props.onImported,
   });
 
+  function handleRestoreImportResult(
+    entry: Parameters<typeof bulkPreview.restoreImportResult>[0],
+  ) {
+    const focusKey = bulkPreview.restoreImportResult(entry);
+
+    if (focusKey) {
+      void props.onFocusKey?.(focusKey);
+    }
+  }
+
   return (
     <Space direction="vertical" size={12} style={{ width: "100%" }}>
       {bulkPreview.error ? (
@@ -111,6 +121,7 @@ export function TranslationBulkPreviewPanel(props: {
       ) : null}
       {bulkPreview.importResult ? (
         <TranslationImportResultView
+          focusSource={bulkPreview.historyReplayNotice ? "history" : "import"}
           focusedKey={readTranslationImportFocusedResultKey(
             bulkPreview.importResult,
             props.focusedKey,
@@ -133,7 +144,7 @@ export function TranslationBulkPreviewPanel(props: {
       <TranslationImportResultHistoryView
         entries={bulkPreview.importResultHistory}
         onClear={bulkPreview.clearImportResultHistory}
-        onSelect={bulkPreview.restoreImportResult}
+        onSelect={handleRestoreImportResult}
         onUseDraft={bulkPreview.useHistoryDraft}
       />
     </Space>

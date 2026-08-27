@@ -10,6 +10,12 @@ import {
   formatTranslationImportDraftNotice,
   formatTranslationImportDraft,
 } from "../src/features/localization/translation-import-draft.ts";
+import {
+  createHistoryTranslationImportDraftState,
+  createMissingTranslationImportDraftState,
+  createResultTranslationImportDraftState,
+} from "../src/features/localization/translation-import-draft-state.ts";
+import { createTranslationImportResultHistoryEntry } from "../src/features/localization/translation-import-result-history.ts";
 
 test("missing translation import drafts create editable default locale entries", () => {
   assert.deepEqual(
@@ -143,5 +149,58 @@ test("translation import draft clear messages explain follow-up actions", () => 
   assert.equal(
     formatTranslationImportDraftClearedNotice({ locale: "en-US" }),
     "Import draft was cleared after the successful default en-US import.",
+  );
+});
+
+test("translation import draft states carry text and notices", () => {
+  const resultEntries = [
+    {
+      action: "create",
+      context: null,
+      index: 0,
+      key: "page.home.hero.title",
+      locale: "en-US",
+      value: "Title",
+    },
+  ];
+
+  assert.deepEqual(
+    JSON.parse(
+      createMissingTranslationImportDraftState({
+        keys: ["page.home.hero.title"],
+        locale: "en-US",
+      }).text,
+    ),
+    {
+      entries: [
+        {
+          context: "page.home.hero / title",
+          key: "page.home.hero.title",
+          locale: "en-US",
+          value: "",
+        },
+      ],
+    },
+  );
+  assert.equal(
+    createResultTranslationImportDraftState(resultEntries).notice,
+    "Draft rebuilt from 1 imported row. Import preview is reset.",
+  );
+  assert.equal(
+    createHistoryTranslationImportDraftState(
+      createTranslationImportResultHistoryEntry(
+        {
+          entries: resultEntries,
+          summary: {
+            createdCount: 1,
+            importedCount: 1,
+            totalEntries: 1,
+            updatedCount: 0,
+          },
+        },
+        2,
+      ),
+    ).notice,
+    "Draft rebuilt from Import #2 with 1 imported row. Import preview is reset.",
   );
 });

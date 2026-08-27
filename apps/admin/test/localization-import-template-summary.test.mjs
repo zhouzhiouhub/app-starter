@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  readTranslationImportTemplateEmptyStateMessage,
   readTranslationImportTemplateSeverity,
   summarizeTranslationImportTemplate,
 } from "../src/features/localization/translation-import-template-summary.ts";
@@ -73,4 +74,30 @@ test("translation import template summary separates JSON and envelope errors", (
   assert.equal(invalidEnvelope.invalidEnvelope, true);
   assert.equal(readTranslationImportTemplateSeverity(invalidJson), "error");
   assert.equal(readTranslationImportTemplateSeverity(invalidEnvelope), "error");
+});
+
+test("translation import template summary explains empty import drafts", () => {
+  const emptySummary = summarizeTranslationImportTemplate({
+    defaultLocale: "en-US",
+    importText: JSON.stringify({ entries: [] }),
+  });
+  const invalidSummary = summarizeTranslationImportTemplate({
+    defaultLocale: "en-US",
+    importText: "{",
+  });
+
+  assert.equal(
+    readTranslationImportTemplateEmptyStateMessage({
+      defaultLocale: "en-US",
+      summary: emptySummary,
+    }),
+    "No import rows are queued for default en-US. Add at least one entries[] item before previewing or importing.",
+  );
+  assert.equal(
+    readTranslationImportTemplateEmptyStateMessage({
+      defaultLocale: "en-US",
+      summary: invalidSummary,
+    }),
+    null,
+  );
 });

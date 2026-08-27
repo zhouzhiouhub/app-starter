@@ -26,6 +26,7 @@ import type {
 
 export function TranslationImportResultView(props: {
   focusedKey?: string | null;
+  focusSource?: "history" | "import";
   onFocusKey?: (key: string) => Promise<void> | void;
   onUseDraft?: (entries: TranslationImportResultEntry[]) => void;
   result: TranslationImportResult;
@@ -69,7 +70,10 @@ export function TranslationImportResultView(props: {
         <Alert
           message={
             <span>
-              Imported rows saved. The translations table is focused on{" "}
+              {props.focusSource === "history"
+                ? "History result replayed."
+                : "Imported rows saved."}{" "}
+              The translations table is focused on{" "}
               <Typography.Text code>{props.focusedKey}</Typography.Text>.
             </span>
           }

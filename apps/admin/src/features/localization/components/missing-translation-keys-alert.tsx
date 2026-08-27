@@ -7,6 +7,7 @@ import {
 } from "@ant-design/icons";
 import { Alert, Button, Pagination, Space, Tag, Typography } from "antd";
 import { useEffect, useState } from "react";
+import { formatMissingTranslationKeyFilterScopeMessage } from "../missing-translation-key-filter-scope";
 import {
   readBrowserMissingTranslationKeyPage,
   readMissingTranslationKeyPageForKey,
@@ -37,6 +38,10 @@ export function MissingTranslationKeysAlert(props: {
     props.resolvedKeys,
   );
   const queueFingerprint = queue.keys.join("\n");
+  const filterScopeMessage = formatMissingTranslationKeyFilterScopeMessage({
+    namespace: props.meta.namespace,
+    query: props.meta.query,
+  });
   const pageState = readMissingTranslationKeyPaginationState({
     currentPage: visiblePage,
     keys: queue.keys,
@@ -148,6 +153,11 @@ export function MissingTranslationKeysAlert(props: {
             <Typography.Text type="secondary">
               Showing {pageState.startIndex}-{pageState.endIndex} of{" "}
               {pageState.totalCount} visible missing keys.
+            </Typography.Text>
+          ) : null}
+          {filterScopeMessage ? (
+            <Typography.Text type="secondary">
+              {filterScopeMessage}
             </Typography.Text>
           ) : null}
           {groups.map((group) => (

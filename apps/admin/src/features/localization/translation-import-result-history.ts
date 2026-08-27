@@ -80,8 +80,13 @@ export function readTranslationImportResultHistoryFilterOptions(
 
 export function formatTranslationImportHistoryReplayMessage(
   entry: TranslationImportResultHistoryEntry,
+  options: { focusKey?: string | null } = {},
 ): string {
-  return `Viewing ${entry.label} from recent import history. This only replays the result table and does not re-import data.`;
+  const focusHint = options.focusKey
+    ? ` Translations table is focused on ${options.focusKey}.`
+    : "";
+
+  return `Viewing ${entry.label} from recent import history. This only replays the result table and does not re-import data.${focusHint}`;
 }
 
 export function formatTranslationImportHistoryDraftMessage(
