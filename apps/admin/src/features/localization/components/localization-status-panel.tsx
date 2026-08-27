@@ -1,6 +1,7 @@
-import { Alert, Descriptions, Space, Table, Tag, Typography } from "antd";
+import { Space, Table } from "antd";
 import { useState } from "react";
 import { readLocalizationSummaryState } from "../localization-summary-state";
+import { mergeResolvedTranslationKeys } from "../missing-translation-key-queue";
 import {
   readTranslationImportFocusFilters,
   readTranslationImportFocusFiltersForKey,
@@ -24,9 +25,9 @@ import {
   marketColumns,
   translationColumns,
 } from "./localization-table-columns";
+import { LocalizationOverview } from "./localization-overview";
 import { MissingTranslationKeysAlert } from "./missing-translation-keys-alert";
 import { TranslationBulkPreviewPanel } from "./translation-bulk-preview-panel";
-import { TranslationCoverageProgress } from "./translation-coverage-progress";
 import { TranslationListFilterBar } from "./translation-list-filter-bar";
 
 export function LocalizationStatusPanel(props: {
@@ -43,6 +44,9 @@ export function LocalizationStatusPanel(props: {
     key: string;
     version: number;
   } | null>(null);
+  const [recentlyResolvedKeys, setRecentlyResolvedKeys] = useState<string[]>(
+    [],
+  );
   const hasTranslationFilters = Boolean(
     props.filters.namespace || props.filters.query,
   );
@@ -62,6 +66,7 @@ export function LocalizationStatusPanel(props: {
   async function handleTranslationSaved(
     result: UpsertDefaultTranslationResult,
   ) {
+    markResolvedKeys([result.entry.key]);
     const repairFilters = readTranslationKeyRepairFilters(
       result.entry.key,
       props.filters,
@@ -76,6 +81,12 @@ export function LocalizationStatusPanel(props: {
     }
 
     await props.onTranslationSaved?.();
+  }
+
+  function markResolvedKeys(keys: string[]) {
+    setRecentlyResolvedKeys((current) =>
+      mergeResolvedTranslationKeys(current, keys),
+    );
   }
 
   async function handleImportResultFocus(key: string) {
@@ -96,6 +107,7 @@ export function LocalizationStatusPanel(props: {
   }
 
   async function handleTranslationsImported(result: TranslationImportResult) {
+    markResolvedKeys(result.entries.map((entry) => entry.key));
     const focusFilters = readTranslationImportFocusFilters(
       result,
       props.filters,
@@ -114,66 +126,7 @@ export function LocalizationStatusPanel(props: {
 
   return (
     <Space direction="vertical" size={16} style={{ width: "100%" }}>
-      <Alert
-        description="Non-default Locale creation and publishing return MULTI_LOCALE_DISABLED while the MVP flag is off."
-        message="Multi-locale writes disabled"
-        showIcon
-        type="info"
-      />
-      <Descriptions bordered column={{ md: 2, xs: 1 }} size="small">
-        <Descriptions.Item label="Default market">
-          <Typography.Text code>{state.defaultMarket}</Typography.Text>
-        </Descriptions.Item>
-        <Descriptions.Item label="Currency">
-          {state.marketCurrency}
-        </Descriptions.Item>
-        <Descriptions.Item label="Default locale">
-          <Typography.Text code>{state.defaultLocale}</Typography.Text>
-        </Descriptions.Item>
-        <Descriptions.Item label="Fallback locale">
-          <Typography.Text code>{state.fallbackLocale}</Typography.Text>
-        </Descriptions.Item>
-        <Descriptions.Item label="Translation fallback">
-          <Tag color={state.isFallback ? "orange" : "green"}>
-            {state.isFallback ? "fallback" : "default"}
-          </Tag>
-        </Descriptions.Item>
-        <Descriptions.Item label="Translation entries">
-          <Space size={4}>
-            <span>{state.translationTotal}</span>
-            <Typography.Text type="secondary">
-              / {state.translationEntryLimit}
-            </Typography.Text>
-          </Space>
-        </Descriptions.Item>
-        <Descriptions.Item label="Page keys missing">
-          <Tag color={state.missingKeyCount > 0 ? "orange" : "green"}>
-            {state.missingKeyCount}
-          </Tag>
-        </Descriptions.Item>
-        <Descriptions.Item label="Page key coverage">
-          <TranslationCoverageProgress
-            expectedKeyCount={state.translationExpectedKeyCount}
-            missingKeyCount={state.missingKeyCount}
-            percent={state.translationCoveragePercent}
-            resolvedKeyCount={state.translationResolvedKeyCount}
-          />
-        </Descriptions.Item>
-        <Descriptions.Item label="Fallback probe">
-          <Space size={4}>
-            <Typography.Text code>
-              {state.translationRequestedLocale}
-            </Typography.Text>
-            <Typography.Text type="secondary">-&gt;</Typography.Text>
-            <Typography.Text code>
-              {state.translationResolvedLocale}
-            </Typography.Text>
-          </Space>
-        </Descriptions.Item>
-        <Descriptions.Item label="MVP state">
-          <Tag color={readStateTagColor(state.status)}>{state.status}</Tag>
-        </Descriptions.Item>
-      </Descriptions>
+      <LocalizationOverview state={state} />
       <Table<LocalizationMarket>
         columns={marketColumns}
         dataSource={props.summary.markets}
@@ -213,6 +166,7 @@ export function LocalizationStatusPanel(props: {
         isSelectingKey={props.isFiltering}
         meta={props.summary.translationsMeta}
         onSelectKey={selectMissingTranslationKey}
+        resolvedKeys={recentlyResolvedKeys}
         selectedKey={translationDraft?.key}
       />
       <Table<LocalizationTranslationEntry>
@@ -235,14 +189,4 @@ export function LocalizationStatusPanel(props: {
       />
     </Space>
   );
-}
-
-function readStateTagColor(
-  status: ReturnType<typeof readLocalizationSummaryState>["status"],
-): string {
-  return status === "active"
-    ? "green"
-    : status === "fallback"
-      ? "orange"
-      : "red";
 }

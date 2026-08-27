@@ -1,4 +1,5 @@
 import { createTranslationKeyDraft } from "./translation-key-draft.ts";
+import type { LocalizationTranslationEntry } from "./types.ts";
 
 export interface TranslationImportDraftEntry {
   context: string;
@@ -10,6 +11,17 @@ export interface TranslationImportDraftEntry {
 export interface TranslationImportDraft {
   entries: TranslationImportDraftEntry[];
 }
+
+export const defaultTranslationImportText = formatTranslationImportDraft({
+  entries: [
+    {
+      context: "",
+      key: "page.home.hero.title",
+      locale: "en-US",
+      value: "Build better storefronts",
+    },
+  ],
+});
 
 export function createMissingTranslationImportDraft(
   keys: string[],
@@ -35,6 +47,37 @@ export function createMissingTranslationImportDraft(
 
       return entries;
     }, []),
+  };
+}
+
+export function createTranslationImportDraftFromEntries(
+  sourceEntries: LocalizationTranslationEntry[],
+): TranslationImportDraft {
+  const seen = new Set<string>();
+
+  return {
+    entries: sourceEntries.reduce<TranslationImportDraftEntry[]>(
+      (entries, entry) => {
+        const draft = createTranslationKeyDraft(entry.key);
+        const locale = entry.locale.trim();
+        const pairKey = `${locale}:${draft?.key}`;
+
+        if (!draft || !locale || seen.has(pairKey)) {
+          return entries;
+        }
+
+        seen.add(pairKey);
+        entries.push({
+          context: entry.context ?? draft.context,
+          key: draft.key,
+          locale,
+          value: entry.value,
+        });
+
+        return entries;
+      },
+      [],
+    ),
   };
 }
 

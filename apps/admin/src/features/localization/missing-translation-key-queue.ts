@@ -11,8 +11,10 @@ export interface MissingTranslationKeyQueueState {
 export function readMissingTranslationKeyQueueState(
   keys: string[],
   selectedKey?: string,
+  resolvedKeys: string[] = [],
 ): MissingTranslationKeyQueueState {
-  const queue = readUniqueValidKeys(keys);
+  const resolved = new Set(readUniqueValidKeys(resolvedKeys));
+  const queue = readUniqueValidKeys(keys).filter((key) => !resolved.has(key));
   const selectedIndex = selectedKey ? queue.indexOf(selectedKey) : -1;
   const currentIndex = selectedIndex >= 0 ? selectedIndex : 0;
   const currentKey = queue[currentIndex] ?? null;
@@ -24,6 +26,13 @@ export function readMissingTranslationKeyQueueState(
     previousKey: currentIndex > 0 ? (queue[currentIndex - 1] ?? null) : null,
     totalCount: queue.length,
   };
+}
+
+export function mergeResolvedTranslationKeys(
+  currentKeys: string[],
+  nextKeys: string[],
+): string[] {
+  return readUniqueValidKeys([...currentKeys, ...nextKeys]);
 }
 
 function readUniqueValidKeys(keys: string[]): string[] {

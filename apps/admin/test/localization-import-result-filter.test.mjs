@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   filterTranslationImportResultEntries,
+  readSelectedTranslationImportResultEntries,
   readTranslationImportResultActionOptions,
+  readTranslationImportResultRowKey,
 } from "../src/features/localization/translation-import-result-filter.ts";
 
 const importResult = {
@@ -51,4 +53,18 @@ test("translation import result action options use summary counts", () => {
     { count: 1, label: "Created", value: "create" },
     { count: 1, label: "Updated", value: "update" },
   ]);
+});
+
+test("translation import result row selection returns stable selected rows", () => {
+  const selectedKey = readTranslationImportResultRowKey(
+    importResult.entries[1],
+  );
+
+  assert.equal(selectedKey, "1:en-US:page.home.hero.body");
+  assert.deepEqual(
+    readSelectedTranslationImportResultEntries(importResult, [selectedKey]).map(
+      (entry) => entry.key,
+    ),
+    ["page.home.hero.body"],
+  );
 });

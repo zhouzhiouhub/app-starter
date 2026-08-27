@@ -15,6 +15,8 @@ import {
 import { formatRequestError } from "../../../lib/api-error";
 import {
   createMissingTranslationImportDraft,
+  createTranslationImportDraftFromEntries,
+  defaultTranslationImportText,
   formatTranslationImportDraft,
 } from "../translation-import-draft";
 import { readTranslationImportErrorDetails } from "../translation-import-error-details";
@@ -25,6 +27,7 @@ import type {
   TranslationExportPreviewResult,
   TranslationImportPreviewResult,
   TranslationImportResult,
+  TranslationImportResultEntry,
   TranslationListFilters,
 } from "../types";
 import { TranslationExportPreviewResultView } from "./translation-export-preview-result";
@@ -32,19 +35,6 @@ import { TranslationImportErrorDetailsView } from "./translation-import-error-de
 import { TranslationImportPreviewResultView } from "./translation-import-preview-result";
 import { TranslationImportResultView } from "./translation-import-result";
 import { TranslationImportTemplateGuide } from "./translation-import-template-guide";
-
-const defaultImportPreviewText = JSON.stringify(
-  {
-    entries: [
-      {
-        key: "page.home.hero.title",
-        value: "Build better storefronts",
-      },
-    ],
-  },
-  null,
-  2,
-);
 
 export function TranslationBulkPreviewPanel(props: {
   focusedKey?: string | null;
@@ -54,7 +44,7 @@ export function TranslationBulkPreviewPanel(props: {
   onFocusKey?: (key: string) => Promise<void> | void;
   onImported?: (result: TranslationImportResult) => Promise<void> | void;
 }) {
-  const [importText, setImportText] = useState(defaultImportPreviewText);
+  const [importText, setImportText] = useState(defaultTranslationImportText);
   const [importPreview, setImportPreview] =
     useState<TranslationImportPreviewResult | null>(null);
   const [importResult, setImportResult] =
@@ -78,12 +68,24 @@ export function TranslationBulkPreviewPanel(props: {
   const hasMissingKeyDraft = missingKeyDraft.entries.length > 0;
 
   function useMissingKeyDraft() {
+    useImportDraft(formatTranslationImportDraft(missingKeyDraft));
+  }
+
+  function useResultDraft(entries: TranslationImportResultEntry[]) {
+    useImportDraft(
+      formatTranslationImportDraft(
+        createTranslationImportDraftFromEntries(entries),
+      ),
+    );
+  }
+
+  function useImportDraft(text: string) {
     setError(null);
     setExportPreview(null);
     setImportErrorDetails(null);
     setImportPreview(null);
     setImportResult(null);
-    setImportText(formatTranslationImportDraft(missingKeyDraft));
+    setImportText(text);
   }
 
   const runImportPreview = async () => {
@@ -218,6 +220,7 @@ export function TranslationBulkPreviewPanel(props: {
             props.focusedKey,
           )}
           onFocusKey={props.onFocusKey}
+          onUseDraft={useResultDraft}
           result={importResult}
         />
       ) : null}

@@ -24,6 +24,23 @@ export function filterTranslationImportResultEntries(
   return result.entries.filter((entry) => entry.action === action);
 }
 
+export function readTranslationImportResultRowKey(
+  entry: TranslationImportResultEntry,
+): string {
+  return `${entry.index}:${entry.locale}:${entry.key}`;
+}
+
+export function readSelectedTranslationImportResultEntries(
+  result: TranslationImportResult,
+  rowKeys: string[],
+): TranslationImportResultEntry[] {
+  const selectedKeys = new Set(rowKeys);
+
+  return result.entries.filter((entry) =>
+    selectedKeys.has(readTranslationImportResultRowKey(entry)),
+  );
+}
+
 export function readTranslationImportResultActionOptions(
   result: TranslationImportResult,
 ): TranslationImportResultActionOption[] {

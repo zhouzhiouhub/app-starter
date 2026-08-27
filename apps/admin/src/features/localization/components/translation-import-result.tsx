@@ -1,4 +1,4 @@
-import { SearchOutlined } from "@ant-design/icons";
+import { FileAddOutlined, SearchOutlined } from "@ant-design/icons";
 import {
   Alert,
   Button,
@@ -13,8 +13,11 @@ import { useMemo, useState } from "react";
 import {
   filterTranslationImportResultEntries,
   readTranslationImportResultActionOptions,
+  readSelectedTranslationImportResultEntries,
+  readTranslationImportResultRowKey,
   type TranslationImportResultActionFilter,
 } from "../translation-import-result-filter";
+import type { Key } from "react";
 import type {
   TranslationImportResult,
   TranslationImportResultEntry,
@@ -23,13 +26,23 @@ import type {
 export function TranslationImportResultView(props: {
   focusedKey?: string | null;
   onFocusKey?: (key: string) => Promise<void> | void;
+  onUseDraft?: (entries: TranslationImportResultEntry[]) => void;
   result: TranslationImportResult;
 }) {
   const [actionFilter, setActionFilter] =
     useState<TranslationImportResultActionFilter>("all");
+  const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
   const filteredEntries = useMemo(
     () => filterTranslationImportResultEntries(props.result, actionFilter),
     [actionFilter, props.result],
+  );
+  const selectedEntries = useMemo(
+    () =>
+      readSelectedTranslationImportResultEntries(
+        props.result,
+        selectedRowKeys.map(String),
+      ),
+    [props.result, selectedRowKeys],
   );
   const actionOptions = useMemo(
     () =>
@@ -68,13 +81,24 @@ export function TranslationImportResultView(props: {
           {props.result.summary.totalEntries}
         </Descriptions.Item>
       </Descriptions>
-      <Segmented
-        onChange={(value) =>
-          setActionFilter(value as TranslationImportResultActionFilter)
-        }
-        options={actionOptions}
-        value={actionFilter}
-      />
+      <Space wrap>
+        <Segmented
+          onChange={(value) =>
+            setActionFilter(value as TranslationImportResultActionFilter)
+          }
+          options={actionOptions}
+          value={actionFilter}
+        />
+        {props.onUseDraft ? (
+          <Button
+            disabled={selectedEntries.length === 0}
+            icon={<FileAddOutlined />}
+            onClick={() => props.onUseDraft?.(selectedEntries)}
+          >
+            Use selected as draft {selectedEntries.length}
+          </Button>
+        ) : null}
+      </Space>
       <Table<TranslationImportResultEntry>
         columns={[
           { dataIndex: "index", key: "index", title: "#", width: 72 },
@@ -130,7 +154,15 @@ export function TranslationImportResultView(props: {
         dataSource={filteredEntries}
         locale={{ emptyText: "No imported rows match the current action." }}
         pagination={false}
-        rowKey={(record) => `${record.index}:${record.locale}:${record.key}`}
+        rowKey={readTranslationImportResultRowKey}
+        rowSelection={
+          props.onUseDraft
+            ? {
+                onChange: (keys) => setSelectedRowKeys(keys),
+                selectedRowKeys,
+              }
+            : undefined
+        }
         size="small"
       />
     </Space>

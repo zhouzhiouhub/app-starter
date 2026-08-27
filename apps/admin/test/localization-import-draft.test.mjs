@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   createMissingTranslationImportDraft,
+  createTranslationImportDraftFromEntries,
+  defaultTranslationImportText,
   formatTranslationImportDraft,
 } from "../src/features/localization/translation-import-draft.ts";
 
@@ -53,4 +55,51 @@ test("missing translation import drafts serialize stable JSON", () => {
       "}",
     ].join("\n"),
   );
+});
+
+test("translation import drafts can be rebuilt from selected result rows", () => {
+  assert.deepEqual(
+    createTranslationImportDraftFromEntries([
+      {
+        context: null,
+        key: "page.home.hero.title",
+        locale: "en-US",
+        value: "Title",
+      },
+      {
+        context: "Existing context",
+        key: "page.home.hero.title",
+        locale: "en-US",
+        value: "Duplicate",
+      },
+      {
+        key: "Page.Home.Hero.Body",
+        locale: "en-US",
+        value: "Bad key",
+      },
+    ]),
+    {
+      entries: [
+        {
+          context: "page.home.hero / title",
+          key: "page.home.hero.title",
+          locale: "en-US",
+          value: "Title",
+        },
+      ],
+    },
+  );
+});
+
+test("default translation import text stays importable", () => {
+  assert.deepEqual(JSON.parse(defaultTranslationImportText), {
+    entries: [
+      {
+        context: "",
+        key: "page.home.hero.title",
+        locale: "en-US",
+        value: "Build better storefronts",
+      },
+    ],
+  });
 });

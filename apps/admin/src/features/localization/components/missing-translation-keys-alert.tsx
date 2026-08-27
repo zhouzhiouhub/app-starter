@@ -13,6 +13,7 @@ export function MissingTranslationKeysAlert(props: {
   isSelectingKey?: boolean;
   meta: LocalizationTranslationsMeta;
   onSelectKey?: (key: string) => void;
+  resolvedKeys?: string[];
   selectedKey?: string;
 }) {
   if (props.meta.missingKeyCount === 0) {
@@ -23,6 +24,7 @@ export function MissingTranslationKeysAlert(props: {
   const queue = readMissingTranslationKeyQueueState(
     props.meta.missingKeys,
     props.selectedKey,
+    props.resolvedKeys,
   );
   const suffix =
     props.meta.missingKeyCount > props.meta.missingKeyPreviewLimit
