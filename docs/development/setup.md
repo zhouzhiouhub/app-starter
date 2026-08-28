@@ -261,6 +261,7 @@ pnpm smoke:report
 pnpm smoke:report -- --list --limit=10
 pnpm smoke:report -- reports/production/smoke-report.json
 pnpm smoke:release-check -- artifacts/production-smoke/smoke-report.json
+pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete
 pnpm release:check -- --checklist --smoke-report artifacts/production-smoke/smoke-report.json
 pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json
 pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --json

@@ -16,6 +16,7 @@ pnpm visual:capture
 pnpm visual:capture:fixture
 pnpm visual:measure
 pnpm visual:measure -- --write
+pnpm visual:references -- --source-dir docs/visual/page-builder-references --write
 ```
 
 Use the default command while collecting evidence. Use `--checklist` to print
@@ -26,9 +27,16 @@ has design references, preview screenshots, and measured diff values. Use
 refresh the component-level browser screenshots referenced by the manifest. Use
 `pnpm visual:capture:fixture` for the full local workflow: build Web, start the
 gated fixture server, capture the screenshots, and stop the server. Use
+`pnpm visual:references` after placing real design reference PNGs in a retained
+source directory to update `designReference` values and reset stale metrics. Use
 `pnpm visual:measure` after attaching design references to calculate
 `visualMatchPercent`, `maxLayoutDeltaPx`, and `maxColorDeltaE`; pass `--write`
 to persist the measured values to the manifest.
+
+Reference import expects files named `<component>-<viewport>.png`, such as
+`hero-banner-desktop.png` and `hero-banner-mobile.png`. It is dry-run by
+default; pass `--write` to update the manifest, and `--require-complete` to fail
+when any of the 12 MVP reference PNGs is missing.
 
 ## Fixture Route
 

@@ -32,6 +32,7 @@
     "visual:capture": "node scripts/page-builder-visual-capture.mjs",
     "visual:capture:fixture": "node scripts/page-builder-visual-capture-fixture.mjs",
     "visual:measure": "node scripts/page-builder-visual-measure.mjs",
+    "visual:references": "node scripts/page-builder-visual-import-references.mjs",
     "format:check": "prettier --check ."
   },
   "devDependencies": {
