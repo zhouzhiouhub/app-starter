@@ -20,6 +20,11 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /visual_artifact_run_id:/);
   assert.match(workflow, /storefront_url:/);
   assert.match(workflow, /release_notes_path:/);
+  assert.match(workflow, /allow_blocked_release_notes:/);
+  assert.match(
+    workflow,
+    /Generate release notes as a failure review draft when evidence is blocked/,
+  );
   assert.match(workflow, /default: "artifacts\/release\/release-notes\.md"/);
   assert.match(workflow, /permissions:/);
   assert.match(workflow, /actions: read/);
@@ -36,6 +41,10 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /RELEASE_CHECK_ARTIFACT_PATH:/);
   assert.match(workflow, /RELEASE_CHECK_ARTIFACT_NAME:/);
   assert.match(workflow, /RELEASE_NOTES_ARTIFACT_NAME:/);
+  assert.match(
+    workflow,
+    /RELEASE_NOTES_ALLOW_BLOCKED: \$\{\{ inputs\.allow_blocked_release_notes \}\}/,
+  );
   assert.match(workflow, /RELEASE_NOTES_PATH: \$\{\{ inputs\.release_notes_path \}\}/);
   assert.match(
     workflow,
@@ -62,6 +71,9 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
     /inputs\.release_tag != '' && inputs\.rollback_target != '' && inputs\.visual_artifact_name != ''/,
   );
   assert.match(workflow, /pnpm release:notes --/);
+  assert.match(workflow, /release_notes_flags=\(\)/);
+  assert.match(workflow, /release_notes_flags\+=\(--allow-blocked\)/);
+  assert.match(workflow, /"\$\{release_notes_flags\[@\]\}" \\/);
   assert.match(workflow, /--release-tag "\$RELEASE_TAG"/);
   assert.match(workflow, /--workflow-run-url "https:\/\/github\.com\/\$\{\{ github\.repository \}\}\/actions\/runs\/\$\{\{ github\.run_id \}\}"/);
   assert.match(workflow, /--release-check "\$RELEASE_CHECK_ARTIFACT_PATH"/);
@@ -72,6 +84,9 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /Combined artifact:/);
   assert.match(workflow, /Release notes:/);
   assert.match(workflow, /Release notes artifact:/);
+  assert.match(workflow, /Release notes mode:/);
+  assert.match(workflow, /failure review draft/);
+  assert.match(workflow, /ready evidence only/);
   assert.match(workflow, /Visual evidence artifact:/);
   assert.match(
     workflow,
@@ -111,6 +126,8 @@ test("release checklist requires archived smoke evidence", async () => {
   assert.match(checklist, /Publish flow: passed/);
   assert.match(checklist, /COMMERCE_ENABLED=false/);
   assert.match(checklist, /MULTI_LOCALE_ENABLED=false/);
+  assert.match(checklist, /allow_blocked_release_notes/);
+  assert.match(checklist, /failure review draft/);
 });
 
 test("main CI verifies the smoke report CLI entry point", async () => {

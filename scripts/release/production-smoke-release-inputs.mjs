@@ -8,12 +8,24 @@ import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
 export function validateProductionSmokeReleaseInputs(env = process.env) {
   const visualArtifact = readVisualArtifactInput(env);
   const releaseNotes = readReleaseNotesInput(env);
+  const allowBlockedReleaseNotes = readReleaseNotesAllowBlockedInput(env);
+
+  if (allowBlockedReleaseNotes && !releaseNotes.enabled) {
+    throw new Error(
+      "allow_blocked_release_notes requires release_tag, rollback_target, and visual_artifact_name together.",
+    );
+  }
 
   if (releaseNotes.enabled) {
-    readReleaseNotesCliConfig(createReleaseNotesArgs(env));
+    readReleaseNotesCliConfig(
+      createReleaseNotesArgs(env, {
+        allowBlocked: allowBlockedReleaseNotes,
+      }),
+    );
   }
 
   return {
+    releaseNotesAllowBlocked: allowBlockedReleaseNotes,
     releaseNotesEnabled: releaseNotes.enabled,
     visualArtifactDownloadEnabled: visualArtifact.enabled,
   };
@@ -35,6 +47,9 @@ export async function runProductionSmokeReleaseInputsCli(args = [], input = {}) 
     stdout(
       [
         "Production smoke release inputs validated:",
+        `releaseNotesAllowBlocked=${formatEnabled(
+          result.releaseNotesAllowBlocked,
+        )},`,
         `releaseNotes=${formatEnabled(result.releaseNotesEnabled)},`,
         `visualArtifactDownload=${formatEnabled(
           result.visualArtifactDownloadEnabled,
@@ -90,8 +105,22 @@ function readReleaseNotesInput(env) {
   return { enabled };
 }
 
-function createReleaseNotesArgs(env) {
-  return [
+function readReleaseNotesAllowBlockedInput(env) {
+  const value = normalizeOptionalText(env.RELEASE_NOTES_ALLOW_BLOCKED);
+
+  if (!value || value === "false") {
+    return false;
+  }
+
+  if (value === "true") {
+    return true;
+  }
+
+  throw new Error("allow_blocked_release_notes must be true or false.");
+}
+
+function createReleaseNotesArgs(env, options = {}) {
+  const args = [
     "--release-tag",
     env.RELEASE_TAG,
     "--workflow-run-url",
@@ -111,6 +140,8 @@ function createReleaseNotesArgs(env) {
     "--output",
     env.RELEASE_NOTES_PATH,
   ];
+
+  return options.allowBlocked ? ["--allow-blocked", ...args] : args;
 }
 
 function createWorkflowRunUrl(env) {
@@ -174,7 +205,8 @@ Environment:
   RELEASE_VISUAL_ARTIFACT_NAME and RELEASE_VISUAL_ARTIFACT_RUN_ID must be set
   together. RELEASE_TAG, RELEASE_ROLLBACK_TARGET, and
   RELEASE_VISUAL_ARTIFACT_NAME must be set together when release notes should be
-  generated.`);
+  generated. RELEASE_NOTES_ALLOW_BLOCKED=true may only be used with release
+  notes inputs to generate a failure review draft from blocked evidence.`);
 }
 
 function isMainModule() {

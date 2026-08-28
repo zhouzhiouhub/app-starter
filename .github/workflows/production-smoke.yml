@@ -50,6 +50,11 @@ on:
         description: "Safe relative Markdown release notes path"
         required: false
         default: "artifacts/release/release-notes.md"
+      allow_blocked_release_notes:
+        description: "Generate release notes as a failure review draft when evidence is blocked"
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   actions: read
@@ -87,6 +92,7 @@ jobs:
       RELEASE_CHECK_ARTIFACT_NAME: release-evidence-check-${{ github.run_number }}
       RELEASE_CHECK_ARTIFACT_PATH: artifacts/release/release-check.json
       RELEASE_NOTES_ARTIFACT_NAME: release-notes-${{ github.run_number }}
+      RELEASE_NOTES_ALLOW_BLOCKED: ${{ inputs.allow_blocked_release_notes }}
       RELEASE_NOTES_PATH: ${{ inputs.release_notes_path }}
       RELEASE_ROLLBACK_TARGET: ${{ inputs.rollback_target }}
       RELEASE_STOREFRONT_URL: ${{ inputs.storefront_url }}
@@ -155,8 +161,13 @@ jobs:
           if [ -z "$storefront_url" ]; then
             storefront_url="$WEB_URL"
           fi
+          release_notes_flags=()
+          if [ "$RELEASE_NOTES_ALLOW_BLOCKED" = "true" ]; then
+            release_notes_flags+=(--allow-blocked)
+          fi
 
           pnpm release:notes -- \
+            "${release_notes_flags[@]}" \
             --release-tag "$RELEASE_TAG" \
             --workflow-run-url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
             --smoke-artifact "$SMOKE_REPORT_ARTIFACT_NAME" \
@@ -185,6 +196,11 @@ jobs:
             if [ -n "$RELEASE_TAG" ] && [ -n "$RELEASE_ROLLBACK_TARGET" ] && [ -n "$RELEASE_VISUAL_ARTIFACT_NAME" ]; then
               echo "- Release notes: \`$RELEASE_NOTES_PATH\`"
               echo "- Release notes artifact: \`$RELEASE_NOTES_ARTIFACT_NAME\`"
+              if [ "$RELEASE_NOTES_ALLOW_BLOCKED" = "true" ]; then
+                echo "- Release notes mode: failure review draft (\`--allow-blocked\`)"
+              else
+                echo "- Release notes mode: ready evidence only"
+              fi
             else
               echo "- Release notes: skipped (set release_tag, rollback_target, and visual_artifact_name)"
             fi

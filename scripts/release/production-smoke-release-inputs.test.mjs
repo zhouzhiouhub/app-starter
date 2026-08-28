@@ -15,6 +15,7 @@ test("production smoke release input preflight accepts disabled optional evidenc
   });
 
   assert.deepEqual(result, {
+    releaseNotesAllowBlocked: false,
     releaseNotesEnabled: false,
     visualArtifactDownloadEnabled: false,
   });
@@ -64,9 +65,21 @@ test("production smoke release input preflight validates release notes config", 
   const result = validateProductionSmokeReleaseInputs(createReleaseNotesEnv());
 
   assert.deepEqual(result, {
+    releaseNotesAllowBlocked: false,
     releaseNotesEnabled: true,
     visualArtifactDownloadEnabled: true,
   });
+  assert.deepEqual(
+    validateProductionSmokeReleaseInputs({
+      ...createReleaseNotesEnv(),
+      RELEASE_NOTES_ALLOW_BLOCKED: "true",
+    }),
+    {
+      releaseNotesAllowBlocked: true,
+      releaseNotesEnabled: true,
+      visualArtifactDownloadEnabled: true,
+    },
+  );
   assert.throws(
     () =>
       validateProductionSmokeReleaseInputs({
@@ -85,6 +98,28 @@ test("production smoke release input preflight validates release notes config", 
   );
 });
 
+test("production smoke release input preflight validates blocked release note drafts", () => {
+  assert.throws(
+    () =>
+      validateProductionSmokeReleaseInputs({
+        RELEASE_NOTES_ALLOW_BLOCKED: "true",
+        RELEASE_ROLLBACK_TARGET: "",
+        RELEASE_TAG: "",
+        RELEASE_VISUAL_ARTIFACT_NAME: "",
+        RELEASE_VISUAL_ARTIFACT_RUN_ID: "",
+      }),
+    /allow_blocked_release_notes requires release_tag, rollback_target, and visual_artifact_name together/,
+  );
+  assert.throws(
+    () =>
+      validateProductionSmokeReleaseInputs({
+        ...createReleaseNotesEnv(),
+        RELEASE_NOTES_ALLOW_BLOCKED: "yes",
+      }),
+    /allow_blocked_release_notes must be true or false/,
+  );
+});
+
 test("production smoke release input preflight CLI prints help", async () => {
   const stdout = [];
   const exitCode = await runProductionSmokeReleaseInputsCli(["--help"], {
@@ -94,6 +129,7 @@ test("production smoke release input preflight CLI prints help", async () => {
   assert.equal(exitCode, 0);
   assert.match(stdout.join("\n"), /pnpm release:preflight/);
   assert.match(stdout.join("\n"), /RELEASE_VISUAL_ARTIFACT_NAME/);
+  assert.match(stdout.join("\n"), /RELEASE_NOTES_ALLOW_BLOCKED/);
 });
 
 test("production smoke release input preflight CLI rejects unknown options", async () => {

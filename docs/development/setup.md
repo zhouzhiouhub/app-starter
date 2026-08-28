@@ -303,7 +303,10 @@ gate. The workflow runs `pnpm release:preflight` before smoke requests so a
 partial visual artifact pair or partial release notes input set fails early.
 When `release_tag`,
 `rollback_target`, and `visual_artifact_name` are provided, it runs
-`release:notes` and uploads `release-notes-<run_number>`. Use
+`release:notes` and uploads `release-notes-<run_number>`. Keep
+`allow_blocked_release_notes` disabled for a formal release; enable it only to
+pass `--allow-blocked` and generate a failure review draft from blocked
+evidence. Use
 [`release-checklist.md`](./release-checklist.md) to attach the workflow run,
 artifact, report review, and rollback target to release notes.
 

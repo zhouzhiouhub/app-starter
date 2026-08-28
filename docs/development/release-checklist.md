@@ -64,6 +64,9 @@ later phases are explicitly approved.
   `visual_artifact_name` and
   `visual_artifact_run_id` must be provided together, and release notes require
   `release_tag`, `rollback_target`, and `visual_artifact_name` together.
+  `allow_blocked_release_notes` must stay disabled for formal release notes and
+  may only be enabled with the release note inputs to create a failure review
+  draft from blocked evidence.
 
 ## Run Production Smoke
 
@@ -82,6 +85,9 @@ later phases are explicitly approved.
 7. To generate release notes in the same run, set `release_tag`,
    `rollback_target`, `visual_artifact_name`, and optionally `storefront_url`
    plus `release_notes_path`.
+8. Keep `allow_blocked_release_notes` disabled for release sign-off. Enable it
+   only when the run is expected to fail and you need a `--allow-blocked`
+   failure review draft attached to the artifacts.
 
 ## Required Evidence
 
@@ -137,7 +143,9 @@ later phases are explicitly approved.
   fully accepted visual evidence with no pending or issue entries.
 - The `Production Smoke` workflow can generate the same Markdown release record
   when `release_tag`, `rollback_target`, and `visual_artifact_name` inputs are
-  provided.
+  provided. When `allow_blocked_release_notes=true`, the same step passes
+  `--allow-blocked` and the uploaded notes are a failure review draft, not
+  release sign-off.
 
 ## Failure Review
 
