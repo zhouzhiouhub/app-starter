@@ -66,6 +66,9 @@ later phases are explicitly approved.
    enabled for production release evidence.
 5. Set `storefront_host` only when the public storefront host differs from
    `WEB_URL`.
+6. To generate release notes in the same run, set `release_tag`,
+   `rollback_target`, `visual_artifact_name`, and optionally `storefront_url`
+   plus `release_notes_path`.
 
 ## Required Evidence
 
@@ -74,6 +77,8 @@ later phases are explicitly approved.
   linked.
 - The uploaded artifact `release-evidence-check-<run_number>` is attached or
   linked.
+- When release note inputs were provided, the uploaded artifact
+  `release-notes-<run_number>` is attached or linked.
 - The GitHub step summary records the report path, artifact name, and review
   command.
 - `pnpm smoke:report -- artifacts/production-smoke/smoke-report.json` output is
@@ -102,6 +107,9 @@ later phases are explicitly approved.
 - `pnpm release:notes -- --release-tag <tag> --workflow-run-url <url> --smoke-artifact production-smoke-report-<run_number> --release-artifact release-evidence-check-<run_number> --visual-artifact page-builder-visual-fixture-<run_number> --storefront-url <url> --rollback-target <target> --output docs/releases/<tag>.md`
   writes the final Markdown release record from the ready
   `release-evidence-check.v1` artifact.
+- The `Production Smoke` workflow can generate the same Markdown release record
+  when `release_tag`, `rollback_target`, and `visual_artifact_name` inputs are
+  provided.
 
 ## Failure Review
 
@@ -121,6 +129,8 @@ later phases are explicitly approved.
 - Keep the smoke report artifact for at least the workflow retention window.
 - Keep the combined release evidence artifact for at least the workflow
   retention window.
+- Keep the generated release notes artifact for at least the workflow retention
+  window when it was produced by `Production Smoke`.
 - Record the release tag, workflow run URL, smoke artifact name, combined release
   artifact name, public storefront URL, and rollback target in the release notes.
 - Keep the generated `docs/releases/<tag>.md` release record with the release

@@ -290,7 +290,9 @@ upload, Admin static hosting, and ISR revalidation by default, writes the review
 and release-check commands to the job summary, and uploads the report as
 `production-smoke-report-<run_number>`. It also runs the combined `release:check`
 gate and uploads `release-evidence-check-<run_number>` with the
-`release-evidence-check.v1` JSON artifact. Use
+`release-evidence-check.v1` JSON artifact. When `release_tag`,
+`rollback_target`, and `visual_artifact_name` are provided, it runs
+`release:notes` and uploads `release-notes-<run_number>`. Use
 [`release-checklist.md`](./release-checklist.md) to attach the workflow run,
 artifact, report review, and rollback target to release notes.
 

@@ -14,6 +14,12 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
     workflow,
     /default: "artifacts\/production-smoke\/smoke-report\.json"/,
   );
+  assert.match(workflow, /release_tag:/);
+  assert.match(workflow, /rollback_target:/);
+  assert.match(workflow, /visual_artifact_name:/);
+  assert.match(workflow, /storefront_url:/);
+  assert.match(workflow, /release_notes_path:/);
+  assert.match(workflow, /default: "artifacts\/release\/release-notes\.md"/);
   assert.match(workflow, /SMOKE_REPORT_PATH: \$\{\{ inputs\.report_path \}\}/);
   assert.match(workflow, /SMOKE_REQUIRE_ADMIN_APP:/);
   assert.match(workflow, /SMOKE_REQUIRE_R2_UPLOAD:/);
@@ -25,18 +31,33 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /pnpm smoke:release-check -- "\$SMOKE_REPORT_PATH"/);
   assert.match(workflow, /RELEASE_CHECK_ARTIFACT_PATH:/);
   assert.match(workflow, /RELEASE_CHECK_ARTIFACT_NAME:/);
+  assert.match(workflow, /RELEASE_NOTES_ARTIFACT_NAME:/);
+  assert.match(workflow, /RELEASE_NOTES_PATH: \$\{\{ inputs\.release_notes_path \}\}/);
   assert.match(
     workflow,
     /pnpm release:check -- --smoke-report "\$SMOKE_REPORT_PATH" --output "\$RELEASE_CHECK_ARTIFACT_PATH"/,
   );
+  assert.match(workflow, /name: Generate release notes/);
+  assert.match(
+    workflow,
+    /inputs\.release_tag != '' && inputs\.rollback_target != '' && inputs\.visual_artifact_name != ''/,
+  );
+  assert.match(workflow, /pnpm release:notes --/);
+  assert.match(workflow, /--release-tag "\$RELEASE_TAG"/);
+  assert.match(workflow, /--workflow-run-url "https:\/\/github\.com\/\$\{\{ github\.repository \}\}\/actions\/runs\/\$\{\{ github\.run_id \}\}"/);
+  assert.match(workflow, /--release-check "\$RELEASE_CHECK_ARTIFACT_PATH"/);
   assert.match(workflow, /GITHUB_STEP_SUMMARY/);
   assert.match(workflow, /Release gate:/);
   assert.match(workflow, /Combined gate:/);
   assert.match(workflow, /Combined artifact:/);
+  assert.match(workflow, /Release notes:/);
+  assert.match(workflow, /Release notes artifact:/);
+  assert.match(workflow, /skipped \(set release_tag, rollback_target, and visual_artifact_name\)/);
   assert.match(workflow, /SMOKE_REPORT_ARTIFACT_NAME:/);
   assert.match(workflow, /actions\/upload-artifact@v4/);
   assert.match(workflow, /path: \$\{\{ inputs\.report_path \}\}/);
   assert.match(workflow, /path: \$\{\{ env\.RELEASE_CHECK_ARTIFACT_PATH \}\}/);
+  assert.match(workflow, /path: \$\{\{ env\.RELEASE_NOTES_PATH \}\}/);
   assert.match(workflow, /retention-days: 30/);
 });
 
