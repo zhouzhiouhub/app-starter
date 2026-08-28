@@ -66,7 +66,9 @@ function formatProjectNextActions(artifact) {
   const hiddenCount = artifact.nextActionCount - artifact.nextActions.length;
 
   if (hiddenCount > 0) {
-    lines.push(`    - ... and ${hiddenCount} more next actions`);
+    lines.push(
+      `    - ... and ${hiddenCount} more next actions. Use --all-actions to list every next action.`,
+    );
   }
 
   return lines;

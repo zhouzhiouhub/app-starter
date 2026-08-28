@@ -136,6 +136,11 @@ function assertVisualGate(visual) {
 
 function assertNextActions(artifact) {
   assertNonNegativeNumber(artifact.nextActionCount, "nextActionCount");
+  assertNonNegativeNumber(artifact.nextActionLimit, "nextActionLimit");
+  assertNonNegativeNumber(
+    artifact.truncatedNextActionCount,
+    "truncatedNextActionCount",
+  );
 
   if (!Array.isArray(artifact.nextActions)) {
     throw new Error("Project status artifact nextActions must be an array.");
@@ -144,6 +149,21 @@ function assertNextActions(artifact) {
   if (artifact.nextActionCount < artifact.nextActions.length) {
     throw new Error(
       "Project status artifact nextActionCount must cover serialized actions.",
+    );
+  }
+
+  if (artifact.nextActionLimit < artifact.nextActions.length) {
+    throw new Error(
+      "Project status artifact nextActionLimit must cover serialized actions.",
+    );
+  }
+
+  if (
+    artifact.truncatedNextActionCount !==
+    artifact.nextActionCount - artifact.nextActions.length
+  ) {
+    throw new Error(
+      "Project status artifact truncatedNextActionCount must match hidden actions.",
     );
   }
 

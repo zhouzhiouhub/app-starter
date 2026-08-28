@@ -44,6 +44,15 @@ test("project status artifact validation rejects incomplete counts", () => {
       }),
     /localVerification\.commandCount must match commands length/,
   );
+
+  assert.throws(
+    () =>
+      assertProjectStatusArtifact({
+        ...createArtifact(),
+        truncatedNextActionCount: 1,
+      }),
+    /truncatedNextActionCount must match hidden actions/,
+  );
 });
 
 test("project status writer validates artifacts before writing", async () => {
@@ -82,6 +91,7 @@ function createArtifact() {
       source: "CI verify job and local package scripts",
     },
     nextActionCount: 1,
+    nextActionLimit: 8,
     nextActions: [
       {
         action: "Run the Production Smoke workflow.",
@@ -113,5 +123,6 @@ function createArtifact() {
     releaseReady: false,
     schemaVersion: projectStatusSchemaVersion,
     status: "needs-evidence",
+    truncatedNextActionCount: 0,
   };
 }

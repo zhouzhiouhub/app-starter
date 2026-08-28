@@ -44,18 +44,21 @@ export function createProjectStatusArtifact(check, input = {}) {
   const serializedActionCount = input.includeAllActions
     ? nextActions.length
     : maxProjectActionCount;
+  const serializedNextActions = nextActions.slice(0, serializedActionCount);
 
   return {
     completedMilestones,
     generatedAt: input.generatedAt ?? new Date().toISOString(),
     localVerification: createLocalVerificationSummary(),
     nextActionCount: nextActions.length,
-    nextActions: nextActions.slice(0, serializedActionCount),
+    nextActionLimit: serializedActionCount,
+    nextActions: serializedNextActions,
     phase: "MVP release verification",
     releaseGate: createReleaseGateSummary(check),
     releaseReady: check.releaseReady,
     schemaVersion: projectStatusSchemaVersion,
     status: check.releaseReady ? "release-ready" : "needs-evidence",
+    truncatedNextActionCount: nextActions.length - serializedNextActions.length,
   };
 }
 

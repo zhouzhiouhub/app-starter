@@ -28,6 +28,8 @@ test("project status summarizes blocked release evidence", () => {
   assert.equal(artifact.releaseGate.visual.status, "needs-evidence");
   assert.equal(artifact.releaseGate.visual.pendingTaskCount, 12);
   assert.equal(artifact.localVerification.commandCount, 6);
+  assert.equal(artifact.nextActionLimit, 8);
+  assert.equal(artifact.truncatedNextActionCount, 5);
   assert.deepEqual(
     artifact.localVerification.commands.map((item) => item.command),
     [
@@ -40,6 +42,7 @@ test("project status summarizes blocked release evidence", () => {
     ],
   );
   assert.equal(artifact.nextActionCount, 13);
+  assert.equal(artifact.nextActions.length, 8);
   assert.equal(artifact.nextActions[0].area, "Production Smoke");
   assert.equal(
     artifact.nextActions.some((action) => action.label === "hero-banner.desktop"),
@@ -55,6 +58,7 @@ test("project status can serialize every next action", () => {
 
   assert.equal(artifact.nextActionCount, 13);
   assert.equal(artifact.nextActions.length, 13);
+  assert.equal(artifact.truncatedNextActionCount, 0);
   assert.equal(artifact.nextActions.at(-1).label, "spec-table.mobile");
 });
 
@@ -92,6 +96,7 @@ test("project status CLI prints readable blocked state", async () => {
     assert.match(text, /Local verification:/);
     assert.match(text, /TypeScript: pnpm typecheck \(configured\)/);
     assert.match(text, /hero-banner\.desktop/);
+    assert.match(text, /Use --all-actions to list every next action/);
   } finally {
     await rm(emptyArchiveRoot, { force: true, recursive: true });
   }
