@@ -7,3 +7,4 @@ export {
   formatProjectStatusArtifact,
   writeProjectStatusArtifact,
 } from "./project-status-report.mjs";
+export { assertProjectStatusArtifact } from "./project-status-validation.mjs";

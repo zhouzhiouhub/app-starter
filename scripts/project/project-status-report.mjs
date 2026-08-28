@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
+import { assertProjectStatusArtifact } from "./project-status-validation.mjs";
 
 const maxProjectLineLength = 420;
 
@@ -36,6 +37,8 @@ function formatLocalVerification(localVerification) {
 }
 
 export async function writeProjectStatusArtifact(outputPath, artifact) {
+  assertProjectStatusArtifact(artifact);
+
   await mkdir(dirname(outputPath), { recursive: true });
   await writeFile(outputPath, `${JSON.stringify(artifact, null, 2)}\n`, "utf8");
 }

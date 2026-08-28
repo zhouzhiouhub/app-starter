@@ -2,6 +2,7 @@
 
 import { pathToFileURL } from "node:url";
 import {
+  assertProjectStatusArtifact,
   createProjectStatusArtifact,
   formatProjectStatusArtifact,
   readProjectStatusCliConfig,
@@ -28,6 +29,8 @@ export async function runProjectStatusCli(args, input = {}) {
     const artifact = createProjectStatusArtifact(check, {
       generatedAt: input.generatedAt,
     });
+
+    assertProjectStatusArtifact(artifact);
 
     if (config.outputPath) {
       await writeProjectStatusArtifact(config.outputPath, artifact);
@@ -70,7 +73,7 @@ function printHelp(writeLine) {
 
 Options:
   --json                     Print the machine-readable project status report.
-  --output <path>            Write a JSON report under tmp/, reports/, artifacts/, or .tmp/.
+  --output <path>            Write a validated project-status.v1 JSON report under tmp/, reports/, artifacts/, or .tmp/.
   --require-ready            Exit 1 unless the current release gate is ready.
   --smoke-report <path>      Read a specific production smoke report.
   --visual-artifact-dir <dir>

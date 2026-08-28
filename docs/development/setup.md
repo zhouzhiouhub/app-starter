@@ -293,7 +293,9 @@ specific GitHub Actions run.
 prints the MVP phase, locally completed milestones, release readiness, and the
 configured local verification commands, and the next concrete actions without
 changing the pass/fail criteria. Add `--require-ready` when the same status
-report should exit non-zero until release evidence is ready.
+report should exit non-zero until release evidence is ready. Use `--json` or
+`--output` to produce a validated `project-status.v1` artifact for handoff or
+release review notes.
 
 After the Page Builder visual manifest has accepted real design evidence,
 `release:check` verifies both evidence streams together: production smoke must
