@@ -298,7 +298,9 @@ uploads `release-evidence-check-<run_number>` with the
 `release-evidence-check.v1` JSON artifact. If `visual_artifact_name` and
 `visual_artifact_run_id` are provided, it downloads that Page Builder Visual
 artifact to `reports/visual/page-builder-fixture` before running the combined
-gate. When `release_tag`,
+gate. The workflow preflights these optional inputs before smoke requests so a
+partial visual artifact pair or partial release notes input set fails early.
+When `release_tag`,
 `rollback_target`, and `visual_artifact_name` are provided, it runs
 `release:notes` and uploads `release-notes-<run_number>`. Use
 [`release-checklist.md`](./release-checklist.md) to attach the workflow run,

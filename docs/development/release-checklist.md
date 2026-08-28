@@ -58,6 +58,10 @@ later phases are explicitly approved.
   `page-builder-visual-fixture-<run_number>` artifact with the release notes.
   This artifact proves fixture capture regression only; final visual sign-off
   still requires accepted real design evidence.
+- Before running smoke requests, the `Production Smoke` workflow preflights the
+  optional release evidence inputs: `visual_artifact_name` and
+  `visual_artifact_run_id` must be provided together, and release notes require
+  `release_tag`, `rollback_target`, and `visual_artifact_name` together.
 
 ## Run Production Smoke
 

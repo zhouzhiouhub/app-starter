@@ -41,6 +41,11 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
     workflow,
     /RELEASE_VISUAL_ARTIFACT_RUN_ID: \$\{\{ inputs\.visual_artifact_run_id \}\}/,
   );
+  assert.match(workflow, /name: Validate release evidence inputs/);
+  assert.match(
+    workflow,
+    /node scripts\/release\/production-smoke-release-inputs\.mjs/,
+  );
   assert.match(workflow, /name: Download Page Builder visual evidence artifact/);
   assert.match(
     workflow,
