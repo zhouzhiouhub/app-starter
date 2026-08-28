@@ -7,14 +7,19 @@ import {
   createGtmLoader,
 } from "../src/lib/analytics-loader.ts";
 
-test("analytics loaders do not install third-party scripts on preview routes", () => {
+test("analytics loaders do not install third-party scripts on private routes", () => {
   const loaders = [
     createClarityLoader("clarity123"),
     createGa4Loader("G-ABC1234567"),
     createGtmLoader("GTM-ABC1234"),
   ];
 
-  for (const pathname of ["/preview", "/preview/draft"]) {
+  for (const pathname of [
+    "/preview",
+    "/preview/draft",
+    "/visual-acceptance",
+    "/visual-acceptance/assets/visual-gallery-a.svg",
+  ]) {
     for (const loader of loaders) {
       const browser = runLoader(loader, pathname);
 

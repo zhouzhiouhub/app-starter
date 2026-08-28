@@ -17,6 +17,26 @@ Use the default command while collecting evidence. Use `--require-accepted` for
 release sign-off after every core section has design references, preview
 screenshots, and measured diff values.
 
+## Fixture Route
+
+The Web app exposes a gated screenshot fixture for the six MVP core sections.
+It is disabled by default and must not be enabled in production.
+
+```powershell
+$env:ENABLE_VISUAL_ACCEPTANCE_FIXTURE = "true"
+pnpm --filter @app-starter/web dev
+```
+
+Capture browser screenshots from:
+
+- `http://localhost:3000/visual-acceptance?viewport=desktop`
+- `http://localhost:3000/visual-acceptance?viewport=mobile`
+
+The route renders a Page Schema through `@app-starter/renderer` and resolves
+fixture `media://` references through local, whitelisted assets. It provides a
+stable capture target; final sign-off still needs the real design references,
+saved browser screenshots, and measured diff values in the manifest.
+
 ## Evidence Rules
 
 - Every MVP section must have a record: `hero-banner`, `rich-text`,

@@ -188,6 +188,11 @@ documentation hosts. Local development can still use localhost fallbacks.
 Storefront page, robots, sitemap, and 404 smoke requests use manual redirects;
 a production 30x response is reported with a redacted `Location` so deployment
 rewrites, storefront host routing, and `WEB_URL` can be fixed before launch.
+For local Page Builder visual sign-off, set
+`ENABLE_VISUAL_ACCEPTANCE_FIXTURE=true` before starting the Web app, then open
+`/visual-acceptance?viewport=desktop` and
+`/visual-acceptance?viewport=mobile` to capture evidence screenshots. Keep this
+flag disabled in production and public preview environments.
 
 After sign-in, open `http://localhost:5173/pages` to list and create pages.
 The editor at `/pages/:id` loads the draft schema, can save a draft, and can

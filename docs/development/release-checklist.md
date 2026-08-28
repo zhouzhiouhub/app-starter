@@ -40,6 +40,11 @@ later phases are explicitly approved.
   accepted screenshots must be retained under `artifacts/visual/` or
   `reports/visual/`, and every referenced evidence file must exist and be
   non-empty.
+- For local screenshot capture, start Web with
+  `ENABLE_VISUAL_ACCEPTANCE_FIXTURE=true` and use
+  `/visual-acceptance?viewport=desktop` plus
+  `/visual-acceptance?viewport=mobile`. Keep the flag disabled outside the
+  capture session.
 
 ## Run Production Smoke
 

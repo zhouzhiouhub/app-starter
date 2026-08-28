@@ -330,6 +330,8 @@ ANALYTICS_CONSENT_GRANTED=false
 GTM_CONTAINER_ID=
 GA4_MEASUREMENT_ID=
 CLARITY_PROJECT_ID=
+
+ENABLE_VISUAL_ACCEPTANCE_FIXTURE=false
 ```
 
 如果你的 PostgreSQL 密码就是 `postgres`：
@@ -376,6 +378,8 @@ ANALYTICS_CONSENT_GRANTED=false
 GTM_CONTAINER_ID=GTM-XXXXXXX
 GA4_MEASUREMENT_ID=G-XXXXXXXXXX
 CLARITY_PROJECT_ID=xxxxxxxxxx
+
+ENABLE_VISUAL_ACCEPTANCE_FIXTURE=false
 ```
 
 线上注意事项：
@@ -386,6 +390,7 @@ CLARITY_PROJECT_ID=xxxxxxxxxx
 - 不要把生产数据库连接串提交到 Git。
 - 生产运行时和 smoke readiness 都会拒绝带首尾空白、账号密码、query、fragment、控制字符或异常路径的 `API_URL`、`WEB_URL`、`ADMIN_URL`；`API_URL` 只允许 API origin 或精确的 `/api/v1` base，`WEB_URL` / `ADMIN_URL` 只允许 origin。
 - Analytics 脚本只有在 `ANALYTICS_ENABLED=true` 且 `ANALYTICS_CONSENT_GRANTED=true` 时才会加载；未接入 Consent 机制前保持关闭。
+- `ENABLE_VISUAL_ACCEPTANCE_FIXTURE` 只用于本地 Page Builder 截图验收，必须精确设置为 `true` 才会开放 `/visual-acceptance`；生产和公开环境保持 `false`。
 - `GTM_CONTAINER_ID`、`GA4_MEASUREMENT_ID`、`CLARITY_PROJECT_ID` 必须精确匹配对应厂商格式、最多 64 字符，不能带首尾空白或控制字符；无效值会被运行时忽略，并被生产 smoke readiness 标记为待修复。
 - R2 生产配置必须使用 DNS 安全的 `R2_ACCOUNT_ID`、3 到 63 字符的安全 bucket 名称，以及不含空白或控制字符的凭据和 region；生产 smoke readiness 会把格式错误的 R2 变量判定为 `invalid-config`。
 - 生产 `PREVIEW_TOKEN_SECRET` 必须是 32 到 1024 字符、不包含控制字符且不带首尾空白的签名密钥；如果配置 `PREVIEW_TOKEN_PREVIOUS_SECRET` 做轮换，也必须满足同样边界。
@@ -669,6 +674,8 @@ pnpm visual:acceptance -- --require-accepted
 ```
 
 最终签收时，`designReference` 需要指向 `docs/`、`artifacts/visual/` 或 `reports/visual/` 下的图片；`previewScreenshot` 需要指向 `artifacts/visual/` 或 `reports/visual/` 下的浏览器截图。所有已接受证据路径都必须对应仓库或发布 artifact 内的非空文件。
+
+本地截图可临时设置 `ENABLE_VISUAL_ACCEPTANCE_FIXTURE=true` 并启动 Web，然后访问 `/visual-acceptance?viewport=desktop` 与 `/visual-acceptance?viewport=mobile`；截图完成后关闭该环境变量，最终验收仍需真实设计参考和差异指标。
 
 GitHub Actions 里新增了手动触发的 `Production Smoke` workflow，会把报告写到 `artifacts/production-smoke/smoke-report.json`，失败或成功都会执行 `pnpm smoke:report` 和 `pnpm smoke:release-check` 并上传 `production-smoke-report-<run_number>` artifact；发布证据按 [Release Checklist](./docs/development/release-checklist.md) 留存。
 

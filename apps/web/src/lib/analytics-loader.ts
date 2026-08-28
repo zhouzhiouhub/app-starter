@@ -1,11 +1,11 @@
-const previewPathname = "/preview";
+const analyticsExcludedPathnames = ["/preview", "/visual-acceptance"];
 
 export function createGtmLoader(containerId: string): string {
   const encodedContainerId = JSON.stringify(containerId);
 
   return `
     (function(w,d,s,l,i){
-      ${createPreviewRouteGuard("w")}
+      ${createAnalyticsRouteGuard("w")}
       w.dataLayer = w.dataLayer || [];
       w.dataLayer.push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
       var f=d.getElementsByTagName(s)[0];
@@ -23,7 +23,7 @@ export function createGa4Loader(measurementId: string): string {
 
   return `
     (function(w,d,i){
-      ${createPreviewRouteGuard("w")}
+      ${createAnalyticsRouteGuard("w")}
       w.dataLayer = w.dataLayer || [];
       w.gtag = function(){w.dataLayer.push(arguments);}
       var f=d.getElementsByTagName("script")[0];
@@ -42,7 +42,7 @@ export function createClarityLoader(projectId: string): string {
 
   return `
     (function(c,l,a,r,i,t,y){
-      ${createPreviewRouteGuard("c")}
+      ${createAnalyticsRouteGuard("c")}
       c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
       t=l.createElement(r);
       t.async=1;
@@ -53,6 +53,8 @@ export function createClarityLoader(projectId: string): string {
   `;
 }
 
-function createPreviewRouteGuard(windowIdentifier: string): string {
-  return `var p=${windowIdentifier}.location&&${windowIdentifier}.location.pathname||"";if(p==="${previewPathname}"||p.indexOf("${previewPathname}/")===0){return;}`;
+function createAnalyticsRouteGuard(windowIdentifier: string): string {
+  const encodedPathnames = JSON.stringify(analyticsExcludedPathnames);
+
+  return `var p=${windowIdentifier}.location&&${windowIdentifier}.location.pathname||"";var __appExcludedPaths=${encodedPathnames};for(var n=0;n<__appExcludedPaths.length;n++){if(p===__appExcludedPaths[n]||p.indexOf(__appExcludedPaths[n]+"/")===0){return;}}`;
 }
