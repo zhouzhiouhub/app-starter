@@ -698,7 +698,7 @@ GitHub Actions 里新增了手动触发的 `Production Smoke` workflow，会把�
 
 最终发布前可运行 `pnpm release:check -- --checklist --smoke-report artifacts/production-smoke/smoke-report.json` 查看生产 Smoke、Page Builder 视觉证据和 release notes 的准备状态；如果使用下载下来的 Page Builder Visual artifact，再追加 `--visual-artifact-dir reports/visual/page-builder-fixture`。去掉 `--checklist` 后同一命令可作为统一门禁，它会同时校验生产 Smoke 发布证据、Page Builder 视觉 accepted 证据，以及可选视觉 artifact 的本地 manifest、capture report、acceptance report 和 12 张截图。需要归档时追加 `--json` 输出机器可读结果，或追加 `--output artifacts/release/release-check.json` 写入 `release-evidence-check.v1` JSON artifact；artifact 内含结构化 `readinessChecklist` 和可选 `visual.artifactCheck`，可直接归档 blocked / ready 任务。当前缺真实设计参考和生产 smoke artifact 时，该命令会阻塞发布。
 
-组合门禁 ready 后，可运行 `pnpm release:notes` 生成最终发布记录 Markdown；命令会强制填写 release tag、workflow run URL、三类 artifact 名称、公开 storefront URL 和 rollback target。默认读取 `artifacts/release/release-check.json`，只有 `release-evidence-check.v1` 为 ready 时才生成正式发布记录。
+组合门禁 ready 后，可运行 `pnpm release:notes` 生成最终发布记录 Markdown；命令会强制填写 release tag、workflow run URL、三类 artifact 名称、公开 storefront URL 和 rollback target。默认读取 `artifacts/release/release-check.json`，只有 `release-evidence-check.v1` 为 ready 时才生成正式发布记录；如果组合门禁记录了 `visual.artifactCheck`，发布记录会同步写出视觉 artifact 的完整性、文件数、截图数和 artifact issue 摘要。
 
 ```powershell
 $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish

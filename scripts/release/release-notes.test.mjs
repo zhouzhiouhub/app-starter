@@ -102,8 +102,17 @@ test("release notes render required evidence and gate status", () => {
   assert.match(markdown, /Page Builder Visual: accepted \(6\/6 components, 12\/12 viewports\)/);
   assert.match(
     markdown,
+    /Page Builder Visual Artifact: complete \(3\/3 files, 12\/12 screenshots\)/,
+  );
+  assert.match(
+    markdown,
     /Manifest: `docs\/development\/page-builder-visual-acceptance\.json`/,
   );
+  assert.match(markdown, /Artifact check: complete/);
+  assert.match(markdown, /Artifact dir: `reports\/visual\/page-builder-fixture`/);
+  assert.match(markdown, /Artifact files: 3\/3/);
+  assert.match(markdown, /Artifact screenshots: 12\/12/);
+  assert.match(markdown, /Artifact issues: none/);
   assert.match(markdown, /Pending components: none/);
   assert.match(markdown, /Pending viewports: none/);
   assert.match(markdown, /Visual issues: none/);
@@ -140,6 +149,7 @@ function createReadyReleaseArtifact() {
     visual: {
       acceptedComponentCount: 6,
       acceptedViewportCount: 12,
+      artifactCheck: createCompleteArtifactCheck(),
       componentCount: 6,
       errorCount: 0,
       issueCount: 0,
@@ -183,6 +193,7 @@ test("release notes require ready evidence unless explicitly allowed", () => {
     visual: {
       acceptedComponentCount: 0,
       acceptedViewportCount: 0,
+      artifactCheck: createInvalidArtifactCheck(),
       componentCount: 6,
       errorCount: 0,
       issueCount: 1,
@@ -227,6 +238,10 @@ test("release notes require ready evidence unless explicitly allowed", () => {
     markdown,
     /Visual issue: hero-banner: record_needs_evidence \(warning\) - hero-banner is needs-evidence\./,
   );
+  assert.match(
+    markdown,
+    /Artifact issue: unknown: missing_artifact_file \(error\) - capture report is missing\./,
+  );
 });
 
 test("release notes command is exposed in package, CI, and release docs", async () => {
@@ -265,6 +280,40 @@ function createRequiredArgs() {
 
 function createReleaseNotesConfig() {
   return readReleaseNotesCliConfig(createRequiredArgs());
+}
+
+function createCompleteArtifactCheck() {
+  return {
+    artifactDir: "reports/visual/page-builder-fixture",
+    expectedScreenshotCount: 12,
+    issueCount: 0,
+    issues: [],
+    presentRequiredFileCount: 3,
+    presentScreenshotCount: 12,
+    requiredFileCount: 3,
+    status: "complete",
+  };
+}
+
+function createInvalidArtifactCheck() {
+  return {
+    artifactDir: "reports/visual/page-builder-fixture",
+    expectedScreenshotCount: 12,
+    issueCount: 1,
+    issues: [
+      {
+        code: "missing_artifact_file",
+        component: null,
+        message: "capture report is missing.",
+        severity: "error",
+        viewport: null,
+      },
+    ],
+    presentRequiredFileCount: 2,
+    presentScreenshotCount: 0,
+    requiredFileCount: 3,
+    status: "invalid",
+  };
 }
 
 async function readText(path) {

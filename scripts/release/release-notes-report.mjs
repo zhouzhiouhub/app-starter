@@ -4,6 +4,7 @@ import { formatSmokeText } from "../smoke/smoke-text.mjs";
 
 const maxBlockerLines = 12;
 const maxTextLength = 180;
+const maxVisualArtifactIssueLines = 12;
 const maxVisualIssueLines = 12;
 
 export function createReleaseNotesMarkdown(config, artifact) {
@@ -36,6 +37,7 @@ export function createReleaseNotesMarkdown(config, artifact) {
     `- Release evidence: ${artifact.status}`,
     `- Production Smoke: ${artifact.smoke.status} (${artifact.smoke.summary.status}, ${artifact.smoke.summary.failedCheckCount} failed checks)`,
     `- Page Builder Visual: ${artifact.visual.status} (${artifact.visual.acceptedComponentCount}/${artifact.visual.componentCount} components, ${artifact.visual.acceptedViewportCount}/${artifact.visual.viewportCount} viewports)`,
+    ...formatVisualArtifactGate(artifact.visual.artifactCheck),
     "",
     "## Visual Evidence",
     "",
@@ -77,8 +79,50 @@ function formatVisualEvidence(visual) {
     `- Manifest: \`${formatInline(visual.manifestPath)}\``,
     `- Pending components: ${formatInlineList(visual.pendingComponents)}`,
     `- Pending viewports: ${formatInlineList(visual.pendingViewports)}`,
+    ...formatVisualArtifactCheck(visual.artifactCheck),
     ...formatVisualIssues(visual.issues),
   ];
+}
+
+function formatVisualArtifactGate(check) {
+  if (!check) {
+    return [];
+  }
+
+  return [
+    `- Page Builder Visual Artifact: ${formatInline(check.status)} (${check.presentRequiredFileCount}/${check.requiredFileCount} files, ${check.presentScreenshotCount}/${check.expectedScreenshotCount} screenshots)`,
+  ];
+}
+
+function formatVisualArtifactCheck(check) {
+  if (!check) {
+    return ["- Artifact check: not recorded"];
+  }
+
+  return [
+    `- Artifact check: ${formatInline(check.status)}`,
+    `- Artifact dir: \`${formatInline(check.artifactDir)}\``,
+    `- Artifact files: ${check.presentRequiredFileCount}/${check.requiredFileCount}`,
+    `- Artifact screenshots: ${check.presentScreenshotCount}/${check.expectedScreenshotCount}`,
+    ...formatVisualArtifactIssues(check.issues),
+  ];
+}
+
+function formatVisualArtifactIssues(issues) {
+  if (!Array.isArray(issues) || issues.length === 0) {
+    return ["- Artifact issues: none"];
+  }
+
+  const visible = issues.slice(0, maxVisualArtifactIssueLines).map(
+    (issue) => `- Artifact issue: ${formatVisualIssue(issue)}`,
+  );
+  const hidden = issues.length - visible.length;
+
+  if (hidden > 0) {
+    visible.push(`- Artifact issue: ... and ${hidden} more artifact issues`);
+  }
+
+  return visible;
 }
 
 function formatVisualIssues(issues) {
