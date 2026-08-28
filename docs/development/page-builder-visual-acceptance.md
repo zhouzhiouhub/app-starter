@@ -68,6 +68,19 @@ pnpm visual:capture:fixture
 Set `PAGE_BUILDER_VISUAL_BROWSER` or pass `--browser` when Chrome or Edge is
 not installed in a standard location.
 
+## CI Workflow
+
+The `Page Builder Visual` GitHub Actions workflow runs on visual-related pull
+requests, pushes to `main`, and manual dispatch. It executes `pnpm test:visual`,
+`pnpm visual:acceptance`, `pnpm visual:measure`, and
+`pnpm visual:capture:fixture -- --output-dir reports/visual/page-builder-fixture`.
+
+The workflow uploads `page-builder-visual-fixture-<run_number>` with the fixture
+screenshots captured under `reports/visual/page-builder-fixture`. This artifact
+is regression evidence for the fixture and capture pipeline only. Final MVP
+visual sign-off still requires real Desktop and Mobile design references,
+measured diff values, and `pnpm visual:acceptance -- --require-accepted`.
+
 After real Desktop and Mobile design reference PNGs are attached to the
 manifest, calculate the metrics with:
 

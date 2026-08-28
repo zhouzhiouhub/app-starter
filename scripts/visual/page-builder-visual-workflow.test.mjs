@@ -1,0 +1,64 @@
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import test from "node:test";
+
+const workflowPath = ".github/workflows/page-builder-visual.yml";
+const readmePath = "README.md";
+const acceptanceDocPath = "docs/development/page-builder-visual-acceptance.md";
+const releaseChecklistPath = "docs/development/release-checklist.md";
+
+test("page builder visual workflow captures fixture evidence", async () => {
+  const workflow = await readFile(workflowPath, "utf8");
+
+  assert.match(workflow, /name: Page Builder Visual/);
+  assert.match(workflow, /pull_request:/);
+  assert.match(workflow, /push:/);
+  assert.match(workflow, /workflow_dispatch:/);
+  assert.match(workflow, /permissions:/);
+  assert.match(workflow, /contents: read/);
+  assert.match(workflow, /PAGE_BUILDER_VISUAL_BROWSER: google-chrome/);
+  assert.match(workflow, /pnpm run check:file-size/);
+  assert.match(workflow, /pnpm test:visual/);
+  assert.match(workflow, /pnpm visual:acceptance/);
+  assert.match(workflow, /pnpm visual:measure/);
+  assert.match(
+    workflow,
+    /pnpm visual:capture:fixture -- --output-dir reports\/visual\/page-builder-fixture/,
+  );
+  assert.match(workflow, /GITHUB_STEP_SUMMARY/);
+  assert.match(workflow, /actions\/upload-artifact@v4/);
+  assert.match(
+    workflow,
+    /name: page-builder-visual-fixture-\$\{\{ github\.run_number \}\}/,
+  );
+  assert.match(workflow, /retention-days: 14/);
+});
+
+test("page builder visual workflow does not claim final design sign-off", async () => {
+  const workflow = await readFile(workflowPath, "utf8");
+
+  assert.match(workflow, /Final sign-off still requires real design references/);
+  assert.doesNotMatch(
+    workflow,
+    /^\s*-\s+run: pnpm visual:acceptance -- --require-accepted/m,
+  );
+  assert.doesNotMatch(
+    workflow,
+    /^\s*-\s+run: pnpm visual:measure -- --write --require-complete/m,
+  );
+});
+
+test("visual workflow documentation is linked from release guidance", async () => {
+  const [readme, acceptanceDoc, releaseChecklist] = await Promise.all([
+    readFile(readmePath, "utf8"),
+    readFile(acceptanceDocPath, "utf8"),
+    readFile(releaseChecklistPath, "utf8"),
+  ]);
+
+  assert.match(readme, /Page Builder Visual/);
+  assert.match(readme, /page-builder-visual-fixture-<run_number>/);
+  assert.match(acceptanceDoc, /## CI Workflow/);
+  assert.match(acceptanceDoc, /reports\/visual\/page-builder-fixture/);
+  assert.match(releaseChecklist, /Page Builder Visual/);
+  assert.match(releaseChecklist, /page-builder-visual-fixture-<run_number>/);
+});

@@ -51,6 +51,10 @@ later phases are explicitly approved.
   running fixture server, or run `pnpm visual:capture:fixture` for the full
   local build/start/capture/stop workflow. Keep the flag disabled outside the
   capture session.
+- Run the `Page Builder Visual` GitHub Actions workflow and keep its
+  `page-builder-visual-fixture-<run_number>` artifact with the release notes.
+  This artifact proves fixture capture regression only; final visual sign-off
+  still requires accepted real design evidence.
 
 ## Run Production Smoke
 
@@ -82,6 +86,9 @@ later phases are explicitly approved.
 - The Page Builder visual acceptance manifest covers all six MVP core sections
   and links the final accepted Desktop / Mobile evidence when MVP visual sign-off
   is requested; every linked evidence file is retained with the release.
+- The latest `Page Builder Visual` workflow run and
+  `page-builder-visual-fixture-<run_number>` artifact are linked when visual
+  evidence is part of the release review.
 
 ## Failure Review
 

@@ -5,7 +5,7 @@
 当前目标不是一次性复制 Shopify 全量能力，而是先完成一个可长期演进的建站平台工程基础：前台渲染、后台管理壳、API 服务、Page Schema、共享 Renderer、数据库模型、二次开发入口和后续电商/多语言能力预留。
 
 > 状态更新时间：2026-08-28
-> 当前阶段：建站 MVP 的页面管理、站点设置、Page Builder、媒体、SEO、预览令牌、发布历史、回滚、审计日志、前台 ISR 刷新链路、发布 smoke 报告、生产验收报告归档索引、失败回看入口、发布证据强校验、CI artifact 留存策略、Release Checklist、Page Builder 核心区块视觉验收记录清单和 Localization 默认 Locale 批量导入 / 导出复盘入口、审计结果筛选回跳、审计回跳上下文提示、导入预览问题行草稿定位细节、默认 Locale 长列表批量操作确认已逐步落地；下一步是在真实生产 R2 / CDN 环境执行验收并归档报告。
+> 当前阶段：建站 MVP 的页面管理、站点设置、Page Builder、媒体、SEO、预览令牌、发布历史、回滚、审计日志、前台 ISR 刷新链路、发布 smoke 报告、生产验收报告归档索引、失败回看入口、发布证据强校验、CI artifact 留存策略、Release Checklist、Page Builder 核心区块视觉验收记录清单、Page Builder 视觉验收 CI 和 Localization 默认 Locale 批量导入 / 导出复盘入口、审计结果筛选回跳、审计回跳上下文提示、导入预览问题行草稿定位细节、默认 Locale 长列表批量操作确认已逐步落地；下一步是在真实生产 R2 / CDN 环境执行验收并归档报告。
 
 ## 1. 当前进度
 
@@ -680,6 +680,8 @@ pnpm visual:measure
 
 本地截图可临时设置 `ENABLE_VISUAL_ACCEPTANCE_FIXTURE=true` 并启动 Web，然后访问 `/visual-acceptance?viewport=desktop` 与 `/visual-acceptance?viewport=mobile`；需要组件级证据时追加 `&component=<hero-banner|rich-text|image-gallery|cta-bar|faq|spec-table>`，或运行 `pnpm visual:capture` 一次性刷新 manifest 引用的 12 张组件截图。也可以直接运行 `pnpm visual:capture:fixture` 完成本地 build、启动 gated fixture、截图和停服务流程。补入真实设计参考图后，运行 `pnpm visual:measure -- --write --require-complete` 写回 `visualMatchPercent`、`maxLayoutDeltaPx` 和 `maxColorDeltaE`。截图完成后关闭该环境变量，最终验收仍需真实设计参考和差异指标。
 
+GitHub Actions 里新增了 `Page Builder Visual` workflow，会在相关 PR、main 推送或手动触发时运行 `pnpm test:visual`、`pnpm visual:acceptance`、`pnpm visual:measure` 和 `pnpm visual:capture:fixture -- --output-dir reports/visual/page-builder-fixture`，并上传 `page-builder-visual-fixture-<run_number>` artifact。该 artifact 只证明 fixture 截图链路可持续回归，不替代真实设计参考、差异指标和 `pnpm visual:acceptance -- --require-accepted` 最终签收。
+
 GitHub Actions 里新增了手动触发的 `Production Smoke` workflow，会把报告写到 `artifacts/production-smoke/smoke-report.json`，失败或成功都会执行 `pnpm smoke:report` 和 `pnpm smoke:release-check` 并上传 `production-smoke-report-<run_number>` artifact；发布证据按 [Release Checklist](./docs/development/release-checklist.md) 留存。
 
 ```powershell
@@ -766,6 +768,6 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 
 1. 在真实 R2 / CDN 环境配置 `MEDIA_CDN_BASE_URL`、R2 凭据和 CDN 域名，确认不是 `example` / `test` / `invalid` / 本地 / 私网域名，执行 `pnpm smoke:publish` 并归档 `SMOKE_REPORT_PATH`。
 2. 补齐部署 Smoke Test：前台 Vercel、API 独立 Node 服务、Admin 静态托管、Redis 生产连接、环境变量清单和回滚步骤。
-3. 做 Page Builder 视觉验收：补真实浏览器截图留档，并将 `docs/development/page-builder-visual-acceptance.json` 中六个核心区块的 Desktop / Mobile 证据从 `needs-evidence` 推进到 `accepted`。
+3. 做 Page Builder 视觉验收：保留最新 `Page Builder Visual` workflow 的 `page-builder-visual-fixture-<run_number>` artifact，补真实浏览器截图留档，并将 `docs/development/page-builder-visual-acceptance.json` 中六个核心区块的 Desktop / Mobile 证据从 `needs-evidence` 推进到 `accepted`。
 4. 在真实生产配置下触发 GitHub Actions `Production Smoke`，把 artifact、`pnpm smoke:report` 输出、`pnpm smoke:release-check` 结果和回滚目标写入发布记录。
 5. 保持 Commerce 关闭态，继续强化订单 / 支付关闭态分支、Phase 2 Webhook 验签设计和 `COMMERCE_DISABLED` 错误分支测试；不进入真实交易。
