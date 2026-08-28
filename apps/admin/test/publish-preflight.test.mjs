@@ -60,6 +60,36 @@ test("publish preflight warns about stale section order data", () => {
   assert.equal(blocker, null);
 });
 
+test("publish preflight surfaces Page Builder visual acceptance warnings", () => {
+  const schema = structuredClone(exampleLandingPage);
+  schema.sections[0].layout.desktop = {
+    height: 520,
+    width: 1220,
+    x: 0,
+    y: 0,
+  };
+  schema.sections[1].layout.desktop = {
+    height: 240,
+    width: 1200,
+    x: 0,
+    y: 480,
+  };
+
+  const issues = collectPublishPreflightIssues(schema);
+  const blocker = findBlockingPublishPreflightIssue(schema);
+
+  assert.deepEqual(
+    issues.map((issue) => [issue.field, issue.severity]),
+    [
+      ["sections[0].layout.desktop.width", "warning"],
+      ["sections[1].layout.desktop.y", "warning"],
+    ],
+  );
+  assert.match(issues[0].message, /Desktop section 1 extends beyond the 1200px canvas/);
+  assert.match(issues[1].message, /negative vertical gap/);
+  assert.equal(blocker, null);
+});
+
 test("publish preflight blocks unsafe chrome links", () => {
   const schema = structuredClone(exampleLandingPage);
 

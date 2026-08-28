@@ -58,6 +58,54 @@ test("page structure preflight warns about mobile layout overflow", () => {
   assert.deepEqual(collectPageStructurePreflightIssues(schema), []);
 });
 
+test("page structure preflight warns about visual canvas clipping", () => {
+  const schema = structuredClone(exampleLandingPage);
+  schema.sections[0].layout.desktop = { width: 1200, x: 24, y: 0 };
+  schema.sections[1].layout.mobile = { width: 360, x: -8, y: 620 };
+
+  const issues = collectPageStructurePreflightIssues(schema);
+
+  assert.deepEqual(
+    issues.map((issue) => [issue.field, issue.severity]),
+    [
+      ["sections[0].layout.desktop.width", "warning"],
+      ["sections[1].layout.mobile.x", "warning"],
+    ],
+  );
+  assert.match(issues[0].message, /Desktop section 1 extends beyond the 1200px canvas/);
+  assert.match(issues[1].message, /Mobile section 2 starts before the canvas left edge/);
+});
+
+test("page structure preflight warns when renderer compresses vertical gaps", () => {
+  const schema = structuredClone(exampleLandingPage);
+  schema.sections[0].layout.desktop = {
+    height: 520,
+    width: 1200,
+    x: 0,
+    y: 0,
+  };
+  schema.sections[1].layout.desktop = {
+    height: 240,
+    width: 1200,
+    x: 0,
+    y: 420,
+  };
+  schema.sections[1].layout.mobile = {
+    height: 240,
+    width: 390,
+    x: 0,
+    y: 620,
+  };
+
+  const issues = collectPageStructurePreflightIssues(schema);
+
+  assert.deepEqual(
+    issues.map((issue) => [issue.field, issue.severity]),
+    [["sections[1].layout.desktop.y", "warning"]],
+  );
+  assert.match(issues[0].message, /Renderer will remove the negative vertical gap/);
+});
+
 test("page structure preflight warns when visible viewport layouts are missing", () => {
   const schema = structuredClone(exampleLandingPage);
   delete schema.sections[0].layout.mobile;

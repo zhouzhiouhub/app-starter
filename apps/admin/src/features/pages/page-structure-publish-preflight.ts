@@ -1,9 +1,9 @@
 import type { PageSchema, SectionNode, Viewport } from "@app-starter/schema";
+import { collectPageLayoutVisualPreflightIssues } from "./page-layout-visual-preflight.ts";
 import type { PublishPreflightIssue } from "./publish-preflight-types";
 import { isSupportedSectionComponent } from "./section-components.ts";
 
 const orderedViewports: Viewport[] = ["desktop", "mobile"];
-const mobileCanvasWidth = 390;
 
 export function collectPageStructurePreflightIssues(
   schema: PageSchema,
@@ -13,7 +13,7 @@ export function collectPageStructurePreflightIssues(
     ...collectEmptyViewportIssues(schema),
     ...collectUnsupportedSectionComponentIssues(schema),
     ...collectMissingViewportLayoutIssues(schema),
-    ...collectMobileLayoutOverflowIssues(schema),
+    ...collectPageLayoutVisualPreflightIssues(schema),
     ...collectDuplicateSectionIdIssues(schema),
     ...collectSectionOrderIssues(schema),
   ];
@@ -111,30 +111,6 @@ function collectMissingViewportLayoutIssues(
       ];
     }),
   );
-}
-
-function collectMobileLayoutOverflowIssues(
-  schema: PageSchema,
-): PublishPreflightIssue[] {
-  return schema.sections.flatMap((section, sectionIndex) => {
-    if (!isSectionVisible(section, "mobile")) {
-      return [];
-    }
-
-    const layout = section.layout.mobile;
-
-    if (!layout || layout.x + layout.width <= mobileCanvasWidth) {
-      return [];
-    }
-
-    return [
-      {
-        field: `sections[${sectionIndex}].layout.mobile.width`,
-        message: `Mobile section ${sectionIndex + 1} extends beyond the ${mobileCanvasWidth}px canvas. Reduce X or Width before publishing to avoid clipped storefront content.`,
-        severity: "warning",
-      },
-    ];
-  });
 }
 
 function collectDuplicateSectionIdIssues(
