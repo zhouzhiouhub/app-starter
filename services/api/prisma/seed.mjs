@@ -1,7 +1,7 @@
 import { hash } from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
-import { exampleLandingPage } from "@app-starter/schema";
 import { pathToFileURL } from "node:url";
+import { seedDefaultPages } from "./seed-pages.mjs";
 
 const DEFAULT_TENANT_SLUG = "default";
 const DEFAULT_TENANT_NAME = "Default Tenant";
@@ -60,83 +60,15 @@ async function seed(prisma) {
     },
   });
 
-  const existingPage = await prisma.page.findUnique({
-    where: {
-      siteId_slug: {
-        siteId: site.id,
-        slug: exampleLandingPage.meta.slug,
-      },
-    },
-    include: {
-      versions: {
-        orderBy: { version: "desc" },
-      },
-    },
-  });
-
-  if (existingPage?.publishedVersionId) {
-    return {
-      adminEmail: admin.email,
-      pageId: existingPage.id,
-      siteId: site.id,
-      tenantId: tenant.id,
-    };
-  }
-
-  const page =
-    existingPage ??
-    (await prisma.page.create({
-      data: {
-        siteId: site.id,
-        slug: exampleLandingPage.meta.slug,
-        title: exampleLandingPage.meta.title,
-        type: "landing",
-        status: "draft",
-      },
-      include: {
-        versions: {
-          orderBy: { version: "desc" },
-        },
-      },
-    }));
-
-  const latestVersion = page.versions[0];
-  const publishedVersion =
-    latestVersion ??
-    (await prisma.pageVersion.create({
-      data: {
-        pageId: page.id,
-        version: 1,
-        schema: exampleLandingPage,
-        status: "published",
-        authorId: admin.id,
-        publishedAt: new Date(),
-      },
-    }));
-
-  if (latestVersion && latestVersion.status !== "published") {
-    await prisma.pageVersion.update({
-      where: { id: latestVersion.id },
-      data: {
-        status: "published",
-        authorId: admin.id,
-        publishedAt: latestVersion.publishedAt ?? new Date(),
-      },
-    });
-  }
-
-  await prisma.page.update({
-    where: { id: page.id },
-    data: {
-      status: "published",
-      publishedVersionId: publishedVersion.id,
-      title: exampleLandingPage.meta.title,
-    },
+  const pageIds = await seedDefaultPages(prisma, {
+    authorId: admin.id,
+    siteId: site.id,
   });
 
   return {
     adminEmail: admin.email,
-    pageId: page.id,
+    pageId: pageIds.home,
+    pageIds,
     siteId: site.id,
     tenantId: tenant.id,
   };
@@ -279,8 +211,11 @@ if (isDirectExecution()) {
 
   seed(prisma)
     .then((result) => {
+      const pages = Object.entries(result.pageIds)
+        .map(([slug, pageId]) => `${slug}:${pageId}`)
+        .join(",");
       console.log(
-        `Seeded tenant=${result.tenantId} site=${result.siteId} page=${result.pageId} admin=${result.adminEmail}`,
+        `Seeded tenant=${result.tenantId} site=${result.siteId} pages=${pages} admin=${result.adminEmail}`,
       );
     })
     .catch((error) => {

@@ -146,6 +146,10 @@ Production smoke readiness treats a missing migrations directory, a missing
 `migration_lock.toml`, or an empty migrations directory as a blocker even when
 `DATABASE_URL` itself is production-safe.
 
+`prisma:seed` creates the default tenant, site, seed admin, and published Home,
+Privacy Policy, Terms of Service, and 404 starter pages. It keeps already
+published starter pages intact and creates any missing MVP pages.
+
 Page write APIs use an `IdempotencyRecord` table, and Preview Token issuance plus
 page publish/rollback use an append-only `AuditLog` table. The audit log endpoint
 (`GET /api/v1/audit-logs`) is admin-only, scoped to the current tenant, and
@@ -347,7 +351,8 @@ The production seed refuses the documented local admin defaults, so set
 non-default `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` before running
 `pnpm --filter @app-starter/api prisma:seed` against production. The seed admin
 email must be valid, and the password must be 8 to 128 characters without
-control characters. Production
+control characters. The seed also ensures the published MVP starter pages exist.
+Production
 smoke also rejects the documented local admin email or password, even when they
 come from `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD`; set non-default
 `SMOKE_ADMIN_EMAIL` and `SMOKE_ADMIN_PASSWORD` for production runs. Smoke login
