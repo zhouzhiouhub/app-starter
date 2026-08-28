@@ -272,6 +272,8 @@ pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.jso
 pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture
 pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --json
 pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --output artifacts/release/release-check.json
+pnpm project:status
+pnpm project:status -- --json
 pnpm release:notes -- --release-tag v0.1.0 --workflow-run-url https://github.com/zhouzhiouhub/app-starter/actions/runs/123 --smoke-artifact production-smoke-report-123 --release-artifact release-evidence-check-123 --visual-artifact page-builder-visual-fixture-123 --storefront-url https://store.brand.com --rollback-target main@abcdef1 --output docs/releases/v0.1.0.md
 ```
 
@@ -285,6 +287,10 @@ and ISR revalidation. Production release evidence must also include
 `config.source.commitSha`, `config.source.repository`, `config.source.runId`,
 and `config.source.workflowRunUrl` so the smoke report can be traced back to a
 specific GitHub Actions run.
+
+`project:status` is an informational wrapper around the same release gate. It
+prints the MVP phase, locally completed milestones, release readiness, and the
+next concrete actions without changing the pass/fail criteria.
 
 After the Page Builder visual manifest has accepted real design evidence,
 `release:check` verifies both evidence streams together: production smoke must

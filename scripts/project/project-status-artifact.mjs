@@ -1,0 +1,146 @@
+import { formatSmokeText } from "../smoke/smoke-text.mjs";
+
+export const projectStatusSchemaVersion = "project-status.v1";
+
+const maxProjectActionCount = 8;
+const maxProjectTextLength = 420;
+
+const completedMilestones = [
+  "Monorepo apps, shared packages, and extension/custom directories are scaffolded.",
+  "MVP page management, Page Builder, preview, publish, rollback, SEO, media, audit logs, and starter pages are implemented.",
+  "Commerce and multi-locale expansion remain explicit disabled placeholders for MVP.",
+  "Production smoke, visual acceptance, release evidence, and release notes tooling are wired.",
+];
+
+export function createProjectStatusArtifact(check, input = {}) {
+  const nextActions = createProjectNextActions(check);
+
+  return {
+    completedMilestones,
+    generatedAt: input.generatedAt ?? new Date().toISOString(),
+    nextActionCount: nextActions.length,
+    nextActions: nextActions.slice(0, maxProjectActionCount),
+    phase: "MVP release verification",
+    releaseGate: createReleaseGateSummary(check),
+    releaseReady: check.releaseReady,
+    schemaVersion: projectStatusSchemaVersion,
+    status: check.releaseReady ? "release-ready" : "needs-evidence",
+  };
+}
+
+function createReleaseGateSummary(check) {
+  return {
+    blockerCount: check.blockers.length,
+    smoke: {
+      blockerCount: countBlockers(check, "Production Smoke"),
+      path: readText(check.smoke.path),
+      status: check.smoke.releaseReady ? "ready" : "blocked",
+      summaryStatus: readText(check.smoke.summary?.status) ?? "unknown",
+    },
+    visual: {
+      acceptedComponentCount: check.visual.acceptedComponentCount,
+      acceptedViewportCount: check.visual.acceptedViewportCount,
+      artifactStatus: readText(check.visualArtifact?.status),
+      componentCount: check.visual.componentCount,
+      pendingComponentCount: readPendingCount(check.visual.records),
+      pendingTaskCount: readVisualPendingTaskCount(check.visualChecklist),
+      pendingViewportCount: readVisualPendingViewportCount(check.visualChecklist),
+      status: check.visual.status,
+      viewportCount: check.visual.viewportCount,
+    },
+  };
+}
+
+function createProjectNextActions(check) {
+  if (check.releaseReady) {
+    return [
+      {
+        action:
+          "Run pnpm release:notes with release tag, workflow run URL, artifact names, storefront URL, and rollback target.",
+        area: "Release Notes",
+        label: "Generate release record",
+      },
+    ];
+  }
+
+  return [
+    ...readProjectBlockerActions(check.blockers),
+    ...readVisualTaskActions(check.visualChecklist),
+  ];
+}
+
+function readProjectBlockerActions(blockers) {
+  return blockers
+    .filter((blocker) => !isVisualRecordWarning(blocker))
+    .map(createBlockerAction);
+}
+
+function isVisualRecordWarning(blocker) {
+  return (
+    blocker.area === "Page Builder Visual" &&
+    typeof blocker.label === "string" &&
+    blocker.label.startsWith("record_")
+  );
+}
+
+function createBlockerAction(blocker) {
+  return {
+    action: readText(blocker.action) ?? "Review the release evidence blocker.",
+    area: readText(blocker.area) ?? "Release",
+    label: readText(blocker.label) ?? "Blocked",
+  };
+}
+
+function readVisualTaskActions(checklist) {
+  return readPendingVisualTasks(checklist).map((task) => ({
+    action: [
+      `Place ${task.expectedDesignReference}.`,
+      `Capture ${task.expectedPreviewScreenshot}.`,
+      `Run ${task.commands?.importReference}.`,
+      `Run ${task.commands?.measure}.`,
+      `Verify with ${task.commands?.verify}.`,
+    ].join(" "),
+    area: "Page Builder Visual",
+    label: `${task.component}.${task.viewport}`,
+  }));
+}
+
+function readPendingVisualTasks(checklist) {
+  if (!Array.isArray(checklist?.components)) {
+    return [];
+  }
+
+  return checklist.components.flatMap((component) =>
+    Array.isArray(component.viewports)
+      ? component.viewports.filter((viewport) => viewport.ready !== true)
+      : [],
+  );
+}
+
+function readPendingCount(records) {
+  return Array.isArray(records)
+    ? records.filter((record) => record.accepted !== true).length
+    : 0;
+}
+
+function readVisualPendingTaskCount(checklist) {
+  return readPendingVisualTasks(checklist).length;
+}
+
+function readVisualPendingViewportCount(checklist) {
+  return typeof checklist?.pendingViewportCount === "number"
+    ? checklist.pendingViewportCount
+    : readVisualPendingTaskCount(checklist);
+}
+
+function countBlockers(check, area) {
+  return check.blockers.filter((blocker) => blocker.area === area).length;
+}
+
+function readText(value) {
+  if (typeof value !== "string" || value.length === 0) {
+    return null;
+  }
+
+  return formatSmokeText(value, { maxLength: maxProjectTextLength });
+}

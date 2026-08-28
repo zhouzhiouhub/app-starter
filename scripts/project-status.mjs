@@ -1,0 +1,86 @@
+#!/usr/bin/env node
+
+import { pathToFileURL } from "node:url";
+import {
+  createProjectStatusArtifact,
+  formatProjectStatusArtifact,
+  readProjectStatusCliConfig,
+  writeProjectStatusArtifact,
+} from "./project/project-status.mjs";
+import { readReleaseEvidenceCheck } from "./release/release-check.mjs";
+import { readErrorMessage } from "./smoke/smoke-error-message.mjs";
+
+export async function runProjectStatusCli(args, input = {}) {
+  const stdout = input.stdout ?? console.log;
+  const stderr = input.stderr ?? console.error;
+
+  if (args.includes("--help") || args.includes("-h")) {
+    printHelp(stdout);
+    return 0;
+  }
+
+  try {
+    const config = readProjectStatusCliConfig(args);
+    const check = await readReleaseEvidenceCheck(
+      config.releaseCheckConfig,
+      input,
+    );
+    const artifact = createProjectStatusArtifact(check, {
+      generatedAt: input.generatedAt,
+    });
+
+    if (config.outputPath) {
+      await writeProjectStatusArtifact(config.outputPath, artifact);
+    }
+
+    if (config.json) {
+      stdout(JSON.stringify(artifact, null, 2));
+    } else {
+      for (const line of formatProjectStatusArtifact(artifact)) {
+        stdout(line);
+      }
+
+      if (config.outputPath) {
+        stdout(`Project status artifact written: ${config.outputPath}`);
+      }
+    }
+
+    return 0;
+  } catch (error) {
+    stderr(`Project status failed: ${readErrorMessage(error)}`);
+    return 1;
+  }
+}
+
+function isMainModule() {
+  return (
+    process.argv[1] &&
+    import.meta.url === pathToFileURL(process.argv[1]).href
+  );
+}
+
+function printHelp(writeLine) {
+  writeLine(`Usage:
+  pnpm project:status
+  pnpm project:status -- --json
+  pnpm project:status -- --output artifacts/release/project-status.json
+  pnpm project:status -- --smoke-report artifacts/production-smoke/smoke-report.json
+  pnpm project:status -- --visual-artifact-dir reports/visual/page-builder-fixture
+
+Options:
+  --json                     Print the machine-readable project status report.
+  --output <path>            Write a JSON report under tmp/, reports/, artifacts/, or .tmp/.
+  --smoke-report <path>      Read a specific production smoke report.
+  --visual-artifact-dir <dir>
+                             Include a downloaded Page Builder Visual artifact.
+  --visual-manifest <path>   Read a specific Page Builder visual manifest.
+  -h, --help                 Show this help.
+
+Project status:
+  This is an informational wrapper around release:check. It summarizes completed
+  MVP milestones, the current release gate, and the next concrete actions.`);
+}
+
+if (isMainModule()) {
+  process.exitCode = await runProjectStatusCli(process.argv.slice(2));
+}
