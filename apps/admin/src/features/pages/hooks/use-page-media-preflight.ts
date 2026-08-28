@@ -33,6 +33,7 @@ export function usePageMediaPreflight(schema: PageSchema | null) {
       readMediaResolverFeedback({
         error: mediaResolver.error,
         isLoading: mediaResolver.isLoading,
+        mediaTypesByReference: mediaResolver.mediaTypesByReference,
         references: mediaReferences,
         urlsByReference: mediaResolver.urlsByReference,
       }),
@@ -40,6 +41,7 @@ export function usePageMediaPreflight(schema: PageSchema | null) {
       mediaReferences,
       mediaResolver.error,
       mediaResolver.isLoading,
+      mediaResolver.mediaTypesByReference,
       mediaResolver.urlsByReference,
     ],
   );

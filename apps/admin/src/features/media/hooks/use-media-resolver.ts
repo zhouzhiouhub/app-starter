@@ -2,10 +2,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MediaAssetReference } from "@app-starter/schema";
 import { formatRequestError } from "../../../lib/api-error";
 import { listAllActiveMediaAssets } from "../api";
+import type { MediaAssetType } from "../types";
 
 export interface MediaResolverState {
   error: string | null;
   isLoading: boolean;
+  mediaTypesByReference: Record<string, MediaAssetType>;
   refresh: () => Promise<void>;
   resolveMediaUrl: (reference: MediaAssetReference) => string;
   urlsByReference: Record<string, string>;
@@ -14,6 +16,9 @@ export interface MediaResolverState {
 export function useMediaResolver(): MediaResolverState {
   const [urlsByReference, setUrlsByReference] = useState<
     Record<string, string>
+  >({});
+  const [mediaTypesByReference, setMediaTypesByReference] = useState<
+    Record<string, MediaAssetType>
   >({});
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -34,8 +39,15 @@ export function useMediaResolver(): MediaResolverState {
         return;
       }
 
+      setMediaTypesByReference(
+        Object.fromEntries(assets.map((asset) => [asset.reference, asset.type])),
+      );
       setUrlsByReference(
-        Object.fromEntries(assets.map((asset) => [asset.reference, asset.url])),
+        Object.fromEntries(
+          assets
+            .filter((asset) => asset.type === "image")
+            .map((asset) => [asset.reference, asset.url]),
+        ),
       );
       setError(null);
     } catch (caught: unknown) {
@@ -44,6 +56,7 @@ export function useMediaResolver(): MediaResolverState {
       }
 
       setUrlsByReference({});
+      setMediaTypesByReference({});
       setError(formatRequestError(caught));
     } finally {
       if (mountedRef.current && requestIdRef.current === requestId) {
@@ -71,10 +84,18 @@ export function useMediaResolver(): MediaResolverState {
     () => ({
       error,
       isLoading,
+      mediaTypesByReference,
       refresh,
       resolveMediaUrl,
       urlsByReference,
     }),
-    [error, isLoading, refresh, resolveMediaUrl, urlsByReference],
+    [
+      error,
+      isLoading,
+      mediaTypesByReference,
+      refresh,
+      resolveMediaUrl,
+      urlsByReference,
+    ],
   );
 }

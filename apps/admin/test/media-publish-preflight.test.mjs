@@ -10,7 +10,10 @@ import {
 test("media publish preflight waits for reference resolution", () => {
   assert.deepEqual(
     readMediaPublishPreflightIssue({
-      message: "Resolving media references...",
+      affectedReferenceCount: 2,
+      description:
+        "Publishing is blocked until referenced media has been verified for preview rendering.",
+      message: "Resolving 2 media references...",
       type: "info",
     }),
     {
@@ -42,7 +45,7 @@ test("media publish preflight blocks missing references", () => {
   assert.deepEqual(
     readMediaPublishPreflightIssue({
       description: "Missing references: media://hero",
-      message: "Some media references are unavailable.",
+      message: "1 media reference needs review.",
       type: "warning",
     }),
     {
