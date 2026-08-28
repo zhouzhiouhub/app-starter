@@ -149,7 +149,8 @@ later phases are explicitly approved.
   exits successfully and records `visual.artifactCheck.status=complete`.
 - `pnpm release:check -- --checklist --smoke-report artifacts/production-smoke/smoke-report.json`
   prints the Production Smoke, Page Builder Visual, and release notes readiness
-  tasks for release review.
+  tasks for release review, including the first Page Builder visual viewport
+  tasks with their expected evidence paths and commands.
 - `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --output artifacts/release/release-check.json`
   writes the combined `release-evidence-check.v1` artifact for the release
   record; its `readinessChecklist` lists the Production Smoke, Page Builder

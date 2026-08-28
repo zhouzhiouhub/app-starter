@@ -1,6 +1,7 @@
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
 
 const maxChecklistLineLength = 420;
+const maxVisibleVisualTasks = 2;
 
 export function createReleaseEvidenceReadinessChecklist(check) {
   return {
@@ -26,6 +27,8 @@ export function formatReleaseEvidenceReadinessChecklist(checklist) {
     if (item.action) {
       lines.push(`    Action: ${item.action}`);
     }
+
+    lines.push(...formatVisualTasks(item));
   }
 
   return lines.map(formatChecklistLine);
@@ -70,6 +73,7 @@ function createVisualChecklistItem(check) {
     detail,
     label: "Page Builder Visual evidence",
     status: check.visual.status,
+    tasks: readVisibleVisualTasks(check.visualChecklist),
   };
 }
 
@@ -96,6 +100,75 @@ function readFirstBlockerAction(check, area) {
     check.blockers.find((blocker) => blocker.area === area)?.action ??
     "Review the release evidence blockers above."
   );
+}
+
+function readVisibleVisualTasks(checklist) {
+  const tasks = readPendingVisualTasks(checklist);
+
+  if (tasks.length === 0) {
+    return null;
+  }
+
+  return {
+    hiddenCount: Math.max(0, tasks.length - maxVisibleVisualTasks),
+    items: tasks.slice(0, maxVisibleVisualTasks).map(createVisualTaskSummary),
+  };
+}
+
+function readPendingVisualTasks(checklist) {
+  if (!Array.isArray(checklist?.components)) {
+    return [];
+  }
+
+  return checklist.components.flatMap((component) =>
+    Array.isArray(component.viewports)
+      ? component.viewports.filter((viewport) => viewport.ready !== true)
+      : [],
+  );
+}
+
+function createVisualTaskSummary(task) {
+  return {
+    capture: task.commands?.capture ?? null,
+    component: task.component,
+    expectedDesignReference: task.expectedDesignReference,
+    expectedPreviewScreenshot: task.expectedPreviewScreenshot,
+    importReference: task.commands?.importReference ?? null,
+    measure: task.commands?.measure ?? null,
+    missing: Array.isArray(task.missing) ? task.missing : [],
+    verify: task.commands?.verify ?? null,
+    viewport: task.viewport,
+  };
+}
+
+function formatVisualTasks(item) {
+  if (!item.tasks || item.tasks.items.length === 0) {
+    return [];
+  }
+
+  const lines = ["    Visual tasks:"];
+
+  for (const task of item.tasks.items) {
+    lines.push(
+      `      - ${task.component}.${task.viewport}: missing ${task.missing.join(
+        ", ",
+      )}`,
+    );
+    lines.push(`        Reference: ${task.expectedDesignReference}`);
+    lines.push(`        Preview: ${task.expectedPreviewScreenshot}`);
+    lines.push(`        Capture: ${task.capture}`);
+    lines.push(`        Import: ${task.importReference}`);
+    lines.push(`        Measure: ${task.measure}`);
+    lines.push(`        Verify: ${task.verify}`);
+  }
+
+  if (item.tasks.hiddenCount > 0) {
+    lines.push(
+      `      - ... and ${item.tasks.hiddenCount} more visual viewport tasks`,
+    );
+  }
+
+  return lines;
 }
 
 function formatChecklistLine(line) {

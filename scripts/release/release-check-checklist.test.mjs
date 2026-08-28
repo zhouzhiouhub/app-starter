@@ -55,11 +55,56 @@ test("release readiness checklist carries blocker actions", () => {
       status: "invalid",
       viewportCount: 12,
     },
+    visualChecklist: createVisualChecklist(),
   });
   const lines = formatReleaseEvidenceReadinessChecklist(checklist).join("\n");
 
   assert.equal(checklist.releaseReady, false);
   assert.match(lines, /Run the Production Smoke workflow/);
   assert.match(lines, /Run pnpm visual:acceptance -- --checklist/);
+  assert.match(lines, /Visual tasks:/);
+  assert.match(lines, /hero-banner\.desktop: missing designReference/);
+  assert.match(
+    lines,
+    /Reference: docs\/visual\/page-builder-references\/hero-banner-desktop\.png/,
+  );
+  assert.match(lines, /Capture: pnpm visual:capture:fixture/);
+  assert.match(lines, /\.\.\. and 1 more visual viewport tasks/);
   assert.match(lines, /Release notes record: waiting for evidence/);
 });
+
+function createVisualChecklist() {
+  return {
+    components: [
+      {
+        component: "hero-banner",
+        viewports: [
+          createVisualTask("hero-banner", "desktop"),
+          createVisualTask("hero-banner", "mobile"),
+        ],
+      },
+      {
+        component: "rich-text",
+        viewports: [createVisualTask("rich-text", "desktop")],
+      },
+    ],
+  };
+}
+
+function createVisualTask(component, viewport) {
+  return {
+    commands: {
+      capture: `pnpm visual:capture:fixture -- --component ${component} --viewport ${viewport} --write-manifest`,
+      importReference:
+        "pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete",
+      measure: "pnpm visual:measure -- --write --require-complete",
+      verify: "pnpm visual:acceptance -- --require-accepted",
+    },
+    component,
+    expectedDesignReference: `docs/visual/page-builder-references/${component}-${viewport}.png`,
+    expectedPreviewScreenshot: `artifacts/visual/page-builder-visual-fixture-${component}-${viewport}.png`,
+    missing: ["designReference"],
+    ready: false,
+    viewport,
+  };
+}
