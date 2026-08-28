@@ -2,7 +2,9 @@
 
 import { pathToFileURL } from "node:url";
 import {
+  createPageBuilderVisualAcceptanceChecklist,
   formatPageBuilderVisualAcceptanceReport,
+  formatPageBuilderVisualAcceptanceChecklist,
   readPageBuilderVisualAcceptanceCliConfig,
   readPageBuilderVisualAcceptanceManifest,
   validatePageBuilderVisualAcceptanceManifest,
@@ -28,6 +30,14 @@ export async function runPageBuilderVisualAcceptanceCli(args) {
       console.log(line);
     }
 
+    if (config.checklist) {
+      const checklist = createPageBuilderVisualAcceptanceChecklist(manifest);
+
+      for (const line of formatPageBuilderVisualAcceptanceChecklist(checklist)) {
+        console.log(line);
+      }
+    }
+
     return report.status === "invalid" ? 1 : 0;
   } catch (error) {
     console.error(
@@ -47,10 +57,12 @@ function isMainModule() {
 function printHelp() {
   console.log(`Usage:
   pnpm visual:acceptance
+  pnpm visual:acceptance -- --checklist
   pnpm visual:acceptance -- --require-accepted
   pnpm visual:acceptance -- docs/development/page-builder-visual-acceptance.json
 
 Options:
+  --checklist         Print per-section evidence tasks for release sign-off.
   --require-accepted  Fail unless every MVP section and viewport is accepted.
   -h, --help          Show this help.
 

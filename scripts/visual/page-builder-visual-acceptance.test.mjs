@@ -193,16 +193,19 @@ test("visual acceptance rejects missing and duplicate section records", () => {
 
 test("visual acceptance CLI config parses options and paths", () => {
   assert.deepEqual(readPageBuilderVisualAcceptanceCliConfig([]), {
+    checklist: false,
     manifestPath: defaultPageBuilderVisualAcceptanceManifestPath,
     requireAccepted: false,
   });
   assert.deepEqual(
     readPageBuilderVisualAcceptanceCliConfig([
       "--",
+      "--checklist",
       "--require-accepted",
       "docs/custom-visual.json",
     ]),
     {
+      checklist: true,
       manifestPath: "docs/custom-visual.json",
       requireAccepted: true,
     },

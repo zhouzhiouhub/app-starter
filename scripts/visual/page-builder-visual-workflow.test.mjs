@@ -19,7 +19,7 @@ test("page builder visual workflow captures fixture evidence", async () => {
   assert.match(workflow, /PAGE_BUILDER_VISUAL_BROWSER: google-chrome/);
   assert.match(workflow, /pnpm run check:file-size/);
   assert.match(workflow, /pnpm test:visual/);
-  assert.match(workflow, /pnpm visual:acceptance/);
+  assert.match(workflow, /pnpm visual:acceptance -- --checklist/);
   assert.match(workflow, /pnpm visual:measure/);
   assert.match(
     workflow,

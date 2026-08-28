@@ -35,8 +35,9 @@ later phases are explicitly approved.
   for production.
 - Confirm the smoke admin account is not the documented local default and has
   `audit:read`.
-- Run `pnpm visual:acceptance` and keep the manifest review output with the
-  release notes. After attaching real design references, run
+- Run `pnpm visual:acceptance -- --checklist` and keep the manifest review
+  output plus per-viewport evidence task list with the release notes. After
+  attaching real design references, run
   `pnpm visual:measure -- --write --require-complete` to calculate the viewport
   metrics. For final MVP sign-off, rerun `pnpm visual:acceptance` with
   `--require-accepted`; accepted screenshots must be retained under

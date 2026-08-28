@@ -2,6 +2,7 @@ import { defaultPageBuilderVisualAcceptanceManifestPath } from "./page-builder-v
 
 export function readPageBuilderVisualAcceptanceCliConfig(args) {
   const config = {
+    checklist: false,
     manifestPath: defaultPageBuilderVisualAcceptanceManifestPath,
     requireAccepted: false,
   };
@@ -13,6 +14,11 @@ export function readPageBuilderVisualAcceptanceCliConfig(args) {
 
     if (arg === "--require-accepted") {
       config.requireAccepted = true;
+      continue;
+    }
+
+    if (arg === "--checklist") {
+      config.checklist = true;
       continue;
     }
 
