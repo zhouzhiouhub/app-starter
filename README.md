@@ -5,7 +5,7 @@
 当前目标不是一次性复制 Shopify 全量能力，而是先完成一个可长期演进的建站平台工程基础：前台渲染、后台管理壳、API 服务、Page Schema、共享 Renderer、数据库模型、二次开发入口和后续电商/多语言能力预留。
 
 > 状态更新时间：2026-08-28
-> 当前阶段：建站 MVP 的页面管理、站点设置、Page Builder、媒体、SEO、预览令牌、发布历史、回滚、审计日志、前台 ISR 刷新链路、发布 smoke 报告和 Localization 默认 Locale 批量导入 / 导出复盘入口、审计结果筛选回跳、审计回跳上下文提示、导入预览问题行草稿定位细节、默认 Locale 长列表批量操作确认已逐步落地；下一步是在真实生产 R2 / CDN 环境执行验收并归档报告。
+> 当前阶段：建站 MVP 的页面管理、站点设置、Page Builder、媒体、SEO、预览令牌、发布历史、回滚、审计日志、前台 ISR 刷新链路、发布 smoke 报告、生产验收报告归档索引与失败回看入口和 Localization 默认 Locale 批量导入 / 导出复盘入口、审计结果筛选回跳、审计回跳上下文提示、导入预览问题行草稿定位细节、默认 Locale 长列表批量操作确认已逐步落地；下一步是在真实生产 R2 / CDN 环境执行验收并归档报告。
 
 ## 1. 当前进度
 
@@ -650,7 +650,15 @@ Admin 静态页 smoke 还会校验入口 `type="module"` 脚本、`modulepreload
 布尔 smoke 开关只接受 `true`/`false`、`1`/`0`、`yes`/`no`、`on`/`off`，拼写错误会直接失败。
 `SMOKE_RETRY_ATTEMPTS` 必须为 1-60，`SMOKE_RETRY_DELAY_MS` 必须为 1-60000 毫秒。
 `SMOKE_REPORT_PATH` 必须是 `tmp/`、`reports/`、`artifacts/` 或 `.tmp/` 下的相对 `.json` 路径，避免报告写到源码或系统目录；生产 readiness 必须设置该路径，确保验收报告可归档。
-Smoke 报告 details 与失败消息会在写入报告或打印到 CLI 前脱敏 Preview Token、敏感 query、JSON 凭据字段、R2 签名参数和 Bearer Token，非 `Error` 异常也会提取 `message` 或使用稳定兜底消息；报告顶层带有 `schemaVersion` 和 `summary`，当前结构版本为 `smoke-report.v3`，便于归档脚本识别结构版本、直接读取检查数量、失败项、结构化失败详情和生产就绪结论，失败数量按失败检查条目统计，缺失名称的失败项会使用稳定占位名，落盘前会校验关键字段完整性、检查条目状态白名单、通过/失败时间、失败错误消息和摘要新鲜度；失败报告也会保留实际请求的 `storefrontRequestUrl` 与公开访问的 `storefrontUrl`，便于区分本地代理请求和生产店面域名。CLI 也会打印这份摘要并区分 Smoke 检查是否通过与生产门禁是否满足；`environment.deployment` 会标记 API / Web / Admin URL 是否仍为本地、占位域名、非 HTTPS 或异常路径；Identity 诊断只记录 JWT 私钥/公钥是否配置、是否能解析为 PEM、是否能完成 RS256 配对验签，不记录密钥内容；`productionReadiness` 会汇总生产上线 blocker 和 `nextActions` 操作清单，只有 API / Web / Admin、DATABASE_URL、REDIS_URL、analytics config、MVP disabled feature flags、JWT key pair、R2 / CDN、Preview Token secret、ISR revalidation 和 `SMOKE_REPORT_PATH` 归档门禁都被证明时才会返回 `productionReady=true`，CLI 也会在 smoke 通过后直接打印 blocked / ready 结论。
+Smoke 报告 details 与失败消息会在写入报告或打印到 CLI 前脱敏 Preview Token、敏感 query、JSON 凭据字段、R2 签名参数和 Bearer Token，非 `Error` 异常也会提取 `message` 或使用稳定兜底消息；报告顶层带有 `schemaVersion` 和 `summary`，当前结构版本为 `smoke-report.v3`，便于归档脚本识别结构版本、直接读取检查数量、失败项、结构化失败详情和生产就绪结论，失败数量按失败检查条目统计，缺失名称的失败项会使用稳定占位名，落盘前会校验关键字段完整性、检查条目状态白名单、通过/失败时间、失败错误消息和摘要新鲜度；失败报告也会保留实际请求的 `storefrontRequestUrl` 与公开访问的 `storefrontUrl`，便于区分本地代理请求和生产店面域名。CLI 也会打印这份摘要并区分 Smoke 检查是否通过与生产门禁是否满足；`pnpm smoke:report` 会在 `tmp/`、`reports/`、`artifacts/` 和 `.tmp/` 下读取最近归档或指定报告，输出 R2 / CDN、Admin 静态托管和发布链路的 traceability 摘要、失败详情与修复建议；`environment.deployment` 会标记 API / Web / Admin URL 是否仍为本地、占位域名、非 HTTPS 或异常路径；Identity 诊断只记录 JWT 私钥/公钥是否配置、是否能解析为 PEM、是否能完成 RS256 配对验签，不记录密钥内容；`productionReadiness` 会汇总生产上线 blocker 和 `nextActions` 操作清单，只有 API / Web / Admin、DATABASE_URL、REDIS_URL、analytics config、MVP disabled feature flags、JWT key pair、R2 / CDN、Preview Token secret、ISR revalidation 和 `SMOKE_REPORT_PATH` 归档门禁都被证明时才会返回 `productionReady=true`，CLI 也会在 smoke 通过后直接打印 blocked / ready 结论。
+
+归档报告可直接回看：
+
+```powershell
+pnpm smoke:report
+pnpm smoke:report -- --list --limit=10
+pnpm smoke:report -- reports/production/smoke-report.json
+```
 
 ```powershell
 $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
@@ -686,6 +694,7 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 - Audit Logs 后台页面、审计日志只读查询 API 与 `audit:read` 权限。
 - 区块库、区块排序、区块属性面板、Undo / Redo。
 - 媒体库列表、上传目标、外部媒体登记、归档和 `media://` 选择。
+- 生产 smoke 报告 `SMOKE_REPORT_PATH` 归档、`smoke-report.v3` 摘要、失败详情脱敏，以及 `pnpm smoke:report` 最近归档 / 指定报告回看入口。
 - Localization 默认 Market / Locale / Translation fallback 视图、默认 Locale 翻译保存、按 ID 更新、分页列表、URL 筛选保留、列表筛选、缺失 key 分组检查、缺失 key 一键回填、缺失 key 修复队列、缺失 key 修复保存自动推进、修复队列跨刷新状态同步、长列表缺失 key 分页、缺失 key 分页页码记忆、缺失 key 分页与筛选联动提示、缺失 key 队列跨筛选恢复提示、键名补全与 context 辅助、修复进度提示、缺失 key 修复定位刷新、缺失 key 修复入口 loading / disabled 状态、保存后的成功定位提示、完成后缺失 key 刷新提示、缺失 key 批量导入草稿、缺失 key 批量草稿与当前筛选差异提示、批量编辑模板提示、导入草稿空状态校验说明、导入草稿空结果预览保护、缺失 key 批量修复校验摘要、导入模板引导、批量导入后的列表定位、成功导入后的修复进度聚焦、批量导入成功后的多 key 跳转、导入结果按 action 筛选、导入结果批量选择和选择保留、导入结果历史保留、导入历史结果清理入口、导入历史结果回放说明、导入历史详情筛选、导入历史筛选空态操作提示、导入历史详情批量生成草稿、从导入结果生成二次修复草稿、二次修复草稿预览提示、导入预览问题行逐项修复提示、导入预览问题行草稿定位细节、历史修复草稿重复键清理、导入 / 缺失队列状态联动、缺失队列完成态反馈、批量修复完成确认、批量修复后服务端确认聚焦、批量修复历史回放定位、批量修复历史回放后的确认清理、批量修复后的历史保留策略说明、批量修复确认后的自动清理建议、批量修复成功后的草稿清空提示、异常重试提示、重复保存提示、写入关闭态、Translation 空态、批量导入/导出预览报告、默认 Locale 批量导入写入、Admin 导入执行结果展示、Admin 默认 Locale JSON 下载、默认 Locale 导入 / 导出审计回看入口、导入 / 导出审计结果筛选回跳、审计回跳后的上下文提示和默认 Locale 长列表批量操作确认。
 - Commerce 已补齐 Product / Variant / Price / Inventory / Order / Payment / WebhookEvent 数据库预留迁移；Products / Orders / Payments 只读空列表占位响应 meta 会明确关闭态、默认市场/币种、不可写和 Phase 2 预留；后台商品创建/详情/更新、商品子资源、订单 / 支付详情、前台商品详情路由、Stripe 可选密钥安全诊断和 Stripe Webhook raw body / 签名形状预留均为显式占位。
 - Settings 默认站点名称、域名与 Analytics 配置展示页。
@@ -735,5 +744,5 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 1. 在真实 R2 / CDN 环境配置 `MEDIA_CDN_BASE_URL`、R2 凭据和 CDN 域名，确认不是 `example` / `test` / `invalid` / 本地 / 私网域名，执行 `pnpm smoke:publish` 并归档 `SMOKE_REPORT_PATH`。
 2. 补齐部署 Smoke Test：前台 Vercel、API 独立 Node 服务、Admin 静态托管、Redis 生产连接、环境变量清单和回滚步骤。
 3. 做 Page Builder 视觉验收：Desktop / Mobile 双端检查、核心区块与设计稿差异记录、媒体解析异常态。
-4. 整理生产验收报告归档与失败回看入口，确保 R2 / CDN、Admin 静态托管和发布 smoke 结果可追踪。
+4. 把生产 smoke 报告接入 CI artifact / Release Checklist 留存策略，并用 `pnpm smoke:report` 固化失败复盘流程。
 5. 保持 Commerce 关闭态，继续强化订单 / 支付关闭态分支、Phase 2 Webhook 验签设计和 `COMMERCE_DISABLED` 错误分支测试；不进入真实交易。

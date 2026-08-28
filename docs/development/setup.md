@@ -243,6 +243,19 @@ Retry settings are also validated: `SMOKE_RETRY_ATTEMPTS` must be 1-60 and
 Production readiness requires this path so every production smoke run leaves a
 machine-readable artifact.
 
+Review archived smoke reports with:
+
+```bash
+pnpm smoke:report
+pnpm smoke:report -- --list --limit=10
+pnpm smoke:report -- reports/production/smoke-report.json
+```
+
+The review command scans the same safe archive roots, recomputes the report
+summary from the stored checks, and highlights R2 / CDN, Admin static app, and
+publish-flow traceability before showing failed check details and suggested
+fixes.
+
 The script logs in with `SMOKE_ADMIN_EMAIL` / `SMOKE_ADMIN_PASSWORD` (falling
 back to the seeded admin), verifies the MVP disabled feature flags
 (`COMMERCE_ENABLED=false` and `MULTI_LOCALE_ENABLED=false`), checks the default
@@ -323,7 +336,8 @@ report or printed by the CLI. Failed check names, failure messages, structured
 failure details, and production readiness blocker/action strings are also
 normalized and bounded in the written report artifact so malformed diagnostics
 cannot inflate CI artifacts with multi-line or oversized values. The CLI summary
-also normalizes dynamic failure labels and messages before printing them. API
+and `pnpm smoke:report` archive review also normalize dynamic failure labels and
+messages before printing them. API
 HTTP, network, and upload failure messages are normalized and bounded before
 they enter smoke failures. Revalidation diagnostics keep total `pathCount` and
 `tagCount` values while bounding path/tag list fields to safe samples. Rollback

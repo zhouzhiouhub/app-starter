@@ -18,6 +18,7 @@
     "lint:scripts": "eslint \"eslint.config.mjs\" \"scripts/**/*.mjs\"",
     "presmoke:publish": "pnpm --filter @app-starter/schema build",
     "smoke:publish": "node scripts/smoke-publish.mjs",
+    "smoke:report": "node scripts/smoke-report.mjs",
     "test": "pnpm -r --if-present test && pnpm run test:smoke",
     "pretest:smoke": "pnpm --filter @app-starter/schema build",
     "test:smoke": "node --test scripts/smoke/*.test.mjs",
