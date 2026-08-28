@@ -283,7 +283,8 @@ be release-ready and Page Builder visual acceptance must be fully accepted. Use
 `--checklist` to print the remaining Production Smoke, visual acceptance, and
 release notes tasks. Use `--json` for machine-readable stdout or `--output` to
 write the combined `release-evidence-check.v1` artifact under a safe archive
-path.
+path; new artifacts also include a structured `readinessChecklist` with the
+same release tasks for CI artifacts and release records.
 After that artifact is ready, `release:notes` writes the final Markdown release
 record and refuses blocked evidence unless `--allow-blocked` is used for a
 failure review draft.

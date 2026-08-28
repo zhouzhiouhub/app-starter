@@ -11,13 +11,10 @@ import {
   hasItems,
   isPlainRecord,
 } from "./release-notes-artifact-assertions.mjs";
+import { assertOptionalReadinessChecklist } from "./release-notes-artifact-readiness-validation.mjs";
 
 const releaseArtifactStatuses = new Set(["ready", "blocked"]);
-const releaseArtifactVisualStatuses = new Set([
-  "accepted",
-  "invalid",
-  "needs-evidence",
-]);
+const releaseArtifactVisualStatuses = new Set(["accepted", "invalid", "needs-evidence"]);
 const releaseArtifactIssueSeverities = new Set(["error", "warning"]);
 
 export function assertReleaseEvidenceCheckArtifact(artifact) {
@@ -42,6 +39,7 @@ export function assertReleaseEvidenceCheckArtifact(artifact) {
   }
 
   assertBlockers(artifact.blockers);
+  assertOptionalReadinessChecklist(artifact.readinessChecklist);
   assertSmokeArtifact(artifact.smoke);
   assertVisualArtifact(artifact.visual);
   assertReleaseReadinessConsistency(artifact);
@@ -77,6 +75,15 @@ function assertReleaseReadinessConsistency(artifact) {
   if (artifact.blockerCount < artifact.blockers.length) {
     throw new Error(
       "Release check artifact blockerCount must cover serialized blockers.",
+    );
+  }
+
+  if (
+    artifact.readinessChecklist !== undefined &&
+    artifact.readinessChecklist.releaseReady !== artifact.releaseReady
+  ) {
+    throw new Error(
+      "Release check artifact readinessChecklist.releaseReady must match releaseReady.",
     );
   }
 
@@ -153,14 +160,8 @@ function assertSmokeArtifact(smoke) {
 
 function assertVisualArtifact(visual) {
   assertEnum(visual.status, releaseArtifactVisualStatuses, "visual.status");
-  assertNonNegativeNumber(
-    visual.acceptedComponentCount,
-    "visual.acceptedComponentCount",
-  );
-  assertNonNegativeNumber(
-    visual.acceptedViewportCount,
-    "visual.acceptedViewportCount",
-  );
+  assertNonNegativeNumber(visual.acceptedComponentCount, "visual.acceptedComponentCount");
+  assertNonNegativeNumber(visual.acceptedViewportCount, "visual.acceptedViewportCount");
   assertNonNegativeNumber(visual.componentCount, "visual.componentCount");
   assertNonNegativeNumber(visual.viewportCount, "visual.viewportCount");
   assertNonNegativeNumber(visual.errorCount, "visual.errorCount");

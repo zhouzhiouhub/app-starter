@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
+import { createReleaseEvidenceReadinessChecklist } from "./release-check-checklist.mjs";
 
 export const releaseEvidenceCheckSchemaVersion = "release-evidence-check.v1";
 
@@ -15,6 +16,7 @@ export function createReleaseEvidenceCheckArtifact(check, input = {}) {
     blockerCount: check.blockers.length,
     blockers: blockers.map(createBlockerArtifact),
     generatedAt: input.generatedAt ?? new Date().toISOString(),
+    readinessChecklist: createReadinessChecklistArtifact(check),
     releaseReady: check.releaseReady,
     schemaVersion: releaseEvidenceCheckSchemaVersion,
     smoke: createSmokeArtifact(check.smoke),
@@ -26,6 +28,25 @@ export function createReleaseEvidenceCheckArtifact(check, input = {}) {
 export async function writeReleaseEvidenceCheckArtifact(outputPath, artifact) {
   await mkdir(dirname(outputPath), { recursive: true });
   await writeFile(outputPath, `${JSON.stringify(artifact, null, 2)}\n`, "utf8");
+}
+
+function createReadinessChecklistArtifact(check) {
+  const checklist = createReleaseEvidenceReadinessChecklist(check);
+
+  return {
+    itemCount: checklist.items.length,
+    items: checklist.items.map(createReadinessChecklistItemArtifact),
+    releaseReady: checklist.releaseReady,
+  };
+}
+
+function createReadinessChecklistItemArtifact(item) {
+  return {
+    action: readTextOrNull(item.action),
+    detail: readTextOrNull(item.detail),
+    label: readTextOrNull(item.label) ?? "unknown",
+    status: readTextOrNull(item.status) ?? "unknown",
+  };
 }
 
 function createSmokeArtifact(smoke) {

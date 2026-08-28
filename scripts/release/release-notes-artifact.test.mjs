@@ -41,6 +41,17 @@ test("release notes validates release evidence artifact shape", () => {
       }),
     /visual\.pendingComponents must be a string array/,
   );
+  assert.throws(
+    () =>
+      assertReleaseEvidenceCheckArtifact({
+        ...artifact,
+        readinessChecklist: {
+          ...artifact.readinessChecklist,
+          items: [null],
+        },
+      }),
+    /readinessChecklist\.items must contain objects/,
+  );
 });
 
 test("release notes validates ready release evidence consistency", () => {
@@ -137,6 +148,17 @@ test("release notes validates subfield count consistency", () => {
       }),
     /blockerCount must cover serialized blockers/,
   );
+  assert.throws(
+    () =>
+      assertReleaseEvidenceCheckArtifact({
+        ...artifact,
+        readinessChecklist: {
+          ...artifact.readinessChecklist,
+          releaseReady: false,
+        },
+      }),
+    /readinessChecklist\.releaseReady must match releaseReady/,
+  );
 });
 
 function createReadyReleaseArtifact() {
@@ -144,6 +166,31 @@ function createReadyReleaseArtifact() {
     blockerCount: 0,
     blockers: [],
     generatedAt: "2026-08-28T00:00:00.000Z",
+    readinessChecklist: {
+      itemCount: 3,
+      items: [
+        {
+          action: null,
+          detail: "Report path: artifacts/production-smoke/smoke-report.json",
+          label: "Production Smoke report",
+          status: "ready",
+        },
+        {
+          action: null,
+          detail: "6/6 components, 12/12 viewports",
+          label: "Page Builder Visual evidence",
+          status: "ready",
+        },
+        {
+          action:
+            "Run pnpm release:notes with release tag, workflow run URL, artifact names, storefront URL, and rollback target.",
+          detail: null,
+          label: "Release notes record",
+          status: "ready to generate",
+        },
+      ],
+      releaseReady: true,
+    },
     releaseReady: true,
     schemaVersion: "release-evidence-check.v1",
     smoke: {

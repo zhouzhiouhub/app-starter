@@ -127,9 +127,10 @@ later phases are explicitly approved.
   tasks for release review.
 - `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --output artifacts/release/release-check.json`
   writes the combined `release-evidence-check.v1` artifact for the release
-  record; its `visual.pendingComponents`, `visual.pendingViewports`, and
-  `visual.issues` fields identify any remaining Page Builder visual evidence
-  gaps when the gate is blocked.
+  record; its `readinessChecklist` lists the Production Smoke, Page Builder
+  visual, and release notes tasks, while `visual.pendingComponents`,
+  `visual.pendingViewports`, and `visual.issues` identify any remaining Page
+  Builder visual evidence gaps when the gate is blocked.
 - The `Production Smoke` workflow uploads the same combined release evidence as
   `release-evidence-check-<run_number>`.
 - `pnpm release:notes -- --release-tag <tag> --workflow-run-url <url> --smoke-artifact production-smoke-report-<run_number> --release-artifact release-evidence-check-<run_number> --visual-artifact page-builder-visual-fixture-<run_number> --storefront-url <url> --rollback-target <target> --output docs/releases/<tag>.md`

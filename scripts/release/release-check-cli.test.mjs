@@ -28,6 +28,8 @@ test("release check CLI prints machine-readable JSON", async () => {
   assert.equal(artifact.status, "blocked");
   assert.equal(artifact.smoke.status, "blocked");
   assert.equal(artifact.visual.status, "needs-evidence");
+  assert.equal(artifact.readinessChecklist.releaseReady, false);
+  assert.equal(artifact.readinessChecklist.itemCount, 3);
 });
 
 test("release check CLI writes JSON artifact output", async () => {
@@ -49,6 +51,7 @@ test("release check CLI writes JSON artifact output", async () => {
     assert.equal(exitCode, 1);
     assert.equal(artifact.schemaVersion, "release-evidence-check.v1");
     assert.equal(artifact.status, "blocked");
+    assert.equal(artifact.readinessChecklist.items.length, 3);
     assert.equal(
       stdout.some((line) =>
         line.includes(`Release evidence artifact written: ${outputPath}`),
