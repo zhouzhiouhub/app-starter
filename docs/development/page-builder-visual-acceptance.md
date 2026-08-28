@@ -114,15 +114,20 @@ binary path problems can be diagnosed from the command output.
 
 The `Page Builder Visual` GitHub Actions workflow runs on visual-related pull
 requests, pushes to `main`, and manual dispatch. It executes `pnpm test:visual`,
-`pnpm visual:acceptance -- --checklist --output reports/visual/page-builder-fixture/visual-acceptance-report.json`,
-`pnpm visual:measure`, and
-`pnpm visual:capture:fixture -- --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json`.
+copies the source manifest to
+`reports/visual/page-builder-fixture/page-builder-visual-acceptance.json`, then
+executes
+`pnpm visual:capture:fixture -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json --write-manifest`,
+`pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json`, and
+`pnpm visual:acceptance -- --checklist --output reports/visual/page-builder-fixture/visual-acceptance-report.json reports/visual/page-builder-fixture/page-builder-visual-acceptance.json`.
 
 The workflow uploads `page-builder-visual-fixture-<run_number>` with the fixture
-screenshots, `visual-capture-report.json`, and `visual-acceptance-report.json` captured under
-`reports/visual/page-builder-fixture`. This artifact is regression evidence for
-the fixture and capture pipeline only. Final MVP visual sign-off still requires
-real Desktop and Mobile design references, measured diff values, and
+screenshots, an artifact-local manifest with captured `previewScreenshot` paths,
+`visual-capture-report.json`, and `visual-acceptance-report.json` captured under
+`reports/visual/page-builder-fixture`. The source manifest under
+`docs/development/` remains unchanged by CI. This artifact is regression
+evidence for the fixture and capture pipeline only. Final MVP visual sign-off
+still requires real Desktop and Mobile design references, measured diff values, and
 `pnpm visual:acceptance -- --require-accepted`.
 When an accepted manifest references screenshots from that artifact, pass the
 artifact name and workflow run id to `Production Smoke` so it downloads the
