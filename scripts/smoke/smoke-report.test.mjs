@@ -230,9 +230,33 @@ test("smoke report validates required fields before writing", () => {
     () =>
       assertSmokeReportWritable({
         ...report,
+        startedAt: null,
+      }),
+    /valid startedAt timestamp/,
+  );
+  assert.throws(
+    () =>
+      assertSmokeReportWritable({
+        ...report,
+        startedAt: "2026-08-20",
+      }),
+    /valid startedAt timestamp/,
+  );
+  assert.throws(
+    () =>
+      assertSmokeReportWritable({
+        ...report,
         finishedAt: null,
       }),
     /terminal finishedAt timestamp/,
+  );
+  assert.throws(
+    () =>
+      assertSmokeReportWritable({
+        ...report,
+        finishedAt: "2026-08-19T23:59:59.000Z",
+      }),
+    /finishedAt must not be earlier than startedAt/,
   );
   assert.throws(
     () => {

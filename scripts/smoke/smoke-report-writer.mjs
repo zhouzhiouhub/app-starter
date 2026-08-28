@@ -68,8 +68,19 @@ function assertSmokeReportTerminal(report) {
     throw new Error("Smoke report status must be passed or failed before write.");
   }
 
-  if (!isIsoDateString(report.finishedAt)) {
+  const startedAt = readIsoDateTime(report.startedAt);
+  const finishedAt = readIsoDateTime(report.finishedAt);
+
+  if (startedAt === null) {
+    throw new Error("Smoke report must include a valid startedAt timestamp.");
+  }
+
+  if (finishedAt === null) {
     throw new Error("Smoke report must include a terminal finishedAt timestamp.");
+  }
+
+  if (finishedAt < startedAt) {
+    throw new Error("Smoke report finishedAt must not be earlier than startedAt.");
   }
 
   if (report.status === "passed") {
@@ -125,13 +136,19 @@ function assertSmokeReportChecksWellFormed(checks) {
 }
 
 function isIsoDateString(value) {
+  return readIsoDateTime(value) !== null;
+}
+
+function readIsoDateTime(value) {
   if (typeof value !== "string") {
-    return false;
+    return null;
   }
 
   const date = new Date(value);
 
-  return !Number.isNaN(date.getTime()) && date.toISOString() === value;
+  return !Number.isNaN(date.getTime()) && date.toISOString() === value
+    ? date.getTime()
+    : null;
 }
 
 function isFailureErrorRecord(value) {

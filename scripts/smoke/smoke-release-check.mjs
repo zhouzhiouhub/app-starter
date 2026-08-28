@@ -34,6 +34,7 @@ export function createSmokeReleaseCheck(artifact) {
   const summary = createSmokeReportSummary(report);
   const blockers = [];
   const groups = readReleaseTraceabilityGroups(report);
+  const timeline = readSmokeReportTimeline(report);
 
   addRequirement(blockers, isSmokeSummaryPassed(summary), {
     action: "Rerun production smoke until summary.status=passed and no checks fail.",
@@ -43,9 +44,17 @@ export function createSmokeReleaseCheck(artifact) {
     action: "Resolve productionReadiness blockers before marking the release ready.",
     label: "Production readiness gates blocked",
   });
-  addRequirement(blockers, isIsoTimestamp(report?.finishedAt), {
+  addRequirement(blockers, timeline.startedAt !== null, {
+    action: "Use a completed smoke report artifact with a valid startedAt timestamp.",
+    label: "Smoke report start timestamp missing",
+  });
+  addRequirement(blockers, timeline.finishedAt !== null, {
     action: "Use a completed smoke report artifact with a valid finishedAt timestamp.",
-    label: "Smoke report not completed",
+    label: "Smoke report finish timestamp missing",
+  });
+  addRequirement(blockers, isChronologicalTimeline(timeline), {
+    action: "Use a completed smoke report artifact whose finishedAt is not earlier than startedAt.",
+    label: "Smoke report timeline invalid",
   });
   addRequirement(blockers, hasText(report?.storefrontUrl), {
     action: "Capture storefrontUrl in the smoke report before saving release evidence.",
@@ -115,8 +124,31 @@ function readArtifactPath(artifact, report) {
   return artifact?.path ?? report?.config?.reportPath ?? null;
 }
 
-function isIsoTimestamp(value) {
-  return typeof value === "string" && !Number.isNaN(Date.parse(value));
+function readSmokeReportTimeline(report) {
+  return {
+    finishedAt: readIsoTimestamp(report?.finishedAt),
+    startedAt: readIsoTimestamp(report?.startedAt),
+  };
+}
+
+function readIsoTimestamp(value) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const date = new Date(value);
+
+  return !Number.isNaN(date.getTime()) && date.toISOString() === value
+    ? date.getTime()
+    : null;
+}
+
+function isChronologicalTimeline(timeline) {
+  return (
+    timeline.startedAt === null ||
+    timeline.finishedAt === null ||
+    timeline.finishedAt >= timeline.startedAt
+  );
 }
 
 function hasText(value) {

@@ -157,6 +157,32 @@ test("smoke release check blocks starter page title and path drift", () => {
   );
 });
 
+test("smoke release check blocks invalid report timelines", () => {
+  const missingStartReport = createCompleteReleaseReport();
+  missingStartReport.startedAt = null;
+  refreshSmokeReportSummary(missingStartReport);
+
+  const missingStartResult = createSmokeReleaseCheck({
+    report: missingStartReport,
+  });
+
+  assert.equal(missingStartResult.releaseReady, false);
+  assert.equal(
+    hasBlocker(missingStartResult, "Smoke report start timestamp missing"),
+    true,
+  );
+
+  const reversedReport = createCompleteReleaseReport();
+  reversedReport.startedAt = "2026-08-21T00:00:00.000Z";
+  reversedReport.finishedAt = "2026-08-20T23:59:59.000Z";
+  refreshSmokeReportSummary(reversedReport);
+
+  const reversedResult = createSmokeReleaseCheck({ report: reversedReport });
+
+  assert.equal(reversedResult.releaseReady, false);
+  assert.equal(hasBlocker(reversedResult, "Smoke report timeline invalid"), true);
+});
+
 test("smoke release check parses pnpm separator and explicit path", () => {
   assert.deepEqual(readSmokeReleaseCheckCliConfig(["--", "--latest"]), {
     reportPath: null,
@@ -192,6 +218,10 @@ test("smoke release check reads latest archived report", async () => {
     await rm(archiveRoot, { force: true, recursive: true });
   }
 });
+
+function hasBlocker(result, label) {
+  return result.blockers.some((blocker) => blocker.label === label);
+}
 
 function createCompleteReleaseReport(overrides = {}) {
   const report = createProductionReadySmokeReport(overrides);

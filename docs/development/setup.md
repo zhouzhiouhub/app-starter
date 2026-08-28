@@ -279,8 +279,9 @@ The review command scans the same safe archive roots, recomputes the report
 summary from the stored checks, and highlights R2 / CDN, Admin static app, and
 publish-flow traceability before showing failed check details and suggested
 fixes. The release-check command exits non-zero unless the archived report
-proves the required production gates, including R2 upload, Admin static app,
-publish/rollback, SEO, and ISR revalidation.
+has a valid chronological start/finish timeline and proves the required
+production gates, including R2 upload, Admin static app, publish/rollback, SEO,
+and ISR revalidation.
 
 After the Page Builder visual manifest has accepted real design evidence,
 `release:check` verifies both evidence streams together: production smoke must

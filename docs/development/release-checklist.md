@@ -110,6 +110,8 @@ later phases are explicitly approved.
 - `pnpm smoke:release-check -- artifacts/production-smoke/smoke-report.json`
   exits successfully in the workflow log.
 - The smoke report shows `summary.status=passed`.
+- The smoke report includes canonical ISO `startedAt` and `finishedAt`
+  timestamps, with `finishedAt` not earlier than `startedAt`.
 - The smoke report shows `summary.productionReady=true`.
 - The traceability section shows `R2/CDN: passed`.
 - The traceability section shows `Admin static app: passed`.
