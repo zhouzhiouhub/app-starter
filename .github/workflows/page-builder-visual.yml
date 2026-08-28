@@ -53,13 +53,14 @@ jobs:
       - run: pnpm test:visual
       - run: pnpm visual:acceptance -- --checklist --output reports/visual/page-builder-fixture/visual-acceptance-report.json
       - run: pnpm visual:measure
-      - run: pnpm visual:capture:fixture -- --output-dir reports/visual/page-builder-fixture
+      - run: pnpm visual:capture:fixture -- --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json
       - name: Write visual evidence summary
         if: always()
         run: |
           {
             echo "## Page Builder Visual Evidence"
-            echo "- Capture: \`pnpm visual:capture:fixture -- --output-dir reports/visual/page-builder-fixture\`"
+            echo "- Capture: \`pnpm visual:capture:fixture -- --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json\`"
+            echo "- Capture report: \`reports/visual/page-builder-fixture/visual-capture-report.json\`"
             echo "- Acceptance: \`pnpm visual:acceptance -- --checklist --output reports/visual/page-builder-fixture/visual-acceptance-report.json\`"
             echo "- Acceptance report: \`reports/visual/page-builder-fixture/visual-acceptance-report.json\`"
             echo "- Measurement: \`pnpm visual:measure\`"

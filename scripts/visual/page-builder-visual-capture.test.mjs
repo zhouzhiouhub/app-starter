@@ -14,6 +14,7 @@ import {
   pageBuilderVisualCaptureDefaultOutputDir,
   readCaptureManifestPath,
   readCaptureOutputDir,
+  readCaptureReportPath,
   readPageBuilderVisualCaptureCliConfig,
   resolvePageBuilderVisualBrowserPath,
   runPageBuilderVisualCapture,
@@ -33,6 +34,7 @@ test("visual capture config reads defaults and env browser fallback", () => {
     "docs/development/page-builder-visual-acceptance.json",
   );
   assert.equal(config.outputDir, pageBuilderVisualCaptureDefaultOutputDir);
+  assert.equal(config.reportPath, null);
   assert.equal(config.timeoutMs, 30000);
   assert.deepEqual(config.viewports, ["desktop", "mobile"]);
   assert.equal(config.writeManifest, false);
@@ -53,6 +55,8 @@ test("visual capture config parses selected components, viewports, and manifest 
     "tmp/page-builder-visual-acceptance.json",
     "--output-dir",
     "reports/visual/page-builder",
+    "--report",
+    "reports/visual/page-builder/visual-capture-report.json",
     "--timeout-ms",
     "45000",
     "--viewport",
@@ -66,6 +70,7 @@ test("visual capture config parses selected components, viewports, and manifest 
     components: ["hero-banner", "faq"],
     manifestPath: "tmp/page-builder-visual-acceptance.json",
     outputDir: "reports/visual/page-builder",
+    reportPath: "reports/visual/page-builder/visual-capture-report.json",
     timeoutMs: 45000,
     viewports: ["mobile"],
     writeManifest: true,
@@ -111,6 +116,14 @@ test("visual capture config rejects unsafe inputs", () => {
   );
   assert.throws(
     () => readCaptureManifestPath("docs/development/visual.md"),
+    /must end with \.json/,
+  );
+  assert.throws(
+    () => readCaptureReportPath("README.md"),
+    /must be under/,
+  );
+  assert.throws(
+    () => readCaptureReportPath("reports/visual/capture.md"),
     /must end with \.json/,
   );
 });

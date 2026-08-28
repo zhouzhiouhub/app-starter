@@ -1,4 +1,6 @@
 import path from "node:path";
+import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
+import { normalizeSmokeReportPath } from "../smoke/smoke-report-path-config.mjs";
 import {
   pageBuilderVisualCaptureComponents,
   pageBuilderVisualCaptureDefaultBaseUrl,
@@ -27,6 +29,7 @@ export function readPageBuilderVisualCaptureCliConfig(
     components: [],
     manifestPath: env.PAGE_BUILDER_VISUAL_MANIFEST_PATH,
     outputDir: env.PAGE_BUILDER_VISUAL_OUTPUT_DIR,
+    reportPath: env.PAGE_BUILDER_VISUAL_CAPTURE_REPORT_PATH,
     timeoutMs: env.PAGE_BUILDER_VISUAL_TIMEOUT_MS,
     viewports: [],
     writeManifest: false,
@@ -52,6 +55,7 @@ export function normalizeCaptureConfig(input) {
     components: readCaptureComponents(input.components),
     manifestPath: readCaptureManifestPath(input.manifestPath),
     outputDir: readCaptureOutputDir(input.outputDir),
+    reportPath: readCaptureReportPath(input.reportPath),
     timeoutMs: readCaptureTimeoutMs(input.timeoutMs),
     viewports: readCaptureViewports(input.viewports),
     writeManifest: Boolean(input.writeManifest),
@@ -139,6 +143,9 @@ function readCaptureOption(option, args, index, input) {
     case "--output-dir":
       input.outputDir = readOptionValue(option, args, index);
       return index + 1;
+    case "--report":
+      input.reportPath = readOptionValue(option, args, index);
+      return index + 1;
     case "--timeout-ms":
       input.timeoutMs = readOptionValue(option, args, index);
       return index + 1;
@@ -150,6 +157,23 @@ function readCaptureOption(option, args, index, input) {
       return index;
     default:
       throw new Error(`Unknown visual capture option: ${option}`);
+  }
+}
+
+export function readCaptureReportPath(value) {
+  if (value === undefined || value === null) {
+    return null;
+  }
+
+  try {
+    return normalizeSmokeReportPath(value);
+  } catch (error) {
+    throw new Error(
+      readErrorMessage(error).replaceAll(
+        "SMOKE_REPORT_PATH",
+        "Visual capture report",
+      ),
+    );
   }
 }
 

@@ -26,9 +26,10 @@ test("page builder visual workflow captures fixture evidence", async () => {
   assert.match(workflow, /pnpm visual:measure/);
   assert.match(
     workflow,
-    /pnpm visual:capture:fixture -- --output-dir reports\/visual\/page-builder-fixture/,
+    /pnpm visual:capture:fixture -- --output-dir reports\/visual\/page-builder-fixture --report reports\/visual\/page-builder-fixture\/visual-capture-report\.json/,
   );
   assert.match(workflow, /GITHUB_STEP_SUMMARY/);
+  assert.match(workflow, /visual-capture-report\.json/);
   assert.match(workflow, /visual-acceptance-report\.json/);
   assert.match(workflow, /actions\/upload-artifact@v4/);
   assert.match(

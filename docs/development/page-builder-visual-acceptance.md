@@ -16,6 +16,7 @@ pnpm visual:acceptance -- --checklist --output reports/visual/page-builder-fixtu
 pnpm visual:acceptance -- --require-accepted
 pnpm visual:capture
 pnpm visual:capture:fixture
+pnpm visual:capture:fixture -- --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json
 pnpm visual:capture:fixture -- --output-dir reports/visual/page-builder-fixture --write-manifest
 pnpm visual:measure
 pnpm visual:measure -- --write
@@ -45,6 +46,9 @@ Pass `--write-manifest` to `visual:capture` or `visual:capture:fixture` only
 when the captured browser screenshots should update `previewScreenshot` paths in
 the manifest. This resets stale diff metrics and keeps viewport status as
 `needs-evidence`; it does not mark visual evidence accepted.
+Pass `--report reports/visual/page-builder-fixture/visual-capture-report.json`
+to keep a structured `page-builder-visual-capture.v1` capture report with the
+browser, output directory, and per-viewport screenshot paths.
 
 Reference import expects files named `<component>-<viewport>.png`, such as
 `hero-banner-desktop.png` and `hero-banner-mobile.png`. It is dry-run by
@@ -95,6 +99,12 @@ point the manifest at those retained screenshots:
 pnpm visual:capture:fixture -- --output-dir reports/visual/page-builder-fixture --write-manifest
 ```
 
+To also archive a structured capture report with the retained screenshots:
+
+```powershell
+pnpm visual:capture:fixture -- --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json
+```
+
 Set `PAGE_BUILDER_VISUAL_BROWSER` or pass `--browser` when Chrome or Edge is
 not installed in a standard location. Browser launch failures print a bounded,
 normalized snippet of captured stdout/stderr so headless runtime, sandbox, or
@@ -106,10 +116,10 @@ The `Page Builder Visual` GitHub Actions workflow runs on visual-related pull
 requests, pushes to `main`, and manual dispatch. It executes `pnpm test:visual`,
 `pnpm visual:acceptance -- --checklist --output reports/visual/page-builder-fixture/visual-acceptance-report.json`,
 `pnpm visual:measure`, and
-`pnpm visual:capture:fixture -- --output-dir reports/visual/page-builder-fixture`.
+`pnpm visual:capture:fixture -- --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json`.
 
 The workflow uploads `page-builder-visual-fixture-<run_number>` with the fixture
-screenshots and `visual-acceptance-report.json` captured under
+screenshots, `visual-capture-report.json`, and `visual-acceptance-report.json` captured under
 `reports/visual/page-builder-fixture`. This artifact is regression evidence for
 the fixture and capture pipeline only. Final MVP visual sign-off still requires
 real Desktop and Mobile design references, measured diff values, and

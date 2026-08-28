@@ -24,6 +24,7 @@ export function formatPageBuilderVisualFixtureCaptureUsage() {
     "  --component <id[,id]>     Capture selected MVP component(s).",
     "  --manifest <path>         Visual acceptance manifest JSON path.",
     "  --output-dir <dir>        artifacts/visual or reports/visual path.",
+    "  --report <path>           Write a JSON capture report.",
     "  --timeout-ms <ms>         Browser screenshot timeout, 1000-120000.",
     "  --viewport <id[,id]>      desktop and/or mobile.",
     "  --write-manifest          Update previewScreenshot paths and reset metrics.",

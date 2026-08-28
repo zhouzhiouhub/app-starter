@@ -115,6 +115,7 @@ later phases are explicitly approved.
 - The latest `Page Builder Visual` workflow run and
   `page-builder-visual-fixture-<run_number>` artifact are linked when visual
   evidence is part of the release review; the artifact contains
+  `visual-capture-report.json` with the captured screenshot list and
   `visual-acceptance-report.json` with the structured acceptance status.
 - When `visual_artifact_run_id` was provided, the Production Smoke workflow log
   shows the Page Builder Visual artifact download before the combined release

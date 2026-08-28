@@ -1,3 +1,4 @@
+export * from "./page-builder-visual-capture-artifact.mjs";
 export * from "./page-builder-visual-capture-browser.mjs";
 export * from "./page-builder-visual-capture-config.mjs";
 export * from "./page-builder-visual-capture-constants.mjs";

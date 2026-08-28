@@ -24,6 +24,7 @@ test("visual fixture capture config wraps capture defaults", () => {
     config.capture.manifestPath,
     "docs/development/page-builder-visual-acceptance.json",
   );
+  assert.equal(config.capture.reportPath, null);
   assert.equal(config.skipBuild, false);
   assert.equal(config.startTimeoutMs, 60000);
   assert.equal(config.webPort, 3000);
@@ -45,6 +46,8 @@ test("visual fixture capture config parses workflow and capture options", () => 
     "mobile",
     "--output-dir",
     "reports/visual/page-builder",
+    "--report",
+    "reports/visual/page-builder/visual-capture-report.json",
     "--write-manifest",
   ]);
 
@@ -56,6 +59,10 @@ test("visual fixture capture config parses workflow and capture options", () => 
   assert.equal(config.capture.manifestPath, "tmp/page-builder-visual-acceptance.json");
   assert.deepEqual(config.capture.viewports, ["mobile"]);
   assert.equal(config.capture.outputDir, "reports/visual/page-builder");
+  assert.equal(
+    config.capture.reportPath,
+    "reports/visual/page-builder/visual-capture-report.json",
+  );
   assert.equal(config.capture.writeManifest, true);
 });
 
