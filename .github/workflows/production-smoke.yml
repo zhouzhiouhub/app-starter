@@ -35,7 +35,11 @@ on:
         required: false
         default: ""
       visual_artifact_name:
-        description: "Optional Page Builder Visual artifact name for release notes"
+        description: "Optional Page Builder Visual artifact name for release notes and evidence"
+        required: false
+        default: ""
+      visual_artifact_run_id:
+        description: "Optional Page Builder Visual workflow run id to download evidence"
         required: false
         default: ""
       storefront_url:
@@ -46,6 +50,10 @@ on:
         description: "Safe relative Markdown release notes path"
         required: false
         default: "artifacts/release/release-notes.md"
+
+permissions:
+  actions: read
+  contents: read
 
 jobs:
   production-smoke:
@@ -84,6 +92,7 @@ jobs:
       RELEASE_STOREFRONT_URL: ${{ inputs.storefront_url }}
       RELEASE_TAG: ${{ inputs.release_tag }}
       RELEASE_VISUAL_ARTIFACT_NAME: ${{ inputs.visual_artifact_name }}
+      RELEASE_VISUAL_ARTIFACT_RUN_ID: ${{ inputs.visual_artifact_run_id }}
       SMOKE_ADMIN_EMAIL: ${{ secrets.PRODUCTION_SMOKE_ADMIN_EMAIL }}
       SMOKE_ADMIN_PASSWORD: ${{ secrets.PRODUCTION_SMOKE_ADMIN_PASSWORD }}
       SMOKE_REPORT_PATH: ${{ inputs.report_path }}
@@ -108,6 +117,14 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm run check:file-size
+      - name: Download Page Builder visual evidence artifact
+        if: ${{ inputs.visual_artifact_name != '' && inputs.visual_artifact_run_id != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.visual_artifact_name }}
+          run-id: ${{ inputs.visual_artifact_run_id }}
+          github-token: ${{ github.token }}
+          path: reports/visual/page-builder-fixture
       - run: pnpm smoke:publish
       - name: Review archived smoke report
         if: always()
@@ -158,6 +175,11 @@ jobs:
             echo "- Release gate: \`pnpm smoke:release-check -- $SMOKE_REPORT_PATH\`"
             echo "- Combined gate: \`pnpm release:check -- --checklist --smoke-report $SMOKE_REPORT_PATH --output $RELEASE_CHECK_ARTIFACT_PATH\`"
             echo "- Combined artifact: \`$RELEASE_CHECK_ARTIFACT_NAME\`"
+            if [ -n "$RELEASE_VISUAL_ARTIFACT_NAME" ] && [ -n "$RELEASE_VISUAL_ARTIFACT_RUN_ID" ]; then
+              echo "- Visual evidence artifact: \`$RELEASE_VISUAL_ARTIFACT_NAME\` from run \`$RELEASE_VISUAL_ARTIFACT_RUN_ID\`"
+            else
+              echo "- Visual evidence artifact: skipped (set visual_artifact_name and visual_artifact_run_id)"
+            fi
             if [ -n "$RELEASE_TAG" ] && [ -n "$RELEASE_ROLLBACK_TARGET" ] && [ -n "$RELEASE_VISUAL_ARTIFACT_NAME" ]; then
               echo "- Release notes: \`$RELEASE_NOTES_PATH\`"
               echo "- Release notes artifact: \`$RELEASE_NOTES_ARTIFACT_NAME\`"

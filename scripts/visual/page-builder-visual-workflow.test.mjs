@@ -31,6 +31,7 @@ test("page builder visual workflow captures fixture evidence", async () => {
     workflow,
     /name: page-builder-visual-fixture-\$\{\{ github\.run_number \}\}/,
   );
+  assert.match(workflow, /Run id for Production Smoke/);
   assert.match(workflow, /retention-days: 14/);
 });
 

@@ -67,7 +67,11 @@ later phases are explicitly approved.
    enabled for production release evidence.
 5. Set `storefront_host` only when the public storefront host differs from
    `WEB_URL`.
-6. To generate release notes in the same run, set `release_tag`,
+6. If the accepted visual manifest references screenshots from the Page Builder
+   Visual workflow artifact, set both `visual_artifact_name` and
+   `visual_artifact_run_id` so Production Smoke downloads the evidence before
+   running `release:check`.
+7. To generate release notes in the same run, set `release_tag`,
    `rollback_target`, `visual_artifact_name`, and optionally `storefront_url`
    plus `release_notes_path`.
 
@@ -97,6 +101,9 @@ later phases are explicitly approved.
 - The latest `Page Builder Visual` workflow run and
   `page-builder-visual-fixture-<run_number>` artifact are linked when visual
   evidence is part of the release review.
+- When `visual_artifact_run_id` was provided, the Production Smoke workflow log
+  shows the Page Builder Visual artifact download before the combined release
+  gate.
 - `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json`
   exits successfully after the production smoke artifact and accepted Page
   Builder visual manifest are both present.

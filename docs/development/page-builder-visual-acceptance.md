@@ -82,6 +82,11 @@ screenshots captured under `reports/visual/page-builder-fixture`. This artifact
 is regression evidence for the fixture and capture pipeline only. Final MVP
 visual sign-off still requires real Desktop and Mobile design references,
 measured diff values, and `pnpm visual:acceptance -- --require-accepted`.
+When an accepted manifest references screenshots from that artifact, pass the
+artifact name and workflow run id to `Production Smoke` so it downloads the
+files to `reports/visual/page-builder-fixture` before running the combined
+release gate. The Page Builder Visual workflow summary prints the run id to use
+with the Production Smoke `visual_artifact_run_id` input.
 
 After real Desktop and Mobile design reference PNGs are attached to the
 manifest, calculate the metrics with:

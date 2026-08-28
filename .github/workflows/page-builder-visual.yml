@@ -63,6 +63,7 @@ jobs:
             echo "- Acceptance: \`pnpm visual:acceptance -- --checklist\`"
             echo "- Measurement: \`pnpm visual:measure\`"
             echo "- Artifact: \`page-builder-visual-fixture-${{ github.run_number }}\`"
+            echo "- Run id for Production Smoke: \`${{ github.run_id }}\`"
             echo "- Final sign-off still requires real design references and \`pnpm visual:acceptance -- --require-accepted\`."
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload visual fixture artifact

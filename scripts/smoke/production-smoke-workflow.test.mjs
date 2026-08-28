@@ -17,9 +17,13 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /release_tag:/);
   assert.match(workflow, /rollback_target:/);
   assert.match(workflow, /visual_artifact_name:/);
+  assert.match(workflow, /visual_artifact_run_id:/);
   assert.match(workflow, /storefront_url:/);
   assert.match(workflow, /release_notes_path:/);
   assert.match(workflow, /default: "artifacts\/release\/release-notes\.md"/);
+  assert.match(workflow, /permissions:/);
+  assert.match(workflow, /actions: read/);
+  assert.match(workflow, /contents: read/);
   assert.match(workflow, /SMOKE_REPORT_PATH: \$\{\{ inputs\.report_path \}\}/);
   assert.match(workflow, /SMOKE_REQUIRE_ADMIN_APP:/);
   assert.match(workflow, /SMOKE_REQUIRE_R2_UPLOAD:/);
@@ -33,6 +37,19 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /RELEASE_CHECK_ARTIFACT_NAME:/);
   assert.match(workflow, /RELEASE_NOTES_ARTIFACT_NAME:/);
   assert.match(workflow, /RELEASE_NOTES_PATH: \$\{\{ inputs\.release_notes_path \}\}/);
+  assert.match(
+    workflow,
+    /RELEASE_VISUAL_ARTIFACT_RUN_ID: \$\{\{ inputs\.visual_artifact_run_id \}\}/,
+  );
+  assert.match(workflow, /name: Download Page Builder visual evidence artifact/);
+  assert.match(
+    workflow,
+    /inputs\.visual_artifact_name != '' && inputs\.visual_artifact_run_id != ''/,
+  );
+  assert.match(workflow, /actions\/download-artifact@v4/);
+  assert.match(workflow, /run-id: \$\{\{ inputs\.visual_artifact_run_id \}\}/);
+  assert.match(workflow, /github-token: \$\{\{ github\.token \}\}/);
+  assert.match(workflow, /path: reports\/visual\/page-builder-fixture/);
   assert.match(
     workflow,
     /pnpm release:check -- --checklist --smoke-report "\$SMOKE_REPORT_PATH" --output "\$RELEASE_CHECK_ARTIFACT_PATH"/,
@@ -53,6 +70,11 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /Combined artifact:/);
   assert.match(workflow, /Release notes:/);
   assert.match(workflow, /Release notes artifact:/);
+  assert.match(workflow, /Visual evidence artifact:/);
+  assert.match(
+    workflow,
+    /skipped \(set visual_artifact_name and visual_artifact_run_id\)/,
+  );
   assert.match(workflow, /skipped \(set release_tag, rollback_target, and visual_artifact_name\)/);
   assert.match(workflow, /SMOKE_REPORT_ARTIFACT_NAME:/);
   assert.match(workflow, /actions\/upload-artifact@v4/);

@@ -294,7 +294,10 @@ and release-check commands to the job summary, and uploads the report as
 `production-smoke-report-<run_number>`. It also runs the combined
 `release:check -- --checklist` gate, prints the release readiness checklist, and
 uploads `release-evidence-check-<run_number>` with the
-`release-evidence-check.v1` JSON artifact. When `release_tag`,
+`release-evidence-check.v1` JSON artifact. If `visual_artifact_name` and
+`visual_artifact_run_id` are provided, it downloads that Page Builder Visual
+artifact to `reports/visual/page-builder-fixture` before running the combined
+gate. When `release_tag`,
 `rollback_target`, and `visual_artifact_name` are provided, it runs
 `release:notes` and uploads `release-notes-<run_number>`. Use
 [`release-checklist.md`](./release-checklist.md) to attach the workflow run,
