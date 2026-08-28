@@ -1,6 +1,7 @@
-import { ExportOutlined } from "@ant-design/icons";
+import { ExportOutlined, GlobalOutlined } from "@ant-design/icons";
 import { Button, Space, Table, Tag, Tooltip, Typography } from "antd";
 import { useNavigate } from "react-router-dom";
+import { readAuditLogLocalizationPath } from "../audit-localization-link";
 import { formatAuditMetadata } from "../audit-metadata-format";
 import type { AuditLog } from "../types";
 
@@ -88,6 +89,7 @@ function AuditTargetCell(props: { log: AuditLog }) {
   const navigate = useNavigate();
   const pageTargetId =
     props.log.targetType === "page" ? props.log.targetId : null;
+  const localizationPath = readAuditLogLocalizationPath(props.log);
 
   return (
     <Space size={8}>
@@ -102,6 +104,17 @@ function AuditTargetCell(props: { log: AuditLog }) {
             onClick={() =>
               navigate(`/pages/${encodeURIComponent(pageTargetId)}`)
             }
+            size="small"
+            type="text"
+          />
+        </Tooltip>
+      ) : null}
+      {localizationPath ? (
+        <Tooltip title="Open localization filters">
+          <Button
+            aria-label="Open localization filters"
+            icon={<GlobalOutlined />}
+            onClick={() => navigate(localizationPath)}
             size="small"
             type="text"
           />
