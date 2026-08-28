@@ -7,6 +7,7 @@ import { smokeReportSchemaVersion } from "./smoke-report-contract.mjs";
 import { refreshSmokeReportSummary } from "./smoke-report-summary.mjs";
 import { createSmokeProductionReadiness } from "./smoke-readiness.mjs";
 import { redactSmokeReportValue } from "./smoke-secrets.mjs";
+import { normalizeSmokeSourceMetadata } from "./smoke-source-metadata.mjs";
 import { readSmokeStorefrontHost } from "./storefront-smoke-host.mjs";
 
 export { smokeReportSchemaVersion } from "./smoke-report-contract.mjs";
@@ -64,6 +65,7 @@ function createSmokeReportConfig(input) {
     requireR2Upload: input.requireR2Upload,
     requireRevalidation: input.requireRevalidation,
     storefrontHost: readSmokeStorefrontHost(input),
+    source: normalizeSmokeSourceMetadata(input.source),
     tenantSlug: input.tenantSlug,
     webUrl: input.webUrl,
   };

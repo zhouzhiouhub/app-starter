@@ -11,6 +11,7 @@ import {
   retryDelayMsRange,
 } from "./publish-smoke-config-defaults.mjs";
 import { readCdnDiagnostics } from "./environment-diagnostics-media-cdn.mjs";
+import { readSmokeSourceMetadata } from "./smoke-source-metadata.mjs";
 import {
   normalizeAdminOrigin,
   normalizeApiBaseUrl,
@@ -80,6 +81,7 @@ export function readConfig() {
     ),
     reportPath: readSmokeReportPathEnv("SMOKE_REPORT_PATH"),
     slug: normalizeSmokeSlug(readEnv("SMOKE_PAGE_SLUG", createSmokeSlug())),
+    source: readSmokeSourceMetadata(process.env),
     storefrontHost: readOptionalStorefrontHostEnv("SMOKE_STOREFRONT_HOST"),
     tenantSlug,
     webUrl: normalizeWebOrigin(readUrlEnv("WEB_URL", defaultWebUrl)),

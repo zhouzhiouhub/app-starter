@@ -38,6 +38,38 @@ test("smoke report includes deployment diagnostics for effective smoke URLs", ()
   assert.equal(report.environment.deployment.api.productionReady, true);
   assert.equal(report.environment.deployment.web.host, "store.brand.com");
   assert.equal(report.environment.deployment.web.productionReady, true);
+  assert.deepEqual(report.config.source, {
+    commitSha: null,
+    repository: null,
+    runId: null,
+    runNumber: null,
+    workflow: null,
+    workflowRunUrl: null,
+  });
+});
+
+test("smoke report records normalized source metadata", () => {
+  const report = createTestSmokeReport({
+    source: {
+      commitSha: "0123456789ABCDEF0123456789ABCDEF01234567",
+      repository: "zhouzhiouhub/app-starter",
+      runId: "123456789",
+      runNumber: "123",
+      workflow: "Production Smoke",
+      workflowRunUrl:
+        "https://github.com/zhouzhiouhub/app-starter/actions/runs/123456789",
+    },
+  });
+
+  assert.deepEqual(report.config.source, {
+    commitSha: "0123456789abcdef0123456789abcdef01234567",
+    repository: "zhouzhiouhub/app-starter",
+    runId: "123456789",
+    runNumber: "123",
+    workflow: "Production Smoke",
+    workflowRunUrl:
+      "https://github.com/zhouzhiouhub/app-starter/actions/runs/123456789",
+  });
 });
 
 test("smoke report ignores unsafe direct storefront host overrides", () => {

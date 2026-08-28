@@ -73,6 +73,24 @@ function createSmokeCheck(input) {
       ? "artifacts/production-smoke/smoke-report.json"
       : null,
     releaseReady: input.releaseReady,
+    source: input.releaseReady
+      ? {
+          commitSha: "0123456789abcdef0123456789abcdef01234567",
+          repository: "zhouzhiouhub/app-starter",
+          runId: "123456789",
+          runNumber: "123",
+          workflow: "Production Smoke",
+          workflowRunUrl:
+            "https://github.com/zhouzhiouhub/app-starter/actions/runs/123456789",
+        }
+      : {
+          commitSha: null,
+          repository: null,
+          runId: null,
+          runNumber: null,
+          workflow: null,
+          workflowRunUrl: null,
+        },
     summary: {
       checkCount: input.releaseReady ? 3 : 0,
       failedCheckCount: input.releaseReady ? 0 : 1,

@@ -138,6 +138,33 @@ test("smoke config includes default fallback context for revalidation targets", 
   );
 });
 
+test("smoke config records production smoke source metadata", async () => {
+  await withEnv(
+    {
+      API_URL: "https://api.example.com",
+      GITHUB_REPOSITORY: "zhouzhiouhub/app-starter",
+      GITHUB_RUN_ID: "123456789",
+      GITHUB_RUN_NUMBER: "123",
+      GITHUB_SHA: "0123456789abcdef0123456789abcdef01234567",
+      GITHUB_WORKFLOW: "Production Smoke",
+      WEB_URL: "https://web.example.com",
+    },
+    async () => {
+      const config = readConfig();
+
+      assert.deepEqual(config.source, {
+        commitSha: "0123456789abcdef0123456789abcdef01234567",
+        repository: "zhouzhiouhub/app-starter",
+        runId: "123456789",
+        runNumber: "123",
+        workflow: "Production Smoke",
+        workflowRunUrl:
+          "https://github.com/zhouzhiouhub/app-starter/actions/runs/123456789",
+      });
+    },
+  );
+});
+
 test("smoke config derives expected CDN checks only from safe CDN bases", async () => {
   await withEnv(
     {

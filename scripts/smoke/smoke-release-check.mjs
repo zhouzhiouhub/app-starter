@@ -1,4 +1,8 @@
 import { readReleaseTraceabilityGroups } from "./smoke-release-evidence.mjs";
+import {
+  normalizeSmokeSourceMetadata,
+  readMissingSmokeSourceFields,
+} from "./smoke-source-metadata.mjs";
 import { createSmokeReportSummary } from "./smoke-report-summary.mjs";
 import { formatSmokeText } from "./smoke-text.mjs";
 
@@ -34,6 +38,7 @@ export function createSmokeReleaseCheck(artifact) {
   const summary = createSmokeReportSummary(report);
   const blockers = [];
   const groups = readReleaseTraceabilityGroups(report);
+  const source = normalizeSmokeSourceMetadata(report?.config?.source);
   const timeline = readSmokeReportTimeline(report);
 
   addRequirement(blockers, isSmokeSummaryPassed(summary), {
@@ -60,6 +65,7 @@ export function createSmokeReleaseCheck(artifact) {
     action: "Capture storefrontUrl in the smoke report before saving release evidence.",
     label: "Public storefront URL missing",
   });
+  addSmokeSourceRequirements(blockers, source);
 
   for (const gate of requiredConfigGates) {
     addRequirement(blockers, report?.config?.[gate.key] === true, gate);
@@ -79,6 +85,7 @@ export function createSmokeReleaseCheck(artifact) {
     groups,
     path: readArtifactPath(artifact, report),
     releaseReady: blockers.length === 0,
+    source,
     summary,
   };
 }
@@ -92,6 +99,7 @@ export function formatSmokeReleaseCheck(artifact) {
     `  Smoke report: ${isSmokeSummaryPassed(check.summary) ? "passed" : "blocked"}`,
     `  Production gates: ${check.summary.productionReady === true ? "passed" : "blocked"}`,
     `  Required gates: R2 upload ${formatRequiredGate(config.requireR2Upload)}, Admin app ${formatRequiredGate(config.requireAdminApp)}, revalidation ${formatRequiredGate(config.requireRevalidation)}`,
+    `  Source: ${formatSmokeSource(check.source)}`,
     `  Traceability: ${check.groups
       .map((group) => `${group.label} ${group.status}`)
       .join(", ")}`,
@@ -114,6 +122,26 @@ function addRequirement(blockers, passed, requirement) {
       label: requirement.label,
     });
   }
+}
+
+function addSmokeSourceRequirements(blockers, source) {
+  for (const field of readMissingSmokeSourceFields(source)) {
+    addRequirement(blockers, false, {
+      action: createMissingSmokeSourceAction(field),
+      label: createMissingSmokeSourceLabel(field),
+    });
+  }
+}
+
+function createMissingSmokeSourceAction(field) {
+  return [
+    "Run Production Smoke from GitHub Actions so",
+    `config.source.${field} is recorded in the smoke artifact.`,
+  ].join(" ");
+}
+
+function createMissingSmokeSourceLabel(field) {
+  return `Smoke source ${field} missing`;
 }
 
 function isSmokeSummaryPassed(summary) {
@@ -157,6 +185,18 @@ function hasText(value) {
 
 function formatRequiredGate(value) {
   return value === true ? "required" : "not required";
+}
+
+function formatSmokeSource(source) {
+  if (!source?.commitSha || !source?.runId || !source?.workflowRunUrl) {
+    return "missing";
+  }
+
+  return [
+    source.commitSha.slice(0, 7),
+    `run ${source.runId}`,
+    source.workflowRunUrl,
+  ].join(" ");
 }
 
 function formatReleaseBlockers(blockers) {

@@ -106,6 +106,12 @@ jobs:
       SMOKE_REQUIRE_R2_UPLOAD: ${{ inputs.require_r2_upload }}
       SMOKE_REQUIRE_REVALIDATION: ${{ inputs.require_revalidation }}
       SMOKE_REPORT_ARTIFACT_NAME: production-smoke-report-${{ github.run_number }}
+      SMOKE_SOURCE_COMMIT_SHA: ${{ github.sha }}
+      SMOKE_SOURCE_REPOSITORY: ${{ github.repository }}
+      SMOKE_SOURCE_RUN_ID: ${{ github.run_id }}
+      SMOKE_SOURCE_RUN_NUMBER: ${{ github.run_number }}
+      SMOKE_SOURCE_WORKFLOW: ${{ github.workflow }}
+      SMOKE_SOURCE_WORKFLOW_RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
       SMOKE_STOREFRONT_HOST: ${{ inputs.storefront_host }}
       STOREFRONT_REVALIDATE_SECRET: ${{ secrets.PRODUCTION_STOREFRONT_REVALIDATE_SECRET }}
       STOREFRONT_REVALIDATE_URL: ${{ secrets.PRODUCTION_STOREFRONT_REVALIDATE_URL }}
@@ -196,6 +202,8 @@ jobs:
             echo "## Production Smoke Evidence"
             echo "- Report path: \`$SMOKE_REPORT_PATH\`"
             echo "- Artifact: \`$SMOKE_REPORT_ARTIFACT_NAME\`"
+            echo "- Source commit: \`${{ github.sha }}\`"
+            echo "- Source workflow run: \`https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\`"
             echo "- Review: \`pnpm smoke:report -- $SMOKE_REPORT_PATH\`"
             echo "- Release gate: \`pnpm smoke:release-check -- $SMOKE_REPORT_PATH\`"
             combined_gate="pnpm release:check -- --checklist --smoke-report $SMOKE_REPORT_PATH --output $RELEASE_CHECK_ARTIFACT_PATH"

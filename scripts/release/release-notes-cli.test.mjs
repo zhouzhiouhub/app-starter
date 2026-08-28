@@ -3,6 +3,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { readFile, rm } from "node:fs/promises";
 import test from "node:test";
 import { runReleaseNotesCli } from "../release-notes.mjs";
+import { createReadySmokeSource } from "./release-notes-test-fixtures.mjs";
 
 test("release notes CLI writes a Markdown release record", async () => {
   const root = `tmp/release-notes-test-${process.pid}-${Date.now()}`;
@@ -41,7 +42,10 @@ test("release notes CLI writes a Markdown release record", async () => {
 
     assert.equal(exitCode, 0);
     assert.deepEqual(stdout, [`Release notes written: ${outputPath}`]);
-    assert.match(await readFile(outputPath, "utf8"), /^# Release v0\.1\.0/m);
+    const markdown = await readFile(outputPath, "utf8");
+
+    assert.match(markdown, /^# Release v0\.1\.0/m);
+    assert.match(markdown, /Production smoke source:/);
   } finally {
     await rm(root, { force: true, recursive: true });
   }
@@ -57,6 +61,7 @@ function createReadyArtifact() {
     smoke: {
       path: "artifacts/production-smoke/smoke-report.json",
       releaseReady: true,
+      source: createReadySmokeSource(),
       status: "ready",
       summary: {
         checkCount: 42,

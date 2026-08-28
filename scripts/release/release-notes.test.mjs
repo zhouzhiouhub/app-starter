@@ -4,6 +4,11 @@ import {
   createReleaseNotesMarkdown,
   readReleaseNotesCliConfig,
 } from "./release-notes.mjs";
+import {
+  createCompleteArtifactCheck,
+  createInvalidArtifactCheck,
+  createReadySmokeSource,
+} from "./release-notes-test-fixtures.mjs";
 
 test("release notes config parses required release evidence fields", () => {
   assert.deepEqual(
@@ -98,6 +103,10 @@ test("release notes render required evidence and gate status", () => {
   assert.match(markdown, /Mode: release sign-off/);
   assert.doesNotMatch(markdown, /failed evidence review only/);
   assert.match(markdown, /Production smoke artifact: `production-smoke-report-123`/);
+  assert.match(
+    markdown,
+    /Production smoke source: https:\/\/github\.com\/zhouzhiouhub\/app-starter\/actions\/runs\/123456789 \(0123456, run 123456789\)/,
+  );
   assert.match(markdown, /Combined release artifact: `release-evidence-check-123`/);
   assert.match(markdown, /Page Builder Visual: accepted \(6\/6 components, 12\/12 viewports\)/);
   assert.match(
@@ -141,6 +150,7 @@ function createReadyReleaseArtifact() {
     smoke: {
       path: "artifacts/production-smoke/smoke-report.json",
       releaseReady: true,
+      source: createReadySmokeSource(),
       status: "ready",
       summary: {
         checkCount: 42,
@@ -192,6 +202,7 @@ test("release notes require ready evidence unless explicitly allowed", () => {
     smoke: {
       path: "artifacts/production-smoke/smoke-report.json",
       releaseReady: true,
+      source: createReadySmokeSource(),
       status: "ready",
       summary: {
         checkCount: 42,
@@ -349,40 +360,6 @@ function createBlockedReadinessChecklist() {
       },
     ],
     releaseReady: false,
-  };
-}
-
-function createCompleteArtifactCheck() {
-  return {
-    artifactDir: "reports/visual/page-builder-fixture",
-    expectedScreenshotCount: 12,
-    issueCount: 0,
-    issues: [],
-    presentRequiredFileCount: 3,
-    presentScreenshotCount: 12,
-    requiredFileCount: 3,
-    status: "complete",
-  };
-}
-
-function createInvalidArtifactCheck() {
-  return {
-    artifactDir: "reports/visual/page-builder-fixture",
-    expectedScreenshotCount: 12,
-    issueCount: 1,
-    issues: [
-      {
-        code: "missing_artifact_file",
-        component: null,
-        message: "capture report is missing.",
-        severity: "error",
-        viewport: null,
-      },
-    ],
-    presentRequiredFileCount: 2,
-    presentScreenshotCount: 0,
-    requiredFileCount: 3,
-    status: "invalid",
   };
 }
 

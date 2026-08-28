@@ -26,6 +26,7 @@ export function createReleaseNotesMarkdown(config, artifact) {
     "",
     `- Workflow run: ${config.workflowRunUrl}`,
     `- Production smoke artifact: \`${formatInline(config.smokeArtifact)}\``,
+    `- Production smoke source: ${formatSmokeSource(artifact.smoke.source)}`,
     `- Combined release artifact: \`${formatInline(config.releaseArtifact)}\``,
     `- Page Builder visual artifact: \`${formatInline(config.visualArtifact)}\``,
     `- Release check source: \`${formatInline(config.releaseCheckPath)}\``,
@@ -120,6 +121,16 @@ function formatVisualArtifactGate(check) {
   return [
     `- Page Builder Visual Artifact: ${formatInline(check.status)} (${check.presentRequiredFileCount}/${check.requiredFileCount} files, ${check.presentScreenshotCount}/${check.expectedScreenshotCount} screenshots)`,
   ];
+}
+
+function formatSmokeSource(source) {
+  if (!source?.commitSha || !source?.runId || !source?.workflowRunUrl) {
+    return "missing";
+  }
+
+  return `${formatInline(source.workflowRunUrl)} (${formatInline(
+    source.commitSha.slice(0, 7),
+  )}, run ${formatInline(source.runId)})`;
 }
 
 function formatVisualArtifactCheck(check) {

@@ -84,6 +84,10 @@ test("release check creates bounded JSON artifacts", () => {
   assert.equal(artifact.status, "ready");
   assert.equal(artifact.releaseReady, true);
   assert.equal(artifact.smoke.path, "artifacts/production-smoke/smoke-report.json");
+  assert.equal(
+    artifact.smoke.source.workflowRunUrl,
+    "https://github.com/zhouzhiouhub/app-starter/actions/runs/123456789",
+  );
   assert.deepEqual(
     artifact.smoke.traceability.map((group) => `${group.label}:${group.status}`),
     ["R2/CDN:passed", "Admin static app:passed", "Publish flow:passed"],

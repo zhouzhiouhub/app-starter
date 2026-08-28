@@ -25,9 +25,19 @@ test("smoke release check accepts full production evidence", () => {
   });
 
   assert.equal(result.releaseReady, true);
+  assert.equal(result.source.commitSha, "0123456789abcdef0123456789abcdef01234567");
   assert.deepEqual(
     result.groups.map((group) => `${group.label}:${group.status}`),
     ["R2/CDN:passed", "Admin static app:passed", "Publish flow:passed"],
+  );
+  assert.equal(
+    formatSmokeReleaseCheck({ report }).some((line) =>
+      line.includes(
+        "Source: 0123456 run 123456789 " +
+          "https://github.com/zhouzhiouhub/app-starter/actions/runs/123456789",
+      ),
+    ),
+    true,
   );
   assert.deepEqual(formatSmokeReleaseCheck({ report }).slice(-1), [
     "  Evidence is ready for release notes.",
@@ -55,6 +65,17 @@ test("smoke release check blocks optional gate reports", () => {
     blockerLabels.includes("Production readiness gates blocked"),
     true,
   );
+});
+
+test("smoke release check blocks missing source metadata", () => {
+  const report = createCompleteReleaseReport({ source: null });
+  const result = createSmokeReleaseCheck({ report });
+
+  assert.equal(result.releaseReady, false);
+  assert.equal(hasBlocker(result, "Smoke source commitSha missing"), true);
+  assert.equal(hasBlocker(result, "Smoke source repository missing"), true);
+  assert.equal(hasBlocker(result, "Smoke source runId missing"), true);
+  assert.equal(hasBlocker(result, "Smoke source workflowRunUrl missing"), true);
 });
 
 test("smoke release check blocks missing traceability checks", () => {

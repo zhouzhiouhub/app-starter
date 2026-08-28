@@ -31,11 +31,24 @@ export function createProductionReadySmokeReport(overrides = {}, options = {}) {
       requireAdminApp: true,
       requireR2Upload: true,
       reportPath: "tmp/smoke-report.json",
+      source: createProductionReadySmokeSourceMetadata(),
       webUrl: "https://store.brand.com",
       ...overrides,
     },
     options,
   );
+}
+
+export function createProductionReadySmokeSourceMetadata() {
+  return {
+    commitSha: "0123456789abcdef0123456789abcdef01234567",
+    repository: "zhouzhiouhub/app-starter",
+    runId: "123456789",
+    runNumber: "123",
+    workflow: "Production Smoke",
+    workflowRunUrl:
+      "https://github.com/zhouzhiouhub/app-starter/actions/runs/123456789",
+  };
 }
 
 export function createProductionReadyEnvironmentDiagnostics() {

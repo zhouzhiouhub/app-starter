@@ -281,7 +281,10 @@ publish-flow traceability before showing failed check details and suggested
 fixes. The release-check command exits non-zero unless the archived report
 has a valid chronological start/finish timeline and proves the required
 production gates, including R2 upload, Admin static app, publish/rollback, SEO,
-and ISR revalidation.
+and ISR revalidation. Production release evidence must also include
+`config.source.commitSha`, `config.source.repository`, `config.source.runId`,
+and `config.source.workflowRunUrl` so the smoke report can be traced back to a
+specific GitHub Actions run.
 
 After the Page Builder visual manifest has accepted real design evidence,
 `release:check` verifies both evidence streams together: production smoke must
@@ -290,7 +293,8 @@ be release-ready and Page Builder visual acceptance must be fully accepted. Use
 release notes tasks. Use `--json` for machine-readable stdout or `--output` to
 write the combined `release-evidence-check.v1` artifact under a safe archive
 path; new artifacts also include a structured `readinessChecklist` with the
-same release tasks for CI artifacts and release records.
+same release tasks plus `smoke.source` metadata for CI artifacts and release
+records.
 When the release uses a downloaded Page Builder Visual artifact, add
 `--visual-artifact-dir reports/visual/page-builder-fixture`; the combined gate
 then verifies the artifact-local manifest, capture report, acceptance report,
@@ -298,14 +302,15 @@ and all 12 PNG screenshots, and writes the result under
 `visual.artifactCheck`.
 After that artifact is ready, `release:notes` writes the final Markdown release
 record, including the readiness checklist and any recorded
-`visual.artifactCheck` summary, and refuses blocked evidence unless
-`--allow-blocked` is used for a failure review draft.
+`visual.artifactCheck` summary plus the production smoke source run, and refuses
+blocked evidence unless `--allow-blocked` is used for a failure review draft.
 
 The `Production Smoke` GitHub Actions workflow runs the same command set against
 the protected `production` environment. It sets
 `SMOKE_REPORT_PATH=artifacts/production-smoke/smoke-report.json`, requires R2
 upload, Admin static hosting, and ISR revalidation by default, writes the review
-and release-check commands to the job summary, and uploads the report as
+and release-check commands to the job summary, records the source commit and
+workflow run URL in both the smoke config and summary, and uploads the report as
 `production-smoke-report-<run_number>`. It also runs the combined
 `release:check -- --checklist` gate, prints the release readiness checklist, and
 uploads `release-evidence-check-<run_number>` with the

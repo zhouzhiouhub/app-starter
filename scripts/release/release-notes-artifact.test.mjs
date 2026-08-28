@@ -18,6 +18,25 @@ test("release notes validates release evidence artifact shape", () => {
     () =>
       assertReleaseEvidenceCheckArtifact({
         ...artifact,
+        smoke: { ...artifact.smoke, source: null },
+      }),
+    /smoke\.source must be an object/,
+  );
+  assert.throws(
+    () =>
+      assertReleaseEvidenceCheckArtifact({
+        ...artifact,
+        smoke: {
+          ...artifact.smoke,
+          source: { ...artifact.smoke.source, commitSha: 42 },
+        },
+      }),
+    /smoke\.source\.commitSha must be a string or null/,
+  );
+  assert.throws(
+    () =>
+      assertReleaseEvidenceCheckArtifact({
+        ...artifact,
         visual: {
           ...artifact.visual,
           acceptedViewportCount: artifact.visual.viewportCount + 1,
@@ -97,6 +116,17 @@ test("release notes validates ready release evidence consistency", () => {
         },
       }),
     /ready smoke must have productionReady true and zero failed checks/,
+  );
+  assert.throws(
+    () =>
+      assertReleaseEvidenceCheckArtifact({
+        ...artifact,
+        smoke: {
+          ...artifact.smoke,
+          source: { ...artifact.smoke.source, workflowRunUrl: null },
+        },
+      }),
+    /ready evidence must include production smoke source metadata/,
   );
   assert.throws(
     () =>
@@ -235,6 +265,7 @@ function createReadyReleaseArtifact() {
     smoke: {
       path: "artifacts/production-smoke/smoke-report.json",
       releaseReady: true,
+      source: createReadySmokeSource(),
       status: "ready",
       summary: {
         checkCount: 42,
@@ -275,6 +306,18 @@ function createReadyReleaseArtifact() {
       viewportCount: 12,
       warningCount: 0,
     },
+  };
+}
+
+function createReadySmokeSource() {
+  return {
+    commitSha: "0123456789abcdef0123456789abcdef01234567",
+    repository: "zhouzhiouhub/app-starter",
+    runId: "123456789",
+    runNumber: "123",
+    workflow: "Production Smoke",
+    workflowRunUrl:
+      "https://github.com/zhouzhiouhub/app-starter/actions/runs/123456789",
   };
 }
 

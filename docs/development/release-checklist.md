@@ -102,8 +102,9 @@ later phases are explicitly approved.
 - When release note inputs were provided, the uploaded artifact
   `release-notes-<run_number>` is attached or linked.
 - The GitHub step summary records the report path, artifact names, review
-  command, and combined `release:check -- --checklist` command. When visual
-  evidence is downloaded, that combined command includes
+  command, source commit, source workflow run URL, and combined
+  `release:check -- --checklist` command. When visual evidence is downloaded,
+  that combined command includes
   `--visual-artifact-dir reports/visual/page-builder-fixture`.
 - `pnpm smoke:report -- artifacts/production-smoke/smoke-report.json` output is
   saved in the workflow log.
@@ -112,6 +113,9 @@ later phases are explicitly approved.
 - The smoke report shows `summary.status=passed`.
 - The smoke report includes canonical ISO `startedAt` and `finishedAt`
   timestamps, with `finishedAt` not earlier than `startedAt`.
+- The smoke report includes `config.source.commitSha`,
+  `config.source.repository`, `config.source.runId`, and
+  `config.source.workflowRunUrl` matching the Production Smoke workflow run.
 - The smoke report shows `summary.productionReady=true`.
 - The traceability section shows `R2/CDN: passed`.
 - The traceability section shows `Admin static app: passed`.
@@ -153,19 +157,20 @@ later phases are explicitly approved.
   `visual.artifactCheck` with required file, validated screenshot, and issue
   counts.
 - The `Production Smoke` workflow uploads the same combined release evidence as
-  `release-evidence-check-<run_number>`.
+  `release-evidence-check-<run_number>`; the artifact includes `smoke.source`
+  so release notes can trace the smoke report back to the CI run.
 - `pnpm release:notes -- --release-tag <tag> --workflow-run-url <url> --smoke-artifact production-smoke-report-<run_number> --release-artifact release-evidence-check-<run_number> --visual-artifact page-builder-visual-fixture-<run_number> --storefront-url <url> --rollback-target <target> --output docs/releases/<tag>.md`
   writes the final Markdown release record from the ready
   `release-evidence-check.v1` artifact, including the readiness checklist,
   visual manifest path, optional `visual.artifactCheck` summary, pending visual
   evidence lists, and visual issue summary when `--allow-blocked` is used for
   failure review drafts. The command validates the artifact's smoke summary,
-  traceability groups, readiness checklist, visual counts, optional visual
-  artifact check, pending lists, and issue entries before writing the Markdown
-  record; a ready artifact must also have no blockers, internally consistent
-  smoke status, ready production smoke, fully accepted visual evidence with no
-  pending or issue entries, and any recorded visual artifact check must be
-  complete.
+  source metadata, traceability groups, readiness checklist, visual counts,
+  optional visual artifact check, pending lists, and issue entries before
+  writing the Markdown record; a ready artifact must also have no blockers,
+  internally consistent smoke status, ready production smoke with source
+  metadata, fully accepted visual evidence with no pending or issue entries, and
+  any recorded visual artifact check must be complete.
 - The `Production Smoke` workflow can generate the same Markdown release record
   when `release_tag`, `rollback_target`, and `visual_artifact_name` inputs are
   provided. When `allow_blocked_release_notes=true`, the same step passes
@@ -199,7 +204,8 @@ later phases are explicitly approved.
 - Keep the generated release notes artifact for at least the workflow retention
   window when it was produced by `Production Smoke`.
 - Record the release tag, workflow run URL, smoke artifact name, combined release
-  artifact name, public storefront URL, and rollback target in the release notes.
+  artifact name, production smoke source run, public storefront URL, and rollback
+  target in the release notes.
 - Keep the generated `docs/releases/<tag>.md` release record with the release
   evidence bundle.
 - If a P0 or P1 issue happens, attach the failed smoke report review to the

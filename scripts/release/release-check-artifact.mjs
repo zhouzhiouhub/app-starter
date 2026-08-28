@@ -54,6 +54,7 @@ function createSmokeArtifact(smoke) {
   return {
     path: readTextOrNull(smoke.path),
     releaseReady: smoke.releaseReady,
+    source: createSmokeSourceArtifact(smoke.source),
     status: smoke.releaseReady ? "ready" : "blocked",
     summary: {
       checkCount: smoke.summary?.checkCount ?? 0,
@@ -66,6 +67,17 @@ function createSmokeArtifact(smoke) {
       label: readTextOrNull(group.label) ?? "unknown",
       status: readTextOrNull(group.status) ?? "unknown",
     })),
+  };
+}
+
+function createSmokeSourceArtifact(source) {
+  return {
+    commitSha: readTextOrNull(source?.commitSha),
+    repository: readTextOrNull(source?.repository),
+    runId: readTextOrNull(source?.runId),
+    runNumber: readTextOrNull(source?.runNumber),
+    workflow: readTextOrNull(source?.workflow),
+    workflowRunUrl: readTextOrNull(source?.workflowRunUrl),
   };
 }
 

@@ -33,6 +33,24 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /SMOKE_REQUIRE_ADMIN_APP:/);
   assert.match(workflow, /SMOKE_REQUIRE_R2_UPLOAD:/);
   assert.match(workflow, /SMOKE_REQUIRE_REVALIDATION:/);
+  assert.match(workflow, /SMOKE_SOURCE_COMMIT_SHA: \$\{\{ github\.sha \}\}/);
+  assert.match(
+    workflow,
+    /SMOKE_SOURCE_REPOSITORY: \$\{\{ github\.repository \}\}/,
+  );
+  assert.match(workflow, /SMOKE_SOURCE_RUN_ID: \$\{\{ github\.run_id \}\}/);
+  assert.match(
+    workflow,
+    /SMOKE_SOURCE_RUN_NUMBER: \$\{\{ github\.run_number \}\}/,
+  );
+  assert.match(
+    workflow,
+    /SMOKE_SOURCE_WORKFLOW: \$\{\{ github\.workflow \}\}/,
+  );
+  assert.match(
+    workflow,
+    /SMOKE_SOURCE_WORKFLOW_RUN_URL: https:\/\/github\.com\/\$\{\{ github\.repository \}\}\/actions\/runs\/\$\{\{ github\.run_id \}\}/,
+  );
   assert.match(workflow, /APP_ENV: production/);
   assert.match(workflow, /pnpm smoke:publish/);
   assert.match(workflow, /if: always\(\)/);
@@ -98,6 +116,8 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /Release notes:/);
   assert.match(workflow, /Release notes artifact:/);
   assert.match(workflow, /Release notes mode:/);
+  assert.match(workflow, /Source commit:/);
+  assert.match(workflow, /Source workflow run:/);
   assert.match(workflow, /failure review draft/);
   assert.match(workflow, /ready evidence only/);
   assert.match(workflow, /Visual evidence artifact:/);

@@ -2,6 +2,7 @@ import {
   createSmokeReleaseCheck,
   readSmokeReleaseCheckArtifact,
 } from "../smoke/smoke-release-check.mjs";
+import { createEmptySmokeSourceMetadata } from "../smoke/smoke-source-metadata.mjs";
 import {
   readPageBuilderVisualAcceptanceManifest,
   validatePageBuilderVisualAcceptanceManifest,
@@ -140,6 +141,7 @@ function createMissingSmokeReleaseCheck(error, smokeReportPath) {
     groups: [],
     path: smokeReportPath ?? null,
     releaseReady: false,
+    source: createEmptySmokeSourceMetadata(),
     summary: {
       failedCheckCount: 1,
       productionReady: false,
