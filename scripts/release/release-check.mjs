@@ -15,7 +15,9 @@ import {
 import { formatReleaseEvidenceCheck } from "./release-check-report.mjs";
 
 const visualEvidenceAction =
-  "Attach real design references and browser screenshots, run pnpm visual:measure -- --write --require-complete, then pnpm visual:acceptance -- --require-accepted.";
+  "Run pnpm visual:acceptance -- --checklist, attach real design references " +
+  "and browser screenshots, run pnpm visual:measure -- --write --require-complete, " +
+  "then pnpm visual:acceptance -- --require-accepted.";
 
 export {
   createReleaseEvidenceCheckArtifact,
@@ -31,6 +33,7 @@ export async function readReleaseEvidenceCheck(config, input = {}) {
   return createReleaseEvidenceCheck({
     smokeArtifact,
     smokeError: smokeArtifact.error,
+    smokeReportPath: config.smokeReportPath,
     visualError: visualManifest.error,
     visualEvidenceRoot: input.visualEvidenceRoot,
     visualManifest: visualManifest.manifest,
@@ -40,7 +43,7 @@ export async function readReleaseEvidenceCheck(config, input = {}) {
 
 export function createReleaseEvidenceCheck(input) {
   const smoke = input.smokeError
-    ? createMissingSmokeReleaseCheck(input.smokeError)
+    ? createMissingSmokeReleaseCheck(input.smokeError, input.smokeReportPath)
     : createSmokeReleaseCheck(input.smokeArtifact);
   const visual = input.visualError
     ? createInvalidVisualAcceptanceReport(input.visualError)
@@ -90,16 +93,16 @@ async function readOptionalVisualManifest(config, input) {
   }
 }
 
-function createMissingSmokeReleaseCheck(error) {
+function createMissingSmokeReleaseCheck(error, smokeReportPath) {
   return {
     blockers: [
       {
-        action: readErrorMessage(error),
+        action: createMissingSmokeArtifactAction(error, smokeReportPath),
         label: "Production smoke artifact missing",
       },
     ],
     groups: [],
-    path: null,
+    path: smokeReportPath ?? null,
     releaseReady: false,
     summary: {
       failedCheckCount: 1,
@@ -107,6 +110,26 @@ function createMissingSmokeReleaseCheck(error) {
       status: "missing",
     },
   };
+}
+
+function createMissingSmokeArtifactAction(error, smokeReportPath) {
+  const cause = readErrorMessage(error);
+
+  if (smokeReportPath) {
+    return [
+      "Run the Production Smoke workflow and keep the",
+      "production-smoke-report-<run_number> artifact, or place its",
+      `smoke-report.json at ${smokeReportPath}; then rerun pnpm release:check.`,
+      `Cause: ${cause}`,
+    ].join(" ");
+  }
+
+  return [
+    "Run the Production Smoke workflow and keep the",
+    "production-smoke-report-<run_number> artifact, or pass --smoke-report",
+    "<path> to an archived report; then rerun pnpm release:check.",
+    `Cause: ${cause}`,
+  ].join(" ");
 }
 
 function createInvalidVisualAcceptanceReport(error) {

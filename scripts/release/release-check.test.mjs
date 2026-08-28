@@ -145,7 +145,8 @@ test("release check blocks pending Page Builder visual evidence", () => {
     check.blockers.some(
       (blocker) =>
         blocker.area === "Page Builder Visual" &&
-        blocker.label === "Visual acceptance invalid",
+        blocker.label === "Visual acceptance invalid" &&
+        blocker.action.includes("pnpm visual:acceptance -- --checklist"),
     ),
     true,
   );
@@ -187,13 +188,39 @@ test("release check reports missing smoke and pending visual together", async ()
     check.blockers.some(
       (blocker) =>
         blocker.area === "Production Smoke" &&
-        blocker.label === "Production smoke artifact missing",
+        blocker.label === "Production smoke artifact missing" &&
+        blocker.action.includes("Production Smoke workflow") &&
+        blocker.action.includes("production-smoke-report-<run_number>") &&
+        blocker.action.includes("--smoke-report <path>"),
     ),
     true,
   );
   assert.equal(
     check.blockers.some(
       (blocker) => blocker.area === "Page Builder Visual",
+    ),
+    true,
+  );
+});
+
+test("release check keeps explicit missing smoke report paths visible", async () => {
+  const check = await readReleaseEvidenceCheck(
+    readReleaseCheckCliConfig([
+      "--smoke-report",
+      "artifacts/production-smoke/smoke-report.json",
+    ]),
+    {
+      visualManifest: createPendingVisualManifest(),
+    },
+  );
+  const lines = formatReleaseEvidenceCheck(check);
+
+  assert.equal(check.smoke.path, "artifacts/production-smoke/smoke-report.json");
+  assert.equal(
+    lines.some((line) =>
+      line.includes(
+        "Smoke report: artifacts/production-smoke/smoke-report.json",
+      ),
     ),
     true,
   );
