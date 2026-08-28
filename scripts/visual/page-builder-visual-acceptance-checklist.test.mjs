@@ -19,12 +19,52 @@ test("visual acceptance checklist lists missing release evidence", async () => {
   assert.equal(checklist.viewportCount, 12);
   assert.equal(checklist.readyViewportCount, 0);
   assert.equal(checklist.pendingViewportCount, 12);
+  assert.deepEqual(checklist.components[0].viewports[0].commands, {
+    capture:
+      "pnpm visual:capture:fixture -- --component hero-banner --viewport desktop --write-manifest",
+    importReference:
+      "pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete",
+    measure: "pnpm visual:measure -- --write --require-complete",
+    verify: "pnpm visual:acceptance -- --require-accepted",
+  });
+  assert.equal(
+    checklist.components[0].viewports[0].expectedDesignReference,
+    "docs/visual/page-builder-references/hero-banner-desktop.png",
+  );
+  assert.equal(
+    checklist.components[0].viewports[0].expectedPreviewScreenshot,
+    "artifacts/visual/page-builder-visual-fixture-hero-banner-desktop.png",
+  );
   assert.match(lines.join("\n"), /Evidence checklist:/);
   assert.match(
     lines.join("\n"),
     /hero-banner\.desktop: missing designReference, visualMatchPercent >= 95, maxLayoutDeltaPx <= 5, maxColorDeltaE <= 3, status=accepted/,
   );
   assert.match(lines.join("\n"), /Next: attach missing design references/);
+  assert.match(lines.join("\n"), /expected designReference:/);
+  assert.match(lines.join("\n"), /capture preview:/);
+});
+
+test("visual acceptance checklist commands respect custom manifest path", async () => {
+  const manifest = await readPageBuilderVisualAcceptanceManifest();
+  const checklist = createPageBuilderVisualAcceptanceChecklist(manifest, {
+    manifestPath:
+      "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
+  });
+  const viewport = checklist.components[0].viewports[0];
+
+  assert.match(viewport.commands.capture, /--manifest reports\/visual/);
+  assert.match(viewport.commands.capture, /--output-dir reports\/visual/);
+  assert.match(viewport.commands.importReference, /--manifest reports\/visual/);
+  assert.match(viewport.commands.measure, /--manifest reports\/visual/);
+  assert.equal(
+    viewport.expectedPreviewScreenshot,
+    "reports/visual/page-builder-fixture/page-builder-visual-fixture-hero-banner-desktop.png",
+  );
+  assert.match(
+    viewport.commands.verify,
+    /--require-accepted reports\/visual\/page-builder-fixture/,
+  );
 });
 
 test("visual acceptance checklist marks passing evidence ready", () => {

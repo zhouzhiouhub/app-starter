@@ -36,7 +36,10 @@ later phases are explicitly approved.
 - Confirm the smoke admin account is not the documented local default and has
   `audit:read`.
 - Run `pnpm visual:acceptance -- --checklist` and keep the manifest review
-  output plus per-viewport evidence task list with the release notes. After
+  output plus per-viewport evidence task list with the release notes. The
+  checklist names the expected reference PNG, retained screenshot path, and
+  import/capture/measure/verify commands for each Desktop and Mobile viewport.
+  After
   placing real design reference PNGs under a retained source directory, run
   `pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete`.
   Then run

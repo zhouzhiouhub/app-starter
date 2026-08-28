@@ -1,7 +1,9 @@
 import {
   mvpPageBuilderComponents,
+  defaultPageBuilderVisualAcceptanceManifestPath,
   pageBuilderVisualAcceptanceViewports,
 } from "./page-builder-visual-acceptance-constants.mjs";
+import { createPageBuilderVisualViewportActions } from "./page-builder-visual-acceptance-actions.mjs";
 import { validateVisualAcceptanceEvidencePath } from "./page-builder-visual-acceptance-evidence-paths.mjs";
 import {
   isObject,
@@ -20,6 +22,8 @@ export function createPageBuilderVisualAcceptanceChecklist(
     : readPageBuilderVisualAcceptanceTargets({}, issues);
   const context = {
     evidenceRoot: options.evidenceRoot ?? process.cwd(),
+    manifestPath:
+      options.manifestPath ?? defaultPageBuilderVisualAcceptanceManifestPath,
   };
   const records = Array.isArray(manifest?.records) ? manifest.records : [];
   const byComponent = new Map(
@@ -62,7 +66,9 @@ export function formatPageBuilderVisualAcceptanceChecklist(checklist) {
     lines.push(`  - ${component.component}: ${component.status}`);
 
     for (const viewport of component.viewports) {
-      lines.push(formatViewportChecklist(viewport));
+      for (const line of formatViewportChecklist(viewport)) {
+        lines.push(line);
+      }
     }
   }
 
@@ -81,7 +87,7 @@ function createComponentChecklist(component, record, targets, context) {
       component,
       status: "missing",
       viewports: pageBuilderVisualAcceptanceViewports.map((viewport) =>
-        createMissingViewportChecklist(component, viewport, targets),
+        createMissingViewportChecklist(component, viewport, targets, context),
       ),
     };
   }
@@ -101,9 +107,17 @@ function createComponentChecklist(component, record, targets, context) {
   };
 }
 
-function createMissingViewportChecklist(component, viewport, targets) {
+function createMissingViewportChecklist(component, viewport, targets, context) {
+  const actions = createPageBuilderVisualViewportActions(component, viewport, {
+    manifestPath: context.manifestPath,
+  });
+
   return {
+    commands: actions.commands,
     component,
+    designReference: null,
+    expectedDesignReference: actions.expectedDesignReference,
+    expectedPreviewScreenshot: actions.expectedPreviewScreenshot,
     missing: [
       "viewport evidence",
       "designReference",
@@ -113,6 +127,7 @@ function createMissingViewportChecklist(component, viewport, targets) {
       `maxColorDeltaE <= ${targets.maxColorDeltaE}`,
       "status=accepted",
     ],
+    previewScreenshot: null,
     ready: false,
     status: "missing",
     viewport,
@@ -127,9 +142,12 @@ function createViewportChecklist(
   context,
 ) {
   if (!isObject(evidence)) {
-    return createMissingViewportChecklist(component, viewport, targets);
+    return createMissingViewportChecklist(component, viewport, targets, context);
   }
 
+  const actions = createPageBuilderVisualViewportActions(component, viewport, {
+    manifestPath: context.manifestPath,
+  });
   const missing = [
     ...collectPathTasks(component, viewport, evidence, context),
     ...collectMetricTasks(evidence, targets),
@@ -137,8 +155,13 @@ function createViewportChecklist(
   ];
 
   return {
+    commands: actions.commands,
     component,
+    designReference: readEvidencePath(evidence.designReference),
+    expectedDesignReference: actions.expectedDesignReference,
+    expectedPreviewScreenshot: actions.expectedPreviewScreenshot,
     missing,
+    previewScreenshot: readEvidencePath(evidence.previewScreenshot),
     ready: missing.length === 0,
     status: readStatus(evidence.status),
     viewport,
@@ -239,12 +262,24 @@ function formatViewportChecklist(viewport) {
   const label = `    ${viewport.component}.${viewport.viewport}`;
 
   if (viewport.ready) {
-    return `${label}: ready`;
+    return [`${label}: ready`];
   }
 
-  return `${label}: missing ${viewport.missing.join(", ")}`;
+  return [
+    `${label}: missing ${viewport.missing.join(", ")}`,
+    `      expected designReference: ${viewport.expectedDesignReference}`,
+    `      expected previewScreenshot: ${viewport.expectedPreviewScreenshot}`,
+    `      import reference: ${viewport.commands.importReference}`,
+    `      capture preview: ${viewport.commands.capture}`,
+    `      measure evidence: ${viewport.commands.measure}`,
+    `      verify accepted: ${viewport.commands.verify}`,
+  ];
 }
 
 function isUnset(value) {
   return value === null || value === undefined || value === "";
+}
+
+function readEvidencePath(value) {
+  return isUnset(value) ? null : value;
 }

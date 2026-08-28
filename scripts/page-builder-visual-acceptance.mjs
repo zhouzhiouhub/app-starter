@@ -34,6 +34,7 @@ export async function runPageBuilderVisualAcceptanceCli(args, input = {}) {
     const checklist = config.checklist
       ? createPageBuilderVisualAcceptanceChecklist(manifest, {
           evidenceRoot: input.evidenceRoot,
+          manifestPath: config.manifestPath,
         })
       : null;
     const artifact = createPageBuilderVisualAcceptanceArtifact(report, {
@@ -90,7 +91,7 @@ function printHelp(writeLine) {
   pnpm visual:acceptance -- docs/development/page-builder-visual-acceptance.json
 
 Options:
-  --checklist         Print per-section evidence tasks for release sign-off.
+  --checklist         Print per-section evidence tasks and next commands.
   --json              Print the machine-readable visual acceptance report.
   --output <path>     Write a JSON report under tmp/, reports/, artifacts/, or .tmp/.
   --require-accepted  Fail unless every MVP section and viewport is accepted.
