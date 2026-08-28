@@ -18,6 +18,8 @@ export function createReleaseNotesMarkdown(config, artifact) {
     "",
     `Generated: ${formatInline(artifact.generatedAt ?? new Date().toISOString())}`,
     `Status: ${artifact.releaseReady ? "ready" : "blocked"}`,
+    `Mode: ${readReleaseNotesMode(config, artifact)}`,
+    ...formatReleaseNotesWarning(config, artifact),
     "",
     "## Evidence",
     "",
@@ -134,6 +136,24 @@ function formatBlockers(blockers) {
   }
 
   return visible;
+}
+
+function readReleaseNotesMode(config, artifact) {
+  if (artifact.releaseReady) {
+    return "release sign-off";
+  }
+
+  return config.allowBlocked ? "failure review draft" : "blocked";
+}
+
+function formatReleaseNotesWarning(config, artifact) {
+  if (artifact.releaseReady || !config.allowBlocked) {
+    return [];
+  }
+
+  return [
+    "Warning: This record is for failed evidence review only and must not be used as release sign-off.",
+  ];
 }
 
 function formatInlineList(values) {

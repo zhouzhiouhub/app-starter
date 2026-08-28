@@ -144,8 +144,8 @@ later phases are explicitly approved.
 - The `Production Smoke` workflow can generate the same Markdown release record
   when `release_tag`, `rollback_target`, and `visual_artifact_name` inputs are
   provided. When `allow_blocked_release_notes=true`, the same step passes
-  `--allow-blocked` and the uploaded notes are a failure review draft, not
-  release sign-off.
+  `--allow-blocked`; the uploaded notes are marked `Mode: failure review draft`
+  with a warning that they are not release sign-off.
 
 ## Failure Review
 

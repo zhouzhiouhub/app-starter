@@ -95,6 +95,8 @@ test("release notes render required evidence and gate status", () => {
 
   assert.match(markdown, /^# Release v0\.1\.0/m);
   assert.match(markdown, /Status: ready/);
+  assert.match(markdown, /Mode: release sign-off/);
+  assert.doesNotMatch(markdown, /failed evidence review only/);
   assert.match(markdown, /Production smoke artifact: `production-smoke-report-123`/);
   assert.match(markdown, /Combined release artifact: `release-evidence-check-123`/);
   assert.match(markdown, /Page Builder Visual: accepted \(6\/6 components, 12\/12 viewports\)/);
@@ -213,6 +215,8 @@ test("release notes require ready evidence unless explicitly allowed", () => {
   );
 
   assert.match(markdown, /Status: blocked/);
+  assert.match(markdown, /Mode: failure review draft/);
+  assert.match(markdown, /failed evidence review only/);
   assert.match(markdown, /Page Builder Visual: Visual acceptance pending/);
   assert.match(markdown, /Pending components: hero-banner, rich-text/);
   assert.match(
