@@ -55,6 +55,7 @@ function createReadyArtifact() {
     releaseReady: true,
     schemaVersion: "release-evidence-check.v1",
     smoke: {
+      path: "artifacts/production-smoke/smoke-report.json",
       releaseReady: true,
       status: "ready",
       summary: {
@@ -71,6 +72,11 @@ function createReadyArtifact() {
       acceptedViewportCount: 12,
       componentCount: 6,
       errorCount: 0,
+      issueCount: 0,
+      issues: [],
+      manifestPath: "docs/development/page-builder-visual-acceptance.json",
+      pendingComponents: [],
+      pendingViewports: [],
       status: "accepted",
       viewportCount: 12,
       warningCount: 0,

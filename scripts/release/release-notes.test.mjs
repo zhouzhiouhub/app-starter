@@ -4,6 +4,7 @@ import {
   createReleaseNotesMarkdown,
   readReleaseNotesCliConfig,
 } from "./release-notes.mjs";
+import { assertReleaseEvidenceCheckArtifact } from "./release-notes-artifact.mjs";
 
 test("release notes config parses required release evidence fields", () => {
   assert.deepEqual(
@@ -87,8 +88,71 @@ test("release notes config rejects unsafe release record values", () => {
   );
 });
 
+test("release notes validates release evidence artifact shape", () => {
+  const artifact = createReadyReleaseArtifact();
+
+  assert.doesNotThrow(() => assertReleaseEvidenceCheckArtifact(artifact));
+  assert.throws(
+    () =>
+      assertReleaseEvidenceCheckArtifact({
+        ...artifact,
+        smoke: { ...artifact.smoke, summary: null },
+      }),
+    /smoke\.summary must be an object/,
+  );
+  assert.throws(
+    () =>
+      assertReleaseEvidenceCheckArtifact({
+        ...artifact,
+        visual: {
+          ...artifact.visual,
+          acceptedViewportCount: artifact.visual.viewportCount + 1,
+        },
+      }),
+    /visual\.acceptedViewportCount must not exceed visual\.viewportCount/,
+  );
+  assert.throws(
+    () =>
+      assertReleaseEvidenceCheckArtifact({
+        ...artifact,
+        blockers: [null],
+      }),
+    /blockers must contain objects/,
+  );
+  assert.throws(
+    () =>
+      assertReleaseEvidenceCheckArtifact({
+        ...artifact,
+        visual: { ...artifact.visual, pendingComponents: ["hero-banner", 42] },
+      }),
+    /visual\.pendingComponents must be a string array/,
+  );
+});
+
 test("release notes render required evidence and gate status", () => {
-  const markdown = createReleaseNotesMarkdown(createReleaseNotesConfig(), {
+  const markdown = createReleaseNotesMarkdown(
+    createReleaseNotesConfig(),
+    createReadyReleaseArtifact(),
+  );
+
+  assert.match(markdown, /^# Release v0\.1\.0/m);
+  assert.match(markdown, /Status: ready/);
+  assert.match(markdown, /Production smoke artifact: `production-smoke-report-123`/);
+  assert.match(markdown, /Combined release artifact: `release-evidence-check-123`/);
+  assert.match(markdown, /Page Builder Visual: accepted \(6\/6 components, 12\/12 viewports\)/);
+  assert.match(
+    markdown,
+    /Manifest: `docs\/development\/page-builder-visual-acceptance\.json`/,
+  );
+  assert.match(markdown, /Pending components: none/);
+  assert.match(markdown, /Pending viewports: none/);
+  assert.match(markdown, /Visual issues: none/);
+  assert.match(markdown, /Rollback target: `main@abcdef1`/);
+  assert.match(markdown, /- None/);
+});
+
+function createReadyReleaseArtifact() {
+  return {
     blockerCount: 0,
     blockers: [],
     generatedAt: "2026-08-28T00:00:00.000Z",
@@ -118,6 +182,7 @@ test("release notes render required evidence and gate status", () => {
       acceptedViewportCount: 12,
       componentCount: 6,
       errorCount: 0,
+      issueCount: 0,
       issues: [],
       manifestPath: "docs/development/page-builder-visual-acceptance.json",
       pendingComponents: [],
@@ -126,23 +191,8 @@ test("release notes render required evidence and gate status", () => {
       viewportCount: 12,
       warningCount: 0,
     },
-  });
-
-  assert.match(markdown, /^# Release v0\.1\.0/m);
-  assert.match(markdown, /Status: ready/);
-  assert.match(markdown, /Production smoke artifact: `production-smoke-report-123`/);
-  assert.match(markdown, /Combined release artifact: `release-evidence-check-123`/);
-  assert.match(markdown, /Page Builder Visual: accepted \(6\/6 components, 12\/12 viewports\)/);
-  assert.match(
-    markdown,
-    /Manifest: `docs\/development\/page-builder-visual-acceptance\.json`/,
-  );
-  assert.match(markdown, /Pending components: none/);
-  assert.match(markdown, /Pending viewports: none/);
-  assert.match(markdown, /Visual issues: none/);
-  assert.match(markdown, /Rollback target: `main@abcdef1`/);
-  assert.match(markdown, /- None/);
-});
+  };
+}
 
 test("release notes require ready evidence unless explicitly allowed", () => {
   const artifact = {
@@ -158,9 +208,15 @@ test("release notes require ready evidence unless explicitly allowed", () => {
     releaseReady: false,
     schemaVersion: "release-evidence-check.v1",
     smoke: {
+      path: "artifacts/production-smoke/smoke-report.json",
       releaseReady: true,
       status: "ready",
-      summary: { failedCheckCount: 0, status: "passed" },
+      summary: {
+        checkCount: 42,
+        failedCheckCount: 0,
+        productionReady: true,
+        status: "passed",
+      },
       traceability: [],
     },
     status: "blocked",
@@ -168,6 +224,8 @@ test("release notes require ready evidence unless explicitly allowed", () => {
       acceptedComponentCount: 0,
       acceptedViewportCount: 0,
       componentCount: 6,
+      errorCount: 1,
+      issueCount: 1,
       issues: [
         {
           code: "record_needs_evidence",
@@ -182,6 +240,7 @@ test("release notes require ready evidence unless explicitly allowed", () => {
       pendingViewports: ["hero-banner.desktop", "hero-banner.mobile"],
       status: "invalid",
       viewportCount: 12,
+      warningCount: 0,
     },
   };
 
@@ -198,7 +257,10 @@ test("release notes require ready evidence unless explicitly allowed", () => {
   assert.match(markdown, /Status: blocked/);
   assert.match(markdown, /Page Builder Visual: Visual acceptance invalid/);
   assert.match(markdown, /Pending components: hero-banner, rich-text/);
-  assert.match(markdown, /Pending viewports: hero-banner\.desktop, hero-banner\.mobile/);
+  assert.match(
+    markdown,
+    /Pending viewports: hero-banner\.desktop, hero-banner\.mobile/,
+  );
   assert.match(
     markdown,
     /Visual issue: hero-banner: record_needs_evidence \(error\) - hero-banner is needs-evidence\./,
