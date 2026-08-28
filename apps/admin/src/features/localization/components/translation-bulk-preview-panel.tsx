@@ -203,6 +203,7 @@ export function TranslationBulkPreviewPanel(props: {
           onFocusKey={props.onFocusKey}
           onUseRepairDraft={handleUsePreviewRepairDraft}
           preview={bulkPreview.importPreview}
+          repairDraftDetailMessage={previewRepairDraftState?.detailMessage}
           repairDraftEntryCount={previewRepairDraftState?.entryCount ?? 0}
         />
       ) : null}

@@ -21,6 +21,7 @@ export function TranslationImportPreviewResultView(props: {
   onFocusKey?: (key: string) => Promise<void> | void;
   onUseRepairDraft?: () => void;
   preview: TranslationImportPreviewResult;
+  repairDraftDetailMessage?: string | null;
   repairDraftEntryCount?: number;
 }) {
   const filterDifference = readTranslationImportPreviewFilterDifference({
@@ -51,7 +52,7 @@ export function TranslationImportPreviewResultView(props: {
         />
       ) : null}
       {props.onUseRepairDraft ? (
-        <Space wrap>
+        <Space direction="vertical" size={4} style={{ width: "100%" }} wrap>
           <Tooltip title="Rebuild a draft from preview rows marked create or update; issue rows stay out for review.">
             <span>
               <Button
@@ -63,6 +64,11 @@ export function TranslationImportPreviewResultView(props: {
               </Button>
             </span>
           </Tooltip>
+          {props.repairDraftDetailMessage ? (
+            <Typography.Text type="secondary">
+              {props.repairDraftDetailMessage}
+            </Typography.Text>
+          ) : null}
         </Space>
       ) : null}
       <Descriptions bordered column={{ md: 3, xs: 1 }} size="small">
