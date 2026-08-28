@@ -5,7 +5,10 @@ import {
   buildTranslationExportAuditLogPath,
   buildTranslationImportAuditLogPath,
 } from "../translation-audit-log-link";
-import { formatDefaultLocaleImportConfirmationSummary } from "../translation-import-confirmation";
+import {
+  formatTranslationBulkExportConfirmationSummary,
+  formatTranslationBulkImportConfirmationSummary,
+} from "../translation-bulk-confirmation-summary";
 import { readTranslationImportFocusedResultKey } from "../translation-import-focus";
 import { readTranslationImportHistoryFilterAlignment } from "../translation-import-history-alignment";
 import { createTranslationImportPreviewRepairDraftState } from "../translation-import-preview-repair-draft";
@@ -42,17 +45,40 @@ export function TranslationBulkPreviewPanel(props: {
   >(null);
   const importConfirmationSummary = useMemo(
     () =>
-      formatDefaultLocaleImportConfirmationSummary({
-        defaultLocale: props.meta.locale,
+      formatTranslationBulkImportConfirmationSummary({
+        filters: props.filters,
         importText: bulkPreview.importText,
+        meta: props.meta,
         missingKeys: props.missingKeys,
         preview: bulkPreview.importPreview,
       }),
     [
       bulkPreview.importPreview,
       bulkPreview.importText,
+      props.filters.namespace,
+      props.filters.query,
+      props.meta.limit,
       props.meta.locale,
+      props.meta.page,
+      props.meta.total,
       props.missingKeys,
+    ],
+  );
+  const exportConfirmationSummary = useMemo(
+    () =>
+      formatTranslationBulkExportConfirmationSummary({
+        exportPreview: bulkPreview.exportPreview,
+        filters: props.filters,
+        meta: props.meta,
+      }),
+    [
+      bulkPreview.exportPreview,
+      props.filters.namespace,
+      props.filters.query,
+      props.meta.limit,
+      props.meta.locale,
+      props.meta.page,
+      props.meta.total,
     ],
   );
   const previewRepairDraftState = useMemo(
@@ -171,6 +197,7 @@ export function TranslationBulkPreviewPanel(props: {
         value={bulkPreview.importText}
       />
       <TranslationBulkActionBar
+        exportConfirmationSummary={exportConfirmationSummary}
         hasMissingKeyDraft={bulkPreview.hasMissingKeyDraft}
         importConfirmationSummary={importConfirmationSummary}
         loadingAction={bulkPreview.loadingAction}

@@ -8,6 +8,7 @@ import { Button, Popconfirm, Space } from "antd";
 import type { TranslationBulkLoadingAction } from "../translation-bulk-action";
 
 export function TranslationBulkActionBar(props: {
+  exportConfirmationSummary?: string | null;
   hasMissingKeyDraft: boolean;
   importConfirmationSummary: string;
   loadingAction?: TranslationBulkLoadingAction | null;
@@ -54,13 +55,24 @@ export function TranslationBulkActionBar(props: {
       >
         Preview export
       </Button>
-      <Button
-        icon={<DownloadOutlined />}
-        loading={props.loadingAction === "download"}
-        onClick={props.onExportDownload}
+      <Popconfirm
+        cancelText="Cancel"
+        description={props.exportConfirmationSummary}
+        disabled={!props.exportConfirmationSummary}
+        okText="Export"
+        onConfirm={props.onExportDownload}
+        title="Export default locale?"
       >
-        Export JSON
-      </Button>
+        <Button
+          icon={<DownloadOutlined />}
+          loading={props.loadingAction === "download"}
+          onClick={
+            props.exportConfirmationSummary ? undefined : props.onExportDownload
+          }
+        >
+          Export JSON
+        </Button>
+      </Popconfirm>
     </Space>
   );
 }
