@@ -1,3 +1,5 @@
+import { lstatSync } from "node:fs";
+import path from "node:path";
 import { createVisualAcceptanceIssue } from "./page-builder-visual-acceptance-targets.mjs";
 
 const imageEvidenceExtensions = new Set([".jpeg", ".jpg", ".png", ".webp"]);
@@ -40,7 +42,7 @@ export function validateVisualAcceptanceEvidencePath(input, context) {
     return false;
   }
 
-  return true;
+  return validateEvidenceFile(input, context);
 }
 
 function isSafeEvidencePath(value, field) {
@@ -98,4 +100,61 @@ function formatAllowedRoots(field) {
 
 function formatEvidenceField(input) {
   return `${input.component}.${input.viewport}.${input.field}`;
+}
+
+function validateEvidenceFile(input, context) {
+  const root = context.evidenceRoot ?? process.cwd();
+  const evidencePath = input.value.trim();
+  const resolvedRoot = path.resolve(root);
+  const resolvedPath = path.resolve(resolvedRoot, evidencePath);
+
+  if (!isPathInsideRoot(resolvedPath, resolvedRoot)) {
+    context.issues.push(
+      createVisualAcceptanceIssue(
+        "error",
+        "invalid_evidence_path",
+        `${formatEvidenceField(input)} must stay inside the visual evidence root.`,
+        input.component,
+        input.viewport,
+      ),
+    );
+    return false;
+  }
+
+  let stats;
+
+  try {
+    stats = lstatSync(resolvedPath);
+  } catch {
+    context.issues.push(
+      createVisualAcceptanceIssue(
+        "error",
+        "missing_evidence_file",
+        `${formatEvidenceField(input)} must point to a retained image file.`,
+        input.component,
+        input.viewport,
+      ),
+    );
+    return false;
+  }
+
+  if (!stats.isFile() || stats.size <= 0) {
+    context.issues.push(
+      createVisualAcceptanceIssue(
+        "error",
+        "invalid_evidence_file",
+        `${formatEvidenceField(input)} must point to a non-empty image file.`,
+        input.component,
+        input.viewport,
+      ),
+    );
+    return false;
+  }
+
+  return true;
+}
+
+function isPathInsideRoot(resolvedPath, resolvedRoot) {
+  const relative = path.relative(resolvedRoot, resolvedPath);
+  return Boolean(relative) && !relative.startsWith("..") && !path.isAbsolute(relative);
 }

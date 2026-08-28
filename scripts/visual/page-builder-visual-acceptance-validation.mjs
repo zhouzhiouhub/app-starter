@@ -35,6 +35,7 @@ export function validatePageBuilderVisualAcceptanceManifest(
   validateSchemaVersion(manifest, issues);
   const targets = readPageBuilderVisualAcceptanceTargets(manifest, issues);
   const records = summarizePageBuilderVisualAcceptanceRecords(manifest, {
+    evidenceRoot: options.evidenceRoot ?? process.cwd(),
     issues,
     requireAccepted: Boolean(options.requireAccepted),
     targets,

@@ -28,6 +28,8 @@ screenshots, and measured diff values.
 - Evidence paths must be retained relative image paths. Design references may
   live under `docs/`, `artifacts/visual/`, or `reports/visual/`; preview
   screenshots must live under `artifacts/visual/` or `reports/visual/`.
+- Accepted evidence paths must point to non-empty files retained in the
+  repository or release artifact bundle; missing files block sign-off.
 - Do not use URLs, absolute paths, parent directory segments, transient `tmp/`
   paths, or non-image files for accepted evidence.
 - Records may stay `needs-evidence` while the renderer exists but the real

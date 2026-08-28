@@ -668,7 +668,7 @@ pnpm visual:acceptance
 pnpm visual:acceptance -- --require-accepted
 ```
 
-最终签收时，`designReference` 需要指向 `docs/`、`artifacts/visual/` 或 `reports/visual/` 下的图片；`previewScreenshot` 需要指向 `artifacts/visual/` 或 `reports/visual/` 下的浏览器截图。
+最终签收时，`designReference` 需要指向 `docs/`、`artifacts/visual/` 或 `reports/visual/` 下的图片；`previewScreenshot` 需要指向 `artifacts/visual/` 或 `reports/visual/` 下的浏览器截图。所有已接受证据路径都必须对应仓库或发布 artifact 内的非空文件。
 
 GitHub Actions 里新增了手动触发的 `Production Smoke` workflow，会把报告写到 `artifacts/production-smoke/smoke-report.json`，失败或成功都会执行 `pnpm smoke:report` 和 `pnpm smoke:release-check` 并上传 `production-smoke-report-<run_number>` artifact；发布证据按 [Release Checklist](./docs/development/release-checklist.md) 留存。
 

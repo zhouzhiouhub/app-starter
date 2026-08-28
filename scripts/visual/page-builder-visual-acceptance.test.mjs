@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import test from "node:test";
 import {
   defaultPageBuilderVisualAcceptanceManifestPath,
@@ -39,9 +42,10 @@ test("visual acceptance require accepted mode blocks pending records", async () 
 });
 
 test("visual acceptance accepts signed off component evidence", () => {
+  const { evidenceRoot, manifest } = createAcceptedManifestWithEvidenceFiles();
   const report = validatePageBuilderVisualAcceptanceManifest(
-    createAcceptedManifest(),
-    { requireAccepted: true },
+    manifest,
+    { evidenceRoot, requireAccepted: true },
   );
 
   assert.equal(report.status, "accepted");
@@ -52,13 +56,14 @@ test("visual acceptance accepts signed off component evidence", () => {
 });
 
 test("visual acceptance rejects accepted records with weak evidence", () => {
-  const manifest = createAcceptedManifest();
+  const { evidenceRoot, manifest } = createAcceptedManifestWithEvidenceFiles();
   manifest.records[0].viewports.desktop.previewScreenshot = "";
   manifest.records[0].viewports.desktop.visualMatchPercent = 94;
   manifest.records[1].viewports.mobile.maxLayoutDeltaPx = 8;
   manifest.records[2].viewports.mobile.maxColorDeltaE = 3.5;
 
   const report = validatePageBuilderVisualAcceptanceManifest(manifest, {
+    evidenceRoot,
     requireAccepted: true,
   });
 
@@ -79,7 +84,7 @@ test("visual acceptance rejects accepted records with weak evidence", () => {
 });
 
 test("visual acceptance rejects unsafe evidence paths", () => {
-  const manifest = createAcceptedManifest();
+  const { evidenceRoot, manifest } = createAcceptedManifestWithEvidenceFiles();
   manifest.records[0].viewports.desktop.designReference =
     "https://figma.example.com/file";
   manifest.records[0].viewports.mobile.previewScreenshot =
@@ -90,6 +95,7 @@ test("visual acceptance rejects unsafe evidence paths", () => {
     "docs/design/rich-text-mobile.svg";
 
   const report = validatePageBuilderVisualAcceptanceManifest(manifest, {
+    evidenceRoot,
     requireAccepted: true,
   });
 
@@ -112,8 +118,34 @@ test("visual acceptance rejects unsafe evidence paths", () => {
   );
 });
 
+test("visual acceptance rejects accepted paths without retained files", () => {
+  const { evidenceRoot, manifest } = createAcceptedManifestWithEvidenceFiles();
+  manifest.records[0].viewports.desktop.previewScreenshot =
+    "artifacts/visual/missing-preview.png";
+  writeFileSync(
+    path.join(evidenceRoot, manifest.records[1].viewports.mobile.designReference),
+    "",
+  );
+
+  const report = validatePageBuilderVisualAcceptanceManifest(manifest, {
+    evidenceRoot,
+    requireAccepted: true,
+  });
+
+  assert.equal(report.status, "invalid");
+  assert.deepEqual(
+    report.issues.map((issue) => issue.code),
+    [
+      "missing_evidence_file",
+      "record_viewports_not_accepted",
+      "invalid_evidence_file",
+      "record_viewports_not_accepted",
+    ],
+  );
+});
+
 test("visual acceptance rejects missing and duplicate section records", () => {
-  const manifest = createAcceptedManifest();
+  const { evidenceRoot, manifest } = createAcceptedManifestWithEvidenceFiles();
   manifest.records = [
     manifest.records[0],
     manifest.records[0],
@@ -125,7 +157,9 @@ test("visual acceptance rejects missing and duplicate section records", () => {
     },
   ];
 
-  const report = validatePageBuilderVisualAcceptanceManifest(manifest);
+  const report = validatePageBuilderVisualAcceptanceManifest(manifest, {
+    evidenceRoot,
+  });
 
   assert.equal(report.status, "invalid");
   assert.deepEqual(
@@ -188,6 +222,23 @@ function createAcceptedManifest() {
   };
 }
 
+function createAcceptedManifestWithEvidenceFiles() {
+  const manifest = createAcceptedManifest();
+  const evidenceRoot = mkdtempSync(
+    path.join(tmpdir(), "page-builder-visual-acceptance-"),
+  );
+
+  for (const record of manifest.records) {
+    for (const viewport of ["desktop", "mobile"]) {
+      const evidence = record.viewports[viewport];
+      writeFixtureImage(evidenceRoot, evidence.designReference);
+      writeFixtureImage(evidenceRoot, evidence.previewScreenshot);
+    }
+  }
+
+  return { evidenceRoot, manifest };
+}
+
 function createAcceptedViewportEvidence(component, viewport) {
   return {
     designReference: `docs/design/${component}-${viewport}.png`,
@@ -197,4 +248,10 @@ function createAcceptedViewportEvidence(component, viewport) {
     status: "accepted",
     visualMatchPercent: 96,
   };
+}
+
+function writeFixtureImage(root, relativePath) {
+  const filePath = path.join(root, relativePath);
+  mkdirSync(path.dirname(filePath), { recursive: true });
+  writeFileSync(filePath, Buffer.from([0x89, 0x50, 0x4e, 0x47]));
 }

@@ -38,7 +38,8 @@ later phases are explicitly approved.
 - Run `pnpm visual:acceptance` and keep the manifest review output with the
   release notes. For final MVP sign-off, rerun it with `--require-accepted`;
   accepted screenshots must be retained under `artifacts/visual/` or
-  `reports/visual/`.
+  `reports/visual/`, and every referenced evidence file must exist and be
+  non-empty.
 
 ## Run Production Smoke
 
@@ -69,7 +70,7 @@ later phases are explicitly approved.
 - The traceability section shows `Publish flow: passed`.
 - The Page Builder visual acceptance manifest covers all six MVP core sections
   and links the final accepted Desktop / Mobile evidence when MVP visual sign-off
-  is requested.
+  is requested; every linked evidence file is retained with the release.
 
 ## Failure Review
 
