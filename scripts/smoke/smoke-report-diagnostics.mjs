@@ -1,4 +1,8 @@
 import { readAdminAppFailureActions } from "./smoke-report-admin-diagnostics.mjs";
+import {
+  readPublicApiDiagnosis,
+  readPublicApiFailureActions,
+} from "./smoke-report-public-api-diagnostics.mjs";
 
 const revalidationFailureActions = new Map([
   [
@@ -36,24 +40,6 @@ const revalidationFailureActions = new Map([
   [
     "web-revalidation-failed",
     "Check the Web /api/revalidate route logs for failed cache tag or path refresh operations.",
-  ],
-]);
-const publicApiFailureActions = new Map([
-  [
-    "fallback-mismatch",
-    "Check public page API fallback metadata for non-default locale requests.",
-  ],
-  [
-    "locale-mismatch",
-    "Check public page API locale metadata and DEFAULT_LOCALE / MULTI_LOCALE_ENABLED settings.",
-  ],
-  [
-    "noindex-page",
-    "Clear SEO noIndex on the smoke page before publishing.",
-  ],
-  [
-    "title-mismatch",
-    "Check that publish wrote the expected PageVersion and the public page API reads the current published slug.",
   ],
 ]);
 const storefrontFailureActions = new Map([
@@ -180,21 +166,6 @@ function readRevalidationDiagnosis(details) {
   return typeof revalidation.diagnosis === "string" &&
     revalidation.diagnosis.length > 0
     ? revalidation.diagnosis
-    : null;
-}
-
-function readPublicApiFailureActions(details) {
-  const diagnosis = readPublicApiDiagnosis(details);
-  const action = diagnosis ? publicApiFailureActions.get(diagnosis) : undefined;
-
-  return action ? [action] : [];
-}
-
-function readPublicApiDiagnosis(details) {
-  const publicApi = readPlainRecord(details.publicApi);
-  return typeof publicApi.diagnosis === "string" &&
-    publicApi.diagnosis.length > 0
-    ? publicApi.diagnosis
     : null;
 }
 

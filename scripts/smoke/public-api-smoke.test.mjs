@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   assertPublicApi,
+  assertPublicPublishedPage,
   formatPublicPageBodyDiagnostic,
   isPublicPageFallbackResponse,
   readPublicPageBodyDiagnostic,
@@ -81,6 +82,7 @@ test("public API smoke helper summarizes page body mismatches", () => {
     diagnosis: "title-mismatch",
     expectedFallback: true,
     expectedLocale: "en-US",
+    expectedNoIndex: false,
     expectedTitle: "Published Page",
     fallbackLocale: "en-US",
     fallbackMatches: false,
@@ -88,13 +90,97 @@ test("public API smoke helper summarizes page body mismatches", () => {
     locale: "de-DE",
     localeMatches: false,
     noIndex: true,
+    noIndexMatches: false,
     title: "Draft Page",
     titleMatches: false,
   });
   assert.equal(
     formatPublicPageBodyDiagnostic(diagnostic),
-    "title: Draft Page (expected Published Page), locale: de-DE (expected en-US), fallback: false (expected true), fallback locale: en-US, noIndex: true",
+    "title: Draft Page (expected Published Page), locale: de-DE (expected en-US), fallback: false (expected true), fallback locale: en-US, noIndex: true (expected false)",
   );
+});
+
+test("public API smoke accepts expected noIndex system pages", async () => {
+  const calls = [];
+
+  await withFetch(
+    async (url, init = {}) => {
+      calls.push({ redirect: init.redirect, url });
+
+      return new Response(
+        JSON.stringify({
+          data: {
+            meta: {
+              title: "Page not found",
+            },
+            seo: {
+              noIndex: true,
+            },
+          },
+          meta: {
+            fallbackLocale: "en-US",
+            isFallback: false,
+            locale: "en-US",
+          },
+        }),
+        {
+          headers: { "Content-Type": "application/json" },
+          status: 200,
+          statusText: "OK",
+        },
+      );
+    },
+    async () => {
+      await assertPublicPublishedPage(
+        {
+          apiBaseUrl: "https://api.example.com",
+          locale: "en-US",
+          market: "us",
+        },
+        {
+          expectedNoIndex: true,
+          slug: "404",
+          title: "Page not found",
+        },
+      );
+    },
+  );
+
+  assert.deepEqual(calls, [
+    {
+      redirect: "manual",
+      url: "https://api.example.com/public/pages/404?locale=en-US&market=us",
+    },
+  ]);
+});
+
+test("public API smoke reports noIndex mismatches separately", () => {
+  const diagnostic = readPublicPageBodyDiagnostic(
+    {
+      data: {
+        meta: {
+          title: "Page not found",
+        },
+        seo: {
+          noIndex: false,
+        },
+      },
+      meta: {
+        fallbackLocale: "en-US",
+        isFallback: false,
+        locale: "en-US",
+      },
+    },
+    {
+      expectedFallback: false,
+      expectedLocale: "en-US",
+      expectedNoIndex: true,
+      expectedTitle: "Page not found",
+    },
+  );
+
+  assert.equal(diagnostic.diagnosis, "noindex-mismatch");
+  assert.equal(diagnostic.noIndexMatches, false);
 });
 
 test("public API smoke failures keep structured diagnostics", async () => {
@@ -140,6 +226,7 @@ test("public API smoke failures keep structured diagnostics", async () => {
             diagnosis: "title-mismatch",
             expectedFallback: false,
             expectedLocale: "en-US",
+            expectedNoIndex: false,
             expectedTitle: "Published Page",
             fallbackLocale: "en-US",
             fallbackMatches: true,
@@ -147,6 +234,7 @@ test("public API smoke failures keep structured diagnostics", async () => {
             locale: "en-US",
             localeMatches: true,
             noIndex: false,
+            noIndexMatches: true,
             title: "Draft Page",
             titleMatches: false,
           });

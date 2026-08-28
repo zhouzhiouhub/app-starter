@@ -184,6 +184,42 @@ test("smoke report CLI suggests fixes for storefront redirects", () => {
   );
 });
 
+test("smoke report CLI suggests fixes for public page noIndex mismatches", () => {
+  const lines = formatSmokeReportSummary({
+    schemaVersion: "smoke-report.v3",
+    summary: {
+      blockerCount: 0,
+      checkCount: 1,
+      failedCheckCount: 1,
+      failedCheckDetails: [
+        {
+          details: {
+            publicApi: {
+              diagnosis: "noindex-mismatch",
+              expectedNoIndex: true,
+              noIndex: false,
+            },
+          },
+          message: "Public page API returned an unexpected noIndex flag.",
+          name: "starter-pages.published",
+        },
+      ],
+      failedChecks: ["starter-pages.published"],
+      passedCheckCount: 0,
+      productionReady: true,
+      status: "failed",
+      warningCount: 0,
+    },
+  });
+
+  assert.equal(
+    lines.includes(
+      "    - Check the published page SEO noIndex value matches the page type: marketing and policy pages should be indexable, while the 404 system page should be noIndex.",
+    ),
+    true,
+  );
+});
+
 test("smoke report CLI suggests fixes for Web revalidation execution failures", () => {
   const lines = formatSmokeReportSummary({
     schemaVersion: "smoke-report.v3",

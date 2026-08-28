@@ -173,6 +173,7 @@ function createCompleteReleaseReport(overrides = {}) {
     "audit.logs",
     "public-page.api",
     "public-page.fallback-api",
+    "starter-pages.published",
     "storefront.page",
     "seo.robots",
     "seo.sitemap",

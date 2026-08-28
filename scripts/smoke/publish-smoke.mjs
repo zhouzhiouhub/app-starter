@@ -35,6 +35,7 @@ import {
   getStorefrontPath,
   joinUrl,
 } from "./storefront-smoke.mjs";
+import { assertStarterPages } from "./starter-pages-smoke.mjs";
 
 export {
   getExpectedStorefrontOrigin,
@@ -156,6 +157,12 @@ export async function runSmokeTest(input) {
       report,
       "public-page.fallback-api",
       () => assertPublicFallbackApi(input, title),
+      (details) => details,
+    );
+    await runSmokeStep(
+      report,
+      "starter-pages.published",
+      () => assertStarterPages(input),
       (details) => details,
     );
     await runSmokeStep(report, "storefront.page", async () => {

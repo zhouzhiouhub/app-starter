@@ -4,18 +4,31 @@ import { createStorefrontSmokeRequestInit } from "./storefront-smoke-http.mjs";
 const fallbackProbeLocale = "de-DE";
 
 export async function assertPublicApi(input, title) {
-  const body = await fetchPublicPage(input, {
-    locale: input.locale,
-    market: input.market,
+  await assertPublicPublishedPage(input, {
+    slug: input.slug,
+    title,
   });
+
+  console.log("Public page API passed.");
+}
+
+export async function assertPublicPublishedPage(input, page) {
+  const body = await fetchPublicPage(
+    { ...input, slug: page.slug },
+    {
+      locale: input.locale,
+      market: input.market,
+    },
+  );
 
   assertPublishedPageBody(body, {
     expectedFallback: false,
     expectedLocale: input.locale,
-    expectedTitle: title,
+    expectedNoIndex: page.expectedNoIndex ?? false,
+    expectedTitle: page.title,
   });
 
-  console.log("Public page API passed.");
+  return body;
 }
 
 export async function assertPublicFallbackApi(input, title) {
@@ -29,6 +42,7 @@ export async function assertPublicFallbackApi(input, title) {
   assertPublishedPageBody(body, {
     expectedFallback: true,
     expectedLocale: input.locale,
+    expectedNoIndex: false,
     expectedTitle: title,
   });
 
@@ -78,9 +92,9 @@ function assertPublishedPageBody(body, input) {
     );
   }
 
-  if (diagnostic.noIndex === true) {
+  if (!diagnostic.noIndexMatches) {
     throw createPublicPageBodyFailure(
-      `Public page API returned the smoke page as noIndex (${formatPublicPageBodyDiagnostic(
+      `Public page API returned an unexpected noIndex flag (${formatPublicPageBodyDiagnostic(
         diagnostic,
       )}).`,
       diagnostic,
@@ -111,30 +125,35 @@ export function readPublicPageBodyDiagnostic(body, input) {
   const locale = body?.meta?.locale ?? null;
   const fallbackLocale = body?.meta?.fallbackLocale ?? null;
   const isFallback = body?.meta?.isFallback ?? null;
+  const expectedNoIndex = input.expectedNoIndex ?? false;
+  const noIndex = body?.data?.seo?.noIndex === true;
 
   return {
     diagnosis: readPublicPageBodyDiagnosis({
       fallbackMatches: isFallback === input.expectedFallback,
       localeMatches: locale === input.expectedLocale,
-      noIndex: body?.data?.seo?.noIndex === true,
+      noIndex,
+      noIndexMatches: noIndex === expectedNoIndex,
       titleMatches: title === input.expectedTitle,
     }),
     expectedFallback: input.expectedFallback,
     expectedLocale: input.expectedLocale,
+    expectedNoIndex,
     expectedTitle: input.expectedTitle,
     fallbackLocale,
     fallbackMatches: isFallback === input.expectedFallback,
     isFallback,
     locale,
     localeMatches: locale === input.expectedLocale,
-    noIndex: body?.data?.seo?.noIndex === true,
+    noIndex,
+    noIndexMatches: noIndex === expectedNoIndex,
     title,
     titleMatches: title === input.expectedTitle,
   };
 }
 
 export function formatPublicPageBodyDiagnostic(diagnostic) {
-  return `title: ${diagnostic.title ?? "missing"} (expected ${diagnostic.expectedTitle}), locale: ${diagnostic.locale ?? "missing"} (expected ${diagnostic.expectedLocale}), fallback: ${diagnostic.isFallback ?? "missing"} (expected ${diagnostic.expectedFallback}), fallback locale: ${diagnostic.fallbackLocale ?? "missing"}, noIndex: ${diagnostic.noIndex}`;
+  return `title: ${diagnostic.title ?? "missing"} (expected ${diagnostic.expectedTitle}), locale: ${diagnostic.locale ?? "missing"} (expected ${diagnostic.expectedLocale}), fallback: ${diagnostic.isFallback ?? "missing"} (expected ${diagnostic.expectedFallback}), fallback locale: ${diagnostic.fallbackLocale ?? "missing"}, noIndex: ${diagnostic.noIndex} (expected ${diagnostic.expectedNoIndex})`;
 }
 
 function createPublicPageBodyFailure(message, diagnostic) {
@@ -150,8 +169,8 @@ function readPublicPageBodyDiagnosis(diagnostic) {
     return "title-mismatch";
   }
 
-  if (diagnostic.noIndex === true) {
-    return "noindex-page";
+  if (!diagnostic.noIndexMatches) {
+    return "noindex-mismatch";
   }
 
   if (!diagnostic.localeMatches) {

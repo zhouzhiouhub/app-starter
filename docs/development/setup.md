@@ -340,10 +340,12 @@ publishes a unique page through the Admin API, publishes a rollback candidate,
 rolls back to the first published version, verifies
 `preview_token.created`, `page.published`, and `page.rolled_back` audit logs
 with redacted and bounded audit error identifiers, checks
-`GET /api/v1/public/pages/:slug`, then checks the media upload target,
-media confirmation, media list filters, storefront HTML, canonical metadata,
-`robots.txt` host/sitemap directives, `sitemap.xml`, and 404/noindex
-behavior. Set `SMOKE_REQUIRE_R2_UPLOAD=true` in production if the deployment
+`GET /api/v1/public/pages/:slug`, the seeded Home, Privacy Policy, Terms of
+Service, and 404 public page records, then checks the media upload target,
+media confirmation, media list filters, seeded Home / Privacy Policy / Terms of
+Service storefront HTML, canonical metadata, `robots.txt` host/sitemap
+directives, `sitemap.xml`, and 404/noindex behavior. Set
+`SMOKE_REQUIRE_R2_UPLOAD=true` in production if the deployment
 must fail unless the upload target is a Cloudflare R2 presigned URL, the test
 object can be uploaded with PUT, and `MEDIA_CDN_BASE_URL` produces an HTTPS CDN
 URL on a non-local host without query strings or embedded credentials.
