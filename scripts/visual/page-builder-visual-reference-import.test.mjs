@@ -1,5 +1,11 @@
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -12,6 +18,7 @@ import {
 import {
   mvpPageBuilderComponents,
   pageBuilderVisualAcceptanceSchemaVersion,
+  pageBuilderVisualAcceptanceViewports,
 } from "./page-builder-visual-acceptance.mjs";
 
 test("visual reference import config parses safe source dirs", () => {
@@ -149,6 +156,29 @@ test("visual reference import command is exposed in docs", () => {
   assert.match(readme, /pnpm visual:references -- --source-dir/);
   assert.match(acceptanceDoc, /pnpm visual:references -- --source-dir/);
   assert.match(releaseChecklist, /pnpm visual:references -- --source-dir/);
+});
+
+test("visual reference intake directory documents every required file", () => {
+  const readmePath = "docs/visual/page-builder-references/README.md";
+
+  assert.equal(existsSync(readmePath), true);
+
+  const referenceReadme = readFileSync(readmePath, "utf8");
+
+  assert.match(referenceReadme, /real Page Builder design\s+reference PNGs/);
+  assert.match(
+    referenceReadme,
+    /visual:references -- --source-dir docs\/visual\/page-builder-references --write --require-complete/,
+  );
+
+  for (const component of mvpPageBuilderComponents) {
+    for (const viewport of pageBuilderVisualAcceptanceViewports) {
+      assert.match(
+        referenceReadme,
+        new RegExp(`${component}-${viewport}\\.png`, "u"),
+      );
+    }
+  }
 });
 
 function createManifest({ accepted }) {
