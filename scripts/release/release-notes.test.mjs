@@ -127,6 +127,60 @@ test("release notes validates release evidence artifact shape", () => {
       }),
     /visual\.pendingComponents must be a string array/,
   );
+  assert.throws(
+    () =>
+      assertReleaseEvidenceCheckArtifact({
+        ...artifact,
+        blockers: [
+          {
+            action: "Fix smoke evidence.",
+            area: "Production Smoke",
+            label: "Blocked",
+          },
+        ],
+        blockerCount: 1,
+      }),
+    /ready evidence must have no blockers/,
+  );
+  assert.throws(
+    () =>
+      assertReleaseEvidenceCheckArtifact({
+        ...artifact,
+        smoke: {
+          ...artifact.smoke,
+          summary: { ...artifact.smoke.summary, failedCheckCount: 1 },
+        },
+      }),
+    /ready evidence must include ready production smoke/,
+  );
+  assert.throws(
+    () =>
+      assertReleaseEvidenceCheckArtifact({
+        ...artifact,
+        visual: {
+          ...artifact.visual,
+          acceptedViewportCount: artifact.visual.viewportCount - 1,
+        },
+      }),
+    /ready evidence must include accepted visual evidence/,
+  );
+  assert.throws(
+    () =>
+      assertReleaseEvidenceCheckArtifact({
+        ...artifact,
+        blockerCount: 0,
+        releaseReady: false,
+        status: "blocked",
+        blockers: [
+          {
+            action: "Fix smoke evidence.",
+            area: "Production Smoke",
+            label: "Blocked",
+          },
+        ],
+      }),
+    /blockerCount must cover serialized blockers/,
+  );
 });
 
 test("release notes render required evidence and gate status", () => {

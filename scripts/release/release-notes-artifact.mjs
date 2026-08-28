@@ -41,6 +41,7 @@ export function assertReleaseEvidenceCheckArtifact(artifact) {
   assertBlockers(artifact.blockers);
   assertSmokeArtifact(artifact.smoke);
   assertVisualArtifact(artifact.visual);
+  assertReleaseReadinessConsistency(artifact);
 }
 
 function assertStatusMatchesReleaseReady(artifact) {
@@ -64,6 +65,46 @@ function assertBlockers(blockers) {
     assertString(blocker.action, "blocker.action");
     assertString(blocker.area, "blocker.area");
     assertString(blocker.label, "blocker.label");
+  }
+}
+
+function assertReleaseReadinessConsistency(artifact) {
+  assertNonNegativeNumber(artifact.blockerCount, "blockerCount");
+
+  if (artifact.blockerCount < artifact.blockers.length) {
+    throw new Error(
+      "Release check artifact blockerCount must cover serialized blockers.",
+    );
+  }
+
+  if (!artifact.releaseReady) {
+    return;
+  }
+
+  if (artifact.blockerCount !== 0 || artifact.blockers.length !== 0) {
+    throw new Error("Release check artifact ready evidence must have no blockers.");
+  }
+
+  if (
+    artifact.smoke.releaseReady !== true ||
+    artifact.smoke.status !== "ready" ||
+    artifact.smoke.summary.productionReady !== true ||
+    artifact.smoke.summary.failedCheckCount !== 0
+  ) {
+    throw new Error(
+      "Release check artifact ready evidence must include ready production smoke.",
+    );
+  }
+
+  if (
+    artifact.visual.status !== "accepted" ||
+    artifact.visual.acceptedComponentCount !== artifact.visual.componentCount ||
+    artifact.visual.acceptedViewportCount !== artifact.visual.viewportCount ||
+    artifact.visual.errorCount !== 0
+  ) {
+    throw new Error(
+      "Release check artifact ready evidence must include accepted visual evidence.",
+    );
   }
 }
 

@@ -125,7 +125,8 @@ later phases are explicitly approved.
   pending visual evidence lists, and visual issue summary when `--allow-blocked`
   is used for failure review drafts. The command validates the artifact's smoke
   summary, traceability groups, visual counts, pending lists, and issue entries
-  before writing the Markdown record.
+  before writing the Markdown record; a ready artifact must also have no
+  blockers, ready production smoke, and fully accepted visual evidence.
 - The `Production Smoke` workflow can generate the same Markdown release record
   when `release_tag`, `rollback_target`, and `visual_artifact_name` inputs are
   provided.
