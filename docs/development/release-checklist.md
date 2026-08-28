@@ -80,8 +80,8 @@ later phases are explicitly approved.
   linked.
 - When release note inputs were provided, the uploaded artifact
   `release-notes-<run_number>` is attached or linked.
-- The GitHub step summary records the report path, artifact name, and review
-  command.
+- The GitHub step summary records the report path, artifact names, review
+  command, and combined `release:check -- --checklist` command.
 - `pnpm smoke:report -- artifacts/production-smoke/smoke-report.json` output is
   saved in the workflow log.
 - `pnpm smoke:release-check -- artifacts/production-smoke/smoke-report.json`

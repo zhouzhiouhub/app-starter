@@ -35,7 +35,7 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /RELEASE_NOTES_PATH: \$\{\{ inputs\.release_notes_path \}\}/);
   assert.match(
     workflow,
-    /pnpm release:check -- --smoke-report "\$SMOKE_REPORT_PATH" --output "\$RELEASE_CHECK_ARTIFACT_PATH"/,
+    /pnpm release:check -- --checklist --smoke-report "\$SMOKE_REPORT_PATH" --output "\$RELEASE_CHECK_ARTIFACT_PATH"/,
   );
   assert.match(workflow, /name: Generate release notes/);
   assert.match(
@@ -49,6 +49,7 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /GITHUB_STEP_SUMMARY/);
   assert.match(workflow, /Release gate:/);
   assert.match(workflow, /Combined gate:/);
+  assert.match(workflow, /release:check -- --checklist/);
   assert.match(workflow, /Combined artifact:/);
   assert.match(workflow, /Release notes:/);
   assert.match(workflow, /Release notes artifact:/);
