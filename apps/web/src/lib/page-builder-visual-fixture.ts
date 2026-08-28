@@ -12,20 +12,23 @@ export const pageBuilderVisualFixtureFlag =
   "ENABLE_VISUAL_ACCEPTANCE_FIXTURE";
 export const pageBuilderVisualFixturePath = "/visual-acceptance";
 
+export const pageBuilderVisualFixtureComponents = [
+  "hero-banner",
+  "rich-text",
+  "image-gallery",
+  "cta-bar",
+  "faq",
+  "spec-table",
+] as const;
+
+export type PageBuilderVisualFixtureComponent =
+  (typeof pageBuilderVisualFixtureComponents)[number];
+
 const fixtureMediaAssets: Readonly<Record<string, string>> = {
   "visual-gallery-a": "visual-gallery-a.svg",
   "visual-gallery-b": "visual-gallery-b.svg",
   "visual-gallery-c": "visual-gallery-c.svg",
 };
-
-const fixtureSectionIds = [
-  "visual-hero",
-  "visual-copy",
-  "visual-gallery",
-  "visual-cta",
-  "visual-faq",
-  "visual-spec",
-] as const;
 
 export function isPageBuilderVisualFixtureEnabled(
   env: NodeJS.ProcessEnv = process.env,
@@ -39,7 +42,26 @@ export function readPageBuilderVisualFixtureViewport(
   return value === "mobile" ? "mobile" : "desktop";
 }
 
-export function createPageBuilderVisualFixtureSchema(): PageSchema {
+export function readPageBuilderVisualFixtureComponent(
+  value: string | string[] | undefined,
+): PageBuilderVisualFixtureComponent | null | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  return isPageBuilderVisualFixtureComponent(value) ? value : null;
+}
+
+export function createPageBuilderVisualFixtureSchema(input: {
+  component?: PageBuilderVisualFixtureComponent;
+} = {}): PageSchema {
+  const sections = createFixtureSections(input.component);
+  const sectionOrder = sections.map((section) => section.id);
+
   return pageSchema.parse({
     analytics: {
       dataLayerName: "dataLayer",
@@ -47,8 +69,8 @@ export function createPageBuilderVisualFixtureSchema(): PageSchema {
     },
     chrome: getPageTemplateChrome("landing-blank"),
     layout: {
-      desktop: { sectionOrder: [...fixtureSectionIds] },
-      mobile: { sectionOrder: [...fixtureSectionIds] },
+      desktop: { sectionOrder },
+      mobile: { sectionOrder },
     },
     meta: {
       locale: "en-US",
@@ -56,7 +78,7 @@ export function createPageBuilderVisualFixtureSchema(): PageSchema {
       slug: "visual-acceptance",
       title: "Page Builder visual acceptance",
     },
-    sections: createFixtureSections(),
+    sections,
     seo: {
       description:
         "Internal fixture page for Page Builder visual acceptance screenshots.",
@@ -81,8 +103,10 @@ export function resolvePageBuilderVisualFixtureMediaUrl(
   }`;
 }
 
-function createFixtureSections(): SectionNode[] {
-  return [
+function createFixtureSections(
+  component?: PageBuilderVisualFixtureComponent,
+): SectionNode[] {
+  const sections = [
     createHeroSection(),
     createRichTextSection(),
     createImageGallerySection(),
@@ -90,6 +114,35 @@ function createFixtureSections(): SectionNode[] {
     createFaqSection(),
     createSpecTableSection(),
   ];
+
+  if (!component) {
+    return sections;
+  }
+
+  const section = sections.find((item) => item.component === component);
+  return section ? [moveSectionToTop(section)] : [];
+}
+
+function isPageBuilderVisualFixtureComponent(
+  value: string,
+): value is PageBuilderVisualFixtureComponent {
+  return pageBuilderVisualFixtureComponents.some(
+    (component) => component === value,
+  );
+}
+
+function moveSectionToTop(section: SectionNode): SectionNode {
+  return {
+    ...section,
+    layout: {
+      desktop: section.layout.desktop
+        ? { ...section.layout.desktop, y: 0 }
+        : undefined,
+      mobile: section.layout.mobile
+        ? { ...section.layout.mobile, y: 0 }
+        : undefined,
+    },
+  };
 }
 
 function createHeroSection(): SectionNode {

@@ -43,8 +43,9 @@ later phases are explicitly approved.
 - For local screenshot capture, start Web with
   `ENABLE_VISUAL_ACCEPTANCE_FIXTURE=true` and use
   `/visual-acceptance?viewport=desktop` plus
-  `/visual-acceptance?viewport=mobile`. Keep the flag disabled outside the
-  capture session.
+  `/visual-acceptance?viewport=mobile`. Add
+  `&component=<hero-banner|rich-text|image-gallery|cta-bar|faq|spec-table>` for
+  component-level evidence. Keep the flag disabled outside the capture session.
 
 ## Run Production Smoke
 

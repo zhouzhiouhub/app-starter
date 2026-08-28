@@ -675,7 +675,7 @@ pnpm visual:acceptance -- --require-accepted
 
 最终签收时，`designReference` 需要指向 `docs/`、`artifacts/visual/` 或 `reports/visual/` 下的图片；`previewScreenshot` 需要指向 `artifacts/visual/` 或 `reports/visual/` 下的浏览器截图。所有已接受证据路径都必须对应仓库或发布 artifact 内的非空文件。
 
-本地截图可临时设置 `ENABLE_VISUAL_ACCEPTANCE_FIXTURE=true` 并启动 Web，然后访问 `/visual-acceptance?viewport=desktop` 与 `/visual-acceptance?viewport=mobile`；截图完成后关闭该环境变量，最终验收仍需真实设计参考和差异指标。
+本地截图可临时设置 `ENABLE_VISUAL_ACCEPTANCE_FIXTURE=true` 并启动 Web，然后访问 `/visual-acceptance?viewport=desktop` 与 `/visual-acceptance?viewport=mobile`；需要组件级证据时追加 `&component=<hero-banner|rich-text|image-gallery|cta-bar|faq|spec-table>`。截图完成后关闭该环境变量，最终验收仍需真实设计参考和差异指标。
 
 GitHub Actions 里新增了手动触发的 `Production Smoke` workflow，会把报告写到 `artifacts/production-smoke/smoke-report.json`，失败或成功都会执行 `pnpm smoke:report` 和 `pnpm smoke:release-check` 并上传 `production-smoke-report-<run_number>` artifact；发布证据按 [Release Checklist](./docs/development/release-checklist.md) 留存。
 

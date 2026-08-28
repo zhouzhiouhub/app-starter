@@ -12,8 +12,10 @@ import {
 import {
   createPageBuilderVisualFixtureSchema,
   isPageBuilderVisualFixtureEnabled,
+  pageBuilderVisualFixtureComponents,
   pageBuilderVisualFixtureFlag,
   pageBuilderVisualFixturePath,
+  readPageBuilderVisualFixtureComponent,
   readPageBuilderVisualFixtureViewport,
   resolvePageBuilderVisualFixtureMediaUrl,
 } from "../src/lib/page-builder-visual-fixture.ts";
@@ -42,6 +44,29 @@ test("visual acceptance fixture schema covers the six core sections", () => {
     ),
     schema.layout.mobile.sectionOrder,
   );
+});
+
+test("visual acceptance fixture can isolate each core section", () => {
+  assert.deepEqual(pageBuilderVisualFixtureComponents, [
+    "hero-banner",
+    "rich-text",
+    "image-gallery",
+    "cta-bar",
+    "faq",
+    "spec-table",
+  ]);
+
+  for (const component of pageBuilderVisualFixtureComponents) {
+    const schema = createPageBuilderVisualFixtureSchema({ component });
+    const section = schema.sections[0];
+
+    assert.equal(schema.sections.length, 1);
+    assert.equal(section?.component, component);
+    assert.equal(section?.layout.desktop?.y, 0);
+    assert.equal(section?.layout.mobile?.y, 0);
+    assert.deepEqual(schema.layout.desktop.sectionOrder, [section?.id]);
+    assert.deepEqual(schema.layout.mobile.sectionOrder, [section?.id]);
+  }
 });
 
 test("visual acceptance fixture resolves media references to local assets", () => {
@@ -83,6 +108,16 @@ test("visual acceptance fixture viewport defaults to desktop", () => {
   assert.equal(readPageBuilderVisualFixtureViewport("tablet"), "desktop");
   assert.equal(readPageBuilderVisualFixtureViewport(["mobile"]), "desktop");
   assert.equal(readPageBuilderVisualFixtureViewport(undefined), "desktop");
+});
+
+test("visual acceptance fixture component query is explicit and whitelisted", () => {
+  assert.equal(
+    readPageBuilderVisualFixtureComponent("image-gallery"),
+    "image-gallery",
+  );
+  assert.equal(readPageBuilderVisualFixtureComponent(undefined), undefined);
+  assert.equal(readPageBuilderVisualFixtureComponent("product-card"), null);
+  assert.equal(readPageBuilderVisualFixtureComponent(["faq"]), null);
 });
 
 test("visual acceptance fixture assets are static and whitelisted", () => {

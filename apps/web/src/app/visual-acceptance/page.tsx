@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import {
   createPageBuilderVisualFixtureSchema,
   isPageBuilderVisualFixtureEnabled,
+  readPageBuilderVisualFixtureComponent,
   readPageBuilderVisualFixtureViewport,
   resolvePageBuilderVisualFixtureMediaUrl,
 } from "../../lib/page-builder-visual-fixture";
@@ -19,19 +20,30 @@ export const metadata: Metadata = {
 };
 
 export default async function PageBuilderVisualAcceptancePage(props: {
-  searchParams: Promise<{ viewport?: string | string[] }>;
+  searchParams: Promise<{
+    component?: string | string[];
+    viewport?: string | string[];
+  }>;
 }) {
   if (!isPageBuilderVisualFixtureEnabled()) {
     notFound();
   }
 
   const searchParams = await props.searchParams;
+  const component = readPageBuilderVisualFixtureComponent(
+    searchParams.component,
+  );
+
+  if (component === null) {
+    notFound();
+  }
+
   const viewport = readPageBuilderVisualFixtureViewport(searchParams.viewport);
 
   return (
     <PageRenderer
       resolveMediaUrl={resolvePageBuilderVisualFixtureMediaUrl}
-      schema={createPageBuilderVisualFixtureSchema()}
+      schema={createPageBuilderVisualFixtureSchema({ component })}
       viewport={viewport}
     />
   );

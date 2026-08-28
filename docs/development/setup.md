@@ -191,8 +191,10 @@ rewrites, storefront host routing, and `WEB_URL` can be fixed before launch.
 For local Page Builder visual sign-off, set
 `ENABLE_VISUAL_ACCEPTANCE_FIXTURE=true` before starting the Web app, then open
 `/visual-acceptance?viewport=desktop` and
-`/visual-acceptance?viewport=mobile` to capture evidence screenshots. Keep this
-flag disabled in production and public preview environments.
+`/visual-acceptance?viewport=mobile` to capture full-page evidence
+screenshots. Add `&component=hero-banner`, `rich-text`, `image-gallery`,
+`cta-bar`, `faq`, or `spec-table` to isolate one MVP section. Keep this flag
+disabled in production and public preview environments.
 
 After sign-in, open `http://localhost:5173/pages` to list and create pages.
 The editor at `/pages/:id` loads the draft schema, can save a draft, and can

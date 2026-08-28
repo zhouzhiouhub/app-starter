@@ -31,11 +31,15 @@ Capture browser screenshots from:
 
 - `http://localhost:3000/visual-acceptance?viewport=desktop`
 - `http://localhost:3000/visual-acceptance?viewport=mobile`
+- `http://localhost:3000/visual-acceptance?viewport=desktop&component=hero-banner`
+- `http://localhost:3000/visual-acceptance?viewport=mobile&component=hero-banner`
 
 The route renders a Page Schema through `@app-starter/renderer` and resolves
-fixture `media://` references through local, whitelisted assets. It provides a
-stable capture target; final sign-off still needs the real design references,
-saved browser screenshots, and measured diff values in the manifest.
+fixture `media://` references through local, whitelisted assets. The optional
+`component` query isolates one core section and only accepts the six MVP
+component IDs listed in this document. It provides a stable capture target;
+final sign-off still needs the real design references, saved browser
+screenshots, and measured diff values in the manifest.
 
 ## Evidence Rules
 
@@ -57,6 +61,7 @@ saved browser screenshots, and measured diff values in the manifest.
 
 ## Current State
 
-The current manifest proves the tracking structure and component coverage. It
-does not prove the final 95% visual acceptance yet because the real design
-references and browser screenshots are still pending.
+The current manifest proves the tracking structure and component coverage, and
+reserves component-level fixture screenshot paths under `artifacts/visual/`.
+It does not prove the final 95% visual acceptance yet because the real design
+references and measured diff values are still pending.

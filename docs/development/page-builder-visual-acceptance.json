@@ -13,7 +13,10 @@
     "maxColorDeltaE": 3,
     "maxLayoutDeltaPx": 5,
     "minVisualMatchPercent": 95,
-    "viewports": ["desktop", "mobile"]
+    "viewports": [
+      "desktop",
+      "mobile"
+    ]
   },
   "records": [
     {
@@ -23,14 +26,14 @@
         "template": "apps/admin/src/features/pages/section-template-factory.ts"
       },
       "label": "Hero Banner",
-      "notes": "Renderer and Admin template are implemented. Attach Desktop and Mobile design references and browser screenshots before marking accepted.",
+      "notes": "Renderer and Admin template are implemented. Local fixture browser screenshots are retained for Desktop and Mobile; attach real design references and measured diff values before marking accepted.",
       "status": "needs-evidence",
       "viewports": {
         "desktop": {
           "designReference": null,
           "maxColorDeltaE": null,
           "maxLayoutDeltaPx": null,
-          "previewScreenshot": null,
+          "previewScreenshot": "artifacts/visual/page-builder-visual-fixture-hero-banner-desktop.png",
           "status": "needs-evidence",
           "visualMatchPercent": null
         },
@@ -38,7 +41,7 @@
           "designReference": null,
           "maxColorDeltaE": null,
           "maxLayoutDeltaPx": null,
-          "previewScreenshot": null,
+          "previewScreenshot": "artifacts/visual/page-builder-visual-fixture-hero-banner-mobile.png",
           "status": "needs-evidence",
           "visualMatchPercent": null
         }
@@ -51,14 +54,14 @@
         "template": "apps/admin/src/features/pages/section-template-factory.ts"
       },
       "label": "Rich Text",
-      "notes": "Renderer and Admin template are implemented. Attach Desktop and Mobile design references and browser screenshots before marking accepted.",
+      "notes": "Renderer and Admin template are implemented. Local fixture browser screenshots are retained for Desktop and Mobile; attach real design references and measured diff values before marking accepted.",
       "status": "needs-evidence",
       "viewports": {
         "desktop": {
           "designReference": null,
           "maxColorDeltaE": null,
           "maxLayoutDeltaPx": null,
-          "previewScreenshot": null,
+          "previewScreenshot": "artifacts/visual/page-builder-visual-fixture-rich-text-desktop.png",
           "status": "needs-evidence",
           "visualMatchPercent": null
         },
@@ -66,7 +69,7 @@
           "designReference": null,
           "maxColorDeltaE": null,
           "maxLayoutDeltaPx": null,
-          "previewScreenshot": null,
+          "previewScreenshot": "artifacts/visual/page-builder-visual-fixture-rich-text-mobile.png",
           "status": "needs-evidence",
           "visualMatchPercent": null
         }
@@ -79,14 +82,14 @@
         "template": "apps/admin/src/features/pages/section-template-factory.ts"
       },
       "label": "Image Gallery",
-      "notes": "Renderer and Admin template are implemented. Attach Desktop and Mobile design references and browser screenshots before marking accepted.",
+      "notes": "Renderer and Admin template are implemented. Local fixture browser screenshots are retained for Desktop and Mobile; attach real design references and measured diff values before marking accepted.",
       "status": "needs-evidence",
       "viewports": {
         "desktop": {
           "designReference": null,
           "maxColorDeltaE": null,
           "maxLayoutDeltaPx": null,
-          "previewScreenshot": null,
+          "previewScreenshot": "artifacts/visual/page-builder-visual-fixture-image-gallery-desktop.png",
           "status": "needs-evidence",
           "visualMatchPercent": null
         },
@@ -94,7 +97,7 @@
           "designReference": null,
           "maxColorDeltaE": null,
           "maxLayoutDeltaPx": null,
-          "previewScreenshot": null,
+          "previewScreenshot": "artifacts/visual/page-builder-visual-fixture-image-gallery-mobile.png",
           "status": "needs-evidence",
           "visualMatchPercent": null
         }
@@ -107,14 +110,14 @@
         "template": "apps/admin/src/features/pages/section-template-factory.ts"
       },
       "label": "CTA Bar",
-      "notes": "Renderer and Admin template are implemented. Attach Desktop and Mobile design references and browser screenshots before marking accepted.",
+      "notes": "Renderer and Admin template are implemented. Local fixture browser screenshots are retained for Desktop and Mobile; attach real design references and measured diff values before marking accepted.",
       "status": "needs-evidence",
       "viewports": {
         "desktop": {
           "designReference": null,
           "maxColorDeltaE": null,
           "maxLayoutDeltaPx": null,
-          "previewScreenshot": null,
+          "previewScreenshot": "artifacts/visual/page-builder-visual-fixture-cta-bar-desktop.png",
           "status": "needs-evidence",
           "visualMatchPercent": null
         },
@@ -122,7 +125,7 @@
           "designReference": null,
           "maxColorDeltaE": null,
           "maxLayoutDeltaPx": null,
-          "previewScreenshot": null,
+          "previewScreenshot": "artifacts/visual/page-builder-visual-fixture-cta-bar-mobile.png",
           "status": "needs-evidence",
           "visualMatchPercent": null
         }
@@ -135,14 +138,14 @@
         "template": "apps/admin/src/features/pages/section-template-factory.ts"
       },
       "label": "FAQ",
-      "notes": "Renderer and Admin template are implemented. Attach Desktop and Mobile design references and browser screenshots before marking accepted.",
+      "notes": "Renderer and Admin template are implemented. Local fixture browser screenshots are retained for Desktop and Mobile; attach real design references and measured diff values before marking accepted.",
       "status": "needs-evidence",
       "viewports": {
         "desktop": {
           "designReference": null,
           "maxColorDeltaE": null,
           "maxLayoutDeltaPx": null,
-          "previewScreenshot": null,
+          "previewScreenshot": "artifacts/visual/page-builder-visual-fixture-faq-desktop.png",
           "status": "needs-evidence",
           "visualMatchPercent": null
         },
@@ -150,7 +153,7 @@
           "designReference": null,
           "maxColorDeltaE": null,
           "maxLayoutDeltaPx": null,
-          "previewScreenshot": null,
+          "previewScreenshot": "artifacts/visual/page-builder-visual-fixture-faq-mobile.png",
           "status": "needs-evidence",
           "visualMatchPercent": null
         }
@@ -163,14 +166,14 @@
         "template": "apps/admin/src/features/pages/section-template-factory.ts"
       },
       "label": "Spec Table",
-      "notes": "Renderer and Admin template are implemented. Attach Desktop and Mobile design references and browser screenshots before marking accepted.",
+      "notes": "Renderer and Admin template are implemented. Local fixture browser screenshots are retained for Desktop and Mobile; attach real design references and measured diff values before marking accepted.",
       "status": "needs-evidence",
       "viewports": {
         "desktop": {
           "designReference": null,
           "maxColorDeltaE": null,
           "maxLayoutDeltaPx": null,
-          "previewScreenshot": null,
+          "previewScreenshot": "artifacts/visual/page-builder-visual-fixture-spec-table-desktop.png",
           "status": "needs-evidence",
           "visualMatchPercent": null
         },
@@ -178,7 +181,7 @@
           "designReference": null,
           "maxColorDeltaE": null,
           "maxLayoutDeltaPx": null,
-          "previewScreenshot": null,
+          "previewScreenshot": "artifacts/visual/page-builder-visual-fixture-spec-table-mobile.png",
           "status": "needs-evidence",
           "visualMatchPercent": null
         }
