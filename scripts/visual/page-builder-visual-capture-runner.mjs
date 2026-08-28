@@ -13,6 +13,8 @@ import {
   createPageBuilderVisualCaptureUrl,
 } from "./page-builder-visual-capture-jobs.mjs";
 
+const browserOutputLimit = 1200;
+
 export async function runPageBuilderVisualCapture(config, input = {}) {
   const browserPath = resolvePageBuilderVisualBrowserPath(config.browserPath, {
     env: input.env,
@@ -64,11 +66,28 @@ async function capturePageBuilderVisualScreenshot(job, input) {
   const profileDir =
     input.profileDir ?? createPageBuilderVisualProfileDir({ root: input.tmpRoot });
   const args = createPageBuilderVisualScreenshotArgs(job, { profileDir });
-  const child = (input.spawn ?? spawn)(input.browserPath, args, {
-    stdio: "ignore",
-    windowsHide: true,
+  let child;
+
+  try {
+    child = (input.spawn ?? spawn)(input.browserPath, args, {
+      stdio: ["ignore", "pipe", "pipe"],
+      windowsHide: true,
+    });
+  } catch (error) {
+    throw new Error(
+      appendBrowserOutput(
+        `Browser screenshot process failed: ${formatCaptureErrorSentence(
+          error,
+        )}`,
+        "",
+      ),
+    );
+  }
+
+  const browserOutput = createBrowserOutputCollector(child);
+  const browserExit = observeBrowserExit(child, input.timeoutMs, {
+    readOutput: browserOutput.read,
   });
-  const browserExit = observeBrowserExit(child, input.timeoutMs);
 
   const screenshotReady = waitForPageBuilderVisualScreenshot(
     job.outputPath,
@@ -110,22 +129,39 @@ async function stopBrowserAfterScreenshot(child, browserExit, stats) {
   return stats;
 }
 
-function observeBrowserExit(child, timeoutMs) {
+function observeBrowserExit(child, timeoutMs, input = {}) {
   let settled = false;
   let timer;
   let onError;
   let onExit;
+  const readOutput = input.readOutput ?? (() => "");
 
   const promise = new Promise((resolve, reject) => {
     timer = setTimeout(() => {
       child.kill();
-      reject(new Error("Timed out waiting for browser screenshot process."));
+      reject(
+        new Error(
+          appendBrowserOutput(
+            "Timed out waiting for browser screenshot process.",
+            readOutput(),
+          ),
+        ),
+      );
     }, timeoutMs);
 
     onError = (error) => {
       settled = true;
       clearTimeout(timer);
-      reject(error);
+      reject(
+        new Error(
+          appendBrowserOutput(
+            `Browser screenshot process failed: ${formatCaptureErrorSentence(
+              error,
+            )}`,
+            readOutput(),
+          ),
+        ),
+      );
     };
 
     onExit = (code, signal) => {
@@ -134,7 +170,12 @@ function observeBrowserExit(child, timeoutMs) {
 
       if (code && code !== 0) {
         reject(
-          new Error(`Browser screenshot failed with code ${code} and signal ${signal}.`),
+          new Error(
+            appendBrowserOutput(
+              `Browser screenshot failed with code ${code} and signal ${signal}.`,
+              readOutput(),
+            ),
+          ),
         );
         return;
       }
@@ -155,4 +196,69 @@ function observeBrowserExit(child, timeoutMs) {
     isSettled: () => settled,
     promise,
   };
+}
+
+function createBrowserOutputCollector(child) {
+  const chunks = [];
+
+  collectBrowserOutput(child.stdout, chunks);
+  collectBrowserOutput(child.stderr, chunks);
+
+  return {
+    read: () => normalizeBrowserOutput(chunks.join("")),
+  };
+}
+
+function collectBrowserOutput(stream, chunks) {
+  if (!stream?.on) {
+    return;
+  }
+
+  stream.on("data", (chunk) => {
+    chunks.push(Buffer.from(chunk).toString("utf8"));
+  });
+}
+
+function appendBrowserOutput(message, output) {
+  if (!output) {
+    return `${message} No browser output was captured.`;
+  }
+
+  return `${message} Browser output: ${output}`;
+}
+
+function readCaptureErrorMessage(error) {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return String(error);
+}
+
+function formatCaptureErrorSentence(error) {
+  const message = readCaptureErrorMessage(error).trim();
+  return /[.!?]$/u.test(message) ? message : `${message}.`;
+}
+
+function normalizeBrowserOutput(output) {
+  return Array.from(output, replaceUnsafeControlCharacter)
+    .join("")
+    .replace(/\s+/gu, " ")
+    .trim()
+    .slice(0, browserOutputLimit);
+}
+
+function replaceUnsafeControlCharacter(character) {
+  const codePoint = character.codePointAt(0);
+
+  if (
+    codePoint === undefined ||
+    codePoint === 0x7f ||
+    (codePoint >= 0x00 && codePoint <= 0x08) ||
+    (codePoint >= 0x0b && codePoint <= 0x1f)
+  ) {
+    return " ";
+  }
+
+  return character;
 }

@@ -7,16 +7,22 @@ const nextCliPath = "apps/web/node_modules/next/dist/bin/next";
 export function createPageBuilderVisualPnpmProcess(args, input = {}) {
   const invocation = readPnpmInvocation(input.env ?? process.env);
 
-  return (input.spawnProcess ?? spawn)(invocation.command, [
-    ...invocation.args,
-    ...args,
-  ], {
-    cwd: input.cwd ?? process.cwd(),
-    env: input.env ?? process.env,
-    shell: invocation.shell,
-    stdio: input.stdio ?? "inherit",
-    windowsHide: true,
-  });
+  try {
+    return (input.spawnProcess ?? spawn)(invocation.command, [
+      ...invocation.args,
+      ...args,
+    ], {
+      cwd: input.cwd ?? process.cwd(),
+      env: input.env ?? process.env,
+      shell: invocation.shell,
+      stdio: input.stdio ?? "inherit",
+      windowsHide: true,
+    });
+  } catch (error) {
+    throw new Error(
+      `pnpm ${args.join(" ")} failed to start: ${formatProcessError(error)}`,
+    );
+  }
 }
 
 export function runPageBuilderVisualPnpmCommand(args, input = {}) {
@@ -27,26 +33,34 @@ export function runPageBuilderVisualPnpmCommand(args, input = {}) {
 }
 
 export function startPageBuilderVisualFixtureServer(config, input = {}) {
-  return (input.spawnProcess ?? spawn)(
-    process.execPath,
-    [
-      path.resolve(input.nextCliPath ?? nextCliPath),
-      "start",
-      "--port",
-      String(config.webPort),
-    ],
-    {
-      cwd: path.resolve(input.webCwd ?? "apps/web"),
-      env: {
-        ...process.env,
-        ...input.env,
-        ENABLE_VISUAL_ACCEPTANCE_FIXTURE: "true",
+  try {
+    return (input.spawnProcess ?? spawn)(
+      process.execPath,
+      [
+        path.resolve(input.nextCliPath ?? nextCliPath),
+        "start",
+        "--port",
+        String(config.webPort),
+      ],
+      {
+        cwd: path.resolve(input.webCwd ?? "apps/web"),
+        env: {
+          ...process.env,
+          ...input.env,
+          ENABLE_VISUAL_ACCEPTANCE_FIXTURE: "true",
+        },
+        shell: false,
+        stdio: input.serverStdio ?? "ignore",
+        windowsHide: true,
       },
-      shell: false,
-      stdio: input.serverStdio ?? "ignore",
-      windowsHide: true,
-    },
-  );
+    );
+  } catch (error) {
+    throw new Error(
+      `Page Builder visual fixture server failed to start: ${formatProcessError(
+        error,
+      )}`,
+    );
+  }
 }
 
 export async function stopPageBuilderVisualFixtureServer(child, input = {}) {
@@ -118,4 +132,11 @@ function clearOptionalTimeout(timer) {
   if (timer) {
     clearTimeout(timer);
   }
+}
+
+function formatProcessError(error) {
+  const message =
+    error instanceof Error && error.message ? error.message.trim() : String(error);
+
+  return /[.!?]$/u.test(message) ? message : `${message}.`;
 }

@@ -254,6 +254,21 @@ test("visual fixture capture starts Next directly for a controllable server", ()
   assert.equal(call.options.shell, false);
 });
 
+test("visual fixture capture explains server startup failures", () => {
+  assert.throws(
+    () =>
+      startPageBuilderVisualFixtureServer(
+        { webPort: 3010 },
+        {
+          spawnProcess: () => {
+            throw new Error("spawn EPERM");
+          },
+        },
+      ),
+    /Page Builder visual fixture server failed to start: spawn EPERM\./,
+  );
+});
+
 test("visual fixture capture report summarizes build and capture output", () => {
   const lines = formatPageBuilderVisualFixtureCaptureReport({
     baseUrl: "http://localhost:3000",

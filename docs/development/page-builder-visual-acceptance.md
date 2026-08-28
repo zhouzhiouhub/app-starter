@@ -84,7 +84,9 @@ pnpm visual:capture:fixture
 ```
 
 Set `PAGE_BUILDER_VISUAL_BROWSER` or pass `--browser` when Chrome or Edge is
-not installed in a standard location.
+not installed in a standard location. Browser launch failures print a bounded,
+normalized snippet of captured stdout/stderr so headless runtime, sandbox, or
+binary path problems can be diagnosed from the command output.
 
 ## CI Workflow
 
