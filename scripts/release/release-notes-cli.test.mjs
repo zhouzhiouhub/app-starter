@@ -1,0 +1,79 @@
+import assert from "node:assert/strict";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { readFile, rm } from "node:fs/promises";
+import test from "node:test";
+import { runReleaseNotesCli } from "../release-notes.mjs";
+
+test("release notes CLI writes a Markdown release record", async () => {
+  const root = `tmp/release-notes-test-${process.pid}-${Date.now()}`;
+  const releaseCheckPath = `${root}/release-check.json`;
+  const outputPath = `${root}/v0.1.0.md`;
+  const stdout = [];
+
+  await rm(root, { force: true, recursive: true });
+  mkdirSync(root, { recursive: true });
+  writeFileSync(releaseCheckPath, `${JSON.stringify(createReadyArtifact())}\n`);
+
+  try {
+    const exitCode = await runReleaseNotesCli(
+      [
+        "--release-tag",
+        "v0.1.0",
+        "--workflow-run-url",
+        "https://github.com/zhouzhiouhub/app-starter/actions/runs/123",
+        "--smoke-artifact",
+        "production-smoke-report-123",
+        "--release-artifact",
+        "release-evidence-check-123",
+        "--visual-artifact",
+        "page-builder-visual-fixture-123",
+        "--storefront-url",
+        "https://store.brand.com",
+        "--rollback-target",
+        "main@abcdef1",
+        "--release-check",
+        releaseCheckPath,
+        "--output",
+        outputPath,
+      ],
+      { stdout: (line) => stdout.push(line) },
+    );
+
+    assert.equal(exitCode, 0);
+    assert.deepEqual(stdout, [`Release notes written: ${outputPath}`]);
+    assert.match(await readFile(outputPath, "utf8"), /^# Release v0\.1\.0/m);
+  } finally {
+    await rm(root, { force: true, recursive: true });
+  }
+});
+
+function createReadyArtifact() {
+  return {
+    blockerCount: 0,
+    blockers: [],
+    generatedAt: "2026-08-28T00:00:00.000Z",
+    releaseReady: true,
+    schemaVersion: "release-evidence-check.v1",
+    smoke: {
+      releaseReady: true,
+      status: "ready",
+      summary: {
+        checkCount: 42,
+        failedCheckCount: 0,
+        productionReady: true,
+        status: "passed",
+      },
+      traceability: [],
+    },
+    status: "ready",
+    visual: {
+      acceptedComponentCount: 6,
+      acceptedViewportCount: 12,
+      componentCount: 6,
+      errorCount: 0,
+      status: "accepted",
+      viewportCount: 12,
+      warningCount: 0,
+    },
+  };
+}

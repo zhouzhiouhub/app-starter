@@ -668,6 +668,7 @@ pnpm release:check
 pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json
 pnpm release:check -- --json
 pnpm release:check -- --output artifacts/release/release-check.json
+pnpm release:notes -- --release-tag v0.1.0 --workflow-run-url https://github.com/zhouzhiouhub/app-starter/actions/runs/123 --smoke-artifact production-smoke-report-123 --release-artifact release-evidence-check-123 --visual-artifact page-builder-visual-fixture-123 --storefront-url https://store.brand.com --rollback-target main@abcdef1 --output docs/releases/v0.1.0.md
 ```
 
 Page Builder 核心区块视觉验收记录可单独检查：
@@ -689,6 +690,8 @@ GitHub Actions 里新增了 `Page Builder Visual` workflow，会在相关 PR、m
 GitHub Actions 里新增了手动触发的 `Production Smoke` workflow，会把报告写到 `artifacts/production-smoke/smoke-report.json`，失败或成功都会执行 `pnpm smoke:report`、`pnpm smoke:release-check` 和 `pnpm release:check -- --smoke-report "$SMOKE_REPORT_PATH" --output "$RELEASE_CHECK_ARTIFACT_PATH"`，并上传 `production-smoke-report-<run_number>` 与 `release-evidence-check-<run_number>` artifact；发布证据按 [Release Checklist](./docs/development/release-checklist.md) 留存。
 
 最终发布前可运行 `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json` 做统一门禁；它会同时校验生产 Smoke 发布证据和 Page Builder 视觉 accepted 证据。需要归档时追加 `--json` 输出机器可读结果，或追加 `--output artifacts/release/release-check.json` 写入 `release-evidence-check.v1` JSON artifact。当前缺真实设计参考和生产 smoke artifact 时，该命令会阻塞发布。
+
+组合门禁 ready 后，可运行 `pnpm release:notes` 生成最终发布记录 Markdown；命令会强制填写 release tag、workflow run URL、三类 artifact 名称、公开 storefront URL 和 rollback target。默认读取 `artifacts/release/release-check.json`，只有 `release-evidence-check.v1` 为 ready 时才生成正式发布记录。
 
 ```powershell
 $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
@@ -776,5 +779,5 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 1. 在真实 R2 / CDN 环境配置 `MEDIA_CDN_BASE_URL`、R2 凭据和 CDN 域名，确认不是 `example` / `test` / `invalid` / 本地 / 私网域名，执行 `pnpm smoke:publish` 并归档 `SMOKE_REPORT_PATH`。
 2. 补齐部署 Smoke Test：前台 Vercel、API 独立 Node 服务、Admin 静态托管、Redis 生产连接、环境变量清单和回滚步骤。
 3. 做 Page Builder 视觉验收：保留最新 `Page Builder Visual` workflow 的 `page-builder-visual-fixture-<run_number>` artifact，补真实浏览器截图留档，并将 `docs/development/page-builder-visual-acceptance.json` 中六个核心区块的 Desktop / Mobile 证据从 `needs-evidence` 推进到 `accepted`。
-4. 在真实生产配置下触发 GitHub Actions `Production Smoke`，把 artifact、`pnpm smoke:report` 输出、`pnpm smoke:release-check`、`pnpm release:check` 结果和回滚目标写入发布记录。
+4. 在真实生产配置下触发 GitHub Actions `Production Smoke`，把 artifact、`pnpm smoke:report` 输出、`pnpm smoke:release-check`、`pnpm release:check` 结果和回滚目标写入 `pnpm release:notes` 生成的发布记录。
 5. 保持 Commerce 关闭态，继续强化订单 / 支付关闭态分支、Phase 2 Webhook 验签设计和 `COMMERCE_DISABLED` 错误分支测试；不进入真实交易。

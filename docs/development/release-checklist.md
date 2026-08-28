@@ -99,6 +99,9 @@ later phases are explicitly approved.
   record.
 - The `Production Smoke` workflow uploads the same combined release evidence as
   `release-evidence-check-<run_number>`.
+- `pnpm release:notes -- --release-tag <tag> --workflow-run-url <url> --smoke-artifact production-smoke-report-<run_number> --release-artifact release-evidence-check-<run_number> --visual-artifact page-builder-visual-fixture-<run_number> --storefront-url <url> --rollback-target <target> --output docs/releases/<tag>.md`
+  writes the final Markdown release record from the ready
+  `release-evidence-check.v1` artifact.
 
 ## Failure Review
 
@@ -120,5 +123,7 @@ later phases are explicitly approved.
   retention window.
 - Record the release tag, workflow run URL, smoke artifact name, combined release
   artifact name, public storefront URL, and rollback target in the release notes.
+- Keep the generated `docs/releases/<tag>.md` release record with the release
+  evidence bundle.
 - If a P0 or P1 issue happens, attach the failed smoke report review to the
   incident recap and add the missing test, monitor, or runbook update.

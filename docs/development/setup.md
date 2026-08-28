@@ -264,6 +264,7 @@ pnpm smoke:release-check -- artifacts/production-smoke/smoke-report.json
 pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json
 pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --json
 pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --output artifacts/release/release-check.json
+pnpm release:notes -- --release-tag v0.1.0 --workflow-run-url https://github.com/zhouzhiouhub/app-starter/actions/runs/123 --smoke-artifact production-smoke-report-123 --release-artifact release-evidence-check-123 --visual-artifact page-builder-visual-fixture-123 --storefront-url https://store.brand.com --rollback-target main@abcdef1 --output docs/releases/v0.1.0.md
 ```
 
 The review command scans the same safe archive roots, recomputes the report
@@ -278,6 +279,9 @@ After the Page Builder visual manifest has accepted real design evidence,
 be release-ready and Page Builder visual acceptance must be fully accepted. Use
 `--json` for machine-readable stdout or `--output` to write the combined
 `release-evidence-check.v1` artifact under a safe archive path.
+After that artifact is ready, `release:notes` writes the final Markdown release
+record and refuses blocked evidence unless `--allow-blocked` is used for a
+failure review draft.
 
 The `Production Smoke` GitHub Actions workflow runs the same command set against
 the protected `production` environment. It sets
