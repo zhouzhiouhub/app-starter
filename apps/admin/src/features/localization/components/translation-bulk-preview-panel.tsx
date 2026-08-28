@@ -1,6 +1,8 @@
 import { DeleteOutlined } from "@ant-design/icons";
 import { Alert, Button, Input, Popconfirm, Space } from "antd";
+import { useMemo } from "react";
 import { useTranslationBulkPreview } from "../hooks/use-translation-bulk-preview";
+import { formatDefaultLocaleImportConfirmationSummary } from "../translation-import-confirmation";
 import { readTranslationImportFocusedResultKey } from "../translation-import-focus";
 import type {
   LocalizationTranslationsMeta,
@@ -29,6 +31,21 @@ export function TranslationBulkPreviewPanel(props: {
     missingKeys: props.missingKeys,
     onImported: props.onImported,
   });
+  const importConfirmationSummary = useMemo(
+    () =>
+      formatDefaultLocaleImportConfirmationSummary({
+        defaultLocale: props.meta.locale,
+        importText: bulkPreview.importText,
+        missingKeys: props.missingKeys,
+        preview: bulkPreview.importPreview,
+      }),
+    [
+      bulkPreview.importPreview,
+      bulkPreview.importText,
+      props.meta.locale,
+      props.missingKeys,
+    ],
+  );
 
   function handleRestoreImportResult(
     entry: Parameters<typeof bulkPreview.restoreImportResult>[0],
@@ -128,6 +145,7 @@ export function TranslationBulkPreviewPanel(props: {
       />
       <TranslationBulkActionBar
         hasMissingKeyDraft={bulkPreview.hasMissingKeyDraft}
+        importConfirmationSummary={importConfirmationSummary}
         loadingAction={bulkPreview.loadingAction}
         onExportDownload={() => void bulkPreview.runExportDownload()}
         onExportPreview={() => void bulkPreview.runExportPreview()}
@@ -154,6 +172,8 @@ export function TranslationBulkPreviewPanel(props: {
       ) : null}
       {bulkPreview.importPreview ? (
         <TranslationImportPreviewResultView
+          filters={props.filters}
+          onFocusKey={props.onFocusKey}
           preview={bulkPreview.importPreview}
         />
       ) : null}

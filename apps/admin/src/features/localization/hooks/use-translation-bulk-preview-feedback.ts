@@ -97,6 +97,7 @@ export function useTranslationBulkPreviewFeedback() {
     setDraftNotice(null);
     setDraftClearSuggestion(null);
     setHistoryReplayNotice(null);
+    setImportPreview(null);
   }
 
   function finishAction() {

@@ -1,9 +1,13 @@
+import { EditOutlined, ReloadOutlined } from "@ant-design/icons";
 import {
-  EditOutlined,
-  FilterOutlined,
-  ReloadOutlined,
-} from "@ant-design/icons";
-import { Alert, Button, Pagination, Space, Tag, Typography } from "antd";
+  Alert,
+  Button,
+  Pagination,
+  Space,
+  Tag,
+  Tooltip,
+  Typography,
+} from "antd";
 import { useEffect, useState } from "react";
 import {
   formatMissingTranslationKeyEmptyActionMessage,
@@ -20,6 +24,8 @@ import {
 import { readMissingTranslationKeyQueueState } from "../missing-translation-key-queue";
 import { groupMissingTranslationKeys } from "../missing-translation-key-groups";
 import type { LocalizationTranslationsMeta } from "../types";
+import { formatMissingTranslationKeyFillHint } from "../translation-key-action-hints";
+import { MissingTranslationKeyClearFilterButton } from "./missing-translation-key-clear-filter-button";
 import { MissingTranslationKeyQueueControls } from "./missing-translation-key-queue-controls";
 
 const missingTranslationKeyPageSize = 10;
@@ -121,6 +127,7 @@ export function MissingTranslationKeysAlert(props: {
           {props.onSelectKey ? (
             <MissingTranslationKeyQueueControls
               isSelectingKey={props.isSelectingKey}
+              locale={props.meta.locale}
               onSelectKey={selectQueuedKey}
               queue={queue}
               selectedKey={props.selectedKey}
@@ -132,14 +139,10 @@ export function MissingTranslationKeysAlert(props: {
                 {emptyActionMessage}
               </Typography.Text>
               {canClearFilters ? (
-                <Button
-                  icon={<FilterOutlined />}
-                  loading={props.isSelectingKey}
-                  onClick={() => props.onClearFilters?.()}
-                  size="small"
-                >
-                  Clear filters
-                </Button>
+                <MissingTranslationKeyClearFilterButton
+                  isSelectingKey={props.isSelectingKey}
+                  onClearFilters={props.onClearFilters}
+                />
               ) : null}
               {props.onRefreshMissingKeys ? (
                 <Button
@@ -170,14 +173,10 @@ export function MissingTranslationKeysAlert(props: {
                 {filterRestoreMessage}
               </Typography.Text>
               {canClearFilters ? (
-                <Button
-                  icon={<FilterOutlined />}
-                  loading={props.isSelectingKey}
-                  onClick={() => props.onClearFilters?.()}
-                  size="small"
-                >
-                  Clear filters
-                </Button>
+                <MissingTranslationKeyClearFilterButton
+                  isSelectingKey={props.isSelectingKey}
+                  onClearFilters={props.onClearFilters}
+                />
               ) : null}
             </Space>
           ) : null}
@@ -191,19 +190,26 @@ export function MissingTranslationKeysAlert(props: {
                       {key}
                     </Typography.Text>
                     {props.onSelectKey ? (
-                      <Button
-                        disabled={
-                          props.isSelectingKey && props.selectedKey !== key
-                        }
-                        icon={<EditOutlined />}
-                        loading={
-                          props.isSelectingKey && props.selectedKey === key
-                        }
-                        onClick={() => props.onSelectKey?.(key)}
-                        size="small"
+                      <Tooltip
+                        title={formatMissingTranslationKeyFillHint({
+                          key,
+                          locale: props.meta.locale,
+                        })}
                       >
-                        Fill
-                      </Button>
+                        <Button
+                          disabled={
+                            props.isSelectingKey && props.selectedKey !== key
+                          }
+                          icon={<EditOutlined />}
+                          loading={
+                            props.isSelectingKey && props.selectedKey === key
+                          }
+                          onClick={() => props.onSelectKey?.(key)}
+                          size="small"
+                        >
+                          Fill
+                        </Button>
+                      </Tooltip>
                     ) : null}
                   </Space>
                 ))}

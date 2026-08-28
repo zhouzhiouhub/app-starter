@@ -11,6 +11,7 @@ import {
   Space,
   Table,
   Typography,
+  Tooltip,
 } from "antd";
 import { useMemo, useState } from "react";
 import {
@@ -21,6 +22,7 @@ import {
   type TranslationImportResultHistoryEntry,
   type TranslationImportResultHistoryFilter,
 } from "../translation-import-result-history";
+import { formatTranslationImportHistoryActionHint } from "../translation-key-action-hints";
 
 export function TranslationImportResultHistoryView(props: {
   entries: TranslationImportResultHistoryEntry[];
@@ -115,21 +117,35 @@ export function TranslationImportResultHistoryView(props: {
             key: "view",
             render: (_, record) => (
               <Space size={6} wrap>
-                <Button
-                  icon={<EyeOutlined />}
-                  onClick={() => props.onSelect(record)}
-                  size="small"
+                <Tooltip
+                  title={formatTranslationImportHistoryActionHint({
+                    action: "view",
+                    entry: record,
+                  })}
                 >
-                  View
-                </Button>
-                {props.onUseDraft ? (
                   <Button
-                    icon={<FileAddOutlined />}
-                    onClick={() => props.onUseDraft?.(record)}
+                    icon={<EyeOutlined />}
+                    onClick={() => props.onSelect(record)}
                     size="small"
                   >
-                    Draft
+                    View
                   </Button>
+                </Tooltip>
+                {props.onUseDraft ? (
+                  <Tooltip
+                    title={formatTranslationImportHistoryActionHint({
+                      action: "draft",
+                      entry: record,
+                    })}
+                  >
+                    <Button
+                      icon={<FileAddOutlined />}
+                      onClick={() => props.onUseDraft?.(record)}
+                      size="small"
+                    >
+                      Draft
+                    </Button>
+                  </Tooltip>
                 ) : null}
               </Space>
             ),

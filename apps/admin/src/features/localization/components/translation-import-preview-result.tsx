@@ -1,14 +1,52 @@
-import { Descriptions, Space, Table, Tag, Typography } from "antd";
+import { SearchOutlined } from "@ant-design/icons";
+import {
+  Alert,
+  Button,
+  Descriptions,
+  Space,
+  Table,
+  Tag,
+  Typography,
+} from "antd";
+import { readTranslationImportPreviewFilterDifference } from "../translation-import-filter-difference";
 import type {
   TranslationImportPreviewEntry,
   TranslationImportPreviewResult,
+  TranslationListFilters,
 } from "../types";
 
 export function TranslationImportPreviewResultView(props: {
+  filters?: TranslationListFilters;
+  onFocusKey?: (key: string) => Promise<void> | void;
   preview: TranslationImportPreviewResult;
 }) {
+  const filterDifference = readTranslationImportPreviewFilterDifference({
+    filters: props.filters,
+    preview: props.preview,
+  });
+
   return (
     <Space direction="vertical" size={12} style={{ width: "100%" }}>
+      {filterDifference ? (
+        <Alert
+          action={
+            props.onFocusKey ? (
+              <Button
+                icon={<SearchOutlined />}
+                onClick={() =>
+                  void props.onFocusKey?.(filterDifference.firstKey)
+                }
+                size="small"
+              >
+                Focus first difference
+              </Button>
+            ) : undefined
+          }
+          message={filterDifference.message}
+          showIcon
+          type="warning"
+        />
+      ) : null}
       <Descriptions bordered column={{ md: 3, xs: 1 }} size="small">
         <Descriptions.Item label="Create">
           {props.preview.summary.createCount}

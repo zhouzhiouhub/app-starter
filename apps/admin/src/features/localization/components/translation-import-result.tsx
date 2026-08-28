@@ -7,6 +7,7 @@ import {
   Space,
   Table,
   Tag,
+  Tooltip,
   Typography,
 } from "antd";
 import { useMemo, useState } from "react";
@@ -18,6 +19,7 @@ import {
   readTranslationImportResultRowKey,
   type TranslationImportResultActionFilter,
 } from "../translation-import-result-filter";
+import { formatTranslationImportResultFocusHint } from "../translation-key-action-hints";
 import type { Key } from "react";
 import type {
   TranslationImportResult,
@@ -152,14 +154,22 @@ export function TranslationImportResultView(props: {
             key: "focus",
             render: (_, record) =>
               props.onFocusKey ? (
-                <Button
-                  disabled={props.focusedKey === record.key}
-                  icon={<SearchOutlined />}
-                  onClick={() => void props.onFocusKey?.(record.key)}
-                  size="small"
+                <Tooltip
+                  title={formatTranslationImportResultFocusHint({
+                    focusSource: props.focusSource,
+                    isFocused: props.focusedKey === record.key,
+                    key: record.key,
+                  })}
                 >
-                  {props.focusedKey === record.key ? "Focused" : "Focus"}
-                </Button>
+                  <Button
+                    disabled={props.focusedKey === record.key}
+                    icon={<SearchOutlined />}
+                    onClick={() => void props.onFocusKey?.(record.key)}
+                    size="small"
+                  >
+                    {props.focusedKey === record.key ? "Focused" : "Focus"}
+                  </Button>
+                </Tooltip>
               ) : null,
             title: "Focus",
             width: 120,

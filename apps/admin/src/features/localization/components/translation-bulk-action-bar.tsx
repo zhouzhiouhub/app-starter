@@ -9,6 +9,7 @@ import type { TranslationBulkLoadingAction } from "../translation-bulk-action";
 
 export function TranslationBulkActionBar(props: {
   hasMissingKeyDraft: boolean;
+  importConfirmationSummary: string;
   loadingAction?: TranslationBulkLoadingAction | null;
   onExportDownload: () => void;
   onExportPreview: () => void;
@@ -34,7 +35,7 @@ export function TranslationBulkActionBar(props: {
       </Button>
       <Popconfirm
         cancelText="Cancel"
-        description="Rows marked error, duplicate, or blocked will stop the import."
+        description={props.importConfirmationSummary}
         okText="Import"
         onConfirm={props.onImport}
         title="Import default locale?"
