@@ -12,6 +12,7 @@ import {
   formatPageBuilderVisualCaptureReport,
   pageBuilderVisualCaptureComponents,
   pageBuilderVisualCaptureDefaultOutputDir,
+  readCaptureManifestPath,
   readCaptureOutputDir,
   readPageBuilderVisualCaptureCliConfig,
   resolvePageBuilderVisualBrowserPath,
@@ -27,12 +28,17 @@ test("visual capture config reads defaults and env browser fallback", () => {
   assert.equal(config.baseUrl, "http://localhost:3000");
   assert.equal(config.browserPath, "C:/Chrome/chrome.exe");
   assert.deepEqual(config.components, pageBuilderVisualCaptureComponents);
+  assert.equal(
+    config.manifestPath,
+    "docs/development/page-builder-visual-acceptance.json",
+  );
   assert.equal(config.outputDir, pageBuilderVisualCaptureDefaultOutputDir);
   assert.equal(config.timeoutMs, 30000);
   assert.deepEqual(config.viewports, ["desktop", "mobile"]);
+  assert.equal(config.writeManifest, false);
 });
 
-test("visual capture config parses selected components and viewports", () => {
+test("visual capture config parses selected components, viewports, and manifest updates", () => {
   const config = readPageBuilderVisualCaptureCliConfig([
     "--",
     "--base-url",
@@ -43,21 +49,26 @@ test("visual capture config parses selected components and viewports", () => {
     "hero-banner,faq",
     "--component",
     "faq",
+    "--manifest",
+    "tmp/page-builder-visual-acceptance.json",
     "--output-dir",
     "reports/visual/page-builder",
     "--timeout-ms",
     "45000",
     "--viewport",
     "mobile",
+    "--write-manifest",
   ]);
 
   assert.deepEqual(config, {
     baseUrl: "https://web.example.com",
     browserPath: "C:/Chrome/chrome.exe",
     components: ["hero-banner", "faq"],
+    manifestPath: "tmp/page-builder-visual-acceptance.json",
     outputDir: "reports/visual/page-builder",
     timeoutMs: 45000,
     viewports: ["mobile"],
+    writeManifest: true,
   });
 });
 
@@ -89,6 +100,18 @@ test("visual capture config rejects unsafe inputs", () => {
   assert.throws(
     () => readCaptureOutputDir("artifacts/visual/bad:path"),
     /unsafe characters/,
+  );
+  assert.throws(
+    () => readCaptureManifestPath("../docs/development/visual.json"),
+    /unsafe path segments/,
+  );
+  assert.throws(
+    () => readCaptureManifestPath("README.md"),
+    /must live under/,
+  );
+  assert.throws(
+    () => readCaptureManifestPath("docs/development/visual.md"),
+    /must end with \.json/,
   );
 });
 
@@ -234,6 +257,17 @@ test("visual capture report includes every captured screenshot", () => {
     baseUrl: "http://localhost:3000",
     browserPath: "chrome",
     outputDir: "artifacts/visual",
+    manifestUpdate: {
+      manifestPath: "docs/development/page-builder-visual-acceptance.json",
+      updated: true,
+      updates: [
+        {
+          component: "hero-banner",
+          previewScreenshot: "artifacts/visual/hero.png",
+          viewport: "desktop",
+        },
+      ],
+    },
     screenshots: [
       {
         bytes: 123,
@@ -245,6 +279,7 @@ test("visual capture report includes every captured screenshot", () => {
   });
 
   assert.match(lines.join("\n"), /Screenshots: 1/);
+  assert.match(lines.join("\n"), /Manifest: docs\/development\/page-builder-visual-acceptance\.json \(updated 1\)/);
   assert.match(lines.join("\n"), /hero-banner\.desktop/);
   assert.match(lines.join("\n"), /123 bytes/);
 });

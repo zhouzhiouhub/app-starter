@@ -6,6 +6,7 @@ import {
   pageBuilderVisualCaptureDefaultTimeoutMs,
   pageBuilderVisualCaptureViewports,
 } from "./page-builder-visual-capture-constants.mjs";
+import { readCaptureManifestPath } from "./page-builder-visual-capture-manifest.mjs";
 
 const captureBrowserEnvNames = [
   "PAGE_BUILDER_VISUAL_BROWSER",
@@ -24,9 +25,11 @@ export function readPageBuilderVisualCaptureCliConfig(
     baseUrl: env.PAGE_BUILDER_VISUAL_BASE_URL,
     browserPath: readEnvBrowserPath(env),
     components: [],
+    manifestPath: env.PAGE_BUILDER_VISUAL_MANIFEST_PATH,
     outputDir: env.PAGE_BUILDER_VISUAL_OUTPUT_DIR,
     timeoutMs: env.PAGE_BUILDER_VISUAL_TIMEOUT_MS,
     viewports: [],
+    writeManifest: false,
   };
 
   for (let index = 0; index < args.length; index += 1) {
@@ -47,9 +50,11 @@ export function normalizeCaptureConfig(input) {
     baseUrl: readCaptureBaseUrl(input.baseUrl),
     browserPath: input.browserPath,
     components: readCaptureComponents(input.components),
+    manifestPath: readCaptureManifestPath(input.manifestPath),
     outputDir: readCaptureOutputDir(input.outputDir),
     timeoutMs: readCaptureTimeoutMs(input.timeoutMs),
     viewports: readCaptureViewports(input.viewports),
+    writeManifest: Boolean(input.writeManifest),
   };
 }
 
@@ -128,6 +133,9 @@ function readCaptureOption(option, args, index, input) {
     case "--component":
       input.components.push(...readCommaList(readOptionValue(option, args, index)));
       return index + 1;
+    case "--manifest":
+      input.manifestPath = readOptionValue(option, args, index);
+      return index + 1;
     case "--output-dir":
       input.outputDir = readOptionValue(option, args, index);
       return index + 1;
@@ -137,6 +145,9 @@ function readCaptureOption(option, args, index, input) {
     case "--viewport":
       input.viewports.push(...readCommaList(readOptionValue(option, args, index)));
       return index + 1;
+    case "--write-manifest":
+      input.writeManifest = true;
+      return index;
     default:
       throw new Error(`Unknown visual capture option: ${option}`);
   }

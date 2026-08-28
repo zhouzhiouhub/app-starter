@@ -20,6 +20,10 @@ test("visual fixture capture config wraps capture defaults", () => {
 
   assert.equal(config.capture.baseUrl, "http://localhost:3000");
   assert.equal(config.capture.browserPath, "C:/Chrome/chrome.exe");
+  assert.equal(
+    config.capture.manifestPath,
+    "docs/development/page-builder-visual-acceptance.json",
+  );
   assert.equal(config.skipBuild, false);
   assert.equal(config.startTimeoutMs, 60000);
   assert.equal(config.webPort, 3000);
@@ -35,10 +39,13 @@ test("visual fixture capture config parses workflow and capture options", () => 
     "http://127.0.0.1:3010",
     "--component",
     "hero-banner,faq",
+    "--manifest",
+    "tmp/page-builder-visual-acceptance.json",
     "--viewport",
     "mobile",
     "--output-dir",
     "reports/visual/page-builder",
+    "--write-manifest",
   ]);
 
   assert.equal(config.skipBuild, true);
@@ -46,8 +53,10 @@ test("visual fixture capture config parses workflow and capture options", () => 
   assert.equal(config.webPort, 3010);
   assert.equal(config.capture.baseUrl, "http://127.0.0.1:3010");
   assert.deepEqual(config.capture.components, ["hero-banner", "faq"]);
+  assert.equal(config.capture.manifestPath, "tmp/page-builder-visual-acceptance.json");
   assert.deepEqual(config.capture.viewports, ["mobile"]);
   assert.equal(config.capture.outputDir, "reports/visual/page-builder");
+  assert.equal(config.capture.writeManifest, true);
 });
 
 test("visual fixture capture rejects non-local or ambiguous Web URLs", () => {

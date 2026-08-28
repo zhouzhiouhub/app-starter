@@ -36,6 +36,11 @@ export function readPageBuilderVisualFixtureCaptureCliConfig(
       continue;
     }
 
+    if (option === "--write-manifest") {
+      captureArgs.push(option);
+      continue;
+    }
+
     captureArgs.push(option);
 
     if (option.startsWith("--")) {

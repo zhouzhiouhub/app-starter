@@ -3,8 +3,11 @@ import { spawn } from "node:child_process";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import {
+  appendBrowserOutput,
+  createBrowserOutputCollector,
   createPageBuilderVisualProfileDir,
   createPageBuilderVisualScreenshotArgs,
+  formatCaptureErrorSentence,
   resolvePageBuilderVisualBrowserPath,
   waitForPageBuilderVisualScreenshot,
 } from "./page-builder-visual-capture-browser.mjs";
@@ -12,9 +15,7 @@ import {
   createPageBuilderVisualCaptureJobs,
   createPageBuilderVisualCaptureUrl,
 } from "./page-builder-visual-capture-jobs.mjs";
-
-const browserOutputLimit = 1200;
-const browserOutputTruncatedSuffix = " ... [truncated]";
+import { updatePageBuilderVisualCaptureManifest } from "./page-builder-visual-capture-manifest.mjs";
 
 export async function runPageBuilderVisualCapture(config, input = {}) {
   const browserPath = resolvePageBuilderVisualBrowserPath(config.browserPath, {
@@ -37,11 +38,20 @@ export async function runPageBuilderVisualCapture(config, input = {}) {
     );
   }
 
-  return {
+  const result = {
     baseUrl: config.baseUrl,
     browserPath,
     outputDir: config.outputDir,
     screenshots,
+  };
+
+  return {
+    ...result,
+    manifestUpdate: updatePageBuilderVisualCaptureManifest(
+      config,
+      result,
+      input,
+    ),
   };
 }
 
@@ -197,96 +207,4 @@ function observeBrowserExit(child, timeoutMs, input = {}) {
     isSettled: () => settled,
     promise,
   };
-}
-
-function createBrowserOutputCollector(child) {
-  let output = "";
-  let truncated = false;
-
-  const append = (chunk) => {
-    const nextOutput = sanitizeBrowserOutput(Buffer.from(chunk).toString("utf8"));
-    const remaining = browserOutputLimit - output.length;
-
-    if (remaining <= 0) {
-      truncated = true;
-      return;
-    }
-
-    if (nextOutput.length > remaining) {
-      truncated = true;
-    }
-
-    output += nextOutput.slice(0, remaining);
-  };
-
-  collectBrowserOutput(child.stdout, append);
-  collectBrowserOutput(child.stderr, append);
-
-  return {
-    read: () => normalizeBrowserOutput(output, { truncated }),
-  };
-}
-
-function collectBrowserOutput(stream, append) {
-  if (!stream?.on) {
-    return;
-  }
-
-  stream.on("data", (chunk) => {
-    append(chunk);
-  });
-}
-
-function appendBrowserOutput(message, output) {
-  if (!output) {
-    return `${message} No browser output was captured.`;
-  }
-
-  return `${message} Browser output: ${output}`;
-}
-
-function readCaptureErrorMessage(error) {
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-
-  return String(error);
-}
-
-function formatCaptureErrorSentence(error) {
-  const message = readCaptureErrorMessage(error).trim();
-  return /[.!?]$/u.test(message) ? message : `${message}.`;
-}
-
-function normalizeBrowserOutput(output, options = {}) {
-  const normalized = output.replace(/\s+/gu, " ").trim();
-
-  if (!normalized) {
-    return "";
-  }
-
-  return options.truncated
-    ? `${normalized}${browserOutputTruncatedSuffix}`
-    : normalized;
-}
-
-function sanitizeBrowserOutput(output) {
-  return Array.from(output, replaceUnsafeControlCharacter)
-    .join("")
-    .replace(/\s+/gu, " ");
-}
-
-function replaceUnsafeControlCharacter(character) {
-  const codePoint = character.codePointAt(0);
-
-  if (
-    codePoint === undefined ||
-    codePoint === 0x7f ||
-    (codePoint >= 0x00 && codePoint <= 0x08) ||
-    (codePoint >= 0x0b && codePoint <= 0x1f)
-  ) {
-    return " ";
-  }
-
-  return character;
 }

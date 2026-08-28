@@ -1,0 +1,128 @@
+import assert from "node:assert/strict";
+import { EventEmitter } from "node:events";
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import test from "node:test";
+import { runPageBuilderVisualCapture } from "./page-builder-visual-capture.mjs";
+
+test("visual capture can write preview screenshot paths back to the manifest", async () => {
+  const root = `tmp/visual-capture-manifest-${process.pid}-${Date.now()}`;
+  const manifestPath = `${root}/manifest.json`;
+
+  rmSync(root, { force: true, recursive: true });
+  mkdirSync(root, { recursive: true });
+  writeFileSync(manifestPath, `${JSON.stringify(createManifest(), null, 2)}\n`);
+
+  try {
+    const result = await runPageBuilderVisualCapture(
+      {
+        baseUrl: "http://localhost:3000",
+        browserPath: "chrome",
+        components: ["hero-banner"],
+        manifestPath,
+        outputDir: "reports/visual/page-builder-fixture",
+        timeoutMs: 2000,
+        viewports: ["desktop"],
+        writeManifest: true,
+      },
+      {
+        fetch: async () => ({ status: 200 }),
+        screenshotInput: { pollMs: 1 },
+        spawn: (_command, args) => createSuccessfulBrowser(args),
+      },
+    );
+
+    const updated = JSON.parse(readFileSync(manifestPath, "utf8"));
+    const evidence = updated.records[0].viewports.desktop;
+
+    assert.equal(result.manifestUpdate.updated, true);
+    assert.equal(result.manifestUpdate.updates.length, 1);
+    assert.equal(updated.records[0].status, "needs-evidence");
+    assert.equal(
+      evidence.previewScreenshot,
+      "reports/visual/page-builder-fixture/page-builder-visual-fixture-hero-banner-desktop.png",
+    );
+    assert.equal(evidence.status, "needs-evidence");
+    assert.equal(evidence.visualMatchPercent, null);
+    assert.equal(evidence.maxLayoutDeltaPx, null);
+    assert.equal(evidence.maxColorDeltaE, null);
+    assert.equal(evidence.designReference, "docs/visual/hero-banner-desktop.png");
+  } finally {
+    rmSync(root, { force: true, recursive: true });
+  }
+});
+
+test("visual capture rejects manifest updates for missing viewport slots", async () => {
+  const root = `tmp/visual-capture-missing-${process.pid}-${Date.now()}`;
+  const manifestPath = `${root}/manifest.json`;
+
+  rmSync(root, { force: true, recursive: true });
+  mkdirSync(root, { recursive: true });
+  writeFileSync(manifestPath, `${JSON.stringify({ records: [] })}\n`);
+
+  try {
+    await assert.rejects(
+      () =>
+        runPageBuilderVisualCapture(
+          {
+            baseUrl: "http://localhost:3000",
+            browserPath: "chrome",
+            components: ["hero-banner"],
+            manifestPath,
+            outputDir: "reports/visual/page-builder-fixture",
+            timeoutMs: 2000,
+            viewports: ["desktop"],
+            writeManifest: true,
+          },
+          {
+            fetch: async () => ({ status: 200 }),
+            screenshotInput: { pollMs: 1 },
+            spawn: (_command, args) => createSuccessfulBrowser(args),
+          },
+        ),
+      /Visual capture manifest is missing hero-banner\.desktop/,
+    );
+  } finally {
+    rmSync(root, { force: true, recursive: true });
+  }
+});
+
+function createSuccessfulBrowser(args) {
+  const child = new EventEmitter();
+  child.stdout = new EventEmitter();
+  child.stderr = new EventEmitter();
+  child.exitCode = null;
+  child.killed = false;
+  child.kill = () => {
+    child.killed = true;
+    queueMicrotask(() => child.emit("exit", 0, null));
+  };
+
+  const screenshotArg = args.find((arg) => arg.startsWith("--screenshot="));
+  writeFileSync(
+    screenshotArg.slice("--screenshot=".length),
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00]),
+  );
+
+  return child;
+}
+
+function createManifest() {
+  return {
+    records: [
+      {
+        component: "hero-banner",
+        status: "accepted",
+        viewports: {
+          desktop: {
+            designReference: "docs/visual/hero-banner-desktop.png",
+            maxColorDeltaE: 1,
+            maxLayoutDeltaPx: 1,
+            previewScreenshot: "artifacts/visual/old-hero-banner-desktop.png",
+            status: "accepted",
+            visualMatchPercent: 99,
+          },
+        },
+      },
+    ],
+  };
+}

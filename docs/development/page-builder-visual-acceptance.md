@@ -16,6 +16,7 @@ pnpm visual:acceptance -- --checklist --output reports/visual/page-builder-fixtu
 pnpm visual:acceptance -- --require-accepted
 pnpm visual:capture
 pnpm visual:capture:fixture
+pnpm visual:capture:fixture -- --output-dir reports/visual/page-builder-fixture --write-manifest
 pnpm visual:measure
 pnpm visual:measure -- --write
 pnpm visual:references -- --source-dir docs/visual/page-builder-references --write
@@ -40,6 +41,10 @@ source directory to update `designReference` values and reset stale metrics. Use
 `pnpm visual:measure` after attaching design references to calculate
 `visualMatchPercent`, `maxLayoutDeltaPx`, and `maxColorDeltaE`; pass `--write`
 to persist the measured values to the manifest.
+Pass `--write-manifest` to `visual:capture` or `visual:capture:fixture` only
+when the captured browser screenshots should update `previewScreenshot` paths in
+the manifest. This resets stale diff metrics and keeps viewport status as
+`needs-evidence`; it does not mark visual evidence accepted.
 
 Reference import expects files named `<component>-<viewport>.png`, such as
 `hero-banner-desktop.png` and `hero-banner-mobile.png`. It is dry-run by
@@ -81,6 +86,13 @@ To run the full local workflow in one command:
 
 ```powershell
 pnpm visual:capture:fixture
+```
+
+To capture into the same directory used by the GitHub Actions artifact and
+point the manifest at those retained screenshots:
+
+```powershell
+pnpm visual:capture:fixture -- --output-dir reports/visual/page-builder-fixture --write-manifest
 ```
 
 Set `PAGE_BUILDER_VISUAL_BROWSER` or pass `--browser` when Chrome or Edge is

@@ -22,8 +22,10 @@ export function formatPageBuilderVisualFixtureCaptureUsage() {
     "  --base-url <url>          Local http Web origin, default http://localhost:3000.",
     "  --browser <path>          Chrome or Edge executable path.",
     "  --component <id[,id]>     Capture selected MVP component(s).",
+    "  --manifest <path>         Visual acceptance manifest JSON path.",
     "  --output-dir <dir>        artifacts/visual or reports/visual path.",
     "  --timeout-ms <ms>         Browser screenshot timeout, 1000-120000.",
     "  --viewport <id[,id]>      desktop and/or mobile.",
+    "  --write-manifest          Update previewScreenshot paths and reset metrics.",
   ];
 }
