@@ -23,11 +23,20 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /if: always\(\)/);
   assert.match(workflow, /pnpm smoke:report -- "\$SMOKE_REPORT_PATH"/);
   assert.match(workflow, /pnpm smoke:release-check -- "\$SMOKE_REPORT_PATH"/);
+  assert.match(workflow, /RELEASE_CHECK_ARTIFACT_PATH:/);
+  assert.match(workflow, /RELEASE_CHECK_ARTIFACT_NAME:/);
+  assert.match(
+    workflow,
+    /pnpm release:check -- --smoke-report "\$SMOKE_REPORT_PATH" --output "\$RELEASE_CHECK_ARTIFACT_PATH"/,
+  );
   assert.match(workflow, /GITHUB_STEP_SUMMARY/);
   assert.match(workflow, /Release gate:/);
+  assert.match(workflow, /Combined gate:/);
+  assert.match(workflow, /Combined artifact:/);
   assert.match(workflow, /SMOKE_REPORT_ARTIFACT_NAME:/);
   assert.match(workflow, /actions\/upload-artifact@v4/);
   assert.match(workflow, /path: \$\{\{ inputs\.report_path \}\}/);
+  assert.match(workflow, /path: \$\{\{ env\.RELEASE_CHECK_ARTIFACT_PATH \}\}/);
   assert.match(workflow, /retention-days: 30/);
 });
 
@@ -63,4 +72,5 @@ test("main CI verifies the smoke report CLI entry point", async () => {
 
   assert.match(workflow, /pnpm smoke:report -- --help/);
   assert.match(workflow, /pnpm smoke:release-check -- --help/);
+  assert.match(workflow, /pnpm release:check -- --help/);
 });

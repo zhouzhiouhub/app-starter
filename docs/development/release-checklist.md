@@ -72,6 +72,8 @@ later phases are explicitly approved.
 - The `Production Smoke` workflow run is linked from the release notes.
 - The uploaded artifact `production-smoke-report-<run_number>` is attached or
   linked.
+- The uploaded artifact `release-evidence-check-<run_number>` is attached or
+  linked.
 - The GitHub step summary records the report path, artifact name, and review
   command.
 - `pnpm smoke:report -- artifacts/production-smoke/smoke-report.json` output is
@@ -95,6 +97,8 @@ later phases are explicitly approved.
 - `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --output artifacts/release/release-check.json`
   writes the combined `release-evidence-check.v1` artifact for the release
   record.
+- The `Production Smoke` workflow uploads the same combined release evidence as
+  `release-evidence-check-<run_number>`.
 
 ## Failure Review
 
@@ -112,7 +116,9 @@ later phases are explicitly approved.
 ## After Release
 
 - Keep the smoke report artifact for at least the workflow retention window.
-- Record the release tag, workflow run URL, artifact name, public storefront URL,
-  and rollback target in the release notes.
+- Keep the combined release evidence artifact for at least the workflow
+  retention window.
+- Record the release tag, workflow run URL, smoke artifact name, combined release
+  artifact name, public storefront URL, and rollback target in the release notes.
 - If a P0 or P1 issue happens, attach the failed smoke report review to the
   incident recap and add the missing test, monitor, or runbook update.
