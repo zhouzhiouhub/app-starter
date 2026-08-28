@@ -42,10 +42,7 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
     /RELEASE_VISUAL_ARTIFACT_RUN_ID: \$\{\{ inputs\.visual_artifact_run_id \}\}/,
   );
   assert.match(workflow, /name: Validate release evidence inputs/);
-  assert.match(
-    workflow,
-    /node scripts\/release\/production-smoke-release-inputs\.mjs/,
-  );
+  assert.match(workflow, /pnpm release:preflight/);
   assert.match(workflow, /name: Download Page Builder visual evidence artifact/);
   assert.match(
     workflow,
@@ -122,4 +119,5 @@ test("main CI verifies the smoke report CLI entry point", async () => {
   assert.match(workflow, /pnpm smoke:report -- --help/);
   assert.match(workflow, /pnpm smoke:release-check -- --help/);
   assert.match(workflow, /pnpm release:check -- --help/);
+  assert.match(workflow, /pnpm release:preflight -- --help/);
 });

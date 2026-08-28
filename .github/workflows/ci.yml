@@ -29,4 +29,5 @@ jobs:
       - run: pnpm smoke:release-check -- --help
       - run: pnpm release:check -- --help
       - run: pnpm release:notes -- --help
+      - run: pnpm release:preflight -- --help
       - run: pnpm build

@@ -118,7 +118,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm run check:file-size
       - name: Validate release evidence inputs
-        run: node scripts/release/production-smoke-release-inputs.mjs
+        run: pnpm release:preflight
       - name: Download Page Builder visual evidence artifact
         if: ${{ inputs.visual_artifact_name != '' && inputs.visual_artifact_run_id != '' }}
         uses: actions/download-artifact@v4

@@ -19,10 +19,20 @@ export function validateProductionSmokeReleaseInputs(env = process.env) {
   };
 }
 
-export async function runProductionSmokeReleaseInputsCli(env = process.env) {
+export async function runProductionSmokeReleaseInputsCli(args = [], input = {}) {
+  const stdout = input.stdout ?? console.log;
+  const stderr = input.stderr ?? console.error;
+
+  if (args.includes("--help") || args.includes("-h")) {
+    printHelp(stdout);
+    return 0;
+  }
+
   try {
+    assertNoUnknownArgs(args);
+    const env = input.env ?? process.env;
     const result = validateProductionSmokeReleaseInputs(env);
-    console.log(
+    stdout(
       [
         "Production smoke release inputs validated:",
         `releaseNotes=${formatEnabled(result.releaseNotesEnabled)},`,
@@ -33,7 +43,7 @@ export async function runProductionSmokeReleaseInputsCli(env = process.env) {
     );
     return 0;
   } catch (error) {
-    console.error(
+    stderr(
       `Production smoke release input validation failed: ${readErrorMessage(
         error,
       )}`,
@@ -143,6 +153,30 @@ function formatEnabled(value) {
   return value ? "enabled" : "disabled";
 }
 
+function assertNoUnknownArgs(args) {
+  const unknown = args.filter((arg) => arg !== "--");
+
+  if (unknown.length > 0) {
+    throw new Error(
+      `Unknown production smoke release input option: ${unknown[0]}`,
+    );
+  }
+}
+
+function printHelp(writeLine) {
+  writeLine(`Usage:
+  pnpm release:preflight
+
+Checks:
+  Validates Production Smoke release evidence inputs before smoke requests run.
+
+Environment:
+  RELEASE_VISUAL_ARTIFACT_NAME and RELEASE_VISUAL_ARTIFACT_RUN_ID must be set
+  together. RELEASE_TAG, RELEASE_ROLLBACK_TARGET, and
+  RELEASE_VISUAL_ARTIFACT_NAME must be set together when release notes should be
+  generated.`);
+}
+
 function isMainModule() {
   return (
     process.argv[1] &&
@@ -151,5 +185,7 @@ function isMainModule() {
 }
 
 if (isMainModule()) {
-  process.exitCode = await runProductionSmokeReleaseInputsCli();
+  process.exitCode = await runProductionSmokeReleaseInputsCli(
+    process.argv.slice(2),
+  );
 }

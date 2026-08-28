@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { validateProductionSmokeReleaseInputs } from "./production-smoke-release-inputs.mjs";
+import {
+  runProductionSmokeReleaseInputsCli,
+  validateProductionSmokeReleaseInputs,
+} from "./production-smoke-release-inputs.mjs";
 
 test("production smoke release input preflight accepts disabled optional evidence", () => {
   const result = validateProductionSmokeReleaseInputs({
@@ -79,6 +83,51 @@ test("production smoke release input preflight validates release notes config", 
       }),
     /Storefront URL must use a real production HTTPS host/,
   );
+});
+
+test("production smoke release input preflight CLI prints help", async () => {
+  const stdout = [];
+  const exitCode = await runProductionSmokeReleaseInputsCli(["--help"], {
+    stdout: (line) => stdout.push(line),
+  });
+
+  assert.equal(exitCode, 0);
+  assert.match(stdout.join("\n"), /pnpm release:preflight/);
+  assert.match(stdout.join("\n"), /RELEASE_VISUAL_ARTIFACT_NAME/);
+});
+
+test("production smoke release input preflight CLI rejects unknown options", async () => {
+  const stderr = [];
+  const exitCode = await runProductionSmokeReleaseInputsCli(["--bad"], {
+    env: {},
+    stderr: (line) => stderr.push(line),
+  });
+
+  assert.equal(exitCode, 1);
+  assert.match(
+    stderr.join("\n"),
+    /Unknown production smoke release input option: --bad/,
+  );
+});
+
+test("production smoke release input preflight is exposed to package and CI", async () => {
+  const [packageJson, ciWorkflow, readme, setupGuide, releaseChecklist] =
+    await Promise.all([
+      readFile("package.json", "utf8"),
+      readFile(".github/workflows/ci.yml", "utf8"),
+      readFile("README.md", "utf8"),
+      readFile("docs/development/setup.md", "utf8"),
+      readFile("docs/development/release-checklist.md", "utf8"),
+    ]);
+
+  assert.match(
+    packageJson,
+    /"release:preflight": "node scripts\/release\/production-smoke-release-inputs\.mjs"/,
+  );
+  assert.match(ciWorkflow, /pnpm release:preflight -- --help/);
+  assert.match(readme, /pnpm release:preflight/);
+  assert.match(setupGuide, /pnpm release:preflight/);
+  assert.match(releaseChecklist, /pnpm release:preflight/);
 });
 
 function createReleaseNotesEnv() {

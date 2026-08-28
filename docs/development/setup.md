@@ -262,6 +262,7 @@ pnpm smoke:report -- --list --limit=10
 pnpm smoke:report -- reports/production/smoke-report.json
 pnpm smoke:release-check -- artifacts/production-smoke/smoke-report.json
 pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete
+pnpm release:preflight
 pnpm release:check -- --checklist --smoke-report artifacts/production-smoke/smoke-report.json
 pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json
 pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --json
@@ -298,7 +299,7 @@ uploads `release-evidence-check-<run_number>` with the
 `release-evidence-check.v1` JSON artifact. If `visual_artifact_name` and
 `visual_artifact_run_id` are provided, it downloads that Page Builder Visual
 artifact to `reports/visual/page-builder-fixture` before running the combined
-gate. The workflow preflights these optional inputs before smoke requests so a
+gate. The workflow runs `pnpm release:preflight` before smoke requests so a
 partial visual artifact pair or partial release notes input set fails early.
 When `release_tag`,
 `rollback_target`, and `visual_artifact_name` are provided, it runs
