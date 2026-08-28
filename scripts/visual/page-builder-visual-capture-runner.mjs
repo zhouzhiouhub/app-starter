@@ -14,6 +14,7 @@ import {
 } from "./page-builder-visual-capture-jobs.mjs";
 
 const browserOutputLimit = 1200;
+const browserOutputTruncatedSuffix = " ... [truncated]";
 
 export async function runPageBuilderVisualCapture(config, input = {}) {
   const browserPath = resolvePageBuilderVisualBrowserPath(config.browserPath, {
@@ -199,23 +200,40 @@ function observeBrowserExit(child, timeoutMs, input = {}) {
 }
 
 function createBrowserOutputCollector(child) {
-  const chunks = [];
+  let output = "";
+  let truncated = false;
 
-  collectBrowserOutput(child.stdout, chunks);
-  collectBrowserOutput(child.stderr, chunks);
+  const append = (chunk) => {
+    const nextOutput = sanitizeBrowserOutput(Buffer.from(chunk).toString("utf8"));
+    const remaining = browserOutputLimit - output.length;
+
+    if (remaining <= 0) {
+      truncated = true;
+      return;
+    }
+
+    if (nextOutput.length > remaining) {
+      truncated = true;
+    }
+
+    output += nextOutput.slice(0, remaining);
+  };
+
+  collectBrowserOutput(child.stdout, append);
+  collectBrowserOutput(child.stderr, append);
 
   return {
-    read: () => normalizeBrowserOutput(chunks.join("")),
+    read: () => normalizeBrowserOutput(output, { truncated }),
   };
 }
 
-function collectBrowserOutput(stream, chunks) {
+function collectBrowserOutput(stream, append) {
   if (!stream?.on) {
     return;
   }
 
   stream.on("data", (chunk) => {
-    chunks.push(Buffer.from(chunk).toString("utf8"));
+    append(chunk);
   });
 }
 
@@ -240,12 +258,22 @@ function formatCaptureErrorSentence(error) {
   return /[.!?]$/u.test(message) ? message : `${message}.`;
 }
 
-function normalizeBrowserOutput(output) {
+function normalizeBrowserOutput(output, options = {}) {
+  const normalized = output.replace(/\s+/gu, " ").trim();
+
+  if (!normalized) {
+    return "";
+  }
+
+  return options.truncated
+    ? `${normalized}${browserOutputTruncatedSuffix}`
+    : normalized;
+}
+
+function sanitizeBrowserOutput(output) {
   return Array.from(output, replaceUnsafeControlCharacter)
     .join("")
-    .replace(/\s+/gu, " ")
-    .trim()
-    .slice(0, browserOutputLimit);
+    .replace(/\s+/gu, " ");
 }
 
 function replaceUnsafeControlCharacter(character) {
