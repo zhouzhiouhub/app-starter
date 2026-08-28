@@ -5,6 +5,7 @@ export function readProjectStatusCliConfig(args) {
   const releaseCheckConfig = readReleaseCheckCliConfig(input.releaseCheckArgs);
 
   return {
+    allActions: input.allActions,
     json: releaseCheckConfig.json,
     outputPath: releaseCheckConfig.outputPath,
     requireReady: input.requireReady,
@@ -15,9 +16,15 @@ export function readProjectStatusCliConfig(args) {
 function readProjectStatusArgs(args) {
   const normalizedArgs = stripPnpmSeparator(args);
   const releaseCheckArgs = [];
+  let allActions = false;
   let requireReady = false;
 
   for (const arg of normalizedArgs) {
+    if (arg === "--all-actions") {
+      allActions = true;
+      continue;
+    }
+
     if (arg === "--require-ready") {
       requireReady = true;
       continue;
@@ -26,7 +33,7 @@ function readProjectStatusArgs(args) {
     releaseCheckArgs.push(arg);
   }
 
-  return { releaseCheckArgs, requireReady };
+  return { allActions, releaseCheckArgs, requireReady };
 }
 
 function stripPnpmSeparator(args) {

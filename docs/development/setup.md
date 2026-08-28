@@ -273,6 +273,7 @@ pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.jso
 pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --json
 pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --output artifacts/release/release-check.json
 pnpm project:status
+pnpm project:status -- --all-actions
 pnpm project:status -- --require-ready
 pnpm project:status -- --json
 pnpm release:notes -- --release-tag v0.1.0 --workflow-run-url https://github.com/zhouzhiouhub/app-starter/actions/runs/123 --smoke-artifact production-smoke-report-123 --release-artifact release-evidence-check-123 --visual-artifact page-builder-visual-fixture-123 --storefront-url https://store.brand.com --rollback-target main@abcdef1 --output docs/releases/v0.1.0.md
@@ -295,7 +296,8 @@ configured local verification commands, and the next concrete actions without
 changing the pass/fail criteria. Add `--require-ready` when the same status
 report should exit non-zero until release evidence is ready. Use `--json` or
 `--output` to produce a validated `project-status.v1` artifact for handoff or
-release review notes.
+release review notes. Add `--all-actions` when the handoff needs every pending
+next action instead of the default short list.
 
 After the Page Builder visual manifest has accepted real design evidence,
 `release:check` verifies both evidence streams together: production smoke must

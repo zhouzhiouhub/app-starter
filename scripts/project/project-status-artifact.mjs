@@ -41,13 +41,16 @@ const localVerificationCommands = [
 
 export function createProjectStatusArtifact(check, input = {}) {
   const nextActions = createProjectNextActions(check);
+  const serializedActionCount = input.includeAllActions
+    ? nextActions.length
+    : maxProjectActionCount;
 
   return {
     completedMilestones,
     generatedAt: input.generatedAt ?? new Date().toISOString(),
     localVerification: createLocalVerificationSummary(),
     nextActionCount: nextActions.length,
-    nextActions: nextActions.slice(0, maxProjectActionCount),
+    nextActions: nextActions.slice(0, serializedActionCount),
     phase: "MVP release verification",
     releaseGate: createReleaseGateSummary(check),
     releaseReady: check.releaseReady,

@@ -28,6 +28,7 @@ export async function runProjectStatusCli(args, input = {}) {
     );
     const artifact = createProjectStatusArtifact(check, {
       generatedAt: input.generatedAt,
+      includeAllActions: config.allActions,
     });
 
     assertProjectStatusArtifact(artifact);
@@ -65,6 +66,7 @@ function isMainModule() {
 function printHelp(writeLine) {
   writeLine(`Usage:
   pnpm project:status
+  pnpm project:status -- --all-actions
   pnpm project:status -- --json
   pnpm project:status -- --require-ready
   pnpm project:status -- --output artifacts/release/project-status.json
@@ -72,6 +74,7 @@ function printHelp(writeLine) {
   pnpm project:status -- --visual-artifact-dir reports/visual/page-builder-fixture
 
 Options:
+  --all-actions              Print or write every next action instead of the first 8.
   --json                     Print the machine-readable project status report.
   --output <path>            Write a validated project-status.v1 JSON report under tmp/, reports/, artifacts/, or .tmp/.
   --require-ready            Exit 1 unless the current release gate is ready.

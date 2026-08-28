@@ -13,6 +13,7 @@ import {
 import {
   createProjectStatusArtifact,
   projectStatusSchemaVersion,
+  readProjectStatusCliConfig,
 } from "./project-status.mjs";
 
 test("project status summarizes blocked release evidence", () => {
@@ -46,6 +47,30 @@ test("project status summarizes blocked release evidence", () => {
   );
 });
 
+test("project status can serialize every next action", () => {
+  const artifact = createProjectStatusArtifact(createBlockedCheck(), {
+    generatedAt: "2026-08-28T00:00:00.000Z",
+    includeAllActions: true,
+  });
+
+  assert.equal(artifact.nextActionCount, 13);
+  assert.equal(artifact.nextActions.length, 13);
+  assert.equal(artifact.nextActions.at(-1).label, "spec-table.mobile");
+});
+
+test("project status config keeps all-actions local", () => {
+  const config = readProjectStatusCliConfig([
+    "--",
+    "--all-actions",
+    "--json",
+    "--require-ready",
+  ]);
+
+  assert.equal(config.allActions, true);
+  assert.equal(config.json, true);
+  assert.equal(config.requireReady, true);
+});
+
 test("project status CLI prints readable blocked state", async () => {
   const emptyArchiveRoot = mkdtempSync(path.join(tmpdir(), "project-status-"));
   const stdout = [];
@@ -67,6 +92,28 @@ test("project status CLI prints readable blocked state", async () => {
     assert.match(text, /Local verification:/);
     assert.match(text, /TypeScript: pnpm typecheck \(configured\)/);
     assert.match(text, /hero-banner\.desktop/);
+  } finally {
+    await rm(emptyArchiveRoot, { force: true, recursive: true });
+  }
+});
+
+test("project status CLI can print every next action", async () => {
+  const emptyArchiveRoot = mkdtempSync(
+    path.join(tmpdir(), "project-status-all-actions-"),
+  );
+  const stdout = [];
+
+  try {
+    const exitCode = await runProjectStatusCli(["--all-actions"], {
+      smokeRoots: [emptyArchiveRoot],
+      stdout: (line) => stdout.push(line),
+      visualManifest: createPendingVisualManifest(),
+    });
+    const text = stdout.join("\n");
+
+    assert.equal(exitCode, 0);
+    assert.match(text, /spec-table\.mobile/);
+    assert.doesNotMatch(text, /\.\.\. and \d+ more next actions/);
   } finally {
     await rm(emptyArchiveRoot, { force: true, recursive: true });
   }
@@ -142,9 +189,11 @@ test("project status CLI writes machine-readable status", async () => {
 });
 
 test("project status command is exposed in package and CI", async () => {
-  const [packageJson, ciWorkflow] = await Promise.all([
+  const [packageJson, ciWorkflow, readme, setupDoc] = await Promise.all([
     readFile("package.json", "utf8"),
     readFile(".github/workflows/ci.yml", "utf8"),
+    readFile("README.md", "utf8"),
+    readFile("docs/development/setup.md", "utf8"),
   ]);
 
   assert.match(
@@ -156,6 +205,9 @@ test("project status command is exposed in package and CI", async () => {
     /"test:project": "node --test scripts\/project\/\*\.test\.mjs"/,
   );
   assert.match(ciWorkflow, /pnpm project:status -- --help/);
+  assert.match(ciWorkflow, /pnpm project:status -- --all-actions --json/);
+  assert.match(readme, /pnpm project:status -- --all-actions/);
+  assert.match(setupDoc, /pnpm project:status -- --all-actions/);
 });
 
 function createBlockedCheck() {
