@@ -22,7 +22,9 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /pnpm smoke:publish/);
   assert.match(workflow, /if: always\(\)/);
   assert.match(workflow, /pnpm smoke:report -- "\$SMOKE_REPORT_PATH"/);
+  assert.match(workflow, /pnpm smoke:release-check -- "\$SMOKE_REPORT_PATH"/);
   assert.match(workflow, /GITHUB_STEP_SUMMARY/);
+  assert.match(workflow, /Release gate:/);
   assert.match(workflow, /SMOKE_REPORT_ARTIFACT_NAME:/);
   assert.match(workflow, /actions\/upload-artifact@v4/);
   assert.match(workflow, /path: \$\{\{ inputs\.report_path \}\}/);
@@ -60,4 +62,5 @@ test("main CI verifies the smoke report CLI entry point", async () => {
   const workflow = await readFile(ciWorkflowPath, "utf8");
 
   assert.match(workflow, /pnpm smoke:report -- --help/);
+  assert.match(workflow, /pnpm smoke:release-check -- --help/);
 });

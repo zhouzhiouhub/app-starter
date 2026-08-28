@@ -19,6 +19,7 @@
     "presmoke:publish": "pnpm --filter @app-starter/schema build",
     "smoke:publish": "node scripts/smoke-publish.mjs",
     "smoke:report": "node scripts/smoke-report.mjs",
+    "smoke:release-check": "node scripts/smoke-release-check.mjs",
     "test": "pnpm -r --if-present test && pnpm run test:smoke",
     "pretest:smoke": "pnpm --filter @app-starter/schema build",
     "test:smoke": "node --test scripts/smoke/*.test.mjs",

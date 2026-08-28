@@ -89,6 +89,15 @@ jobs:
           else
             echo "Smoke report artifact was not created at $SMOKE_REPORT_PATH."
           fi
+      - name: Check release evidence gates
+        if: always()
+        run: |
+          if [ -f "$SMOKE_REPORT_PATH" ]; then
+            pnpm smoke:release-check -- "$SMOKE_REPORT_PATH"
+          else
+            echo "Smoke report artifact was not created at $SMOKE_REPORT_PATH."
+            exit 1
+          fi
       - name: Write release evidence summary
         if: always()
         run: |
@@ -97,6 +106,7 @@ jobs:
             echo "- Report path: \`$SMOKE_REPORT_PATH\`"
             echo "- Artifact: \`$SMOKE_REPORT_ARTIFACT_NAME\`"
             echo "- Review: \`pnpm smoke:report -- $SMOKE_REPORT_PATH\`"
+            echo "- Release gate: \`pnpm smoke:release-check -- $SMOKE_REPORT_PATH\`"
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload smoke report artifact
         if: always()

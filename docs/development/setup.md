@@ -249,18 +249,21 @@ Review archived smoke reports with:
 pnpm smoke:report
 pnpm smoke:report -- --list --limit=10
 pnpm smoke:report -- reports/production/smoke-report.json
+pnpm smoke:release-check -- artifacts/production-smoke/smoke-report.json
 ```
 
 The review command scans the same safe archive roots, recomputes the report
 summary from the stored checks, and highlights R2 / CDN, Admin static app, and
 publish-flow traceability before showing failed check details and suggested
-fixes.
+fixes. The release-check command exits non-zero unless the archived report
+proves the required production gates, including R2 upload, Admin static app,
+publish/rollback, SEO, and ISR revalidation.
 
 The `Production Smoke` GitHub Actions workflow runs the same command set against
 the protected `production` environment. It sets
 `SMOKE_REPORT_PATH=artifacts/production-smoke/smoke-report.json`, requires R2
 upload, Admin static hosting, and ISR revalidation by default, writes the review
-command to the job summary, and uploads the report as
+and release-check commands to the job summary, and uploads the report as
 `production-smoke-report-<run_number>`. Use
 [`release-checklist.md`](./release-checklist.md) to attach the workflow run,
 artifact, report review, and rollback target to release notes.

@@ -56,6 +56,8 @@ later phases are explicitly approved.
   command.
 - `pnpm smoke:report -- artifacts/production-smoke/smoke-report.json` output is
   saved in the workflow log.
+- `pnpm smoke:release-check -- artifacts/production-smoke/smoke-report.json`
+  exits successfully in the workflow log.
 - The smoke report shows `summary.status=passed`.
 - The smoke report shows `summary.productionReady=true`.
 - The traceability section shows `R2/CDN: passed`.
@@ -66,6 +68,8 @@ later phases are explicitly approved.
 
 - Download the workflow artifact or open the checked-out report path.
 - Run `pnpm smoke:report -- artifacts/production-smoke/smoke-report.json`.
+- Run `pnpm smoke:release-check -- artifacts/production-smoke/smoke-report.json`
+  before marking release evidence ready.
 - Use the failed check details and suggested fixes from the report review.
 - Link both the failed run and the fixed run in the release notes.
 - Do not mark the release ready until a new artifact proves the failed gate is
