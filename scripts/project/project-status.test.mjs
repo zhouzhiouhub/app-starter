@@ -72,6 +72,41 @@ test("project status CLI prints readable blocked state", async () => {
   }
 });
 
+test("project status CLI can require release-ready evidence", async () => {
+  const emptyArchiveRoot = mkdtempSync(
+    path.join(tmpdir(), "project-status-ready-gate-"),
+  );
+  const blockedStdout = [];
+
+  try {
+    const blockedExitCode = await runProjectStatusCli(["--require-ready"], {
+      smokeRoots: [emptyArchiveRoot],
+      stdout: (line) => blockedStdout.push(line),
+      visualManifest: createPendingVisualManifest(),
+    });
+
+    assert.equal(blockedExitCode, 1);
+    assert.match(blockedStdout.join("\n"), /Status: needs-evidence/);
+  } finally {
+    await rm(emptyArchiveRoot, { force: true, recursive: true });
+  }
+
+  const readyStdout = [];
+  const { evidenceRoot, manifest } = createAcceptedVisualManifest();
+  const readyExitCode = await runProjectStatusCli(["--require-ready"], {
+    smokeArtifact: {
+      path: "artifacts/production-smoke/smoke-report.json",
+      report: createCompleteReleaseReport(),
+    },
+    stdout: (line) => readyStdout.push(line),
+    visualEvidenceRoot: evidenceRoot,
+    visualManifest: manifest,
+  });
+
+  assert.equal(readyExitCode, 0);
+  assert.match(readyStdout.join("\n"), /Status: release-ready/);
+});
+
 test("project status CLI writes machine-readable status", async () => {
   const outputRoot = `tmp/project-status-output-${process.pid}-${Date.now()}`;
   const outputPath = `${outputRoot}/project-status.json`;

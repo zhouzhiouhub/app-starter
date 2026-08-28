@@ -45,7 +45,7 @@ export async function runProjectStatusCli(args, input = {}) {
       }
     }
 
-    return 0;
+    return config.requireReady && !artifact.releaseReady ? 1 : 0;
   } catch (error) {
     stderr(`Project status failed: ${readErrorMessage(error)}`);
     return 1;
@@ -63,6 +63,7 @@ function printHelp(writeLine) {
   writeLine(`Usage:
   pnpm project:status
   pnpm project:status -- --json
+  pnpm project:status -- --require-ready
   pnpm project:status -- --output artifacts/release/project-status.json
   pnpm project:status -- --smoke-report artifacts/production-smoke/smoke-report.json
   pnpm project:status -- --visual-artifact-dir reports/visual/page-builder-fixture
@@ -70,6 +71,7 @@ function printHelp(writeLine) {
 Options:
   --json                     Print the machine-readable project status report.
   --output <path>            Write a JSON report under tmp/, reports/, artifacts/, or .tmp/.
+  --require-ready            Exit 1 unless the current release gate is ready.
   --smoke-report <path>      Read a specific production smoke report.
   --visual-artifact-dir <dir>
                              Include a downloaded Page Builder Visual artifact.
@@ -77,8 +79,9 @@ Options:
   -h, --help                 Show this help.
 
 Project status:
-  This is an informational wrapper around release:check. It summarizes completed
-  MVP milestones, the current release gate, and the next concrete actions.`);
+  This wraps release:check. It summarizes completed MVP milestones, the current
+  release gate, and the next concrete actions; --require-ready turns the same
+  summary into a completion gate.`);
 }
 
 if (isMainModule()) {
