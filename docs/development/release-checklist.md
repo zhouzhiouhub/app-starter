@@ -112,6 +112,9 @@ later phases are explicitly approved.
 - The traceability section shows `R2/CDN: passed`.
 - The traceability section shows `Admin static app: passed`.
 - The traceability section shows `Publish flow: passed`.
+- The smoke report includes `starter-pages.published` with Home, Privacy Policy,
+  Terms of Service, and 404 public API evidence, plus Home, Privacy Policy, and
+  Terms of Service storefront HTML evidence.
 - The Page Builder visual acceptance manifest covers all six MVP core sections
   and links the final accepted Desktop / Mobile evidence when MVP visual sign-off
   is requested; every linked evidence file is retained with the release.

@@ -39,6 +39,8 @@ const releaseTraceabilityGroups = [
     label: "Publish flow",
   },
 ];
+const starterPublicPageSlugs = ["home", "privacy", "terms", "404"];
+const starterStorefrontPageSlugs = ["home", "privacy", "terms"];
 
 export function readReleaseTraceabilityGroups(report) {
   return releaseTraceabilityGroups.map((group) =>
@@ -146,9 +148,74 @@ function readAdminAppEvidenceIssues(report) {
 }
 
 function readPublishFlowEvidenceIssues(report) {
-  return ["page.publish", "page.rollback"].flatMap((name) =>
-    readRevalidationEvidenceIssues(report, name),
+  return [
+    ...["page.publish", "page.rollback"].flatMap((name) =>
+      readRevalidationEvidenceIssues(report, name),
+    ),
+    ...readStarterPageEvidenceIssues(report),
+  ];
+}
+
+function readStarterPageEvidenceIssues(report) {
+  const details = readCheckDetails(report, "starter-pages.published");
+  const publicPages = readStarterPageEvidenceList(details.publicPages);
+  const storefrontPages = readStarterPageEvidenceList(details.storefrontPages);
+
+  return [
+    ...readStarterPageSlugIssues(
+      publicPages,
+      starterPublicPageSlugs,
+      "public API",
+    ),
+    ...readStarterPageSlugIssues(
+      storefrontPages,
+      starterStorefrontPageSlugs,
+      "storefront HTML",
+    ),
+    ...readStarterPageNoIndexIssues(publicPages),
+  ];
+}
+
+function readStarterPageEvidenceList(value) {
+  return Array.isArray(value) ? value : [];
+}
+
+function readStarterPageSlugIssues(pages, expectedSlugs, surface) {
+  const slugs = new Set(
+    pages
+      .filter((page) => page && typeof page.slug === "string")
+      .map((page) => page.slug),
   );
+
+  return expectedSlugs
+    .filter((slug) => !slugs.has(slug))
+    .map(
+      (slug) =>
+        `starter-pages.published did not prove seeded ${slug} ${surface} readiness.`,
+    );
+}
+
+function readStarterPageNoIndexIssues(publicPages) {
+  const pageBySlug = new Map(
+    publicPages
+      .filter((page) => page && typeof page.slug === "string")
+      .map((page) => [page.slug, page]),
+  );
+  const issues = starterPublicPageSlugs
+    .filter((slug) => slug !== "404")
+    .filter((slug) => pageBySlug.get(slug)?.noIndex !== false)
+    .map(
+      (slug) =>
+        `starter-pages.published did not prove seeded ${slug} public API is indexable.`,
+    );
+
+  if (pageBySlug.get("404")?.noIndex !== true) {
+    issues.push(
+      "starter-pages.published did not prove seeded 404 public API is noIndex.",
+    );
+  }
+
+  return issues;
 }
 
 function readRevalidationEvidenceIssues(report, checkName) {

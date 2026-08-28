@@ -6,6 +6,7 @@ import {
   recordSmokeCheck,
   refreshSmokeReportSummary,
 } from "../smoke/smoke-report.mjs";
+import { createStarterPagesSmokeDetails } from "../smoke/starter-pages-smoke.mjs";
 import { createProductionReadySmokeReport } from "../smoke/smoke-report-test-fixtures.mjs";
 import {
   mvpPageBuilderComponents,
@@ -42,7 +43,6 @@ export function createCompleteReleaseReport(overrides = {}) {
     "audit.logs",
     "public-page.api",
     "public-page.fallback-api",
-    "starter-pages.published",
     "storefront.page",
     "seo.robots",
     "seo.sitemap",
@@ -50,6 +50,11 @@ export function createCompleteReleaseReport(overrides = {}) {
   ]) {
     recordSmokeCheck(report, name);
   }
+  recordSmokeCheck(
+    report,
+    "starter-pages.published",
+    createStarterPagesSmokeDetails("en-US"),
+  );
 
   recordSmokeCheck(report, "page.publish", {
     revalidation: {

@@ -13,6 +13,7 @@ import {
   recordSmokeCheck,
   refreshSmokeReportSummary,
 } from "./smoke-report.mjs";
+import { createStarterPagesSmokeDetails } from "./starter-pages-smoke.mjs";
 
 const archiveRoot = `tmp/smoke-release-check-test-${process.pid}`;
 
@@ -107,6 +108,28 @@ test("smoke release check blocks weak R2 and Admin evidence details", () => {
   );
 });
 
+test("smoke release check blocks weak starter page evidence details", () => {
+  const report = createCompleteReleaseReport();
+  const starterCheck = report.checks.find(
+    (check) => check.name === "starter-pages.published",
+  );
+
+  starterCheck.details.publicPages = starterCheck.details.publicPages.filter(
+    (page) => page.slug !== "404",
+  );
+  refreshSmokeReportSummary(report);
+
+  const result = createSmokeReleaseCheck({ report });
+
+  assert.equal(result.releaseReady, false);
+  assert.equal(
+    result.blockers.some((blocker) =>
+      blocker.action.includes("seeded 404 public API readiness"),
+    ),
+    true,
+  );
+});
+
 test("smoke release check parses pnpm separator and explicit path", () => {
   assert.deepEqual(readSmokeReleaseCheckCliConfig(["--", "--latest"]), {
     reportPath: null,
@@ -173,7 +196,6 @@ function createCompleteReleaseReport(overrides = {}) {
     "audit.logs",
     "public-page.api",
     "public-page.fallback-api",
-    "starter-pages.published",
     "storefront.page",
     "seo.robots",
     "seo.sitemap",
@@ -181,6 +203,11 @@ function createCompleteReleaseReport(overrides = {}) {
   ]) {
     recordSmokeCheck(report, name);
   }
+  recordSmokeCheck(
+    report,
+    "starter-pages.published",
+    createStarterPagesSmokeDetails("en-US"),
+  );
   recordSmokeCheck(report, "page.publish", {
     revalidation: {
       required: true,

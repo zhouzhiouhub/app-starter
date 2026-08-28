@@ -30,26 +30,31 @@ const starterStorefrontPages = starterPublicPages.filter(
 );
 
 export async function assertStarterPages(input) {
-  const publicPages = [];
-  const storefrontPages = [];
+  const details = createStarterPagesSmokeDetails(input.locale);
 
   for (const page of starterPublicPages) {
     await assertPublicPublishedPage(input, page);
-    publicPages.push(readStarterPageSummary(page, input.locale));
   }
 
   for (const page of starterStorefrontPages) {
     const pageInput = { ...input, slug: page.slug };
     const html = await assertStorefrontPage(pageInput, page.title);
     assertIndexableStorefrontPage(html, pageInput);
-    storefrontPages.push(readStarterPageSummary(page, input.locale));
   }
 
   console.log("Starter pages passed.");
 
+  return details;
+}
+
+export function createStarterPagesSmokeDetails(locale) {
   return {
-    publicPages,
-    storefrontPages,
+    publicPages: starterPublicPages.map((page) =>
+      readStarterPageSummary(page, locale),
+    ),
+    storefrontPages: starterStorefrontPages.map((page) =>
+      readStarterPageSummary(page, locale),
+    ),
   };
 }
 
