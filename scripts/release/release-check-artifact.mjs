@@ -7,6 +7,7 @@ export const releaseEvidenceCheckSchemaVersion = "release-evidence-check.v1";
 
 const maxArtifactBlockerCount = 50;
 const maxArtifactTextLength = 420;
+const maxVisualArtifactIssueCount = 50;
 const maxVisualIssueCount = 50;
 
 export function createReleaseEvidenceCheckArtifact(check, input = {}) {
@@ -71,7 +72,7 @@ function createSmokeArtifact(smoke) {
 function createVisualArtifact(check) {
   const visualIssues = check.visual.issues.slice(0, maxVisualIssueCount);
 
-  return {
+  const artifact = {
     acceptedComponentCount: check.visual.acceptedComponentCount,
     acceptedViewportCount: check.visual.acceptedViewportCount,
     componentCount: check.visual.componentCount,
@@ -84,6 +85,29 @@ function createVisualArtifact(check) {
     status: check.visual.status,
     viewportCount: check.visual.viewportCount,
     warningCount: check.visual.warningCount,
+  };
+
+  if (check.visualArtifact) {
+    artifact.artifactCheck = createVisualArtifactCheckArtifact(
+      check.visualArtifact,
+    );
+  }
+
+  return artifact;
+}
+
+function createVisualArtifactCheckArtifact(check) {
+  const issues = check.issues.slice(0, maxVisualArtifactIssueCount);
+
+  return {
+    artifactDir: readTextOrNull(check.artifactDir),
+    expectedScreenshotCount: check.expectedScreenshotCount,
+    issueCount: check.issues.length,
+    issues: issues.map(createVisualIssueArtifact),
+    presentRequiredFileCount: check.presentRequiredFileCount,
+    presentScreenshotCount: check.presentScreenshotCount,
+    requiredFileCount: check.requiredFileCount,
+    status: check.status,
   };
 }
 

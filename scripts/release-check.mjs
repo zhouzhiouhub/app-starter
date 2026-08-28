@@ -68,6 +68,7 @@ function printHelp(writeLine) {
   pnpm release:check
   pnpm release:check -- --checklist
   pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json
+  pnpm release:check -- --visual-artifact-dir reports/visual/page-builder-fixture
   pnpm release:check -- --json
   pnpm release:check -- --output artifacts/release/release-check.json
   pnpm release:check -- artifacts/production-smoke/smoke-report.json
@@ -78,6 +79,8 @@ Options:
   --json                     Print the machine-readable release evidence report.
   --output <path>            Write a JSON report under tmp/, reports/, artifacts/, or .tmp/.
   --smoke-report <path>      Check a specific production smoke report.
+  --visual-artifact-dir <dir>
+                             Check a downloaded Page Builder Visual artifact.
   --visual-manifest <path>   Check a specific Page Builder visual manifest.
   -h, --help                 Show this help.
 

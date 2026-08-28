@@ -1,5 +1,9 @@
 import { releaseEvidenceCheckSchemaVersion } from "./release-check-artifact.mjs";
 import {
+  assertOptionalVisualArtifactCheck,
+  hasInvalidVisualArtifactCheck,
+} from "./release-notes-visual-artifact-validation.mjs";
+import {
   assertBoolean,
   assertCountDoesNotExceed,
   assertEnum,
@@ -47,7 +51,6 @@ export function assertReleaseEvidenceCheckArtifact(artifact) {
 
 function assertStatusMatchesReleaseReady(artifact) {
   const expected = artifact.releaseReady ? "ready" : "blocked";
-
   if (artifact.status !== expected) {
     throw new Error("Release check artifact status must match releaseReady.");
   }
@@ -110,7 +113,8 @@ function assertReleaseReadinessConsistency(artifact) {
     artifact.visual.status !== "accepted" ||
     artifact.visual.acceptedComponentCount !== artifact.visual.componentCount ||
     artifact.visual.acceptedViewportCount !== artifact.visual.viewportCount ||
-    artifact.visual.errorCount !== 0
+    artifact.visual.errorCount !== 0 ||
+    hasInvalidVisualArtifactCheck(artifact.visual.artifactCheck)
   ) {
     throw new Error(
       "Release check artifact ready evidence must include accepted visual evidence.",
@@ -182,6 +186,7 @@ function assertVisualArtifact(visual) {
   assertNullableString(visual.manifestPath, "visual.manifestPath");
   assertOptionalStringList(visual.pendingComponents, "visual.pendingComponents");
   assertOptionalStringList(visual.pendingViewports, "visual.pendingViewports");
+  assertOptionalVisualArtifactCheck(visual.artifactCheck);
   assertOptionalVisualIssues(visual.issues);
   assertVisualIssueCountConsistency(visual);
   assertAcceptedVisualConsistency(visual);

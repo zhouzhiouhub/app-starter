@@ -68,7 +68,15 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   );
   assert.match(
     workflow,
-    /pnpm release:check -- --checklist --smoke-report "\$SMOKE_REPORT_PATH" --output "\$RELEASE_CHECK_ARTIFACT_PATH"/,
+    /release_check_flags=\(/,
+  );
+  assert.match(
+    workflow,
+    /release_check_flags\+=\(--visual-artifact-dir reports\/visual\/page-builder-fixture\)/,
+  );
+  assert.match(
+    workflow,
+    /pnpm release:check -- "\$\{release_check_flags\[@\]\}"/,
   );
   assert.match(workflow, /name: Generate release notes/);
   assert.match(

@@ -139,8 +139,12 @@ still requires real Desktop and Mobile design references, measured diff values, 
 When an accepted manifest references screenshots from that artifact, pass the
 artifact name and workflow run id to `Production Smoke` so it downloads the
 files to `reports/visual/page-builder-fixture` before running the combined
-release gate. The Page Builder Visual workflow summary prints the run id to use
-with the Production Smoke `visual_artifact_run_id` input.
+release gate. The combined gate then runs with
+`--visual-artifact-dir reports/visual/page-builder-fixture`, reads the
+artifact-local manifest by default, and records the artifact check result in
+`release-evidence-check.v1` as `visual.artifactCheck`. The Page Builder Visual
+workflow summary prints the run id to use with the Production Smoke
+`visual_artifact_run_id` input.
 
 After real Desktop and Mobile design reference PNGs are attached to the
 manifest, calculate the metrics with:

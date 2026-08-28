@@ -14,6 +14,13 @@ export function formatReleaseEvidenceCheck(check) {
     `  Visual manifest: ${formatReleaseValue(check.visualManifestPath, "unknown")}`,
   ];
 
+  if (check.visualArtifact) {
+    lines.push(
+      `  Visual artifact: ${check.visualArtifact.status} ` +
+        `(${formatReleaseValue(check.visualArtifact.artifactDir, "unknown")})`,
+    );
+  }
+
   if (check.blockers.length > 0) {
     lines.push("  Blockers:");
     lines.push(...formatReleaseBlockers(check.blockers));

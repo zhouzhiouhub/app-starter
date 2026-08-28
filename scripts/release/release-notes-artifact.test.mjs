@@ -52,6 +52,21 @@ test("release notes validates release evidence artifact shape", () => {
       }),
     /readinessChecklist\.items must contain objects/,
   );
+  assert.throws(
+    () =>
+      assertReleaseEvidenceCheckArtifact({
+        ...artifact,
+        visual: {
+          ...artifact.visual,
+          artifactCheck: {
+            ...artifact.visual.artifactCheck,
+            presentScreenshotCount:
+              artifact.visual.artifactCheck.expectedScreenshotCount + 1,
+          },
+        },
+      }),
+    /visual\.artifactCheck\.presentScreenshotCount must not exceed/,
+  );
 });
 
 test("release notes validates ready release evidence consistency", () => {
@@ -93,6 +108,30 @@ test("release notes validates ready release evidence consistency", () => {
         },
       }),
     /accepted visual evidence must have full counts, no pending evidence, and no issues/,
+  );
+  assert.throws(
+    () =>
+      assertReleaseEvidenceCheckArtifact({
+        ...artifact,
+        visual: {
+          ...artifact.visual,
+          artifactCheck: {
+            ...artifact.visual.artifactCheck,
+            issueCount: 1,
+            issues: [
+              {
+                code: "missing_artifact_file",
+                component: null,
+                message: "capture report is missing.",
+                severity: "error",
+                viewport: null,
+              },
+            ],
+            status: "invalid",
+          },
+        },
+      }),
+    /ready evidence must include accepted visual evidence/,
   );
 });
 
@@ -215,6 +254,16 @@ function createReadyReleaseArtifact() {
     visual: {
       acceptedComponentCount: 6,
       acceptedViewportCount: 12,
+      artifactCheck: {
+        artifactDir: "reports/visual/page-builder-fixture",
+        expectedScreenshotCount: 12,
+        issueCount: 0,
+        issues: [],
+        presentRequiredFileCount: 3,
+        presentScreenshotCount: 12,
+        requiredFileCount: 3,
+        status: "complete",
+      },
       componentCount: 6,
       errorCount: 0,
       issueCount: 0,

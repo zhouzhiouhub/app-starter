@@ -3,6 +3,10 @@ import { readCaptureOutputDir } from "./page-builder-visual-capture-config.mjs";
 export const defaultPageBuilderVisualArtifactDir =
   "reports/visual/page-builder-fixture";
 
+export function readPageBuilderVisualArtifactDir(value) {
+  return readCaptureOutputDir(value);
+}
+
 export function readPageBuilderVisualArtifactCheckCliConfig(
   argv,
   env = process.env,
@@ -26,7 +30,7 @@ export function readPageBuilderVisualArtifactCheckCliConfig(
   }
 
   return {
-    artifactDir: readCaptureOutputDir(input.artifactDir),
+    artifactDir: readPageBuilderVisualArtifactDir(input.artifactDir),
     json: input.json,
   };
 }

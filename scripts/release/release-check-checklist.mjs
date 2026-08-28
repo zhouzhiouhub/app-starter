@@ -52,7 +52,10 @@ function createVisualChecklistItem(check) {
   const detail = [
     `${check.visual.acceptedComponentCount}/${check.visual.componentCount} components`,
     `${check.visual.acceptedViewportCount}/${check.visual.viewportCount} viewports`,
-  ].join(", ");
+    check.visualArtifact ? `artifact ${check.visualArtifact.status}` : null,
+  ]
+    .filter(Boolean)
+    .join(", ");
 
   if (check.visual.status === "accepted") {
     return {

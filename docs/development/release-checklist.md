@@ -81,7 +81,8 @@ later phases are explicitly approved.
 6. If the accepted visual manifest references screenshots from the Page Builder
    Visual workflow artifact, set both `visual_artifact_name` and
    `visual_artifact_run_id` so Production Smoke downloads the evidence before
-   running `release:check`.
+   running `release:check` with
+   `--visual-artifact-dir reports/visual/page-builder-fixture`.
 7. To generate release notes in the same run, set `release_tag`,
    `rollback_target`, `visual_artifact_name`, and optionally `storefront_url`
    plus `release_notes_path`.
@@ -99,7 +100,9 @@ later phases are explicitly approved.
 - When release note inputs were provided, the uploaded artifact
   `release-notes-<run_number>` is attached or linked.
 - The GitHub step summary records the report path, artifact names, review
-  command, and combined `release:check -- --checklist` command.
+  command, and combined `release:check -- --checklist` command. When visual
+  evidence is downloaded, that combined command includes
+  `--visual-artifact-dir reports/visual/page-builder-fixture`.
 - `pnpm smoke:report -- artifacts/production-smoke/smoke-report.json` output is
   saved in the workflow log.
 - `pnpm smoke:release-check -- artifacts/production-smoke/smoke-report.json`
@@ -127,6 +130,9 @@ later phases are explicitly approved.
 - `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json`
   exits successfully after the production smoke artifact and accepted Page
   Builder visual manifest are both present.
+- When `visual_artifact_run_id` was provided,
+  `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture`
+  exits successfully and records `visual.artifactCheck.status=complete`.
 - `pnpm release:check -- --checklist --smoke-report artifacts/production-smoke/smoke-report.json`
   prints the Production Smoke, Page Builder Visual, and release notes readiness
   tasks for release review.
@@ -135,7 +141,9 @@ later phases are explicitly approved.
   record; its `readinessChecklist` lists the Production Smoke, Page Builder
   visual, and release notes tasks, while `visual.pendingComponents`,
   `visual.pendingViewports`, and `visual.issues` identify any remaining Page
-  Builder visual evidence gaps when the gate is blocked.
+  Builder visual evidence gaps when the gate is blocked. When
+  `--visual-artifact-dir` is provided, the same artifact includes
+  `visual.artifactCheck` with required file, screenshot, and issue counts.
 - The `Production Smoke` workflow uploads the same combined release evidence as
   `release-evidence-check-<run_number>`.
 - `pnpm release:notes -- --release-tag <tag> --workflow-run-url <url> --smoke-artifact production-smoke-report-<run_number> --release-artifact release-evidence-check-<run_number> --visual-artifact page-builder-visual-fixture-<run_number> --storefront-url <url> --rollback-target <target> --output docs/releases/<tag>.md`
@@ -161,6 +169,8 @@ later phases are explicitly approved.
   before marking release evidence ready.
 - Run `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json`
   before marking the combined production and visual evidence ready.
+- Add `--visual-artifact-dir reports/visual/page-builder-fixture` when the
+  release depends on screenshots from a downloaded Page Builder Visual artifact.
 - Run the same command with `--checklist` when the gate is blocked and keep the
   readiness task output with the failed evidence review.
 - Use the failed check details and suggested fixes from the report review; the

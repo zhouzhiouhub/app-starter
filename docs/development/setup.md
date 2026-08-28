@@ -265,6 +265,7 @@ pnpm visual:references -- --source-dir docs/visual/page-builder-references --wri
 pnpm release:preflight
 pnpm release:check -- --checklist --smoke-report artifacts/production-smoke/smoke-report.json
 pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json
+pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture
 pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --json
 pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --output artifacts/release/release-check.json
 pnpm release:notes -- --release-tag v0.1.0 --workflow-run-url https://github.com/zhouzhiouhub/app-starter/actions/runs/123 --smoke-artifact production-smoke-report-123 --release-artifact release-evidence-check-123 --visual-artifact page-builder-visual-fixture-123 --storefront-url https://store.brand.com --rollback-target main@abcdef1 --output docs/releases/v0.1.0.md
@@ -285,6 +286,11 @@ release notes tasks. Use `--json` for machine-readable stdout or `--output` to
 write the combined `release-evidence-check.v1` artifact under a safe archive
 path; new artifacts also include a structured `readinessChecklist` with the
 same release tasks for CI artifacts and release records.
+When the release uses a downloaded Page Builder Visual artifact, add
+`--visual-artifact-dir reports/visual/page-builder-fixture`; the combined gate
+then verifies the artifact-local manifest, capture report, acceptance report,
+and all 12 PNG screenshots, and writes the result under
+`visual.artifactCheck`.
 After that artifact is ready, `release:notes` writes the final Markdown release
 record and refuses blocked evidence unless `--allow-blocked` is used for a
 failure review draft.
@@ -302,7 +308,9 @@ uploads `release-evidence-check-<run_number>` with the
 artifact, including the artifact-local visual manifest and
 `visual-capture-report.json`, to `reports/visual/page-builder-fixture` before
 running `pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture`
-and the combined gate. The workflow runs `pnpm release:preflight` before smoke requests so a
+and the combined gate with
+`--visual-artifact-dir reports/visual/page-builder-fixture`. The workflow runs
+`pnpm release:preflight` before smoke requests so a
 partial visual artifact pair or partial release notes input set fails early.
 When `release_tag`,
 `rollback_target`, and `visual_artifact_name` are provided, it runs

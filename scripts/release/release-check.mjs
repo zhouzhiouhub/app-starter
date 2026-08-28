@@ -6,6 +6,7 @@ import {
   readPageBuilderVisualAcceptanceManifest,
   validatePageBuilderVisualAcceptanceManifest,
 } from "../visual/page-builder-visual-acceptance.mjs";
+import { checkPageBuilderVisualArtifact } from "../visual/page-builder-visual-artifact-check.mjs";
 import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
 import { readReleaseCheckCliConfig } from "./release-check-config.mjs";
 import {
@@ -23,6 +24,10 @@ const visualEvidenceAction =
   "and browser screenshots, run pnpm visual:measure -- --write --require-complete, " +
   "then pnpm visual:acceptance -- --require-accepted.";
 
+const visualArtifactAction =
+  "Run pnpm visual:artifact-check against the downloaded Page Builder Visual " +
+  "artifact, then rerun Production Smoke with a complete artifact pair.";
+
 export {
   createReleaseEvidenceCheckArtifact,
   formatReleaseEvidenceCheck,
@@ -32,12 +37,15 @@ export {
 
 export async function readReleaseEvidenceCheck(config, input = {}) {
   const smokeArtifact = await readOptionalSmokeArtifact(config, input);
+  const visualArtifact = readOptionalVisualArtifactCheck(config, input);
   const visualManifest = await readOptionalVisualManifest(config, input);
 
   return createReleaseEvidenceCheck({
     smokeArtifact,
     smokeError: smokeArtifact.error,
     smokeReportPath: config.smokeReportPath,
+    visualArtifact,
+    visualArtifactDir: config.visualArtifactDir,
     visualError: visualManifest.error,
     visualEvidenceRoot: input.visualEvidenceRoot,
     visualManifest: visualManifest.manifest,
@@ -54,13 +62,19 @@ export function createReleaseEvidenceCheck(input) {
     : validatePageBuilderVisualAcceptanceManifest(input.visualManifest, {
         evidenceRoot: input.visualEvidenceRoot,
       });
-  const blockers = readReleaseEvidenceBlockers({ smoke, visual });
+  const blockers = readReleaseEvidenceBlockers({
+    smoke,
+    visual,
+    visualArtifact: input.visualArtifact,
+  });
 
   return {
     blockers,
     releaseReady: blockers.length === 0,
     smoke,
     visual,
+    visualArtifact: input.visualArtifact ?? null,
+    visualArtifactDir: input.visualArtifactDir ?? null,
     visualManifestPath: input.visualManifestPath,
   };
 }
@@ -93,6 +107,25 @@ async function readOptionalVisualManifest(config, input) {
     };
   } catch (error) {
     return { error };
+  }
+}
+
+function readOptionalVisualArtifactCheck(config, input) {
+  if (Object.hasOwn(input, "visualArtifact")) {
+    return input.visualArtifact;
+  }
+
+  if (!config.visualArtifactDir) {
+    return null;
+  }
+
+  try {
+    return checkPageBuilderVisualArtifact(
+      { artifactDir: config.visualArtifactDir },
+      { cwd: input.visualArtifactRoot ?? input.visualEvidenceRoot },
+    );
+  } catch (error) {
+    return createInvalidVisualArtifactReport(error, config.visualArtifactDir);
   }
 }
 
@@ -160,6 +193,7 @@ function createInvalidVisualAcceptanceReport(error) {
 function readReleaseEvidenceBlockers(input) {
   return [
     ...readSmokeEvidenceBlockers(input.smoke),
+    ...readVisualArtifactBlockers(input.visualArtifact),
     ...readVisualEvidenceBlockers(input.visual),
   ];
 }
@@ -196,4 +230,43 @@ function readVisualEvidenceBlockers(visual) {
       label: issue.code,
     })),
   ];
+}
+
+function readVisualArtifactBlockers(artifact) {
+  if (!artifact || artifact.status === "complete") {
+    return [];
+  }
+
+  return [
+    {
+      action: visualArtifactAction,
+      area: "Page Builder Visual",
+      label: "Visual artifact invalid",
+    },
+    ...artifact.issues.map((issue) => ({
+      action: issue.message,
+      area: "Page Builder Visual",
+      label: issue.code,
+    })),
+  ];
+}
+
+function createInvalidVisualArtifactReport(error, artifactDir) {
+  return {
+    artifactDir,
+    expectedScreenshotCount: 0,
+    issues: [
+      {
+        code: "visual_artifact_check_failed",
+        message: `Unable to check Page Builder visual artifact: ${readErrorMessage(
+          error,
+        )}`,
+        severity: "error",
+      },
+    ],
+    presentRequiredFileCount: 0,
+    presentScreenshotCount: 0,
+    requiredFileCount: 0,
+    status: "invalid",
+  };
 }

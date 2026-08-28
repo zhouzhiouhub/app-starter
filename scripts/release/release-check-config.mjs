@@ -1,4 +1,6 @@
 import { defaultPageBuilderVisualAcceptanceManifestPath } from "../visual/page-builder-visual-acceptance-constants.mjs";
+import { readPageBuilderVisualArtifactDir } from "../visual/page-builder-visual-artifact-check-config.mjs";
+import { createArtifactPaths } from "../visual/page-builder-visual-artifact-check-paths.mjs";
 import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
 import { normalizeSmokeReportPath } from "../smoke/smoke-report-path-config.mjs";
 
@@ -8,8 +10,10 @@ export function readReleaseCheckCliConfig(args) {
     json: false,
     outputPath: null,
     smokeReportPath: null,
+    visualArtifactDir: null,
     visualManifestPath: defaultPageBuilderVisualAcceptanceManifestPath,
   };
+  let visualManifestPathExplicit = false;
   const normalizedArgs = stripPnpmSeparator(args);
 
   for (let index = 0; index < normalizedArgs.length; index += 1) {
@@ -46,6 +50,15 @@ export function readReleaseCheckCliConfig(args) {
 
     if (arg === "--visual-manifest") {
       config.visualManifestPath = readOptionValue(arg, normalizedArgs, index);
+      visualManifestPathExplicit = true;
+      index += 1;
+      continue;
+    }
+
+    if (arg === "--visual-artifact-dir") {
+      config.visualArtifactDir = readPageBuilderVisualArtifactDir(
+        readOptionValue(arg, normalizedArgs, index),
+      );
       index += 1;
       continue;
     }
@@ -59,6 +72,11 @@ export function readReleaseCheckCliConfig(args) {
     }
 
     config.smokeReportPath = arg;
+  }
+
+  if (config.visualArtifactDir && !visualManifestPathExplicit) {
+    config.visualManifestPath = createArtifactPaths(config.visualArtifactDir)
+      .manifest;
   }
 
   return config;

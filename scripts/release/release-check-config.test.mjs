@@ -8,6 +8,7 @@ test("release check config parses defaults and evidence paths", () => {
     json: false,
     outputPath: null,
     smokeReportPath: null,
+    visualArtifactDir: null,
     visualManifestPath: "docs/development/page-builder-visual-acceptance.json",
   });
   assert.deepEqual(
@@ -24,6 +25,38 @@ test("release check config parses defaults and evidence paths", () => {
       json: false,
       outputPath: null,
       smokeReportPath: "artifacts/production-smoke/smoke-report.json",
+      visualArtifactDir: null,
+      visualManifestPath: "reports/visual/accepted.json",
+    },
+  );
+  assert.deepEqual(
+    readReleaseCheckCliConfig([
+      "--visual-artifact-dir",
+      "reports/visual/page-builder-fixture",
+    ]),
+    {
+      checklist: false,
+      json: false,
+      outputPath: null,
+      smokeReportPath: null,
+      visualArtifactDir: "reports/visual/page-builder-fixture",
+      visualManifestPath:
+        "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
+    },
+  );
+  assert.deepEqual(
+    readReleaseCheckCliConfig([
+      "--visual-artifact-dir",
+      "reports/visual/page-builder-fixture",
+      "--visual-manifest",
+      "reports/visual/accepted.json",
+    ]),
+    {
+      checklist: false,
+      json: false,
+      outputPath: null,
+      smokeReportPath: null,
+      visualArtifactDir: "reports/visual/page-builder-fixture",
       visualManifestPath: "reports/visual/accepted.json",
     },
   );
@@ -34,12 +67,21 @@ test("release check config parses defaults and evidence paths", () => {
       json: false,
       outputPath: null,
       smokeReportPath: "artifacts/production-smoke/smoke-report.json",
+      visualArtifactDir: null,
       visualManifestPath: "docs/development/page-builder-visual-acceptance.json",
     },
   );
   assert.throws(
     () => readReleaseCheckCliConfig(["--bad-option"]),
     /Unknown release check option/,
+  );
+  assert.throws(
+    () =>
+      readReleaseCheckCliConfig([
+        "--visual-artifact-dir",
+        "tmp/page-builder-fixture",
+      ]),
+    /must live under artifacts\/visual or reports\/visual/,
   );
 });
 
@@ -55,6 +97,7 @@ test("release check config parses JSON artifact output", () => {
       json: true,
       outputPath: "artifacts/release/release-check.json",
       smokeReportPath: null,
+      visualArtifactDir: null,
       visualManifestPath: "docs/development/page-builder-visual-acceptance.json",
     },
   );

@@ -10,6 +10,18 @@ import {
   pageBuilderVisualAcceptanceSchemaVersion,
 } from "../visual/page-builder-visual-acceptance.mjs";
 
+test("release check CLI help explains visual artifact input", async () => {
+  const stdout = [];
+  const exitCode = await runReleaseCheckCli(["--help"], {
+    stdout: (line) => stdout.push(line),
+  });
+  const help = stdout.join("\n");
+
+  assert.equal(exitCode, 0);
+  assert.match(help, /--visual-artifact-dir <dir>/);
+  assert.match(help, /downloaded Page Builder Visual artifact/);
+});
+
 test("release check CLI prints machine-readable JSON", async () => {
   const emptyArchiveRoot = mkdtempSync(path.join(tmpdir(), "release-json-"));
   const stdout = [];
