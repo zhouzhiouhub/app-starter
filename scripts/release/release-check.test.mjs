@@ -111,13 +111,38 @@ test("release check blocks pending Page Builder visual evidence", () => {
 
   assert.equal(check.releaseReady, false);
   assert.equal(check.smoke.releaseReady, true);
+  assert.equal(check.visual.status, "needs-evidence");
+  assert.equal(
+    check.blockers.some(
+      (blocker) =>
+        blocker.area === "Page Builder Visual" &&
+        blocker.label === "Visual acceptance pending" &&
+        blocker.action.includes("pnpm visual:acceptance -- --checklist"),
+    ),
+    true,
+  );
+});
+
+test("release check keeps invalid status for weak accepted visual evidence", () => {
+  const { evidenceRoot, manifest } = createAcceptedVisualManifest();
+  manifest.records[0].viewports.desktop.visualMatchPercent = 90;
+  const check = createReleaseEvidenceCheck({
+    smokeArtifact: {
+      path: "artifacts/production-smoke/smoke-report.json",
+      report: createCompleteReleaseReport(),
+    },
+    visualEvidenceRoot: evidenceRoot,
+    visualManifest: manifest,
+    visualManifestPath: "docs/development/page-builder-visual-acceptance.json",
+  });
+
+  assert.equal(check.releaseReady, false);
   assert.equal(check.visual.status, "invalid");
   assert.equal(
     check.blockers.some(
       (blocker) =>
         blocker.area === "Page Builder Visual" &&
-        blocker.label === "Visual acceptance invalid" &&
-        blocker.action.includes("pnpm visual:acceptance -- --checklist"),
+        blocker.label === "Visual acceptance invalid",
     ),
     true,
   );

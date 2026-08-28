@@ -27,7 +27,7 @@ test("release check CLI prints machine-readable JSON", async () => {
   assert.equal(artifact.schemaVersion, "release-evidence-check.v1");
   assert.equal(artifact.status, "blocked");
   assert.equal(artifact.smoke.status, "blocked");
-  assert.equal(artifact.visual.status, "invalid");
+  assert.equal(artifact.visual.status, "needs-evidence");
 });
 
 test("release check CLI writes JSON artifact output", async () => {
@@ -80,7 +80,7 @@ test("release check CLI prints readiness checklist in text mode only", async () 
   );
   assert.equal(
     stdout.some((line) =>
-      line.includes("Page Builder Visual evidence: invalid"),
+      line.includes("Page Builder Visual evidence: needs-evidence"),
     ),
     true,
   );

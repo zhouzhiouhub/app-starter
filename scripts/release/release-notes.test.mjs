@@ -159,7 +159,7 @@ test("release notes require ready evidence unless explicitly allowed", () => {
       {
         action: "Attach design references.",
         area: "Page Builder Visual",
-        label: "Visual acceptance invalid",
+        label: "Visual acceptance pending",
       },
     ],
     generatedAt: "2026-08-28T00:00:00.000Z",
@@ -182,23 +182,23 @@ test("release notes require ready evidence unless explicitly allowed", () => {
       acceptedComponentCount: 0,
       acceptedViewportCount: 0,
       componentCount: 6,
-      errorCount: 1,
+      errorCount: 0,
       issueCount: 1,
       issues: [
         {
           code: "record_needs_evidence",
           component: "hero-banner",
           message: "hero-banner is needs-evidence.",
-          severity: "error",
+          severity: "warning",
           viewport: null,
         },
       ],
       manifestPath: "docs/development/page-builder-visual-acceptance.json",
       pendingComponents: ["hero-banner", "rich-text"],
       pendingViewports: ["hero-banner.desktop", "hero-banner.mobile"],
-      status: "invalid",
+      status: "needs-evidence",
       viewportCount: 12,
-      warningCount: 0,
+      warningCount: 1,
     },
   };
 
@@ -213,7 +213,7 @@ test("release notes require ready evidence unless explicitly allowed", () => {
   );
 
   assert.match(markdown, /Status: blocked/);
-  assert.match(markdown, /Page Builder Visual: Visual acceptance invalid/);
+  assert.match(markdown, /Page Builder Visual: Visual acceptance pending/);
   assert.match(markdown, /Pending components: hero-banner, rich-text/);
   assert.match(
     markdown,
@@ -221,7 +221,7 @@ test("release notes require ready evidence unless explicitly allowed", () => {
   );
   assert.match(
     markdown,
-    /Visual issue: hero-banner: record_needs_evidence \(error\) - hero-banner is needs-evidence\./,
+    /Visual issue: hero-banner: record_needs_evidence \(warning\) - hero-banner is needs-evidence\./,
   );
 });
 

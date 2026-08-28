@@ -53,7 +53,6 @@ export function createReleaseEvidenceCheck(input) {
     ? createInvalidVisualAcceptanceReport(input.visualError)
     : validatePageBuilderVisualAcceptanceManifest(input.visualManifest, {
         evidenceRoot: input.visualEvidenceRoot,
-        requireAccepted: true,
       });
   const blockers = readReleaseEvidenceBlockers({ smoke, visual });
 
