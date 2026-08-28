@@ -9,23 +9,23 @@ import {
   defaultTranslationImportText,
   emptyTranslationImportText,
   formatTranslationImportDraftClearedNotice,
-  formatTranslationImportDraftClearSuggestion,
 } from "../translation-import-draft";
 import {
   createHistoryTranslationImportDraftState,
   createMissingTranslationImportDraftState,
   createResultTranslationImportDraftState,
 } from "../translation-import-draft-state";
-import { readTranslationImportErrorDetails } from "../translation-import-error-details";
 import { downloadTranslationExport } from "../translation-export-file";
 import { readTranslationImportFocusKey } from "../translation-import-focus";
 import {
+  readTranslationBulkImportFailureFeedback,
+  readTranslationBulkImportSuccessFeedback,
+} from "../translation-bulk-import-outcome";
+import {
   formatTranslationBulkRepairCleanupSuggestion,
-  formatTranslationBulkRepairCompletionMessage,
   formatTranslationBulkRepairHistoryRetentionMessage,
   formatTranslationImportHistoryReplayCleanupSuggestion,
   formatTranslationImportHistoryReplayMessage,
-  readTranslationBulkRepairCoveredMissingKeys,
   type TranslationImportResultHistoryEntry,
 } from "../translation-import-result-history";
 import { readTranslationBulkActionError } from "../translation-bulk-action-error";
@@ -130,28 +130,34 @@ export function useTranslationBulkPreview(input: {
 
     try {
       const result = await importTranslations(JSON.parse(importText));
-      importResultHistoryState.recordImportResult(result);
-      const repairedKeys = readTranslationBulkRepairCoveredMissingKeys({
+      const successFeedback = readTranslationBulkImportSuccessFeedback({
+        locale: input.meta.locale,
         missingKeys: input.missingKeys,
         result,
       });
+
+      importResultHistoryState.recordImportResult(result);
       feedback.showImportResult({
-        draftClearSuggestion: formatTranslationImportDraftClearSuggestion({
-          importedCount: result.summary.importedCount,
-        }),
-        repairCompletionNotice: formatTranslationBulkRepairCompletionMessage({
-          locale: input.meta.locale,
-          missingKeys: input.missingKeys,
-          result,
-        }),
+        draftClearSuggestion: successFeedback.draftClearSuggestion,
+        repairCompletionNotice: successFeedback.repairCompletionNotice,
         result,
+        reviewNotice: successFeedback.reviewNotice,
       });
       await input.onImported?.(result);
-      repairConfirmation.begin(repairedKeys, result.entries[0]?.key ?? null);
+      repairConfirmation.begin(
+        successFeedback.repairedKeys,
+        successFeedback.focusKey,
+      );
     } catch (caught) {
+      const failureFeedback = readTranslationBulkImportFailureFeedback({
+        caught,
+        locale: input.meta.locale,
+      });
+
       feedback.showImportError(
-        readTranslationBulkActionError("import", caught),
-        readTranslationImportErrorDetails(caught),
+        failureFeedback.message,
+        failureFeedback.details,
+        failureFeedback.reviewNotice,
       );
     } finally {
       feedback.finishAction();
@@ -262,6 +268,7 @@ export function useTranslationBulkPreview(input: {
     importPreview: feedback.importPreview,
     importResult: feedback.importResult,
     importResultHistory: importResultHistoryState.importResultHistory,
+    importReviewNotice: feedback.importReviewNotice,
     importText,
     loadingAction: feedback.loadingAction,
     repairCleanupSuggestion:

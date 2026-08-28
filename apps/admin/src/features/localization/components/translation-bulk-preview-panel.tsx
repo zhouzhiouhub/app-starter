@@ -1,9 +1,10 @@
-import { DeleteOutlined } from "@ant-design/icons";
-import { Alert, Button, Input, Popconfirm, Space } from "antd";
-import { useMemo } from "react";
+import { Input, Space } from "antd";
+import { useMemo, useState } from "react";
 import { useTranslationBulkPreview } from "../hooks/use-translation-bulk-preview";
 import { formatDefaultLocaleImportConfirmationSummary } from "../translation-import-confirmation";
 import { readTranslationImportFocusedResultKey } from "../translation-import-focus";
+import { readTranslationImportHistoryFilterAlignment } from "../translation-import-history-alignment";
+import { createTranslationImportPreviewRepairDraftState } from "../translation-import-preview-repair-draft";
 import type {
   LocalizationTranslationsMeta,
   TranslationImportResult,
@@ -11,6 +12,7 @@ import type {
 } from "../types";
 import { TranslationExportPreviewResultView } from "./translation-export-preview-result";
 import { TranslationBulkActionBar } from "./translation-bulk-action-bar";
+import { TranslationBulkPreviewAlerts } from "./translation-bulk-preview-alerts";
 import { TranslationImportErrorDetailsView } from "./translation-import-error-details";
 import { TranslationImportPreviewResultView } from "./translation-import-preview-result";
 import { TranslationImportResultView } from "./translation-import-result";
@@ -31,6 +33,9 @@ export function TranslationBulkPreviewPanel(props: {
     missingKeys: props.missingKeys,
     onImported: props.onImported,
   });
+  const [previewRepairDraftNotice, setPreviewRepairDraftNotice] = useState<
+    string | null
+  >(null);
   const importConfirmationSummary = useMemo(
     () =>
       formatDefaultLocaleImportConfirmationSummary({
@@ -46,10 +51,39 @@ export function TranslationBulkPreviewPanel(props: {
       props.missingKeys,
     ],
   );
+  const previewRepairDraftState = useMemo(
+    () =>
+      bulkPreview.importPreview
+        ? createTranslationImportPreviewRepairDraftState({
+            defaultLocale: props.meta.locale,
+            importText: bulkPreview.importText,
+            preview: bulkPreview.importPreview,
+          })
+        : null,
+    [bulkPreview.importPreview, bulkPreview.importText, props.meta.locale],
+  );
+  const historyFilterAlignment = useMemo(
+    () =>
+      bulkPreview.historyReplayNotice && bulkPreview.importResult
+        ? readTranslationImportHistoryFilterAlignment({
+            filters: props.filters,
+            result: bulkPreview.importResult,
+          })
+        : null,
+    [
+      bulkPreview.historyReplayNotice,
+      bulkPreview.importResult,
+      props.filters.limit,
+      props.filters.namespace,
+      props.filters.page,
+      props.filters.query,
+    ],
+  );
 
   function handleRestoreImportResult(
     entry: Parameters<typeof bulkPreview.restoreImportResult>[0],
   ) {
+    setPreviewRepairDraftNotice(null);
     const focusKey = bulkPreview.restoreImportResult(entry);
 
     if (focusKey) {
@@ -57,90 +91,74 @@ export function TranslationBulkPreviewPanel(props: {
     }
   }
 
+  function handleUseMissingKeyDraft() {
+    setPreviewRepairDraftNotice(null);
+    bulkPreview.useMissingKeyDraft();
+  }
+
+  function handleUseResultDraft(
+    entries: Parameters<typeof bulkPreview.useResultDraft>[0],
+  ) {
+    setPreviewRepairDraftNotice(null);
+    bulkPreview.useResultDraft(entries);
+  }
+
+  function handleUseHistoryDraft(
+    entry: Parameters<typeof bulkPreview.useHistoryDraft>[0],
+  ) {
+    setPreviewRepairDraftNotice(null);
+    bulkPreview.useHistoryDraft(entry);
+  }
+
+  function handleImportTextChange(value: string) {
+    setPreviewRepairDraftNotice(null);
+    bulkPreview.handleImportTextChange(value);
+  }
+
+  function handleUsePreviewRepairDraft() {
+    if (!previewRepairDraftState) {
+      return;
+    }
+
+    setPreviewRepairDraftNotice(previewRepairDraftState.notice);
+    bulkPreview.handleImportTextChange(previewRepairDraftState.text);
+  }
+
   return (
     <Space direction="vertical" size={12} style={{ width: "100%" }}>
-      {bulkPreview.error ? (
-        <Alert message={bulkPreview.error} showIcon type="error" />
-      ) : null}
       <TranslationImportTemplateGuide
         defaultLocale={props.meta.locale}
         filters={props.filters}
         importText={bulkPreview.importText}
         missingKeys={props.missingKeys}
       />
-      {bulkPreview.draftNotice ? (
-        <Alert message={bulkPreview.draftNotice} showIcon type="info" />
-      ) : null}
-      {bulkPreview.historyReplayNotice ? (
-        <Alert
-          action={
-            bulkPreview.historyReplayCleanupSuggestion ? (
-              <Popconfirm
-                cancelText="Keep replay"
-                okText="Clear"
-                onConfirm={bulkPreview.clearHistoryReplayAfterConfirmation}
-                title="Clear replay and recent import history?"
-              >
-                <Button icon={<DeleteOutlined />} size="small">
-                  Clear replay
-                </Button>
-              </Popconfirm>
-            ) : undefined
-          }
-          description={bulkPreview.historyReplayCleanupSuggestion}
-          message={bulkPreview.historyReplayNotice}
-          showIcon
-          type="info"
-        />
-      ) : null}
-      {bulkPreview.repairCompletionNotice ? (
-        <Alert
-          description={bulkPreview.repairHistoryRetentionMessage}
-          message={bulkPreview.repairCompletionNotice}
-          showIcon
-          type="success"
-        />
-      ) : null}
-      {bulkPreview.repairServerNotice ? (
-        <Alert
-          action={
-            bulkPreview.repairCleanupSuggestion ? (
-              <Button
-                icon={<DeleteOutlined />}
-                onClick={bulkPreview.clearImportResultHistory}
-                size="small"
-              >
-                Clear history
-              </Button>
-            ) : undefined
-          }
-          description={bulkPreview.repairCleanupSuggestion}
-          message={bulkPreview.repairServerNotice.message}
-          showIcon
-          type={bulkPreview.repairServerNotice.type}
-        />
-      ) : null}
-      {bulkPreview.draftClearSuggestion ? (
-        <Alert
-          action={
-            <Button
-              icon={<DeleteOutlined />}
-              onClick={bulkPreview.clearImportDraftAfterSuccess}
-              size="small"
-            >
-              Clear draft
-            </Button>
-          }
-          message={bulkPreview.draftClearSuggestion}
-          showIcon
-          type="success"
-        />
-      ) : null}
+      <TranslationBulkPreviewAlerts
+        draftClearSuggestion={bulkPreview.draftClearSuggestion}
+        draftNotice={bulkPreview.draftNotice}
+        error={bulkPreview.error}
+        historyFilterAlignment={historyFilterAlignment}
+        historyReplayCleanupSuggestion={
+          bulkPreview.historyReplayCleanupSuggestion
+        }
+        historyReplayNotice={bulkPreview.historyReplayNotice}
+        importReviewNotice={bulkPreview.importReviewNotice}
+        onAlignHistoryFilters={props.onFocusKey}
+        onClearHistoryReplay={bulkPreview.clearHistoryReplayAfterConfirmation}
+        onClearImportDraftAfterSuccess={
+          bulkPreview.clearImportDraftAfterSuccess
+        }
+        onClearImportResultHistory={bulkPreview.clearImportResultHistory}
+        previewRepairDraftNotice={previewRepairDraftNotice}
+        repairCleanupSuggestion={bulkPreview.repairCleanupSuggestion}
+        repairCompletionNotice={bulkPreview.repairCompletionNotice}
+        repairHistoryRetentionMessage={
+          bulkPreview.repairHistoryRetentionMessage
+        }
+        repairServerNotice={bulkPreview.repairServerNotice}
+      />
       <Input.TextArea
         autoSize={{ maxRows: 8, minRows: 5 }}
-        onChange={(event) =>
-          bulkPreview.handleImportTextChange(event.target.value)
-        }
+        onChange={(event) => handleImportTextChange(event.target.value)}
         value={bulkPreview.importText}
       />
       <TranslationBulkActionBar
@@ -151,7 +169,7 @@ export function TranslationBulkPreviewPanel(props: {
         onExportPreview={() => void bulkPreview.runExportPreview()}
         onImport={() => void bulkPreview.runImport()}
         onImportPreview={() => void bulkPreview.runImportPreview()}
-        onUseMissingKeyDraft={bulkPreview.useMissingKeyDraft}
+        onUseMissingKeyDraft={handleUseMissingKeyDraft}
       />
       {bulkPreview.importErrorDetails ? (
         <TranslationImportErrorDetailsView
@@ -166,7 +184,7 @@ export function TranslationBulkPreviewPanel(props: {
             props.focusedKey,
           )}
           onFocusKey={props.onFocusKey}
-          onUseDraft={bulkPreview.useResultDraft}
+          onUseDraft={handleUseResultDraft}
           result={bulkPreview.importResult}
         />
       ) : null}
@@ -174,7 +192,9 @@ export function TranslationBulkPreviewPanel(props: {
         <TranslationImportPreviewResultView
           filters={props.filters}
           onFocusKey={props.onFocusKey}
+          onUseRepairDraft={handleUsePreviewRepairDraft}
           preview={bulkPreview.importPreview}
+          repairDraftEntryCount={previewRepairDraftState?.entryCount ?? 0}
         />
       ) : null}
       {bulkPreview.exportPreview ? (
@@ -186,7 +206,7 @@ export function TranslationBulkPreviewPanel(props: {
         entries={bulkPreview.importResultHistory}
         onClear={bulkPreview.clearImportResultHistory}
         onSelect={handleRestoreImportResult}
-        onUseDraft={bulkPreview.useHistoryDraft}
+        onUseDraft={handleUseHistoryDraft}
       />
     </Space>
   );

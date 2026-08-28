@@ -5,6 +5,7 @@ import type {
   TranslationImportPreviewResult,
   TranslationImportResult,
 } from "../types";
+import type { TranslationImportReviewNotice } from "../translation-import-review";
 
 type TranslationImportAction = Extract<
   TranslationBulkLoadingAction,
@@ -36,6 +37,8 @@ export function useTranslationBulkPreviewFeedback() {
   const [repairCompletionNotice, setRepairCompletionNotice] = useState<
     string | null
   >(null);
+  const [importReviewNotice, setImportReviewNotice] =
+    useState<TranslationImportReviewNotice | null>(null);
   const [loadingAction, setLoadingAction] =
     useState<TranslationBulkLoadingAction | null>(null);
 
@@ -45,6 +48,7 @@ export function useTranslationBulkPreviewFeedback() {
     setDraftClearSuggestion(null);
     setHistoryReplayNotice(null);
     setRepairCompletionNotice(null);
+    setImportReviewNotice(null);
   }
 
   function beginImportAction(action: TranslationImportAction) {
@@ -56,6 +60,7 @@ export function useTranslationBulkPreviewFeedback() {
     setDraftClearSuggestion(null);
     setHistoryReplayNotice(null);
     setRepairCompletionNotice(null);
+    setImportReviewNotice(null);
   }
 
   function beginExportAction(action: TranslationExportAction) {
@@ -64,6 +69,7 @@ export function useTranslationBulkPreviewFeedback() {
     setImportErrorDetails(null);
     setDraftClearSuggestion(null);
     setHistoryReplayNotice(null);
+    setImportReviewNotice(null);
   }
 
   function clearHistoryReplayAfterConfirmation() {
@@ -74,6 +80,7 @@ export function useTranslationBulkPreviewFeedback() {
     setImportPreview(null);
     setDraftClearSuggestion(null);
     setRepairCompletionNotice(null);
+    setImportReviewNotice(null);
   }
 
   function clearImportDraftAfterSuccess(notice: string) {
@@ -84,12 +91,14 @@ export function useTranslationBulkPreviewFeedback() {
     setDraftNotice(notice);
     setDraftClearSuggestion(null);
     setHistoryReplayNotice(null);
+    setImportReviewNotice(null);
   }
 
   function clearImportResultHistoryFeedback() {
     if (historyReplayNotice) {
       setHistoryReplayNotice(null);
       setImportResult(null);
+      setImportReviewNotice(null);
     }
   }
 
@@ -98,6 +107,7 @@ export function useTranslationBulkPreviewFeedback() {
     setDraftClearSuggestion(null);
     setHistoryReplayNotice(null);
     setImportPreview(null);
+    setImportReviewNotice(null);
   }
 
   function finishAction() {
@@ -114,6 +124,7 @@ export function useTranslationBulkPreviewFeedback() {
     setDraftClearSuggestion(null);
     setHistoryReplayNotice(null);
     setRepairCompletionNotice(null);
+    setImportReviewNotice(null);
   }
 
   function showExportPreview(preview: TranslationExportPreviewResult) {
@@ -133,14 +144,17 @@ export function useTranslationBulkPreviewFeedback() {
     setDraftClearSuggestion(null);
     setHistoryReplayNotice(input.notice);
     setRepairCompletionNotice(null);
+    setImportReviewNotice(null);
   }
 
   function showImportError(
     message: string,
     details: TranslationImportPreviewResult | null,
+    reviewNotice: TranslationImportReviewNotice,
   ) {
     setError(message);
     setImportErrorDetails(details);
+    setImportReviewNotice(reviewNotice);
   }
 
   function showImportPreview(preview: TranslationImportPreviewResult) {
@@ -149,12 +163,14 @@ export function useTranslationBulkPreviewFeedback() {
 
   function showImportResult(input: {
     draftClearSuggestion: string;
+    reviewNotice: TranslationImportReviewNotice;
     repairCompletionNotice: string | null;
     result: TranslationImportResult;
   }) {
     setImportResult(input.result);
     setRepairCompletionNotice(input.repairCompletionNotice);
     setDraftClearSuggestion(input.draftClearSuggestion);
+    setImportReviewNotice(input.reviewNotice);
   }
 
   function clearVisibleResults() {
@@ -182,6 +198,7 @@ export function useTranslationBulkPreviewFeedback() {
     importErrorDetails,
     importPreview,
     importResult,
+    importReviewNotice,
     loadingAction,
     repairCompletionNotice,
     showActionError,
