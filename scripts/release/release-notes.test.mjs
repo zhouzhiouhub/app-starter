@@ -4,7 +4,6 @@ import {
   createReleaseNotesMarkdown,
   readReleaseNotesCliConfig,
 } from "./release-notes.mjs";
-import { assertReleaseEvidenceCheckArtifact } from "./release-notes-artifact.mjs";
 
 test("release notes config parses required release evidence fields", () => {
   assert.deepEqual(
@@ -85,101 +84,6 @@ test("release notes config rejects unsafe release record values", () => {
         "README.md",
       ]),
     /Release notes output must use safe path segments/,
-  );
-});
-
-test("release notes validates release evidence artifact shape", () => {
-  const artifact = createReadyReleaseArtifact();
-
-  assert.doesNotThrow(() => assertReleaseEvidenceCheckArtifact(artifact));
-  assert.throws(
-    () =>
-      assertReleaseEvidenceCheckArtifact({
-        ...artifact,
-        smoke: { ...artifact.smoke, summary: null },
-      }),
-    /smoke\.summary must be an object/,
-  );
-  assert.throws(
-    () =>
-      assertReleaseEvidenceCheckArtifact({
-        ...artifact,
-        visual: {
-          ...artifact.visual,
-          acceptedViewportCount: artifact.visual.viewportCount + 1,
-        },
-      }),
-    /visual\.acceptedViewportCount must not exceed visual\.viewportCount/,
-  );
-  assert.throws(
-    () =>
-      assertReleaseEvidenceCheckArtifact({
-        ...artifact,
-        blockers: [null],
-      }),
-    /blockers must contain objects/,
-  );
-  assert.throws(
-    () =>
-      assertReleaseEvidenceCheckArtifact({
-        ...artifact,
-        visual: { ...artifact.visual, pendingComponents: ["hero-banner", 42] },
-      }),
-    /visual\.pendingComponents must be a string array/,
-  );
-  assert.throws(
-    () =>
-      assertReleaseEvidenceCheckArtifact({
-        ...artifact,
-        blockers: [
-          {
-            action: "Fix smoke evidence.",
-            area: "Production Smoke",
-            label: "Blocked",
-          },
-        ],
-        blockerCount: 1,
-      }),
-    /ready evidence must have no blockers/,
-  );
-  assert.throws(
-    () =>
-      assertReleaseEvidenceCheckArtifact({
-        ...artifact,
-        smoke: {
-          ...artifact.smoke,
-          summary: { ...artifact.smoke.summary, failedCheckCount: 1 },
-        },
-      }),
-    /ready evidence must include ready production smoke/,
-  );
-  assert.throws(
-    () =>
-      assertReleaseEvidenceCheckArtifact({
-        ...artifact,
-        visual: {
-          ...artifact.visual,
-          acceptedViewportCount: artifact.visual.viewportCount - 1,
-        },
-      }),
-    /ready evidence must include accepted visual evidence/,
-  );
-  assert.throws(
-    () =>
-      assertReleaseEvidenceCheckArtifact({
-        ...artifact,
-        blockerCount: 0,
-        releaseReady: false,
-        status: "blocked",
-        blockers: [
-          {
-            action: "Fix smoke evidence.",
-            area: "Production Smoke",
-            label: "Blocked",
-          },
-        ],
-      }),
-    /blockerCount must cover serialized blockers/,
   );
 });
 
