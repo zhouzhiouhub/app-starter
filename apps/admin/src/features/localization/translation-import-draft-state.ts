@@ -65,12 +65,13 @@ export function createResultTranslationImportDraftState(
   entries: TranslationImportResultEntry[],
 ): TranslationImportDraftState {
   const draft = createTranslationImportDraftFromEntries(entries);
+  const skippedCount = entries.length - draft.entries.length;
 
   return {
-    entryCount: entries.length,
-    notice: formatTranslationImportDraftNotice({
-      entryCount: entries.length,
-      source: "import-result",
+    entryCount: draft.entries.length,
+    notice: formatTranslationImportDedupedDraftNotice({
+      entryCount: draft.entries.length,
+      skippedCount,
     }),
     text: formatTranslationImportDraft(draft),
   };
@@ -80,12 +81,32 @@ export function createHistoryTranslationImportDraftState(
   entry: TranslationImportResultHistoryEntry,
 ): TranslationImportDraftState {
   const draft = createTranslationImportDraftFromEntries(entry.result.entries);
+  const skippedCount = entry.result.entries.length - draft.entries.length;
 
   return {
-    entryCount: entry.result.entries.length,
-    notice: formatTranslationImportHistoryDraftMessage(entry),
+    entryCount: draft.entries.length,
+    notice: formatTranslationImportHistoryDraftMessage(entry, {
+      entryCount: draft.entries.length,
+      skippedCount,
+    }),
     text: formatTranslationImportDraft(draft),
   };
+}
+
+export function formatTranslationImportDedupedDraftNotice(input: {
+  entryCount: number;
+  skippedCount: number;
+}): string {
+  const baseNotice = formatTranslationImportDraftNotice({
+    entryCount: input.entryCount,
+    source: "import-result",
+  });
+
+  if (input.skippedCount <= 0) {
+    return baseNotice;
+  }
+
+  return `${baseNotice} ${input.skippedCount} duplicate or invalid ${input.skippedCount === 1 ? "row was" : "rows were"} left out.`;
 }
 
 function formatFilterPart(

@@ -114,10 +114,16 @@ export function formatTranslationImportHistoryReplayMessage(
 
 export function formatTranslationImportHistoryDraftMessage(
   entry: TranslationImportResultHistoryEntry,
+  options: { entryCount?: number; skippedCount?: number } = {},
 ): string {
-  const entryCount = entry.result.entries.length;
+  const entryCount = options.entryCount ?? entry.result.entries.length;
+  const skippedCount = options.skippedCount ?? 0;
+  const skippedHint =
+    skippedCount > 0
+      ? ` ${skippedCount} duplicate or invalid ${skippedCount === 1 ? "row was" : "rows were"} left out.`
+      : "";
 
-  return `Draft rebuilt from ${entry.label} with ${entryCount} imported ${entryCount === 1 ? "row" : "rows"}. Import preview is reset.`;
+  return `Draft rebuilt from ${entry.label} with ${entryCount} imported ${entryCount === 1 ? "row" : "rows"}. Import preview is reset.${skippedHint}`;
 }
 
 export function formatTranslationImportHistoryReplayCleanupSuggestion(input: {

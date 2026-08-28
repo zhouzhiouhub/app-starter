@@ -191,6 +191,16 @@ test("translation import result history explains draft rebuilds", () => {
     ),
     "Draft rebuilt from Import #2 with 2 imported rows. Import preview is reset.",
   );
+  assert.equal(
+    formatTranslationImportHistoryDraftMessage(
+      createTranslationImportResultHistoryEntry(
+        createImportResult(["page.home.hero.title", "section.faq.answer"]),
+        3,
+      ),
+      { entryCount: 1, skippedCount: 1 },
+    ),
+    "Draft rebuilt from Import #3 with 1 imported row. Import preview is reset. 1 duplicate or invalid row was left out.",
+  );
 });
 
 test("translation import result history explains replay cleanup", () => {

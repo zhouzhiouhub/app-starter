@@ -1,10 +1,5 @@
 import { useMemo, useState } from "react";
-import {
-  exportTranslations,
-  importTranslations,
-  previewTranslationExport,
-  previewTranslationImport,
-} from "../api";
+import { importTranslations, previewTranslationImport } from "../api";
 import {
   defaultTranslationImportText,
   emptyTranslationImportText,
@@ -15,7 +10,6 @@ import {
   createMissingTranslationImportDraftState,
   createResultTranslationImportDraftState,
 } from "../translation-import-draft-state";
-import { downloadTranslationExport } from "../translation-export-file";
 import { readTranslationImportFocusKey } from "../translation-import-focus";
 import {
   readTranslationBulkImportFailureFeedback,
@@ -31,6 +25,7 @@ import {
 import { readTranslationBulkActionError } from "../translation-bulk-action-error";
 import { readTranslationImportDraftActionGuard } from "../translation-import-action-guard";
 import { useTranslationBulkPreviewFeedback } from "./use-translation-bulk-preview-feedback";
+import { createTranslationBulkExportActions } from "./use-translation-bulk-export-actions";
 import { useTranslationBulkRepairConfirmation } from "./use-translation-bulk-repair-confirmation";
 import { useTranslationImportResultHistory } from "./use-translation-import-result-history";
 import type { TranslationBulkLoadingAction } from "../translation-bulk-action";
@@ -71,6 +66,11 @@ export function useTranslationBulkPreview(input: {
     locale: input.meta.locale,
     missingKeys: input.missingKeys,
     requestId: input.meta.requestId,
+  });
+  const exportActions = createTranslationBulkExportActions({
+    feedback,
+    filters: input.filters,
+    meta: input.meta,
   });
 
   function useMissingKeyDraft() {
@@ -163,40 +163,6 @@ export function useTranslationBulkPreview(input: {
       feedback.finishAction();
     }
   };
-  const runExportPreview = async () => {
-    feedback.beginExportAction("export");
-
-    try {
-      feedback.showExportPreview(
-        await previewTranslationExport(
-          input.filters,
-          input.meta.requestedLocale,
-        ),
-      );
-    } catch (caught) {
-      feedback.showActionError(
-        readTranslationBulkActionError("export", caught),
-      );
-    } finally {
-      feedback.finishAction();
-    }
-  };
-  const runExportDownload = async () => {
-    feedback.beginExportAction("download");
-
-    try {
-      downloadTranslationExport(
-        await exportTranslations(input.filters, input.meta.requestedLocale),
-      );
-    } catch (caught) {
-      feedback.showActionError(
-        readTranslationBulkActionError("download", caught),
-      );
-    } finally {
-      feedback.finishAction();
-    }
-  };
-
   function restoreImportResult(entry: TranslationImportResultHistoryEntry) {
     const focusKey = readTranslationImportFocusKey(entry.result);
 
@@ -256,6 +222,7 @@ export function useTranslationBulkPreview(input: {
     draftClearSuggestion: feedback.draftClearSuggestion,
     draftNotice: feedback.draftNotice,
     error: feedback.error,
+    exportReviewNotice: feedback.exportReviewNotice,
     exportPreview: feedback.exportPreview,
     hasMissingKeyDraft: missingKeyDraftState.entryCount > 0,
     historyReplayNotice: feedback.historyReplayNotice,
@@ -285,8 +252,8 @@ export function useTranslationBulkPreview(input: {
       : null,
     repairServerNotice: repairConfirmation.notice,
     restoreImportResult,
-    runExportDownload,
-    runExportPreview,
+    runExportDownload: exportActions.runExportDownload,
+    runExportPreview: exportActions.runExportPreview,
     runImport,
     runImportPreview,
     useMissingKeyDraft,

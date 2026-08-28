@@ -1,6 +1,10 @@
 import { Input, Space } from "antd";
 import { useMemo, useState } from "react";
 import { useTranslationBulkPreview } from "../hooks/use-translation-bulk-preview";
+import {
+  buildTranslationExportAuditLogPath,
+  buildTranslationImportAuditLogPath,
+} from "../translation-audit-log-link";
 import { formatDefaultLocaleImportConfirmationSummary } from "../translation-import-confirmation";
 import { readTranslationImportFocusedResultKey } from "../translation-import-focus";
 import { readTranslationImportHistoryFilterAlignment } from "../translation-import-history-alignment";
@@ -136,11 +140,16 @@ export function TranslationBulkPreviewPanel(props: {
         draftClearSuggestion={bulkPreview.draftClearSuggestion}
         draftNotice={bulkPreview.draftNotice}
         error={bulkPreview.error}
+        exportAuditLogPath={buildTranslationExportAuditLogPath(
+          props.meta.locale,
+        )}
+        exportReviewNotice={bulkPreview.exportReviewNotice}
         historyFilterAlignment={historyFilterAlignment}
         historyReplayCleanupSuggestion={
           bulkPreview.historyReplayCleanupSuggestion
         }
         historyReplayNotice={bulkPreview.historyReplayNotice}
+        importAuditLogPath={buildTranslationImportAuditLogPath()}
         importReviewNotice={bulkPreview.importReviewNotice}
         onAlignHistoryFilters={props.onFocusKey}
         onClearHistoryReplay={bulkPreview.clearHistoryReplayAfterConfirmation}

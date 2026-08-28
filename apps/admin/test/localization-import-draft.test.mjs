@@ -15,6 +15,7 @@ import {
   createMissingTranslationImportDraftState,
   createResultTranslationImportDraftState,
   formatMissingTranslationImportDraftFilterNotice,
+  formatTranslationImportDedupedDraftNotice,
 } from "../src/features/localization/translation-import-draft-state.ts";
 import { createTranslationImportResultHistoryEntry } from "../src/features/localization/translation-import-result-history.ts";
 
@@ -228,6 +229,20 @@ test("translation import draft states carry text and notices", () => {
     "Draft rebuilt from 1 imported row. Import preview is reset.",
   );
   assert.equal(
+    createResultTranslationImportDraftState([
+      ...resultEntries,
+      {
+        action: "update",
+        context: "Existing context",
+        index: 1,
+        key: "page.home.hero.title",
+        locale: "en-US",
+        value: "Duplicate",
+      },
+    ]).notice,
+    "Draft rebuilt from 1 imported row. Import preview is reset. 1 duplicate or invalid row was left out.",
+  );
+  assert.equal(
     createHistoryTranslationImportDraftState(
       createTranslationImportResultHistoryEntry(
         {
@@ -243,5 +258,15 @@ test("translation import draft states carry text and notices", () => {
       ),
     ).notice,
     "Draft rebuilt from Import #2 with 1 imported row. Import preview is reset.",
+  );
+});
+
+test("translation import deduped draft notices explain skipped rows", () => {
+  assert.equal(
+    formatTranslationImportDedupedDraftNotice({
+      entryCount: 1,
+      skippedCount: 2,
+    }),
+    "Draft rebuilt from 1 imported row. Import preview is reset. 2 duplicate or invalid rows were left out.",
   );
 });

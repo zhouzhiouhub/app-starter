@@ -1,6 +1,11 @@
-import { DeleteOutlined, SearchOutlined } from "@ant-design/icons";
+import {
+  AuditOutlined,
+  DeleteOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
 import { Alert, Button, Popconfirm } from "antd";
 import type { TranslationBulkRepairNotice } from "../hooks/use-translation-bulk-repair-confirmation";
+import type { TranslationExportReviewNotice } from "../translation-export-review";
 import type { TranslationImportHistoryFilterAlignment } from "../translation-import-history-alignment";
 import type { TranslationImportReviewNotice } from "../translation-import-review";
 
@@ -8,9 +13,12 @@ export function TranslationBulkPreviewAlerts(props: {
   draftClearSuggestion?: string | null;
   draftNotice?: string | null;
   error?: string | null;
+  exportAuditLogPath?: string | null;
+  exportReviewNotice?: TranslationExportReviewNotice | null;
   historyFilterAlignment?: TranslationImportHistoryFilterAlignment | null;
   historyReplayCleanupSuggestion?: string | null;
   historyReplayNotice?: string | null;
+  importAuditLogPath?: string | null;
   importReviewNotice?: TranslationImportReviewNotice | null;
   onAlignHistoryFilters?: (key: string) => Promise<void> | void;
   onClearHistoryReplay: () => void;
@@ -81,9 +89,39 @@ export function TranslationBulkPreviewAlerts(props: {
       ) : null}
       {props.importReviewNotice ? (
         <Alert
+          action={
+            props.importReviewNotice.type === "success" &&
+            props.importAuditLogPath ? (
+              <Button
+                href={props.importAuditLogPath}
+                icon={<AuditOutlined />}
+                size="small"
+              >
+                Import audit
+              </Button>
+            ) : undefined
+          }
           message={props.importReviewNotice.message}
           showIcon
           type={props.importReviewNotice.type}
+        />
+      ) : null}
+      {props.exportReviewNotice ? (
+        <Alert
+          action={
+            props.exportAuditLogPath ? (
+              <Button
+                href={props.exportAuditLogPath}
+                icon={<AuditOutlined />}
+                size="small"
+              >
+                Export audit
+              </Button>
+            ) : undefined
+          }
+          message={props.exportReviewNotice.message}
+          showIcon
+          type={props.exportReviewNotice.type}
         />
       ) : null}
       {props.repairCompletionNotice ? (

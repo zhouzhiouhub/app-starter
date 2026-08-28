@@ -5,6 +5,7 @@ import type {
   TranslationImportPreviewResult,
   TranslationImportResult,
 } from "../types";
+import type { TranslationExportReviewNotice } from "../translation-export-review";
 import type { TranslationImportReviewNotice } from "../translation-import-review";
 
 type TranslationImportAction = Extract<
@@ -39,6 +40,8 @@ export function useTranslationBulkPreviewFeedback() {
   >(null);
   const [importReviewNotice, setImportReviewNotice] =
     useState<TranslationImportReviewNotice | null>(null);
+  const [exportReviewNotice, setExportReviewNotice] =
+    useState<TranslationExportReviewNotice | null>(null);
   const [loadingAction, setLoadingAction] =
     useState<TranslationBulkLoadingAction | null>(null);
 
@@ -49,6 +52,7 @@ export function useTranslationBulkPreviewFeedback() {
     setHistoryReplayNotice(null);
     setRepairCompletionNotice(null);
     setImportReviewNotice(null);
+    setExportReviewNotice(null);
   }
 
   function beginImportAction(action: TranslationImportAction) {
@@ -61,6 +65,7 @@ export function useTranslationBulkPreviewFeedback() {
     setHistoryReplayNotice(null);
     setRepairCompletionNotice(null);
     setImportReviewNotice(null);
+    setExportReviewNotice(null);
   }
 
   function beginExportAction(action: TranslationExportAction) {
@@ -70,6 +75,7 @@ export function useTranslationBulkPreviewFeedback() {
     setDraftClearSuggestion(null);
     setHistoryReplayNotice(null);
     setImportReviewNotice(null);
+    setExportReviewNotice(null);
   }
 
   function clearHistoryReplayAfterConfirmation() {
@@ -81,6 +87,7 @@ export function useTranslationBulkPreviewFeedback() {
     setDraftClearSuggestion(null);
     setRepairCompletionNotice(null);
     setImportReviewNotice(null);
+    setExportReviewNotice(null);
   }
 
   function clearImportDraftAfterSuccess(notice: string) {
@@ -92,6 +99,7 @@ export function useTranslationBulkPreviewFeedback() {
     setDraftClearSuggestion(null);
     setHistoryReplayNotice(null);
     setImportReviewNotice(null);
+    setExportReviewNotice(null);
   }
 
   function clearImportResultHistoryFeedback() {
@@ -99,6 +107,7 @@ export function useTranslationBulkPreviewFeedback() {
       setHistoryReplayNotice(null);
       setImportResult(null);
       setImportReviewNotice(null);
+      setExportReviewNotice(null);
     }
   }
 
@@ -108,6 +117,7 @@ export function useTranslationBulkPreviewFeedback() {
     setHistoryReplayNotice(null);
     setImportPreview(null);
     setImportReviewNotice(null);
+    setExportReviewNotice(null);
   }
 
   function finishAction() {
@@ -125,6 +135,7 @@ export function useTranslationBulkPreviewFeedback() {
     setHistoryReplayNotice(null);
     setRepairCompletionNotice(null);
     setImportReviewNotice(null);
+    setExportReviewNotice(null);
   }
 
   function showExportPreview(preview: TranslationExportPreviewResult) {
@@ -145,6 +156,7 @@ export function useTranslationBulkPreviewFeedback() {
     setHistoryReplayNotice(input.notice);
     setRepairCompletionNotice(null);
     setImportReviewNotice(null);
+    setExportReviewNotice(null);
   }
 
   function showImportError(
@@ -155,6 +167,7 @@ export function useTranslationBulkPreviewFeedback() {
     setError(message);
     setImportErrorDetails(details);
     setImportReviewNotice(reviewNotice);
+    setExportReviewNotice(null);
   }
 
   function showImportPreview(preview: TranslationImportPreviewResult) {
@@ -171,6 +184,13 @@ export function useTranslationBulkPreviewFeedback() {
     setRepairCompletionNotice(input.repairCompletionNotice);
     setDraftClearSuggestion(input.draftClearSuggestion);
     setImportReviewNotice(input.reviewNotice);
+    setExportReviewNotice(null);
+  }
+
+  function showExportDownloadResult(input: {
+    reviewNotice: TranslationExportReviewNotice;
+  }) {
+    setExportReviewNotice(input.reviewNotice);
   }
 
   function clearVisibleResults() {
@@ -192,6 +212,7 @@ export function useTranslationBulkPreviewFeedback() {
     draftClearSuggestion,
     draftNotice,
     error,
+    exportReviewNotice,
     exportPreview,
     finishAction,
     historyReplayNotice,
@@ -204,6 +225,7 @@ export function useTranslationBulkPreviewFeedback() {
     showActionError,
     showDraftActionGuard,
     showExportPreview,
+    showExportDownloadResult,
     showHistoryReplay,
     showImportError,
     showImportPreview,
