@@ -1,12 +1,15 @@
 import assert from "node:assert/strict";
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readFile, rm } from "node:fs/promises";
 import path from "node:path";
+import { tmpdir } from "node:os";
 import test from "node:test";
+import { runPageBuilderVisualAcceptanceCli } from "../page-builder-visual-acceptance.mjs";
 import {
   defaultPageBuilderVisualAcceptanceManifestPath,
   formatPageBuilderVisualAcceptanceReport,
   mvpPageBuilderComponents,
+  normalizeVisualAcceptanceOutputPath,
   pageBuilderVisualAcceptanceSchemaVersion,
   readPageBuilderVisualAcceptanceCliConfig,
   readPageBuilderVisualAcceptanceManifest,
@@ -198,25 +201,43 @@ test("visual acceptance rejects missing and duplicate section records", () => {
 test("visual acceptance CLI config parses options and paths", () => {
   assert.deepEqual(readPageBuilderVisualAcceptanceCliConfig([]), {
     checklist: false,
+    json: false,
     manifestPath: defaultPageBuilderVisualAcceptanceManifestPath,
+    outputPath: null,
     requireAccepted: false,
   });
   assert.deepEqual(
     readPageBuilderVisualAcceptanceCliConfig([
       "--",
       "--checklist",
+      "--json",
+      "--output",
+      "reports/visual/page-builder-fixture/visual-acceptance-report.json",
       "--require-accepted",
       "docs/custom-visual.json",
     ]),
     {
       checklist: true,
+      json: true,
       manifestPath: "docs/custom-visual.json",
+      outputPath:
+        "reports/visual/page-builder-fixture/visual-acceptance-report.json",
       requireAccepted: true,
     },
+  );
+  assert.equal(
+    normalizeVisualAcceptanceOutputPath(
+      "reports\\visual\\page-builder-fixture\\visual-acceptance-report.json",
+    ),
+    "reports/visual/page-builder-fixture/visual-acceptance-report.json",
   );
   assert.throws(
     () => readPageBuilderVisualAcceptanceCliConfig(["--bad-option"]),
     /Unknown visual acceptance option/,
+  );
+  assert.throws(
+    () => readPageBuilderVisualAcceptanceCliConfig(["--output", "README.md"]),
+    /Visual acceptance output must be under/,
   );
 });
 
@@ -228,6 +249,60 @@ test("visual acceptance report formats pending evidence", async () => {
   assert.match(lines.join("\n"), /Status: needs-evidence/);
   assert.match(lines.join("\n"), /Components accepted: 0\/6/);
   assert.match(lines.join("\n"), /Pending components: hero-banner/);
+});
+
+test("visual acceptance CLI prints machine-readable JSON", async () => {
+  const { evidenceRoot, manifest } =
+    createPendingManifestWithProvidedScreenshotFiles();
+  const stdout = [];
+  const exitCode = await runPageBuilderVisualAcceptanceCli(
+    ["--json", "--checklist"],
+    {
+      evidenceRoot,
+      manifest,
+      stdout: (line) => stdout.push(line),
+    },
+  );
+
+  assert.equal(exitCode, 0);
+  assert.equal(stdout.length, 1);
+
+  const artifact = JSON.parse(stdout[0]);
+  assert.equal(artifact.schemaVersion, pageBuilderVisualAcceptanceSchemaVersion);
+  assert.equal(artifact.status, "needs-evidence");
+  assert.equal(artifact.checklist.pendingViewportCount, 12);
+});
+
+test("visual acceptance CLI writes JSON artifact output", async () => {
+  const { evidenceRoot, manifest } = createAcceptedManifestWithEvidenceFiles();
+  const outputRoot = `tmp/page-builder-visual-acceptance-${process.pid}-${Date.now()}`;
+  const outputPath = `${outputRoot}/visual-acceptance-report.json`;
+  const stdout = [];
+
+  await rm(outputRoot, { force: true, recursive: true });
+
+  try {
+    const exitCode = await runPageBuilderVisualAcceptanceCli(
+      ["--output", outputPath],
+      {
+        evidenceRoot,
+        manifest,
+        stdout: (line) => stdout.push(line),
+      },
+    );
+    const artifact = JSON.parse(await readFile(outputPath, "utf8"));
+
+    assert.equal(exitCode, 0);
+    assert.equal(artifact.status, "accepted");
+    assert.equal(
+      stdout.some((line) =>
+        line.includes(`Visual acceptance artifact written: ${outputPath}`),
+      ),
+      true,
+    );
+  } finally {
+    await rm(outputRoot, { force: true, recursive: true });
+  }
 });
 
 function createAcceptedManifest() {

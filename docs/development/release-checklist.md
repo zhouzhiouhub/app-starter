@@ -56,8 +56,9 @@ later phases are explicitly approved.
   capture session.
 - Run the `Page Builder Visual` GitHub Actions workflow and keep its
   `page-builder-visual-fixture-<run_number>` artifact with the release notes.
-  This artifact proves fixture capture regression only; final visual sign-off
-  still requires accepted real design evidence.
+  This artifact includes `visual-acceptance-report.json` for structured review
+  status and proves fixture capture regression only; final visual sign-off still
+  requires accepted real design evidence.
 - Before running smoke requests, the `Production Smoke` workflow preflights the
   optional release evidence inputs with `pnpm release:preflight`:
   `visual_artifact_name` and
@@ -107,7 +108,8 @@ later phases are explicitly approved.
   is requested; every linked evidence file is retained with the release.
 - The latest `Page Builder Visual` workflow run and
   `page-builder-visual-fixture-<run_number>` artifact are linked when visual
-  evidence is part of the release review.
+  evidence is part of the release review; the artifact contains
+  `visual-acceptance-report.json` with the structured acceptance status.
 - When `visual_artifact_run_id` was provided, the Production Smoke workflow log
   shows the Page Builder Visual artifact download before the combined release
   gate.

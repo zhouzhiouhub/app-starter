@@ -11,6 +11,8 @@ The source of truth is
 ```powershell
 pnpm visual:acceptance
 pnpm visual:acceptance -- --checklist
+pnpm visual:acceptance -- --json
+pnpm visual:acceptance -- --checklist --output reports/visual/page-builder-fixture/visual-acceptance-report.json
 pnpm visual:acceptance -- --require-accepted
 pnpm visual:capture
 pnpm visual:capture:fixture
@@ -27,6 +29,10 @@ for release sign-off after every core section has design references, preview
 screenshots, and measured diff values. Use
 `pnpm visual:capture` after starting the Web app with the fixture flag to
 refresh the component-level browser screenshots referenced by the manifest. Use
+`--json` for a machine-readable report and `--output` to write that report to a
+safe `.json` path under `tmp/`, `reports/`, `artifacts/`, or `.tmp/`. When
+`--checklist` is present, the JSON artifact includes the per-viewport missing
+evidence tasks. Use
 `pnpm visual:capture:fixture` for the full local workflow: build Web, start the
 gated fixture server, capture the screenshots, and stop the server. Use
 `pnpm visual:references` after placing real design reference PNGs in a retained
@@ -84,14 +90,16 @@ not installed in a standard location.
 
 The `Page Builder Visual` GitHub Actions workflow runs on visual-related pull
 requests, pushes to `main`, and manual dispatch. It executes `pnpm test:visual`,
-`pnpm visual:acceptance -- --checklist`, `pnpm visual:measure`, and
+`pnpm visual:acceptance -- --checklist --output reports/visual/page-builder-fixture/visual-acceptance-report.json`,
+`pnpm visual:measure`, and
 `pnpm visual:capture:fixture -- --output-dir reports/visual/page-builder-fixture`.
 
 The workflow uploads `page-builder-visual-fixture-<run_number>` with the fixture
-screenshots captured under `reports/visual/page-builder-fixture`. This artifact
-is regression evidence for the fixture and capture pipeline only. Final MVP
-visual sign-off still requires real Desktop and Mobile design references,
-measured diff values, and `pnpm visual:acceptance -- --require-accepted`.
+screenshots and `visual-acceptance-report.json` captured under
+`reports/visual/page-builder-fixture`. This artifact is regression evidence for
+the fixture and capture pipeline only. Final MVP visual sign-off still requires
+real Desktop and Mobile design references, measured diff values, and
+`pnpm visual:acceptance -- --require-accepted`.
 When an accepted manifest references screenshots from that artifact, pass the
 artifact name and workflow run id to `Production Smoke` so it downloads the
 files to `reports/visual/page-builder-fixture` before running the combined

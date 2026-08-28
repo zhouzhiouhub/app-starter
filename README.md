@@ -678,6 +678,7 @@ Page Builder 核心区块视觉验收记录可单独检查：
 ```powershell
 pnpm visual:acceptance
 pnpm visual:acceptance -- --checklist
+pnpm visual:acceptance -- --checklist --output reports/visual/page-builder-fixture/visual-acceptance-report.json
 pnpm visual:acceptance -- --require-accepted
 pnpm visual:capture
 pnpm visual:capture:fixture
@@ -689,7 +690,7 @@ pnpm visual:references -- --source-dir docs/visual/page-builder-references --wri
 
 本地截图可临时设置 `ENABLE_VISUAL_ACCEPTANCE_FIXTURE=true` 并启动 Web，然后访问 `/visual-acceptance?viewport=desktop` 与 `/visual-acceptance?viewport=mobile`；需要组件级证据时追加 `&component=<hero-banner|rich-text|image-gallery|cta-bar|faq|spec-table>`，或运行 `pnpm visual:capture` 一次性刷新 manifest 引用的 12 张组件截图。也可以直接运行 `pnpm visual:capture:fixture` 完成本地 build、启动 gated fixture、截图和停服务流程。将真实设计参考 PNG 放到 `docs/visual/page-builder-references` 后，可运行 `pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete` 自动写入 `designReference` 并重置旧指标；然后运行 `pnpm visual:measure -- --write --require-complete` 写回 `visualMatchPercent`、`maxLayoutDeltaPx` 和 `maxColorDeltaE`。可用 `pnpm visual:acceptance -- --checklist` 查看 6 个核心区块 Desktop / Mobile 还缺哪些签收证据。截图完成后关闭该环境变量，最终验收仍需真实设计参考和差异指标。
 
-GitHub Actions 里新增了 `Page Builder Visual` workflow，会在相关 PR、main 推送或手动触发时运行 `pnpm test:visual`、`pnpm visual:acceptance -- --checklist`、`pnpm visual:measure` 和 `pnpm visual:capture:fixture -- --output-dir reports/visual/page-builder-fixture`，并上传 `page-builder-visual-fixture-<run_number>` artifact。该 artifact 只证明 fixture 截图链路可持续回归，不替代真实设计参考、差异指标和 `pnpm visual:acceptance -- --require-accepted` 最终签收。
+GitHub Actions 里新增了 `Page Builder Visual` workflow，会在相关 PR、main 推送或手动触发时运行 `pnpm test:visual`、`pnpm visual:acceptance -- --checklist --output reports/visual/page-builder-fixture/visual-acceptance-report.json`、`pnpm visual:measure` 和 `pnpm visual:capture:fixture -- --output-dir reports/visual/page-builder-fixture`，并上传 `page-builder-visual-fixture-<run_number>` artifact。该 artifact 带有 fixture 截图和 `visual-acceptance-report.json` 结构化验收状态，只证明 fixture 截图链路可持续回归，不替代真实设计参考、差异指标和 `pnpm visual:acceptance -- --require-accepted` 最终签收。
 
 GitHub Actions 里新增了手动触发的 `Production Smoke` workflow，会把报告写到 `artifacts/production-smoke/smoke-report.json`，先运行 `pnpm release:preflight` 校验可选发布证据输入，失败或成功都会执行 `pnpm smoke:report`、`pnpm smoke:release-check` 和 `pnpm release:check -- --checklist --smoke-report "$SMOKE_REPORT_PATH" --output "$RELEASE_CHECK_ARTIFACT_PATH"`，并上传 `production-smoke-report-<run_number>` 与 `release-evidence-check-<run_number>` artifact；当填写 `visual_artifact_name` 和 `visual_artifact_run_id` 时，会先把 Page Builder Visual artifact 下载到 `reports/visual/page-builder-fixture` 供组合门禁读取；当填写 `release_tag`、`rollback_target` 和 `visual_artifact_name` 时，还会运行 `pnpm release:notes` 并上传 `release-notes-<run_number>` artifact；发布证据按 [Release Checklist](./docs/development/release-checklist.md) 留存。
 

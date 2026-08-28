@@ -1,3 +1,4 @@
+export * from "./page-builder-visual-acceptance-artifact.mjs";
 export * from "./page-builder-visual-acceptance-cli-config.mjs";
 export * from "./page-builder-visual-acceptance-checklist.mjs";
 export * from "./page-builder-visual-acceptance-constants.mjs";

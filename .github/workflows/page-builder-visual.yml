@@ -51,7 +51,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm run check:file-size
       - run: pnpm test:visual
-      - run: pnpm visual:acceptance -- --checklist
+      - run: pnpm visual:acceptance -- --checklist --output reports/visual/page-builder-fixture/visual-acceptance-report.json
       - run: pnpm visual:measure
       - run: pnpm visual:capture:fixture -- --output-dir reports/visual/page-builder-fixture
       - name: Write visual evidence summary
@@ -60,7 +60,8 @@ jobs:
           {
             echo "## Page Builder Visual Evidence"
             echo "- Capture: \`pnpm visual:capture:fixture -- --output-dir reports/visual/page-builder-fixture\`"
-            echo "- Acceptance: \`pnpm visual:acceptance -- --checklist\`"
+            echo "- Acceptance: \`pnpm visual:acceptance -- --checklist --output reports/visual/page-builder-fixture/visual-acceptance-report.json\`"
+            echo "- Acceptance report: \`reports/visual/page-builder-fixture/visual-acceptance-report.json\`"
             echo "- Measurement: \`pnpm visual:measure\`"
             echo "- Artifact: \`page-builder-visual-fixture-${{ github.run_number }}\`"
             echo "- Run id for Production Smoke: \`${{ github.run_id }}\`"

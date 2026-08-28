@@ -19,13 +19,17 @@ test("page builder visual workflow captures fixture evidence", async () => {
   assert.match(workflow, /PAGE_BUILDER_VISUAL_BROWSER: google-chrome/);
   assert.match(workflow, /pnpm run check:file-size/);
   assert.match(workflow, /pnpm test:visual/);
-  assert.match(workflow, /pnpm visual:acceptance -- --checklist/);
+  assert.match(
+    workflow,
+    /pnpm visual:acceptance -- --checklist --output reports\/visual\/page-builder-fixture\/visual-acceptance-report\.json/,
+  );
   assert.match(workflow, /pnpm visual:measure/);
   assert.match(
     workflow,
     /pnpm visual:capture:fixture -- --output-dir reports\/visual\/page-builder-fixture/,
   );
   assert.match(workflow, /GITHUB_STEP_SUMMARY/);
+  assert.match(workflow, /visual-acceptance-report\.json/);
   assert.match(workflow, /actions\/upload-artifact@v4/);
   assert.match(
     workflow,
@@ -58,8 +62,11 @@ test("visual workflow documentation is linked from release guidance", async () =
 
   assert.match(readme, /Page Builder Visual/);
   assert.match(readme, /page-builder-visual-fixture-<run_number>/);
+  assert.match(readme, /visual-acceptance-report\.json/);
   assert.match(acceptanceDoc, /## CI Workflow/);
   assert.match(acceptanceDoc, /reports\/visual\/page-builder-fixture/);
+  assert.match(acceptanceDoc, /--json/);
   assert.match(releaseChecklist, /Page Builder Visual/);
   assert.match(releaseChecklist, /page-builder-visual-fixture-<run_number>/);
+  assert.match(releaseChecklist, /visual-acceptance-report\.json/);
 });
