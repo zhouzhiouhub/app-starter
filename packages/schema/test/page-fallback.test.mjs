@@ -35,6 +35,18 @@ test("named landing fallback pages do not reuse the home hero", () => {
   );
 });
 
+test("named landing fallback body keeps the storefront path readable", () => {
+  const faq = createFallbackPage({ slug: "faq", title: "Faq" });
+  const hero = faq.sections.find(
+    (section) => section.component === "hero-banner",
+  );
+  const body = readDefaultValue(hero?.props.body);
+
+  assert.match(body, /This is the Faq page\. It is separate from Home/);
+  assert.match(body, /open \/en\/faq on the storefront after you publish\./);
+  assert.doesNotMatch(body, /[\uFFFD\u9225]/u);
+});
+
 test("privacy and terms fallback pages keep global chrome visible", () => {
   assert.equal(getFallbackPageTemplateId("privacy"), "policy");
   assert.equal(getFallbackPageTemplateId("terms"), "policy");
@@ -123,3 +135,9 @@ test("fallback pages inherit site chrome content without turning chrome off", ()
     "(c) Published",
   );
 });
+
+function readDefaultValue(value) {
+  return value && typeof value === "object" && "defaultValue" in value
+    ? value.defaultValue
+    : "";
+}
