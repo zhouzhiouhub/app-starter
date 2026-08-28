@@ -36,10 +36,12 @@ later phases are explicitly approved.
 - Confirm the smoke admin account is not the documented local default and has
   `audit:read`.
 - Run `pnpm visual:acceptance` and keep the manifest review output with the
-  release notes. For final MVP sign-off, rerun it with `--require-accepted`;
-  accepted screenshots must be retained under `artifacts/visual/` or
-  `reports/visual/`, and every referenced evidence file must exist and be
-  non-empty.
+  release notes. After attaching real design references, run
+  `pnpm visual:measure -- --write --require-complete` to calculate the viewport
+  metrics. For final MVP sign-off, rerun `pnpm visual:acceptance` with
+  `--require-accepted`; accepted screenshots must be retained under
+  `artifacts/visual/` or `reports/visual/`, and every referenced evidence file
+  must exist and be non-empty.
 - For local screenshot capture, start Web with
   `ENABLE_VISUAL_ACCEPTANCE_FIXTURE=true` and use
   `/visual-acceptance?viewport=desktop` plus

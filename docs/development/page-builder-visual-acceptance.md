@@ -13,6 +13,8 @@ pnpm visual:acceptance
 pnpm visual:acceptance -- --require-accepted
 pnpm visual:capture
 pnpm visual:capture:fixture
+pnpm visual:measure
+pnpm visual:measure -- --write
 ```
 
 Use the default command while collecting evidence. Use `--require-accepted` for
@@ -21,7 +23,10 @@ screenshots, and measured diff values. Use `pnpm visual:capture` after starting
 the Web app with the fixture flag to refresh the component-level browser
 screenshots referenced by the manifest. Use `pnpm visual:capture:fixture` for
 the full local workflow: build Web, start the gated fixture server, capture the
-screenshots, and stop the server.
+screenshots, and stop the server. Use `pnpm visual:measure` after attaching
+design references to calculate `visualMatchPercent`, `maxLayoutDeltaPx`, and
+`maxColorDeltaE`; pass `--write` to persist the measured values to the
+manifest.
 
 ## Fixture Route
 
@@ -63,6 +68,19 @@ pnpm visual:capture:fixture
 Set `PAGE_BUILDER_VISUAL_BROWSER` or pass `--browser` when Chrome or Edge is
 not installed in a standard location.
 
+After real Desktop and Mobile design reference PNGs are attached to the
+manifest, calculate the metrics with:
+
+```powershell
+pnpm visual:measure -- --write --require-complete
+```
+
+Use `--accept-passing` only when the measured values pass the configured
+thresholds and the design review is ready to mark those viewport records as
+accepted.
+The metric reader supports the non-interlaced 8-bit RGB/RGBA PNG files commonly
+exported by browser screenshots and design tools.
+
 ## Evidence Rules
 
 - Every MVP section must have a record: `hero-banner`, `rich-text`,
@@ -88,4 +106,5 @@ not installed in a standard location.
 The current manifest proves the tracking structure and component coverage, and
 reserves component-level fixture screenshot paths under `artifacts/visual/`.
 It does not prove the final 95% visual acceptance yet because the real design
-references and measured diff values are still pending.
+references and measured diff values are still pending. `pnpm visual:measure`
+is available to calculate those values once references are attached.
