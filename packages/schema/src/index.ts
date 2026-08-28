@@ -1,5 +1,6 @@
 export * from "./api-contract.js";
 export * from "./commerce-disabled.js";
+export * from "./commerce-reserved-detail.js";
 export * from "./foundation.js";
 export * from "./image-source.js";
 export * from "./media-reference.js";

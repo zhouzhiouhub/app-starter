@@ -1,12 +1,8 @@
 import { fetchJson, readHttpError } from "./http-json-smoke.mjs";
 import {
-  assertErrorResponse,
-  readApiErrorCode,
-} from "./feature-flags-smoke-disabled-endpoint.mjs";
-import {
-  apiErrorCodes,
-  createCommerceDisabledDetails,
-} from "../../packages/schema/dist/index.js";
+  assertCommerceDisabledErrorResponse,
+  assertCommerceReservedDetailResponse,
+} from "./feature-flags-smoke-commerce-errors.mjs";
 
 export async function assertCommerceReadPlaceholders(input, accessToken) {
   await assertEmptyListResponse(
@@ -54,7 +50,7 @@ const smokeProductCreateIdempotencyKey = "7f10f6d3-02d9-4f3d-a69d-49b26ec63132";
 const smokeProductUpdateIdempotencyKey = "4d3a1fc5-3d10-4bb8-91ef-c8a8fef3c61a";
 
 export async function assertCommerceDisabled(input, accessToken) {
-  await assertErrorResponse(
+  await assertCommerceReservedDetailResponse(
     `${input.apiBaseUrl}/products/${smokeProductId}`,
     {
       headers: {
@@ -62,8 +58,11 @@ export async function assertCommerceDisabled(input, accessToken) {
       },
       method: "GET",
     },
-    "NOT_FOUND",
-    404,
+    {
+      resource: "product",
+      surface: "admin",
+    },
+    smokeProductId,
   );
   await assertCommerceDisabledErrorResponse(
     `${input.apiBaseUrl}/products`,
@@ -97,7 +96,7 @@ export async function assertCommerceDisabled(input, accessToken) {
       resource: "product",
     },
   );
-  await assertNotFoundPlaceholderResponse(
+  await assertCommerceReservedDetailResponse(
     `${input.apiBaseUrl}/orders/${smokeOrderId}`,
     {
       headers: {
@@ -105,10 +104,13 @@ export async function assertCommerceDisabled(input, accessToken) {
       },
       method: "GET",
     },
-    "Order detail placeholder",
+    {
+      resource: "order",
+      surface: "admin",
+    },
     smokeOrderId,
   );
-  await assertNotFoundPlaceholderResponse(
+  await assertCommerceReservedDetailResponse(
     `${input.apiBaseUrl}/payments/${smokePaymentId}`,
     {
       headers: {
@@ -116,16 +118,22 @@ export async function assertCommerceDisabled(input, accessToken) {
       },
       method: "GET",
     },
-    "Payment detail placeholder",
+    {
+      resource: "payment",
+      surface: "admin",
+    },
     smokePaymentId,
   );
-  await assertErrorResponse(
+  await assertCommerceReservedDetailResponse(
     `${input.apiBaseUrl}/public/products/smoke-product`,
     {
       method: "GET",
     },
-    "NOT_FOUND",
-    404,
+    {
+      resource: "product",
+      surface: "public",
+    },
+    smokeProductId,
   );
   await assertCommerceDisabledErrorResponse(
     `${input.apiBaseUrl}/public/cart`,
@@ -198,86 +206,5 @@ function assertCommercePlaceholderMeta(meta, label, resource) {
     meta?.writable !== false
   ) {
     throw new Error(`${label} did not expose disabled Commerce metadata.`);
-  }
-}
-
-async function assertCommerceDisabledErrorResponse(url, init, expectedDetails) {
-  const response = await fetchJson(url, init);
-  const code = readApiErrorCode(response.body);
-
-  if (response.status !== 409 || code !== apiErrorCodes.COMMERCE_DISABLED) {
-    throw new Error(
-      `${url} expected 409 ${apiErrorCodes.COMMERCE_DISABLED}, got ${formatCommerceDisabledDiagnostic(
-        response,
-        code,
-      )}.`,
-    );
-  }
-
-  assertCommerceDisabledDetails(url, response.body, expectedDetails);
-}
-
-function formatCommerceDisabledDiagnostic(response, code) {
-  const statusText = response.statusText ? ` ${response.statusText}` : "";
-  const redirect = response.redirectLocation
-    ? ` redirect: ${response.redirectLocation}`
-    : "";
-
-  return `${response.status}${statusText} ${code ?? "NO_CODE"}${redirect}`;
-}
-
-function assertCommerceDisabledDetails(url, body, expectedDetails) {
-  const details = readCommerceDisabledDetails(body);
-  const expected = createCommerceDisabledDetails({
-    ...expectedDetails,
-    commerceEnabled: false,
-  });
-
-  if (!details || typeof details !== "object" || Array.isArray(details)) {
-    throw new Error(`${url} did not expose Commerce disabled details.`);
-  }
-
-  const actualKeys = Object.keys(details).sort();
-  const expectedKeys = Object.keys(expected).sort();
-
-  if (actualKeys.join(",") !== expectedKeys.join(",")) {
-    throw new Error(`${url} exposed unexpected Commerce disabled detail keys.`);
-  }
-
-  for (const [key, value] of Object.entries(expected)) {
-    if (details[key] !== value) {
-      throw new Error(
-        `${url} Commerce disabled details.${key} did not match the MVP disabled contract.`,
-      );
-    }
-  }
-}
-
-function readCommerceDisabledDetails(body) {
-  return body?.error?.details ?? body?.details ?? null;
-}
-
-async function assertNotFoundPlaceholderResponse(
-  url,
-  init,
-  label,
-  placeholderIdentifier,
-) {
-  const response = await fetchJson(url, init);
-  const code = readApiErrorCode(response.body);
-
-  if (response.status !== 404 || code !== "NOT_FOUND") {
-    throw new Error(
-      `${url} expected 404 NOT_FOUND, got ${readHttpError(
-        response,
-        `${label} failed.`,
-      )}`,
-    );
-  }
-
-  const serializedBody = JSON.stringify(response.body ?? {});
-
-  if (serializedBody.includes(placeholderIdentifier)) {
-    throw new Error(`${label} leaked the placeholder identifier.`);
   }
 }

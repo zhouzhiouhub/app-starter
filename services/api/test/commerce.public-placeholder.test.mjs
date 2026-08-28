@@ -181,6 +181,16 @@ test("public product detail stays an explicit MVP placeholder", async () => {
     assert.equal(response.status, 404);
     assert.equal(body.code, apiErrorCodes.NOT_FOUND);
     assert.equal(body.requestId, "request-public-product-placeholder");
+    assert.deepEqual(body.details, {
+      action: "read",
+      available: false,
+      commerceEnabled: false,
+      readUnavailableCode: apiErrorCodes.NOT_FOUND,
+      reservedPhase: "phase-2",
+      resource: "product",
+      surface: "public",
+      writable: false,
+    });
     assert.equal(text.includes("product-secret-token"), false);
   } finally {
     await app.close();

@@ -140,6 +140,10 @@ export function createFeatureFlagSmokeFetch(options = {}) {
         return jsonResponse(
           {
             code: "NOT_FOUND",
+            details: commerceReservedDetailDetails({
+              resource: "product",
+              surface: "public",
+            }),
             message: "Public product pages are reserved.",
           },
           { status: 404, statusText: "Not Found" },
@@ -150,6 +154,10 @@ export function createFeatureFlagSmokeFetch(options = {}) {
         return jsonResponse(
           {
             code: "NOT_FOUND",
+            details: commerceReservedDetailDetails({
+              resource: "order",
+              surface: "admin",
+            }),
             message: "Order details are reserved.",
           },
           { status: 404, statusText: "Not Found" },
@@ -160,6 +168,10 @@ export function createFeatureFlagSmokeFetch(options = {}) {
         return jsonResponse(
           {
             code: "NOT_FOUND",
+            details: commerceReservedDetailDetails({
+              resource: "payment",
+              surface: "admin",
+            }),
             message: "Payment details are reserved.",
           },
           { status: 404, statusText: "Not Found" },
@@ -170,6 +182,10 @@ export function createFeatureFlagSmokeFetch(options = {}) {
         return jsonResponse(
           {
             code: "NOT_FOUND",
+            details: commerceReservedDetailDetails({
+              resource: "product",
+              surface: "admin",
+            }),
             message: "Product details are reserved.",
           },
           { status: 404, statusText: "Not Found" },
@@ -237,6 +253,19 @@ function commerceDisabledDetails(input) {
     resource: input.resource,
     writable: false,
     writeDisabledCode: "COMMERCE_DISABLED",
+  };
+}
+
+function commerceReservedDetailDetails(input) {
+  return {
+    action: "read",
+    available: false,
+    commerceEnabled: false,
+    readUnavailableCode: "NOT_FOUND",
+    reservedPhase: "phase-2",
+    resource: input.resource,
+    surface: input.surface,
+    writable: false,
   };
 }
 

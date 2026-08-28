@@ -214,6 +214,16 @@ test("admin product reserved routes keep stable MVP errors", () => {
     );
 
     assert.equal(detailError.getResponse()?.requestId, "request-product-detail");
+    assert.deepEqual(detailError.getResponse()?.details, {
+      action: "read",
+      available: false,
+      commerceEnabled: false,
+      readUnavailableCode: apiErrorCodes.NOT_FOUND,
+      reservedPhase: "phase-2",
+      resource: "product",
+      surface: "admin",
+      writable: false,
+    });
     assert.equal(createError.getResponse()?.requestId, "request-product-create");
     assert.equal(updateError.getResponse()?.requestId, "request-product-update");
     assert.deepEqual(createError.getResponse()?.details, {
@@ -237,24 +247,49 @@ test("admin product reserved routes keep stable MVP errors", () => {
 });
 
 test("admin order and payment detail routes keep stable MVP errors", () => {
-  const controller = new AdminCommerceController();
-  const orderError = assertApiNotFound(
-    () => controller.getOrder("request-order-detail"),
-    apiErrorCodes.NOT_FOUND,
-  );
-  const paymentError = assertApiNotFound(
-    () => controller.getPayment("request-payment-detail"),
-    apiErrorCodes.NOT_FOUND,
-  );
-  const serializedOrder = JSON.stringify(orderError.getResponse());
-  const serializedPayment = JSON.stringify(paymentError.getResponse());
+  withEnv({ COMMERCE_ENABLED: "false" }, () => {
+    const controller = new AdminCommerceController();
+    const orderError = assertApiNotFound(
+      () => controller.getOrder("request-order-detail"),
+      apiErrorCodes.NOT_FOUND,
+    );
+    const paymentError = assertApiNotFound(
+      () => controller.getPayment("request-payment-detail"),
+      apiErrorCodes.NOT_FOUND,
+    );
+    const serializedOrder = JSON.stringify(orderError.getResponse());
+    const serializedPayment = JSON.stringify(paymentError.getResponse());
 
-  assert.equal(orderError.getResponse()?.requestId, "request-order-detail");
-  assert.equal(paymentError.getResponse()?.requestId, "request-payment-detail");
-  assert.match(orderError.getResponse()?.message, /Order details/);
-  assert.match(paymentError.getResponse()?.message, /Payment details/);
-  assert.equal(serializedOrder.includes("smoke-order"), false);
-  assert.equal(serializedPayment.includes("smoke-payment"), false);
+    assert.equal(orderError.getResponse()?.requestId, "request-order-detail");
+    assert.equal(
+      paymentError.getResponse()?.requestId,
+      "request-payment-detail",
+    );
+    assert.deepEqual(orderError.getResponse()?.details, {
+      action: "read",
+      available: false,
+      commerceEnabled: false,
+      readUnavailableCode: apiErrorCodes.NOT_FOUND,
+      reservedPhase: "phase-2",
+      resource: "order",
+      surface: "admin",
+      writable: false,
+    });
+    assert.deepEqual(paymentError.getResponse()?.details, {
+      action: "read",
+      available: false,
+      commerceEnabled: false,
+      readUnavailableCode: apiErrorCodes.NOT_FOUND,
+      reservedPhase: "phase-2",
+      resource: "payment",
+      surface: "admin",
+      writable: false,
+    });
+    assert.match(orderError.getResponse()?.message, /Order details/);
+    assert.match(paymentError.getResponse()?.message, /Payment details/);
+    assert.equal(serializedOrder.includes("smoke-order"), false);
+    assert.equal(serializedPayment.includes("smoke-payment"), false);
+  });
 });
 
 function readCommercePlaceholderMeta(resource) {

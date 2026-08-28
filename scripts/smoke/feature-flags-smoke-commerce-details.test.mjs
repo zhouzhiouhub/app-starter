@@ -77,7 +77,7 @@ test("feature flag smoke rejects admin payment detail identifier leaks", async (
             },
             "access-token",
           ),
-        /Payment detail placeholder leaked the placeholder identifier\./,
+        /payments\/smoke-payment leaked the placeholder identifier\./,
       );
     },
   );
