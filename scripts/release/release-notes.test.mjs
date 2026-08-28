@@ -104,6 +104,16 @@ test("release notes render required evidence and gate status", () => {
     markdown,
     /Page Builder Visual Artifact: complete \(3\/3 files, 12\/12 screenshots\)/,
   );
+  assert.match(markdown, /## Readiness Checklist/);
+  assert.match(
+    markdown,
+    /Production Smoke report: ready; detail: Report path: artifacts\/production-smoke\/smoke-report\.json/,
+  );
+  assert.match(
+    markdown,
+    /Page Builder Visual evidence: ready; detail: 6\/6 components, 12\/12 viewports, artifact complete/,
+  );
+  assert.match(markdown, /Release notes record: ready to generate/);
   assert.match(
     markdown,
     /Manifest: `docs\/development\/page-builder-visual-acceptance\.json`/,
@@ -125,6 +135,7 @@ function createReadyReleaseArtifact() {
     blockerCount: 0,
     blockers: [],
     generatedAt: "2026-08-28T00:00:00.000Z",
+    readinessChecklist: createReadyReadinessChecklist(),
     releaseReady: true,
     schemaVersion: "release-evidence-check.v1",
     smoke: {
@@ -175,6 +186,7 @@ test("release notes require ready evidence unless explicitly allowed", () => {
       },
     ],
     generatedAt: "2026-08-28T00:00:00.000Z",
+    readinessChecklist: createBlockedReadinessChecklist(),
     releaseReady: false,
     schemaVersion: "release-evidence-check.v1",
     smoke: {
@@ -229,6 +241,10 @@ test("release notes require ready evidence unless explicitly allowed", () => {
   assert.match(markdown, /Mode: failure review draft/);
   assert.match(markdown, /failed evidence review only/);
   assert.match(markdown, /Page Builder Visual: Visual acceptance pending/);
+  assert.match(
+    markdown,
+    /Page Builder Visual evidence: needs-evidence; detail: 0\/6 components, 0\/12 viewports, artifact invalid/,
+  );
   assert.match(markdown, /Pending components: hero-banner, rich-text/);
   assert.match(
     markdown,
@@ -280,6 +296,60 @@ function createRequiredArgs() {
 
 function createReleaseNotesConfig() {
   return readReleaseNotesCliConfig(createRequiredArgs());
+}
+
+function createReadyReadinessChecklist() {
+  return {
+    itemCount: 3,
+    items: [
+      {
+        action: null,
+        detail: "Report path: artifacts/production-smoke/smoke-report.json",
+        label: "Production Smoke report",
+        status: "ready",
+      },
+      {
+        action: null,
+        detail: "6/6 components, 12/12 viewports, artifact complete",
+        label: "Page Builder Visual evidence",
+        status: "ready",
+      },
+      {
+        action: "Run pnpm release:notes with release tag and evidence names.",
+        detail: null,
+        label: "Release notes record",
+        status: "ready to generate",
+      },
+    ],
+    releaseReady: true,
+  };
+}
+
+function createBlockedReadinessChecklist() {
+  return {
+    itemCount: 3,
+    items: [
+      {
+        action: null,
+        detail: "Report path: artifacts/production-smoke/smoke-report.json",
+        label: "Production Smoke report",
+        status: "ready",
+      },
+      {
+        action: "Attach real visual evidence.",
+        detail: "0/6 components, 0/12 viewports, artifact invalid",
+        label: "Page Builder Visual evidence",
+        status: "needs-evidence",
+      },
+      {
+        action: "Wait until release evidence is ready.",
+        detail: null,
+        label: "Release notes record",
+        status: "waiting for evidence",
+      },
+    ],
+    releaseReady: false,
+  };
 }
 
 function createCompleteArtifactCheck() {

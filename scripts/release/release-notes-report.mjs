@@ -39,6 +39,10 @@ export function createReleaseNotesMarkdown(config, artifact) {
     `- Page Builder Visual: ${artifact.visual.status} (${artifact.visual.acceptedComponentCount}/${artifact.visual.componentCount} components, ${artifact.visual.acceptedViewportCount}/${artifact.visual.viewportCount} viewports)`,
     ...formatVisualArtifactGate(artifact.visual.artifactCheck),
     "",
+    "## Readiness Checklist",
+    "",
+    ...formatReadinessChecklist(artifact.readinessChecklist),
+    "",
     "## Visual Evidence",
     "",
     ...formatVisualEvidence(artifact.visual),
@@ -72,6 +76,30 @@ function formatTraceability(groups) {
         group.action ?? "no action",
       )})`,
   );
+}
+
+function formatReadinessChecklist(checklist) {
+  const items = Array.isArray(checklist?.items) ? checklist.items : [];
+
+  if (items.length === 0) {
+    return ["- Not recorded"];
+  }
+
+  return items.map(formatReadinessChecklistItem);
+}
+
+function formatReadinessChecklistItem(item) {
+  return [
+    `- ${formatInline(item.label)}: ${formatInline(item.status)}`,
+    formatChecklistField("detail", item.detail),
+    formatChecklistField("action", item.action),
+  ]
+    .filter(Boolean)
+    .join("; ");
+}
+
+function formatChecklistField(label, value) {
+  return hasText(value) ? `${label}: ${formatInline(value)}` : null;
 }
 
 function formatVisualEvidence(visual) {

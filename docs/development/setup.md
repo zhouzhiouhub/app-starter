@@ -292,8 +292,9 @@ then verifies the artifact-local manifest, capture report, acceptance report,
 and all 12 PNG screenshots, and writes the result under
 `visual.artifactCheck`.
 After that artifact is ready, `release:notes` writes the final Markdown release
-record, including any recorded `visual.artifactCheck` summary, and refuses
-blocked evidence unless `--allow-blocked` is used for a failure review draft.
+record, including the readiness checklist and any recorded
+`visual.artifactCheck` summary, and refuses blocked evidence unless
+`--allow-blocked` is used for a failure review draft.
 
 The `Production Smoke` GitHub Actions workflow runs the same command set against
 the protected `production` environment. It sets
