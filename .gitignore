@@ -8,6 +8,8 @@ dist/
 build/
 coverage/
 storybook-static/
+artifacts/
+reports/
 
 # env
 .env
@@ -28,6 +30,7 @@ Thumbs.db
 
 # generated
 *.tsbuildinfo
+.tmp/
 tmp/
 apps/web/.vercel/
 services/api/.data/

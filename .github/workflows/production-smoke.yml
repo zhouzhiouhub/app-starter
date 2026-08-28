@@ -1,0 +1,108 @@
+name: Production Smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      report_path:
+        description: "Safe relative smoke report path"
+        required: true
+        default: "artifacts/production-smoke/smoke-report.json"
+      require_admin_app:
+        description: "Require Admin static app smoke"
+        required: true
+        type: boolean
+        default: true
+      require_r2_upload:
+        description: "Require real R2 upload and CDN smoke"
+        required: true
+        type: boolean
+        default: true
+      require_revalidation:
+        description: "Require storefront ISR revalidation"
+        required: true
+        type: boolean
+        default: true
+      storefront_host:
+        description: "Optional public storefront host override"
+        required: false
+        default: ""
+
+jobs:
+  production-smoke:
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      ADMIN_URL: ${{ secrets.PRODUCTION_ADMIN_URL }}
+      ANALYTICS_CONSENT_GRANTED: ${{ vars.PRODUCTION_ANALYTICS_CONSENT_GRANTED }}
+      ANALYTICS_ENABLED: ${{ vars.PRODUCTION_ANALYTICS_ENABLED }}
+      APP_ENV: production
+      API_URL: ${{ secrets.PRODUCTION_API_URL }}
+      CLARITY_PROJECT_ID: ${{ vars.PRODUCTION_CLARITY_PROJECT_ID }}
+      COMMERCE_ENABLED: "false"
+      DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+      GA4_MEASUREMENT_ID: ${{ vars.PRODUCTION_GA4_MEASUREMENT_ID }}
+      GTM_CONTAINER_ID: ${{ vars.PRODUCTION_GTM_CONTAINER_ID }}
+      JWT_ACCESS_TOKEN_EXPIRES_IN_SECONDS: ${{ vars.PRODUCTION_JWT_ACCESS_TOKEN_EXPIRES_IN_SECONDS }}
+      JWT_PRIVATE_KEY: ${{ secrets.PRODUCTION_JWT_PRIVATE_KEY }}
+      JWT_PUBLIC_KEY: ${{ secrets.PRODUCTION_JWT_PUBLIC_KEY }}
+      MEDIA_CDN_BASE_URL: ${{ vars.PRODUCTION_MEDIA_CDN_BASE_URL }}
+      MEDIA_EXTERNAL_URL_HOSTS: ${{ vars.PRODUCTION_MEDIA_EXTERNAL_URL_HOSTS }}
+      MULTI_LOCALE_ENABLED: "false"
+      PREVIEW_TOKEN_PREVIOUS_SECRET: ${{ secrets.PRODUCTION_PREVIEW_TOKEN_PREVIOUS_SECRET }}
+      PREVIEW_TOKEN_SECRET: ${{ secrets.PRODUCTION_PREVIEW_TOKEN_SECRET }}
+      R2_ACCESS_KEY_ID: ${{ secrets.PRODUCTION_R2_ACCESS_KEY_ID }}
+      R2_ACCOUNT_ID: ${{ secrets.PRODUCTION_R2_ACCOUNT_ID }}
+      R2_BUCKET: ${{ secrets.PRODUCTION_R2_BUCKET }}
+      R2_REGION: ${{ vars.PRODUCTION_R2_REGION }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.PRODUCTION_R2_SECRET_ACCESS_KEY }}
+      REDIS_URL: ${{ secrets.PRODUCTION_REDIS_URL }}
+      SMOKE_ADMIN_EMAIL: ${{ secrets.PRODUCTION_SMOKE_ADMIN_EMAIL }}
+      SMOKE_ADMIN_PASSWORD: ${{ secrets.PRODUCTION_SMOKE_ADMIN_PASSWORD }}
+      SMOKE_REPORT_PATH: ${{ inputs.report_path }}
+      SMOKE_REQUIRE_ADMIN_APP: ${{ inputs.require_admin_app }}
+      SMOKE_REQUIRE_R2_UPLOAD: ${{ inputs.require_r2_upload }}
+      SMOKE_REQUIRE_REVALIDATION: ${{ inputs.require_revalidation }}
+      SMOKE_REPORT_ARTIFACT_NAME: production-smoke-report-${{ github.run_number }}
+      SMOKE_STOREFRONT_HOST: ${{ inputs.storefront_host }}
+      STOREFRONT_REVALIDATE_SECRET: ${{ secrets.PRODUCTION_STOREFRONT_REVALIDATE_SECRET }}
+      STOREFRONT_REVALIDATE_URL: ${{ secrets.PRODUCTION_STOREFRONT_REVALIDATE_URL }}
+      STRIPE_SECRET_KEY: ${{ secrets.PRODUCTION_STRIPE_SECRET_KEY }}
+      STRIPE_WEBHOOK_SECRET: ${{ secrets.PRODUCTION_STRIPE_WEBHOOK_SECRET }}
+      WEB_URL: ${{ secrets.PRODUCTION_WEB_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run check:file-size
+      - run: pnpm smoke:publish
+      - name: Review archived smoke report
+        if: always()
+        run: |
+          if [ -f "$SMOKE_REPORT_PATH" ]; then
+            pnpm smoke:report -- "$SMOKE_REPORT_PATH"
+          else
+            echo "Smoke report artifact was not created at $SMOKE_REPORT_PATH."
+          fi
+      - name: Write release evidence summary
+        if: always()
+        run: |
+          {
+            echo "## Production Smoke Evidence"
+            echo "- Report path: \`$SMOKE_REPORT_PATH\`"
+            echo "- Artifact: \`$SMOKE_REPORT_ARTIFACT_NAME\`"
+            echo "- Review: \`pnpm smoke:report -- $SMOKE_REPORT_PATH\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload smoke report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.SMOKE_REPORT_ARTIFACT_NAME }}
+          path: ${{ inputs.report_path }}
+          if-no-files-found: warn
+          retention-days: 30
