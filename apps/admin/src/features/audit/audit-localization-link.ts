@@ -1,9 +1,12 @@
 import { buildTranslationListSearch } from "../localization/translation-list-query.ts";
+import { appendTranslationAuditReturnContext } from "../localization/translation-audit-return-context.ts";
 import type { TranslationListFilters } from "../localization/types.ts";
 import type { AuditLog } from "./types.ts";
 
 export function readAuditLogLocalizationPath(log: AuditLog): string | null {
-  if (!isTranslationImportAuditLog(log) && !isTranslationExportAuditLog(log)) {
+  const auditSource = readAuditLocalizationSource(log);
+
+  if (!auditSource) {
     return null;
   }
 
@@ -12,8 +15,24 @@ export function readAuditLogLocalizationPath(log: AuditLog): string | null {
       ? readExportTranslationFilters(log.metadata)
       : {},
   );
+  const searchWithContext = appendTranslationAuditReturnContext(
+    search,
+    auditSource,
+  );
 
-  return search ? `/localization?${search}` : "/localization";
+  return `/localization?${searchWithContext}`;
+}
+
+function readAuditLocalizationSource(log: AuditLog) {
+  if (isTranslationImportAuditLog(log)) {
+    return "translation-imported";
+  }
+
+  if (isTranslationExportAuditLog(log)) {
+    return "translation-exported";
+  }
+
+  return null;
 }
 
 function isTranslationImportAuditLog(log: AuditLog): boolean {

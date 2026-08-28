@@ -26,7 +26,7 @@ test("audit localization links restore export filters", () => {
         },
       }),
     ),
-    "/localization?namespace=page.home&q=hero",
+    "/localization?namespace=page.home&q=hero&auditReturn=translation-exported",
   );
 });
 
@@ -40,7 +40,7 @@ test("audit localization links ignore unsafe export filters", () => {
         },
       }),
     ),
-    "/localization",
+    "/localization?auditReturn=translation-exported",
   );
 });
 
@@ -53,7 +53,7 @@ test("audit localization links open the default localization view for imports", 
         targetType: "translation-import",
       }),
     ),
-    "/localization",
+    "/localization?auditReturn=translation-imported",
   );
 });
 

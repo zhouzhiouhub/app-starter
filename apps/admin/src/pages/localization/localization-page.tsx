@@ -1,3 +1,4 @@
+import { CloseOutlined } from "@ant-design/icons";
 import { Alert, Button, Spin, Space, Typography } from "antd";
 import { useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -7,6 +8,10 @@ import {
   buildTranslationListSearch,
   readTranslationListFilters,
 } from "../../features/localization/translation-list-query";
+import {
+  clearTranslationAuditReturnContext,
+  readTranslationAuditReturnContext,
+} from "../../features/localization/translation-audit-return-context";
 import type { TranslationListFilters } from "../../features/localization/types";
 
 export function LocalizationPage() {
@@ -15,8 +20,17 @@ export function LocalizationPage() {
     () => readTranslationListFilters(searchParams),
     [searchParams],
   );
+  const auditReturnContext = useMemo(
+    () => readTranslationAuditReturnContext(searchParams, translationFilters),
+    [searchParams, translationFilters],
+  );
   const { error, isLoading, load, summary } =
     useLocalizationSummary(translationFilters);
+  const clearAuditReturnContext = useCallback(() => {
+    setSearchParams(clearTranslationAuditReturnContext(searchParams), {
+      replace: true,
+    });
+  }, [searchParams, setSearchParams]);
   const updateTranslationFilters = useCallback(
     (filters: TranslationListFilters) => {
       setSearchParams(
@@ -65,6 +79,23 @@ export function LocalizationPage() {
         <Button onClick={() => void load()}>Refresh</Button>
       </div>
       <Space direction="vertical" size={16} style={{ width: "100%" }}>
+        {auditReturnContext ? (
+          <Alert
+            action={
+              <Button
+                icon={<CloseOutlined />}
+                onClick={clearAuditReturnContext}
+                size="small"
+              >
+                Clear context
+              </Button>
+            }
+            description={auditReturnContext.description}
+            message={auditReturnContext.message}
+            showIcon
+            type={auditReturnContext.type}
+          />
+        ) : null}
         {error ? <Alert message={error} showIcon type="error" /> : null}
         {isLoading && !summary ? (
           <div style={{ padding: 48, textAlign: "center" }}>
