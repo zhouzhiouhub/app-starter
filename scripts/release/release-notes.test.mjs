@@ -153,6 +153,20 @@ test("release notes reject mismatched smoke source workflow run", () => {
   );
 });
 
+test("release notes reject mismatched smoke artifact run number", () => {
+  assert.throws(
+    () =>
+      createReleaseNotesMarkdown(
+        {
+          ...createReleaseNotesConfig(),
+          smokeArtifact: "production-smoke-report-999",
+        },
+        createReadyReleaseArtifact(),
+      ),
+    /smoke artifact must match smoke\.source\.runNumber/,
+  );
+});
+
 function createReadyReleaseArtifact() {
   return {
     blockerCount: 0,

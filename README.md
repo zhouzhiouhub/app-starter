@@ -700,6 +700,8 @@ GitHub Actions 里新增了手动触发的 `Production Smoke` workflow，会把�
 
 组合门禁 ready 后，可运行 `pnpm release:notes` 生成最终发布记录 Markdown；命令会强制填写 release tag、workflow run URL、三类 artifact 名称、公开 storefront URL 和 rollback target。默认读取 `artifacts/release/release-check.json`，只有 `release-evidence-check.v1` 为 ready 时才生成正式发布记录；发布记录会同步写出 `readinessChecklist` 和 production smoke source，如果组合门禁记录了 `visual.artifactCheck`，还会写出视觉 artifact 的完整性、文件数、截图数和 artifact issue 摘要。
 
+当 `release-evidence-check.v1` 记录了 `smoke.source` 时，`pnpm release:notes` 还会校验 `--workflow-run-url` 匹配 `smoke.source.workflowRunUrl`，并校验 `--smoke-artifact` 匹配 `production-smoke-report-<runNumber>`，避免发布记录指向错误的 Actions run 或 smoke artifact。
+
 ```powershell
 $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 ```

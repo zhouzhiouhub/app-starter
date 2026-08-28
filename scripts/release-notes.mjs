@@ -61,6 +61,11 @@ Options:
   --storefront-url <url>      Public production storefront URL.
   --visual-artifact <name>    Page Builder visual fixture artifact name.
   --workflow-run-url <url>    GitHub Actions workflow run URL.
+
+Consistency:
+  --workflow-run-url and --smoke-artifact must match smoke.source when the
+  release-evidence-check.v1 artifact records production smoke source metadata.
+
   -h, --help                  Show this help.`);
 }
 
