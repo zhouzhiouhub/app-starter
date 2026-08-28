@@ -8,6 +8,8 @@ export const releaseEvidenceCheckSchemaVersion = "release-evidence-check.v1";
 const maxArtifactBlockerCount = 50;
 const maxArtifactTextLength = 420;
 const maxVisualArtifactIssueCount = 50;
+const maxVisualChecklistMissingCount = 20;
+const maxVisualChecklistTaskCount = 50;
 const maxVisualIssueCount = 50;
 
 export function createReleaseEvidenceCheckArtifact(check, input = {}) {
@@ -105,7 +107,65 @@ function createVisualArtifact(check) {
     );
   }
 
+  if (check.visualChecklist) {
+    artifact.checklist = createVisualChecklistArtifact(check.visualChecklist);
+  }
+
   return artifact;
+}
+
+function createVisualChecklistArtifact(checklist) {
+  const pendingTasks = readPendingVisualChecklistTasks(checklist);
+
+  return {
+    pendingTaskCount: pendingTasks.length,
+    pendingTasks: pendingTasks
+      .slice(0, maxVisualChecklistTaskCount)
+      .map(createVisualChecklistTaskArtifact),
+    pendingViewportCount: checklist.pendingViewportCount,
+    readyViewportCount: checklist.readyViewportCount,
+    viewportCount: checklist.viewportCount,
+  };
+}
+
+function readPendingVisualChecklistTasks(checklist) {
+  if (!Array.isArray(checklist.components)) {
+    return [];
+  }
+
+  return checklist.components.flatMap((component) =>
+    Array.isArray(component.viewports)
+      ? component.viewports.filter((viewport) => viewport.ready !== true)
+      : [],
+  );
+}
+
+function createVisualChecklistTaskArtifact(task) {
+  const missing = Array.isArray(task.missing) ? task.missing : [];
+
+  return {
+    commands: createVisualChecklistCommandsArtifact(task.commands),
+    component: readTextOrNull(task.component) ?? "unknown",
+    designReference: readTextOrNull(task.designReference),
+    expectedDesignReference: readTextOrNull(task.expectedDesignReference),
+    expectedPreviewScreenshot: readTextOrNull(task.expectedPreviewScreenshot),
+    missing: missing
+      .slice(0, maxVisualChecklistMissingCount)
+      .map((item) => readTextOrNull(item) ?? "unknown"),
+    missingCount: missing.length,
+    previewScreenshot: readTextOrNull(task.previewScreenshot),
+    status: readTextOrNull(task.status) ?? "unknown",
+    viewport: readTextOrNull(task.viewport) ?? "unknown",
+  };
+}
+
+function createVisualChecklistCommandsArtifact(commands) {
+  return {
+    capture: readTextOrNull(commands?.capture),
+    importReference: readTextOrNull(commands?.importReference),
+    measure: readTextOrNull(commands?.measure),
+    verify: readTextOrNull(commands?.verify),
+  };
 }
 
 function createVisualArtifactCheckArtifact(check) {

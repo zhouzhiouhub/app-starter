@@ -189,6 +189,24 @@ test("release check artifact records visual evidence gaps", () => {
     "hero-banner.desktop",
     "hero-banner.mobile",
   ]);
+  assert.equal(artifact.visual.checklist.pendingViewportCount, 12);
+  assert.equal(artifact.visual.checklist.pendingTaskCount, 12);
+  assert.equal(
+    artifact.visual.checklist.pendingTasks[0].expectedDesignReference,
+    "docs/visual/page-builder-references/hero-banner-desktop.png",
+  );
+  assert.deepEqual(artifact.visual.checklist.pendingTasks[0].missing, [
+    "designReference",
+    "previewScreenshot",
+    "visualMatchPercent >= 95",
+    "maxLayoutDeltaPx <= 5",
+    "maxColorDeltaE <= 3",
+    "status=accepted",
+  ]);
+  assert.match(
+    artifact.visual.checklist.pendingTasks[0].commands.capture,
+    /pnpm visual:capture:fixture/,
+  );
 });
 
 test("release check blocks pending Page Builder visual evidence", () => {

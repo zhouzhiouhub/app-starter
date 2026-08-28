@@ -10,6 +10,7 @@ import {
   isPlainRecord,
 } from "./release-notes-artifact-assertions.mjs";
 import { assertOptionalVisualArtifactCheck } from "./release-notes-visual-artifact-validation.mjs";
+import { assertOptionalVisualChecklist } from "./release-notes-visual-checklist-validation.mjs";
 
 const releaseArtifactVisualStatuses = new Set([
   "accepted",
@@ -49,6 +50,7 @@ export function assertVisualArtifact(visual) {
   assertOptionalStringList(visual.pendingComponents, "visual.pendingComponents");
   assertOptionalStringList(visual.pendingViewports, "visual.pendingViewports");
   assertOptionalVisualArtifactCheck(visual.artifactCheck);
+  assertOptionalVisualChecklist(visual.checklist);
   assertOptionalVisualIssues(visual.issues);
   assertVisualIssueCountConsistency(visual);
   assertAcceptedVisualConsistency(visual);
@@ -89,7 +91,9 @@ function assertAcceptedVisualConsistency(visual) {
   }
 
   const hasPending =
-    hasItems(visual.pendingComponents) || hasItems(visual.pendingViewports);
+    hasItems(visual.pendingComponents) ||
+    hasItems(visual.pendingViewports) ||
+    hasPendingVisualChecklist(visual.checklist);
   const hasIssues =
     (visual.issueCount ?? 0) > 0 ||
     hasItems(visual.issues) ||
@@ -106,6 +110,15 @@ function assertAcceptedVisualConsistency(visual) {
       "Release check artifact accepted visual evidence must have full counts, no pending evidence, and no issues.",
     );
   }
+}
+
+function hasPendingVisualChecklist(checklist) {
+  return (
+    isPlainRecord(checklist) &&
+    ((checklist.pendingTaskCount ?? 0) > 0 ||
+      (checklist.pendingViewportCount ?? 0) > 0 ||
+      hasItems(checklist.pendingTasks))
+  );
 }
 
 function assertOptionalVisualIssues(issues) {

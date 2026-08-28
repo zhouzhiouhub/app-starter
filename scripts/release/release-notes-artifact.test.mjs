@@ -64,6 +64,22 @@ test("release notes validates release evidence artifact shape", () => {
     () =>
       assertReleaseEvidenceCheckArtifact({
         ...artifact,
+        visual: {
+          ...artifact.visual,
+          checklist: {
+            ...artifact.visual.checklist,
+            pendingTaskCount: 1,
+            pendingViewportCount: 1,
+            pendingTasks: [null],
+          },
+        },
+      }),
+    /visual\.checklist\.pendingTasks must contain objects/,
+  );
+  assert.throws(
+    () =>
+      assertReleaseEvidenceCheckArtifact({
+        ...artifact,
         readinessChecklist: {
           ...artifact.readinessChecklist,
           items: [null],
@@ -305,6 +321,13 @@ function createReadyReleaseArtifact() {
       status: "accepted",
       viewportCount: 12,
       warningCount: 0,
+      checklist: {
+        pendingTaskCount: 0,
+        pendingTasks: [],
+        pendingViewportCount: 0,
+        readyViewportCount: 12,
+        viewportCount: 12,
+      },
     },
   };
 }

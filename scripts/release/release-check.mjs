@@ -4,6 +4,7 @@ import {
 } from "../smoke/smoke-release-check.mjs";
 import { createEmptySmokeSourceMetadata } from "../smoke/smoke-source-metadata.mjs";
 import {
+  createPageBuilderVisualAcceptanceChecklist,
   readPageBuilderVisualAcceptanceManifest,
   validatePageBuilderVisualAcceptanceManifest,
 } from "../visual/page-builder-visual-acceptance.mjs";
@@ -63,6 +64,13 @@ export function createReleaseEvidenceCheck(input) {
     : validatePageBuilderVisualAcceptanceManifest(input.visualManifest, {
         evidenceRoot: input.visualEvidenceRoot,
       });
+  const visualChecklist = createPageBuilderVisualAcceptanceChecklist(
+    input.visualManifest,
+    {
+      evidenceRoot: input.visualEvidenceRoot,
+      manifestPath: input.visualManifestPath,
+    },
+  );
   const blockers = readReleaseEvidenceBlockers({
     smoke,
     visual,
@@ -76,6 +84,7 @@ export function createReleaseEvidenceCheck(input) {
     visual,
     visualArtifact: input.visualArtifact ?? null,
     visualArtifactDir: input.visualArtifactDir ?? null,
+    visualChecklist,
     visualManifestPath: input.visualManifestPath,
   };
 }

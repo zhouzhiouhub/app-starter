@@ -154,8 +154,9 @@ later phases are explicitly approved.
   writes the combined `release-evidence-check.v1` artifact for the release
   record; its `readinessChecklist` lists the Production Smoke, Page Builder
   visual, and release notes tasks, while `visual.pendingComponents`,
-  `visual.pendingViewports`, and `visual.issues` identify any remaining Page
-  Builder visual evidence gaps when the gate is blocked. When
+  `visual.pendingViewports`, `visual.issues`, and
+  `visual.checklist.pendingTasks` identify any remaining Page Builder visual
+  evidence gaps and their per-viewport commands when the gate is blocked. When
   `--visual-artifact-dir` is provided, the same artifact includes
   `visual.artifactCheck` with required file, validated screenshot, and issue
   counts.
