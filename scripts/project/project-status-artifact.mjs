@@ -12,12 +12,40 @@ const completedMilestones = [
   "Production smoke, visual acceptance, release evidence, and release notes tooling are wired.",
 ];
 
+const localVerificationCommands = [
+  {
+    command: "pnpm install --frozen-lockfile",
+    label: "Install",
+  },
+  {
+    command: "pnpm run check:file-size",
+    label: "File size guard",
+  },
+  {
+    command: "pnpm typecheck",
+    label: "TypeScript",
+  },
+  {
+    command: "pnpm lint",
+    label: "Lint",
+  },
+  {
+    command: "pnpm test",
+    label: "Tests",
+  },
+  {
+    command: "pnpm build",
+    label: "Build",
+  },
+];
+
 export function createProjectStatusArtifact(check, input = {}) {
   const nextActions = createProjectNextActions(check);
 
   return {
     completedMilestones,
     generatedAt: input.generatedAt ?? new Date().toISOString(),
+    localVerification: createLocalVerificationSummary(),
     nextActionCount: nextActions.length,
     nextActions: nextActions.slice(0, maxProjectActionCount),
     phase: "MVP release verification",
@@ -25,6 +53,18 @@ export function createProjectStatusArtifact(check, input = {}) {
     releaseReady: check.releaseReady,
     schemaVersion: projectStatusSchemaVersion,
     status: check.releaseReady ? "release-ready" : "needs-evidence",
+  };
+}
+
+function createLocalVerificationSummary() {
+  return {
+    commandCount: localVerificationCommands.length,
+    commands: localVerificationCommands.map((item) => ({
+      command: item.command,
+      label: item.label,
+      status: "configured",
+    })),
+    source: "CI verify job and local package scripts",
   };
 }
 

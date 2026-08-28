@@ -26,6 +26,18 @@ test("project status summarizes blocked release evidence", () => {
   assert.equal(artifact.releaseGate.smoke.status, "blocked");
   assert.equal(artifact.releaseGate.visual.status, "needs-evidence");
   assert.equal(artifact.releaseGate.visual.pendingTaskCount, 12);
+  assert.equal(artifact.localVerification.commandCount, 6);
+  assert.deepEqual(
+    artifact.localVerification.commands.map((item) => item.command),
+    [
+      "pnpm install --frozen-lockfile",
+      "pnpm run check:file-size",
+      "pnpm typecheck",
+      "pnpm lint",
+      "pnpm test",
+      "pnpm build",
+    ],
+  );
   assert.equal(artifact.nextActionCount, 13);
   assert.equal(artifact.nextActions[0].area, "Production Smoke");
   assert.equal(
@@ -52,6 +64,8 @@ test("project status CLI prints readable blocked state", async () => {
     assert.match(text, /Release ready: no/);
     assert.match(text, /Production Smoke: blocked/);
     assert.match(text, /Page Builder Visual: needs-evidence/);
+    assert.match(text, /Local verification:/);
+    assert.match(text, /TypeScript: pnpm typecheck \(configured\)/);
     assert.match(text, /hero-banner\.desktop/);
   } finally {
     await rm(emptyArchiveRoot, { force: true, recursive: true });
@@ -102,10 +116,12 @@ test("project status command is exposed in package and CI", async () => {
     packageJson,
     /"project:status": "node scripts\/project-status\.mjs"/,
   );
-  assert.match(packageJson, /"test:project": "node --test scripts\/project\/\*\.test\.mjs"/);
+  assert.match(
+    packageJson,
+    /"test:project": "node --test scripts\/project\/\*\.test\.mjs"/,
+  );
   assert.match(ciWorkflow, /pnpm project:status -- --help/);
-}
-);
+});
 
 function createBlockedCheck() {
   return {
@@ -138,24 +154,20 @@ function createBlockedCheck() {
 }
 
 function createVisualRecords() {
-  return ["hero-banner", "rich-text", "image-gallery", "cta-bar", "faq", "spec-table"].map(
-    (component) => ({
-      accepted: false,
-      component,
-    }),
-  );
+  return mvpComponents.map((component) => ({
+    accepted: false,
+    component,
+  }));
 }
 
 function createVisualChecklist() {
-  const components = ["hero-banner", "rich-text", "image-gallery", "cta-bar", "faq", "spec-table"].map(
-    (component) => ({
-      component,
-      viewports: [
-        createVisualTask(component, "desktop"),
-        createVisualTask(component, "mobile"),
-      ],
-    }),
-  );
+  const components = mvpComponents.map((component) => ({
+    component,
+    viewports: [
+      createVisualTask(component, "desktop"),
+      createVisualTask(component, "mobile"),
+    ],
+  }));
 
   return {
     components,
@@ -164,6 +176,15 @@ function createVisualChecklist() {
     viewportCount: 12,
   };
 }
+
+const mvpComponents = [
+  "hero-banner",
+  "rich-text",
+  "image-gallery",
+  "cta-bar",
+  "faq",
+  "spec-table",
+];
 
 function createVisualTask(component, viewport) {
   return {

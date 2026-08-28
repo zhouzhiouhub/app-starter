@@ -16,11 +16,23 @@ export function formatProjectStatusArtifact(artifact) {
     `    - Production Smoke: ${artifact.releaseGate.smoke.status} (${artifact.releaseGate.smoke.summaryStatus})`,
     `    - Page Builder Visual: ${formatVisualGate(artifact.releaseGate.visual)}`,
     `    - Blockers: ${artifact.releaseGate.blockerCount}`,
+    "  Local verification:",
+    ...formatLocalVerification(artifact.localVerification),
     "  Next actions:",
     ...formatProjectNextActions(artifact),
   ];
 
   return lines.map(formatProjectLine);
+}
+
+function formatLocalVerification(localVerification) {
+  if (!Array.isArray(localVerification?.commands)) {
+    return ["    - Not recorded"];
+  }
+
+  return localVerification.commands.map(
+    (item) => `    - ${item.label}: ${item.command} (${item.status})`,
+  );
 }
 
 export async function writeProjectStatusArtifact(outputPath, artifact) {

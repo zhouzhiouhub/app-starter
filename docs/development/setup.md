@@ -290,7 +290,8 @@ specific GitHub Actions run.
 
 `project:status` is an informational wrapper around the same release gate. It
 prints the MVP phase, locally completed milestones, release readiness, and the
-next concrete actions without changing the pass/fail criteria.
+configured local verification commands, and the next concrete actions without
+changing the pass/fail criteria.
 
 After the Page Builder visual manifest has accepted real design evidence,
 `release:check` verifies both evidence streams together: production smoke must
