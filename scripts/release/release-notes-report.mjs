@@ -4,6 +4,7 @@ import { formatSmokeText } from "../smoke/smoke-text.mjs";
 
 const maxBlockerLines = 12;
 const maxTextLength = 180;
+const maxVisualIssueLines = 12;
 
 export function createReleaseNotesMarkdown(config, artifact) {
   if (!config.allowBlocked && artifact.releaseReady !== true) {
@@ -33,6 +34,10 @@ export function createReleaseNotesMarkdown(config, artifact) {
     `- Release evidence: ${artifact.status}`,
     `- Production Smoke: ${artifact.smoke.status} (${artifact.smoke.summary.status}, ${artifact.smoke.summary.failedCheckCount} failed checks)`,
     `- Page Builder Visual: ${artifact.visual.status} (${artifact.visual.acceptedComponentCount}/${artifact.visual.componentCount} components, ${artifact.visual.acceptedViewportCount}/${artifact.visual.viewportCount} viewports)`,
+    "",
+    "## Visual Evidence",
+    "",
+    ...formatVisualEvidence(artifact.visual),
     "",
     "## Traceability",
     "",
@@ -65,6 +70,52 @@ function formatTraceability(groups) {
   );
 }
 
+function formatVisualEvidence(visual) {
+  return [
+    `- Manifest: \`${formatInline(visual.manifestPath)}\``,
+    `- Pending components: ${formatInlineList(visual.pendingComponents)}`,
+    `- Pending viewports: ${formatInlineList(visual.pendingViewports)}`,
+    ...formatVisualIssues(visual.issues),
+  ];
+}
+
+function formatVisualIssues(issues) {
+  if (!Array.isArray(issues) || issues.length === 0) {
+    return ["- Visual issues: none"];
+  }
+
+  const visible = issues.slice(0, maxVisualIssueLines).map(
+    (issue) => `- Visual issue: ${formatVisualIssue(issue)}`,
+  );
+  const hidden = issues.length - visible.length;
+
+  if (hidden > 0) {
+    visible.push(`- Visual issue: ... and ${hidden} more visual issues`);
+  }
+
+  return visible;
+}
+
+function formatVisualIssue(issue) {
+  const label = formatIssueTarget(issue);
+  const code = formatInline(issue.code);
+  const severity = formatInline(issue.severity);
+  const message = formatInline(issue.message);
+
+  return formatInline(`${label}: ${code} (${severity}) - ${message}`);
+}
+
+function formatIssueTarget(issue) {
+  const component = formatInline(issue.component);
+  const viewport = formatInline(issue.viewport);
+
+  if (component === "unknown") {
+    return viewport;
+  }
+
+  return viewport === "unknown" ? component : `${component}.${viewport}`;
+}
+
 function formatBlockers(blockers) {
   if (!Array.isArray(blockers) || blockers.length === 0) {
     return ["- None"];
@@ -85,6 +136,20 @@ function formatBlockers(blockers) {
   return visible;
 }
 
+function formatInlineList(values) {
+  const list = Array.isArray(values) ? values.filter(hasText) : [];
+
+  if (list.length === 0) {
+    return "none";
+  }
+
+  return formatInline(list.join(", "));
+}
+
 function formatInline(value) {
   return formatSmokeText(value, { fallback: "unknown", maxLength: maxTextLength });
+}
+
+function hasText(value) {
+  return typeof value === "string" && value.length > 0;
 }

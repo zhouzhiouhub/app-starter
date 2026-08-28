@@ -118,7 +118,10 @@ test("release notes render required evidence and gate status", () => {
       acceptedViewportCount: 12,
       componentCount: 6,
       errorCount: 0,
+      issues: [],
       manifestPath: "docs/development/page-builder-visual-acceptance.json",
+      pendingComponents: [],
+      pendingViewports: [],
       status: "accepted",
       viewportCount: 12,
       warningCount: 0,
@@ -130,6 +133,13 @@ test("release notes render required evidence and gate status", () => {
   assert.match(markdown, /Production smoke artifact: `production-smoke-report-123`/);
   assert.match(markdown, /Combined release artifact: `release-evidence-check-123`/);
   assert.match(markdown, /Page Builder Visual: accepted \(6\/6 components, 12\/12 viewports\)/);
+  assert.match(
+    markdown,
+    /Manifest: `docs\/development\/page-builder-visual-acceptance\.json`/,
+  );
+  assert.match(markdown, /Pending components: none/);
+  assert.match(markdown, /Pending viewports: none/);
+  assert.match(markdown, /Visual issues: none/);
   assert.match(markdown, /Rollback target: `main@abcdef1`/);
   assert.match(markdown, /- None/);
 });
@@ -158,6 +168,18 @@ test("release notes require ready evidence unless explicitly allowed", () => {
       acceptedComponentCount: 0,
       acceptedViewportCount: 0,
       componentCount: 6,
+      issues: [
+        {
+          code: "record_needs_evidence",
+          component: "hero-banner",
+          message: "hero-banner is needs-evidence.",
+          severity: "error",
+          viewport: null,
+        },
+      ],
+      manifestPath: "docs/development/page-builder-visual-acceptance.json",
+      pendingComponents: ["hero-banner", "rich-text"],
+      pendingViewports: ["hero-banner.desktop", "hero-banner.mobile"],
       status: "invalid",
       viewportCount: 12,
     },
@@ -175,6 +197,12 @@ test("release notes require ready evidence unless explicitly allowed", () => {
 
   assert.match(markdown, /Status: blocked/);
   assert.match(markdown, /Page Builder Visual: Visual acceptance invalid/);
+  assert.match(markdown, /Pending components: hero-banner, rich-text/);
+  assert.match(markdown, /Pending viewports: hero-banner\.desktop, hero-banner\.mobile/);
+  assert.match(
+    markdown,
+    /Visual issue: hero-banner: record_needs_evidence \(error\) - hero-banner is needs-evidence\./,
+  );
 });
 
 test("release notes command is exposed in package, CI, and release docs", async () => {

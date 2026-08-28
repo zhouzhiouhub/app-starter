@@ -121,7 +121,9 @@ later phases are explicitly approved.
   `release-evidence-check-<run_number>`.
 - `pnpm release:notes -- --release-tag <tag> --workflow-run-url <url> --smoke-artifact production-smoke-report-<run_number> --release-artifact release-evidence-check-<run_number> --visual-artifact page-builder-visual-fixture-<run_number> --storefront-url <url> --rollback-target <target> --output docs/releases/<tag>.md`
   writes the final Markdown release record from the ready
-  `release-evidence-check.v1` artifact.
+  `release-evidence-check.v1` artifact, including the visual manifest path,
+  pending visual evidence lists, and visual issue summary when `--allow-blocked`
+  is used for failure review drafts.
 - The `Production Smoke` workflow can generate the same Markdown release record
   when `release_tag`, `rollback_target`, and `visual_artifact_name` inputs are
   provided.
