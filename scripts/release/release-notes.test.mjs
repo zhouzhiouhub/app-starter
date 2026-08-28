@@ -139,6 +139,20 @@ test("release notes render required evidence and gate status", () => {
   assert.match(markdown, /- None/);
 });
 
+test("release notes reject mismatched smoke source workflow run", () => {
+  const artifact = createReadyReleaseArtifact();
+  artifact.smoke.source = {
+    ...artifact.smoke.source,
+    workflowRunUrl:
+      "https://github.com/zhouzhiouhub/app-starter/actions/runs/987654321",
+  };
+
+  assert.throws(
+    () => createReleaseNotesMarkdown(createReleaseNotesConfig(), artifact),
+    /workflow run URL must match smoke\.source\.workflowRunUrl/,
+  );
+});
+
 function createReadyReleaseArtifact() {
   return {
     blockerCount: 0,
@@ -291,7 +305,7 @@ function createRequiredArgs() {
     "--release-tag",
     "v0.1.0",
     "--workflow-run-url",
-    "https://github.com/zhouzhiouhub/app-starter/actions/runs/123",
+    "https://github.com/zhouzhiouhub/app-starter/actions/runs/123456789",
     "--smoke-artifact",
     "production-smoke-report-123",
     "--release-artifact",

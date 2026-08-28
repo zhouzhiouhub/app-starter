@@ -21,7 +21,7 @@ test("release notes CLI writes a Markdown release record", async () => {
         "--release-tag",
         "v0.1.0",
         "--workflow-run-url",
-        "https://github.com/zhouzhiouhub/app-starter/actions/runs/123",
+        "https://github.com/zhouzhiouhub/app-starter/actions/runs/123456789",
         "--smoke-artifact",
         "production-smoke-report-123",
         "--release-artifact",

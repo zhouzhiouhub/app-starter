@@ -304,6 +304,9 @@ After that artifact is ready, `release:notes` writes the final Markdown release
 record, including the readiness checklist and any recorded
 `visual.artifactCheck` summary plus the production smoke source run, and refuses
 blocked evidence unless `--allow-blocked` is used for a failure review draft.
+When the artifact records `smoke.source.workflowRunUrl`, the CLI
+`--workflow-run-url` must match it so release records cannot point at a
+different GitHub Actions run.
 
 The `Production Smoke` GitHub Actions workflow runs the same command set against
 the protected `production` environment. It sets

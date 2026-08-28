@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
+import { assertReleaseNotesSourceConsistency } from "./release-notes-source-consistency.mjs";
 
 const maxBlockerLines = 12;
 const maxTextLength = 180;
@@ -13,6 +14,8 @@ export function createReleaseNotesMarkdown(config, artifact) {
       "Release notes require a ready release-evidence-check.v1 artifact. Pass --allow-blocked only for failure review drafts.",
     );
   }
+
+  assertReleaseNotesSourceConsistency(config, artifact);
 
   const lines = [
     `# Release ${formatInline(config.releaseTag)}`,

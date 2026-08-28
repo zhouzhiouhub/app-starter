@@ -165,12 +165,12 @@ later phases are explicitly approved.
   visual manifest path, optional `visual.artifactCheck` summary, pending visual
   evidence lists, and visual issue summary when `--allow-blocked` is used for
   failure review drafts. The command validates the artifact's smoke summary,
-  source metadata, traceability groups, readiness checklist, visual counts,
-  optional visual artifact check, pending lists, and issue entries before
-  writing the Markdown record; a ready artifact must also have no blockers,
-  internally consistent smoke status, ready production smoke with source
-  metadata, fully accepted visual evidence with no pending or issue entries, and
-  any recorded visual artifact check must be complete.
+  source metadata, `--workflow-run-url` match, traceability groups, readiness
+  checklist, visual counts, optional visual artifact check, pending lists, and
+  issue entries before writing the Markdown record; a ready artifact must also
+  have no blockers, internally consistent smoke status, ready production smoke
+  with source metadata, fully accepted visual evidence with no pending or issue
+  entries, and any recorded visual artifact check must be complete.
 - The `Production Smoke` workflow can generate the same Markdown release record
   when `release_tag`, `rollback_target`, and `visual_artifact_name` inputs are
   provided. When `allow_blocked_release_notes=true`, the same step passes
