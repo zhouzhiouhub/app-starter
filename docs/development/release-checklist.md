@@ -36,7 +36,9 @@ later phases are explicitly approved.
 - Confirm the smoke admin account is not the documented local default and has
   `audit:read`.
 - Run `pnpm visual:acceptance` and keep the manifest review output with the
-  release notes. For final MVP sign-off, rerun it with `--require-accepted`.
+  release notes. For final MVP sign-off, rerun it with `--require-accepted`;
+  accepted screenshots must be retained under `artifacts/visual/` or
+  `reports/visual/`.
 
 ## Run Production Smoke
 

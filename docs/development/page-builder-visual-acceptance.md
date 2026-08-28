@@ -25,6 +25,11 @@ screenshots, and measured diff values.
 - Accepted viewport evidence needs a design reference, a browser preview
   screenshot, `visualMatchPercent >= 95`, `maxLayoutDeltaPx <= 5`, and
   `maxColorDeltaE <= 3`.
+- Evidence paths must be retained relative image paths. Design references may
+  live under `docs/`, `artifacts/visual/`, or `reports/visual/`; preview
+  screenshots must live under `artifacts/visual/` or `reports/visual/`.
+- Do not use URLs, absolute paths, parent directory segments, transient `tmp/`
+  paths, or non-image files for accepted evidence.
 - Records may stay `needs-evidence` while the renderer exists but the real
   design source or screenshot has not been attached.
 

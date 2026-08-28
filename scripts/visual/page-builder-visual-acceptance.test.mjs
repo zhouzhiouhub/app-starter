@@ -78,6 +78,40 @@ test("visual acceptance rejects accepted records with weak evidence", () => {
   );
 });
 
+test("visual acceptance rejects unsafe evidence paths", () => {
+  const manifest = createAcceptedManifest();
+  manifest.records[0].viewports.desktop.designReference =
+    "https://figma.example.com/file";
+  manifest.records[0].viewports.mobile.previewScreenshot =
+    "../artifacts/visual/hero-mobile.png";
+  manifest.records[1].viewports.desktop.previewScreenshot =
+    "tmp/visual/rich-text-desktop.png";
+  manifest.records[1].viewports.mobile.designReference =
+    "docs/design/rich-text-mobile.svg";
+
+  const report = validatePageBuilderVisualAcceptanceManifest(manifest, {
+    requireAccepted: true,
+  });
+
+  assert.equal(report.status, "invalid");
+  assert.equal(report.errorCount, 6);
+  assert.deepEqual(
+    report.issues.map((issue) => issue.code),
+    [
+      "invalid_evidence_path",
+      "invalid_evidence_path",
+      "record_viewports_not_accepted",
+      "invalid_evidence_path",
+      "invalid_evidence_path",
+      "record_viewports_not_accepted",
+    ],
+  );
+  assert.match(
+    report.issues[0].message,
+    /hero-banner\.desktop\.designReference must be a retained relative image path/,
+  );
+});
+
 test("visual acceptance rejects missing and duplicate section records", () => {
   const manifest = createAcceptedManifest();
   manifest.records = [
@@ -156,7 +190,7 @@ function createAcceptedManifest() {
 
 function createAcceptedViewportEvidence(component, viewport) {
   return {
-    designReference: `design/${component}-${viewport}.png`,
+    designReference: `docs/design/${component}-${viewport}.png`,
     maxColorDeltaE: 2.5,
     maxLayoutDeltaPx: 4,
     previewScreenshot: `artifacts/visual/${component}-${viewport}.png`,

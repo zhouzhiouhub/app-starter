@@ -7,6 +7,7 @@ import {
   createVisualAcceptanceIssue,
   isObject,
 } from "./page-builder-visual-acceptance-targets.mjs";
+import { validateVisualAcceptanceEvidencePath } from "./page-builder-visual-acceptance-evidence-paths.mjs";
 
 export function summarizePageBuilderVisualAcceptanceRecords(
   manifest,
@@ -179,18 +180,16 @@ function validateAcceptedViewportEvidence(
   let valid = true;
 
   for (const field of ["designReference", "previewScreenshot"]) {
-    if (typeof evidence[field] !== "string" || !evidence[field].trim()) {
-      context.issues.push(
-        createVisualAcceptanceIssue(
-          "error",
-          "missing_evidence_path",
-          `${component}.${viewport}.${field} is required for accepted evidence.`,
+    valid =
+      validateVisualAcceptanceEvidencePath(
+        {
           component,
+          field,
+          value: evidence[field],
           viewport,
-        ),
-      );
-      valid = false;
-    }
+        },
+        context,
+      ) && valid;
   }
 
   return [
