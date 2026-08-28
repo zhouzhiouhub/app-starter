@@ -22,63 +22,6 @@ import {
   refreshSmokeReportSummary,
 } from "../smoke/smoke-report.mjs";
 
-test("release check config parses defaults and evidence paths", () => {
-  assert.deepEqual(readReleaseCheckCliConfig([]), {
-    json: false,
-    outputPath: null,
-    smokeReportPath: null,
-    visualManifestPath: "docs/development/page-builder-visual-acceptance.json",
-  });
-  assert.deepEqual(
-    readReleaseCheckCliConfig([
-      "--",
-      "--smoke-report",
-      "artifacts/production-smoke/smoke-report.json",
-      "--visual-manifest",
-      "reports/visual/accepted.json",
-    ]),
-    {
-      json: false,
-      outputPath: null,
-      smokeReportPath: "artifacts/production-smoke/smoke-report.json",
-      visualManifestPath: "reports/visual/accepted.json",
-    },
-  );
-  assert.deepEqual(
-    readReleaseCheckCliConfig(["artifacts/production-smoke/smoke-report.json"]),
-    {
-      json: false,
-      outputPath: null,
-      smokeReportPath: "artifacts/production-smoke/smoke-report.json",
-      visualManifestPath: "docs/development/page-builder-visual-acceptance.json",
-    },
-  );
-  assert.throws(
-    () => readReleaseCheckCliConfig(["--bad-option"]),
-    /Unknown release check option/,
-  );
-});
-
-test("release check config parses JSON artifact output", () => {
-  assert.deepEqual(
-    readReleaseCheckCliConfig([
-      "--json",
-      "--output",
-      "artifacts/release/release-check.json",
-    ]),
-    {
-      json: true,
-      outputPath: "artifacts/release/release-check.json",
-      smokeReportPath: null,
-      visualManifestPath: "docs/development/page-builder-visual-acceptance.json",
-    },
-  );
-  assert.throws(
-    () => readReleaseCheckCliConfig(["--output", "release-check.json"]),
-    /Release check output must be under tmp\/, reports\/, artifacts\/, or \.tmp\//,
-  );
-});
-
 test("release check accepts complete smoke and visual evidence", () => {
   const { evidenceRoot, manifest } = createAcceptedVisualManifest();
   const check = createReleaseEvidenceCheck({

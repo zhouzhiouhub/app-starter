@@ -3,7 +3,9 @@
 import { pathToFileURL } from "node:url";
 import {
   createReleaseEvidenceCheckArtifact,
+  createReleaseEvidenceReadinessChecklist,
   formatReleaseEvidenceCheck,
+  formatReleaseEvidenceReadinessChecklist,
   readReleaseCheckCliConfig,
   readReleaseEvidenceCheck,
   writeReleaseEvidenceCheckArtifact,
@@ -33,6 +35,14 @@ export async function runReleaseCheckCli(args, input = {}) {
         writeLine(line);
       }
 
+      if (config.checklist) {
+        const checklist = createReleaseEvidenceReadinessChecklist(check);
+
+        for (const line of formatReleaseEvidenceReadinessChecklist(checklist)) {
+          writeLine(line);
+        }
+      }
+
       if (config.outputPath) {
         writeLine(`Release evidence artifact written: ${config.outputPath}`);
       }
@@ -56,6 +66,7 @@ function isMainModule() {
 function printHelp(writeLine) {
   writeLine(`Usage:
   pnpm release:check
+  pnpm release:check -- --checklist
   pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json
   pnpm release:check -- --json
   pnpm release:check -- --output artifacts/release/release-check.json
@@ -63,6 +74,7 @@ function printHelp(writeLine) {
 
 Options:
   --latest                   Check the newest archived smoke report (default).
+  --checklist                Print release evidence readiness tasks.
   --json                     Print the machine-readable release evidence report.
   --output <path>            Write a JSON report under tmp/, reports/, artifacts/, or .tmp/.
   --smoke-report <path>      Check a specific production smoke report.

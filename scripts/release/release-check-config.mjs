@@ -4,6 +4,7 @@ import { normalizeSmokeReportPath } from "../smoke/smoke-report-path-config.mjs"
 
 export function readReleaseCheckCliConfig(args) {
   const config = {
+    checklist: false,
     json: false,
     outputPath: null,
     smokeReportPath: null,
@@ -21,6 +22,11 @@ export function readReleaseCheckCliConfig(args) {
 
     if (arg === "--json") {
       config.json = true;
+      continue;
+    }
+
+    if (arg === "--checklist") {
+      config.checklist = true;
       continue;
     }
 

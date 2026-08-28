@@ -100,6 +100,9 @@ later phases are explicitly approved.
 - `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json`
   exits successfully after the production smoke artifact and accepted Page
   Builder visual manifest are both present.
+- `pnpm release:check -- --checklist --smoke-report artifacts/production-smoke/smoke-report.json`
+  prints the Production Smoke, Page Builder Visual, and release notes readiness
+  tasks for release review.
 - `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --output artifacts/release/release-check.json`
   writes the combined `release-evidence-check.v1` artifact for the release
   record.
@@ -120,6 +123,8 @@ later phases are explicitly approved.
   before marking release evidence ready.
 - Run `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json`
   before marking the combined production and visual evidence ready.
+- Run the same command with `--checklist` when the gate is blocked and keep the
+  readiness task output with the failed evidence review.
 - Use the failed check details and suggested fixes from the report review; the
   combined release gate blockers include the Production Smoke artifact action
   and the `pnpm visual:acceptance -- --checklist` command for visual evidence.

@@ -261,6 +261,7 @@ pnpm smoke:report
 pnpm smoke:report -- --list --limit=10
 pnpm smoke:report -- reports/production/smoke-report.json
 pnpm smoke:release-check -- artifacts/production-smoke/smoke-report.json
+pnpm release:check -- --checklist --smoke-report artifacts/production-smoke/smoke-report.json
 pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json
 pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --json
 pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --output artifacts/release/release-check.json
@@ -277,8 +278,10 @@ publish/rollback, SEO, and ISR revalidation.
 After the Page Builder visual manifest has accepted real design evidence,
 `release:check` verifies both evidence streams together: production smoke must
 be release-ready and Page Builder visual acceptance must be fully accepted. Use
-`--json` for machine-readable stdout or `--output` to write the combined
-`release-evidence-check.v1` artifact under a safe archive path.
+`--checklist` to print the remaining Production Smoke, visual acceptance, and
+release notes tasks. Use `--json` for machine-readable stdout or `--output` to
+write the combined `release-evidence-check.v1` artifact under a safe archive
+path.
 After that artifact is ready, `release:notes` writes the final Markdown release
 record and refuses blocked evidence unless `--allow-blocked` is used for a
 failure review draft.

@@ -12,6 +12,10 @@ import {
   createReleaseEvidenceCheckArtifact,
   writeReleaseEvidenceCheckArtifact,
 } from "./release-check-artifact.mjs";
+export {
+  createReleaseEvidenceReadinessChecklist,
+  formatReleaseEvidenceReadinessChecklist,
+} from "./release-check-checklist.mjs";
 import { formatReleaseEvidenceCheck } from "./release-check-report.mjs";
 
 const visualEvidenceAction =

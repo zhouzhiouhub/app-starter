@@ -60,6 +60,42 @@ test("release check CLI writes JSON artifact output", async () => {
   }
 });
 
+test("release check CLI prints readiness checklist in text mode only", async () => {
+  const emptyArchiveRoot = mkdtempSync(path.join(tmpdir(), "release-list-"));
+  const stdout = [];
+  const exitCode = await runReleaseCheckCli(["--checklist"], {
+    smokeRoots: [emptyArchiveRoot],
+    stdout: (line) => stdout.push(line),
+    visualManifest: createPendingVisualManifest(),
+  });
+
+  assert.equal(exitCode, 1);
+  assert.equal(
+    stdout.some((line) => line.includes("Release readiness checklist:")),
+    true,
+  );
+  assert.equal(
+    stdout.some((line) => line.includes("Production Smoke report: blocked")),
+    true,
+  );
+  assert.equal(
+    stdout.some((line) =>
+      line.includes("Page Builder Visual evidence: invalid"),
+    ),
+    true,
+  );
+
+  const jsonStdout = [];
+  await runReleaseCheckCli(["--json", "--checklist"], {
+    smokeRoots: [emptyArchiveRoot],
+    stdout: (line) => jsonStdout.push(line),
+    visualManifest: createPendingVisualManifest(),
+  });
+
+  assert.equal(jsonStdout.length, 1);
+  assert.doesNotMatch(jsonStdout[0], /Release readiness checklist/);
+});
+
 function createPendingVisualManifest() {
   return {
     records: mvpPageBuilderComponents.map((component) => ({
