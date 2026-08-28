@@ -664,6 +664,8 @@ pnpm smoke:report
 pnpm smoke:report -- --list --limit=10
 pnpm smoke:report -- reports/production/smoke-report.json
 pnpm smoke:release-check -- artifacts/production-smoke/smoke-report.json
+pnpm release:check
+pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json
 ```
 
 Page Builder 核心区块视觉验收记录可单独检查：
@@ -684,6 +686,8 @@ GitHub Actions 里新增了 `Page Builder Visual` workflow，会在相关 PR、m
 
 GitHub Actions 里新增了手动触发的 `Production Smoke` workflow，会把报告写到 `artifacts/production-smoke/smoke-report.json`，失败或成功都会执行 `pnpm smoke:report` 和 `pnpm smoke:release-check` 并上传 `production-smoke-report-<run_number>` artifact；发布证据按 [Release Checklist](./docs/development/release-checklist.md) 留存。
 
+最终发布前可运行 `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json` 做统一门禁；它会同时校验生产 Smoke 发布证据和 Page Builder 视觉 accepted 证据。当前缺真实设计参考和生产 smoke artifact 时，该命令会阻塞发布。
+
 ```powershell
 $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 ```
@@ -698,6 +702,7 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 - `pnpm -r --if-present typecheck`
 - `pnpm lint`
 - `pnpm test`
+- `pnpm test:release`
 - `pnpm visual:acceptance`
 - `git diff --check`
 
@@ -769,5 +774,5 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 1. 在真实 R2 / CDN 环境配置 `MEDIA_CDN_BASE_URL`、R2 凭据和 CDN 域名，确认不是 `example` / `test` / `invalid` / 本地 / 私网域名，执行 `pnpm smoke:publish` 并归档 `SMOKE_REPORT_PATH`。
 2. 补齐部署 Smoke Test：前台 Vercel、API 独立 Node 服务、Admin 静态托管、Redis 生产连接、环境变量清单和回滚步骤。
 3. 做 Page Builder 视觉验收：保留最新 `Page Builder Visual` workflow 的 `page-builder-visual-fixture-<run_number>` artifact，补真实浏览器截图留档，并将 `docs/development/page-builder-visual-acceptance.json` 中六个核心区块的 Desktop / Mobile 证据从 `needs-evidence` 推进到 `accepted`。
-4. 在真实生产配置下触发 GitHub Actions `Production Smoke`，把 artifact、`pnpm smoke:report` 输出、`pnpm smoke:release-check` 结果和回滚目标写入发布记录。
+4. 在真实生产配置下触发 GitHub Actions `Production Smoke`，把 artifact、`pnpm smoke:report` 输出、`pnpm smoke:release-check`、`pnpm release:check` 结果和回滚目标写入发布记录。
 5. 保持 Commerce 关闭态，继续强化订单 / 支付关闭态分支、Phase 2 Webhook 验签设计和 `COMMERCE_DISABLED` 错误分支测试；不进入真实交易。

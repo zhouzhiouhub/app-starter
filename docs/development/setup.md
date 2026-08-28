@@ -261,6 +261,7 @@ pnpm smoke:report
 pnpm smoke:report -- --list --limit=10
 pnpm smoke:report -- reports/production/smoke-report.json
 pnpm smoke:release-check -- artifacts/production-smoke/smoke-report.json
+pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json
 ```
 
 The review command scans the same safe archive roots, recomputes the report
@@ -269,6 +270,10 @@ publish-flow traceability before showing failed check details and suggested
 fixes. The release-check command exits non-zero unless the archived report
 proves the required production gates, including R2 upload, Admin static app,
 publish/rollback, SEO, and ISR revalidation.
+
+After the Page Builder visual manifest has accepted real design evidence,
+`release:check` verifies both evidence streams together: production smoke must
+be release-ready and Page Builder visual acceptance must be fully accepted.
 
 The `Production Smoke` GitHub Actions workflow runs the same command set against
 the protected `production` environment. It sets

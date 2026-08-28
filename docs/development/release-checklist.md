@@ -89,6 +89,9 @@ later phases are explicitly approved.
 - The latest `Page Builder Visual` workflow run and
   `page-builder-visual-fixture-<run_number>` artifact are linked when visual
   evidence is part of the release review.
+- `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json`
+  exits successfully after the production smoke artifact and accepted Page
+  Builder visual manifest are both present.
 
 ## Failure Review
 
@@ -96,6 +99,8 @@ later phases are explicitly approved.
 - Run `pnpm smoke:report -- artifacts/production-smoke/smoke-report.json`.
 - Run `pnpm smoke:release-check -- artifacts/production-smoke/smoke-report.json`
   before marking release evidence ready.
+- Run `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json`
+  before marking the combined production and visual evidence ready.
 - Use the failed check details and suggested fixes from the report review.
 - Link both the failed run and the fixed run in the release notes.
 - Do not mark the release ready until a new artifact proves the failed gate is
