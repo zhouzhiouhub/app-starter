@@ -121,6 +121,9 @@ later phases are explicitly approved.
 - When `visual_artifact_run_id` was provided, the Production Smoke workflow log
   shows the Page Builder Visual artifact download before the combined release
   gate.
+- When `visual_artifact_run_id` was provided, the Production Smoke workflow log
+  shows `pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture`
+  passing after the download and before smoke requests continue.
 - `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json`
   exits successfully after the production smoke artifact and accepted Page
   Builder visual manifest are both present.

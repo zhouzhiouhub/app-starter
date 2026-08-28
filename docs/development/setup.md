@@ -301,7 +301,8 @@ uploads `release-evidence-check-<run_number>` with the
 `visual_artifact_run_id` are provided, it downloads that Page Builder Visual
 artifact, including the artifact-local visual manifest and
 `visual-capture-report.json`, to `reports/visual/page-builder-fixture` before
-running the combined gate. The workflow runs `pnpm release:preflight` before smoke requests so a
+running `pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture`
+and the combined gate. The workflow runs `pnpm release:preflight` before smoke requests so a
 partial visual artifact pair or partial release notes input set fails early.
 When `release_tag`,
 `rollback_target`, and `visual_artifact_name` are provided, it runs

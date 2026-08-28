@@ -30,4 +30,5 @@ jobs:
       - run: pnpm release:check -- --help
       - run: pnpm release:notes -- --help
       - run: pnpm release:preflight -- --help
+      - run: pnpm visual:artifact-check -- --help
       - run: pnpm build

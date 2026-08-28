@@ -56,6 +56,7 @@ jobs:
       - run: pnpm visual:capture:fixture -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json --write-manifest
       - run: pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json
       - run: pnpm visual:acceptance -- --checklist --output reports/visual/page-builder-fixture/visual-acceptance-report.json reports/visual/page-builder-fixture/page-builder-visual-acceptance.json
+      - run: pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture
       - name: Write visual evidence summary
         if: always()
         run: |
@@ -67,6 +68,7 @@ jobs:
             echo "- Acceptance: \`pnpm visual:acceptance -- --checklist --output reports/visual/page-builder-fixture/visual-acceptance-report.json reports/visual/page-builder-fixture/page-builder-visual-acceptance.json\`"
             echo "- Acceptance report: \`reports/visual/page-builder-fixture/visual-acceptance-report.json\`"
             echo "- Measurement: \`pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json\`"
+            echo "- Artifact check: \`pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture\`"
             echo "- Artifact: \`page-builder-visual-fixture-${{ github.run_number }}\`"
             echo "- Run id for Production Smoke: \`${{ github.run_id }}\`"
             echo "- Final sign-off still requires real design references and \`pnpm visual:acceptance -- --require-accepted\`."

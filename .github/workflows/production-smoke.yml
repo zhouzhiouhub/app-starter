@@ -133,6 +133,9 @@ jobs:
           run-id: ${{ inputs.visual_artifact_run_id }}
           github-token: ${{ github.token }}
           path: reports/visual/page-builder-fixture
+      - name: Check Page Builder visual evidence artifact
+        if: ${{ inputs.visual_artifact_name != '' && inputs.visual_artifact_run_id != '' }}
+        run: pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture
       - run: pnpm smoke:publish
       - name: Review archived smoke report
         if: always()
@@ -190,6 +193,7 @@ jobs:
             echo "- Combined artifact: \`$RELEASE_CHECK_ARTIFACT_NAME\`"
             if [ -n "$RELEASE_VISUAL_ARTIFACT_NAME" ] && [ -n "$RELEASE_VISUAL_ARTIFACT_RUN_ID" ]; then
               echo "- Visual evidence artifact: \`$RELEASE_VISUAL_ARTIFACT_NAME\` from run \`$RELEASE_VISUAL_ARTIFACT_RUN_ID\`"
+              echo "- Visual artifact check: \`pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture\`"
             else
               echo "- Visual evidence artifact: skipped (set visual_artifact_name and visual_artifact_run_id)"
             fi

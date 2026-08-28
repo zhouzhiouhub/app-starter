@@ -61,6 +61,11 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /run-id: \$\{\{ inputs\.visual_artifact_run_id \}\}/);
   assert.match(workflow, /github-token: \$\{\{ github\.token \}\}/);
   assert.match(workflow, /path: reports\/visual\/page-builder-fixture/);
+  assert.match(workflow, /name: Check Page Builder visual evidence artifact/);
+  assert.match(
+    workflow,
+    /pnpm visual:artifact-check -- --artifact-dir reports\/visual\/page-builder-fixture/,
+  );
   assert.match(
     workflow,
     /pnpm release:check -- --checklist --smoke-report "\$SMOKE_REPORT_PATH" --output "\$RELEASE_CHECK_ARTIFACT_PATH"/,
@@ -88,6 +93,7 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /failure review draft/);
   assert.match(workflow, /ready evidence only/);
   assert.match(workflow, /Visual evidence artifact:/);
+  assert.match(workflow, /Visual artifact check:/);
   assert.match(
     workflow,
     /skipped \(set visual_artifact_name and visual_artifact_run_id\)/,
@@ -137,4 +143,5 @@ test("main CI verifies the smoke report CLI entry point", async () => {
   assert.match(workflow, /pnpm smoke:release-check -- --help/);
   assert.match(workflow, /pnpm release:check -- --help/);
   assert.match(workflow, /pnpm release:preflight -- --help/);
+  assert.match(workflow, /pnpm visual:artifact-check -- --help/);
 });

@@ -680,6 +680,7 @@ pnpm visual:acceptance
 pnpm visual:acceptance -- --checklist
 pnpm visual:acceptance -- --checklist --output reports/visual/page-builder-fixture/visual-acceptance-report.json
 pnpm visual:acceptance -- --require-accepted
+pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture
 pnpm visual:capture
 pnpm visual:capture:fixture
 pnpm visual:measure

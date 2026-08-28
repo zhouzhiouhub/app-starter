@@ -14,6 +14,7 @@ pnpm visual:acceptance -- --checklist
 pnpm visual:acceptance -- --json
 pnpm visual:acceptance -- --checklist --output reports/visual/page-builder-fixture/visual-acceptance-report.json
 pnpm visual:acceptance -- --require-accepted
+pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture
 pnpm visual:capture
 pnpm visual:capture:fixture
 pnpm visual:capture:fixture -- --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json
@@ -49,6 +50,10 @@ the manifest. This resets stale diff metrics and keeps viewport status as
 Pass `--report reports/visual/page-builder-fixture/visual-capture-report.json`
 to keep a structured `page-builder-visual-capture.v1` capture report with the
 browser, output directory, and per-viewport screenshot paths.
+Use `pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture`
+after capture and acceptance report generation to verify the artifact-local
+manifest, capture report, acceptance report, and all 12 screenshot PNGs are
+present and internally consistent.
 
 Reference import expects files named `<component>-<viewport>.png`, such as
 `hero-banner-desktop.png` and `hero-banner-mobile.png`. It is dry-run by
@@ -119,7 +124,9 @@ copies the source manifest to
 executes
 `pnpm visual:capture:fixture -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json --write-manifest`,
 `pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json`, and
-`pnpm visual:acceptance -- --checklist --output reports/visual/page-builder-fixture/visual-acceptance-report.json reports/visual/page-builder-fixture/page-builder-visual-acceptance.json`.
+`pnpm visual:acceptance -- --checklist --output reports/visual/page-builder-fixture/visual-acceptance-report.json reports/visual/page-builder-fixture/page-builder-visual-acceptance.json`,
+then verifies the uploaded bundle with
+`pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture`.
 
 The workflow uploads `page-builder-visual-fixture-<run_number>` with the fixture
 screenshots, an artifact-local manifest with captured `previewScreenshot` paths,
