@@ -54,6 +54,8 @@ screenshots, and measured diff values in the manifest.
   screenshots must live under `artifacts/visual/` or `reports/visual/`.
 - Accepted evidence paths must point to non-empty files retained in the
   repository or release artifact bundle; missing files block sign-off.
+- Evidence paths that are filled before final acceptance are also validated for
+  safe relative path format and retained non-empty image files.
 - Do not use URLs, absolute paths, parent directory segments, transient `tmp/`
   paths, or non-image files for accepted evidence.
 - Records may stay `needs-evidence` while the renderer exists but the real

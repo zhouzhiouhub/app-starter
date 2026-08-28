@@ -144,6 +144,29 @@ test("visual acceptance rejects accepted paths without retained files", () => {
   );
 });
 
+test("visual acceptance validates provided pending evidence paths", () => {
+  const { evidenceRoot, manifest } =
+    createPendingManifestWithProvidedScreenshotFiles();
+  let report = validatePageBuilderVisualAcceptanceManifest(manifest, {
+    evidenceRoot,
+  });
+
+  assert.equal(report.status, "needs-evidence");
+  assert.equal(report.errorCount, 0);
+  assert.equal(report.warningCount, 6);
+
+  manifest.records[0].viewports.desktop.previewScreenshot =
+    "artifacts/visual/missing-preview.png";
+  report = validatePageBuilderVisualAcceptanceManifest(manifest, {
+    evidenceRoot,
+  });
+
+  assert.equal(report.status, "invalid");
+  assert.equal(report.errorCount, 1);
+  assert.equal(report.warningCount, 6);
+  assert.equal(report.issues[0].code, "missing_evidence_file");
+});
+
 test("visual acceptance rejects missing and duplicate section records", () => {
   const { evidenceRoot, manifest } = createAcceptedManifestWithEvidenceFiles();
   manifest.records = [
@@ -232,6 +255,29 @@ function createAcceptedManifestWithEvidenceFiles() {
     for (const viewport of ["desktop", "mobile"]) {
       const evidence = record.viewports[viewport];
       writeFixtureImage(evidenceRoot, evidence.designReference);
+      writeFixtureImage(evidenceRoot, evidence.previewScreenshot);
+    }
+  }
+
+  return { evidenceRoot, manifest };
+}
+
+function createPendingManifestWithProvidedScreenshotFiles() {
+  const manifest = createAcceptedManifest();
+  const evidenceRoot = mkdtempSync(
+    path.join(tmpdir(), "page-builder-visual-acceptance-pending-"),
+  );
+
+  for (const record of manifest.records) {
+    record.status = "needs-evidence";
+
+    for (const viewport of ["desktop", "mobile"]) {
+      const evidence = record.viewports[viewport];
+      evidence.designReference = null;
+      evidence.maxColorDeltaE = null;
+      evidence.maxLayoutDeltaPx = null;
+      evidence.status = "needs-evidence";
+      evidence.visualMatchPercent = null;
       writeFixtureImage(evidenceRoot, evidence.previewScreenshot);
     }
   }
