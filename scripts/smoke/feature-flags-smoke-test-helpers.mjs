@@ -180,9 +180,15 @@ export function createFeatureFlagSmokeFetch(options = {}) {
         (url.endsWith("/products/smoke-product") && init.method === "PATCH") ||
         (url.endsWith("/products") && init.method === "POST")
       ) {
+        const isCreate = url.endsWith("/products") && init.method === "POST";
+
         return jsonResponse(
           {
             code: "COMMERCE_DISABLED",
+            details: commerceDisabledDetails({
+              action: isCreate ? "create" : "update",
+              resource: "product",
+            }),
             message: "Product writes are reserved.",
           },
           { status: 409, statusText: "Conflict" },
@@ -192,6 +198,7 @@ export function createFeatureFlagSmokeFetch(options = {}) {
       return jsonResponse(
         {
           code: "COMMERCE_DISABLED",
+          details: commerceDisabledDetails(readPublicCommerceDisabledRoute(url)),
           message: "Commerce is disabled.",
         },
         { status: 409, statusText: "Conflict" },
@@ -220,6 +227,29 @@ export function createFeatureFlagSmokeFetch(options = {}) {
 
     return jsonResponse({}, { status: 404, statusText: "Not Found" });
   };
+}
+
+function commerceDisabledDetails(input) {
+  return {
+    action: input.action,
+    commerceEnabled: false,
+    reservedPhase: "phase-2",
+    resource: input.resource,
+    writable: false,
+    writeDisabledCode: "COMMERCE_DISABLED",
+  };
+}
+
+function readPublicCommerceDisabledRoute(url) {
+  if (url.endsWith("/public/cart")) {
+    return { action: "add-to-cart", resource: "cart" };
+  }
+
+  if (url.endsWith("/public/checkout")) {
+    return { action: "checkout", resource: "checkout" };
+  }
+
+  return { action: "receive-webhook", resource: "stripe-webhook" };
 }
 
 export function jsonResponse(body, init = {}) {

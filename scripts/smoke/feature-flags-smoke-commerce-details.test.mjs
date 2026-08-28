@@ -305,6 +305,80 @@ test("feature flag smoke rejects admin product write placeholder drift", async (
   );
 });
 
+test("feature flag smoke rejects missing commerce disabled details", async () => {
+  await withFetch(
+    createFeatureFlagSmokeFetch({
+      overrides: {
+        "/public/cart": () =>
+          jsonResponse(
+            {
+              code: "COMMERCE_DISABLED",
+              message: "Commerce is disabled.",
+            },
+            { status: 409, statusText: "Conflict" },
+          ),
+      },
+    }),
+    async () => {
+      await assert.rejects(
+        () =>
+          assertFeatureFlagsDisabled(
+            {
+              apiBaseUrl: "https://api.example.com/api/v1",
+            },
+            "access-token",
+          ),
+        /public\/cart did not expose Commerce disabled details\./,
+      );
+    },
+  );
+});
+
+test("feature flag smoke rejects commerce disabled detail drift safely", async () => {
+  await withFetch(
+    createFeatureFlagSmokeFetch({
+      overrides: {
+        "/webhooks/stripe": () =>
+          jsonResponse(
+            {
+              code: "COMMERCE_DISABLED",
+              details: {
+                action: "receive-webhook",
+                commerceEnabled: false,
+                leakedSignature: "smoke-signature",
+                reservedPhase: "phase-2",
+                resource: "stripe-webhook",
+                writable: false,
+                writeDisabledCode: "COMMERCE_DISABLED",
+              },
+              message: "Commerce is disabled.",
+            },
+            { status: 409, statusText: "Conflict" },
+          ),
+      },
+    }),
+    async () => {
+      await assert.rejects(
+        () =>
+          assertFeatureFlagsDisabled(
+            {
+              apiBaseUrl: "https://api.example.com/api/v1",
+            },
+            "access-token",
+          ),
+        (error) => {
+          assert.match(
+            error.message,
+            /webhooks\/stripe exposed unexpected Commerce disabled detail keys\./,
+          );
+          assert.equal(error.message.includes("smoke-signature"), false);
+          return true;
+        },
+      );
+    },
+  );
+});
+
 function assertDetailPlaceholderCall(call) {
   assert.ok(call);
   assert.equal(call.init.method, "GET");

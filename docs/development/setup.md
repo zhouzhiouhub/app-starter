@@ -310,8 +310,9 @@ back to the seeded admin), verifies the MVP disabled feature flags
 Market / Locale / Translation read placeholders, Products / Orders / Payments
 empty placeholders, Product Variant / Price / Inventory subresource
 placeholders with disabled Commerce metadata, Order / Payment detail 404
-placeholders, the public product detail 404 placeholder, and the Stripe Webhook
-placeholder, saves a draft, creates a
+placeholders, the public product detail 404 placeholder, Commerce write, cart,
+checkout, and Webhook disabled details, and the Stripe Webhook placeholder,
+saves a draft, creates a
 Preview Token, checks the public preview API and Web `/preview` route,
 publishes a unique page through the Admin API, publishes a rollback candidate,
 rolls back to the first published version, verifies
