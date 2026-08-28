@@ -130,6 +130,33 @@ test("smoke release check blocks weak starter page evidence details", () => {
   );
 });
 
+test("smoke release check blocks starter page title and path drift", () => {
+  const report = createCompleteReleaseReport();
+  const starterCheck = report.checks.find(
+    (check) => check.name === "starter-pages.published",
+  );
+  const privacyApiPage = starterCheck.details.publicPages.find(
+    (page) => page.slug === "privacy",
+  );
+  const termsStorefrontPage = starterCheck.details.storefrontPages.find(
+    (page) => page.slug === "terms",
+  );
+
+  privacyApiPage.title = "Privacy";
+  termsStorefrontPage.path = "/en/legal/terms";
+  refreshSmokeReportSummary(report);
+
+  const result = createSmokeReleaseCheck({ report });
+
+  assert.equal(result.releaseReady, false);
+  assert.equal(
+    result.blockers.some((blocker) =>
+      blocker.action.includes('seeded privacy public API title="Privacy Policy"'),
+    ),
+    true,
+  );
+});
+
 test("smoke release check parses pnpm separator and explicit path", () => {
   assert.deepEqual(readSmokeReleaseCheckCliConfig(["--", "--latest"]), {
     reportPath: null,
