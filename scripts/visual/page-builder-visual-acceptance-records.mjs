@@ -93,7 +93,13 @@ function summarizeRecord(component, record, context) {
         component,
       ),
     );
-    return createRecordSummary(component, false, 0, "missing");
+    return createRecordSummary(
+      component,
+      false,
+      0,
+      "missing",
+      createMissingViewportSummaries(),
+    );
   }
 
   const status = readRecordStatus(record, component, context.issues);
@@ -114,6 +120,7 @@ function summarizeRecord(component, record, context) {
     accepted,
     acceptedViewportCount,
     status,
+    viewportSummaries,
   );
 }
 
@@ -199,6 +206,20 @@ function readRecordStatus(record, label, issues) {
   return record.status;
 }
 
-function createRecordSummary(component, accepted, acceptedViewportCount, status) {
-  return { accepted, acceptedViewportCount, component, status };
+function createRecordSummary(
+  component,
+  accepted,
+  acceptedViewportCount,
+  status,
+  viewports,
+) {
+  return { accepted, acceptedViewportCount, component, status, viewports };
+}
+
+function createMissingViewportSummaries() {
+  return pageBuilderVisualAcceptanceViewports.map((viewport) => ({
+    accepted: false,
+    status: "missing",
+    viewport,
+  }));
 }

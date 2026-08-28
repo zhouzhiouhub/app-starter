@@ -68,7 +68,35 @@ test("release check creates bounded JSON artifacts", () => {
   );
   assert.equal(artifact.visual.status, "accepted");
   assert.equal(artifact.visual.acceptedViewportCount, 12);
+  assert.deepEqual(artifact.visual.issues, []);
+  assert.deepEqual(artifact.visual.pendingComponents, []);
+  assert.deepEqual(artifact.visual.pendingViewports, []);
   assert.equal(artifact.blockerCount, 0);
+});
+
+test("release check artifact records visual evidence gaps", () => {
+  const check = createReleaseEvidenceCheck({
+    smokeArtifact: {
+      path: "artifacts/production-smoke/smoke-report.json",
+      report: createCompleteReleaseReport(),
+    },
+    visualManifest: createPendingVisualManifest(),
+    visualManifestPath: "docs/development/page-builder-visual-acceptance.json",
+  });
+  const artifact = createReleaseEvidenceCheckArtifact(check, {
+    generatedAt: "2026-08-28T00:00:00.000Z",
+  });
+
+  assert.equal(artifact.status, "blocked");
+  assert.equal(artifact.visual.issueCount, 6);
+  assert.equal(artifact.visual.issues[0].code, "record_needs_evidence");
+  assert.equal(artifact.visual.issues[0].component, "hero-banner");
+  assert.deepEqual(artifact.visual.pendingComponents, mvpPageBuilderComponents);
+  assert.equal(artifact.visual.pendingViewports.length, 12);
+  assert.deepEqual(artifact.visual.pendingViewports.slice(0, 2), [
+    "hero-banner.desktop",
+    "hero-banner.mobile",
+  ]);
 });
 
 test("release check blocks pending Page Builder visual evidence", () => {

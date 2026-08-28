@@ -28,6 +28,10 @@ test("visual acceptance manifest covers every MVP core section", async () => {
     report.records.map((record) => record.component),
     mvpPageBuilderComponents,
   );
+  assert.deepEqual(report.records[0].viewports, [
+    { accepted: false, status: "needs-evidence", viewport: "desktop" },
+    { accepted: false, status: "needs-evidence", viewport: "mobile" },
+  ]);
 });
 
 test("visual acceptance require accepted mode blocks pending records", async () => {
