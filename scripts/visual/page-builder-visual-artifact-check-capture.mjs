@@ -3,7 +3,11 @@ import {
   pageBuilderVisualAcceptanceViewports,
 } from "./page-builder-visual-acceptance.mjs";
 import { pageBuilderVisualCaptureSchemaVersion } from "./page-builder-visual-capture-artifact.mjs";
-import { validatePageBuilderVisualScreenshotFile } from "./page-builder-visual-capture-browser.mjs";
+import {
+  pageBuilderVisualCaptureDefaultHeight,
+  pageBuilderVisualCaptureViewportWidths,
+} from "./page-builder-visual-capture-constants.mjs";
+import { decodePngImage } from "./png-image-reader.mjs";
 import {
   addArtifactCheckIssue,
   isObject,
@@ -168,15 +172,27 @@ function validateScreenshotFile(screenshot, key, context) {
       return;
     }
 
-    validatePageBuilderVisualScreenshotFile(resolvedPath, {
-      readFile: context.readFile,
-    });
+    const image = decodePngImage(
+      readScreenshotBuffer(resolvedPath, context),
+      evidencePath,
+    );
 
     if (screenshot.bytes !== stats.size) {
       addArtifactCheckIssue(
         context,
         "screenshot_size_mismatch",
         `${key} screenshot bytes do not match.`,
+      );
+      return;
+    }
+
+    if (!hasExpectedScreenshotDimensions(image, screenshot.viewport)) {
+      addArtifactCheckIssue(
+        context,
+        "screenshot_dimensions_mismatch",
+        `${key} screenshot dimensions must be ${readExpectedDimensionsLabel(
+          screenshot.viewport,
+        )}; got ${image.width}x${image.height}.`,
       );
       return;
     }
@@ -189,4 +205,20 @@ function validateScreenshotFile(screenshot, key, context) {
       `${key} screenshot is not a retained PNG file: ${readErrorMessage(error)}`,
     );
   }
+}
+
+function readScreenshotBuffer(resolvedPath, context) {
+  const body = context.readFile(resolvedPath);
+  return Buffer.isBuffer(body) ? body : Buffer.from(body);
+}
+
+function hasExpectedScreenshotDimensions(image, viewport) {
+  return (
+    image.width === pageBuilderVisualCaptureViewportWidths[viewport] &&
+    image.height === pageBuilderVisualCaptureDefaultHeight
+  );
+}
+
+function readExpectedDimensionsLabel(viewport) {
+  return `${pageBuilderVisualCaptureViewportWidths[viewport]}x${pageBuilderVisualCaptureDefaultHeight}`;
 }

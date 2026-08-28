@@ -53,7 +53,7 @@ browser, output directory, and per-viewport screenshot paths.
 Use `pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture`
 after capture and acceptance report generation to verify the artifact-local
 manifest, capture report, acceptance report, and all 12 screenshot PNGs are
-present and internally consistent.
+present, internally consistent, decodable, and sized to the capture viewport.
 
 Reference import expects files named `<component>-<viewport>.png`, such as
 `hero-banner-desktop.png` and `hero-banner-mobile.png`. It is dry-run by
@@ -172,6 +172,9 @@ exported by browser screenshots and design tools.
   screenshots must live under `artifacts/visual/` or `reports/visual/`.
 - Accepted evidence paths must point to non-empty files retained in the
   repository or release artifact bundle; missing files block sign-off.
+- Preview screenshots retained in a Page Builder Visual artifact must be
+  decodable PNG files sized to the capture viewport: desktop `1440x1000` and
+  mobile `390x1000`.
 - Evidence paths that are filled before final acceptance are also validated for
   safe relative path format and retained non-empty image files.
 - Do not use URLs, absolute paths, parent directory segments, transient `tmp/`

@@ -44,7 +44,9 @@ later phases are explicitly approved.
   metrics. For final MVP sign-off, rerun `pnpm visual:acceptance` with
   `--require-accepted`; accepted screenshots must be retained under
   `artifacts/visual/` or `reports/visual/`, and every referenced evidence file
-  must exist and be non-empty.
+  must exist and be non-empty. Screenshots inside a Page Builder Visual artifact
+  must also be decodable PNGs sized to the capture viewport: desktop
+  `1440x1000` and mobile `390x1000`.
 - For local screenshot capture, start Web with
   `ENABLE_VISUAL_ACCEPTANCE_FIXTURE=true` and use
   `/visual-acceptance?viewport=desktop` plus
@@ -146,7 +148,8 @@ later phases are explicitly approved.
   `visual.pendingViewports`, and `visual.issues` identify any remaining Page
   Builder visual evidence gaps when the gate is blocked. When
   `--visual-artifact-dir` is provided, the same artifact includes
-  `visual.artifactCheck` with required file, screenshot, and issue counts.
+  `visual.artifactCheck` with required file, validated screenshot, and issue
+  counts.
 - The `Production Smoke` workflow uploads the same combined release evidence as
   `release-evidence-check-<run_number>`.
 - `pnpm release:notes -- --release-tag <tag> --workflow-run-url <url> --smoke-artifact production-smoke-report-<run_number> --release-artifact release-evidence-check-<run_number> --visual-artifact page-builder-visual-fixture-<run_number> --storefront-url <url> --rollback-target <target> --output docs/releases/<tag>.md`
