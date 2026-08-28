@@ -268,6 +268,7 @@ pnpm smoke:release-check -- artifacts/production-smoke/smoke-report.json
 pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete
 pnpm release:preflight
 pnpm release:check -- --checklist --smoke-report artifacts/production-smoke/smoke-report.json
+pnpm release:check -- --checklist --all-visual-tasks --smoke-report artifacts/production-smoke/smoke-report.json
 pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json
 pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture
 pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --json
@@ -303,11 +304,12 @@ After the Page Builder visual manifest has accepted real design evidence,
 `release:check` verifies both evidence streams together: production smoke must
 be release-ready and Page Builder visual acceptance must be fully accepted. Use
 `--checklist` to print the remaining Production Smoke, visual acceptance, and
-release notes tasks. Use `--json` for machine-readable stdout or `--output` to
-write the combined `release-evidence-check.v1` artifact under a safe archive
-path; new artifacts also include a structured `readinessChecklist` with the
-same release tasks plus `smoke.source` metadata for CI artifacts and release
-records.
+release notes tasks; add `--all-visual-tasks` when the release review needs
+every pending Page Builder viewport task instead of the default short list. Use
+`--json` for machine-readable stdout or `--output` to write the combined
+`release-evidence-check.v1` artifact under a safe archive path; new artifacts
+also include a structured `readinessChecklist` with the same release tasks plus
+`smoke.source` metadata for CI artifacts and release records.
 When the release uses a downloaded Page Builder Visual artifact, add
 `--visual-artifact-dir reports/visual/page-builder-fixture`; the combined gate
 then verifies the artifact-local manifest, capture report, acceptance report,

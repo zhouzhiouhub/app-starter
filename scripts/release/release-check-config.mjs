@@ -6,6 +6,7 @@ import { normalizeSmokeReportPath } from "../smoke/smoke-report-path-config.mjs"
 
 export function readReleaseCheckCliConfig(args) {
   const config = {
+    allVisualTasks: false,
     checklist: false,
     json: false,
     outputPath: null,
@@ -31,6 +32,11 @@ export function readReleaseCheckCliConfig(args) {
 
     if (arg === "--checklist") {
       config.checklist = true;
+      continue;
+    }
+
+    if (arg === "--all-visual-tasks") {
+      config.allVisualTasks = true;
       continue;
     }
 

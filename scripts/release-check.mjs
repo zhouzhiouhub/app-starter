@@ -36,7 +36,9 @@ export async function runReleaseCheckCli(args, input = {}) {
       }
 
       if (config.checklist) {
-        const checklist = createReleaseEvidenceReadinessChecklist(check);
+        const checklist = createReleaseEvidenceReadinessChecklist(check, {
+          includeAllVisualTasks: config.allVisualTasks,
+        });
 
         for (const line of formatReleaseEvidenceReadinessChecklist(checklist)) {
           writeLine(line);
@@ -67,6 +69,7 @@ function printHelp(writeLine) {
   writeLine(`Usage:
   pnpm release:check
   pnpm release:check -- --checklist
+  pnpm release:check -- --checklist --all-visual-tasks
   pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json
   pnpm release:check -- --visual-artifact-dir reports/visual/page-builder-fixture
   pnpm release:check -- --json
@@ -74,6 +77,7 @@ function printHelp(writeLine) {
   pnpm release:check -- artifacts/production-smoke/smoke-report.json
 
 Options:
+  --all-visual-tasks        Show every Page Builder visual task with --checklist.
   --latest                   Check the newest archived smoke report (default).
   --checklist                Print release evidence readiness tasks.
   --json                     Print the machine-readable release evidence report.

@@ -18,6 +18,7 @@ test("release check CLI help explains visual artifact input", async () => {
   const help = stdout.join("\n");
 
   assert.equal(exitCode, 0);
+  assert.match(help, /--all-visual-tasks/);
   assert.match(help, /--visual-artifact-dir <dir>/);
   assert.match(help, /downloaded Page Builder Visual artifact/);
 });
@@ -109,6 +110,24 @@ test("release check CLI prints readiness checklist in text mode only", async () 
 
   assert.equal(jsonStdout.length, 1);
   assert.doesNotMatch(jsonStdout[0], /Release readiness checklist/);
+});
+
+test("release check CLI can print every visual checklist task", async () => {
+  const emptyArchiveRoot = mkdtempSync(path.join(tmpdir(), "release-full-list-"));
+  const stdout = [];
+  const exitCode = await runReleaseCheckCli(
+    ["--checklist", "--all-visual-tasks"],
+    {
+      smokeRoots: [emptyArchiveRoot],
+      stdout: (line) => stdout.push(line),
+      visualManifest: createPendingVisualManifest(),
+    },
+  );
+  const output = stdout.join("\n");
+
+  assert.equal(exitCode, 1);
+  assert.match(output, /spec-table\.mobile/);
+  assert.doesNotMatch(output, /\.\.\. and \d+ more visual viewport tasks/);
 });
 
 function createPendingVisualManifest() {

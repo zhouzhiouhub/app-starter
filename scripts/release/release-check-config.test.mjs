@@ -4,6 +4,7 @@ import { readReleaseCheckCliConfig } from "./release-check.mjs";
 
 test("release check config parses defaults and evidence paths", () => {
   assert.deepEqual(readReleaseCheckCliConfig([]), {
+    allVisualTasks: false,
     checklist: false,
     json: false,
     outputPath: null,
@@ -14,6 +15,7 @@ test("release check config parses defaults and evidence paths", () => {
   assert.deepEqual(
     readReleaseCheckCliConfig([
       "--",
+      "--all-visual-tasks",
       "--smoke-report",
       "artifacts/production-smoke/smoke-report.json",
       "--visual-manifest",
@@ -21,6 +23,7 @@ test("release check config parses defaults and evidence paths", () => {
       "--checklist",
     ]),
     {
+      allVisualTasks: true,
       checklist: true,
       json: false,
       outputPath: null,
@@ -35,6 +38,7 @@ test("release check config parses defaults and evidence paths", () => {
       "reports/visual/page-builder-fixture",
     ]),
     {
+      allVisualTasks: false,
       checklist: false,
       json: false,
       outputPath: null,
@@ -52,6 +56,7 @@ test("release check config parses defaults and evidence paths", () => {
       "reports/visual/accepted.json",
     ]),
     {
+      allVisualTasks: false,
       checklist: false,
       json: false,
       outputPath: null,
@@ -63,6 +68,7 @@ test("release check config parses defaults and evidence paths", () => {
   assert.deepEqual(
     readReleaseCheckCliConfig(["artifacts/production-smoke/smoke-report.json"]),
     {
+      allVisualTasks: false,
       checklist: false,
       json: false,
       outputPath: null,
@@ -93,6 +99,7 @@ test("release check config parses JSON artifact output", () => {
       "artifacts/release/release-check.json",
     ]),
     {
+      allVisualTasks: false,
       checklist: false,
       json: true,
       outputPath: "artifacts/release/release-check.json",

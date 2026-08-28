@@ -3,11 +3,11 @@ import { formatSmokeText } from "../smoke/smoke-text.mjs";
 const maxChecklistLineLength = 420;
 const maxVisibleVisualTasks = 2;
 
-export function createReleaseEvidenceReadinessChecklist(check) {
+export function createReleaseEvidenceReadinessChecklist(check, options = {}) {
   return {
     items: [
       createSmokeChecklistItem(check),
-      createVisualChecklistItem(check),
+      createVisualChecklistItem(check, options),
       createReleaseNotesChecklistItem(check),
     ],
     releaseReady: check.releaseReady,
@@ -51,7 +51,7 @@ function createSmokeChecklistItem(check) {
   };
 }
 
-function createVisualChecklistItem(check) {
+function createVisualChecklistItem(check, options) {
   const detail = [
     `${check.visual.acceptedComponentCount}/${check.visual.componentCount} components`,
     `${check.visual.acceptedViewportCount}/${check.visual.viewportCount} viewports`,
@@ -73,7 +73,7 @@ function createVisualChecklistItem(check) {
     detail,
     label: "Page Builder Visual evidence",
     status: check.visual.status,
-    tasks: readVisibleVisualTasks(check.visualChecklist),
+    tasks: readVisibleVisualTasks(check.visualChecklist, options),
   };
 }
 
@@ -102,16 +102,20 @@ function readFirstBlockerAction(check, area) {
   );
 }
 
-function readVisibleVisualTasks(checklist) {
+function readVisibleVisualTasks(checklist, options) {
   const tasks = readPendingVisualTasks(checklist);
 
   if (tasks.length === 0) {
     return null;
   }
 
+  const visibleTaskCount = options.includeAllVisualTasks
+    ? tasks.length
+    : maxVisibleVisualTasks;
+
   return {
-    hiddenCount: Math.max(0, tasks.length - maxVisibleVisualTasks),
-    items: tasks.slice(0, maxVisibleVisualTasks).map(createVisualTaskSummary),
+    hiddenCount: Math.max(0, tasks.length - visibleTaskCount),
+    items: tasks.slice(0, visibleTaskCount).map(createVisualTaskSummary),
   };
 }
 
@@ -164,7 +168,7 @@ function formatVisualTasks(item) {
 
   if (item.tasks.hiddenCount > 0) {
     lines.push(
-      `      - ... and ${item.tasks.hiddenCount} more visual viewport tasks`,
+      `      - ... and ${item.tasks.hiddenCount} more visual viewport tasks. Use --all-visual-tasks with --checklist to list every visual task.`,
     );
   }
 

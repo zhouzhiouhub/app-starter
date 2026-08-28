@@ -70,7 +70,41 @@ test("release readiness checklist carries blocker actions", () => {
   );
   assert.match(lines, /Capture: pnpm visual:capture:fixture/);
   assert.match(lines, /\.\.\. and 1 more visual viewport tasks/);
+  assert.match(lines, /Use --all-visual-tasks with --checklist/);
   assert.match(lines, /Release notes record: waiting for evidence/);
+});
+
+test("release readiness checklist can include every visual task", () => {
+  const checklist = createReleaseEvidenceReadinessChecklist(
+    {
+      blockers: [
+        {
+          action: "Run pnpm visual:acceptance -- --checklist.",
+          area: "Page Builder Visual",
+          label: "invalid",
+        },
+      ],
+      releaseReady: false,
+      smoke: {
+        path: "artifacts/production-smoke/smoke-report.json",
+        releaseReady: true,
+      },
+      visual: {
+        acceptedComponentCount: 0,
+        acceptedViewportCount: 0,
+        componentCount: 6,
+        status: "needs-evidence",
+        viewportCount: 12,
+      },
+      visualChecklist: createVisualChecklist(),
+    },
+    { includeAllVisualTasks: true },
+  );
+  const lines = formatReleaseEvidenceReadinessChecklist(checklist).join("\n");
+
+  assert.match(lines, /hero-banner\.desktop/);
+  assert.match(lines, /rich-text\.desktop/);
+  assert.doesNotMatch(lines, /\.\.\. and \d+ more visual viewport tasks/);
 });
 
 function createVisualChecklist() {
