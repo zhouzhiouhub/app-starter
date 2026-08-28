@@ -168,8 +168,9 @@ later phases are explicitly approved.
   writes the final Markdown release record from the ready
   `release-evidence-check.v1` artifact, including the readiness checklist,
   visual manifest path, optional `visual.artifactCheck` summary, pending visual
-  evidence lists, and visual issue summary when `--allow-blocked` is used for
-  failure review drafts. The command validates the artifact's smoke summary,
+  evidence lists, visual checklist task summary, and visual issue summary when
+  `--allow-blocked` is used for failure review drafts. The command validates
+  the artifact's smoke summary,
   source metadata, `--workflow-run-url` match, smoke artifact name run-number
   match, traceability groups, readiness checklist, visual counts, optional
   visual artifact check, pending lists, and issue entries before writing the

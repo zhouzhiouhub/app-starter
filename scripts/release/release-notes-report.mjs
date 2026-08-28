@@ -2,6 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { assertReleaseNotesSourceConsistency } from "./release-notes-source-consistency.mjs";
+import { formatVisualChecklist } from "./release-notes-visual-checklist-report.mjs";
 
 const maxBlockerLines = 12;
 const maxTextLength = 180;
@@ -111,6 +112,7 @@ function formatVisualEvidence(visual) {
     `- Manifest: \`${formatInline(visual.manifestPath)}\``,
     `- Pending components: ${formatInlineList(visual.pendingComponents)}`,
     `- Pending viewports: ${formatInlineList(visual.pendingViewports)}`,
+    ...formatVisualChecklist(visual.checklist),
     ...formatVisualArtifactCheck(visual.artifactCheck),
     ...formatVisualIssues(visual.issues),
   ];
