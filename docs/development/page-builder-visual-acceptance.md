@@ -21,8 +21,10 @@ pnpm visual:references -- --source-dir docs/visual/page-builder-references --wri
 
 Use the default command while collecting evidence. Use `--checklist` to print
 the per-component Desktop and Mobile evidence tasks that still block release
-sign-off. Use `--require-accepted` for release sign-off after every core section
-has design references, preview screenshots, and measured diff values. Use
+sign-off, including unsafe paths, missing retained files, and empty image files
+for any evidence path that has already been filled. Use `--require-accepted`
+for release sign-off after every core section has design references, preview
+screenshots, and measured diff values. Use
 `pnpm visual:capture` after starting the Web app with the fixture flag to
 refresh the component-level browser screenshots referenced by the manifest. Use
 `pnpm visual:capture:fixture` for the full local workflow: build Web, start the

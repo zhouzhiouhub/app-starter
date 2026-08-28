@@ -2,16 +2,25 @@ import {
   mvpPageBuilderComponents,
   pageBuilderVisualAcceptanceViewports,
 } from "./page-builder-visual-acceptance-constants.mjs";
+import { validateVisualAcceptanceEvidencePath } from "./page-builder-visual-acceptance-evidence-paths.mjs";
 import {
   isObject,
   readPageBuilderVisualAcceptanceTargets,
 } from "./page-builder-visual-acceptance-targets.mjs";
 
-export function createPageBuilderVisualAcceptanceChecklist(manifest) {
+const evidencePathFields = ["designReference", "previewScreenshot"];
+
+export function createPageBuilderVisualAcceptanceChecklist(
+  manifest,
+  options = {},
+) {
   const issues = [];
   const targets = isObject(manifest)
     ? readPageBuilderVisualAcceptanceTargets(manifest, issues)
     : readPageBuilderVisualAcceptanceTargets({}, issues);
+  const context = {
+    evidenceRoot: options.evidenceRoot ?? process.cwd(),
+  };
   const records = Array.isArray(manifest?.records) ? manifest.records : [];
   const byComponent = new Map(
     records
@@ -19,7 +28,12 @@ export function createPageBuilderVisualAcceptanceChecklist(manifest) {
       .map((record) => [record.component, record]),
   );
   const components = mvpPageBuilderComponents.map((component) =>
-    createComponentChecklist(component, byComponent.get(component), targets),
+    createComponentChecklist(
+      component,
+      byComponent.get(component),
+      targets,
+      context,
+    ),
   );
   const viewportCount =
     mvpPageBuilderComponents.length * pageBuilderVisualAcceptanceViewports.length;
@@ -61,7 +75,7 @@ export function formatPageBuilderVisualAcceptanceChecklist(checklist) {
   return lines;
 }
 
-function createComponentChecklist(component, record, targets) {
+function createComponentChecklist(component, record, targets, context) {
   if (!isObject(record)) {
     return {
       component,
@@ -81,6 +95,7 @@ function createComponentChecklist(component, record, targets) {
         viewport,
         record.viewports?.[viewport],
         targets,
+        context,
       ),
     ),
   };
@@ -104,13 +119,19 @@ function createMissingViewportChecklist(component, viewport, targets) {
   };
 }
 
-function createViewportChecklist(component, viewport, evidence, targets) {
+function createViewportChecklist(
+  component,
+  viewport,
+  evidence,
+  targets,
+  context,
+) {
   if (!isObject(evidence)) {
     return createMissingViewportChecklist(component, viewport, targets);
   }
 
   const missing = [
-    ...collectPathTasks(evidence),
+    ...collectPathTasks(component, viewport, evidence, context),
     ...collectMetricTasks(evidence, targets),
     ...collectStatusTasks(evidence),
   ];
@@ -124,18 +145,49 @@ function createViewportChecklist(component, viewport, evidence, targets) {
   };
 }
 
-function collectPathTasks(evidence) {
-  const tasks = [];
+function collectPathTasks(component, viewport, evidence, context) {
+  return evidencePathFields
+    .map((field) =>
+      readEvidencePathTask(component, viewport, field, evidence[field], context),
+    )
+    .filter(Boolean);
+}
 
-  if (isUnset(evidence.designReference)) {
-    tasks.push("designReference");
+function readEvidencePathTask(component, viewport, field, value, context) {
+  if (isUnset(value)) {
+    return field;
   }
 
-  if (isUnset(evidence.previewScreenshot)) {
-    tasks.push("previewScreenshot");
+  const issues = [];
+  const valid = validateVisualAcceptanceEvidencePath(
+    { component, field, value, viewport },
+    {
+      evidenceRoot: context.evidenceRoot,
+      issues,
+    },
+  );
+
+  if (valid) {
+    return null;
   }
 
-  return tasks;
+  return `${field} ${readEvidencePathRequirement(issues[0]?.code)}`;
+}
+
+function readEvidencePathRequirement(code) {
+  if (code === "invalid_evidence_path") {
+    return "safe retained image path";
+  }
+
+  if (code === "missing_evidence_file") {
+    return "retained image file exists";
+  }
+
+  if (code === "invalid_evidence_file") {
+    return "non-empty image file";
+  }
+
+  return "valid retained image file";
 }
 
 function collectMetricTasks(evidence, targets) {
