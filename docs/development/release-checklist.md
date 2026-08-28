@@ -45,7 +45,9 @@ later phases are explicitly approved.
   `/visual-acceptance?viewport=desktop` plus
   `/visual-acceptance?viewport=mobile`. Add
   `&component=<hero-banner|rich-text|image-gallery|cta-bar|faq|spec-table>` for
-  component-level evidence. Keep the flag disabled outside the capture session.
+  component-level evidence, or run `pnpm visual:capture` to refresh every
+  component screenshot path referenced by the manifest. Keep the flag disabled
+  outside the capture session.
 
 ## Run Production Smoke
 

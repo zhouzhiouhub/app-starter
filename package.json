@@ -26,6 +26,7 @@
     "test:visual": "node --test scripts/visual/*.test.mjs",
     "typecheck": "pnpm -r --if-present typecheck",
     "visual:acceptance": "node scripts/page-builder-visual-acceptance.mjs",
+    "visual:capture": "node scripts/page-builder-visual-capture.mjs",
     "format:check": "prettier --check ."
   },
   "devDependencies": {
