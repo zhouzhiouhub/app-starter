@@ -2,9 +2,11 @@
 
 import { pathToFileURL } from "node:url";
 import {
+  createReleaseEvidenceCheckArtifact,
   formatReleaseEvidenceCheck,
   readReleaseCheckCliConfig,
   readReleaseEvidenceCheck,
+  writeReleaseEvidenceCheckArtifact,
 } from "./release/release-check.mjs";
 import { readErrorMessage } from "./smoke/smoke-error-message.mjs";
 
@@ -17,10 +19,23 @@ export async function runReleaseCheckCli(args, input = {}) {
   try {
     const config = readReleaseCheckCliConfig(args);
     const check = await readReleaseEvidenceCheck(config, input);
+    const artifact = createReleaseEvidenceCheckArtifact(check);
     const writeLine = input.stdout ?? console.log;
 
-    for (const line of formatReleaseEvidenceCheck(check)) {
-      writeLine(line);
+    if (config.outputPath) {
+      await writeReleaseEvidenceCheckArtifact(config.outputPath, artifact);
+    }
+
+    if (config.json) {
+      writeLine(JSON.stringify(artifact, null, 2));
+    } else {
+      for (const line of formatReleaseEvidenceCheck(check)) {
+        writeLine(line);
+      }
+
+      if (config.outputPath) {
+        writeLine(`Release evidence artifact written: ${config.outputPath}`);
+      }
     }
 
     return check.releaseReady ? 0 : 1;
@@ -42,10 +57,14 @@ function printHelp(writeLine) {
   writeLine(`Usage:
   pnpm release:check
   pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json
+  pnpm release:check -- --json
+  pnpm release:check -- --output artifacts/release/release-check.json
   pnpm release:check -- artifacts/production-smoke/smoke-report.json
 
 Options:
   --latest                   Check the newest archived smoke report (default).
+  --json                     Print the machine-readable release evidence report.
+  --output <path>            Write a JSON report under tmp/, reports/, artifacts/, or .tmp/.
   --smoke-report <path>      Check a specific production smoke report.
   --visual-manifest <path>   Check a specific Page Builder visual manifest.
   -h, --help                 Show this help.

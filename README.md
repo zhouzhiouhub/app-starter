@@ -666,6 +666,8 @@ pnpm smoke:report -- reports/production/smoke-report.json
 pnpm smoke:release-check -- artifacts/production-smoke/smoke-report.json
 pnpm release:check
 pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json
+pnpm release:check -- --json
+pnpm release:check -- --output artifacts/release/release-check.json
 ```
 
 Page Builder 核心区块视觉验收记录可单独检查：
@@ -686,7 +688,7 @@ GitHub Actions 里新增了 `Page Builder Visual` workflow，会在相关 PR、m
 
 GitHub Actions 里新增了手动触发的 `Production Smoke` workflow，会把报告写到 `artifacts/production-smoke/smoke-report.json`，失败或成功都会执行 `pnpm smoke:report` 和 `pnpm smoke:release-check` 并上传 `production-smoke-report-<run_number>` artifact；发布证据按 [Release Checklist](./docs/development/release-checklist.md) 留存。
 
-最终发布前可运行 `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json` 做统一门禁；它会同时校验生产 Smoke 发布证据和 Page Builder 视觉 accepted 证据。当前缺真实设计参考和生产 smoke artifact 时，该命令会阻塞发布。
+最终发布前可运行 `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json` 做统一门禁；它会同时校验生产 Smoke 发布证据和 Page Builder 视觉 accepted 证据。需要归档时追加 `--json` 输出机器可读结果，或追加 `--output artifacts/release/release-check.json` 写入 `release-evidence-check.v1` JSON artifact。当前缺真实设计参考和生产 smoke artifact 时，该命令会阻塞发布。
 
 ```powershell
 $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish

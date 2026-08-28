@@ -1,7 +1,11 @@
 import { defaultPageBuilderVisualAcceptanceManifestPath } from "../visual/page-builder-visual-acceptance-constants.mjs";
+import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
+import { normalizeSmokeReportPath } from "../smoke/smoke-report-path-config.mjs";
 
 export function readReleaseCheckCliConfig(args) {
   const config = {
+    json: false,
+    outputPath: null,
     smokeReportPath: null,
     visualManifestPath: defaultPageBuilderVisualAcceptanceManifestPath,
   };
@@ -12,6 +16,19 @@ export function readReleaseCheckCliConfig(args) {
 
     if (arg === "--latest") {
       config.smokeReportPath = null;
+      continue;
+    }
+
+    if (arg === "--json") {
+      config.json = true;
+      continue;
+    }
+
+    if (arg === "--output") {
+      config.outputPath = normalizeReleaseCheckOutputPath(
+        readOptionValue(arg, normalizedArgs, index),
+      );
+      index += 1;
       continue;
     }
 
@@ -39,6 +56,19 @@ export function readReleaseCheckCliConfig(args) {
   }
 
   return config;
+}
+
+export function normalizeReleaseCheckOutputPath(value) {
+  try {
+    return normalizeSmokeReportPath(value);
+  } catch (error) {
+    throw new Error(
+      readErrorMessage(error).replaceAll(
+        "SMOKE_REPORT_PATH",
+        "Release check output",
+      ),
+    );
+  }
 }
 
 function readOptionValue(option, args, index) {

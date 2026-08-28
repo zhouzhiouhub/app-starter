@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 import {
+  createReleaseEvidenceCheckArtifact,
   createReleaseEvidenceCheck,
   formatReleaseEvidenceCheck,
   readReleaseCheckCliConfig,
@@ -23,6 +24,8 @@ import {
 
 test("release check config parses defaults and evidence paths", () => {
   assert.deepEqual(readReleaseCheckCliConfig([]), {
+    json: false,
+    outputPath: null,
     smokeReportPath: null,
     visualManifestPath: "docs/development/page-builder-visual-acceptance.json",
   });
@@ -35,6 +38,8 @@ test("release check config parses defaults and evidence paths", () => {
       "reports/visual/accepted.json",
     ]),
     {
+      json: false,
+      outputPath: null,
       smokeReportPath: "artifacts/production-smoke/smoke-report.json",
       visualManifestPath: "reports/visual/accepted.json",
     },
@@ -42,6 +47,8 @@ test("release check config parses defaults and evidence paths", () => {
   assert.deepEqual(
     readReleaseCheckCliConfig(["artifacts/production-smoke/smoke-report.json"]),
     {
+      json: false,
+      outputPath: null,
       smokeReportPath: "artifacts/production-smoke/smoke-report.json",
       visualManifestPath: "docs/development/page-builder-visual-acceptance.json",
     },
@@ -49,6 +56,26 @@ test("release check config parses defaults and evidence paths", () => {
   assert.throws(
     () => readReleaseCheckCliConfig(["--bad-option"]),
     /Unknown release check option/,
+  );
+});
+
+test("release check config parses JSON artifact output", () => {
+  assert.deepEqual(
+    readReleaseCheckCliConfig([
+      "--json",
+      "--output",
+      "artifacts/release/release-check.json",
+    ]),
+    {
+      json: true,
+      outputPath: "artifacts/release/release-check.json",
+      smokeReportPath: null,
+      visualManifestPath: "docs/development/page-builder-visual-acceptance.json",
+    },
+  );
+  assert.throws(
+    () => readReleaseCheckCliConfig(["--output", "release-check.json"]),
+    /Release check output must be under tmp\/, reports\/, artifacts\/, or \.tmp\//,
   );
 });
 
@@ -70,6 +97,35 @@ test("release check accepts complete smoke and visual evidence", () => {
   assert.deepEqual(formatReleaseEvidenceCheck(check).slice(-1), [
     "  Evidence is ready for release notes.",
   ]);
+});
+
+test("release check creates bounded JSON artifacts", () => {
+  const { evidenceRoot, manifest } = createAcceptedVisualManifest();
+  const check = createReleaseEvidenceCheck({
+    smokeArtifact: {
+      path: "artifacts/production-smoke/smoke-report.json",
+      report: createCompleteReleaseReport(),
+    },
+    visualEvidenceRoot: evidenceRoot,
+    visualManifest: manifest,
+    visualManifestPath: "reports/visual/accepted.json",
+  });
+  const artifact = createReleaseEvidenceCheckArtifact(check, {
+    generatedAt: "2026-08-28T00:00:00.000Z",
+  });
+
+  assert.equal(artifact.schemaVersion, "release-evidence-check.v1");
+  assert.equal(artifact.generatedAt, "2026-08-28T00:00:00.000Z");
+  assert.equal(artifact.status, "ready");
+  assert.equal(artifact.releaseReady, true);
+  assert.equal(artifact.smoke.path, "artifacts/production-smoke/smoke-report.json");
+  assert.deepEqual(
+    artifact.smoke.traceability.map((group) => `${group.label}:${group.status}`),
+    ["R2/CDN:passed", "Admin static app:passed", "Publish flow:passed"],
+  );
+  assert.equal(artifact.visual.status, "accepted");
+  assert.equal(artifact.visual.acceptedViewportCount, 12);
+  assert.equal(artifact.blockerCount, 0);
 });
 
 test("release check blocks pending Page Builder visual evidence", () => {
@@ -159,6 +215,8 @@ test("release check command is exposed in package, CI, and release docs", async 
     releaseChecklist,
     /pnpm release:check -- --smoke-report artifacts\/production-smoke\/smoke-report\.json/,
   );
+  assert.match(releaseChecklist, /--output artifacts\/release\/release-check\.json/);
+  assert.match(releaseChecklist, /release-evidence-check\.v1/);
 });
 
 function createCompleteReleaseReport(overrides = {}) {

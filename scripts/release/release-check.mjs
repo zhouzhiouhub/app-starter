@@ -8,12 +8,21 @@ import {
 } from "../visual/page-builder-visual-acceptance.mjs";
 import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
 import { readReleaseCheckCliConfig } from "./release-check-config.mjs";
+import {
+  createReleaseEvidenceCheckArtifact,
+  writeReleaseEvidenceCheckArtifact,
+} from "./release-check-artifact.mjs";
 import { formatReleaseEvidenceCheck } from "./release-check-report.mjs";
 
 const visualEvidenceAction =
   "Attach real design references and browser screenshots, run pnpm visual:measure -- --write --require-complete, then pnpm visual:acceptance -- --require-accepted.";
 
-export { formatReleaseEvidenceCheck, readReleaseCheckCliConfig };
+export {
+  createReleaseEvidenceCheckArtifact,
+  formatReleaseEvidenceCheck,
+  readReleaseCheckCliConfig,
+  writeReleaseEvidenceCheckArtifact,
+};
 
 export async function readReleaseEvidenceCheck(config, input = {}) {
   const smokeArtifact = await readOptionalSmokeArtifact(config, input);

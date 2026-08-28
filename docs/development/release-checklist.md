@@ -92,6 +92,9 @@ later phases are explicitly approved.
 - `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json`
   exits successfully after the production smoke artifact and accepted Page
   Builder visual manifest are both present.
+- `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --output artifacts/release/release-check.json`
+  writes the combined `release-evidence-check.v1` artifact for the release
+  record.
 
 ## Failure Review
 
