@@ -607,7 +607,7 @@ POST /api/v1/webhooks/stripe
 - `GET /api/v1/public/translations/:locale` 按公开店面域名解析 Tenant，返回对应 Tenant 的安全翻译消息包；多语言关闭时非默认 Locale 会回退默认 Locale。
 - `GET /api/v1/public/preview/:token` 返回短期预览 Token 对应的草稿 Schema，并显式设置 `Cache-Control: no-store`。
 - 前台只渲染已发布页面；未发布或不存在的 slug 进入 404 页面。
-- 当前 `cart`、`checkout` 和 Stripe Webhook 占位路由会返回 `COMMERCE_DISABLED`，这是预期行为；关闭态 `details` 会标记 `resource`、`action`、`writable=false`、`writeDisabledCode=COMMERCE_DISABLED` 和 `reservedPhase=phase-2`，但不会回显请求体、商品 ID、payload 或签名。Webhook 占位仅对 `POST /api/v1/webhooks/stripe` 捕获原始 JSON body 并识别 `stripe-signature` 形状，不验签、不落库、不处理事件。
+- 当前 `cart`、`checkout` 和 Stripe Webhook 占位路由会返回 `COMMERCE_DISABLED`，这是预期行为；关闭态 `details` 会标记 `resource`、`action`、`writable=false`、`writeDisabledCode=COMMERCE_DISABLED` 和 `reservedPhase=phase-2`，但不会回显请求体、商品 ID、payload 或签名。Webhook 占位仅对 `POST /api/v1/webhooks/stripe` 捕获原始 JSON body，并识别 `stripe-signature` 是否包含可用于 Phase 2 验签的非空 `v1` 与数字 `t`，不验签、不落库、不处理事件。
 - 本地默认管理员：`admin@example.com` / `ChangeMe123!`（可通过 `SEED_ADMIN_EMAIL`、`SEED_ADMIN_PASSWORD` 覆盖）；邮箱必须是有效邮箱，密码必须为 8 到 128 字符且不含控制字符，生产环境不能使用文档默认值。
 
 ## 12. 常用验证命令
@@ -734,7 +734,7 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 - 媒体库列表、上传目标、外部媒体登记、归档、`media://` 选择，以及 Page Builder 缺失 / 非图片媒体引用异常态。
 - 生产 smoke 报告 `SMOKE_REPORT_PATH` 归档、`smoke-report.v3` 摘要、失败详情脱敏、`pnpm smoke:report` 最近归档 / 指定报告回看入口、`pnpm smoke:release-check` 发布证据强校验，以及 GitHub Actions `Production Smoke` artifact 留存和 Release Checklist。
 - Localization 默认 Market / Locale / Translation fallback 视图、默认 Locale 翻译保存、按 ID 更新、分页列表、URL 筛选保留、列表筛选、缺失 key 分组检查、缺失 key 一键回填、缺失 key 修复队列、缺失 key 修复保存自动推进、修复队列跨刷新状态同步、长列表缺失 key 分页、缺失 key 分页页码记忆、缺失 key 分页与筛选联动提示、缺失 key 队列跨筛选恢复提示、键名补全与 context 辅助、修复进度提示、缺失 key 修复定位刷新、缺失 key 修复入口 loading / disabled 状态、保存后的成功定位提示、完成后缺失 key 刷新提示、缺失 key 批量导入草稿、缺失 key 批量草稿与当前筛选差异提示、批量编辑模板提示、导入草稿空状态校验说明、导入草稿空结果预览保护、缺失 key 批量修复校验摘要、导入模板引导、批量导入后的列表定位、成功导入后的修复进度聚焦、批量导入成功后的多 key 跳转、导入结果按 action 筛选、导入结果批量选择和选择保留、导入结果历史保留、导入历史结果清理入口、导入历史结果回放说明、导入历史详情筛选、导入历史筛选空态操作提示、导入历史详情批量生成草稿、从导入结果生成二次修复草稿、二次修复草稿预览提示、导入预览问题行逐项修复提示、导入预览问题行草稿定位细节、历史修复草稿重复键清理、导入 / 缺失队列状态联动、缺失队列完成态反馈、批量修复完成确认、批量修复后服务端确认聚焦、批量修复历史回放定位、批量修复历史回放后的确认清理、批量修复后的历史保留策略说明、批量修复确认后的自动清理建议、批量修复成功后的草稿清空提示、异常重试提示、重复保存提示、写入关闭态、Translation 空态、批量导入/导出预览报告、默认 Locale 批量导入写入、Admin 导入执行结果展示、Admin 默认 Locale JSON 下载、默认 Locale 导入 / 导出审计回看入口、导入 / 导出审计结果筛选回跳、审计回跳后的上下文提示和默认 Locale 长列表批量操作确认。
-- Commerce 已补齐 Product / Variant / Price / Inventory / Order / Payment / WebhookEvent 数据库预留迁移；Products / Orders / Payments 只读空列表占位响应 meta 会明确关闭态、默认市场/币种、不可写和 Phase 2 预留；后台商品创建/更新、前台 cart / checkout 与 Stripe Webhook 写入关闭态会返回共享 Schema 定义的安全 details；后台商品详情、商品子资源、订单 / 支付详情、前台商品详情路由、Stripe 可选密钥安全诊断和 Stripe Webhook raw body / 签名形状预留均为显式占位。
+- Commerce 已补齐 Product / Variant / Price / Inventory / Order / Payment / WebhookEvent 数据库预留迁移；Products / Orders / Payments 只读空列表占位响应 meta 会明确关闭态、默认市场/币种、不可写和 Phase 2 预留；后台商品创建/更新、前台 cart / checkout 与 Stripe Webhook 写入关闭态会返回共享 Schema 定义的安全 details；后台商品详情、商品子资源、订单 / 支付详情、前台商品详情路由、Stripe 可选密钥安全诊断和 Stripe Webhook raw body / 可验签签名形状预留均为显式占位。
 - Settings 默认站点名称、域名与 Analytics 配置展示页。
 - Publish 按钮，发布结果写入 PostgreSQL。
 - 启动时尝试加载已发布的 `home` 页面。

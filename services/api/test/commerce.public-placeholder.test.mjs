@@ -105,14 +105,62 @@ test("stripe webhook placeholder records raw body and signature shape only", () 
   const serialized = JSON.stringify(contract);
 
   assert.deepEqual(contract, {
+    readyForSignatureVerification: true,
     rawBodyBytes: payload.byteLength,
     rawBodyCaptured: true,
     signatureHasTimestamp: true,
     signatureHasV1: true,
     signatureProvided: true,
+    signatureTimestampReady: true,
+    signatureV1Ready: true,
   });
   assert.equal(serialized.includes("evt_secret_payload"), false);
   assert.equal(serialized.includes("secret_signature"), false);
+});
+
+test("stripe webhook placeholder separates signature shape from verification readiness", () => {
+  const capture = createRouteRawBodyCapture(stripeWebhookRawBodyRoutePath);
+  const request = {
+    method: "POST",
+    originalUrl: "/api/v1/webhooks/stripe",
+  };
+
+  capture(request, {}, Buffer.from('{"id":"evt_shape_only"}'));
+
+  assert.deepEqual(
+    readStripeWebhookPlaceholderContract({
+      request,
+      requestId: "request-webhook-empty-signature",
+      stripeSignature: "t=,v1=",
+    }),
+    {
+      readyForSignatureVerification: false,
+      rawBodyBytes: 23,
+      rawBodyCaptured: true,
+      signatureHasTimestamp: true,
+      signatureHasV1: true,
+      signatureProvided: true,
+      signatureTimestampReady: false,
+      signatureV1Ready: false,
+    },
+  );
+
+  assert.deepEqual(
+    readStripeWebhookPlaceholderContract({
+      requestId: "request-webhook-missing-raw-body",
+      stripeSignature: "t=1,v1=secret_signature",
+    }),
+    {
+      readyForSignatureVerification: false,
+      rawBodyBytes: 0,
+      rawBodyCaptured: false,
+      signatureHasTimestamp: true,
+      signatureHasV1: true,
+      signatureProvided: true,
+      signatureTimestampReady: true,
+      signatureV1Ready: true,
+    },
+  );
 });
 
 test("public product detail stays an explicit MVP placeholder", async () => {
