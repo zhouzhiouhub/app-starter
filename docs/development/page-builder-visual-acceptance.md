@@ -12,13 +12,16 @@ The source of truth is
 pnpm visual:acceptance
 pnpm visual:acceptance -- --require-accepted
 pnpm visual:capture
+pnpm visual:capture:fixture
 ```
 
 Use the default command while collecting evidence. Use `--require-accepted` for
 release sign-off after every core section has design references, preview
 screenshots, and measured diff values. Use `pnpm visual:capture` after starting
 the Web app with the fixture flag to refresh the component-level browser
-screenshots referenced by the manifest.
+screenshots referenced by the manifest. Use `pnpm visual:capture:fixture` for
+the full local workflow: build Web, start the gated fixture server, capture the
+screenshots, and stop the server.
 
 ## Fixture Route
 
@@ -44,13 +47,17 @@ component IDs listed in this document. It provides a stable capture target;
 final sign-off still needs the real design references, saved browser
 screenshots, and measured diff values in the manifest.
 
-To capture all component-level fixture screenshots in one pass:
+To capture all component-level fixture screenshots with an already running Web
+fixture server:
 
 ```powershell
-pnpm --filter @app-starter/web build
-$env:ENABLE_VISUAL_ACCEPTANCE_FIXTURE = "true"
-pnpm --filter @app-starter/web start
 pnpm visual:capture
+```
+
+To run the full local workflow in one command:
+
+```powershell
+pnpm visual:capture:fixture
 ```
 
 Set `PAGE_BUILDER_VISUAL_BROWSER` or pass `--browser` when Chrome or Edge is

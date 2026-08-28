@@ -1,6 +1,7 @@
 import { mkdirSync } from "node:fs";
 import { spawn } from "node:child_process";
 import path from "node:path";
+import { setTimeout as delay } from "node:timers/promises";
 import {
   createPageBuilderVisualProfileDir,
   createPageBuilderVisualScreenshotArgs,
@@ -67,12 +68,29 @@ async function capturePageBuilderVisualScreenshot(job, input) {
     stdio: "ignore",
     windowsHide: true,
   });
+  const browserExit = observeBrowserExit(child, input.timeoutMs);
 
-  await waitForBrowserExit(child, input.timeoutMs);
-  const stats = await waitForPageBuilderVisualScreenshot(
+  const screenshotReady = waitForPageBuilderVisualScreenshot(
     job.outputPath,
     input.timeoutMs,
+    input.screenshotInput,
   );
+  const outcome = await Promise.race([
+    screenshotReady.then((stats) => ({ stats, type: "screenshot" })),
+    browserExit.promise.then(
+      () => ({ type: "exit" }),
+      (error) => ({ error, type: "error" }),
+    ),
+  ]);
+
+  if (outcome.type === "error") {
+    throw outcome.error;
+  }
+
+  const stats =
+    outcome.type === "screenshot"
+      ? await stopBrowserAfterScreenshot(child, browserExit, outcome.stats)
+      : await screenshotReady;
 
   return {
     bytes: stats.size,
@@ -82,19 +100,36 @@ async function capturePageBuilderVisualScreenshot(job, input) {
   };
 }
 
-function waitForBrowserExit(child, timeoutMs) {
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
+async function stopBrowserAfterScreenshot(child, browserExit, stats) {
+  if (!browserExit.isSettled() && !child.killed) {
+    child.kill();
+  }
+
+  await Promise.race([browserExit.promise.catch(() => undefined), delay(1000)]);
+  browserExit.cancel();
+  return stats;
+}
+
+function observeBrowserExit(child, timeoutMs) {
+  let settled = false;
+  let timer;
+  let onError;
+  let onExit;
+
+  const promise = new Promise((resolve, reject) => {
+    timer = setTimeout(() => {
       child.kill();
       reject(new Error("Timed out waiting for browser screenshot process."));
     }, timeoutMs);
 
-    child.once("error", (error) => {
+    onError = (error) => {
+      settled = true;
       clearTimeout(timer);
       reject(error);
-    });
+    };
 
-    child.once("exit", (code, signal) => {
+    onExit = (code, signal) => {
+      settled = true;
       clearTimeout(timer);
 
       if (code && code !== 0) {
@@ -105,6 +140,19 @@ function waitForBrowserExit(child, timeoutMs) {
       }
 
       resolve();
-    });
+    };
+
+    child.once("error", onError);
+    child.once("exit", onExit);
   });
+
+  return {
+    cancel: () => {
+      clearTimeout(timer);
+      child.off?.("error", onError);
+      child.off?.("exit", onExit);
+    },
+    isSettled: () => settled,
+    promise,
+  };
 }

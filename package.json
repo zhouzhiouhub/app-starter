@@ -27,6 +27,7 @@
     "typecheck": "pnpm -r --if-present typecheck",
     "visual:acceptance": "node scripts/page-builder-visual-acceptance.mjs",
     "visual:capture": "node scripts/page-builder-visual-capture.mjs",
+    "visual:capture:fixture": "node scripts/page-builder-visual-capture-fixture.mjs",
     "format:check": "prettier --check ."
   },
   "devDependencies": {

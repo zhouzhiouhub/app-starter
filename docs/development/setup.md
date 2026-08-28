@@ -194,8 +194,10 @@ For local Page Builder visual sign-off, set
 `/visual-acceptance?viewport=mobile` to capture full-page evidence
 screenshots. Add `&component=hero-banner`, `rich-text`, `image-gallery`,
 `cta-bar`, `faq`, or `spec-table` to isolate one MVP section, or run
-`pnpm visual:capture` to refresh every component screenshot path in the visual
-acceptance manifest. Keep this flag disabled in production and public preview
+`pnpm visual:capture` against the running fixture server. Use
+`pnpm visual:capture:fixture` to build Web, start the gated fixture server,
+refresh every component screenshot path in the visual acceptance manifest, and
+stop the server. Keep this flag disabled in production and public preview
 environments.
 
 After sign-in, open `http://localhost:5173/pages` to list and create pages.
