@@ -35,6 +35,8 @@ later phases are explicitly approved.
   for production.
 - Confirm the smoke admin account is not the documented local default and has
   `audit:read`.
+- Run `pnpm visual:acceptance` and keep the manifest review output with the
+  release notes. For final MVP sign-off, rerun it with `--require-accepted`.
 
 ## Run Production Smoke
 
@@ -63,6 +65,9 @@ later phases are explicitly approved.
 - The traceability section shows `R2/CDN: passed`.
 - The traceability section shows `Admin static app: passed`.
 - The traceability section shows `Publish flow: passed`.
+- The Page Builder visual acceptance manifest covers all six MVP core sections
+  and links the final accepted Desktop / Mobile evidence when MVP visual sign-off
+  is requested.
 
 ## Failure Review
 

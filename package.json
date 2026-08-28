@@ -20,10 +20,12 @@
     "smoke:publish": "node scripts/smoke-publish.mjs",
     "smoke:report": "node scripts/smoke-report.mjs",
     "smoke:release-check": "node scripts/smoke-release-check.mjs",
-    "test": "pnpm -r --if-present test && pnpm run test:smoke",
+    "test": "pnpm -r --if-present test && pnpm run test:smoke && pnpm run test:visual",
     "pretest:smoke": "pnpm --filter @app-starter/schema build",
     "test:smoke": "node --test scripts/smoke/*.test.mjs",
+    "test:visual": "node --test scripts/visual/*.test.mjs",
     "typecheck": "pnpm -r --if-present typecheck",
+    "visual:acceptance": "node scripts/page-builder-visual-acceptance.mjs",
     "format:check": "prettier --check ."
   },
   "devDependencies": {

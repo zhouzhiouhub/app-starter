@@ -1,0 +1,188 @@
+{
+  "schemaVersion": "page-builder-visual-acceptance.v1",
+  "scope": "MVP Page Builder core section visual acceptance",
+  "targets": {
+    "components": [
+      "hero-banner",
+      "rich-text",
+      "image-gallery",
+      "cta-bar",
+      "faq",
+      "spec-table"
+    ],
+    "maxColorDeltaE": 3,
+    "maxLayoutDeltaPx": 5,
+    "minVisualMatchPercent": 95,
+    "viewports": ["desktop", "mobile"]
+  },
+  "records": [
+    {
+      "component": "hero-banner",
+      "implementation": {
+        "renderer": "packages/ui/src/components/hero-banner.tsx",
+        "template": "apps/admin/src/features/pages/section-template-factory.ts"
+      },
+      "label": "Hero Banner",
+      "notes": "Renderer and Admin template are implemented. Attach Desktop and Mobile design references and browser screenshots before marking accepted.",
+      "status": "needs-evidence",
+      "viewports": {
+        "desktop": {
+          "designReference": null,
+          "maxColorDeltaE": null,
+          "maxLayoutDeltaPx": null,
+          "previewScreenshot": null,
+          "status": "needs-evidence",
+          "visualMatchPercent": null
+        },
+        "mobile": {
+          "designReference": null,
+          "maxColorDeltaE": null,
+          "maxLayoutDeltaPx": null,
+          "previewScreenshot": null,
+          "status": "needs-evidence",
+          "visualMatchPercent": null
+        }
+      }
+    },
+    {
+      "component": "rich-text",
+      "implementation": {
+        "renderer": "packages/ui/src/components/rich-text.tsx",
+        "template": "apps/admin/src/features/pages/section-template-factory.ts"
+      },
+      "label": "Rich Text",
+      "notes": "Renderer and Admin template are implemented. Attach Desktop and Mobile design references and browser screenshots before marking accepted.",
+      "status": "needs-evidence",
+      "viewports": {
+        "desktop": {
+          "designReference": null,
+          "maxColorDeltaE": null,
+          "maxLayoutDeltaPx": null,
+          "previewScreenshot": null,
+          "status": "needs-evidence",
+          "visualMatchPercent": null
+        },
+        "mobile": {
+          "designReference": null,
+          "maxColorDeltaE": null,
+          "maxLayoutDeltaPx": null,
+          "previewScreenshot": null,
+          "status": "needs-evidence",
+          "visualMatchPercent": null
+        }
+      }
+    },
+    {
+      "component": "image-gallery",
+      "implementation": {
+        "renderer": "packages/ui/src/components/image-gallery.tsx",
+        "template": "apps/admin/src/features/pages/section-template-factory.ts"
+      },
+      "label": "Image Gallery",
+      "notes": "Renderer and Admin template are implemented. Attach Desktop and Mobile design references and browser screenshots before marking accepted.",
+      "status": "needs-evidence",
+      "viewports": {
+        "desktop": {
+          "designReference": null,
+          "maxColorDeltaE": null,
+          "maxLayoutDeltaPx": null,
+          "previewScreenshot": null,
+          "status": "needs-evidence",
+          "visualMatchPercent": null
+        },
+        "mobile": {
+          "designReference": null,
+          "maxColorDeltaE": null,
+          "maxLayoutDeltaPx": null,
+          "previewScreenshot": null,
+          "status": "needs-evidence",
+          "visualMatchPercent": null
+        }
+      }
+    },
+    {
+      "component": "cta-bar",
+      "implementation": {
+        "renderer": "packages/ui/src/components/cta-bar.tsx",
+        "template": "apps/admin/src/features/pages/section-template-factory.ts"
+      },
+      "label": "CTA Bar",
+      "notes": "Renderer and Admin template are implemented. Attach Desktop and Mobile design references and browser screenshots before marking accepted.",
+      "status": "needs-evidence",
+      "viewports": {
+        "desktop": {
+          "designReference": null,
+          "maxColorDeltaE": null,
+          "maxLayoutDeltaPx": null,
+          "previewScreenshot": null,
+          "status": "needs-evidence",
+          "visualMatchPercent": null
+        },
+        "mobile": {
+          "designReference": null,
+          "maxColorDeltaE": null,
+          "maxLayoutDeltaPx": null,
+          "previewScreenshot": null,
+          "status": "needs-evidence",
+          "visualMatchPercent": null
+        }
+      }
+    },
+    {
+      "component": "faq",
+      "implementation": {
+        "renderer": "packages/ui/src/components/faq.tsx",
+        "template": "apps/admin/src/features/pages/section-template-factory.ts"
+      },
+      "label": "FAQ",
+      "notes": "Renderer and Admin template are implemented. Attach Desktop and Mobile design references and browser screenshots before marking accepted.",
+      "status": "needs-evidence",
+      "viewports": {
+        "desktop": {
+          "designReference": null,
+          "maxColorDeltaE": null,
+          "maxLayoutDeltaPx": null,
+          "previewScreenshot": null,
+          "status": "needs-evidence",
+          "visualMatchPercent": null
+        },
+        "mobile": {
+          "designReference": null,
+          "maxColorDeltaE": null,
+          "maxLayoutDeltaPx": null,
+          "previewScreenshot": null,
+          "status": "needs-evidence",
+          "visualMatchPercent": null
+        }
+      }
+    },
+    {
+      "component": "spec-table",
+      "implementation": {
+        "renderer": "packages/ui/src/components/spec-table.tsx",
+        "template": "apps/admin/src/features/pages/section-template-factory.ts"
+      },
+      "label": "Spec Table",
+      "notes": "Renderer and Admin template are implemented. Attach Desktop and Mobile design references and browser screenshots before marking accepted.",
+      "status": "needs-evidence",
+      "viewports": {
+        "desktop": {
+          "designReference": null,
+          "maxColorDeltaE": null,
+          "maxLayoutDeltaPx": null,
+          "previewScreenshot": null,
+          "status": "needs-evidence",
+          "visualMatchPercent": null
+        },
+        "mobile": {
+          "designReference": null,
+          "maxColorDeltaE": null,
+          "maxLayoutDeltaPx": null,
+          "previewScreenshot": null,
+          "status": "needs-evidence",
+          "visualMatchPercent": null
+        }
+      }
+    }
+  ]
+}

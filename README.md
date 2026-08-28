@@ -5,7 +5,7 @@
 当前目标不是一次性复制 Shopify 全量能力，而是先完成一个可长期演进的建站平台工程基础：前台渲染、后台管理壳、API 服务、Page Schema、共享 Renderer、数据库模型、二次开发入口和后续电商/多语言能力预留。
 
 > 状态更新时间：2026-08-28
-> 当前阶段：建站 MVP 的页面管理、站点设置、Page Builder、媒体、SEO、预览令牌、发布历史、回滚、审计日志、前台 ISR 刷新链路、发布 smoke 报告、生产验收报告归档索引、失败回看入口、发布证据强校验、CI artifact 留存策略、Release Checklist 和 Localization 默认 Locale 批量导入 / 导出复盘入口、审计结果筛选回跳、审计回跳上下文提示、导入预览问题行草稿定位细节、默认 Locale 长列表批量操作确认已逐步落地；下一步是在真实生产 R2 / CDN 环境执行验收并归档报告。
+> 当前阶段：建站 MVP 的页面管理、站点设置、Page Builder、媒体、SEO、预览令牌、发布历史、回滚、审计日志、前台 ISR 刷新链路、发布 smoke 报告、生产验收报告归档索引、失败回看入口、发布证据强校验、CI artifact 留存策略、Release Checklist、Page Builder 核心区块视觉验收记录清单和 Localization 默认 Locale 批量导入 / 导出复盘入口、审计结果筛选回跳、审计回跳上下文提示、导入预览问题行草稿定位细节、默认 Locale 长列表批量操作确认已逐步落地；下一步是在真实生产 R2 / CDN 环境执行验收并归档报告。
 
 ## 1. 当前进度
 
@@ -69,7 +69,7 @@
 - Preview Token 签发会写入只追加的 AuditLog，且不记录 token 明文。
 - 页面发布和回滚会写入只追加的 AuditLog，记录 actor、tenant、page、site、slug 和版本 ID。
 - 后台可通过 Audit Logs 页面或 `GET /api/v1/audit-logs` 只读查询当前 Tenant 的审计日志，入口需要 `audit:read`。
-- Page Builder 已具备区块库、区块排序、属性面板、Desktop / Mobile 布局编辑、Undo / Redo 和双端视觉布局发布前检查。
+- Page Builder 已具备区块库、区块排序、属性面板、Desktop / Mobile 布局编辑、Undo / Redo、双端视觉布局发布前检查和核心区块视觉验收记录清单。
 - 媒体库已具备列表、登记外部媒体、上传目标生成、归档和 `media://` 引用解析；Page Builder 会提示缺失或非图片媒体引用并阻断发布。
 - Settings 已具备默认站点名称与域名管理，并展示 MVP 默认市场、Locale、Currency、功能开关和 Analytics 配置。
 - Localization 已具备默认 Market / Locale / Translation fallback 检查视图，支持默认 `en-US` 翻译条目保存、按 ID 更新、分页列表、URL 筛选条件保留、筛选、缺失 key 分组检查、缺失 key 一键回填、缺失 key 修复队列、缺失 key 修复保存自动推进、修复队列跨刷新状态同步、长列表缺失 key 分页、缺失 key 分页页码记忆、缺失 key 分页与筛选联动提示、缺失 key 队列跨筛选恢复提示、键名补全与 context 辅助、修复进度提示、缺失 key 修复定位刷新、缺失 key 修复入口 loading / disabled 状态、保存后的成功定位提示、完成后缺失 key 刷新提示、缺失 key 批量导入草稿、缺失 key 批量草稿与当前筛选差异提示、批量草稿筛选后的定位提示、批量草稿预览后的差异定位、批量编辑模板提示、导入草稿空状态校验说明、导入草稿空结果预览保护、缺失 key 批量修复校验摘要、导入模板引导、批量导入后的列表定位、成功导入后的修复进度聚焦、批量导入成功后的多 key 跳转、导入结果按 action 筛选、导入结果批量选择和选择保留、导入结果历史保留、导入历史结果清理入口、导入历史清理确认、导入历史与修复队列键级操作提示、导入历史结果回放说明、导入历史与当前筛选定位校准、导入历史详情筛选、导入历史筛选空态操作提示、导入历史详情批量生成草稿、从导入结果生成二次修复草稿、二次修复草稿预览提示、导入预览结果批量修复草稿入口、导入 / 缺失队列状态联动、缺失队列完成态反馈、修复队列空态操作收口、批量修复完成确认、批量修复后服务端确认聚焦、批量修复历史回放定位、批量修复历史回放后的确认清理、批量修复后的历史保留策略说明、批量修复确认后的自动清理建议、批量修复成功后的草稿清空提示、异常重试提示、重复保存提示、批量导入/导出预览报告、默认 Locale 批量导入写入、Admin 导入前确认、默认 Locale 导入前最终确认摘要、导入确认后的成功 / 失败分支复盘、导入执行结果展示、导入失败行定位、导入预览问题行逐项修复提示、导入预览问题行草稿定位细节、历史修复草稿重复键清理、错误详情面板、Admin 默认 Locale JSON 下载、默认 Locale 导入 / 导出审计回看入口、导入 / 导出审计结果筛选回跳、审计回跳后的上下文提示和默认 Locale 长列表批量操作确认；非默认 Locale 会明确显示回退到 `en-US` 的关闭态，并展示 Locale 创建/更新禁用、Translation 空态和批量导入关闭态错误提示。
@@ -661,6 +661,13 @@ pnpm smoke:report -- reports/production/smoke-report.json
 pnpm smoke:release-check -- artifacts/production-smoke/smoke-report.json
 ```
 
+Page Builder 核心区块视觉验收记录可单独检查：
+
+```powershell
+pnpm visual:acceptance
+pnpm visual:acceptance -- --require-accepted
+```
+
 GitHub Actions 里新增了手动触发的 `Production Smoke` workflow，会把报告写到 `artifacts/production-smoke/smoke-report.json`，失败或成功都会执行 `pnpm smoke:report` 和 `pnpm smoke:release-check` 并上传 `production-smoke-report-<run_number>` artifact；发布证据按 [Release Checklist](./docs/development/release-checklist.md) 留存。
 
 ```powershell
@@ -677,6 +684,7 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 - `pnpm -r --if-present typecheck`
 - `pnpm lint`
 - `pnpm test`
+- `pnpm visual:acceptance`
 - `git diff --check`
 
 本地数据库初始化后，还需执行一次种子数据，前台和后台才能读到默认 `home` 页。
@@ -695,7 +703,7 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 - Preview Token 签发审计日志。
 - 页面发布 / 回滚审计日志。
 - Audit Logs 后台页面、审计日志只读查询 API 与 `audit:read` 权限。
-- 区块库、区块排序、区块属性面板、Undo / Redo，以及 Desktop / Mobile 画布溢出、左侧裁切和纵向压缩风险发布前检查。
+- 区块库、区块排序、区块属性面板、Undo / Redo，Desktop / Mobile 画布溢出、左侧裁切和纵向压缩风险发布前检查，以及核心区块视觉验收记录清单 / CLI。
 - 媒体库列表、上传目标、外部媒体登记、归档、`media://` 选择，以及 Page Builder 缺失 / 非图片媒体引用异常态。
 - 生产 smoke 报告 `SMOKE_REPORT_PATH` 归档、`smoke-report.v3` 摘要、失败详情脱敏、`pnpm smoke:report` 最近归档 / 指定报告回看入口、`pnpm smoke:release-check` 发布证据强校验，以及 GitHub Actions `Production Smoke` artifact 留存和 Release Checklist。
 - Localization 默认 Market / Locale / Translation fallback 视图、默认 Locale 翻译保存、按 ID 更新、分页列表、URL 筛选保留、列表筛选、缺失 key 分组检查、缺失 key 一键回填、缺失 key 修复队列、缺失 key 修复保存自动推进、修复队列跨刷新状态同步、长列表缺失 key 分页、缺失 key 分页页码记忆、缺失 key 分页与筛选联动提示、缺失 key 队列跨筛选恢复提示、键名补全与 context 辅助、修复进度提示、缺失 key 修复定位刷新、缺失 key 修复入口 loading / disabled 状态、保存后的成功定位提示、完成后缺失 key 刷新提示、缺失 key 批量导入草稿、缺失 key 批量草稿与当前筛选差异提示、批量编辑模板提示、导入草稿空状态校验说明、导入草稿空结果预览保护、缺失 key 批量修复校验摘要、导入模板引导、批量导入后的列表定位、成功导入后的修复进度聚焦、批量导入成功后的多 key 跳转、导入结果按 action 筛选、导入结果批量选择和选择保留、导入结果历史保留、导入历史结果清理入口、导入历史结果回放说明、导入历史详情筛选、导入历史筛选空态操作提示、导入历史详情批量生成草稿、从导入结果生成二次修复草稿、二次修复草稿预览提示、导入预览问题行逐项修复提示、导入预览问题行草稿定位细节、历史修复草稿重复键清理、导入 / 缺失队列状态联动、缺失队列完成态反馈、批量修复完成确认、批量修复后服务端确认聚焦、批量修复历史回放定位、批量修复历史回放后的确认清理、批量修复后的历史保留策略说明、批量修复确认后的自动清理建议、批量修复成功后的草稿清空提示、异常重试提示、重复保存提示、写入关闭态、Translation 空态、批量导入/导出预览报告、默认 Locale 批量导入写入、Admin 导入执行结果展示、Admin 默认 Locale JSON 下载、默认 Locale 导入 / 导出审计回看入口、导入 / 导出审计结果筛选回跳、审计回跳后的上下文提示和默认 Locale 长列表批量操作确认。
@@ -746,6 +754,6 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 
 1. 在真实 R2 / CDN 环境配置 `MEDIA_CDN_BASE_URL`、R2 凭据和 CDN 域名，确认不是 `example` / `test` / `invalid` / 本地 / 私网域名，执行 `pnpm smoke:publish` 并归档 `SMOKE_REPORT_PATH`。
 2. 补齐部署 Smoke Test：前台 Vercel、API 独立 Node 服务、Admin 静态托管、Redis 生产连接、环境变量清单和回滚步骤。
-3. 做 Page Builder 视觉验收：继续补核心区块与设计稿差异记录和真实浏览器截图留档。
+3. 做 Page Builder 视觉验收：补真实浏览器截图留档，并将 `docs/development/page-builder-visual-acceptance.json` 中六个核心区块的 Desktop / Mobile 证据从 `needs-evidence` 推进到 `accepted`。
 4. 在真实生产配置下触发 GitHub Actions `Production Smoke`，把 artifact、`pnpm smoke:report` 输出、`pnpm smoke:release-check` 结果和回滚目标写入发布记录。
 5. 保持 Commerce 关闭态，继续强化订单 / 支付关闭态分支、Phase 2 Webhook 验签设计和 `COMMERCE_DISABLED` 错误分支测试；不进入真实交易。
