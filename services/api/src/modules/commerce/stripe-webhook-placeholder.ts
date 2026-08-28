@@ -41,8 +41,10 @@ export function throwStripeWebhookReserved(
   readStripeWebhookPlaceholderContract(input);
 
   return throwCommerceDisabled({
+    action: "receive-webhook",
     message: stripeWebhookDisabledMessage,
     requestId: input.requestId,
+    resource: "stripe-webhook",
   });
 }
 

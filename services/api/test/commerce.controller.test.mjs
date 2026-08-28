@@ -192,30 +192,48 @@ test("commerce admin reserved routes keep explicit HTTP contracts", () => {
 });
 
 test("admin product reserved routes keep stable MVP errors", () => {
-  const controller = new AdminCommerceController();
-  const detailError = assertApiNotFound(
-    () => controller.getProduct("request-product-detail"),
-    apiErrorCodes.NOT_FOUND,
-  );
-  const createError = assertApiConflict(
-    () =>
-      controller.createProduct(validIdempotencyKey, "request-product-create"),
-    apiErrorCodes.COMMERCE_DISABLED,
-  );
-  const updateError = assertApiConflict(
-    () =>
-      controller.updateProduct(validIdempotencyKey, "request-product-update"),
-    apiErrorCodes.COMMERCE_DISABLED,
-  );
-  const missingKeyError = assertApiBadRequest(
-    () => controller.createProduct(undefined, "request-product-missing-key"),
-    apiErrorCodes.VALIDATION_ERROR,
-  );
+  withEnv({ COMMERCE_ENABLED: "false" }, () => {
+    const controller = new AdminCommerceController();
+    const detailError = assertApiNotFound(
+      () => controller.getProduct("request-product-detail"),
+      apiErrorCodes.NOT_FOUND,
+    );
+    const createError = assertApiConflict(
+      () =>
+        controller.createProduct(validIdempotencyKey, "request-product-create"),
+      apiErrorCodes.COMMERCE_DISABLED,
+    );
+    const updateError = assertApiConflict(
+      () =>
+        controller.updateProduct(validIdempotencyKey, "request-product-update"),
+      apiErrorCodes.COMMERCE_DISABLED,
+    );
+    const missingKeyError = assertApiBadRequest(
+      () => controller.createProduct(undefined, "request-product-missing-key"),
+      apiErrorCodes.VALIDATION_ERROR,
+    );
 
-  assert.equal(detailError.getResponse()?.requestId, "request-product-detail");
-  assert.equal(createError.getResponse()?.requestId, "request-product-create");
-  assert.equal(updateError.getResponse()?.requestId, "request-product-update");
-  assert.equal(missingKeyError.getResponse()?.requestId, undefined);
+    assert.equal(detailError.getResponse()?.requestId, "request-product-detail");
+    assert.equal(createError.getResponse()?.requestId, "request-product-create");
+    assert.equal(updateError.getResponse()?.requestId, "request-product-update");
+    assert.deepEqual(createError.getResponse()?.details, {
+      action: "create",
+      commerceEnabled: false,
+      reservedPhase: "phase-2",
+      resource: "product",
+      writable: false,
+      writeDisabledCode: apiErrorCodes.COMMERCE_DISABLED,
+    });
+    assert.deepEqual(updateError.getResponse()?.details, {
+      action: "update",
+      commerceEnabled: false,
+      reservedPhase: "phase-2",
+      resource: "product",
+      writable: false,
+      writeDisabledCode: apiErrorCodes.COMMERCE_DISABLED,
+    });
+    assert.equal(missingKeyError.getResponse()?.requestId, undefined);
+  });
 });
 
 test("admin order and payment detail routes keep stable MVP errors", () => {

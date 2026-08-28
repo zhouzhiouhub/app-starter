@@ -35,10 +35,26 @@ test("commerce endpoints reject writes while commerce is disabled", () => {
       );
 
       assert.equal(cartError.getResponse()?.requestId, "request-cart-disabled");
+      assert.deepEqual(cartError.getResponse()?.details, {
+        action: "add-to-cart",
+        commerceEnabled: flag === "true",
+        reservedPhase: "phase-2",
+        resource: "cart",
+        writable: false,
+        writeDisabledCode: apiErrorCodes.COMMERCE_DISABLED,
+      });
       assert.equal(
         checkoutError.getResponse()?.requestId,
         "request-checkout-disabled",
       );
+      assert.deepEqual(checkoutError.getResponse()?.details, {
+        action: "checkout",
+        commerceEnabled: flag === "true",
+        reservedPhase: "phase-2",
+        resource: "checkout",
+        writable: false,
+        writeDisabledCode: apiErrorCodes.COMMERCE_DISABLED,
+      });
     });
   }
 });
@@ -56,6 +72,14 @@ test("stripe webhook placeholder rejects events without echoing payloads", () =>
       const serialized = JSON.stringify(response);
 
       assert.equal(response?.requestId, "request-webhook-disabled");
+      assert.deepEqual(response?.details, {
+        action: "receive-webhook",
+        commerceEnabled: flag === "true",
+        reservedPhase: "phase-2",
+        resource: "stripe-webhook",
+        writable: false,
+        writeDisabledCode: apiErrorCodes.COMMERCE_DISABLED,
+      });
       assert.match(response?.message, /Stripe webhook is reserved/);
       assert.equal(serialized.includes("evt_secret"), false);
       assert.equal(serialized.includes("stripe-signature"), false);
@@ -133,6 +157,8 @@ test("public commerce disabled routes keep the MVP public paths", async () => {
       assert.equal(response.status, 409);
       assert.equal(body.code, apiErrorCodes.COMMERCE_DISABLED);
       assert.equal(body.requestId, `request-commerce-${path}`);
+      assert.equal(body.details.resource, path);
+      assert.equal(body.details.writable, false);
     }
 
     const webhookResponse = await fetch(`${baseUrl}/webhooks/stripe`, {
@@ -153,6 +179,8 @@ test("public commerce disabled routes keep the MVP public paths", async () => {
     assert.equal(webhookResponse.status, 409);
     assert.equal(webhookBody.code, apiErrorCodes.COMMERCE_DISABLED);
     assert.equal(webhookBody.requestId, "request-commerce-webhook");
+    assert.equal(webhookBody.details.resource, "stripe-webhook");
+    assert.equal(webhookBody.details.action, "receive-webhook");
     assert.equal(webhookText.includes("evt_secret_payload"), false);
     assert.equal(webhookText.includes("secret_signature"), false);
   } finally {

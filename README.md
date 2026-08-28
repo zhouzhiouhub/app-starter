@@ -597,7 +597,7 @@ POST /api/v1/webhooks/stripe
 - `POST /api/v1/translations/export` 需要 `translation:read`；MVP 返回当前 Tenant、当前筛选条件下的默认 Locale JSON 导出 payload，非默认 Locale 请求仍回退默认 Locale，审计日志只记录条目数量、筛选条件和缺失 key 数量，不记录翻译正文。
 - `POST /api/v1/translations/import` 需要 `translation:write` 和 `Idempotency-Key`；MVP 只允许批量导入默认 Locale 条目，导入前复用预览契约校验重复、非法和非默认 Locale 行，审计日志只记录 create / update 数量，不记录翻译正文。
 - `GET /api/v1/products`、`GET /api/v1/orders` 和 `GET /api/v1/payments` 是后台 Commerce 只读占位契约，MVP 返回空列表，并在 meta 标记 `commerceEnabled`、默认 `market` / `currency`、`writable=false`、`writeDisabledCode=COMMERCE_DISABLED` 和 `reservedPhase=phase-2`。
-- `POST /api/v1/products` 和 `PATCH /api/v1/products/:id` 是受保护的商品写入占位契约，需要 `product:write` 与 `Idempotency-Key`，MVP 返回 `COMMERCE_DISABLED` 且不回显请求体或商品 ID。
+- `POST /api/v1/products` 和 `PATCH /api/v1/products/:id` 是受保护的商品写入占位契约，需要 `product:write` 与 `Idempotency-Key`，MVP 返回 `COMMERCE_DISABLED`，并在安全 `details` 标记 `resource=product`、`action=create|update`、`writable=false`、`writeDisabledCode=COMMERCE_DISABLED` 和 `reservedPhase=phase-2`，且不回显请求体或商品 ID。
 - `GET /api/v1/products/:id` 是受保护的后台商品详情占位契约，MVP 返回 `NOT_FOUND` 且不回显商品 ID。
 - `GET /api/v1/products/:id/variants`、`GET /api/v1/products/:id/prices` 和 `GET /api/v1/products/:id/inventory` 是受保护的商品子资源只读占位契约，MVP 返回空列表和关闭态 meta，不回显商品 ID。
 - `GET /api/v1/orders/:id` 和 `GET /api/v1/payments/:id` 是受保护的后台订单 / 支付详情占位契约，MVP 返回 `NOT_FOUND` 且不回显资源 ID。
@@ -607,7 +607,7 @@ POST /api/v1/webhooks/stripe
 - `GET /api/v1/public/translations/:locale` 按公开店面域名解析 Tenant，返回对应 Tenant 的安全翻译消息包；多语言关闭时非默认 Locale 会回退默认 Locale。
 - `GET /api/v1/public/preview/:token` 返回短期预览 Token 对应的草稿 Schema，并显式设置 `Cache-Control: no-store`。
 - 前台只渲染已发布页面；未发布或不存在的 slug 进入 404 页面。
-- 当前 `cart`、`checkout` 和 Stripe Webhook 占位路由会返回 `COMMERCE_DISABLED`，这是预期行为；Webhook 占位仅对 `POST /api/v1/webhooks/stripe` 捕获原始 JSON body 并识别 `stripe-signature` 形状，不验签、不落库、不处理事件、不回显 payload 或签名。
+- 当前 `cart`、`checkout` 和 Stripe Webhook 占位路由会返回 `COMMERCE_DISABLED`，这是预期行为；关闭态 `details` 会标记 `resource`、`action`、`writable=false`、`writeDisabledCode=COMMERCE_DISABLED` 和 `reservedPhase=phase-2`，但不会回显请求体、商品 ID、payload 或签名。Webhook 占位仅对 `POST /api/v1/webhooks/stripe` 捕获原始 JSON body 并识别 `stripe-signature` 形状，不验签、不落库、不处理事件。
 - 本地默认管理员：`admin@example.com` / `ChangeMe123!`（可通过 `SEED_ADMIN_EMAIL`、`SEED_ADMIN_PASSWORD` 覆盖）；邮箱必须是有效邮箱，密码必须为 8 到 128 字符且不含控制字符，生产环境不能使用文档默认值。
 
 ## 12. 常用验证命令
@@ -734,7 +734,7 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 - 媒体库列表、上传目标、外部媒体登记、归档、`media://` 选择，以及 Page Builder 缺失 / 非图片媒体引用异常态。
 - 生产 smoke 报告 `SMOKE_REPORT_PATH` 归档、`smoke-report.v3` 摘要、失败详情脱敏、`pnpm smoke:report` 最近归档 / 指定报告回看入口、`pnpm smoke:release-check` 发布证据强校验，以及 GitHub Actions `Production Smoke` artifact 留存和 Release Checklist。
 - Localization 默认 Market / Locale / Translation fallback 视图、默认 Locale 翻译保存、按 ID 更新、分页列表、URL 筛选保留、列表筛选、缺失 key 分组检查、缺失 key 一键回填、缺失 key 修复队列、缺失 key 修复保存自动推进、修复队列跨刷新状态同步、长列表缺失 key 分页、缺失 key 分页页码记忆、缺失 key 分页与筛选联动提示、缺失 key 队列跨筛选恢复提示、键名补全与 context 辅助、修复进度提示、缺失 key 修复定位刷新、缺失 key 修复入口 loading / disabled 状态、保存后的成功定位提示、完成后缺失 key 刷新提示、缺失 key 批量导入草稿、缺失 key 批量草稿与当前筛选差异提示、批量编辑模板提示、导入草稿空状态校验说明、导入草稿空结果预览保护、缺失 key 批量修复校验摘要、导入模板引导、批量导入后的列表定位、成功导入后的修复进度聚焦、批量导入成功后的多 key 跳转、导入结果按 action 筛选、导入结果批量选择和选择保留、导入结果历史保留、导入历史结果清理入口、导入历史结果回放说明、导入历史详情筛选、导入历史筛选空态操作提示、导入历史详情批量生成草稿、从导入结果生成二次修复草稿、二次修复草稿预览提示、导入预览问题行逐项修复提示、导入预览问题行草稿定位细节、历史修复草稿重复键清理、导入 / 缺失队列状态联动、缺失队列完成态反馈、批量修复完成确认、批量修复后服务端确认聚焦、批量修复历史回放定位、批量修复历史回放后的确认清理、批量修复后的历史保留策略说明、批量修复确认后的自动清理建议、批量修复成功后的草稿清空提示、异常重试提示、重复保存提示、写入关闭态、Translation 空态、批量导入/导出预览报告、默认 Locale 批量导入写入、Admin 导入执行结果展示、Admin 默认 Locale JSON 下载、默认 Locale 导入 / 导出审计回看入口、导入 / 导出审计结果筛选回跳、审计回跳后的上下文提示和默认 Locale 长列表批量操作确认。
-- Commerce 已补齐 Product / Variant / Price / Inventory / Order / Payment / WebhookEvent 数据库预留迁移；Products / Orders / Payments 只读空列表占位响应 meta 会明确关闭态、默认市场/币种、不可写和 Phase 2 预留；后台商品创建/详情/更新、商品子资源、订单 / 支付详情、前台商品详情路由、Stripe 可选密钥安全诊断和 Stripe Webhook raw body / 签名形状预留均为显式占位。
+- Commerce 已补齐 Product / Variant / Price / Inventory / Order / Payment / WebhookEvent 数据库预留迁移；Products / Orders / Payments 只读空列表占位响应 meta 会明确关闭态、默认市场/币种、不可写和 Phase 2 预留；后台商品创建/更新、前台 cart / checkout 与 Stripe Webhook 写入关闭态会返回共享 Schema 定义的安全 details；后台商品详情、商品子资源、订单 / 支付详情、前台商品详情路由、Stripe 可选密钥安全诊断和 Stripe Webhook raw body / 签名形状预留均为显式占位。
 - Settings 默认站点名称、域名与 Analytics 配置展示页。
 - Publish 按钮，发布结果写入 PostgreSQL。
 - 启动时尝试加载已发布的 `home` 页面。
@@ -783,4 +783,4 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 2. 补齐部署 Smoke Test：前台 Vercel、API 独立 Node 服务、Admin 静态托管、Redis 生产连接、环境变量清单和回滚步骤。
 3. 做 Page Builder 视觉验收：保留最新 `Page Builder Visual` workflow 的 `page-builder-visual-fixture-<run_number>` artifact，补真实浏览器截图留档，并将 `docs/development/page-builder-visual-acceptance.json` 中六个核心区块的 Desktop / Mobile 证据从 `needs-evidence` 推进到 `accepted`。
 4. 在真实生产配置下触发 GitHub Actions `Production Smoke`，把 artifact、`pnpm smoke:report` 输出、`pnpm smoke:release-check`、`pnpm release:check` 结果和回滚目标写入 `pnpm release:notes` 生成的发布记录。
-5. 保持 Commerce 关闭态，继续强化订单 / 支付关闭态分支、Phase 2 Webhook 验签设计和 `COMMERCE_DISABLED` 错误分支测试；不进入真实交易。
+5. 保持 Commerce 关闭态，继续强化订单 / 支付关闭态分支和 Phase 2 Webhook 验签设计；不进入真实交易。

@@ -34,7 +34,7 @@ export class AdminCommerceController {
   ) {
     requireIdempotencyKey(idempotencyKey);
 
-    return throwAdminProductWriteDisabled(requestId);
+    return throwAdminProductWriteDisabled("create", requestId);
   }
 
   @Get("products/:id")
@@ -69,7 +69,7 @@ export class AdminCommerceController {
   ) {
     requireIdempotencyKey(idempotencyKey);
 
-    return throwAdminProductWriteDisabled(requestId);
+    return throwAdminProductWriteDisabled("update", requestId);
   }
 
   @Get("orders")

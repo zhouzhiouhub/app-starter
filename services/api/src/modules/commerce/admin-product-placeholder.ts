@@ -10,9 +10,14 @@ export function throwAdminProductUnavailable(requestId: string): never {
   });
 }
 
-export function throwAdminProductWriteDisabled(requestId: string): never {
+export function throwAdminProductWriteDisabled(
+  action: "create" | "update",
+  requestId: string,
+): never {
   return throwCommerceDisabled({
+    action,
     message: "Product writes are reserved for Phase 2.",
     requestId,
+    resource: "product",
   });
 }

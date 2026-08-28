@@ -12,11 +12,19 @@ export class PublicCommerceController {
 
   @Post("cart")
   addToCart(@CurrentRequestId() requestId = "local-dev") {
-    return throwCommerceDisabled({ requestId });
+    return throwCommerceDisabled({
+      action: "add-to-cart",
+      requestId,
+      resource: "cart",
+    });
   }
 
   @Post("checkout")
   checkout(@CurrentRequestId() requestId = "local-dev") {
-    return throwCommerceDisabled({ requestId });
+    return throwCommerceDisabled({
+      action: "checkout",
+      requestId,
+      resource: "checkout",
+    });
   }
 }
