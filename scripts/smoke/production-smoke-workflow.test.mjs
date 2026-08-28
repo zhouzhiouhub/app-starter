@@ -88,6 +88,7 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
     workflow,
     /release_check_flags=\(/,
   );
+  assert.match(workflow, /--all-visual-tasks/);
   assert.match(
     workflow,
     /release_check_flags\+=\(--visual-artifact-dir reports\/visual\/page-builder-fixture\)/,
@@ -111,7 +112,7 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /GITHUB_STEP_SUMMARY/);
   assert.match(workflow, /Release gate:/);
   assert.match(workflow, /Combined gate:/);
-  assert.match(workflow, /release:check -- --checklist/);
+  assert.match(workflow, /release:check -- --checklist --all-visual-tasks/);
   assert.match(workflow, /Combined artifact:/);
   assert.match(workflow, /Release notes:/);
   assert.match(workflow, /Release notes artifact:/);
@@ -162,6 +163,7 @@ test("release checklist requires archived smoke evidence", async () => {
   assert.match(checklist, /MULTI_LOCALE_ENABLED=false/);
   assert.match(checklist, /allow_blocked_release_notes/);
   assert.match(checklist, /failure review draft/);
+  assert.match(checklist, /--all-visual-tasks/);
 });
 
 test("main CI verifies the smoke report CLI entry point", async () => {

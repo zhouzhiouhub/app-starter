@@ -165,6 +165,7 @@ jobs:
         run: |
           release_check_flags=(
             --checklist
+            --all-visual-tasks
             --smoke-report "$SMOKE_REPORT_PATH"
             --output "$RELEASE_CHECK_ARTIFACT_PATH"
           )
@@ -206,7 +207,7 @@ jobs:
             echo "- Source workflow run: \`https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\`"
             echo "- Review: \`pnpm smoke:report -- $SMOKE_REPORT_PATH\`"
             echo "- Release gate: \`pnpm smoke:release-check -- $SMOKE_REPORT_PATH\`"
-            combined_gate="pnpm release:check -- --checklist --smoke-report $SMOKE_REPORT_PATH --output $RELEASE_CHECK_ARTIFACT_PATH"
+            combined_gate="pnpm release:check -- --checklist --all-visual-tasks --smoke-report $SMOKE_REPORT_PATH --output $RELEASE_CHECK_ARTIFACT_PATH"
             if [ -n "$RELEASE_VISUAL_ARTIFACT_NAME" ] && [ -n "$RELEASE_VISUAL_ARTIFACT_RUN_ID" ]; then
               combined_gate="$combined_gate --visual-artifact-dir reports/visual/page-builder-fixture"
             fi

@@ -332,7 +332,8 @@ upload, Admin static hosting, and ISR revalidation by default, writes the review
 and release-check commands to the job summary, records the source commit and
 workflow run URL in both the smoke config and summary, and uploads the report as
 `production-smoke-report-<run_number>`. It also runs the combined
-`release:check -- --checklist` gate, prints the release readiness checklist, and
+`release:check -- --checklist --all-visual-tasks` gate, prints the release
+readiness checklist with every pending Page Builder visual viewport task, and
 uploads `release-evidence-check-<run_number>` with the
 `release-evidence-check.v1` JSON artifact. If `visual_artifact_name` and
 `visual_artifact_run_id` are provided, it downloads that Page Builder Visual

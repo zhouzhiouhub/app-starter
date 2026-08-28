@@ -106,8 +106,9 @@ later phases are explicitly approved.
   `release-notes-<run_number>` is attached or linked.
 - The GitHub step summary records the report path, artifact names, review
   command, source commit, source workflow run URL, and combined
-  `release:check -- --checklist` command. When visual evidence is downloaded,
-  that combined command includes
+  `release:check -- --checklist --all-visual-tasks` command so blocked runs keep
+  every pending Page Builder visual viewport task in the log. When visual
+  evidence is downloaded, that combined command includes
   `--visual-artifact-dir reports/visual/page-builder-fixture`.
 - `pnpm smoke:report -- artifacts/production-smoke/smoke-report.json` output is
   saved in the workflow log.
