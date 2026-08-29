@@ -144,14 +144,24 @@ function formatReadinessChecklist(checklist) {
     return ["- Not recorded"];
   }
 
-  return checklist.items.map((item) =>
-    [
-      `- ${formatText(item.label)}: ${formatText(item.status)}`,
-      item.detail ? `; detail: ${formatText(item.detail)}` : "",
-      item.action ? `; action: ${formatText(item.action)}` : "",
-      item.bundleCommand ? `; bundle: ${formatText(item.bundleCommand)}` : "",
-    ].join(""),
-  );
+  return checklist.items.flatMap(formatReadinessChecklistItem);
+}
+
+function formatReadinessChecklistItem(item) {
+  return [
+    `- ${formatText(item.label)}: ${formatText(item.status)}`,
+    ...formatOptionalChecklistField("Detail", item.detail),
+    ...formatOptionalChecklistField("Action", item.action, { maxLength: 1200 }),
+    ...formatOptionalChecklistCommand("Bundle", item.bundleCommand),
+  ];
+}
+
+function formatOptionalChecklistField(label, value, options = {}) {
+  return value ? [`  - ${label}: ${formatText(value, options)}`] : [];
+}
+
+function formatOptionalChecklistCommand(label, command) {
+  return command ? [`  - ${label}: ${formatCode(command)}`] : [];
 }
 
 function formatBlockers(blockers, blockerCount) {

@@ -68,6 +68,28 @@ test("release check Markdown lists blockers and visual tasks", () => {
   const markdown = createReleaseEvidenceCheckMarkdown(artifact);
 
   assert.match(markdown, /Status: `blocked`/);
+  assert.match(markdown, /Production Smoke report: blocked/);
+  assert.doesNotMatch(
+    markdown,
+    /Production Smoke report: blocked; detail:/u,
+  );
+  assert.match(
+    markdown,
+    / {2}- Detail: Report path: artifacts\/production-smoke\/smoke-report\.json/,
+  );
+  assert.match(
+    markdown,
+    / {2}- Action: Resolve productionReadiness blockers before marking the release ready\./,
+  );
+  assert.match(markdown, /Page Builder Visual evidence: needs-evidence/);
+  assert.doesNotMatch(
+    markdown,
+    /Page Builder Visual evidence: needs-evidence; detail:/u,
+  );
+  assert.match(
+    markdown,
+    / {2}- Bundle: `pnpm visual:artifact-bundle -- --artifact-dir reports\/visual\/page-builder-fixture`/,
+  );
   assert.match(markdown, /Production Smoke: R2 upload smoke required/);
   assert.match(markdown, /Page Builder Visual: Visual artifact invalid/);
   assert.match(markdown, /Artifact issues:/);
