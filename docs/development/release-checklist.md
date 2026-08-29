@@ -178,7 +178,7 @@ later phases are explicitly approved.
   so release notes can trace the smoke report back to the CI run.
 - The `Production Smoke` workflow uploads `project-status-<run_number>`; the
   artifact is a validated `project-status.v1` snapshot with the full
-  `--all-actions` next-action list.
+  `--all-actions` next-action list and untruncated command lines.
 - `pnpm release:notes -- --release-tag <tag> --workflow-run-url <url> --smoke-artifact production-smoke-report-<run_number> --release-artifact release-evidence-check-<run_number> --project-status artifacts/release/project-status.json --project-status-artifact project-status-<run_number> --visual-artifact page-builder-visual-fixture-<run_number> --storefront-url <url> --rollback-target <target> --output docs/releases/<tag>.md`
   writes the final Markdown release record from the ready
   `release-evidence-check.v1` artifact, including the readiness checklist,

@@ -302,7 +302,7 @@ changing the pass/fail criteria. Add `--require-ready` when the same status
 report should exit non-zero until release evidence is ready. Use `--json` or
 `--output` to produce a validated `project-status.v1` artifact for handoff or
 release review notes. Add `--all-actions` when the handoff needs every pending
-next action instead of the default short list.
+next action, including full command lines, instead of the default short list.
 
 After the Page Builder visual manifest has accepted real design evidence,
 `release:check` verifies both evidence streams together: production smoke must

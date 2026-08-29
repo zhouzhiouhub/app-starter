@@ -5,7 +5,7 @@ import { assertProjectStatusArtifact } from "./project-status-validation.mjs";
 
 const maxProjectLineLength = 420;
 
-export function formatProjectStatusArtifact(artifact) {
+export function formatProjectStatusArtifact(artifact, options = {}) {
   const lines = [
     `Project status (${artifact.schemaVersion})`,
     `  Phase: ${artifact.phase}`,
@@ -23,7 +23,7 @@ export function formatProjectStatusArtifact(artifact) {
     ...formatProjectNextActions(artifact),
   ];
 
-  return lines.map(formatProjectLine);
+  return lines.map((line) => formatProjectLine(line, options));
 }
 
 function formatLocalVerification(localVerification) {
@@ -74,9 +74,12 @@ function formatProjectNextActions(artifact) {
   return lines;
 }
 
-function formatProjectLine(line) {
+function formatProjectLine(line, options) {
   const prefix = line.match(/^ */u)?.[0] ?? "";
-  const maxLength = Math.max(3, maxProjectLineLength - prefix.length);
+  const maxLength =
+    options.truncateLines === false
+      ? null
+      : Math.max(3, maxProjectLineLength - prefix.length);
 
   return `${prefix}${formatSmokeText(line.slice(prefix.length), {
     maxLength,

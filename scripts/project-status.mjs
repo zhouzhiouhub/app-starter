@@ -40,7 +40,9 @@ export async function runProjectStatusCli(args, input = {}) {
     if (config.json) {
       stdout(JSON.stringify(artifact, null, 2));
     } else {
-      for (const line of formatProjectStatusArtifact(artifact)) {
+      for (const line of formatProjectStatusArtifact(artifact, {
+        truncateLines: !config.allActions,
+      })) {
         stdout(line);
       }
 
@@ -74,7 +76,8 @@ function printHelp(writeLine) {
   pnpm project:status -- --visual-artifact-dir reports/visual/page-builder-fixture
 
 Options:
-  --all-actions              Print or write every next action instead of the first 8.
+  --all-actions              Print or write every next action instead of the first 8;
+                             text output keeps full action lines.
   --json                     Print the machine-readable project status report.
   --output <path>            Write a validated project-status.v1 JSON report under tmp/, reports/, artifacts/, or .tmp/.
   --require-ready            Exit 1 unless the current release gate is ready.

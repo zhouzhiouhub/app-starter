@@ -12,6 +12,7 @@ import {
 } from "../release/release-check-test-fixtures.mjs";
 import {
   createProjectStatusArtifact,
+  formatProjectStatusArtifact,
   projectStatusSchemaVersion,
   readProjectStatusCliConfig,
 } from "./project-status.mjs";
@@ -124,10 +125,47 @@ test("project status CLI can print every next action", async () => {
 
     assert.equal(exitCode, 0);
     assert.match(text, /spec-table\.mobile/);
+    assert.match(
+      text,
+      /spec-table\.mobile.*Verify with pnpm visual:acceptance -- --require-accepted\./,
+    );
+    assert.doesNotMatch(text, /pnpm visua\.\.\./);
     assert.doesNotMatch(text, /\.\.\. and \d+ more next actions/);
   } finally {
     await rm(emptyArchiveRoot, { force: true, recursive: true });
   }
+});
+
+test("project status formatter can preserve full action lines", () => {
+  const artifact = createProjectStatusArtifact(createBlockedCheck(), {
+    generatedAt: "2026-08-28T00:00:00.000Z",
+    includeAllActions: true,
+  });
+  const endMarker = "final-full-action-marker";
+  const longAction = [
+    "Run",
+    "pnpm visual:measure -- --write --require-complete ".repeat(12),
+    endMarker,
+  ].join(" ");
+
+  artifact.nextActions = [
+    {
+      action: longAction,
+      area: "Page Builder Visual",
+      label: "spec-table.mobile",
+    },
+  ];
+  artifact.nextActionCount = 1;
+  artifact.nextActionLimit = 1;
+  artifact.truncatedNextActionCount = 0;
+
+  const truncatedText = formatProjectStatusArtifact(artifact).join("\n");
+  const fullText = formatProjectStatusArtifact(artifact, {
+    truncateLines: false,
+  }).join("\n");
+
+  assert.equal(truncatedText.includes(endMarker), false);
+  assert.equal(fullText.includes(endMarker), true);
 });
 
 test("project status CLI can require release-ready evidence", async () => {
