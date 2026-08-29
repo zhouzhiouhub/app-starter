@@ -107,6 +107,22 @@ test("release notes validates release evidence artifact shape", () => {
     () =>
       assertReleaseEvidenceCheckArtifact({
         ...artifact,
+        readinessChecklist: {
+          ...artifact.readinessChecklist,
+          items: [
+            {
+              ...artifact.readinessChecklist.items[2],
+              steps: [{ label: "Command" }],
+            },
+          ],
+        },
+      }),
+    /readinessChecklist\.items\.steps\.value must be a string/,
+  );
+  assert.throws(
+    () =>
+      assertReleaseEvidenceCheckArtifact({
+        ...artifact,
         visual: {
           ...artifact.visual,
           artifactCheck: {

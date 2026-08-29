@@ -4,6 +4,7 @@ import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { assertReleaseNotesProjectStatusConsistency } from "./release-notes-project-status-consistency.mjs";
 import { assertReleaseNotesSourceConsistency } from "./release-notes-source-consistency.mjs";
 import { formatProjectNextActions } from "./release-notes-project-actions-report.mjs";
+import { formatReadinessChecklistMarkdown } from "./release-readiness-checklist-markdown.mjs";
 import { formatVisualChecklist } from "./release-notes-visual-checklist-report.mjs";
 
 const maxBlockerLines = 12;
@@ -57,7 +58,11 @@ export function createReleaseNotesMarkdown(config, artifact, projectStatus) {
     "",
     "## Readiness Checklist",
     "",
-    ...formatReadinessChecklist(artifact.readinessChecklist),
+    ...formatReadinessChecklistMarkdown(artifact.readinessChecklist, {
+      maxActionLength: maxTextLength,
+      maxStepTextLength: 420,
+      maxTextLength,
+    }),
     ...formatProjectNextActions(projectStatus, artifact),
     "## Visual Evidence",
     "",
@@ -92,33 +97,6 @@ function formatTraceability(groups) {
         group.action ?? "no action",
       )})`,
   );
-}
-
-function formatReadinessChecklist(checklist) {
-  const items = Array.isArray(checklist?.items) ? checklist.items : [];
-
-  if (items.length === 0) {
-    return ["- Not recorded"];
-  }
-
-  return items.flatMap(formatReadinessChecklistItem);
-}
-
-function formatReadinessChecklistItem(item) {
-  return [
-    `- ${formatInline(item.label)}: ${formatInline(item.status)}`,
-    ...formatChecklistField("Detail", item.detail),
-    ...formatChecklistField("Action", item.action),
-    ...formatChecklistCommand("Bundle", item.bundleCommand),
-  ];
-}
-
-function formatChecklistField(label, value) {
-  return hasText(value) ? [`  - ${label}: ${formatInline(value)}`] : [];
-}
-
-function formatChecklistCommand(label, value) {
-  return hasText(value) ? [`  - ${label}: \`${formatInline(value)}\``] : [];
 }
 
 function formatVisualEvidence(visual) {

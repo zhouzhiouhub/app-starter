@@ -27,6 +27,15 @@ test("release readiness checklist summarizes ready evidence", () => {
   assert.match(lines, /Production Smoke report: ready/);
   assert.match(lines, /Page Builder Visual evidence: ready/);
   assert.match(lines, /Release notes record: ready to generate/);
+  assert.match(lines, /Steps:/);
+  assert.match(lines, /Command: pnpm release:notes -- --release-tag <tag>/);
+  assert.match(
+    lines,
+    /Evidence args: --smoke-artifact production-smoke-report-<run_number>/,
+  );
+  assert.match(lines, /Output: docs\/releases\/<tag>\.md/);
+  assert.match(lines, /Keep artifact: release-notes-<run_number>/);
+  assert.match(lines, /Formal mode: Run without --allow-blocked/);
 });
 
 test("release readiness checklist carries blocker actions", () => {

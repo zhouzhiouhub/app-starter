@@ -42,6 +42,19 @@ test("release check Markdown summarizes ready evidence", () => {
   assert.match(markdown, /Manifest: `reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json`/);
   assert.match(markdown, /Artifact check: complete/);
   assert.match(markdown, /## Readiness Checklist/);
+  assert.match(markdown, /Release notes record: ready to generate/);
+  assert.match(
+    markdown,
+    / {2}- Steps:\n {4}- Command: `pnpm release:notes -- --release-tag <tag> --workflow-run-url <url> --output docs\/releases\/<tag>\.md`/,
+  );
+  assert.match(
+    markdown,
+    / {4}- Evidence args: `--smoke-artifact production-smoke-report-<run_number>/,
+  );
+  assert.match(
+    markdown,
+    / {4}- Keep artifact: `release-notes-<run_number>`/,
+  );
   assert.match(markdown, /## Pending Visual Evidence/);
   assert.match(markdown, /- None/);
 });

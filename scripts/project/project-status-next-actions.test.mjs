@@ -30,21 +30,29 @@ test("project next actions structure the ready release notes handoff", () => {
   assert.equal(releaseNotesAction.label, "Generate release record");
   assert.deepEqual(
     releaseNotesAction.steps.map((step) => step.label),
-    ["Command", "Input evidence", "Output", "Keep artifact", "Formal mode"],
+    [
+      "Command",
+      "Evidence args",
+      "Review args",
+      "Input evidence",
+      "Output",
+      "Keep artifact",
+      "Formal mode",
+    ],
   );
   assert.match(releaseNotesAction.steps[0].value, /pnpm release:notes --/);
   assert.match(
-    releaseNotesAction.steps[0].value,
+    releaseNotesAction.steps[1].value,
     /--project-status artifacts\/release\/project-status\.json/,
   );
   assert.equal(
-    releaseNotesAction.steps[1].value,
+    releaseNotesAction.steps[3].value,
     "artifacts/release/release-check.json, artifacts/release/project-status.json",
   );
-  assert.equal(releaseNotesAction.steps[2].value, "docs/releases/<tag>.md");
+  assert.equal(releaseNotesAction.steps[4].value, "docs/releases/<tag>.md");
   assert.equal(
-    releaseNotesAction.steps[3].value,
+    releaseNotesAction.steps[5].value,
     "release-notes-<run_number>",
   );
-  assert.match(releaseNotesAction.steps[4].value, /without --allow-blocked/);
+  assert.match(releaseNotesAction.steps[6].value, /without --allow-blocked/);
 });

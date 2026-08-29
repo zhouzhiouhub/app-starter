@@ -1,5 +1,6 @@
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { defaultPageBuilderVisualArtifactDir } from "../visual/page-builder-visual-artifact-check.mjs";
+import { createReleaseNotesHandoffSteps } from "./release-notes-handoff-steps.mjs";
 
 const maxChecklistLineLength = 420;
 const maxVisibleVisualTasks = 2;
@@ -33,6 +34,7 @@ export function formatReleaseEvidenceReadinessChecklist(checklist, options = {})
       lines.push(`    Bundle: ${item.bundleCommand}`);
     }
 
+    lines.push(...formatChecklistSteps(item.steps));
     lines.push(...formatVisualTasks(item));
   }
 
@@ -99,6 +101,7 @@ function createReleaseNotesChecklistItem(check) {
         "Run pnpm release:notes with release tag, workflow run URL, artifact names, storefront URL, and rollback target.",
       label: "Release notes record",
       status: "ready to generate",
+      steps: createReleaseNotesHandoffSteps(),
     };
   }
 
@@ -160,6 +163,17 @@ function createVisualTaskSummary(task) {
     verify: task.commands?.verify ?? null,
     viewport: task.viewport,
   };
+}
+
+function formatChecklistSteps(steps) {
+  if (!Array.isArray(steps) || steps.length === 0) {
+    return [];
+  }
+
+  return [
+    "    Steps:",
+    ...steps.map((step) => `      ${step.label}: ${step.value}`),
+  ];
 }
 
 function formatVisualTasks(item) {

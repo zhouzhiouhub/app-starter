@@ -14,6 +14,24 @@ test("release check artifact includes ready checklist tasks", () => {
     "Page Builder Visual evidence:ready",
     "Release notes record:ready to generate",
   ]);
+  const releaseNotesItem = artifact.readinessChecklist.items.find(
+    (item) => item.label === "Release notes record",
+  );
+
+  assert.deepEqual(
+    releaseNotesItem.steps.map((step) => step.label),
+    [
+      "Command",
+      "Evidence args",
+      "Review args",
+      "Input evidence",
+      "Output",
+      "Keep artifact",
+      "Formal mode",
+    ],
+  );
+  assert.match(releaseNotesItem.steps[1].value, /--release-artifact/);
+  assert.doesNotMatch(releaseNotesItem.steps[1].value, /\.\.\./);
 });
 
 test("release check artifact includes blocked checklist actions", () => {

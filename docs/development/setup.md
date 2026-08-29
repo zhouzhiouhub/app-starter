@@ -325,8 +325,8 @@ release notes. Add `--all-actions` when it needs every pending next action,
 including
 full command lines, instead of the default short list. When the gate is ready,
 the next action expands the final `pnpm release:notes` handoff into structured
-steps for the command, input evidence, output record, `release-notes` artifact,
-and formal mode without `--allow-blocked`.
+steps for the command, evidence args, review args, input evidence, output
+record, `release-notes` artifact, and formal mode without `--allow-blocked`.
 
 `release:handoff` is a convenience wrapper for release review handoff. It reads
 the same release gate once, then writes `preflight.json`, `preflight.md`,

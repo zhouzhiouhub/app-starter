@@ -265,8 +265,9 @@ later phases are explicitly approved.
   visual bundle, reference import Markdown, artifact check Markdown, combined
   gate, project status, and release notes artifact map. Once the gate is ready,
   the next-action list reduces to the structured `release:notes` handoff:
-  command, input evidence, output record, `release-notes-<run_number>` artifact,
-  and formal mode without `--allow-blocked`.
+  command, evidence args, review args, input evidence, output record,
+  `release-notes-<run_number>` artifact, and formal mode without
+  `--allow-blocked`.
 - Production Smoke artifact uploads use `if-no-files-found: error`; missing
   preflight JSON/Markdown, smoke JSON, Smoke Markdown, combined gate
   JSON/Markdown, project status, or release notes files fail the workflow

@@ -1,4 +1,5 @@
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
+import { createReleaseNotesHandoffSteps } from "../release/release-notes-handoff-steps.mjs";
 
 const maxProjectTextLength = 420;
 
@@ -12,22 +13,6 @@ const productionSmokeArtifactNames = [
 const pageBuilderVisualArtifactName = "page-builder-visual-fixture-<run_number>";
 const defaultVisualArtifactDir = "reports/visual/page-builder-fixture";
 const defaultVisualReferenceSourceDir = "docs/visual/page-builder-references";
-const releaseNotesArtifactName = "release-notes-<run_number>";
-const releaseNotesOutputPath = "docs/releases/<tag>.md";
-const releaseNotesCommand = [
-  "pnpm release:notes --",
-  "--release-tag <tag>",
-  "--workflow-run-url <url>",
-  "--smoke-artifact production-smoke-report-<run_number>",
-  "--preflight-artifact release-preflight-<run_number>",
-  "--release-artifact release-evidence-check-<run_number>",
-  "--project-status artifacts/release/project-status.json",
-  "--project-status-artifact project-status-<run_number>",
-  "--visual-artifact page-builder-visual-fixture-<run_number>",
-  "--storefront-url <url>",
-  "--rollback-target <target>",
-  `--output ${releaseNotesOutputPath}`,
-].join(" ");
 
 export function createProjectNextActions(check) {
   if (check.releaseReady) {
@@ -51,19 +36,7 @@ function createReleaseNotesAction() {
       "Run pnpm release:notes with release tag, workflow run URL, artifact names, storefront URL, and rollback target.",
     area: "Release Notes",
     label: "Generate release record",
-    steps: [
-      createNextActionStep("Command", releaseNotesCommand),
-      createNextActionStep(
-        "Input evidence",
-        "artifacts/release/release-check.json, artifacts/release/project-status.json",
-      ),
-      createNextActionStep("Output", releaseNotesOutputPath),
-      createNextActionStep("Keep artifact", releaseNotesArtifactName),
-      createNextActionStep(
-        "Formal mode",
-        "Run without --allow-blocked after release evidence is ready",
-      ),
-    ],
+    steps: createReleaseNotesHandoffSteps(),
   };
 }
 

@@ -44,13 +44,31 @@ function createReadinessChecklistArtifact(check) {
 }
 
 function createReadinessChecklistItemArtifact(item) {
-  return {
+  const artifact = {
     action: readTextOrNull(item.action),
     bundleCommand: readTextOrNull(item.bundleCommand),
     detail: readTextOrNull(item.detail),
     label: readTextOrNull(item.label) ?? "unknown",
     status: readTextOrNull(item.status) ?? "unknown",
   };
+  const steps = createReadinessChecklistStepsArtifact(item.steps);
+
+  if (steps.length > 0) {
+    artifact.steps = steps;
+  }
+
+  return artifact;
+}
+
+function createReadinessChecklistStepsArtifact(steps) {
+  if (!Array.isArray(steps)) {
+    return [];
+  }
+
+  return steps.map((step) => ({
+    label: readTextOrNull(step.label) ?? "unknown",
+    value: readTextOrNull(step.value) ?? "unknown",
+  }));
 }
 
 function createSmokeArtifact(smoke) {
