@@ -323,7 +323,8 @@ blocked evidence unless `--allow-blocked` is used for a failure review draft.
 When the artifact records `smoke.source.workflowRunUrl`, the CLI
 `--workflow-run-url` must match it so release records cannot point at a
 different GitHub Actions run. When it records `smoke.source.runNumber`,
-`--smoke-artifact` must match `production-smoke-report-<runNumber>` for the
+`--smoke-artifact` and `--project-status-artifact` must match
+`production-smoke-report-<runNumber>` and `project-status-<runNumber>` for the
 same reason.
 
 The `Production Smoke` GitHub Actions workflow runs the same command set against

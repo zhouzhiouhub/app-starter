@@ -84,6 +84,14 @@ test("production smoke release input preflight validates release notes config", 
     () =>
       validateProductionSmokeReleaseInputs({
         ...createReleaseNotesEnv(),
+        PROJECT_STATUS_ARTIFACT_NAME: "",
+      }),
+    /--project-status-artifact requires a value/,
+  );
+  assert.throws(
+    () =>
+      validateProductionSmokeReleaseInputs({
+        ...createReleaseNotesEnv(),
         PROJECT_STATUS_ARTIFACT_NAME: "project status",
       }),
     /Project status artifact must use 1-160 safe characters/,

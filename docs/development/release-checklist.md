@@ -219,11 +219,12 @@ later phases are explicitly approved.
 - Keep the smoke report artifact for at least the workflow retention window.
 - Keep the combined release evidence artifact for at least the workflow
   retention window.
+- Keep the project status artifact for at least the workflow retention window.
 - Keep the generated release notes artifact for at least the workflow retention
   window when it was produced by `Production Smoke`.
 - Record the release tag, workflow run URL, smoke artifact name, combined release
-  artifact name, production smoke source run, public storefront URL, and rollback
-  target in the release notes.
+  artifact name, project status artifact name, production smoke source run,
+  public storefront URL, and rollback target in the release notes.
 - Keep the generated `docs/releases/<tag>.md` release record with the release
   evidence bundle.
 - If a P0 or P1 issue happens, attach the failed smoke report review to the
