@@ -15,6 +15,7 @@ test("release records directory documents final sign-off evidence", () => {
   assert.match(readme, /production-smoke-report-<run_number>/);
   assert.match(readme, /release-evidence-check-<run_number>/);
   assert.match(readme, /project-status-<run_number>/);
+  assert.match(readme, /--project-status artifacts\/release\/project-status\.json/);
   assert.match(readme, /--project-status-artifact project-status-123/);
   assert.match(readme, /page-builder-visual-fixture-<run_number>/);
   assert.match(readme, /Failure review drafts may use `--allow-blocked`/);

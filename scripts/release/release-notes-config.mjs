@@ -1,6 +1,7 @@
 import {
   normalizeArtifactName,
   normalizePlainValue,
+  normalizeProjectStatusPath,
   normalizeReleaseEvidencePath,
   normalizeReleaseNotesOutputPath,
   normalizeReleaseTag,
@@ -9,12 +10,14 @@ import {
 } from "./release-notes-validation.mjs";
 
 const defaultReleaseCheckPath = "artifacts/release/release-check.json";
+const defaultProjectStatusPath = "artifacts/release/project-status.json";
 
 export function readReleaseNotesCliConfig(args) {
   const config = {
     allowBlocked: false,
     outputPath: null,
     projectStatusArtifact: null,
+    projectStatusPath: defaultProjectStatusPath,
     releaseArtifact: null,
     releaseCheckPath: defaultReleaseCheckPath,
     releaseTag: null,
@@ -47,6 +50,9 @@ function readReleaseNotesOption(arg, args, index, config) {
       return index + 1;
     case "--project-status-artifact":
       config.projectStatusArtifact = readOptionValue(arg, args, index);
+      return index + 1;
+    case "--project-status":
+      config.projectStatusPath = readOptionValue(arg, args, index);
       return index + 1;
     case "--release-artifact":
       config.releaseArtifact = readOptionValue(arg, args, index);
@@ -92,6 +98,7 @@ function normalizeReleaseNotesConfig(config) {
       "project status artifact",
       config.projectStatusArtifact,
     ),
+    projectStatusPath: normalizeProjectStatusPath(config.projectStatusPath),
     releaseTag: normalizeReleaseTag(config.releaseTag),
     rollbackTarget: normalizePlainValue("rollback target", config.rollbackTarget),
     smokeArtifact: normalizeArtifactName("smoke artifact", config.smokeArtifact),

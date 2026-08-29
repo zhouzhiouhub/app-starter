@@ -125,6 +125,7 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /"\$\{release_notes_flags\[@\]\}" \\/);
   assert.match(workflow, /--release-tag "\$RELEASE_TAG"/);
   assert.match(workflow, /--workflow-run-url "https:\/\/github\.com\/\$\{\{ github\.repository \}\}\/actions\/runs\/\$\{\{ github\.run_id \}\}"/);
+  assert.match(workflow, /--project-status "\$PROJECT_STATUS_ARTIFACT_PATH"/);
   assert.match(workflow, /--project-status-artifact "\$PROJECT_STATUS_ARTIFACT_NAME"/);
   assert.match(workflow, /--release-check "\$RELEASE_CHECK_ARTIFACT_PATH"/);
   assert.match(workflow, /GITHUB_STEP_SUMMARY/);

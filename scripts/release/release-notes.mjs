@@ -1,5 +1,6 @@
 import { readReleaseNotesCliConfig } from "./release-notes-config.mjs";
 import { readReleaseEvidenceCheckArtifact } from "./release-notes-artifact.mjs";
+import { readProjectStatusArtifact } from "./release-notes-project-status-artifact.mjs";
 import {
   createReleaseNotesMarkdown,
   writeReleaseNotesMarkdown,
@@ -7,12 +8,17 @@ import {
 
 export {
   createReleaseNotesMarkdown,
+  readProjectStatusArtifact,
   readReleaseEvidenceCheckArtifact,
   readReleaseNotesCliConfig,
   writeReleaseNotesMarkdown,
 };
 
 export async function createReleaseNotesFromConfig(config) {
-  const artifact = await readReleaseEvidenceCheckArtifact(config.releaseCheckPath);
-  return createReleaseNotesMarkdown(config, artifact);
+  const [artifact, projectStatus] = await Promise.all([
+    readReleaseEvidenceCheckArtifact(config.releaseCheckPath),
+    readProjectStatusArtifact(config.projectStatusPath),
+  ]);
+
+  return createReleaseNotesMarkdown(config, artifact, projectStatus);
 }

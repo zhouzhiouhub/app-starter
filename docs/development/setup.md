@@ -278,7 +278,7 @@ pnpm project:status -- --all-actions
 pnpm project:status -- --require-ready
 pnpm project:status -- --json
 pnpm project:status -- --output artifacts/release/project-status.json
-pnpm release:notes -- --release-tag v0.1.0 --workflow-run-url https://github.com/zhouzhiouhub/app-starter/actions/runs/123 --smoke-artifact production-smoke-report-123 --release-artifact release-evidence-check-123 --project-status-artifact project-status-123 --visual-artifact page-builder-visual-fixture-123 --storefront-url https://store.brand.com --rollback-target main@abcdef1 --output docs/releases/v0.1.0.md
+pnpm release:notes -- --release-tag v0.1.0 --workflow-run-url https://github.com/zhouzhiouhub/app-starter/actions/runs/123 --smoke-artifact production-smoke-report-123 --release-artifact release-evidence-check-123 --project-status artifacts/release/project-status.json --project-status-artifact project-status-123 --visual-artifact page-builder-visual-fixture-123 --storefront-url https://store.brand.com --rollback-target main@abcdef1 --output docs/releases/v0.1.0.md
 ```
 
 The review command scans the same safe archive roots, recomputes the report
@@ -317,9 +317,11 @@ then verifies the artifact-local manifest, capture report, acceptance report,
 and all 12 PNG screenshots, and writes the result under
 `visual.artifactCheck`.
 After that artifact is ready, `release:notes` writes the final Markdown release
-record, including the readiness checklist, project status artifact, any recorded
-`visual.artifactCheck` summary, and the production smoke source run, and refuses
-blocked evidence unless `--allow-blocked` is used for a failure review draft.
+record, including the readiness checklist, project status artifact and source
+path, any recorded `visual.artifactCheck` summary, and the production smoke
+source run. It validates the `project-status.v1` file against the same release
+evidence gate and refuses blocked evidence unless `--allow-blocked` is used for
+a failure review draft.
 When the artifact records `smoke.source.workflowRunUrl`, the CLI
 `--workflow-run-url` must match it so release records cannot point at a
 different GitHub Actions run. When it records `smoke.source.runNumber`,

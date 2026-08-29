@@ -7,6 +7,7 @@ import { createReadySmokeSource } from "./release-notes-test-fixtures.mjs";
 
 test("release notes CLI writes a Markdown release record", async () => {
   const root = `tmp/release-notes-test-${process.pid}-${Date.now()}`;
+  const projectStatusPath = `${root}/project-status.json`;
   const releaseCheckPath = `${root}/release-check.json`;
   const outputPath = `${root}/v0.1.0.md`;
   const stdout = [];
@@ -14,6 +15,10 @@ test("release notes CLI writes a Markdown release record", async () => {
   await rm(root, { force: true, recursive: true });
   mkdirSync(root, { recursive: true });
   writeFileSync(releaseCheckPath, `${JSON.stringify(createReadyArtifact())}\n`);
+  writeFileSync(
+    projectStatusPath,
+    `${JSON.stringify(createReadyProjectStatus())}\n`,
+  );
 
   try {
     const exitCode = await runReleaseNotesCli(
@@ -26,6 +31,8 @@ test("release notes CLI writes a Markdown release record", async () => {
         "production-smoke-report-123",
         "--release-artifact",
         "release-evidence-check-123",
+        "--project-status",
+        projectStatusPath,
         "--project-status-artifact",
         "project-status-123",
         "--visual-artifact",
@@ -49,6 +56,7 @@ test("release notes CLI writes a Markdown release record", async () => {
     assert.match(markdown, /^# Release v0\.1\.0/m);
     assert.match(markdown, /Production smoke source:/);
     assert.match(markdown, /Project status artifact: `project-status-123`/);
+    assert.match(markdown, /Project Status: release-ready \(0 blockers, 1 next actions\)/);
   } finally {
     await rm(root, { force: true, recursive: true });
   }
@@ -89,5 +97,57 @@ function createReadyArtifact() {
       viewportCount: 12,
       warningCount: 0,
     },
+  };
+}
+
+function createReadyProjectStatus() {
+  return {
+    completedMilestones: ["MVP release evidence tooling is wired."],
+    generatedAt: "2026-08-28T00:00:00.000Z",
+    localVerification: {
+      commandCount: 1,
+      commands: [
+        {
+          command: "pnpm build",
+          label: "Build",
+          status: "configured",
+        },
+      ],
+      source: "CI verify job and local package scripts",
+    },
+    nextActionCount: 1,
+    nextActionLimit: 1,
+    nextActions: [
+      {
+        action: "Run pnpm release:notes.",
+        area: "Release Notes",
+        label: "Generate release record",
+      },
+    ],
+    phase: "MVP release verification",
+    releaseGate: {
+      blockerCount: 0,
+      smoke: {
+        blockerCount: 0,
+        path: "artifacts/production-smoke/smoke-report.json",
+        status: "ready",
+        summaryStatus: "passed",
+      },
+      visual: {
+        acceptedComponentCount: 6,
+        acceptedViewportCount: 12,
+        artifactStatus: null,
+        componentCount: 6,
+        pendingComponentCount: 0,
+        pendingTaskCount: 0,
+        pendingViewportCount: 0,
+        status: "accepted",
+        viewportCount: 12,
+      },
+    },
+    releaseReady: true,
+    schemaVersion: "project-status.v1",
+    status: "release-ready",
+    truncatedNextActionCount: 0,
   };
 }

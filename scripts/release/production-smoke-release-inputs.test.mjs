@@ -100,6 +100,14 @@ test("production smoke release input preflight validates release notes config", 
     () =>
       validateProductionSmokeReleaseInputs({
         ...createReleaseNotesEnv(),
+        PROJECT_STATUS_ARTIFACT_PATH: "artifacts/release/project-status.md",
+      }),
+    /Project status artifact must end with \.json/,
+  );
+  assert.throws(
+    () =>
+      validateProductionSmokeReleaseInputs({
+        ...createReleaseNotesEnv(),
         RELEASE_NOTES_PATH: "README.md",
       }),
     /Release notes output must use safe path segments/,
@@ -145,6 +153,7 @@ test("production smoke release input preflight CLI prints help", async () => {
   assert.equal(exitCode, 0);
   assert.match(stdout.join("\n"), /pnpm release:preflight/);
   assert.match(stdout.join("\n"), /RELEASE_VISUAL_ARTIFACT_NAME/);
+  assert.match(stdout.join("\n"), /PROJECT_STATUS_ARTIFACT_PATH/);
   assert.match(stdout.join("\n"), /PROJECT_STATUS_ARTIFACT_NAME/);
   assert.match(stdout.join("\n"), /RELEASE_NOTES_ALLOW_BLOCKED/);
 });
@@ -188,6 +197,7 @@ function createReleaseNotesEnv() {
     GITHUB_REPOSITORY: "zhouzhiouhub/app-starter",
     GITHUB_RUN_ID: "123456",
     PROJECT_STATUS_ARTIFACT_NAME: "project-status-123",
+    PROJECT_STATUS_ARTIFACT_PATH: "artifacts/release/project-status.json",
     RELEASE_CHECK_ARTIFACT_NAME: "release-evidence-check-123",
     RELEASE_CHECK_ARTIFACT_PATH: "artifacts/release/release-check.json",
     RELEASE_NOTES_PATH: "artifacts/release/release-notes.md",

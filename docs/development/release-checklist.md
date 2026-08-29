@@ -174,16 +174,17 @@ later phases are explicitly approved.
 - The `Production Smoke` workflow uploads `project-status-<run_number>`; the
   artifact is a validated `project-status.v1` snapshot with the full
   `--all-actions` next-action list.
-- `pnpm release:notes -- --release-tag <tag> --workflow-run-url <url> --smoke-artifact production-smoke-report-<run_number> --release-artifact release-evidence-check-<run_number> --project-status-artifact project-status-<run_number> --visual-artifact page-builder-visual-fixture-<run_number> --storefront-url <url> --rollback-target <target> --output docs/releases/<tag>.md`
+- `pnpm release:notes -- --release-tag <tag> --workflow-run-url <url> --smoke-artifact production-smoke-report-<run_number> --release-artifact release-evidence-check-<run_number> --project-status artifacts/release/project-status.json --project-status-artifact project-status-<run_number> --visual-artifact page-builder-visual-fixture-<run_number> --storefront-url <url> --rollback-target <target> --output docs/releases/<tag>.md`
   writes the final Markdown release record from the ready
   `release-evidence-check.v1` artifact, including the readiness checklist,
-  project status artifact, visual manifest path, optional
+  project status artifact and source path, visual manifest path, optional
   `visual.artifactCheck` summary, pending visual evidence lists, visual
   checklist task summary, and visual issue summary when `--allow-blocked` is
   used for failure review drafts. The command validates the artifact's smoke
   summary, source metadata, `--workflow-run-url` match, smoke artifact and
-  project status artifact run-number match, traceability groups, readiness
-  checklist, visual counts, optional
+  project status artifact run-number match, `project-status.v1` release-ready
+  and gate-count consistency, traceability groups, readiness checklist, visual
+  counts, optional
   visual artifact check, pending lists, and issue entries before writing the
   Markdown record; a ready artifact must also have no blockers, internally
   consistent smoke status, ready production smoke with source metadata, fully

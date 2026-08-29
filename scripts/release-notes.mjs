@@ -48,11 +48,12 @@ function isMainModule() {
 
 function printHelp(writeLine) {
   writeLine(`Usage:
-  pnpm release:notes -- --release-tag v0.1.0 --workflow-run-url https://github.com/owner/repo/actions/runs/123 --smoke-artifact production-smoke-report-123 --release-artifact release-evidence-check-123 --project-status-artifact project-status-123 --visual-artifact page-builder-visual-fixture-123 --storefront-url https://store.brand.com --rollback-target main@abcdef1 --output docs/releases/v0.1.0.md
+  pnpm release:notes -- --release-tag v0.1.0 --workflow-run-url https://github.com/owner/repo/actions/runs/123 --smoke-artifact production-smoke-report-123 --release-artifact release-evidence-check-123 --project-status artifacts/release/project-status.json --project-status-artifact project-status-123 --visual-artifact page-builder-visual-fixture-123 --storefront-url https://store.brand.com --rollback-target main@abcdef1 --output docs/releases/v0.1.0.md
 
 Options:
   --allow-blocked             Generate a failure review draft from blocked evidence.
   --output <path>             Write Markdown under docs/releases, artifacts/release, reports/release, tmp/, or .tmp/.
+  --project-status <path>     project-status.v1 JSON path.
   --project-status-artifact <name>
                               Project status handoff artifact name.
   --release-artifact <name>   Combined release evidence artifact name.
@@ -65,9 +66,10 @@ Options:
   --workflow-run-url <url>    GitHub Actions workflow run URL.
 
 Consistency:
-  --workflow-run-url, --smoke-artifact, and --project-status-artifact must match
-  smoke.source when the release-evidence-check.v1 artifact records production
-  smoke source metadata.
+  The project-status.v1 artifact must match release-evidence-check.v1 readiness
+  and gate counts. --workflow-run-url, --smoke-artifact, and
+  --project-status-artifact must match smoke.source when release evidence records
+  production smoke source metadata.
 
   -h, --help                  Show this help.`);
 }

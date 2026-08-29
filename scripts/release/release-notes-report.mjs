@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
+import { assertReleaseNotesProjectStatusConsistency } from "./release-notes-project-status-consistency.mjs";
 import { assertReleaseNotesSourceConsistency } from "./release-notes-source-consistency.mjs";
 import { formatVisualChecklist } from "./release-notes-visual-checklist-report.mjs";
 
@@ -9,7 +10,7 @@ const maxTextLength = 180;
 const maxVisualArtifactIssueLines = 12;
 const maxVisualIssueLines = 12;
 
-export function createReleaseNotesMarkdown(config, artifact) {
+export function createReleaseNotesMarkdown(config, artifact, projectStatus) {
   if (!config.allowBlocked && artifact.releaseReady !== true) {
     throw new Error(
       "Release notes require a ready release-evidence-check.v1 artifact. Pass --allow-blocked only for failure review drafts.",
@@ -17,6 +18,9 @@ export function createReleaseNotesMarkdown(config, artifact) {
   }
 
   assertReleaseNotesSourceConsistency(config, artifact);
+  if (projectStatus) {
+    assertReleaseNotesProjectStatusConsistency(artifact, projectStatus);
+  }
 
   const lines = [
     `# Release ${formatInline(config.releaseTag)}`,
@@ -33,6 +37,7 @@ export function createReleaseNotesMarkdown(config, artifact) {
     `- Production smoke source: ${formatSmokeSource(artifact.smoke.source)}`,
     `- Combined release artifact: \`${formatInline(config.releaseArtifact)}\``,
     `- Project status artifact: \`${formatInline(config.projectStatusArtifact)}\``,
+    `- Project status source: \`${formatInline(config.projectStatusPath)}\``,
     `- Page Builder visual artifact: \`${formatInline(config.visualArtifact)}\``,
     `- Release check source: \`${formatInline(config.releaseCheckPath)}\``,
     `- Public storefront: ${config.storefrontUrl}`,
@@ -43,6 +48,7 @@ export function createReleaseNotesMarkdown(config, artifact) {
     `- Release evidence: ${artifact.status}`,
     `- Production Smoke: ${artifact.smoke.status} (${artifact.smoke.summary.status}, ${artifact.smoke.summary.failedCheckCount} failed checks)`,
     `- Page Builder Visual: ${artifact.visual.status} (${artifact.visual.acceptedComponentCount}/${artifact.visual.componentCount} components, ${artifact.visual.acceptedViewportCount}/${artifact.visual.viewportCount} viewports)`,
+    ...formatProjectStatusGate(projectStatus),
     ...formatVisualArtifactGate(artifact.visual.artifactCheck),
     "",
     "## Readiness Checklist",
@@ -126,6 +132,16 @@ function formatVisualArtifactGate(check) {
 
   return [
     `- Page Builder Visual Artifact: ${formatInline(check.status)} (${check.presentRequiredFileCount}/${check.requiredFileCount} files, ${check.presentScreenshotCount}/${check.expectedScreenshotCount} screenshots)`,
+  ];
+}
+
+function formatProjectStatusGate(projectStatus) {
+  if (!projectStatus) {
+    return [];
+  }
+
+  return [
+    `- Project Status: ${formatInline(projectStatus.status)} (${projectStatus.releaseGate.blockerCount} blockers, ${projectStatus.nextActionCount} next actions)`,
   ];
 }
 
