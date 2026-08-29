@@ -204,14 +204,37 @@ test("release handoff accepts ready smoke and visual evidence", async () => {
     const releaseArtifact = await readJson(`${outputRoot}/release-check.json`);
     const projectArtifact = await readJson(`${outputRoot}/project-status.json`);
     const preflightArtifact = await readJson(`${outputRoot}/preflight.json`);
+    const projectMarkdown = await readFile(
+      `${outputRoot}/project-status.md`,
+      "utf8",
+    );
+    const stdoutText = stdout.join("\n");
 
     assert.equal(exitCode, 0);
     assert.equal(releaseArtifact.status, "ready");
     assert.equal(projectArtifact.status, "release-ready");
     assert.equal(preflightArtifact.status, "passed");
-    assert.match(stdout.join("\n"), /Release ready: yes/);
-    assert.match(stdout.join("\n"), /Next actions: 1/);
-    assert.match(stdout.join("\n"), /Next action 1: Release Notes/);
+    assert.match(stdoutText, /Release ready: yes/);
+    assert.match(stdoutText, /Next actions: 1/);
+    assert.match(stdoutText, /Next action 1: Release Notes/);
+    assert.match(
+      stdoutText,
+      /Command: pnpm release:notes -- --release-tag <tag>/,
+    );
+    assert.match(
+      stdoutText,
+      /Evidence args: --smoke-artifact production-smoke-report-<run_number>/,
+    );
+    assert.match(stdoutText, /Formal mode: Run without --allow-blocked/);
+    assert.match(projectMarkdown, /Release Notes: Generate release record/);
+    assert.match(
+      projectMarkdown,
+      /Evidence args: `--smoke-artifact production-smoke-report-<run_number>/,
+    );
+    assert.match(
+      projectMarkdown,
+      /Keep artifact: `release-notes-<run_number>`/,
+    );
   } finally {
     await rm(outputRoot, { force: true, recursive: true });
   }
