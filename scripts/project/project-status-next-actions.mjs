@@ -150,6 +150,14 @@ function createPageBuilderVisualActionSteps(action, context) {
       "Verify",
       `pnpm visual:acceptance -- --require-accepted ${visualContext.manifestPath}`,
     ),
+    createNextActionStep(
+      "Bundle artifact",
+      `pnpm visual:artifact-bundle -- --artifact-dir ${visualContext.artifactDir}`,
+    ),
+    createNextActionStep(
+      "Check artifact",
+      `pnpm visual:artifact-check -- --artifact-dir ${visualContext.artifactDir} --markdown-output ${visualContext.artifactCheckReportPath}`,
+    ),
   ];
 }
 
@@ -158,6 +166,7 @@ function createPageBuilderVisualActionContext(context) {
 
   return {
     artifactDir,
+    artifactCheckReportPath: `${artifactDir}/visual-artifact-check-report.md`,
     captureReportPath: `${artifactDir}/visual-capture-report.json`,
     manifestPath: `${artifactDir}/page-builder-visual-acceptance.json`,
     referenceReportPath: `${artifactDir}/visual-reference-import-report.md`,

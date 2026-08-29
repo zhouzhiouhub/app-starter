@@ -78,11 +78,17 @@ test("project status summarizes blocked release evidence", () => {
       "Measure",
       "Accept passing",
       "Verify",
+      "Bundle artifact",
+      "Check artifact",
     ],
   );
   assert.equal(
     artifact.nextActions[1].steps[3].value,
     "pnpm visual:capture:fixture -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json --write-manifest",
+  );
+  assert.equal(
+    artifact.nextActions[1].steps.at(-1).value,
+    "pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture --markdown-output reports/visual/page-builder-fixture/visual-artifact-check-report.md",
   );
   assert.equal(
     artifact.nextActions.some((action) => action.label === "hero-banner.desktop"),
