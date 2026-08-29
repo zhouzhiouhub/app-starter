@@ -50,10 +50,7 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
     workflow,
     /SMOKE_SOURCE_RUN_NUMBER: \$\{\{ github\.run_number \}\}/,
   );
-  assert.match(
-    workflow,
-    /SMOKE_SOURCE_WORKFLOW: \$\{\{ github\.workflow \}\}/,
-  );
+  assert.match(workflow, /SMOKE_SOURCE_WORKFLOW: \$\{\{ github\.workflow \}\}/);
   assert.match(
     workflow,
     /SMOKE_SOURCE_WORKFLOW_RUN_URL: https:\/\/github\.com\/\$\{\{ github\.repository \}\}\/actions\/runs\/\$\{\{ github\.run_id \}\}/,
@@ -69,6 +66,9 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /RELEASE_CHECK_ARTIFACT_PATH:/);
   assert.match(workflow, /RELEASE_CHECK_ARTIFACT_NAME:/);
   assert.match(workflow, /RELEASE_CHECK_MARKDOWN_PATH:/);
+  assert.match(workflow, /RELEASE_PREFLIGHT_ARTIFACT_NAME:/);
+  assert.match(workflow, /RELEASE_PREFLIGHT_REPORT_PATH:/);
+  assert.match(workflow, /RELEASE_PREFLIGHT_MARKDOWN_PATH:/);
   assert.match(workflow, /PROJECT_STATUS_ARTIFACT_NAME:/);
   assert.match(workflow, /PROJECT_STATUS_ARTIFACT_PATH:/);
   assert.match(workflow, /PROJECT_STATUS_MARKDOWN_PATH:/);
@@ -77,14 +77,23 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
     workflow,
     /RELEASE_NOTES_ALLOW_BLOCKED: \$\{\{ inputs\.allow_blocked_release_notes \}\}/,
   );
-  assert.match(workflow, /RELEASE_NOTES_PATH: \$\{\{ inputs\.release_notes_path \}\}/);
+  assert.match(
+    workflow,
+    /RELEASE_NOTES_PATH: \$\{\{ inputs\.release_notes_path \}\}/,
+  );
   assert.match(
     workflow,
     /RELEASE_VISUAL_ARTIFACT_RUN_ID: \$\{\{ inputs\.visual_artifact_run_id \}\}/,
   );
   assert.match(workflow, /name: Validate release evidence inputs/);
-  assert.match(workflow, /pnpm release:preflight/);
-  assert.match(workflow, /name: Download Page Builder visual evidence artifact/);
+  assert.match(
+    workflow,
+    /pnpm release:preflight -- --json-output "\$RELEASE_PREFLIGHT_REPORT_PATH" --markdown-output "\$RELEASE_PREFLIGHT_MARKDOWN_PATH"/,
+  );
+  assert.match(
+    workflow,
+    /name: Download Page Builder visual evidence artifact/,
+  );
   assert.match(
     workflow,
     /inputs\.visual_artifact_name != '' && inputs\.visual_artifact_run_id != ''/,
@@ -101,18 +110,27 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /name: Write release handoff artifacts/);
   assert.match(workflow, /handoff_flags=\(/);
   assert.match(workflow, /--require-ready/);
-  assert.match(workflow, /--release-check-output "\$RELEASE_CHECK_ARTIFACT_PATH"/);
-  assert.match(workflow, /--release-check-markdown "\$RELEASE_CHECK_MARKDOWN_PATH"/);
-  assert.match(workflow, /--project-status-output "\$PROJECT_STATUS_ARTIFACT_PATH"/);
-  assert.match(workflow, /--project-status-markdown "\$PROJECT_STATUS_MARKDOWN_PATH"/);
+  assert.match(
+    workflow,
+    /--release-check-output "\$RELEASE_CHECK_ARTIFACT_PATH"/,
+  );
+  assert.match(
+    workflow,
+    /--release-check-markdown "\$RELEASE_CHECK_MARKDOWN_PATH"/,
+  );
+  assert.match(
+    workflow,
+    /--project-status-output "\$PROJECT_STATUS_ARTIFACT_PATH"/,
+  );
+  assert.match(
+    workflow,
+    /--project-status-markdown "\$PROJECT_STATUS_MARKDOWN_PATH"/,
+  );
   assert.match(
     workflow,
     /handoff_flags\+=\(--visual-artifact-dir reports\/visual\/page-builder-fixture\)/,
   );
-  assert.match(
-    workflow,
-    /pnpm release:handoff -- "\$\{handoff_flags\[@\]\}"/,
-  );
+  assert.match(workflow, /pnpm release:handoff -- "\$\{handoff_flags\[@\]\}"/);
   assert.match(workflow, /name: Generate release notes/);
   assert.match(
     workflow,
@@ -123,20 +141,35 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /release_notes_flags\+=\(--allow-blocked\)/);
   assert.match(workflow, /"\$\{release_notes_flags\[@\]\}" \\/);
   assert.match(workflow, /--release-tag "\$RELEASE_TAG"/);
-  assert.match(workflow, /--workflow-run-url "https:\/\/github\.com\/\$\{\{ github\.repository \}\}\/actions\/runs\/\$\{\{ github\.run_id \}\}"/);
+  assert.match(
+    workflow,
+    /--workflow-run-url "https:\/\/github\.com\/\$\{\{ github\.repository \}\}\/actions\/runs\/\$\{\{ github\.run_id \}\}"/,
+  );
   assert.match(workflow, /--project-status "\$PROJECT_STATUS_ARTIFACT_PATH"/);
-  assert.match(workflow, /--project-status-artifact "\$PROJECT_STATUS_ARTIFACT_NAME"/);
+  assert.match(
+    workflow,
+    /--project-status-artifact "\$PROJECT_STATUS_ARTIFACT_NAME"/,
+  );
   assert.match(workflow, /--release-check "\$RELEASE_CHECK_ARTIFACT_PATH"/);
   assert.match(workflow, /GITHUB_STEP_SUMMARY/);
   assert.match(workflow, /Report Markdown:/);
+  assert.match(workflow, /Preflight report:/);
+  assert.match(workflow, /Preflight Markdown:/);
+  assert.match(workflow, /Preflight artifact:/);
   assert.match(workflow, /Release gate:/);
   assert.match(workflow, /Review Markdown:/);
   assert.match(workflow, /Release handoff gate:/);
   assert.match(workflow, /release:handoff -- --require-ready/);
-  assert.match(workflow, /--release-check-markdown \$RELEASE_CHECK_MARKDOWN_PATH/);
+  assert.match(
+    workflow,
+    /--release-check-markdown \$RELEASE_CHECK_MARKDOWN_PATH/,
+  );
   assert.match(workflow, /Combined artifact:/);
   assert.match(workflow, /Combined Markdown:/);
-  assert.match(workflow, /--project-status-markdown \$PROJECT_STATUS_MARKDOWN_PATH/);
+  assert.match(
+    workflow,
+    /--project-status-markdown \$PROJECT_STATUS_MARKDOWN_PATH/,
+  );
   assert.match(workflow, /Project status artifact:/);
   assert.match(workflow, /Project status Markdown:/);
   assert.match(workflow, /Release notes:/);
@@ -163,6 +196,8 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /actions\/upload-artifact@v4/);
   assert.match(workflow, /\$\{\{ inputs\.report_path \}\}/);
   assert.match(workflow, /\$\{\{ env\.SMOKE_REPORT_MARKDOWN_PATH \}\}/);
+  assert.match(workflow, /\$\{\{ env\.RELEASE_PREFLIGHT_REPORT_PATH \}\}/);
+  assert.match(workflow, /\$\{\{ env\.RELEASE_PREFLIGHT_MARKDOWN_PATH \}\}/);
   assert.match(workflow, /\$\{\{ env\.RELEASE_CHECK_ARTIFACT_PATH \}\}/);
   assert.match(workflow, /\$\{\{ env\.RELEASE_CHECK_MARKDOWN_PATH \}\}/);
   assert.match(workflow, /\$\{\{ env\.PROJECT_STATUS_ARTIFACT_PATH \}\}/);
@@ -175,7 +210,7 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
     ),
     2,
   );
-  assert.equal(matchCount(workflow, /if-no-files-found: error/g), 4);
+  assert.equal(matchCount(workflow, /if-no-files-found: error/g), 5);
   assert.doesNotMatch(workflow, /if-no-files-found: warn/);
   assert.match(workflow, /retention-days: 30/);
 });
@@ -263,7 +298,10 @@ test("infra runbook maps production environment sources", async () => {
     .filter(shouldDocumentRuntimeEnvironmentVariable)
     .sort();
 
-  assert.deepEqual([...documentedMatrix.keys()].sort(), workflowRuntimeVariables);
+  assert.deepEqual(
+    [...documentedMatrix.keys()].sort(),
+    workflowRuntimeVariables,
+  );
 
   for (const variable of workflowRuntimeVariables) {
     assert.equal(

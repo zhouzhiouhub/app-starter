@@ -3,12 +3,17 @@
 import { pathToFileURL } from "node:url";
 import { normalizeArtifactName } from "./release-notes-validation.mjs";
 import { readReleaseNotesCliConfig } from "./release-notes-config.mjs";
+import {
+  printProductionSmokePreflightHelp,
+  readProductionSmokePreflightCliConfig,
+} from "./production-smoke-preflight-cli.mjs";
 import { validateProductionSmokeWorkflowArtifacts } from "./production-smoke-release-artifacts.mjs";
+import {
+  readProductionSmokePreflightErrorMessage,
+  writeProductionSmokePreflightReport,
+} from "./production-smoke-preflight-report.mjs";
 import { validateProductionSmokeRuntimeReadiness } from "./production-smoke-release-readiness.mjs";
 import { validateProductionSmokeRuntimeInputs } from "./production-smoke-release-runtime.mjs";
-import { formatSmokeText } from "../smoke/smoke-text.mjs";
-
-const maxPreflightErrorMessageLength = 3000;
 
 export function validateProductionSmokeReleaseInputs(env = process.env) {
   validateProductionSmokeWorkflowArtifacts(env);
@@ -41,19 +46,48 @@ export function validateProductionSmokeReleaseInputs(env = process.env) {
   };
 }
 
-export async function runProductionSmokeReleaseInputsCli(args = [], input = {}) {
+export async function runProductionSmokeReleaseInputsCli(
+  args = [],
+  input = {},
+) {
   const stdout = input.stdout ?? console.log;
   const stderr = input.stderr ?? console.error;
 
   if (args.includes("--help") || args.includes("-h")) {
-    printHelp(stdout);
+    printProductionSmokePreflightHelp(stdout);
     return 0;
   }
 
+  let config;
+
   try {
-    assertNoUnknownArgs(args);
-    const env = input.env ?? process.env;
-    const result = validateProductionSmokeReleaseInputs(env);
+    config = readProductionSmokePreflightCliConfig(args);
+  } catch (error) {
+    stderr(
+      `Production smoke release input validation failed: ${readProductionSmokePreflightErrorMessage(
+        error,
+      )}`,
+    );
+    return 1;
+  }
+
+  const env = input.env ?? process.env;
+  let result;
+
+  try {
+    result = validateProductionSmokeReleaseInputs(env);
+  } catch (error) {
+    await writePreflightFailureReport(config, env, error, stderr);
+    stderr(
+      `Production smoke release input validation failed: ${readProductionSmokePreflightErrorMessage(
+        error,
+      )}`,
+    );
+    return 1;
+  }
+
+  try {
+    await writeProductionSmokePreflightReport(config, { env, result });
     stdout(
       [
         "Production smoke release inputs validated:",
@@ -69,7 +103,7 @@ export async function runProductionSmokeReleaseInputsCli(args = [], input = {}) 
     return 0;
   } catch (error) {
     stderr(
-      `Production smoke release input validation failed: ${readPreflightErrorMessage(
+      `Production smoke preflight report write failed: ${readProductionSmokePreflightErrorMessage(
         error,
       )}`,
     );
@@ -206,63 +240,21 @@ function formatEnabled(value) {
   return value ? "enabled" : "disabled";
 }
 
-function assertNoUnknownArgs(args) {
-  const unknown = args.filter((arg) => arg !== "--");
-
-  if (unknown.length > 0) {
-    throw new Error(
-      `Unknown production smoke release input option: ${unknown[0]}`,
+async function writePreflightFailureReport(config, env, error, stderr) {
+  try {
+    await writeProductionSmokePreflightReport(config, { env, error });
+  } catch (reportError) {
+    stderr(
+      `Production smoke preflight report write failed: ${readProductionSmokePreflightErrorMessage(
+        reportError,
+      )}`,
     );
   }
 }
 
-function readPreflightErrorMessage(error) {
-  return formatSmokeText(error instanceof Error ? error.message : error, {
-    fallback: "Unknown production smoke release input validation failure.",
-    maxLength: maxPreflightErrorMessageLength,
-  });
-}
-
-function printHelp(writeLine) {
-  writeLine(`Usage:
-  pnpm release:preflight
-
-Checks:
-  Validates Production Smoke release evidence inputs before smoke requests run.
-
-Environment:
-  SMOKE_REPORT_PATH, RELEASE_CHECK_ARTIFACT_PATH, and
-  PROJECT_STATUS_ARTIFACT_PATH must be safe repository-relative JSON paths.
-  SMOKE_REPORT_MARKDOWN_PATH, RELEASE_CHECK_MARKDOWN_PATH,
-  PROJECT_STATUS_MARKDOWN_PATH, and RELEASE_NOTES_PATH must be safe
-  repository-relative Markdown paths.
-  SMOKE_REPORT_ARTIFACT_NAME, RELEASE_CHECK_ARTIFACT_NAME,
-  PROJECT_STATUS_ARTIFACT_NAME, and RELEASE_NOTES_ARTIFACT_NAME must be safe
-  artifact names.
-  RELEASE_VISUAL_ARTIFACT_NAME and RELEASE_VISUAL_ARTIFACT_RUN_ID must be set
-  together. RELEASE_TAG, RELEASE_ROLLBACK_TARGET, and
-  RELEASE_VISUAL_ARTIFACT_NAME plus RELEASE_VISUAL_ARTIFACT_RUN_ID must be set
-  together when release notes should be generated. PROJECT_STATUS_ARTIFACT_PATH
-  and PROJECT_STATUS_ARTIFACT_NAME are required when release notes are generated.
-  SMOKE_STOREFRONT_HOST must be a safe host when provided, and
-  SMOKE_REQUIRE_ADMIN_APP, SMOKE_REQUIRE_R2_UPLOAD, and
-  SMOKE_REQUIRE_REVALIDATION must be true or false when provided.
-  SMOKE_ADMIN_EMAIL, SMOKE_ADMIN_PASSWORD, SMOKE_TENANT_SLUG, SMOKE_LOCALE,
-  SMOKE_MARKET, SMOKE_PAGE_SLUG, SMOKE_RETRY_ATTEMPTS, and
-  SMOKE_RETRY_DELAY_MS must match smoke:publish input constraints when provided.
-  When NODE_ENV, APP_ENV, or VERCEL_ENV is production, also validates runtime
-  production readiness before smoke requests: production API/Web/Admin URLs,
-  SMOKE_ADMIN_EMAIL/SMOKE_ADMIN_PASSWORD, DATABASE_URL, REDIS_URL, MVP disabled
-  feature flags, JWT keys, R2/CDN, Preview Token secret, ISR revalidation, and
-  required smoke gates.
-  RELEASE_NOTES_ALLOW_BLOCKED=true may only be used with release notes inputs to
-  generate a failure review draft from blocked evidence.`);
-}
-
 function isMainModule() {
   return (
-    process.argv[1] &&
-    import.meta.url === pathToFileURL(process.argv[1]).href
+    process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href
   );
 }
 

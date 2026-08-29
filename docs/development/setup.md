@@ -382,10 +382,14 @@ running
 `pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture --markdown-output reports/visual/page-builder-fixture/visual-artifact-check-report.md`
 and the release handoff gate with
 `--visual-artifact-dir reports/visual/page-builder-fixture`. The workflow runs
-`pnpm release:preflight` before smoke requests so unsafe artifact output paths,
+`pnpm release:preflight` with
+`--json-output artifacts/release/preflight.json --markdown-output artifacts/release/preflight.md`
+before smoke requests so unsafe artifact output paths,
 an unsafe combined gate, project status, or release notes Markdown output path,
 unsafe artifact names, unsafe storefront hosts, invalid smoke boolean inputs, a
-partial visual artifact pair, or a partial release notes input set fails early.
+partial visual artifact pair, or a partial release notes input set fails early;
+it uploads `release-preflight-<run_number>` so passed and failed preflight runs
+retain the structured blocker summary.
 The same visual artifact shape can be reproduced locally with
 `pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture`.
 When `release_tag`, `rollback_target`, `visual_artifact_name`, and

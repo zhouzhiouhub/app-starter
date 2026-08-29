@@ -15,13 +15,15 @@ const defaultSmokeReportMarkdownPath =
   "artifacts/production-smoke/smoke-report.md";
 const defaultReleaseCheckArtifactPath = "artifacts/release/release-check.json";
 const defaultReleaseCheckMarkdownPath = "artifacts/release/release-check.md";
-const defaultProjectStatusArtifactPath = "artifacts/release/project-status.json";
+const defaultProjectStatusArtifactPath =
+  "artifacts/release/project-status.json";
 const defaultProjectStatusMarkdownPath = "artifacts/release/project-status.md";
 const defaultReleaseNotesPath = "artifacts/release/release-notes.md";
 const defaultSmokeReportArtifactName = "production-smoke-report-local";
 const defaultReleaseCheckArtifactName = "release-evidence-check-local";
 const defaultProjectStatusArtifactName = "project-status-local";
 const defaultReleaseNotesArtifactName = "release-notes-local";
+const defaultReleasePreflightArtifactName = "release-preflight-local";
 
 export function validateProductionSmokeWorkflowArtifacts(env) {
   validateWorkflowArtifactPaths(env);
@@ -105,6 +107,14 @@ function validateWorkflowArtifactNames(env) {
       env,
       "RELEASE_NOTES_ARTIFACT_NAME",
       defaultReleaseNotesArtifactName,
+    ),
+  );
+  normalizeArtifactName(
+    "release preflight artifact",
+    readWorkflowEnv(
+      env,
+      "RELEASE_PREFLIGHT_ARTIFACT_NAME",
+      defaultReleasePreflightArtifactName,
     ),
   );
 }

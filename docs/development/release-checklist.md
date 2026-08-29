@@ -103,7 +103,10 @@ later phases are explicitly approved.
   disabled feature flags, JWT keys, R2/CDN, Preview Token secret, ISR
   revalidation, `SMOKE_REPORT_PATH`, or required smoke gates are not
   production-ready; the failure output includes a bounded blocker and next
-  action summary for the workflow log;
+  action summary for the workflow log; the workflow writes
+  `artifacts/release/preflight.json` and `artifacts/release/preflight.md` and
+  uploads them as `release-preflight-<run_number>` so a failed preflight still
+  has retained evidence;
   `visual_artifact_name` and
   `visual_artifact_run_id` must be provided together, and release notes require
   `release_tag`, `rollback_target`, `visual_artifact_name`, and
@@ -247,8 +250,9 @@ later phases are explicitly approved.
   visual bundle, reference import Markdown, artifact check Markdown, combined
   gate, project status, and release notes artifact map.
 - Production Smoke artifact uploads use `if-no-files-found: error`; missing
-  smoke JSON, Smoke Markdown, combined gate JSON/Markdown, project status, or
-  release notes files fail the workflow instead of leaving only a warning.
+  preflight JSON/Markdown, smoke JSON, Smoke Markdown, combined gate
+  JSON/Markdown, project status, or release notes files fail the workflow
+  instead of leaving only a warning.
 - `pnpm release:notes -- --release-tag <tag> --workflow-run-url <url> --smoke-artifact production-smoke-report-<run_number> --release-artifact release-evidence-check-<run_number> --project-status artifacts/release/project-status.json --project-status-artifact project-status-<run_number> --visual-artifact page-builder-visual-fixture-<run_number> --storefront-url <url> --rollback-target <target> --output docs/releases/<tag>.md`
   writes the final Markdown release record from the ready
   `release-evidence-check.v1` artifact, including the readiness checklist,

@@ -94,6 +94,9 @@ jobs:
       RELEASE_NOTES_ARTIFACT_NAME: release-notes-${{ github.run_number }}
       RELEASE_NOTES_ALLOW_BLOCKED: ${{ inputs.allow_blocked_release_notes }}
       RELEASE_NOTES_PATH: ${{ inputs.release_notes_path }}
+      RELEASE_PREFLIGHT_ARTIFACT_NAME: release-preflight-${{ github.run_number }}
+      RELEASE_PREFLIGHT_MARKDOWN_PATH: artifacts/release/preflight.md
+      RELEASE_PREFLIGHT_REPORT_PATH: artifacts/release/preflight.json
       RELEASE_ROLLBACK_TARGET: ${{ inputs.rollback_target }}
       RELEASE_STOREFRONT_URL: ${{ inputs.storefront_url }}
       RELEASE_TAG: ${{ inputs.release_tag }}
@@ -134,7 +137,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm run check:file-size
       - name: Validate release evidence inputs
-        run: pnpm release:preflight
+        run: pnpm release:preflight -- --json-output "$RELEASE_PREFLIGHT_REPORT_PATH" --markdown-output "$RELEASE_PREFLIGHT_MARKDOWN_PATH"
       - name: Download Page Builder visual evidence artifact
         if: ${{ inputs.visual_artifact_name != '' && inputs.visual_artifact_run_id != '' }}
         uses: actions/download-artifact@v4
@@ -212,6 +215,9 @@ jobs:
             echo "- Report path: \`$SMOKE_REPORT_PATH\`"
             echo "- Report Markdown: \`$SMOKE_REPORT_MARKDOWN_PATH\`"
             echo "- Artifact: \`$SMOKE_REPORT_ARTIFACT_NAME\`"
+            echo "- Preflight report: \`$RELEASE_PREFLIGHT_REPORT_PATH\`"
+            echo "- Preflight Markdown: \`$RELEASE_PREFLIGHT_MARKDOWN_PATH\`"
+            echo "- Preflight artifact: \`$RELEASE_PREFLIGHT_ARTIFACT_NAME\`"
             echo "- Source commit: \`${{ github.sha }}\`"
             echo "- Source workflow run: \`https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\`"
             echo "- Review: \`pnpm smoke:report -- $SMOKE_REPORT_PATH\`"
@@ -253,6 +259,16 @@ jobs:
           path: |
             ${{ inputs.report_path }}
             ${{ env.SMOKE_REPORT_MARKDOWN_PATH }}
+          if-no-files-found: error
+          retention-days: 30
+      - name: Upload release preflight artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.RELEASE_PREFLIGHT_ARTIFACT_NAME }}
+          path: |
+            ${{ env.RELEASE_PREFLIGHT_REPORT_PATH }}
+            ${{ env.RELEASE_PREFLIGHT_MARKDOWN_PATH }}
           if-no-files-found: error
           retention-days: 30
       - name: Upload combined release evidence artifact
