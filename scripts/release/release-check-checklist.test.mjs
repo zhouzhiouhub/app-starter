@@ -112,6 +112,54 @@ test("release readiness checklist can include every visual task", () => {
   assert.doesNotMatch(lines, /\.\.\. and \d+ more visual viewport tasks/);
 });
 
+test("release readiness checklist formatter can preserve full task command lines", () => {
+  const endMarker = "final-full-visual-task-marker";
+  const longCommand = [
+    "pnpm",
+    "visual:measure",
+    "--",
+    "--write --require-complete ".repeat(24),
+    endMarker,
+  ].join(" ");
+  const checklist = {
+    items: [
+      {
+        label: "Page Builder Visual evidence",
+        status: "needs-evidence",
+        tasks: {
+          hiddenCount: 0,
+          items: [
+            {
+              capture: longCommand,
+              component: "spec-table",
+              expectedDesignReference:
+                "docs/visual/page-builder-references/spec-table-mobile.png",
+              expectedPreviewScreenshot:
+                "artifacts/visual/page-builder-visual-fixture-spec-table-mobile.png",
+              importReference: longCommand,
+              measure: longCommand,
+              missing: ["designReference"],
+              verify: longCommand,
+              viewport: "mobile",
+            },
+          ],
+        },
+      },
+    ],
+    releaseReady: false,
+  };
+
+  const truncatedText = formatReleaseEvidenceReadinessChecklist(checklist).join(
+    "\n",
+  );
+  const fullText = formatReleaseEvidenceReadinessChecklist(checklist, {
+    truncateLines: false,
+  }).join("\n");
+
+  assert.equal(truncatedText.includes(endMarker), false);
+  assert.equal(fullText.includes(endMarker), true);
+});
+
 function createVisualChecklist() {
   return {
     components: [

@@ -309,11 +309,12 @@ After the Page Builder visual manifest has accepted real design evidence,
 be release-ready and Page Builder visual acceptance must be fully accepted. Use
 `--checklist` to print the remaining Production Smoke, visual acceptance, and
 release notes tasks; add `--all-visual-tasks` when the release review needs
-every pending Page Builder viewport task instead of the default short list. Use
-`--json` for machine-readable stdout or `--output` to write the combined
-`release-evidence-check.v1` artifact under a safe archive path; new artifacts
-also include a structured `readinessChecklist` with the same release tasks plus
-`smoke.source` metadata for CI artifacts and release records.
+every pending Page Builder viewport task with full command lines instead of the
+default short list. Use `--json` for machine-readable stdout or `--output` to
+write the combined `release-evidence-check.v1` artifact under a safe archive
+path; new artifacts also include a structured `readinessChecklist` with the
+same release tasks plus `smoke.source` metadata for CI artifacts and release
+records.
 When the release uses a downloaded Page Builder Visual artifact, add
 `--visual-artifact-dir reports/visual/page-builder-fixture`; the combined gate
 then verifies the artifact-local manifest, capture report, acceptance report,
@@ -340,8 +341,8 @@ and release-check commands to the job summary, records the source commit and
 workflow run URL in both the smoke config and summary, and uploads the report as
 `production-smoke-report-<run_number>`. It also runs the combined
 `release:check -- --checklist --all-visual-tasks` gate, prints the release
-readiness checklist with every pending Page Builder visual viewport task, and
-uploads `release-evidence-check-<run_number>` with the
+readiness checklist with every pending Page Builder visual viewport task and
+full command lines, and uploads `release-evidence-check-<run_number>` with the
 `release-evidence-check.v1` JSON artifact. The workflow also runs
 `project:status -- --all-actions` against the same smoke and optional visual
 evidence inputs, uploads `project-status-<run_number>`, and keeps a

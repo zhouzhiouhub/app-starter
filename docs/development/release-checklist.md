@@ -111,8 +111,8 @@ later phases are explicitly approved.
 - The GitHub step summary records the report path, artifact names, review
   command, source commit, source workflow run URL, and combined
   `release:check -- --checklist --all-visual-tasks` command so blocked runs keep
-  every pending Page Builder visual viewport task in the log. When visual
-  evidence is downloaded, that combined command includes
+  every pending Page Builder visual viewport task and command line in the log.
+  When visual evidence is downloaded, that combined command includes
   `--visual-artifact-dir reports/visual/page-builder-fixture`.
 - The GitHub step summary records the
   `project:status -- --all-actions --smoke-report artifacts/production-smoke/smoke-report.json --output artifacts/release/project-status.json`
@@ -162,7 +162,7 @@ later phases are explicitly approved.
   tasks for release review, including the first Page Builder visual viewport
   tasks with their expected evidence paths and commands. Add
   `--all-visual-tasks` when the release review needs every pending Page Builder
-  visual viewport task in the same output.
+  visual viewport task and full command line in the same output.
 - `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --output artifacts/release/release-check.json`
   writes the combined `release-evidence-check.v1` artifact for the release
   record; its `readinessChecklist` lists the Production Smoke, Page Builder

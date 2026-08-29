@@ -115,8 +115,19 @@ test("release check CLI prints readiness checklist in text mode only", async () 
 test("release check CLI can print every visual checklist task", async () => {
   const emptyArchiveRoot = mkdtempSync(path.join(tmpdir(), "release-full-list-"));
   const stdout = [];
+  const endMarker = "full-visual-task-command.json";
+  const visualManifestPath = [
+    "reports/visual",
+    "very-long-page-builder-visual-artifact-directory-name".repeat(8),
+    endMarker,
+  ].join("/");
   const exitCode = await runReleaseCheckCli(
-    ["--checklist", "--all-visual-tasks"],
+    [
+      "--checklist",
+      "--all-visual-tasks",
+      "--visual-manifest",
+      visualManifestPath,
+    ],
     {
       smokeRoots: [emptyArchiveRoot],
       stdout: (line) => stdout.push(line),
@@ -127,6 +138,7 @@ test("release check CLI can print every visual checklist task", async () => {
 
   assert.equal(exitCode, 1);
   assert.match(output, /spec-table\.mobile/);
+  assert.equal(output.includes(endMarker), true);
   assert.doesNotMatch(output, /\.\.\. and \d+ more visual viewport tasks/);
 });
 

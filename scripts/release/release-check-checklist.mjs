@@ -15,7 +15,7 @@ export function createReleaseEvidenceReadinessChecklist(check, options = {}) {
   };
 }
 
-export function formatReleaseEvidenceReadinessChecklist(checklist) {
+export function formatReleaseEvidenceReadinessChecklist(checklist, options = {}) {
   const lines = ["Release readiness checklist:"];
 
   for (const item of checklist.items) {
@@ -36,7 +36,7 @@ export function formatReleaseEvidenceReadinessChecklist(checklist) {
     lines.push(...formatVisualTasks(item));
   }
 
-  return lines.map(formatChecklistLine);
+  return lines.map((line) => formatChecklistLine(line, options));
 }
 
 function createSmokeChecklistItem(check) {
@@ -190,9 +190,12 @@ function formatVisualTasks(item) {
   return lines;
 }
 
-function formatChecklistLine(line) {
+function formatChecklistLine(line, options) {
   const prefix = line.match(/^ */u)?.[0] ?? "";
-  const maxLength = Math.max(3, maxChecklistLineLength - prefix.length);
+  const maxLength =
+    options.truncateLines === false
+      ? null
+      : Math.max(3, maxChecklistLineLength - prefix.length);
 
   return `${prefix}${formatSmokeText(line.slice(prefix.length), {
     maxLength,
