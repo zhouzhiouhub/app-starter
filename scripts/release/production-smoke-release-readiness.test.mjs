@@ -91,6 +91,51 @@ test("production smoke release input preflight blocks disabled production eviden
   assert.match(error.message, /revalidation\/revalidation-smoke-not-required/);
 });
 
+test("production smoke release input preflight blocks missing smoke login credentials", () => {
+  const env = createProductionReadyEnv();
+  delete env.SMOKE_ADMIN_EMAIL;
+  delete env.SMOKE_ADMIN_PASSWORD;
+
+  const error = readThrownError(() => validateProductionSmokeReleaseInputs(env));
+
+  assert.match(
+    error.message,
+    /Production smoke runtime readiness failed before smoke requests/,
+  );
+  assert.match(error.message, /\(1 blockers\)/);
+  assert.match(error.message, /smoke\.login\/missing-required-env/);
+  assert.match(
+    error.message,
+    /Configure SMOKE_ADMIN_EMAIL and SMOKE_ADMIN_PASSWORD/,
+  );
+});
+
+test("production smoke release input preflight blocks default smoke login credentials", () => {
+  const error = readThrownError(() =>
+    validateProductionSmokeReleaseInputs({
+      ...createProductionReadyEnv(),
+      SMOKE_ADMIN_EMAIL: "admin@example.com",
+    }),
+  );
+
+  assert.match(error.message, /\(1 blockers\)/);
+  assert.match(error.message, /smoke\.login\/default-local-credentials/);
+  assert.match(error.message, /documented local default/);
+});
+
+test("production smoke release input preflight blocks invalid smoke login credentials", () => {
+  const error = readThrownError(() =>
+    validateProductionSmokeReleaseInputs({
+      ...createProductionReadyEnv(),
+      SMOKE_ADMIN_EMAIL: "owner",
+    }),
+  );
+
+  assert.match(error.message, /\(1 blockers\)/);
+  assert.match(error.message, /smoke\.login\/invalid-config/);
+  assert.match(error.message, /SMOKE_ADMIN_EMAIL must be a valid email/);
+});
+
 function createProductionReadyEnv() {
   return {
     ...readJwtKeyPairFixture(),
@@ -112,6 +157,8 @@ function createProductionReadyEnv() {
     R2_SECRET_ACCESS_KEY: "r2SecretAccessKeyProductionValue",
     REDIS_URL: "rediss://redis.brand-platform.com:6379",
     SMOKE_REPORT_PATH: "artifacts/production-smoke/smoke-report.json",
+    SMOKE_ADMIN_EMAIL: "owner@brand-platform.com",
+    SMOKE_ADMIN_PASSWORD: "production-password",
     SMOKE_REQUIRE_ADMIN_APP: "true",
     SMOKE_REQUIRE_R2_UPLOAD: "true",
     SMOKE_REQUIRE_REVALIDATION: "true",

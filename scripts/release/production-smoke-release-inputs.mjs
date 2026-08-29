@@ -240,8 +240,9 @@ Environment:
   SMOKE_REQUIRE_REVALIDATION must be true or false when provided.
   When NODE_ENV, APP_ENV, or VERCEL_ENV is production, also validates runtime
   production readiness before smoke requests: production API/Web/Admin URLs,
-  DATABASE_URL, REDIS_URL, MVP disabled feature flags, JWT keys, R2/CDN,
-  Preview Token secret, ISR revalidation, and required smoke gates.
+  SMOKE_ADMIN_EMAIL/SMOKE_ADMIN_PASSWORD, DATABASE_URL, REDIS_URL, MVP disabled
+  feature flags, JWT keys, R2/CDN, Preview Token secret, ISR revalidation, and
+  required smoke gates.
   RELEASE_NOTES_ALLOW_BLOCKED=true may only be used with release notes inputs to
   generate a failure review draft from blocked evidence.`);
 }
