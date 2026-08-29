@@ -122,7 +122,8 @@ later phases are explicitly approved.
   linked.
 - The uploaded artifact `project-status-<run_number>` is attached or linked.
   It contains both `project-status.json` and the Markdown handoff checklist
-  `project-status.md`.
+  `project-status.md`; the Markdown handoff lists the release evidence artifact
+  paths and refresh commands used for review.
 - When release note inputs were provided, the uploaded artifact
   `release-notes-<run_number>` is attached or linked.
 - The GitHub step summary records the report path, artifact names, review
@@ -197,7 +198,8 @@ later phases are explicitly approved.
 - The `Production Smoke` workflow uploads `project-status-<run_number>`; the
   artifact is a validated `project-status.v1` snapshot with the full
   `--all-actions` next-action list, untruncated command lines, and
-  `project-status.md` handoff checklist.
+  `project-status.md` handoff checklist, including the production smoke,
+  visual bundle, combined gate, project status, and release notes artifact map.
 - Production Smoke artifact uploads use `if-no-files-found: error`; missing
   smoke JSON, Smoke Markdown, combined gate, project status, or release notes
   files fail the workflow instead of leaving only a warning.

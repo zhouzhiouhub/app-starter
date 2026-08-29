@@ -309,9 +309,11 @@ report should exit non-zero until release evidence is ready. Use `--json` or
 `--output` to produce a validated `project-status.v1` artifact for handoff or
 release review notes. Add
 `--markdown-output artifacts/release/project-status.md` when the handoff needs
-a pasteable Markdown checklist, and add `--all-actions` when it needs every
-pending next action, including full command lines, instead of the default short
-list.
+a pasteable Markdown checklist; it also records the recommended archive paths
+and refresh commands for the Production Smoke JSON/Markdown, Page Builder
+Visual bundle, combined release gate, project status artifact, and release
+notes. Add `--all-actions` when it needs every pending next action, including
+full command lines, instead of the default short list.
 
 After the Page Builder visual manifest has accepted real design evidence,
 `release:check` verifies both evidence streams together: production smoke must
@@ -358,7 +360,8 @@ full command lines, and uploads `release-evidence-check-<run_number>` with the
 `project:status -- --all-actions` against the same smoke and optional visual
 evidence inputs, writes `artifacts/release/project-status.md`, uploads
 `project-status-<run_number>`, and keeps a `project-status.v1` handoff snapshot
-plus a Markdown checklist with the full next-action list. If
+plus a Markdown checklist with the full next-action list and release evidence
+artifact map. If
 `visual_artifact_name` and `visual_artifact_run_id` are provided, it downloads
 that Page Builder Visual
 artifact, including the artifact-local visual manifest and

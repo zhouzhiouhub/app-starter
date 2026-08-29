@@ -23,6 +23,10 @@ export function createProjectStatusMarkdown(artifact) {
     "",
     ...formatReleaseGate(artifact.releaseGate),
     "",
+    "## Release Evidence Artifacts",
+    "",
+    ...formatReleaseEvidenceArtifacts(),
+    "",
     "## Local Verification",
     "",
     ...formatLocalVerification(artifact.localVerification),
@@ -54,6 +58,31 @@ function formatReleaseGate(gate) {
     )})`,
     `- Page Builder Visual: ${formatVisualGate(gate.visual)}`,
     `- Blockers: ${gate.blockerCount}`,
+  ];
+}
+
+function formatReleaseEvidenceArtifacts() {
+  return [
+    "- Production Smoke JSON: `artifacts/production-smoke/smoke-report.json`",
+    "- Production Smoke Markdown: `artifacts/production-smoke/smoke-report.md`",
+    "- Page Builder Visual bundle: `reports/visual/page-builder-fixture`",
+    "- Page Builder Visual acceptance Markdown: `reports/visual/page-builder-fixture/visual-acceptance-report.md`",
+    "- Release evidence JSON: `artifacts/release/release-check.json`",
+    "- Project status JSON: `artifacts/release/project-status.json`",
+    "- Project status Markdown: `artifacts/release/project-status.md`",
+    "- Release notes Markdown: `docs/releases/<tag>.md`",
+    `- Refresh Smoke review: ${formatCode(
+      "pnpm smoke:report -- --markdown-output artifacts/production-smoke/smoke-report.md artifacts/production-smoke/smoke-report.json",
+    )}`,
+    `- Refresh visual bundle: ${formatCode(
+      "pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture",
+    )}`,
+    `- Refresh combined gate: ${formatCode(
+      "pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture --output artifacts/release/release-check.json",
+    )}`,
+    `- Refresh status handoff: ${formatCode(
+      "pnpm project:status -- --all-actions --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture --output artifacts/release/project-status.json --markdown-output artifacts/release/project-status.md",
+    )}`,
   ];
 }
 
