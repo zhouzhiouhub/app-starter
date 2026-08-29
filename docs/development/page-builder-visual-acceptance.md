@@ -151,7 +151,8 @@ the uploaded bundle with `visual:artifact-check`.
 The workflow uploads `page-builder-visual-fixture-<run_number>` with the fixture
 screenshots, an artifact-local manifest with captured `previewScreenshot` paths,
 `visual-capture-report.json`, and `visual-acceptance-report.json` captured under
-`reports/visual/page-builder-fixture`. The source manifest under
+`reports/visual/page-builder-fixture`; the upload step fails when the bundle is
+missing instead of leaving only a warning. The source manifest under
 `docs/development/` remains unchanged by CI. This artifact is regression
 evidence for the fixture and capture pipeline only. Final MVP visual sign-off
 still requires real Desktop and Mobile design references, measured diff values, and

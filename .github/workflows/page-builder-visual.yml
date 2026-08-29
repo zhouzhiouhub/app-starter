@@ -73,5 +73,5 @@ jobs:
         with:
           name: page-builder-visual-fixture-${{ github.run_number }}
           path: reports/visual/page-builder-fixture
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 14

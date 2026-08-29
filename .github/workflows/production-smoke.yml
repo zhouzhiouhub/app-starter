@@ -259,7 +259,7 @@ jobs:
         with:
           name: ${{ env.SMOKE_REPORT_ARTIFACT_NAME }}
           path: ${{ inputs.report_path }}
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 30
       - name: Upload combined release evidence artifact
         if: always()
@@ -267,7 +267,7 @@ jobs:
         with:
           name: ${{ env.RELEASE_CHECK_ARTIFACT_NAME }}
           path: ${{ env.RELEASE_CHECK_ARTIFACT_PATH }}
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 30
       - name: Upload project status artifact
         if: always()
@@ -275,7 +275,7 @@ jobs:
         with:
           name: ${{ env.PROJECT_STATUS_ARTIFACT_NAME }}
           path: ${{ env.PROJECT_STATUS_ARTIFACT_PATH }}
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 30
       - name: Upload release notes artifact
         if: ${{ always() && inputs.release_tag != '' && inputs.rollback_target != '' && inputs.visual_artifact_name != '' }}
@@ -283,5 +283,5 @@ jobs:
         with:
           name: ${{ env.RELEASE_NOTES_ARTIFACT_NAME }}
           path: ${{ env.RELEASE_NOTES_PATH }}
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 30

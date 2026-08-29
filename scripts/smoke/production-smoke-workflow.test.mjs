@@ -156,6 +156,8 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /path: \$\{\{ env\.RELEASE_CHECK_ARTIFACT_PATH \}\}/);
   assert.match(workflow, /path: \$\{\{ env\.PROJECT_STATUS_ARTIFACT_PATH \}\}/);
   assert.match(workflow, /path: \$\{\{ env\.RELEASE_NOTES_PATH \}\}/);
+  assert.equal(matchCount(workflow, /if-no-files-found: error/g), 4);
+  assert.doesNotMatch(workflow, /if-no-files-found: warn/);
   assert.match(workflow, /retention-days: 30/);
 });
 
@@ -201,3 +203,7 @@ test("main CI verifies the smoke report CLI entry point", async () => {
   assert.match(workflow, /pnpm release:preflight -- --help/);
   assert.match(workflow, /pnpm visual:artifact-check -- --help/);
 });
+
+function matchCount(value, pattern) {
+  return [...value.matchAll(pattern)].length;
+}
