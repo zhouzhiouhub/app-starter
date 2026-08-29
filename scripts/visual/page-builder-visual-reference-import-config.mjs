@@ -1,5 +1,6 @@
 import { defaultPageBuilderVisualAcceptanceManifestPath } from "./page-builder-visual-acceptance-constants.mjs";
 import { normalizeVisualAcceptanceMarkdownOutputPath } from "./page-builder-visual-acceptance-output-paths.mjs";
+import { normalizeDirectoryPathSeparators } from "../safe-path-separators.mjs";
 import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
 
 const allowedSourceDirs = ["docs", "artifacts/visual", "reports/visual"];
@@ -53,8 +54,10 @@ export function normalizeVisualReferenceSourceDir(value) {
     throw new Error("Visual reference source dir must not include padding.");
   }
 
-  const normalized = trimmed.replaceAll("\\", "/").replace(/^\.\//u, "");
-  const sourceDir = normalized.replace(/\/+$/u, "");
+  const sourceDir = normalizeDirectoryPathSeparators(trimmed).replace(
+    /^\.\//u,
+    "",
+  );
 
   if (!isSafeRelativeDir(sourceDir)) {
     throw new Error(

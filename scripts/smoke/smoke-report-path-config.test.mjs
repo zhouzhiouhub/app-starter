@@ -14,6 +14,10 @@ test("smoke report path config validates report output paths", () => {
     "tmp/smoke-report.json",
   );
   assert.equal(
+    normalizeSmokeReportPath(String.raw`artifacts\\production-smoke\\smoke-report.json`),
+    "artifacts/production-smoke/smoke-report.json",
+  );
+  assert.equal(
     normalizeSmokeReportPath("reports/2026-08-20/smoke.JSON"),
     "reports/2026-08-20/smoke.JSON",
   );
@@ -63,6 +67,10 @@ test("smoke report path config validates Markdown review paths", () => {
   assert.equal(
     normalizeSmokeReportMarkdownPath(" artifacts\\production-smoke\\smoke-report.md "),
     "artifacts/production-smoke/smoke-report.md",
+  );
+  assert.equal(
+    normalizeSmokeReportMarkdownPath(String.raw`reports\\production\\smoke-report.md`),
+    "reports/production/smoke-report.md",
   );
   assert.equal(
     normalizeSmokeReportMarkdownPath("reports/production/smoke.MD"),

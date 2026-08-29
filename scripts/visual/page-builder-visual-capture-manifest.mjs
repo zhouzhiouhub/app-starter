@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { normalizePathSeparators } from "../safe-path-separators.mjs";
 import { defaultPageBuilderVisualAcceptanceManifestPath } from "./page-builder-visual-acceptance-constants.mjs";
 
 const captureManifestPathRoots = [
@@ -26,7 +27,7 @@ export function readCaptureManifestPath(value) {
     throw new Error("Visual capture manifest path has unsafe characters.");
   }
 
-  const normalized = raw.replaceAll("\\", "/");
+  const normalized = normalizePathSeparators(raw);
   const segments = normalized.split("/");
 
   if (segments.some((segment) => !segment || segment === "." || segment === "..")) {

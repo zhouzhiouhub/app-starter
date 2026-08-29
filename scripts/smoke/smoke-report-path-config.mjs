@@ -1,4 +1,5 @@
 import { posix, win32 } from "node:path";
+import { normalizePathSeparators } from "../safe-path-separators.mjs";
 
 const reportPathSegmentPattern = /^[A-Za-z0-9._-]+$/;
 const reportPathRoots = new Set([".tmp", "artifacts", "reports", "tmp"]);
@@ -34,7 +35,7 @@ export function normalizeSmokeReportPath(value) {
     throw new Error(readSmokeReportPathErrorMessage(issue));
   }
 
-  return value.trim().replace(/\\/g, "/");
+  return normalizePathSeparators(value);
 }
 
 export function normalizeSmokeReportMarkdownPath(value) {
@@ -50,7 +51,7 @@ export function normalizeSmokeReportMarkdownPath(value) {
     throw new Error(readSmokeReportPathErrorMessage(issue, context));
   }
 
-  return value.trim().replace(/\\/g, "/");
+  return normalizePathSeparators(value);
 }
 
 export function readSmokeReportPathIssue(value, options = {}) {
@@ -74,7 +75,7 @@ export function readSmokeReportPathIssue(value, options = {}) {
     return "absolute-or-null-path";
   }
 
-  const normalized = trimmed.replace(/\\/g, "/");
+  const normalized = normalizePathSeparators(trimmed);
   const segments = normalized.split("/");
 
   if (segments.length < 2 || !reportPathRoots.has(segments[0])) {

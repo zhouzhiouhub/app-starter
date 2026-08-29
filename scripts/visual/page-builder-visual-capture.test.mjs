@@ -69,6 +69,22 @@ test("visual capture config parses selected components, viewports, and manifest 
     viewports: ["mobile"],
     writeManifest: true,
   });
+  assert.equal(
+    readCaptureOutputDir(String.raw`reports\\visual\\page-builder`),
+    "reports/visual/page-builder",
+  );
+  assert.equal(
+    readCaptureManifestPath(
+      String.raw`docs\\development\\page-builder-visual-acceptance.json`,
+    ),
+    "docs/development/page-builder-visual-acceptance.json",
+  );
+  assert.equal(
+    readCaptureReportPath(
+      String.raw`reports\\visual\\page-builder\\visual-capture-report.json`,
+    ),
+    "reports/visual/page-builder/visual-capture-report.json",
+  );
 });
 
 test("visual capture config rejects unsafe inputs", () => {

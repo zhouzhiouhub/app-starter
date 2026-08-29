@@ -27,6 +27,20 @@ test("visual artifact check config parses safe artifact directories", () => {
         "artifacts/visual/page-builder-fixture/visual-artifact-check-report.md",
     },
   );
+  assert.deepEqual(
+    readPageBuilderVisualArtifactCheckCliConfig([
+      "--artifact-dir",
+      String.raw`reports\\visual\\page-builder-fixture`,
+      "--markdown-output",
+      String.raw`reports\\visual\\page-builder-fixture\\visual-artifact-check-report.md`,
+    ]),
+    {
+      artifactDir: "reports/visual/page-builder-fixture",
+      json: false,
+      markdownOutputPath:
+        "reports/visual/page-builder-fixture/visual-artifact-check-report.md",
+    },
+  );
 });
 
 test("visual artifact check config rejects unsafe Markdown paths", () => {

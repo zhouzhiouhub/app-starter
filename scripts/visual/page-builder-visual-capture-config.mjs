@@ -1,4 +1,5 @@
 import path from "node:path";
+import { normalizeDirectoryPathSeparators } from "../safe-path-separators.mjs";
 import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
 import { normalizeSmokeReportPath } from "../smoke/smoke-report-path-config.mjs";
 import {
@@ -105,7 +106,7 @@ export function readCaptureOutputDir(value) {
     throw new Error("Visual capture output directory has unsafe characters.");
   }
 
-  const normalized = raw.replaceAll("\\", "/").replace(/\/+$/u, "");
+  const normalized = normalizeDirectoryPathSeparators(raw);
   const segments = normalized.split("/");
 
   if (

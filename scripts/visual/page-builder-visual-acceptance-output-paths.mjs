@@ -1,4 +1,5 @@
 import { posix, win32 } from "node:path";
+import { normalizePathSeparators } from "../safe-path-separators.mjs";
 import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
 import { normalizeSmokeReportPath } from "../smoke/smoke-report-path-config.mjs";
 
@@ -73,7 +74,7 @@ export function normalizeVisualAcceptanceMarkdownOutputPath(value) {
     );
   }
 
-  const normalized = raw.replace(/\\/gu, "/");
+  const normalized = normalizePathSeparators(raw);
   const segments = normalized.split("/");
 
   if (!markdownRoots.some((root) => normalized.startsWith(root))) {

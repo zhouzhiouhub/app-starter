@@ -1,4 +1,5 @@
 import { posix, win32 } from "node:path";
+import { normalizePathSeparators } from "../safe-path-separators.mjs";
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
 
 const outputPathRoots = new Set([".tmp", "artifacts", "docs", "reports", "tmp"]);
@@ -136,7 +137,7 @@ function normalizeSafeRelativePath(label, value, options) {
     throw new Error(`${label} must be a repository-relative path.`);
   }
 
-  const normalized = raw.replace(/\\/gu, "/");
+  const normalized = normalizePathSeparators(raw);
   const segments = normalized.split("/");
 
   if (!hasSafePathRoot(segments) || segments.some((segment) => !isSafePathSegment(segment))) {

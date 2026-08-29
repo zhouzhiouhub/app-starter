@@ -50,6 +50,10 @@ test("visual reference import config parses safe source dirs", () => {
     normalizeVisualReferenceSourceDir("./artifacts/visual/references"),
     "artifacts/visual/references",
   );
+  assert.equal(
+    normalizeVisualReferenceSourceDir(String.raw`docs\\visual\\page-builder-references\\`),
+    "docs/visual/page-builder-references",
+  );
   assert.throws(
     () => normalizeVisualReferenceSourceDir("../visual"),
     /safe relative directory/,

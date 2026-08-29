@@ -92,6 +92,13 @@ test("project status config keeps all-actions local", () => {
     "artifacts/release/project-status.md",
   );
   assert.equal(config.requireReady, true);
+  assert.equal(
+    readProjectStatusCliConfig([
+      "--visual-artifact-dir",
+      String.raw`reports\\visual\\page-builder-fixture`,
+    ]).releaseCheckConfig.visualArtifactDir,
+    "reports/visual/page-builder-fixture",
+  );
   assert.throws(
     () => readProjectStatusCliConfig(["--markdown-output", "README.md"]),
     /Project status Markdown must use safe path segments/,
