@@ -1,0 +1,210 @@
+import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
+import { mkdtempSync } from "node:fs";
+import { readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import test from "node:test";
+import {
+  createAcceptedVisualManifest,
+  createCompleteReleaseReport,
+  createPendingVisualManifest,
+  createVisualArtifactCheck,
+} from "./release-check-test-fixtures.mjs";
+import {
+  readReleaseHandoffCliConfig,
+  runReleaseHandoffCli,
+} from "./release-handoff.mjs";
+
+test("release handoff writes blocked reports without requiring readiness", async () => {
+  const outputRoot = createOutputRoot("blocked");
+  const smokeRoot = mkdtempSync(path.join(tmpdir(), "release-handoff-smoke-"));
+  const stdout = [];
+
+  try {
+    const exitCode = await runReleaseHandoffCli(
+      [
+        "--visual-artifact-dir",
+        "reports/visual/page-builder-fixture",
+        "--release-check-output",
+        `${outputRoot}/release-check.json`,
+        "--release-check-markdown",
+        `${outputRoot}/release-check.md`,
+        "--project-status-output",
+        `${outputRoot}/project-status.json`,
+        "--project-status-markdown",
+        `${outputRoot}/project-status.md`,
+      ],
+      {
+        generatedAt: "2026-08-29T00:00:00.000Z",
+        smokeRoots: [smokeRoot],
+        stdout: (line) => stdout.push(line),
+        visualArtifact: createVisualArtifactCheck({ status: "complete" }),
+        visualManifest: createPendingVisualManifest(),
+      },
+    );
+    const releaseArtifact = await readJson(`${outputRoot}/release-check.json`);
+    const projectArtifact = await readJson(`${outputRoot}/project-status.json`);
+    const releaseMarkdown = await readFile(
+      `${outputRoot}/release-check.md`,
+      "utf8",
+    );
+    const projectMarkdown = await readFile(
+      `${outputRoot}/project-status.md`,
+      "utf8",
+    );
+
+    assert.equal(exitCode, 0);
+    assert.equal(releaseArtifact.status, "blocked");
+    assert.equal(releaseArtifact.blockerCount, 8);
+    assert.equal(releaseArtifact.visual.artifactCheck.status, "complete");
+    assert.equal(projectArtifact.status, "needs-evidence");
+    assert.equal(projectArtifact.nextActionCount, 14);
+    assert.match(releaseMarkdown, /# Release Evidence Check/);
+    assert.match(projectMarkdown, /# MVP Release Handoff/);
+    assert.match(stdout.join("\n"), /Release handoff written:/);
+    assert.match(stdout.join("\n"), /Release ready: no/);
+  } finally {
+    await rm(outputRoot, { force: true, recursive: true });
+    await rm(smokeRoot, { force: true, recursive: true });
+  }
+});
+
+test("release handoff can require ready evidence after writing reports", async () => {
+  const outputRoot = createOutputRoot("require-ready");
+  const smokeRoot = mkdtempSync(path.join(tmpdir(), "release-handoff-smoke-"));
+
+  try {
+    const exitCode = await runReleaseHandoffCli(
+      [
+        "--require-ready",
+        "--release-check-output",
+        `${outputRoot}/release-check.json`,
+        "--release-check-markdown",
+        `${outputRoot}/release-check.md`,
+        "--project-status-output",
+        `${outputRoot}/project-status.json`,
+        "--project-status-markdown",
+        `${outputRoot}/project-status.md`,
+      ],
+      {
+        smokeRoots: [smokeRoot],
+        stdout: () => {},
+        visualManifest: createPendingVisualManifest(),
+      },
+    );
+
+    assert.equal(exitCode, 1);
+    assert.equal((await readJson(`${outputRoot}/release-check.json`)).status, "blocked");
+    assert.equal(
+      (await readJson(`${outputRoot}/project-status.json`)).status,
+      "needs-evidence",
+    );
+  } finally {
+    await rm(outputRoot, { force: true, recursive: true });
+    await rm(smokeRoot, { force: true, recursive: true });
+  }
+});
+
+test("release handoff accepts ready smoke and visual evidence", async () => {
+  const outputRoot = createOutputRoot("ready");
+  const { evidenceRoot, manifest } = createAcceptedVisualManifest();
+  const stdout = [];
+
+  try {
+    const exitCode = await runReleaseHandoffCli(
+      [
+        "--require-ready",
+        "--smoke-report",
+        "artifacts/production-smoke/smoke-report.json",
+        "--release-check-output",
+        `${outputRoot}/release-check.json`,
+        "--release-check-markdown",
+        `${outputRoot}/release-check.md`,
+        "--project-status-output",
+        `${outputRoot}/project-status.json`,
+        "--project-status-markdown",
+        `${outputRoot}/project-status.md`,
+      ],
+      {
+        generatedAt: "2026-08-29T00:00:00.000Z",
+        smokeArtifact: {
+          path: "artifacts/production-smoke/smoke-report.json",
+          report: createCompleteReleaseReport(),
+        },
+        stdout: (line) => stdout.push(line),
+        visualEvidenceRoot: evidenceRoot,
+        visualManifest: manifest,
+      },
+    );
+    const releaseArtifact = await readJson(`${outputRoot}/release-check.json`);
+    const projectArtifact = await readJson(`${outputRoot}/project-status.json`);
+
+    assert.equal(exitCode, 0);
+    assert.equal(releaseArtifact.status, "ready");
+    assert.equal(projectArtifact.status, "release-ready");
+    assert.match(stdout.join("\n"), /Release ready: yes/);
+    assert.match(stdout.join("\n"), /Next action: Release Notes/);
+  } finally {
+    await rm(outputRoot, { force: true, recursive: true });
+  }
+});
+
+test("release handoff config normalizes paths and is documented", async () => {
+  const config = readReleaseHandoffCliConfig([
+    "--",
+    "--smoke-report",
+    String.raw`artifacts\\production-smoke\\smoke-report.json`,
+    "--visual-artifact-dir",
+    String.raw`reports\\visual\\page-builder-fixture`,
+    "--release-check-output",
+    String.raw`artifacts\\release\\release-check.json`,
+    "--release-check-markdown",
+    String.raw`artifacts\\release\\release-check.md`,
+    "--project-status-output",
+    String.raw`artifacts\\release\\project-status.json`,
+    "--project-status-markdown",
+    String.raw`artifacts\\release\\project-status.md`,
+  ]);
+  const [packageJson, ciWorkflow, readme, setupDoc, releaseChecklist] =
+    await Promise.all([
+      readFile("package.json", "utf8"),
+      readFile(".github/workflows/ci.yml", "utf8"),
+      readFile("README.md", "utf8"),
+      readFile("docs/development/setup.md", "utf8"),
+      readFile("docs/development/release-checklist.md", "utf8"),
+    ]);
+
+  assert.equal(config.releaseCheckOutputPath, "artifacts/release/release-check.json");
+  assert.equal(config.releaseCheckMarkdownPath, "artifacts/release/release-check.md");
+  assert.equal(config.projectStatusOutputPath, "artifacts/release/project-status.json");
+  assert.equal(config.projectStatusMarkdownPath, "artifacts/release/project-status.md");
+  assert.equal(
+    config.smokeReportPath,
+    String.raw`artifacts\\production-smoke\\smoke-report.json`,
+  );
+  assert.equal(
+    config.visualArtifactDir,
+    String.raw`reports\\visual\\page-builder-fixture`,
+  );
+  assert.throws(
+    () => readReleaseHandoffCliConfig(["--release-check-output", "README.md"]),
+    /Release check artifact must use safe path segments/,
+  );
+  assert.match(
+    packageJson,
+    /"release:handoff": "node scripts\/release-handoff\.mjs"/,
+  );
+  assert.match(ciWorkflow, /pnpm release:handoff -- --help/);
+  assert.match(readme, /pnpm release:handoff/);
+  assert.match(setupDoc, /pnpm release:handoff/);
+  assert.match(releaseChecklist, /pnpm release:handoff/);
+});
+
+function createOutputRoot(label) {
+  return `tmp/release-handoff-${label}-${process.pid}-${randomUUID()}`;
+}
+
+async function readJson(filePath) {
+  return JSON.parse(await readFile(filePath, "utf8"));
+}

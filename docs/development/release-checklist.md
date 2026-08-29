@@ -211,6 +211,11 @@ later phases are explicitly approved.
   `--visual-artifact-dir` is provided, the same artifact includes
   `visual.artifactCheck` with required file, validated screenshot, and issue
   counts.
+- `pnpm release:handoff -- --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture`
+  writes the combined release evidence JSON/Markdown and project status
+  JSON/Markdown from the same release gate read. It is safe for blocked review
+  handoff because it still writes the files; add `--require-ready` when it
+  should fail until release evidence is ready.
 - The `Production Smoke` workflow uploads the same combined release evidence as
   `release-evidence-check-<run_number>`; the artifact includes
   `release-check.json`, `release-check.md`, and `smoke.source` so release notes
@@ -258,8 +263,12 @@ later phases are explicitly approved.
   before marking the combined production and visual evidence ready.
 - Add `--visual-artifact-dir reports/visual/page-builder-fixture` when the
   release depends on screenshots from a downloaded Page Builder Visual artifact.
-- Run the same command with `--checklist` when the gate is blocked and keep the
-  readiness task output with the failed evidence review.
+- Run
+  `pnpm release:handoff -- --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture`
+  when a blocked or ready review needs both release evidence and project status
+  JSON/Markdown files refreshed together.
+- Run `pnpm release:check -- --checklist` when the gate is blocked and keep
+  the readiness task output with the failed evidence review.
 - Use the failed check details and suggested fixes from the report review; the
   combined release gate blockers include the Production Smoke artifact action
   and the `pnpm visual:acceptance -- --checklist` command for visual evidence.

@@ -287,6 +287,9 @@ pnpm project:status -- --require-ready
 pnpm project:status -- --json
 pnpm project:status -- --output artifacts/release/project-status.json
 pnpm project:status -- --markdown-output artifacts/release/project-status.md
+pnpm release:handoff
+pnpm release:handoff -- --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture
+pnpm release:handoff -- --require-ready
 pnpm release:notes -- --release-tag v0.1.0 --workflow-run-url https://github.com/zhouzhiouhub/app-starter/actions/runs/123 --smoke-artifact production-smoke-report-123 --release-artifact release-evidence-check-123 --project-status artifacts/release/project-status.json --project-status-artifact project-status-123 --visual-artifact page-builder-visual-fixture-123 --storefront-url https://store.brand.com --rollback-target main@abcdef1 --output docs/releases/v0.1.0.md
 ```
 
@@ -317,6 +320,13 @@ Visual bundle, reference import Markdown, artifact check Markdown, combined
 release gate, project status artifact, and release notes. Add `--all-actions` when it needs every
 pending next action, including
 full command lines, instead of the default short list.
+
+`release:handoff` is a convenience wrapper for release review handoff. It reads
+the same release gate once, then writes `release-check.json`,
+`release-check.md`, `project-status.json`, and `project-status.md` under
+`artifacts/release/` by default so blocked and ready states use matching
+evidence. Blocked evidence still writes the files; add `--require-ready` when
+the handoff should fail until the release gate is ready.
 
 After the Page Builder visual manifest has accepted real design evidence,
 `release:check` verifies both evidence streams together: production smoke must
