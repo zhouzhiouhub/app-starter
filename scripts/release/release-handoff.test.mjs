@@ -88,6 +88,18 @@ test("release handoff writes blocked reports without requiring readiness", async
     assert.match(stdout.join("\n"), /Next action 2: Page Builder Visual/);
     assert.match(
       stdout.join("\n"),
+      /First structured action: Page Builder Visual: hero-banner\.desktop/,
+    );
+    assert.match(
+      stdout.join("\n"),
+      /Reference: docs\/visual\/page-builder-references\/hero-banner-desktop\.png/,
+    );
+    assert.match(
+      stdout.join("\n"),
+      /Accept passing: pnpm visual:measure -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --accept-passing --require-complete/,
+    );
+    assert.match(
+      stdout.join("\n"),
       new RegExp(
         `Remaining next actions: 12 \\(see ${escapeRegExp(
           `${outputRoot}/project-status.md`,
@@ -327,19 +339,19 @@ test("release handoff config normalizes paths and is documented", async () => {
   printReleaseHandoffHelp((line) => helpOutput.push(line));
   assert.match(
     helpOutput.join("\n"),
-    /first two next actions.*generated project-status Markdown/s,
+    /first two next actions.*first structured action steps.*generated project-status Markdown/s,
   );
   assert.match(
     readme,
-    /first two next\s+actions.*artifacts\/release\/project-status\.md/s,
+    /first two next\s+actions.*first structured next-action steps.*artifacts\/release\/project-status\.md/s,
   );
   assert.match(
     setupDoc,
-    /first two next\s+actions.*artifacts\/release\/project-status\.md/s,
+    /first two next\s+actions.*first structured next-action steps.*artifacts\/release\/project-status\.md/s,
   );
   assert.match(
     releaseChecklist,
-    /first two next\s+actions.*project-status\.md/s,
+    /first two next\s+actions.*first structured\s+next-action steps.*project-status\.md/s,
   );
 });
 

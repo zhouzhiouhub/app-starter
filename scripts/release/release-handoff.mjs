@@ -138,8 +138,9 @@ Release handoff:
   Writes preflight.json, preflight.md, release-check.json, release-check.md,
   project-status.json, and project-status.md from the same handoff run. Blocked
   evidence still writes the handoff; use --require-ready when the command should
-  gate release. The terminal summary prints the first two next actions and
-  points any remaining actions to the generated project-status Markdown.`);
+  gate release. The terminal summary prints the first two next actions, previews
+  the first structured action steps when available, and points any remaining
+  actions to the generated project-status Markdown.`);
 }
 
 async function writeReleaseHandoffPreflight(config, input, generatedAt) {
@@ -176,7 +177,9 @@ function formatNextAction(action) {
 
 function formatNextActions(actions, projectStatusMarkdownPath) {
   const visibleActions = actions.slice(0, 2);
-  const hiddenActionCount = actions.length - visibleActions.length;
+  const hiddenActions = actions.slice(visibleActions.length);
+  const hiddenActionCount = hiddenActions.length;
+  const structuredAction = hiddenActions.find(hasStructuredSteps);
 
   if (visibleActions.length === 0) {
     return ["  Next action: None"];
@@ -186,10 +189,26 @@ function formatNextActions(actions, projectStatusMarkdownPath) {
     ...visibleActions.map(
       (action, index) => `  Next action ${index + 1}: ${formatNextAction(action)}`,
     ),
+    ...formatStructuredActionPreview(structuredAction),
     ...(hiddenActionCount > 0
       ? [
           `  Remaining next actions: ${hiddenActionCount} (see ${projectStatusMarkdownPath} for the full list)`,
         ]
-      : []),
+    : []),
   ];
+}
+
+function formatStructuredActionPreview(action) {
+  if (!hasStructuredSteps(action)) {
+    return [];
+  }
+
+  return [
+    `  First structured action: ${action.area}: ${action.label}`,
+    ...action.steps.map((step) => `    ${step.label}: ${step.value}`),
+  ];
+}
+
+function hasStructuredSteps(action) {
+  return Array.isArray(action?.steps) && action.steps.length > 0;
 }

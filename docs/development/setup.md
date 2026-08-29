@@ -330,10 +330,10 @@ the same release gate once, then writes `preflight.json`, `preflight.md`,
 `release-check.json`, `release-check.md`, `project-status.json`, and
 `project-status.md` under `artifacts/release/` by default so blocked and ready
 states use matching evidence. Its terminal summary prints the first two next
-actions and points remaining actions to
-`artifacts/release/project-status.md`. Blocked evidence still writes the files; add
-`--require-ready` when the handoff should fail until both release evidence and
-preflight are ready.
+actions, previews the first structured next-action steps when available, and
+points remaining actions to `artifacts/release/project-status.md`. Blocked
+evidence still writes the files; add `--require-ready` when the handoff should
+fail until both release evidence and preflight are ready.
 
 After the Page Builder visual manifest has accepted real design evidence,
 `release:check` verifies both evidence streams together: production smoke must

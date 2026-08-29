@@ -248,11 +248,11 @@ later phases are explicitly approved.
 - `pnpm release:handoff -- --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture`
   writes the preflight JSON/Markdown, combined release evidence JSON/Markdown,
   and project status JSON/Markdown from the same handoff run. The terminal
-  summary prints the first two next actions and points any remaining work to
-  `project-status.md`. It is safe for
-  blocked review handoff because it still writes the files; add
-  `--require-ready` when it should fail until release evidence and preflight are
-  ready.
+  summary prints the first two next actions, previews the first structured
+  next-action steps when available, and points any remaining work to
+  `project-status.md`. It is safe for blocked review handoff because it still
+  writes the files; add `--require-ready` when it should fail until release
+  evidence and preflight are ready.
 - The `Production Smoke` workflow uploads the same combined release evidence as
   `release-evidence-check-<run_number>`; the artifact includes
   `release-check.json`, `release-check.md`, and `smoke.source` so release notes
