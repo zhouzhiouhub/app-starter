@@ -42,7 +42,7 @@ later phases are explicitly approved.
   import/capture/measure/verify commands for each Desktop and Mobile viewport.
   After
   placing real design reference PNGs under a retained source directory, run
-  `pnpm visual:references -- --source-dir docs/visual/page-builder-references --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md`
+  `pnpm visual:references -- --source-dir docs/visual/page-builder-references --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete`
   to keep the reference intake report with missing or imported PNG paths. Then
   run
   `pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete`.

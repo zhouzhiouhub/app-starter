@@ -271,7 +271,7 @@ pnpm smoke:report -- --list --limit=10
 pnpm smoke:report -- --markdown-output artifacts/production-smoke/smoke-report.md artifacts/production-smoke/smoke-report.json
 pnpm smoke:report -- reports/production/smoke-report.json
 pnpm smoke:release-check -- artifacts/production-smoke/smoke-report.json
-pnpm visual:references -- --source-dir docs/visual/page-builder-references --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md
+pnpm visual:references -- --source-dir docs/visual/page-builder-references --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete
 pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete
 pnpm release:preflight
 pnpm release:check -- --checklist --smoke-report artifacts/production-smoke/smoke-report.json

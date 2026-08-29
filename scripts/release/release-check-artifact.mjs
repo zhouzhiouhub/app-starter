@@ -161,12 +161,19 @@ function createVisualChecklistTaskArtifact(task) {
 }
 
 function createVisualChecklistCommandsArtifact(commands) {
-  return {
+  const artifact = {
     capture: readTextOrNull(commands?.capture),
     importReference: readTextOrNull(commands?.importReference),
     measure: readTextOrNull(commands?.measure),
     verify: readTextOrNull(commands?.verify),
   };
+  const referenceReport = readTextOrNull(commands?.referenceReport);
+
+  if (referenceReport) {
+    artifact.referenceReport = referenceReport;
+  }
+
+  return artifact;
 }
 
 function createVisualArtifactCheckArtifact(check) {

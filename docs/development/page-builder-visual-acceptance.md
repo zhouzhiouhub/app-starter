@@ -24,7 +24,7 @@ pnpm visual:capture:fixture -- --output-dir reports/visual/page-builder-fixture 
 pnpm visual:capture:fixture -- --output-dir reports/visual/page-builder-fixture --write-manifest
 pnpm visual:measure
 pnpm visual:measure -- --write
-pnpm visual:references -- --source-dir docs/visual/page-builder-references --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md
+pnpm visual:references -- --source-dir docs/visual/page-builder-references --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete
 pnpm visual:references -- --source-dir docs/visual/page-builder-references --write
 ```
 
@@ -62,7 +62,7 @@ Use
 `pnpm visual:references` after placing real design reference PNGs in a retained
 source directory to inspect or update `designReference` values and reset stale
 metrics. Add
-`--markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md`
+`--markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete`
 to keep a human-readable reference intake report listing missing PNGs, imported
 paths, and the next command. Use `pnpm visual:measure` after attaching design
 references to calculate `visualMatchPercent`, `maxLayoutDeltaPx`, and

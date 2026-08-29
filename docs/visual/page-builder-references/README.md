@@ -26,7 +26,7 @@ approved design source for each MVP core section and viewport.
 
 1. Export each approved design reference as a PNG using the component and
    viewport names above.
-2. Run `pnpm visual:references -- --source-dir docs/visual/page-builder-references --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md`.
+2. Run `pnpm visual:references -- --source-dir docs/visual/page-builder-references --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete`.
 3. Review the generated Markdown report and fix any missing or empty PNGs.
 4. Run `pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete`.
 5. Capture retained browser screenshots with `pnpm visual:capture:fixture -- --write-manifest`.

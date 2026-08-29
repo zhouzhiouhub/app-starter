@@ -142,10 +142,15 @@ function readVisualTaskActions(checklist) {
     action: [
       `Place ${task.expectedDesignReference}.`,
       `Capture ${task.expectedPreviewScreenshot}.`,
+      task.commands?.referenceReport
+        ? `Run ${task.commands.referenceReport}.`
+        : null,
       `Run ${task.commands?.importReference}.`,
       `Run ${task.commands?.measure}.`,
       `Verify with ${task.commands?.verify}.`,
-    ].join(" "),
+    ]
+      .filter(Boolean)
+      .join(" "),
     area: "Page Builder Visual",
     label: `${task.component}.${task.viewport}`,
   }));

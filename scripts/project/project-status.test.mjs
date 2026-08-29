@@ -55,6 +55,12 @@ test("project status summarizes blocked release evidence", () => {
     artifact.nextActions.some((action) => action.label === "hero-banner.desktop"),
     true,
   );
+  assert.equal(
+    artifact.nextActions.some((action) =>
+      action.action.includes("visual-reference-import-report.md"),
+    ),
+    true,
+  );
 });
 
 test("project status can serialize every next action", () => {
@@ -364,6 +370,8 @@ function createVisualTask(component, viewport) {
       importReference:
         "pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete",
       measure: "pnpm visual:measure -- --write --require-complete",
+      referenceReport:
+        "pnpm visual:references -- --source-dir docs/visual/page-builder-references --markdown-output artifacts/visual/visual-reference-import-report.md --require-complete",
       verify: "pnpm visual:acceptance -- --require-accepted",
     },
     component,

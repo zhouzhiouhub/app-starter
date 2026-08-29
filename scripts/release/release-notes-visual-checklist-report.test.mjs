@@ -28,6 +28,10 @@ test("release notes failure drafts include visual checklist tasks", () => {
   );
   assert.match(
     markdown,
+    /Reference report: `pnpm visual:references -- --source-dir docs\/visual\/page-builder-references --markdown-output artifacts\/visual\/visual-reference-import-report\.md --require-complete`/,
+  );
+  assert.match(
+    markdown,
     /Import: `pnpm visual:references -- --source-dir docs\/visual\/page-builder-references --write --require-complete`/,
   );
   assert.match(markdown, /Visual task: \.\.\. and 1 more pending viewport tasks/);
@@ -144,6 +148,8 @@ function createVisualTask(component, viewport) {
       importReference:
         "pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete",
       measure: "pnpm visual:measure -- --write --require-complete",
+      referenceReport:
+        "pnpm visual:references -- --source-dir docs/visual/page-builder-references --markdown-output artifacts/visual/visual-reference-import-report.md --require-complete",
       verify: "pnpm visual:acceptance -- --require-accepted",
     },
     component,

@@ -73,6 +73,8 @@ test("release readiness checklist carries blocker actions", () => {
     lines,
     /Reference: docs\/visual\/page-builder-references\/hero-banner-desktop\.png/,
   );
+  assert.match(lines, /Reference report: pnpm visual:references/);
+  assert.match(lines, /visual-reference-import-report\.md/);
   assert.match(lines, /Capture: pnpm visual:capture:fixture/);
   assert.match(lines, /\.\.\. and 1 more visual viewport tasks/);
   assert.match(lines, /Use --all-visual-tasks with --checklist/);
@@ -185,6 +187,8 @@ function createVisualTask(component, viewport) {
       importReference:
         "pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete",
       measure: "pnpm visual:measure -- --write --require-complete",
+      referenceReport:
+        "pnpm visual:references -- --source-dir docs/visual/page-builder-references --markdown-output artifacts/visual/visual-reference-import-report.md --require-complete",
       verify: "pnpm visual:acceptance -- --require-accepted",
     },
     component,

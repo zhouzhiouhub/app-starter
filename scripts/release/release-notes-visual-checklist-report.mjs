@@ -44,10 +44,18 @@ function formatVisualChecklistTask(task) {
     `  - Reference: \`${formatValue(task.expectedDesignReference)}\``,
     `  - Preview: \`${formatValue(task.expectedPreviewScreenshot)}\``,
     `  - Capture: \`${formatValue(task.commands?.capture)}\``,
+    ...formatOptionalCommand(
+      "Reference report",
+      task.commands?.referenceReport,
+    ),
     `  - Import: \`${formatValue(task.commands?.importReference)}\``,
     `  - Measure: \`${formatValue(task.commands?.measure)}\``,
     `  - Verify: \`${formatValue(task.commands?.verify)}\``,
   ];
+}
+
+function formatOptionalCommand(label, command) {
+  return command ? [`  - ${label}: \`${formatValue(command)}\``] : [];
 }
 
 function formatHiddenTaskCount(hiddenCount) {

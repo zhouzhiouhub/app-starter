@@ -138,5 +138,11 @@ function assertVisualChecklistCommands(commands) {
     "visual.checklist.pendingTasks.commands.importReference",
   );
   assertString(commands.measure, "visual.checklist.pendingTasks.commands.measure");
+  if (commands.referenceReport !== undefined) {
+    assertString(
+      commands.referenceReport,
+      "visual.checklist.pendingTasks.commands.referenceReport",
+    );
+  }
   assertString(commands.verify, "visual.checklist.pendingTasks.commands.verify");
 }

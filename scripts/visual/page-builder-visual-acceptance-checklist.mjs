@@ -269,6 +269,7 @@ function formatViewportChecklist(viewport) {
     `${label}: missing ${viewport.missing.join(", ")}`,
     `      expected designReference: ${viewport.expectedDesignReference}`,
     `      expected previewScreenshot: ${viewport.expectedPreviewScreenshot}`,
+    `      reference report: ${viewport.commands.referenceReport}`,
     `      import reference: ${viewport.commands.importReference}`,
     `      capture preview: ${viewport.commands.capture}`,
     `      measure evidence: ${viewport.commands.measure}`,

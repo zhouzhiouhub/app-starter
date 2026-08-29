@@ -17,6 +17,7 @@ export function createPageBuilderVisualViewportActions(
         createPageBuilderVisualViewportCaptureCommand(component, viewport, context),
       importReference: createPageBuilderVisualReferenceImportCommand(context),
       measure: createPageBuilderVisualMeasureCommand(context),
+      referenceReport: createPageBuilderVisualReferenceReportCommand(context),
       verify: createPageBuilderVisualVerifyCommand(context),
     },
     expectedDesignReference: createPageBuilderVisualReferencePath(
@@ -93,6 +94,20 @@ function createPageBuilderVisualReferenceImportCommand(context) {
   ]);
 }
 
+function createPageBuilderVisualReferenceReportCommand(context) {
+  return joinCommand([
+    "pnpm",
+    "visual:references",
+    "--",
+    "--source-dir",
+    context.referenceSourceDir,
+    ...createManifestOption(context),
+    "--markdown-output",
+    createPageBuilderVisualReferenceReportPath(context),
+    "--require-complete",
+  ]);
+}
+
 function createPageBuilderVisualMeasureCommand(context) {
   return joinCommand([
     "pnpm",
@@ -140,6 +155,10 @@ function createAcceptanceManifestArgument(context) {
 
 function joinCommand(parts) {
   return parts.join(" ");
+}
+
+function createPageBuilderVisualReferenceReportPath(context) {
+  return `${context.captureOutputDir}/visual-reference-import-report.md`;
 }
 
 function inferCaptureOutputDir(manifestPath) {

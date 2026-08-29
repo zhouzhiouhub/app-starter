@@ -190,12 +190,21 @@ function formatVisualTasks(tasks) {
             task.viewport,
           )}: missing ${formatMissing(task.missing)}; reference ${formatCode(
             task.expectedDesignReference,
-          )}; preview ${formatCode(task.expectedPreviewScreenshot)}; measure ${formatCode(
+          )}; preview ${formatCode(
+            task.expectedPreviewScreenshot,
+          )}${formatOptionalTaskCommand(
+            "reference report",
+            task.commands?.referenceReport,
+          )}; measure ${formatCode(
             task.commands?.measure,
           )}; verify ${formatCode(task.commands?.verify)}`,
       ),
     ...formatHiddenCount(tasks.length, maxMarkdownItemCount, "visual tasks"),
   ];
+}
+
+function formatOptionalTaskCommand(label, command) {
+  return command ? `; ${label} ${formatCode(command)}` : "";
 }
 
 function formatList(label, values) {

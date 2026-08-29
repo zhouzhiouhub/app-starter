@@ -102,6 +102,9 @@ function formatViewportTask(viewport) {
     `  - Current preview screenshot: ${formatNullableCode(
       viewport.previewScreenshot,
     )}`,
+    `  - Reference report: ${formatNullableCode(
+      viewport.commands?.referenceReport,
+    )}`,
     `  - Capture: ${formatCode(viewport.commands?.capture)}`,
     `  - Import reference: ${formatCode(viewport.commands?.importReference)}`,
     `  - Measure: ${formatCode(viewport.commands?.measure)}`,

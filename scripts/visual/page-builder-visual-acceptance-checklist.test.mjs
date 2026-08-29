@@ -25,6 +25,8 @@ test("visual acceptance checklist lists missing release evidence", async () => {
     importReference:
       "pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete",
     measure: "pnpm visual:measure -- --write --require-complete",
+    referenceReport:
+      "pnpm visual:references -- --source-dir docs/visual/page-builder-references --markdown-output artifacts/visual/visual-reference-import-report.md --require-complete",
     verify: "pnpm visual:acceptance -- --require-accepted",
   });
   assert.equal(
@@ -42,6 +44,7 @@ test("visual acceptance checklist lists missing release evidence", async () => {
   );
   assert.match(lines.join("\n"), /Next: attach missing design references/);
   assert.match(lines.join("\n"), /expected designReference:/);
+  assert.match(lines.join("\n"), /reference report:/);
   assert.match(lines.join("\n"), /capture preview:/);
 });
 
@@ -57,6 +60,11 @@ test("visual acceptance checklist commands respect custom manifest path", async 
   assert.match(viewport.commands.capture, /--output-dir reports\/visual/);
   assert.match(viewport.commands.importReference, /--manifest reports\/visual/);
   assert.match(viewport.commands.measure, /--manifest reports\/visual/);
+  assert.match(viewport.commands.referenceReport, /--manifest reports\/visual/);
+  assert.match(
+    viewport.commands.referenceReport,
+    /--markdown-output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md/,
+  );
   assert.equal(
     viewport.expectedPreviewScreenshot,
     "reports/visual/page-builder-fixture/page-builder-visual-fixture-hero-banner-desktop.png",

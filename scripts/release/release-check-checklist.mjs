@@ -155,6 +155,7 @@ function createVisualTaskSummary(task) {
     importReference: task.commands?.importReference ?? null,
     measure: task.commands?.measure ?? null,
     missing: Array.isArray(task.missing) ? task.missing : [],
+    referenceReport: task.commands?.referenceReport ?? null,
     verify: task.commands?.verify ?? null,
     viewport: task.viewport,
   };
@@ -176,6 +177,9 @@ function formatVisualTasks(item) {
     lines.push(`        Reference: ${task.expectedDesignReference}`);
     lines.push(`        Preview: ${task.expectedPreviewScreenshot}`);
     lines.push(`        Capture: ${task.capture}`);
+    if (task.referenceReport) {
+      lines.push(`        Reference report: ${task.referenceReport}`);
+    }
     lines.push(`        Import: ${task.importReference}`);
     lines.push(`        Measure: ${task.measure}`);
     lines.push(`        Verify: ${task.verify}`);
