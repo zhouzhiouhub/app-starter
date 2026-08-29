@@ -42,6 +42,14 @@ test("project status CLI writes a Markdown handoff", async () => {
     );
     assert.match(
       markdown,
+      /Production Smoke preflight JSON: `artifacts\/release\/preflight\.json`/,
+    );
+    assert.match(
+      markdown,
+      /Production Smoke preflight Markdown: `artifacts\/release\/preflight\.md`/,
+    );
+    assert.match(
+      markdown,
       /Page Builder Visual reference import Markdown: `reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md`/,
     );
     assert.match(
@@ -58,13 +66,19 @@ test("project status CLI writes a Markdown handoff", async () => {
     );
     assert.match(
       markdown,
+      /Refresh Production Smoke preflight: `pnpm release:preflight -- --json-output artifacts\/release\/preflight\.json --markdown-output artifacts\/release\/preflight\.md`/,
+    );
+    assert.match(
+      markdown,
       /Refresh release handoff: `pnpm release:handoff -- --smoke-report artifacts\/production-smoke\/smoke-report\.json --visual-artifact-dir reports\/visual\/page-builder-fixture`/,
     );
     assert.match(markdown, /spec-table\.mobile/);
     assert.match(markdown, /pnpm visual:acceptance -- --require-accepted/);
     assert.match(
       stdout.join("\n"),
-      new RegExp(`Project status Markdown written: ${escapeRegExp(outputPath)}`),
+      new RegExp(
+        `Project status Markdown written: ${escapeRegExp(outputPath)}`,
+      ),
     );
   } finally {
     await rm(emptyArchiveRoot, { force: true, recursive: true });

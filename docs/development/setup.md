@@ -315,10 +315,11 @@ report should exit non-zero until release evidence is ready. Use `--json` or
 release review notes. Add
 `--markdown-output artifacts/release/project-status.md` when the handoff needs
 a pasteable Markdown checklist; it also records the recommended archive paths
-and refresh commands for the Production Smoke JSON/Markdown, Page Builder
-Visual bundle, reference import Markdown, artifact check Markdown, combined
-release gate, project status artifact, and release notes. Add `--all-actions` when it needs every
-pending next action, including
+and refresh commands for the Production Smoke JSON/Markdown, Production Smoke
+preflight JSON/Markdown, Page Builder Visual bundle, reference import Markdown,
+artifact check Markdown, combined release gate, project status artifact, and
+release notes. Add `--all-actions` when it needs every pending next action,
+including
 full command lines, instead of the default short list.
 
 `release:handoff` is a convenience wrapper for release review handoff. It reads

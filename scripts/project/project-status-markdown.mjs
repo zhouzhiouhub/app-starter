@@ -65,6 +65,8 @@ function formatReleaseEvidenceArtifacts() {
   return [
     "- Production Smoke JSON: `artifacts/production-smoke/smoke-report.json`",
     "- Production Smoke Markdown: `artifacts/production-smoke/smoke-report.md`",
+    "- Production Smoke preflight JSON: `artifacts/release/preflight.json`",
+    "- Production Smoke preflight Markdown: `artifacts/release/preflight.md`",
     "- Page Builder Visual bundle: `reports/visual/page-builder-fixture`",
     "- Page Builder Visual reference import Markdown: `reports/visual/page-builder-fixture/visual-reference-import-report.md`",
     "- Page Builder Visual acceptance Markdown: `reports/visual/page-builder-fixture/visual-acceptance-report.md`",
@@ -76,6 +78,9 @@ function formatReleaseEvidenceArtifacts() {
     "- Release notes Markdown: `docs/releases/<tag>.md`",
     `- Refresh Smoke review: ${formatCode(
       "pnpm smoke:report -- --markdown-output artifacts/production-smoke/smoke-report.md artifacts/production-smoke/smoke-report.json",
+    )}`,
+    `- Refresh Production Smoke preflight: ${formatCode(
+      "pnpm release:preflight -- --json-output artifacts/release/preflight.json --markdown-output artifacts/release/preflight.md",
     )}`,
     `- Refresh visual bundle: ${formatCode(
       "pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture",
@@ -95,7 +100,9 @@ function formatVisualGate(visual) {
     `${visual.acceptedComponentCount}/${visual.componentCount} components`,
     `${visual.acceptedViewportCount}/${visual.viewportCount} viewports`,
     `${visual.pendingTaskCount} pending tasks`,
-    visual.artifactStatus ? `artifact ${formatText(visual.artifactStatus)}` : null,
+    visual.artifactStatus
+      ? `artifact ${formatText(visual.artifactStatus)}`
+      : null,
   ]
     .filter(Boolean)
     .join(", ");
