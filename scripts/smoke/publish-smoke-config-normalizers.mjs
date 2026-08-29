@@ -1,4 +1,4 @@
-import { readSiteDomainHeader } from "../../packages/schema/dist/index.js";
+import { normalizeSafeStorefrontHost } from "./storefront-host-validation.mjs";
 
 const localeCodePattern = /^[a-z]{2}(?:-[A-Z]{2})?$/;
 const marketCodePattern = /^[a-z][a-z0-9-]{1,15}$/;
@@ -20,15 +20,7 @@ export function normalizeWebOrigin(value) {
 }
 
 export function normalizeStorefrontHost(value) {
-  const host = readSiteDomainHeader(value);
-
-  if (!host) {
-    throw new Error(
-      "SMOKE_STOREFRONT_HOST must be a safe storefront host without protocol, path, query, or fragment.",
-    );
-  }
-
-  return host;
+  return normalizeSafeStorefrontHost(value);
 }
 
 export function normalizeAdminOrigin(value) {

@@ -355,8 +355,9 @@ running `pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builde
 and both the combined gate and project status snapshot with
 `--visual-artifact-dir reports/visual/page-builder-fixture`. The workflow runs
 `pnpm release:preflight` before smoke requests so unsafe artifact output paths,
-an unsafe release notes output path, unsafe artifact names, a partial visual
-artifact pair, or a partial release notes input set fails early.
+an unsafe release notes output path, unsafe artifact names, unsafe storefront
+hosts, invalid smoke boolean inputs, a partial visual artifact pair, or a partial
+release notes input set fails early.
 The same visual artifact shape can be reproduced locally with
 `pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture`.
 When `release_tag`, `rollback_target`, `visual_artifact_name`, and

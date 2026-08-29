@@ -1,7 +1,7 @@
-import { readSiteDomainHeader } from "../../packages/schema/dist/index.js";
+import { readSafeStorefrontHost } from "./storefront-host-validation.mjs";
 
 export function readSmokeStorefrontHost(input) {
-  return readSiteDomainHeader(input?.storefrontHost);
+  return readSafeStorefrontHost(input?.storefrontHost);
 }
 
 export function readSmokeStorefrontOrigin(input) {

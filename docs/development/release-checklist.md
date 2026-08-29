@@ -68,13 +68,17 @@ later phases are explicitly approved.
   status and proves fixture capture regression only; final visual sign-off still
   requires accepted real design evidence.
 - Before running smoke requests, the `Production Smoke` workflow preflights
-  artifact output paths and optional release evidence inputs with
+  artifact output paths, optional smoke runtime inputs, and optional release
+  evidence inputs with
   `pnpm release:preflight`: `SMOKE_REPORT_PATH`,
   `RELEASE_CHECK_ARTIFACT_PATH`, and `PROJECT_STATUS_ARTIFACT_PATH` must be
   safe repository-relative JSON paths; `RELEASE_NOTES_PATH` must be a safe
   repository-relative Markdown path; `SMOKE_REPORT_ARTIFACT_NAME`,
   `RELEASE_CHECK_ARTIFACT_NAME`, `PROJECT_STATUS_ARTIFACT_NAME`, and
   `RELEASE_NOTES_ARTIFACT_NAME` must be safe artifact names;
+  `SMOKE_STOREFRONT_HOST` must be a safe host when set;
+  `SMOKE_REQUIRE_ADMIN_APP`, `SMOKE_REQUIRE_R2_UPLOAD`, and
+  `SMOKE_REQUIRE_REVALIDATION` must be `true` or `false` when set;
   `visual_artifact_name` and
   `visual_artifact_run_id` must be provided together, and release notes require
   `release_tag`, `rollback_target`, `visual_artifact_name`, and

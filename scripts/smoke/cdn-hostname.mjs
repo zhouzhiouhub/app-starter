@@ -1,4 +1,4 @@
-import { readProductionHostnameIssue } from "../../packages/schema/dist/index.js";
+import { readProductionHostnameIssue } from "./production-hostname-validation.mjs";
 
 export function isLocalHostname(hostname) {
   return readProductionHostnameIssue(hostname) === "local-host";

@@ -4,10 +4,12 @@ import { pathToFileURL } from "node:url";
 import { normalizeArtifactName } from "./release-notes-validation.mjs";
 import { readReleaseNotesCliConfig } from "./release-notes-config.mjs";
 import { validateProductionSmokeWorkflowArtifacts } from "./production-smoke-release-artifacts.mjs";
+import { validateProductionSmokeRuntimeInputs } from "./production-smoke-release-runtime.mjs";
 import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
 
 export function validateProductionSmokeReleaseInputs(env = process.env) {
   validateProductionSmokeWorkflowArtifacts(env);
+  validateProductionSmokeRuntimeInputs(env);
 
   const visualArtifact = readVisualArtifactInput(env);
   const releaseNotes = readReleaseNotesInput(env);
@@ -228,6 +230,9 @@ Environment:
   RELEASE_VISUAL_ARTIFACT_NAME plus RELEASE_VISUAL_ARTIFACT_RUN_ID must be set
   together when release notes should be generated. PROJECT_STATUS_ARTIFACT_PATH
   and PROJECT_STATUS_ARTIFACT_NAME are required when release notes are generated.
+  SMOKE_STOREFRONT_HOST must be a safe host when provided, and
+  SMOKE_REQUIRE_ADMIN_APP, SMOKE_REQUIRE_R2_UPLOAD, and
+  SMOKE_REQUIRE_REVALIDATION must be true or false when provided.
   RELEASE_NOTES_ALLOW_BLOCKED=true may only be used with release notes inputs to
   generate a failure review draft from blocked evidence.`);
 }

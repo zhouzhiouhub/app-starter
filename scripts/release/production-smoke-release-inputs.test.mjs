@@ -116,6 +116,50 @@ test("production smoke release input preflight validates workflow artifact names
   );
 });
 
+test("production smoke release input preflight validates smoke runtime inputs", () => {
+  assert.deepEqual(
+    validateProductionSmokeReleaseInputs({
+      SMOKE_REQUIRE_ADMIN_APP: "true",
+      SMOKE_REQUIRE_R2_UPLOAD: "false",
+      SMOKE_REQUIRE_REVALIDATION: "yes",
+      SMOKE_STOREFRONT_HOST: " Store.Brand-Platform.com:443 ",
+    }),
+    {
+      releaseNotesAllowBlocked: false,
+      releaseNotesEnabled: false,
+      visualArtifactDownloadEnabled: false,
+    },
+  );
+  assert.throws(
+    () =>
+      validateProductionSmokeReleaseInputs({
+        SMOKE_STOREFRONT_HOST: "https://store.brand-platform.com",
+      }),
+    /SMOKE_STOREFRONT_HOST must be a safe storefront host/,
+  );
+  assert.throws(
+    () =>
+      validateProductionSmokeReleaseInputs({
+        SMOKE_REQUIRE_ADMIN_APP: "enabled",
+      }),
+    /SMOKE_REQUIRE_ADMIN_APP must be true or false/,
+  );
+  assert.throws(
+    () =>
+      validateProductionSmokeReleaseInputs({
+        SMOKE_REQUIRE_R2_UPLOAD: "maybe",
+      }),
+    /SMOKE_REQUIRE_R2_UPLOAD must be true or false/,
+  );
+  assert.throws(
+    () =>
+      validateProductionSmokeReleaseInputs({
+        SMOKE_REQUIRE_REVALIDATION: "treu",
+      }),
+    /SMOKE_REQUIRE_REVALIDATION must be true or false/,
+  );
+});
+
 test("production smoke release input preflight validates visual artifact pairs", () => {
   assert.throws(
     () =>
@@ -257,6 +301,10 @@ test("production smoke release input preflight CLI prints help", async () => {
   assert.match(stdout.join("\n"), /PROJECT_STATUS_ARTIFACT_PATH/);
   assert.match(stdout.join("\n"), /PROJECT_STATUS_ARTIFACT_NAME/);
   assert.match(stdout.join("\n"), /RELEASE_NOTES_ARTIFACT_NAME/);
+  assert.match(stdout.join("\n"), /SMOKE_STOREFRONT_HOST/);
+  assert.match(stdout.join("\n"), /SMOKE_REQUIRE_ADMIN_APP/);
+  assert.match(stdout.join("\n"), /SMOKE_REQUIRE_R2_UPLOAD/);
+  assert.match(stdout.join("\n"), /SMOKE_REQUIRE_REVALIDATION/);
   assert.match(stdout.join("\n"), /RELEASE_NOTES_ALLOW_BLOCKED/);
 });
 
