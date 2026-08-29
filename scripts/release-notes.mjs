@@ -51,6 +51,8 @@ function printHelp(writeLine) {
 
 Options:
   --allow-blocked             Generate a failure review draft from blocked evidence.
+                              Drafts include Project Next Actions from
+                              project-status.v1 when that artifact is provided.
   --output <path>             Write Markdown under docs/releases, artifacts/release, reports/release, tmp/, or .tmp/.
   --project-status <path>     project-status.v1 JSON path.
   --project-status-artifact <name>

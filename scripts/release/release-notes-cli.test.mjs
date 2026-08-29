@@ -71,6 +71,19 @@ test("release notes CLI writes a Markdown release record", async () => {
   }
 });
 
+test("release notes CLI help documents blocked draft next actions", async () => {
+  const stdout = [];
+  const exitCode = await runReleaseNotesCli(["--help"], {
+    stdout: (line) => stdout.push(line),
+  });
+  const help = stdout.join("\n");
+
+  assert.equal(exitCode, 0);
+  assert.match(help, /--allow-blocked/);
+  assert.match(help, /Project Next Actions/);
+  assert.match(help, /project-status\.v1/);
+});
+
 function createReadyArtifact() {
   return {
     blockerCount: 0,
