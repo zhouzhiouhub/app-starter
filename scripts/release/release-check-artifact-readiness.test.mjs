@@ -27,6 +27,10 @@ test("release check artifact includes blocked checklist actions", () => {
   assert.equal(artifact.readinessChecklist.releaseReady, false);
   assert.equal(visualItem?.status, "needs-evidence");
   assert.match(visualItem?.action, /pnpm visual:acceptance -- --checklist/);
+  assert.equal(
+    visualItem?.bundleCommand,
+    "pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture",
+  );
 });
 
 function readChecklistStatuses(artifact) {
@@ -62,6 +66,7 @@ function createBlockedCheck() {
     releaseReady: false,
     smoke: createSmokeCheck({ releaseReady: false }),
     visual: createVisualCheck({ status: "needs-evidence" }),
+    visualArtifactDir: "reports/visual/page-builder-fixture",
     visualManifestPath: "docs/development/page-builder-visual-acceptance.json",
   };
 }

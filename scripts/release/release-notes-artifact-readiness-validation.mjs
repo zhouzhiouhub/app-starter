@@ -54,6 +54,10 @@ function assertReadinessChecklistItem(item) {
   }
 
   assertNullableString(item.action, "readinessChecklist.items.action");
+  assertNullableString(
+    item.bundleCommand,
+    "readinessChecklist.items.bundleCommand",
+  );
   assertNullableString(item.detail, "readinessChecklist.items.detail");
   assertString(item.label, "readinessChecklist.items.label");
   assertString(item.status, "readinessChecklist.items.status");

@@ -46,6 +46,7 @@ function createReadinessChecklistArtifact(check) {
 function createReadinessChecklistItemArtifact(item) {
   return {
     action: readTextOrNull(item.action),
+    bundleCommand: readTextOrNull(item.bundleCommand),
     detail: readTextOrNull(item.detail),
     label: readTextOrNull(item.label) ?? "unknown",
     status: readTextOrNull(item.status) ?? "unknown",

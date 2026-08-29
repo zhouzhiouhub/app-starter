@@ -91,6 +91,22 @@ test("release notes validates release evidence artifact shape", () => {
     () =>
       assertReleaseEvidenceCheckArtifact({
         ...artifact,
+        readinessChecklist: {
+          ...artifact.readinessChecklist,
+          items: [
+            {
+              ...artifact.readinessChecklist.items[1],
+              bundleCommand: 42,
+            },
+          ],
+        },
+      }),
+    /readinessChecklist\.items\.bundleCommand must be a string or null/,
+  );
+  assert.throws(
+    () =>
+      assertReleaseEvidenceCheckArtifact({
+        ...artifact,
         visual: {
           ...artifact.visual,
           artifactCheck: {

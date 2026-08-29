@@ -105,6 +105,7 @@ function formatReadinessChecklistItem(item) {
     `- ${formatInline(item.label)}: ${formatInline(item.status)}`,
     formatChecklistField("detail", item.detail),
     formatChecklistField("action", item.action),
+    formatChecklistField("bundle", item.bundleCommand),
   ]
     .filter(Boolean)
     .join("; ");

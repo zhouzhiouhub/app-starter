@@ -22,7 +22,8 @@ export {
 import { formatReleaseEvidenceCheck } from "./release-check-report.mjs";
 
 const visualEvidenceAction =
-  "Run pnpm visual:acceptance -- --checklist, attach real design references " +
+  "Run pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture " +
+  "to refresh retained fixture evidence, run pnpm visual:acceptance -- --checklist, attach real design references " +
   "and browser screenshots, run pnpm visual:measure -- --write --require-complete, " +
   "then pnpm visual:acceptance -- --require-accepted.";
 

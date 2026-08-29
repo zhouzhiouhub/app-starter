@@ -1,4 +1,5 @@
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
+import { defaultPageBuilderVisualArtifactDir } from "../visual/page-builder-visual-artifact-check.mjs";
 
 const maxChecklistLineLength = 420;
 const maxVisibleVisualTasks = 2;
@@ -26,6 +27,10 @@ export function formatReleaseEvidenceReadinessChecklist(checklist) {
 
     if (item.action) {
       lines.push(`    Action: ${item.action}`);
+    }
+
+    if (item.bundleCommand) {
+      lines.push(`    Bundle: ${item.bundleCommand}`);
     }
 
     lines.push(...formatVisualTasks(item));
@@ -70,11 +75,21 @@ function createVisualChecklistItem(check, options) {
 
   return {
     action: readFirstBlockerAction(check, "Page Builder Visual"),
+    bundleCommand: createVisualArtifactBundleCommand(check),
     detail,
     label: "Page Builder Visual evidence",
     status: check.visual.status,
     tasks: readVisibleVisualTasks(check.visualChecklist, options),
   };
+}
+
+function createVisualArtifactBundleCommand(check) {
+  const artifactDir =
+    check.visualArtifact?.artifactDir ??
+    check.visualArtifactDir ??
+    defaultPageBuilderVisualArtifactDir;
+
+  return `pnpm visual:artifact-bundle -- --artifact-dir ${artifactDir}`;
 }
 
 function createReleaseNotesChecklistItem(check) {

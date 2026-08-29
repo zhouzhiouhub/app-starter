@@ -179,6 +179,10 @@ test("release notes require ready evidence unless explicitly allowed", () => {
     markdown,
     /Page Builder Visual evidence: needs-evidence; detail: 0\/6 components, 0\/12 viewports, artifact invalid/,
   );
+  assert.match(
+    markdown,
+    /bundle: pnpm visual:artifact-bundle -- --artifact-dir reports\/visual\/page-builder-fixture/,
+  );
   assert.match(markdown, /Pending components: hero-banner, rich-text/);
   assert.match(
     markdown,
@@ -281,6 +285,8 @@ function createBlockedReadinessChecklist() {
       },
       {
         action: "Attach real visual evidence.",
+        bundleCommand:
+          "pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture",
         detail: "0/6 components, 0/12 viewports, artifact invalid",
         label: "Page Builder Visual evidence",
         status: "needs-evidence",

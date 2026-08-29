@@ -55,6 +55,7 @@ test("release readiness checklist carries blocker actions", () => {
       status: "invalid",
       viewportCount: 12,
     },
+    visualArtifactDir: "reports/visual/page-builder-fixture",
     visualChecklist: createVisualChecklist(),
   });
   const lines = formatReleaseEvidenceReadinessChecklist(checklist).join("\n");
@@ -64,6 +65,10 @@ test("release readiness checklist carries blocker actions", () => {
   assert.match(lines, /Run pnpm visual:acceptance -- --checklist/);
   assert.match(lines, /Visual tasks:/);
   assert.match(lines, /hero-banner\.desktop: missing designReference/);
+  assert.match(
+    lines,
+    /Bundle: pnpm visual:artifact-bundle -- --artifact-dir reports\/visual\/page-builder-fixture/,
+  );
   assert.match(
     lines,
     /Reference: docs\/visual\/page-builder-references\/hero-banner-desktop\.png/,

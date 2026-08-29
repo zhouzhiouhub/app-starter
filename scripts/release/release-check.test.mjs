@@ -227,6 +227,7 @@ test("release check blocks pending Page Builder visual evidence", () => {
       (blocker) =>
         blocker.area === "Page Builder Visual" &&
         blocker.label === "Visual acceptance pending" &&
+        blocker.action.includes("pnpm visual:artifact-bundle") &&
         blocker.action.includes("pnpm visual:acceptance -- --checklist"),
     ),
     true,

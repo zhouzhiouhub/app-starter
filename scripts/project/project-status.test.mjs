@@ -29,7 +29,7 @@ test("project status summarizes blocked release evidence", () => {
   assert.equal(artifact.releaseGate.visual.pendingTaskCount, 12);
   assert.equal(artifact.localVerification.commandCount, 6);
   assert.equal(artifact.nextActionLimit, 8);
-  assert.equal(artifact.truncatedNextActionCount, 5);
+  assert.equal(artifact.truncatedNextActionCount, 6);
   assert.deepEqual(
     artifact.localVerification.commands.map((item) => item.command),
     [
@@ -41,9 +41,15 @@ test("project status summarizes blocked release evidence", () => {
       "pnpm build",
     ],
   );
-  assert.equal(artifact.nextActionCount, 13);
+  assert.equal(artifact.nextActionCount, 14);
   assert.equal(artifact.nextActions.length, 8);
   assert.equal(artifact.nextActions[0].area, "Production Smoke");
+  assert.equal(
+    artifact.nextActions.some((action) =>
+      action.action.includes("pnpm visual:artifact-bundle"),
+    ),
+    true,
+  );
   assert.equal(
     artifact.nextActions.some((action) => action.label === "hero-banner.desktop"),
     true,
@@ -56,8 +62,8 @@ test("project status can serialize every next action", () => {
     includeAllActions: true,
   });
 
-  assert.equal(artifact.nextActionCount, 13);
-  assert.equal(artifact.nextActions.length, 13);
+  assert.equal(artifact.nextActionCount, 14);
+  assert.equal(artifact.nextActions.length, 14);
   assert.equal(artifact.truncatedNextActionCount, 0);
   assert.equal(artifact.nextActions.at(-1).label, "spec-table.mobile");
 });
@@ -230,6 +236,12 @@ function createBlockedCheck() {
         action: "Run the Production Smoke workflow.",
         area: "Production Smoke",
         label: "Production smoke artifact missing",
+      },
+      {
+        action:
+          "Run pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture to refresh retained fixture evidence.",
+        area: "Page Builder Visual",
+        label: "Visual acceptance pending",
       },
     ],
     releaseReady: false,
