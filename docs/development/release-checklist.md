@@ -42,6 +42,9 @@ later phases are explicitly approved.
   import/capture/measure/verify commands for each Desktop and Mobile viewport.
   After
   placing real design reference PNGs under a retained source directory, run
+  `pnpm visual:references -- --source-dir docs/visual/page-builder-references --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md`
+  to keep the reference intake report with missing or imported PNG paths. Then
+  run
   `pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete`.
   Then run
   `pnpm visual:measure -- --write --require-complete` to calculate the viewport
@@ -159,6 +162,9 @@ later phases are explicitly approved.
 - The Page Builder visual acceptance manifest covers all six MVP core sections
   and links the final accepted Desktop / Mobile evidence when MVP visual sign-off
   is requested; every linked evidence file is retained with the release.
+- The reference intake report
+  `reports/visual/page-builder-fixture/visual-reference-import-report.md` is
+  retained when real design PNGs were imported for the release review.
 - The latest `Page Builder Visual` workflow run and
   `page-builder-visual-fixture-<run_number>` artifact are linked when visual
   evidence is part of the release review; the artifact contains

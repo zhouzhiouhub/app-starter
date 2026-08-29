@@ -24,6 +24,7 @@ pnpm visual:capture:fixture -- --output-dir reports/visual/page-builder-fixture 
 pnpm visual:capture:fixture -- --output-dir reports/visual/page-builder-fixture --write-manifest
 pnpm visual:measure
 pnpm visual:measure -- --write
+pnpm visual:references -- --source-dir docs/visual/page-builder-references --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md
 pnpm visual:references -- --source-dir docs/visual/page-builder-references --write
 ```
 
@@ -59,10 +60,14 @@ writes `visual-capture-report.json`, runs measurement, writes
 `visual:artifact-check`.
 Use
 `pnpm visual:references` after placing real design reference PNGs in a retained
-source directory to update `designReference` values and reset stale metrics. Use
-`pnpm visual:measure` after attaching design references to calculate
-`visualMatchPercent`, `maxLayoutDeltaPx`, and `maxColorDeltaE`; pass `--write`
-to persist the measured values to the manifest.
+source directory to inspect or update `designReference` values and reset stale
+metrics. Add
+`--markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md`
+to keep a human-readable reference intake report listing missing PNGs, imported
+paths, and the next command. Use `pnpm visual:measure` after attaching design
+references to calculate `visualMatchPercent`, `maxLayoutDeltaPx`, and
+`maxColorDeltaE`; pass `--write` to persist the measured values to the
+manifest.
 Pass `--write-manifest` to `visual:capture` or `visual:capture:fixture` only
 when the captured browser screenshots should update `previewScreenshot` paths in
 the manifest. This resets stale diff metrics and keeps viewport status as
@@ -81,8 +86,9 @@ release review file.
 
 Reference import expects files named `<component>-<viewport>.png`, such as
 `hero-banner-desktop.png` and `hero-banner-mobile.png`. It is dry-run by
-default; pass `--write` to update the manifest, and `--require-complete` to fail
-when any of the 12 MVP reference PNGs is missing.
+default; pass `--write` to update the manifest, `--markdown-output` to retain
+the intake report, and `--require-complete` to fail when any of the 12 MVP
+reference PNGs is missing.
 
 ## Fixture Route
 

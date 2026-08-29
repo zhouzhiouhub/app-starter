@@ -1,4 +1,6 @@
 import { defaultPageBuilderVisualAcceptanceManifestPath } from "./page-builder-visual-acceptance-constants.mjs";
+import { normalizeVisualAcceptanceMarkdownOutputPath } from "./page-builder-visual-acceptance-output-paths.mjs";
+import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
 
 const allowedSourceDirs = ["docs", "artifacts/visual", "reports/visual"];
 const unsafeSourceDirCharacters = new Set(["`", '"', "'"]);
@@ -7,6 +9,7 @@ export function readPageBuilderVisualReferenceImportCliConfig(argv) {
   const args = stripPnpmSeparator(argv);
   const input = {
     manifestPath: defaultPageBuilderVisualAcceptanceManifestPath,
+    markdownOutputPath: null,
     requireComplete: false,
     sourceDir: null,
     write: false,
@@ -28,6 +31,11 @@ export function readPageBuilderVisualReferenceImportCliConfig(argv) {
 
   return {
     manifestPath: input.manifestPath,
+    markdownOutputPath: input.markdownOutputPath
+      ? normalizeVisualReferenceImportMarkdownOutputPath(
+          input.markdownOutputPath,
+        )
+      : null,
     requireComplete: input.requireComplete,
     sourceDir: normalizeVisualReferenceSourceDir(input.sourceDir),
     write: input.write,
@@ -57,10 +65,26 @@ export function normalizeVisualReferenceSourceDir(value) {
   return sourceDir;
 }
 
+export function normalizeVisualReferenceImportMarkdownOutputPath(value) {
+  try {
+    return normalizeVisualAcceptanceMarkdownOutputPath(value);
+  } catch (error) {
+    throw new Error(
+      readErrorMessage(error).replaceAll(
+        "Visual acceptance Markdown",
+        "Visual reference import Markdown",
+      ),
+    );
+  }
+}
+
 function readReferenceImportOption(option, args, index, input) {
   switch (option) {
     case "--manifest":
       input.manifestPath = readOptionValue(option, args, index);
+      return index + 1;
+    case "--markdown-output":
+      input.markdownOutputPath = readOptionValue(option, args, index);
       return index + 1;
     case "--require-complete":
       input.requireComplete = true;

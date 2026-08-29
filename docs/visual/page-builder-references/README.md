@@ -26,10 +26,12 @@ approved design source for each MVP core section and viewport.
 
 1. Export each approved design reference as a PNG using the component and
    viewport names above.
-2. Run `pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete`.
-3. Capture retained browser screenshots with `pnpm visual:capture:fixture -- --write-manifest`.
-4. Run `pnpm visual:measure -- --write --require-complete`.
-5. Review the measured evidence and finish with `pnpm visual:acceptance -- --require-accepted`.
+2. Run `pnpm visual:references -- --source-dir docs/visual/page-builder-references --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md`.
+3. Review the generated Markdown report and fix any missing or empty PNGs.
+4. Run `pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete`.
+5. Capture retained browser screenshots with `pnpm visual:capture:fixture -- --write-manifest`.
+6. Run `pnpm visual:measure -- --write --require-complete`.
+7. Review the measured evidence and finish with `pnpm visual:acceptance -- --require-accepted`.
 
 The reference importer only writes manifest paths and resets stale metrics. It
 does not mark a viewport as accepted.
