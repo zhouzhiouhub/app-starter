@@ -85,7 +85,14 @@ test("release handoff writes blocked reports without requiring readiness", async
     assert.match(stdout.join("\n"), /Next actions: 14/);
     assert.match(stdout.join("\n"), /Next action 1: Production Smoke/);
     assert.match(stdout.join("\n"), /Next action 2: Page Builder Visual/);
-    assert.match(stdout.join("\n"), /Remaining next actions: 12/);
+    assert.match(
+      stdout.join("\n"),
+      new RegExp(
+        `Remaining next actions: 12 \\(see ${escapeRegExp(
+          `${outputRoot}/project-status.md`,
+        )} for the full list\\)`,
+      ),
+    );
   } finally {
     await rm(outputRoot, { force: true, recursive: true });
     await rm(smokeRoot, { force: true, recursive: true });
@@ -322,4 +329,8 @@ function createOutputRoot(label) {
 
 async function readJson(filePath) {
   return JSON.parse(await readFile(filePath, "utf8"));
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
 }

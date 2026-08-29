@@ -105,7 +105,7 @@ export function formatReleaseHandoffSummary(input) {
     `  Project status JSON: ${input.config.projectStatusOutputPath}`,
     `  Project status Markdown: ${input.config.projectStatusMarkdownPath}`,
     `  Next actions: ${nextActions.length}`,
-    ...formatNextActions(nextActions),
+    ...formatNextActions(nextActions, input.config.projectStatusMarkdownPath),
   ];
 }
 
@@ -173,7 +173,7 @@ function formatNextAction(action) {
   });
 }
 
-function formatNextActions(actions) {
+function formatNextActions(actions, projectStatusMarkdownPath) {
   const visibleActions = actions.slice(0, 2);
   const hiddenActionCount = actions.length - visibleActions.length;
 
@@ -187,7 +187,7 @@ function formatNextActions(actions) {
     ),
     ...(hiddenActionCount > 0
       ? [
-          `  Remaining next actions: ${hiddenActionCount} (see project status Markdown for the full list)`,
+          `  Remaining next actions: ${hiddenActionCount} (see ${projectStatusMarkdownPath} for the full list)`,
         ]
       : []),
   ];
