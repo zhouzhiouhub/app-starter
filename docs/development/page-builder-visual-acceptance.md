@@ -13,6 +13,7 @@ pnpm visual:acceptance
 pnpm visual:acceptance -- --checklist
 pnpm visual:acceptance -- --json
 pnpm visual:acceptance -- --checklist --output reports/visual/page-builder-fixture/visual-acceptance-report.json
+pnpm visual:acceptance -- --markdown-output reports/visual/page-builder-fixture/visual-acceptance-report.md
 pnpm visual:acceptance -- --require-accepted
 pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture
 pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture
@@ -40,16 +41,19 @@ design references, preview screenshots, and measured diff values. Use
 `pnpm visual:capture` after starting the Web app with the fixture flag to
 refresh the component-level browser screenshots referenced by the manifest. Use
 `--json` for a machine-readable report and `--output` to write that report to a
-safe `.json` path under `tmp/`, `reports/`, `artifacts/`, or `.tmp/`. When
-`--checklist` is present, the JSON artifact includes the per-viewport missing
-evidence tasks. Use
+safe `.json` path under `tmp/`, `reports/`, `artifacts/`, or `.tmp/`. Use
+`--markdown-output` to write a human-readable evidence handoff under
+`docs/visual/`, `artifacts/visual/`, `reports/visual/`, `tmp/`, or `.tmp/`;
+it includes the same per-viewport paths and commands even when `--checklist`
+is not printed to stdout. When `--checklist` is present, the JSON artifact
+includes the per-viewport missing evidence tasks. Use
 `pnpm visual:capture:fixture` for the full local workflow: build Web, start the
 gated fixture server, capture the screenshots, and stop the server. Use
 `pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture`
 when you need the full uploadable fixture evidence bundle; it copies the source
 manifest into the artifact directory, captures all 12 viewport screenshots,
 writes `visual-capture-report.json`, runs measurement, writes
-`visual-acceptance-report.json`, and verifies the bundle with
+`visual-acceptance-report.json` plus `visual-acceptance-report.md`, and verifies the bundle with
 `visual:artifact-check`.
 Use
 `pnpm visual:references` after placing real design reference PNGs in a retained
@@ -150,8 +154,9 @@ the uploaded bundle with `visual:artifact-check`.
 
 The workflow uploads `page-builder-visual-fixture-<run_number>` with the fixture
 screenshots, an artifact-local manifest with captured `previewScreenshot` paths,
-`visual-capture-report.json`, and `visual-acceptance-report.json` captured under
-`reports/visual/page-builder-fixture`; the upload step fails when the bundle is
+`visual-capture-report.json`, `visual-acceptance-report.json`, and
+`visual-acceptance-report.md` captured under `reports/visual/page-builder-fixture`;
+the upload step fails when the bundle is
 missing instead of leaving only a warning. The source manifest under
 `docs/development/` remains unchanged by CI. This artifact is regression
 evidence for the fixture and capture pipeline only. Final MVP visual sign-off

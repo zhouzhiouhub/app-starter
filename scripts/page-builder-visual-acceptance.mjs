@@ -10,6 +10,7 @@ import {
   readPageBuilderVisualAcceptanceManifest,
   validatePageBuilderVisualAcceptanceManifest,
   writePageBuilderVisualAcceptanceArtifact,
+  writePageBuilderVisualAcceptanceMarkdown,
 } from "./visual/page-builder-visual-acceptance.mjs";
 import { readErrorMessage } from "./smoke/smoke-error-message.mjs";
 
@@ -31,18 +32,28 @@ export async function runPageBuilderVisualAcceptanceCli(args, input = {}) {
       evidenceRoot: input.evidenceRoot,
       requireAccepted: config.requireAccepted,
     });
-    const checklist = config.checklist
+    const needsChecklist = config.checklist || Boolean(config.markdownOutputPath);
+    const checklist = needsChecklist
       ? createPageBuilderVisualAcceptanceChecklist(manifest, {
           evidenceRoot: input.evidenceRoot,
           manifestPath: config.manifestPath,
         })
       : null;
     const artifact = createPageBuilderVisualAcceptanceArtifact(report, {
-      checklist,
+      checklist: config.checklist ? checklist : null,
     });
 
     if (config.outputPath) {
       await writePageBuilderVisualAcceptanceArtifact(config.outputPath, artifact);
+    }
+
+    if (config.markdownOutputPath) {
+      await writePageBuilderVisualAcceptanceMarkdown(
+        config.markdownOutputPath,
+        report,
+        checklist,
+        { manifestPath: config.manifestPath },
+      );
     }
 
     if (config.json) {
@@ -52,7 +63,7 @@ export async function runPageBuilderVisualAcceptanceCli(args, input = {}) {
         stdout(line);
       }
 
-      if (checklist) {
+      if (config.checklist && checklist) {
         for (const line of formatPageBuilderVisualAcceptanceChecklist(
           checklist,
         )) {
@@ -62,6 +73,12 @@ export async function runPageBuilderVisualAcceptanceCli(args, input = {}) {
 
       if (config.outputPath) {
         stdout(`Visual acceptance artifact written: ${config.outputPath}`);
+      }
+
+      if (config.markdownOutputPath) {
+        stdout(
+          `Visual acceptance Markdown written: ${config.markdownOutputPath}`,
+        );
       }
     }
 
@@ -88,12 +105,15 @@ function printHelp(writeLine) {
   pnpm visual:acceptance -- --require-accepted
   pnpm visual:acceptance -- --json
   pnpm visual:acceptance -- --output reports/visual/page-builder-fixture/visual-acceptance-report.json
+  pnpm visual:acceptance -- --markdown-output reports/visual/page-builder-fixture/visual-acceptance-report.md
   pnpm visual:acceptance -- docs/development/page-builder-visual-acceptance.json
 
 Options:
   --checklist         Print per-section evidence tasks and next commands.
   --json              Print the machine-readable visual acceptance report.
   --output <path>     Write a JSON report under tmp/, reports/, artifacts/, or .tmp/.
+  --markdown-output <path>
+                      Write a Markdown evidence checklist under docs/visual, artifacts/visual, reports/visual, tmp/, or .tmp/.
   --require-accepted  Fail unless every MVP section and viewport is accepted.
   -h, --help          Show this help.
 

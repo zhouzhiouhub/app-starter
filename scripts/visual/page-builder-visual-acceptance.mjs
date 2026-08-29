@@ -5,5 +5,7 @@ export * from "./page-builder-visual-acceptance-checklist.mjs";
 export * from "./page-builder-visual-acceptance-constants.mjs";
 export * from "./page-builder-visual-acceptance-evidence-paths.mjs";
 export * from "./page-builder-visual-acceptance-manifest.mjs";
+export * from "./page-builder-visual-acceptance-markdown.mjs";
+export * from "./page-builder-visual-acceptance-output-paths.mjs";
 export * from "./page-builder-visual-acceptance-report.mjs";
 export * from "./page-builder-visual-acceptance-validation.mjs";

@@ -1,11 +1,14 @@
 import { defaultPageBuilderVisualAcceptanceManifestPath } from "./page-builder-visual-acceptance-constants.mjs";
-import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
-import { normalizeSmokeReportPath } from "../smoke/smoke-report-path-config.mjs";
+import {
+  normalizeVisualAcceptanceMarkdownOutputPath,
+  normalizeVisualAcceptanceOutputPath,
+} from "./page-builder-visual-acceptance-output-paths.mjs";
 
 export function readPageBuilderVisualAcceptanceCliConfig(args) {
   const config = {
     checklist: false,
     json: false,
+    markdownOutputPath: null,
     manifestPath: defaultPageBuilderVisualAcceptanceManifestPath,
     outputPath: null,
     requireAccepted: false,
@@ -38,6 +41,14 @@ export function readPageBuilderVisualAcceptanceCliConfig(args) {
       continue;
     }
 
+    if (arg === "--markdown-output") {
+      config.markdownOutputPath = normalizeVisualAcceptanceMarkdownOutputPath(
+        readOptionValue(arg, normalizedArgs, index),
+      );
+      index += 1;
+      continue;
+    }
+
     if (arg.startsWith("-")) {
       throw new Error(`Unknown visual acceptance option: ${arg}`);
     }
@@ -50,19 +61,6 @@ export function readPageBuilderVisualAcceptanceCliConfig(args) {
   }
 
   return config;
-}
-
-export function normalizeVisualAcceptanceOutputPath(value) {
-  try {
-    return normalizeSmokeReportPath(value);
-  } catch (error) {
-    throw new Error(
-      readErrorMessage(error).replaceAll(
-        "SMOKE_REPORT_PATH",
-        "Visual acceptance output",
-      ),
-    );
-  }
 }
 
 function readOptionValue(option, args, index) {

@@ -6,6 +6,7 @@ export function formatPageBuilderVisualArtifactBundleReport(result) {
     `Artifact manifest: ${result.paths.manifest}`,
     `Capture report: ${result.paths.captureReport}`,
     `Acceptance report: ${result.paths.acceptanceReport}`,
+    `Acceptance Markdown: ${result.paths.acceptanceMarkdown}`,
     `Captured screenshots: ${result.capture.screenshots.length}`,
     `Measurement: ${result.measure.status} (${result.measure.measuredViewportCount}/${result.measure.targetViewportCount} measured, ${result.measure.missingViewportCount} missing)`,
     `Acceptance: ${result.acceptance.status} (${result.acceptance.acceptedComponentCount}/${result.acceptance.componentCount} components, ${result.acceptance.acceptedViewportCount}/${result.acceptance.viewportCount} viewports)`,

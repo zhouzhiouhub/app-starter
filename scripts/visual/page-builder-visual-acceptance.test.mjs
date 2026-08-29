@@ -202,6 +202,7 @@ test("visual acceptance CLI config parses options and paths", () => {
   assert.deepEqual(readPageBuilderVisualAcceptanceCliConfig([]), {
     checklist: false,
     json: false,
+    markdownOutputPath: null,
     manifestPath: defaultPageBuilderVisualAcceptanceManifestPath,
     outputPath: null,
     requireAccepted: false,
@@ -219,6 +220,7 @@ test("visual acceptance CLI config parses options and paths", () => {
     {
       checklist: true,
       json: true,
+      markdownOutputPath: null,
       manifestPath: "docs/custom-visual.json",
       outputPath:
         "reports/visual/page-builder-fixture/visual-acceptance-report.json",

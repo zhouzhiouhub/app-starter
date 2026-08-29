@@ -44,6 +44,10 @@ test("visual artifact bundle config derives fixed artifact paths", () => {
     config.paths.acceptanceReport,
     "reports/visual/page-builder-fixture/visual-acceptance-report.json",
   );
+  assert.equal(
+    config.paths.acceptanceMarkdown,
+    "reports/visual/page-builder-fixture/visual-acceptance-report.md",
+  );
   assert.equal(config.fixtureCapture.skipBuild, true);
   assert.equal(config.fixtureCapture.webPort, 3010);
   assert.equal(config.fixtureCapture.capture.browserPath, "chrome");
@@ -96,6 +100,10 @@ test("visual artifact bundle writes capture and acceptance reports", async () =>
 
     const captureReport = readJson(config.paths.captureReport);
     const acceptanceReport = readJson(config.paths.acceptanceReport);
+    const acceptanceMarkdown = readFileSync(
+      config.paths.acceptanceMarkdown,
+      "utf8",
+    );
 
     assert.equal(result.capture.screenshots.length, 12);
     assert.equal(result.measure.status, "needs-evidence");
@@ -106,6 +114,8 @@ test("visual artifact bundle writes capture and acceptance reports", async () =>
     assert.equal(captureReport.screenshotCount, 12);
     assert.equal(acceptanceReport.schemaVersion, pageBuilderVisualAcceptanceSchemaVersion);
     assert.equal(acceptanceReport.checklist.pendingViewportCount, 12);
+    assert.match(acceptanceMarkdown, /^# Page Builder Visual Acceptance/m);
+    assert.match(acceptanceMarkdown, /hero-banner/);
   } finally {
     rmSync(root, { force: true, recursive: true });
   }
@@ -134,6 +144,7 @@ test("visual artifact bundle report and usage describe the generated bundle", ()
     paths: {
       acceptanceReport: "reports/visual/page-builder/visual-acceptance-report.json",
       captureReport: "reports/visual/page-builder/visual-capture-report.json",
+      acceptanceMarkdown: "reports/visual/page-builder/visual-acceptance-report.md",
       manifest: "reports/visual/page-builder/page-builder-visual-acceptance.json",
     },
     sourceManifestPath: "docs/development/page-builder-visual-acceptance.json",
@@ -142,6 +153,7 @@ test("visual artifact bundle report and usage describe the generated bundle", ()
 
   assert.match(report, /Page Builder visual artifact bundle/);
   assert.match(report, /Artifact check: complete/);
+  assert.match(report, /Acceptance Markdown: reports\/visual\/page-builder\/visual-acceptance-report\.md/);
   assert.match(report, /Next: attach real design references/);
   assert.match(usage, /pnpm visual:artifact-bundle/);
   assert.match(usage, /--source-manifest/);

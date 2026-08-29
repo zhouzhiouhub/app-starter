@@ -63,6 +63,7 @@ jobs:
             echo "- Capture report: \`reports/visual/page-builder-fixture/visual-capture-report.json\`"
             echo "- Artifact manifest: \`reports/visual/page-builder-fixture/page-builder-visual-acceptance.json\`"
             echo "- Acceptance report: \`reports/visual/page-builder-fixture/visual-acceptance-report.json\`"
+            echo "- Acceptance Markdown: \`reports/visual/page-builder-fixture/visual-acceptance-report.md\`"
             echo "- Artifact: \`page-builder-visual-fixture-${{ github.run_number }}\`"
             echo "- Run id for Production Smoke: \`${{ github.run_id }}\`"
             echo "- Final sign-off still requires real design references and \`pnpm visual:acceptance -- --require-accepted\`."

@@ -5,6 +5,7 @@ import {
   readPageBuilderVisualAcceptanceManifest,
   validatePageBuilderVisualAcceptanceManifest,
   writePageBuilderVisualAcceptanceArtifact,
+  writePageBuilderVisualAcceptanceMarkdown,
 } from "./page-builder-visual-acceptance.mjs";
 import { checkPageBuilderVisualArtifact } from "./page-builder-visual-artifact-check.mjs";
 import {
@@ -102,6 +103,13 @@ async function writeAcceptanceReport(config, input) {
     writePageBuilderVisualAcceptanceArtifact)(
     config.paths.acceptanceReport,
     artifact,
+  );
+  await (input.writeAcceptanceMarkdown ??
+    writePageBuilderVisualAcceptanceMarkdown)(
+    config.paths.acceptanceMarkdown,
+    report,
+    checklist,
+    { manifestPath: config.paths.manifest },
   );
 
   return report;

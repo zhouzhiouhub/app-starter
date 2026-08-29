@@ -84,6 +84,7 @@ export function normalizeArtifactBundleConfig(input, env = process.env) {
 
 export function createPageBuilderVisualArtifactBundlePaths(artifactDir) {
   return {
+    acceptanceMarkdown: `${artifactDir}/visual-acceptance-report.md`,
     acceptanceReport: `${artifactDir}/${artifactFileNames.acceptanceReport}`,
     captureReport: `${artifactDir}/${artifactFileNames.captureReport}`,
     manifest: `${artifactDir}/${artifactFileNames.manifest}`,
