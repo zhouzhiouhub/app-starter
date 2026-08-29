@@ -1,4 +1,14 @@
-import { normalizeSmokeBoolean } from "../smoke/publish-smoke-config-normalizers.mjs";
+import {
+  retryAttemptsRange,
+  retryDelayMsRange,
+} from "../smoke/publish-smoke-config-defaults.mjs";
+import {
+  normalizeSmokeBoolean,
+  normalizeSmokeLocale,
+  normalizeSmokeMarket,
+  normalizeSmokePositiveInt,
+  normalizeSmokeSlug,
+} from "../smoke/publish-smoke-config-normalizers.mjs";
 import { normalizeSafeStorefrontHost } from "../smoke/storefront-host-validation.mjs";
 
 const smokeBooleanInputNames = [
@@ -6,10 +16,21 @@ const smokeBooleanInputNames = [
   "SMOKE_REQUIRE_R2_UPLOAD",
   "SMOKE_REQUIRE_REVALIDATION",
 ];
+const smokeTextInputNormalizers = [
+  ["SMOKE_LOCALE", normalizeSmokeLocale],
+  ["SMOKE_MARKET", normalizeSmokeMarket],
+  ["SMOKE_PAGE_SLUG", normalizeSmokeSlug],
+];
+const smokePositiveIntInputNormalizers = [
+  ["SMOKE_RETRY_ATTEMPTS", retryAttemptsRange],
+  ["SMOKE_RETRY_DELAY_MS", retryDelayMsRange],
+];
 
 export function validateProductionSmokeRuntimeInputs(env) {
   validateOptionalStorefrontHost(env);
   validateSmokeBooleanInputs(env);
+  validateSmokeTextInputs(env);
+  validateSmokePositiveIntInputs(env);
 }
 
 function validateOptionalStorefrontHost(env) {
@@ -28,6 +49,26 @@ function validateSmokeBooleanInputs(env) {
 
     if (value) {
       normalizeSmokeBoolean(value, name);
+    }
+  }
+}
+
+function validateSmokeTextInputs(env) {
+  for (const [name, normalize] of smokeTextInputNormalizers) {
+    const value = readOptionalSmokeInput(env, name);
+
+    if (value) {
+      normalize(value);
+    }
+  }
+}
+
+function validateSmokePositiveIntInputs(env) {
+  for (const [name, range] of smokePositiveIntInputNormalizers) {
+    const value = readOptionalSmokeInput(env, name);
+
+    if (value) {
+      normalizeSmokePositiveInt(value, name, range);
     }
   }
 }

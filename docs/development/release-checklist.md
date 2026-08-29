@@ -93,6 +93,9 @@ later phases are explicitly approved.
   `SMOKE_STOREFRONT_HOST` must be a safe host when set;
   `SMOKE_REQUIRE_ADMIN_APP`, `SMOKE_REQUIRE_R2_UPLOAD`, and
   `SMOKE_REQUIRE_REVALIDATION` must be `true` or `false` when set;
+  `SMOKE_LOCALE`, `SMOKE_MARKET`, `SMOKE_PAGE_SLUG`,
+  `SMOKE_RETRY_ATTEMPTS`, and `SMOKE_RETRY_DELAY_MS` must match
+  `smoke:publish` input constraints when set;
   when `NODE_ENV`, `APP_ENV`, or `VERCEL_ENV` is `production`, the same
   preflight also fails before smoke requests if production API/Web/Admin URLs,
   `SMOKE_ADMIN_EMAIL`, `SMOKE_ADMIN_PASSWORD`, `DATABASE_URL`, `REDIS_URL`, MVP
