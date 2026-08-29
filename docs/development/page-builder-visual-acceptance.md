@@ -138,8 +138,9 @@ binary path problems can be diagnosed from the command output.
 ## CI Workflow
 
 The `Page Builder Visual` GitHub Actions workflow runs on visual-related pull
-requests, pushes to `main`, and manual dispatch. It executes `pnpm test:visual`,
-then executes
+requests, pushes to `main`, changes under
+`docs/visual/page-builder-references/`, and manual dispatch. It executes
+`pnpm test:visual`, then executes
 `pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture`.
 The bundle command copies the source manifest to
 `reports/visual/page-builder-fixture/page-builder-visual-acceptance.json`,

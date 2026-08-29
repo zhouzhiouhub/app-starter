@@ -33,3 +33,7 @@ approved design source for each MVP core section and viewport.
 
 The reference importer only writes manifest paths and resets stale metrics. It
 does not mark a viewport as accepted.
+
+Changes in this directory trigger the `Page Builder Visual` GitHub Actions
+workflow so fixture evidence can be refreshed before Production Smoke consumes
+the visual artifact.
