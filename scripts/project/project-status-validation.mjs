@@ -177,6 +177,26 @@ function assertNextActions(artifact) {
     assertString(action.action, "nextActions.action");
     assertString(action.area, "nextActions.area");
     assertString(action.label, "nextActions.label");
+    assertNextActionSteps(action.steps);
+  }
+}
+
+function assertNextActionSteps(steps) {
+  if (steps === undefined) {
+    return;
+  }
+
+  if (!Array.isArray(steps)) {
+    throw new Error("Project status artifact nextActions.steps must be an array.");
+  }
+
+  for (const step of steps) {
+    if (!isRecord(step)) {
+      throw new Error("Project status artifact nextActions.steps must contain objects.");
+    }
+
+    assertString(step.label, "nextActions.steps.label");
+    assertString(step.value, "nextActions.steps.value");
   }
 }
 

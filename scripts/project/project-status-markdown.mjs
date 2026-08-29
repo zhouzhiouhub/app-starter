@@ -134,10 +134,7 @@ function formatNextActions(artifact) {
     return ["- None"];
   }
 
-  const lines = artifact.nextActions.flatMap((action) => [
-    `- ${formatText(action.area)}: ${formatText(action.label)}`,
-    `  Action: ${formatText(action.action, { maxLength: 1200 })}`,
-  ]);
+  const lines = artifact.nextActions.flatMap(formatNextAction);
 
   if (artifact.truncatedNextActionCount > 0) {
     lines.push(
@@ -148,6 +145,23 @@ function formatNextActions(artifact) {
   }
 
   return lines;
+}
+
+function formatNextAction(action) {
+  if (!Array.isArray(action.steps) || action.steps.length === 0) {
+    return [
+      `- ${formatText(action.area)}: ${formatText(action.label)}`,
+      `  Action: ${formatText(action.action, { maxLength: 1200 })}`,
+    ];
+  }
+
+  return [
+    `- ${formatText(action.area)}: ${formatText(action.label)}`,
+    "  Steps:",
+    ...action.steps.map(
+      (step) => `    - ${formatText(step.label)}: ${formatCode(step.value)}`,
+    ),
+  ];
 }
 
 function formatCode(value) {

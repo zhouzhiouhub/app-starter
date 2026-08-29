@@ -97,7 +97,19 @@ test("project status CLI writes a Markdown handoff", async () => {
       /Refresh release handoff: `pnpm release:handoff -- --smoke-report artifacts\/production-smoke\/smoke-report\.json --visual-artifact-dir reports\/visual\/page-builder-fixture`/,
     );
     assert.match(markdown, /spec-table\.mobile/);
-    assert.match(markdown, /pnpm visual:acceptance -- --require-accepted/);
+    assert.match(markdown, / {2}Steps:/);
+    assert.match(
+      markdown,
+      / {4}- Reference: `docs\/visual\/page-builder-references\/spec-table-mobile\.png`/,
+    );
+    assert.match(
+      markdown,
+      / {4}- Accept passing: `pnpm visual:measure -- --write --accept-passing --require-complete`/,
+    );
+    assert.match(
+      markdown,
+      / {4}- Verify: `pnpm visual:acceptance -- --require-accepted`/,
+    );
     assert.match(
       stdout.join("\n"),
       new RegExp(

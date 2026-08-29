@@ -60,9 +60,7 @@ function formatProjectNextActions(artifact) {
     return ["    - None"];
   }
 
-  const lines = artifact.nextActions.map(
-    (action) => `    - ${action.area}: ${action.label} - ${action.action}`,
-  );
+  const lines = artifact.nextActions.flatMap(formatProjectNextAction);
   const hiddenCount = artifact.nextActionCount - artifact.nextActions.length;
 
   if (hiddenCount > 0) {
@@ -72,6 +70,17 @@ function formatProjectNextActions(artifact) {
   }
 
   return lines;
+}
+
+function formatProjectNextAction(action) {
+  if (!Array.isArray(action.steps) || action.steps.length === 0) {
+    return [`    - ${action.area}: ${action.label} - ${action.action}`];
+  }
+
+  return [
+    `    - ${action.area}: ${action.label}`,
+    ...action.steps.map((step) => `      ${step.label}: ${step.value}`),
+  ];
 }
 
 function formatProjectLine(line, options) {

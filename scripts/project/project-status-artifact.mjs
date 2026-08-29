@@ -160,7 +160,30 @@ function readVisualTaskActions(checklist) {
       .join(" "),
     area: "Page Builder Visual",
     label: `${task.component}.${task.viewport}`,
+    steps: createVisualTaskActionSteps(task),
   }));
+}
+
+function createVisualTaskActionSteps(task) {
+  return [
+    createNextActionStep("Reference", task.expectedDesignReference),
+    createNextActionStep("Preview", task.expectedPreviewScreenshot),
+    createNextActionStep("Capture", task.commands?.capture),
+    createNextActionStep("Reference report", task.commands?.referenceReport),
+    createNextActionStep("Import", task.commands?.importReference),
+    createNextActionStep("Measure", task.commands?.measure),
+    createNextActionStep("Accept passing", task.commands?.acceptPassing),
+    createNextActionStep("Verify", task.commands?.verify),
+  ].filter(Boolean);
+}
+
+function createNextActionStep(label, value) {
+  return typeof value === "string" && value.length > 0
+    ? {
+        label,
+        value,
+      }
+    : null;
 }
 
 function readPendingVisualTasks(checklist) {

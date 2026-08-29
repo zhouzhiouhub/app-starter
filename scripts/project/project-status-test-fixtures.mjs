@@ -63,6 +63,7 @@ function createVisualTask(component, viewport) {
     commands: {
       acceptPassing:
         "pnpm visual:measure -- --write --accept-passing --require-complete",
+      capture: `pnpm visual:capture:fixture -- --component ${component} --viewport ${viewport}`,
       importReference:
         "pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete",
       measure: "pnpm visual:measure -- --write --require-complete",

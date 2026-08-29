@@ -11,6 +11,7 @@ import {
   createPendingVisualManifest,
 } from "../release/release-check-test-fixtures.mjs";
 import {
+  assertProjectStatusArtifact,
   createProjectStatusArtifact,
   formatProjectStatusArtifact,
   projectStatusSchemaVersion,
@@ -62,6 +63,22 @@ test("project status summarizes blocked release evidence", () => {
     artifact.nextActions.some((action) => action.label === "hero-banner.desktop"),
     true,
   );
+  const heroDesktopAction = artifact.nextActions.find(
+    (action) => action.label === "hero-banner.desktop",
+  );
+  assert.deepEqual(
+    heroDesktopAction.steps.map((step) => step.label),
+    [
+      "Reference",
+      "Preview",
+      "Capture",
+      "Reference report",
+      "Import",
+      "Measure",
+      "Accept passing",
+      "Verify",
+    ],
+  );
   assert.equal(
     artifact.nextActions.some((action) =>
       action.action.includes("visual-reference-import-report.md"),
@@ -80,6 +97,23 @@ test("project status can serialize every next action", () => {
   assert.equal(artifact.nextActions.length, 14);
   assert.equal(artifact.truncatedNextActionCount, 0);
   assert.equal(artifact.nextActions.at(-1).label, "spec-table.mobile");
+  assert.equal(artifact.nextActions.at(-1).steps.at(-1).label, "Verify");
+});
+
+test("project status validates structured next action steps", () => {
+  const artifact = createProjectStatusArtifact(createBlockedCheck(), {
+    generatedAt: "2026-08-28T00:00:00.000Z",
+  });
+  const visualAction = artifact.nextActions.find(
+    (action) => action.label === "hero-banner.desktop",
+  );
+
+  visualAction.steps = [{ label: "Reference" }];
+
+  assert.throws(
+    () => assertProjectStatusArtifact(artifact),
+    /nextActions\.steps\.value/,
+  );
 });
 
 test("project status config keeps all-actions local", () => {
@@ -157,15 +191,15 @@ test("project status CLI can print every next action", async () => {
     assert.match(text, /spec-table\.mobile/);
     assert.match(
       text,
-      /spec-table\.mobile.*Run pnpm visual:capture:fixture -- --component spec-table --viewport mobile/s,
+      /spec-table\.mobile[\s\S]*Capture: pnpm visual:capture:fixture -- --component spec-table --viewport mobile/,
     );
     assert.match(
       text,
-      /spec-table\.mobile.*Run pnpm visual:measure -- --write --accept-passing --require-complete after review passes/s,
+      /spec-table\.mobile[\s\S]*Accept passing: pnpm visual:measure -- --write --accept-passing --require-complete/,
     );
     assert.match(
       text,
-      /spec-table\.mobile.*Verify with pnpm visual:acceptance -- --require-accepted\./,
+      /spec-table\.mobile[\s\S]*Verify: pnpm visual:acceptance -- --require-accepted/,
     );
     assert.doesNotMatch(text, /pnpm visua\.\.\./);
     assert.doesNotMatch(text, /\.\.\. and \d+ more next actions/);
