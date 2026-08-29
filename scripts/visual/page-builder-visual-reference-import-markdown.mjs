@@ -3,6 +3,7 @@ import { dirname } from "node:path";
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import {
   createPageBuilderVisualReferenceAcceptanceCommand,
+  createPageBuilderVisualReferenceCaptureCommand,
   createPageBuilderVisualReferenceImportWriteCommand,
   createPageBuilderVisualReferenceMeasureCommand,
 } from "./page-builder-visual-reference-import-commands.mjs";
@@ -80,6 +81,9 @@ function formatNextStep(report) {
   if (report.status === "ready") {
     return [
       `- Run ${formatCode(
+        createPageBuilderVisualReferenceCaptureCommand(report),
+      )} if the retained browser screenshots are stale.`,
+      `- Run ${formatCode(
         createPageBuilderVisualReferenceMeasureCommand(report),
       )} after fixture screenshots are attached.`,
     ];
@@ -87,6 +91,9 @@ function formatNextStep(report) {
 
   if (report.status === "updated") {
     return [
+      `- Run ${formatCode(
+        createPageBuilderVisualReferenceCaptureCommand(report),
+      )}.`,
       `- Run ${formatCode(createPageBuilderVisualReferenceMeasureCommand(report))}.`,
       `- Review the measured diff values, then run ${formatCode(
         createPageBuilderVisualReferenceAcceptanceCommand(report),

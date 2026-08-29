@@ -1,4 +1,5 @@
 import {
+  createPageBuilderVisualReferenceCaptureCommand,
   createPageBuilderVisualReferenceImportWriteCommand,
   createPageBuilderVisualReferenceMeasureCommand,
 } from "./page-builder-visual-reference-import-commands.mjs";
@@ -45,6 +46,9 @@ export function formatPageBuilderVisualReferenceImportReport(report) {
   }
 
   if (report.status === "updated") {
+    lines.push(
+      `  Next: run ${createPageBuilderVisualReferenceCaptureCommand(report)}.`,
+    );
     lines.push(
       `  Next: run ${createPageBuilderVisualReferenceMeasureCommand(report)}.`,
     );

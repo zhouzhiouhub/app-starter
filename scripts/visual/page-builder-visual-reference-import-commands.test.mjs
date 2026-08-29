@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   createPageBuilderVisualReferenceAcceptanceCommand,
+  createPageBuilderVisualReferenceCaptureCommand,
   createPageBuilderVisualReferenceImportMarkdown,
   createPageBuilderVisualReferenceImportWriteCommand,
   createPageBuilderVisualReferenceMeasureCommand,
@@ -15,6 +16,10 @@ const artifactReport = {
 };
 
 test("visual reference commands keep artifact manifest context", () => {
+  assert.equal(
+    createPageBuilderVisualReferenceCaptureCommand(artifactReport),
+    "pnpm visual:capture:fixture -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json --write-manifest",
+  );
   assert.equal(
     createPageBuilderVisualReferenceImportWriteCommand(artifactReport),
     "pnpm visual:references -- --source-dir docs/visual/page-builder-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete",
@@ -45,6 +50,7 @@ test("visual reference Markdown keeps artifact follow-up commands", () => {
   });
 
   assert.match(markdown, /pnpm visual:measure -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --require-complete/);
+  assert.match(markdown, /pnpm visual:capture:fixture -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output-dir reports\/visual\/page-builder-fixture --report reports\/visual\/page-builder-fixture\/visual-capture-report\.json --write-manifest/);
   assert.match(markdown, /pnpm visual:acceptance -- --require-accepted reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/);
 });
 
