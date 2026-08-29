@@ -26,12 +26,12 @@ approved design source for each MVP core section and viewport.
 
 1. Export each approved design reference as a PNG using the component and
    viewport names above.
-2. Run `pnpm visual:references -- --source-dir docs/visual/page-builder-references --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete`.
+2. Run `pnpm visual:references -- --source-dir docs/visual/page-builder-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete`.
 3. Review the generated Markdown report and fix any missing or empty PNGs.
-4. Run `pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete`.
-5. Capture retained browser screenshots with `pnpm visual:capture:fixture -- --write-manifest`.
-6. Run `pnpm visual:measure -- --write --require-complete`.
-7. Review the measured evidence and finish with `pnpm visual:acceptance -- --require-accepted`.
+4. Run `pnpm visual:references -- --source-dir docs/visual/page-builder-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete`.
+5. Capture retained browser screenshots with `pnpm visual:capture:fixture -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json --write-manifest`.
+6. Run `pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete`.
+7. Review the measured evidence and finish with `pnpm visual:acceptance -- --require-accepted reports/visual/page-builder-fixture/page-builder-visual-acceptance.json`.
 
 The reference importer only writes manifest paths and resets stale metrics. It
 does not mark a viewport as accepted.

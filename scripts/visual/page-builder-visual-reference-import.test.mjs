@@ -97,7 +97,8 @@ test("visual reference import previews complete manifest updates", () => {
     "docs/old/hero-banner-desktop.png",
   );
   assert.match(lines, /References updated: 12/);
-  assert.match(lines, /Next: rerun with --write/);
+  assert.match(lines, /Next: rerun pnpm visual:references/);
+  assert.match(lines, /--write --require-complete/);
 });
 
 test("visual reference import writes references and resets stale metrics", () => {
@@ -246,12 +247,16 @@ test("visual reference import command is exposed in docs", () => {
     /"visual:references": "node scripts\/page-builder-visual-import-references\.mjs"/,
   );
   assert.match(cli, /--markdown-output <path>/);
+  assert.match(cli, /visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --markdown-output/);
   assert.match(readme, /pnpm visual:references -- --source-dir/);
   assert.match(readme, /visual-reference-import-report\.md/);
+  assert.match(readme, /--manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/);
   assert.match(acceptanceDoc, /pnpm visual:references -- --source-dir/);
   assert.match(acceptanceDoc, /visual-reference-import-report\.md/);
+  assert.match(acceptanceDoc, /--manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/);
   assert.match(releaseChecklist, /pnpm visual:references -- --source-dir/);
   assert.match(releaseChecklist, /visual-reference-import-report\.md/);
+  assert.match(releaseChecklist, /--manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/);
 });
 
 test("visual reference intake directory documents every required file", () => {
@@ -264,11 +269,15 @@ test("visual reference intake directory documents every required file", () => {
   assert.match(referenceReadme, /real Page Builder design\s+reference PNGs/);
   assert.match(
     referenceReadme,
-    /visual:references -- --source-dir docs\/visual\/page-builder-references --markdown-output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md/,
+    /visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md/,
   );
   assert.match(
     referenceReadme,
-    /visual:references -- --source-dir docs\/visual\/page-builder-references --write --require-complete/,
+    /visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --require-complete/,
+  );
+  assert.match(
+    referenceReadme,
+    /visual:capture:fixture -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output-dir reports\/visual\/page-builder-fixture --report reports\/visual\/page-builder-fixture\/visual-capture-report\.json --write-manifest/,
   );
 
   for (const component of mvpPageBuilderComponents) {

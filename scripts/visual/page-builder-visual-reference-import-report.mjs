@@ -1,3 +1,8 @@
+import {
+  createPageBuilderVisualReferenceImportWriteCommand,
+  createPageBuilderVisualReferenceMeasureCommand,
+} from "./page-builder-visual-reference-import-commands.mjs";
+
 export function formatPageBuilderVisualReferenceImportReport(report) {
   const lines = [
     "Page Builder visual reference import",
@@ -23,20 +28,31 @@ export function formatPageBuilderVisualReferenceImportReport(report) {
 
     for (const missing of report.missing) {
       lines.push(
-        `    - ${missing.component}.${missing.viewport}: ${missing.reason}`,
+        `    - ${missing.component}.${missing.viewport}: ${missing.reason}; expected ${createExpectedReferencePath(
+          report.sourceDir,
+          missing,
+        )}`,
       );
     }
   }
 
   if (report.status === "would-update") {
-    lines.push("  Next: rerun with --write to update the manifest.");
+    lines.push(
+      `  Next: rerun ${createPageBuilderVisualReferenceImportWriteCommand(
+        report,
+      )}.`,
+    );
   }
 
   if (report.status === "updated") {
     lines.push(
-      "  Next: run pnpm visual:measure -- --write --require-complete.",
+      `  Next: run ${createPageBuilderVisualReferenceMeasureCommand(report)}.`,
     );
   }
 
   return lines;
+}
+
+function createExpectedReferencePath(sourceDir, missing) {
+  return `${sourceDir}/${missing.component}-${missing.viewport}.png`;
 }

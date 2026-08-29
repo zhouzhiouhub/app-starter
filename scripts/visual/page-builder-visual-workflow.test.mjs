@@ -76,10 +76,18 @@ test("visual workflow documentation is linked from release guidance", async () =
   assert.match(acceptanceDoc, /## CI Workflow/);
   assert.match(acceptanceDoc, /docs\/visual\/page-builder-references/);
   assert.match(acceptanceDoc, /reports\/visual\/page-builder-fixture/);
+  assert.match(
+    acceptanceDoc,
+    /--manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/,
+  );
   assert.match(acceptanceDoc, /--json/);
   assert.match(acceptanceDoc, /--markdown-output/);
   assert.match(releaseChecklist, /Page Builder Visual/);
   assert.match(releaseChecklist, /page-builder-visual-fixture-<run_number>/);
+  assert.match(
+    releaseChecklist,
+    /--manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/,
+  );
   assert.match(releaseChecklist, /visual-acceptance-report\.json/);
   assert.match(releaseChecklist, /visual-reference-import-report\.md/);
   assert.match(releaseChecklist, /visual-acceptance-report\.md/);

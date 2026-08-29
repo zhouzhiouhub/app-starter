@@ -43,21 +43,25 @@ later phases are explicitly approved.
   for production.
 - Confirm the smoke admin account is not the documented local default and has
   `audit:read`.
-- Run `pnpm visual:acceptance -- --checklist --markdown-output reports/visual/page-builder-fixture/visual-acceptance-report.md`
+- Run `pnpm visual:acceptance -- --checklist --markdown-output reports/visual/page-builder-fixture/visual-acceptance-report.md reports/visual/page-builder-fixture/page-builder-visual-acceptance.json`
   and keep the manifest review output plus per-viewport evidence task list
   with the release notes. The
   checklist names the expected reference PNG, retained screenshot path, and
   import/capture/measure/verify commands for each Desktop and Mobile viewport.
   After
   placing real design reference PNGs under a retained source directory, run
-  `pnpm visual:references -- --source-dir docs/visual/page-builder-references --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete`
+  `pnpm visual:references -- --source-dir docs/visual/page-builder-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete`
   to keep the reference intake report with missing or imported PNG paths. Then
   run
-  `pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete`.
+  `pnpm visual:references -- --source-dir docs/visual/page-builder-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete`.
   Then run
-  `pnpm visual:measure -- --write --require-complete` to calculate the viewport
-  metrics. For final MVP sign-off, rerun `pnpm visual:acceptance` with
-  `--require-accepted`; accepted screenshots must be retained under
+  `pnpm visual:capture:fixture -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json --write-manifest`
+  to refresh retained screenshots against the same artifact-local manifest.
+  Then run
+  `pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete`
+  to calculate the viewport metrics. For final MVP sign-off, rerun
+  `pnpm visual:acceptance -- --require-accepted reports/visual/page-builder-fixture/page-builder-visual-acceptance.json`;
+  accepted screenshots must be retained under
   `artifacts/visual/` or `reports/visual/`, and every referenced evidence file
   must exist and be non-empty. Screenshots inside a Page Builder Visual artifact
   must also be decodable PNGs sized to the capture viewport: desktop

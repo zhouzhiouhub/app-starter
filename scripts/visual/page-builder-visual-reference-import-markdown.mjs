@@ -1,6 +1,11 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
+import {
+  createPageBuilderVisualReferenceAcceptanceCommand,
+  createPageBuilderVisualReferenceImportWriteCommand,
+  createPageBuilderVisualReferenceMeasureCommand,
+} from "./page-builder-visual-reference-import-commands.mjs";
 
 const maxMarkdownTextLength = 420;
 
@@ -74,26 +79,34 @@ function formatMissingReferences(report) {
 function formatNextStep(report) {
   if (report.status === "ready") {
     return [
-      "- Run `pnpm visual:measure -- --write --require-complete` after fixture screenshots are attached.",
+      `- Run ${formatCode(
+        createPageBuilderVisualReferenceMeasureCommand(report),
+      )} after fixture screenshots are attached.`,
     ];
   }
 
   if (report.status === "updated") {
     return [
-      "- Run `pnpm visual:measure -- --write --require-complete`.",
-      "- Review the measured diff values, then run `pnpm visual:acceptance -- --require-accepted`.",
+      `- Run ${formatCode(createPageBuilderVisualReferenceMeasureCommand(report))}.`,
+      `- Review the measured diff values, then run ${formatCode(
+        createPageBuilderVisualReferenceAcceptanceCommand(report),
+      )}.`,
     ];
   }
 
   if (report.status === "would-update") {
     return [
-      "- Rerun `pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete`.",
+      `- Rerun ${formatCode(
+        createPageBuilderVisualReferenceImportWriteCommand(report),
+      )}.`,
     ];
   }
 
   return [
     "- Add the missing real design reference PNGs listed above.",
-    "- Rerun `pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete`.",
+    `- Rerun ${formatCode(
+      createPageBuilderVisualReferenceImportWriteCommand(report),
+    )}.`,
   ];
 }
 

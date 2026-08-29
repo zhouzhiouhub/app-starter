@@ -57,7 +57,7 @@ function printHelp() {
   pnpm visual:references -- --source-dir docs/visual/page-builder-references
   pnpm visual:references -- --source-dir docs/visual/page-builder-references --write
   pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete
-  pnpm visual:references -- --source-dir docs/visual/page-builder-references --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete
+  pnpm visual:references -- --source-dir docs/visual/page-builder-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete
 
 Options:
   --source-dir <dir>     Directory containing <component>-<viewport>.png files.

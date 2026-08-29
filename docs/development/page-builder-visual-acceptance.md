@@ -20,12 +20,12 @@ pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture
 pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture --markdown-output reports/visual/page-builder-fixture/visual-artifact-check-report.md
 pnpm visual:capture
 pnpm visual:capture:fixture
-pnpm visual:capture:fixture -- --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json
-pnpm visual:capture:fixture -- --output-dir reports/visual/page-builder-fixture --write-manifest
+pnpm visual:capture:fixture -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json --write-manifest
 pnpm visual:measure
 pnpm visual:measure -- --write
-pnpm visual:references -- --source-dir docs/visual/page-builder-references --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete
-pnpm visual:references -- --source-dir docs/visual/page-builder-references --write
+pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete
+pnpm visual:references -- --source-dir docs/visual/page-builder-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete
+pnpm visual:references -- --source-dir docs/visual/page-builder-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete
 ```
 
 Use the default command while collecting evidence. Use `--checklist` to print
@@ -63,12 +63,14 @@ Use
 `pnpm visual:references` after placing real design reference PNGs in a retained
 source directory to inspect or update `designReference` values and reset stale
 metrics. Add
-`--markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete`
-to keep a human-readable reference intake report listing missing PNGs, imported
-paths, and the next command. Use `pnpm visual:measure` after attaching design
+`--manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete`
+when importing into the uploadable artifact manifest. This keeps a
+human-readable reference intake report listing missing PNGs, imported paths,
+and the next command. Use `pnpm visual:measure` after attaching design
 references to calculate `visualMatchPercent`, `maxLayoutDeltaPx`, and
 `maxColorDeltaE`; pass `--write` to persist the measured values to the
-manifest.
+manifest, and pass `--manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json`
+when measuring the artifact-local manifest.
 Pass `--write-manifest` to `visual:capture` or `visual:capture:fixture` only
 when the captured browser screenshots should update `previewScreenshot` paths in
 the manifest. This resets stale diff metrics and keeps viewport status as
@@ -142,13 +144,13 @@ To capture into the same directory used by the GitHub Actions artifact and
 point the manifest at those retained screenshots:
 
 ```powershell
-pnpm visual:capture:fixture -- --output-dir reports/visual/page-builder-fixture --write-manifest
+pnpm visual:capture:fixture -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output-dir reports/visual/page-builder-fixture --write-manifest
 ```
 
 To also archive a structured capture report with the retained screenshots:
 
 ```powershell
-pnpm visual:capture:fixture -- --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json
+pnpm visual:capture:fixture -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json --write-manifest
 ```
 
 Set `PAGE_BUILDER_VISUAL_BROWSER` or pass `--browser` when Chrome or Edge is
@@ -197,7 +199,7 @@ After real Desktop and Mobile design reference PNGs are attached to the
 manifest, calculate the metrics with:
 
 ```powershell
-pnpm visual:measure -- --write --require-complete
+pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete
 ```
 
 Use `--accept-passing` only when the measured values pass the configured

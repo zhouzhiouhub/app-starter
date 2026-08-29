@@ -1,0 +1,70 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import {
+  createPageBuilderVisualReferenceAcceptanceCommand,
+  createPageBuilderVisualReferenceImportMarkdown,
+  createPageBuilderVisualReferenceImportWriteCommand,
+  createPageBuilderVisualReferenceMeasureCommand,
+  formatPageBuilderVisualReferenceImportReport,
+} from "./page-builder-visual-reference-import.mjs";
+
+const artifactReport = {
+  manifestPath:
+    "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
+  sourceDir: "docs/visual/page-builder-references",
+};
+
+test("visual reference commands keep artifact manifest context", () => {
+  assert.equal(
+    createPageBuilderVisualReferenceImportWriteCommand(artifactReport),
+    "pnpm visual:references -- --source-dir docs/visual/page-builder-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete",
+  );
+  assert.equal(
+    createPageBuilderVisualReferenceMeasureCommand(artifactReport),
+    "pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete",
+  );
+  assert.equal(
+    createPageBuilderVisualReferenceAcceptanceCommand(artifactReport),
+    "pnpm visual:acceptance -- --require-accepted reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
+  );
+});
+
+test("visual reference Markdown keeps artifact follow-up commands", () => {
+  const markdown = createPageBuilderVisualReferenceImportMarkdown({
+    ...artifactReport,
+    missing: [],
+    status: "updated",
+    updates: [
+      {
+        component: "hero-banner",
+        designReference:
+          "docs/visual/page-builder-references/hero-banner-desktop.png",
+        viewport: "desktop",
+      },
+    ],
+  });
+
+  assert.match(markdown, /pnpm visual:measure -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --require-complete/);
+  assert.match(markdown, /pnpm visual:acceptance -- --require-accepted reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/);
+});
+
+test("visual reference reports list expected files and artifact write command", () => {
+  const report = {
+    ...artifactReport,
+    missing: [
+      {
+        component: "faq",
+        reason: "faq-mobile.png is missing",
+        viewport: "mobile",
+      },
+    ],
+    status: "would-update",
+    updates: [],
+  };
+  const text = formatPageBuilderVisualReferenceImportReport(report).join("\n");
+  const markdown = createPageBuilderVisualReferenceImportMarkdown(report);
+
+  assert.match(text, /expected docs\/visual\/page-builder-references\/faq-mobile\.png/);
+  assert.match(text, /visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --require-complete/);
+  assert.match(markdown, /visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --require-complete/);
+});
