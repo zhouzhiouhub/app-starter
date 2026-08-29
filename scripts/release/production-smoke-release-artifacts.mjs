@@ -1,10 +1,14 @@
-import { normalizeArtifactName } from "./release-notes-validation.mjs";
+import {
+  normalizeArtifactName,
+  normalizeReleaseNotesOutputPath,
+} from "./release-notes-validation.mjs";
 import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
 import { normalizeSmokeReportPath } from "../smoke/smoke-report-path-config.mjs";
 
 const defaultSmokeReportPath = "artifacts/production-smoke/smoke-report.json";
 const defaultReleaseCheckArtifactPath = "artifacts/release/release-check.json";
 const defaultProjectStatusArtifactPath = "artifacts/release/project-status.json";
+const defaultReleaseNotesPath = "artifacts/release/release-notes.md";
 const defaultSmokeReportArtifactName = "production-smoke-report-local";
 const defaultReleaseCheckArtifactName = "release-evidence-check-local";
 const defaultProjectStatusArtifactName = "project-status-local";
@@ -34,6 +38,9 @@ function validateWorkflowArtifactPaths(env) {
       "PROJECT_STATUS_ARTIFACT_PATH",
       defaultProjectStatusArtifactPath,
     ),
+  );
+  normalizeReleaseNotesOutputPath(
+    readWorkflowEnv(env, "RELEASE_NOTES_PATH", defaultReleaseNotesPath),
   );
 }
 

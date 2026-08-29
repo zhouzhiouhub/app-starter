@@ -219,6 +219,7 @@ Checks:
 Environment:
   SMOKE_REPORT_PATH, RELEASE_CHECK_ARTIFACT_PATH, and
   PROJECT_STATUS_ARTIFACT_PATH must be safe repository-relative JSON paths.
+  RELEASE_NOTES_PATH must be a safe repository-relative Markdown path.
   SMOKE_REPORT_ARTIFACT_NAME, RELEASE_CHECK_ARTIFACT_NAME,
   PROJECT_STATUS_ARTIFACT_NAME, and RELEASE_NOTES_ARTIFACT_NAME must be safe
   artifact names.
