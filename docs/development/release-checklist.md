@@ -179,7 +179,8 @@ later phases are explicitly approved.
 - When `visual_artifact_run_id` was provided, the Production Smoke workflow log
   shows
   `pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture --markdown-output reports/visual/page-builder-fixture/visual-artifact-check-report.md`
-  passing after the download and before smoke requests continue.
+  passing after the download and before smoke requests continue. The check
+  confirms the reference import Markdown belongs to the artifact-local manifest.
 - Local reproduction of the same uploaded visual artifact shape uses
   `pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture`.
 - `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json`

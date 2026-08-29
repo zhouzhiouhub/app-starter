@@ -28,9 +28,8 @@ export function checkPageBuilderVisualArtifact(config, input = {}) {
     "acceptance report",
     context,
   );
-  validateRequiredText(
+  validateReferenceImportMarkdown(
     context.paths.referenceImportMarkdown,
-    "reference import Markdown",
     context,
   );
   const screenshots = validateCaptureReport(captureReport, context);
@@ -93,7 +92,17 @@ function readRequiredJson(filePath, label, context) {
   }
 }
 
-function validateRequiredText(filePath, label, context) {
+function validateReferenceImportMarkdown(filePath, context) {
+  const body = readRequiredText(filePath, "reference import Markdown", context);
+
+  if (!body) {
+    return;
+  }
+
+  validateReferenceImportMarkdownContent(body, context);
+}
+
+function readRequiredText(filePath, label, context) {
   try {
     const resolvedPath = resolveRepositoryPath(context, filePath);
     const stats = context.stat(resolvedPath);
@@ -104,16 +113,40 @@ function validateRequiredText(filePath, label, context) {
         "invalid_artifact_file",
         `${label} must be a non-empty file.`,
       );
-      return;
+      return null;
     }
 
     context.presentRequiredFileCount += 1;
+    return context.readFile(resolvedPath, "utf8");
   } catch {
     addArtifactCheckIssue(
       context,
       "missing_artifact_file",
       `${label} is missing: ${filePath}.`,
     );
+    return null;
+  }
+}
+
+function validateReferenceImportMarkdownContent(body, context) {
+  const expectedLines = [
+    [/^# Page Builder Visual Reference Import\r?$/mu, "title"],
+    [/^Status: `(invalid|needs-evidence|ready|updated|would-update)`\r?$/mu, "status"],
+    [
+      new RegExp(`^Manifest: \`${escapeRegExp(context.paths.manifest)}\`\\r?$`, "mu"),
+      "manifest path",
+    ],
+    [/^Source dir: `docs\/visual\/page-builder-references`\r?$/mu, "source dir"],
+  ];
+
+  for (const [pattern, label] of expectedLines) {
+    if (!pattern.test(body)) {
+      addArtifactCheckIssue(
+        context,
+        "invalid_artifact_markdown",
+        `reference import Markdown must include the expected ${label}.`,
+      );
+    }
   }
 }
 
@@ -227,4 +260,8 @@ function findManifestPreviewScreenshot(manifest, component, viewport) {
     : null;
 
   return record?.viewports?.[viewport]?.previewScreenshot ?? null;
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
 }

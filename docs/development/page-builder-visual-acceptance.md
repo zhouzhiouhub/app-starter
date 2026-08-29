@@ -80,6 +80,8 @@ Use `pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fi
 after capture and acceptance report generation to verify the artifact-local
 manifest, capture report, acceptance report, and all 12 screenshot PNGs are
 present, internally consistent, decodable, and sized to the capture viewport.
+The check also verifies that `visual-reference-import-report.md` is retained
+for the artifact-local manifest and default reference intake directory.
 Add
 `--markdown-output reports/visual/page-builder-fixture/visual-artifact-check-report.md`
 when the artifact integrity result should be retained as a human-readable
