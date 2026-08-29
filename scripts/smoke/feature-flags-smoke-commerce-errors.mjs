@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from "node:util";
 import {
   apiErrorCodes,
   createCommerceDisabledDetails,
@@ -85,7 +86,7 @@ function assertCommerceDetails({ actual, expected, label, url }) {
   }
 
   for (const [key, value] of Object.entries(expected)) {
-    if (actual[key] !== value) {
+    if (!isDeepStrictEqual(actual[key], value)) {
       throw new Error(
         `${url} ${fieldLabel}.${key} did not match the MVP reserved contract.`,
       );

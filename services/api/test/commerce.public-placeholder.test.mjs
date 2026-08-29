@@ -8,6 +8,7 @@ import {
   createRouteRawBodyCapture,
   stripeWebhookRawBodyRoutePath,
 } from "../dist/common/raw-body.js";
+import { configureApiApplication } from "../dist/common/api-application.js";
 import { PublicCommerceController } from "../dist/modules/commerce/public-commerce.controller.js";
 import { StripeWebhookController } from "../dist/modules/commerce/stripe-webhook.controller.js";
 import { readStripeWebhookPlaceholderContract } from "../dist/modules/commerce/stripe-webhook-placeholder.js";
@@ -77,6 +78,19 @@ test("stripe webhook placeholder rejects events without echoing payloads", () =>
         commerceEnabled: flag === "true",
         reservedPhase: "phase-2",
         resource: "stripe-webhook",
+        webhookVerification: {
+          eventProcessed: false,
+          rawBodyBytes: 0,
+          rawBodyCaptured: false,
+          readyForSignatureVerification: false,
+          signatureHasTimestamp: false,
+          signatureHasV1: false,
+          signatureProvided: false,
+          signatureTimestampReady: false,
+          signatureV1Ready: false,
+          signatureVerified: false,
+          webhookEventPersisted: false,
+        },
         writable: false,
         writeDisabledCode: apiErrorCodes.COMMERCE_DISABLED,
       });
@@ -177,11 +191,12 @@ test("public product detail stays an explicit MVP placeholder", async () => {
     );
     const text = await response.text();
     const body = JSON.parse(text);
+    const error = readApiErrorBody(body);
 
     assert.equal(response.status, 404);
-    assert.equal(body.code, apiErrorCodes.NOT_FOUND);
-    assert.equal(body.requestId, "request-public-product-placeholder");
-    assert.deepEqual(body.details, {
+    assert.equal(error.code, apiErrorCodes.NOT_FOUND);
+    assert.equal(error.requestId, "request-public-product-placeholder");
+    assert.deepEqual(error.details, {
       action: "read",
       available: false,
       commerceEnabled: false,
@@ -211,12 +226,13 @@ test("public commerce disabled routes keep the MVP public paths", async () => {
         method: "POST",
       });
       const body = await response.json();
+      const error = readApiErrorBody(body);
 
       assert.equal(response.status, 409);
-      assert.equal(body.code, apiErrorCodes.COMMERCE_DISABLED);
-      assert.equal(body.requestId, `request-commerce-${path}`);
-      assert.equal(body.details.resource, path);
-      assert.equal(body.details.writable, false);
+      assert.equal(error.code, apiErrorCodes.COMMERCE_DISABLED);
+      assert.equal(error.requestId, `request-commerce-${path}`);
+      assert.equal(error.details.resource, path);
+      assert.equal(error.details.writable, false);
     }
 
     const webhookResponse = await fetch(`${baseUrl}/webhooks/stripe`, {
@@ -233,12 +249,26 @@ test("public commerce disabled routes keep the MVP public paths", async () => {
     });
     const webhookText = await webhookResponse.text();
     const webhookBody = JSON.parse(webhookText);
+    const webhookError = readApiErrorBody(webhookBody);
 
     assert.equal(webhookResponse.status, 409);
-    assert.equal(webhookBody.code, apiErrorCodes.COMMERCE_DISABLED);
-    assert.equal(webhookBody.requestId, "request-commerce-webhook");
-    assert.equal(webhookBody.details.resource, "stripe-webhook");
-    assert.equal(webhookBody.details.action, "receive-webhook");
+    assert.equal(webhookError.code, apiErrorCodes.COMMERCE_DISABLED);
+    assert.equal(webhookError.requestId, "request-commerce-webhook");
+    assert.equal(webhookError.details.resource, "stripe-webhook");
+    assert.equal(webhookError.details.action, "receive-webhook");
+    assert.deepEqual(webhookError.details.webhookVerification, {
+      eventProcessed: false,
+      rawBodyBytes: 44,
+      rawBodyCaptured: true,
+      readyForSignatureVerification: true,
+      signatureHasTimestamp: true,
+      signatureHasV1: true,
+      signatureProvided: true,
+      signatureTimestampReady: true,
+      signatureV1Ready: true,
+      signatureVerified: false,
+      webhookEventPersisted: false,
+    });
     assert.equal(webhookText.includes("evt_secret_payload"), false);
     assert.equal(webhookText.includes("secret_signature"), false);
   } finally {
@@ -248,9 +278,10 @@ test("public commerce disabled routes keep the MVP public paths", async () => {
 
 async function createPublicCommerceApp() {
   const app = await NestFactory.create(PublicCommerceRouteTestModule, {
+    bodyParser: false,
     logger: false,
   });
-  app.setGlobalPrefix("api/v1");
+  configureApiApplication(app);
   await app.listen(0, "127.0.0.1");
 
   return app;
@@ -262,4 +293,8 @@ function readPublicCommerceBaseUrl(app) {
     typeof address === "object" && address !== null ? address.port : 0;
 
   return `http://127.0.0.1:${port}/api/v1`;
+}
+
+function readApiErrorBody(body) {
+  return body.error ?? body;
 }

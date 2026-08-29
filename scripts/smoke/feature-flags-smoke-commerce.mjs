@@ -46,6 +46,11 @@ export async function assertCommerceReadPlaceholders(input, accessToken) {
 const smokeProductId = "smoke-product";
 const smokeOrderId = "smoke-order";
 const smokePaymentId = "smoke-payment";
+const smokeStripeWebhookBody = JSON.stringify({
+  id: "evt_smoke_webhook",
+  object: "event",
+});
+const smokeStripeWebhookSignature = "t=1,v1=smoke-signature";
 const smokeProductCreateIdempotencyKey = "7f10f6d3-02d9-4f3d-a69d-49b26ec63132";
 const smokeProductUpdateIdempotencyKey = "4d3a1fc5-3d10-4bb8-91ef-c8a8fef3c61a";
 
@@ -162,16 +167,26 @@ export async function assertCommerceDisabled(input, accessToken) {
   await assertCommerceDisabledErrorResponse(
     `${input.apiBaseUrl}/webhooks/stripe`,
     {
-      body: JSON.stringify({ id: "evt_smoke_webhook", object: "event" }),
+      body: smokeStripeWebhookBody,
       headers: {
         "Content-Type": "application/json",
-        "Stripe-Signature": "t=1,v1=smoke-signature",
+        "Stripe-Signature": smokeStripeWebhookSignature,
       },
       method: "POST",
     },
     {
       action: "receive-webhook",
       resource: "stripe-webhook",
+      webhookVerification: {
+        rawBodyBytes: Buffer.byteLength(smokeStripeWebhookBody),
+        rawBodyCaptured: true,
+        readyForSignatureVerification: true,
+        signatureHasTimestamp: true,
+        signatureHasV1: true,
+        signatureProvided: true,
+        signatureTimestampReady: true,
+        signatureV1Ready: true,
+      },
     },
   );
 }

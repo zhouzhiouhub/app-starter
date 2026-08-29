@@ -4,6 +4,7 @@ import {
   createCommerceDisabledDetails,
   type CommerceDisabledAction,
   type CommerceDisabledResource,
+  type CommerceDisabledWebhookVerificationInput,
 } from "./commerce-disabled-details.js";
 
 const defaultCommerceDisabledMessage =
@@ -14,12 +15,14 @@ export function throwCommerceDisabled(input: {
   message?: string;
   requestId: string;
   resource?: CommerceDisabledResource;
+  webhookVerification?: CommerceDisabledWebhookVerificationInput;
 }): never {
   throw new ConflictException({
     code: apiErrorCodes.COMMERCE_DISABLED,
     details: createCommerceDisabledDetails({
       action: input.action ?? "update",
       resource: input.resource ?? "product",
+      webhookVerification: input.webhookVerification,
     }),
     message: input.message ?? defaultCommerceDisabledMessage,
     requestId: input.requestId,

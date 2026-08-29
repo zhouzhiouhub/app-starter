@@ -1,3 +1,5 @@
+import { readPublicCommerceDisabledRouteFixture } from "./feature-flags-smoke-commerce-route-fixture.mjs";
+
 export function createFeatureFlagSmokeFetch(options = {}) {
   return async (url, init = {}) => {
     options.calls?.push({ init, url });
@@ -214,7 +216,9 @@ export function createFeatureFlagSmokeFetch(options = {}) {
       return jsonResponse(
         {
           code: "COMMERCE_DISABLED",
-          details: commerceDisabledDetails(readPublicCommerceDisabledRoute(url)),
+          details: commerceDisabledDetails(
+            readPublicCommerceDisabledRouteFixture(url, init),
+          ),
           message: "Commerce is disabled.",
         },
         { status: 409, statusText: "Conflict" },
@@ -246,7 +250,7 @@ export function createFeatureFlagSmokeFetch(options = {}) {
 }
 
 function commerceDisabledDetails(input) {
-  return {
+  const details = {
     action: input.action,
     commerceEnabled: false,
     reservedPhase: "phase-2",
@@ -254,6 +258,12 @@ function commerceDisabledDetails(input) {
     writable: false,
     writeDisabledCode: "COMMERCE_DISABLED",
   };
+
+  if (input.webhookVerification) {
+    details.webhookVerification = input.webhookVerification;
+  }
+
+  return details;
 }
 
 function commerceReservedDetailDetails(input) {
@@ -267,18 +277,6 @@ function commerceReservedDetailDetails(input) {
     surface: input.surface,
     writable: false,
   };
-}
-
-function readPublicCommerceDisabledRoute(url) {
-  if (url.endsWith("/public/cart")) {
-    return { action: "add-to-cart", resource: "cart" };
-  }
-
-  if (url.endsWith("/public/checkout")) {
-    return { action: "checkout", resource: "checkout" };
-  }
-
-  return { action: "receive-webhook", resource: "stripe-webhook" };
 }
 
 export function jsonResponse(body, init = {}) {

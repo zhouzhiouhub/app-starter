@@ -608,6 +608,7 @@ POST /api/v1/webhooks/stripe
 - `GET /api/v1/public/preview/:token` 返回短期预览 Token 对应的草稿 Schema，并显式设置 `Cache-Control: no-store`。
 - 前台只渲染已发布页面；未发布或不存在的 slug 进入 404 页面。
 - 当前 `cart`、`checkout` 和 Stripe Webhook 占位路由会返回 `COMMERCE_DISABLED`，这是预期行为；关闭态 `details` 会标记 `resource`、`action`、`writable=false`、`writeDisabledCode=COMMERCE_DISABLED` 和 `reservedPhase=phase-2`，但不会回显请求体、商品 ID、payload 或签名。Webhook 占位仅对 `POST /api/v1/webhooks/stripe` 捕获原始 JSON body，并识别 `stripe-signature` 是否包含可用于 Phase 2 验签的非空 `v1` 与数字 `t`，不验签、不落库、不处理事件。
+- Stripe Webhook 关闭态 `details.webhookVerification` 只返回 raw body 是否捕获、byte 数、签名 timestamp / `v1` 形状和 `readyForSignatureVerification` 等安全布尔值，并固定 `signatureVerified=false`、`webhookEventPersisted=false`、`eventProcessed=false`。
 - 本地默认管理员：`admin@example.com` / `ChangeMe123!`（可通过 `SEED_ADMIN_EMAIL`、`SEED_ADMIN_PASSWORD` 覆盖）；邮箱必须是有效邮箱，密码必须为 8 到 128 字符且不含控制字符，生产环境不能使用文档默认值。Seed 会幂等发布 Home、Privacy Policy、Terms of Service 和 404 四个 MVP 起始页面。
 
 ## 12. 常用验证命令

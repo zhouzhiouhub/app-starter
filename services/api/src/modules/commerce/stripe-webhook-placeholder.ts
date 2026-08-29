@@ -48,13 +48,14 @@ export function readStripeWebhookPlaceholderContract({
 export function throwStripeWebhookReserved(
   input: StripeWebhookPlaceholderInput,
 ): never {
-  readStripeWebhookPlaceholderContract(input);
+  const webhookVerification = readStripeWebhookPlaceholderContract(input);
 
   return throwCommerceDisabled({
     action: "receive-webhook",
     message: stripeWebhookDisabledMessage,
     requestId: input.requestId,
     resource: "stripe-webhook",
+    webhookVerification,
   });
 }
 
