@@ -54,6 +54,15 @@ export function formatPageBuilderVisualReferenceImportReport(report) {
     );
   }
 
+  if (report.status === "invalid" || report.status === "needs-evidence") {
+    lines.push("  Next: add the missing real design reference PNGs listed above.");
+    lines.push(
+      `  Next: rerun ${createPageBuilderVisualReferenceImportWriteCommand(
+        report,
+      )}.`,
+    );
+  }
+
   return lines;
 }
 

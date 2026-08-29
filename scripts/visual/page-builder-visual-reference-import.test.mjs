@@ -149,6 +149,7 @@ test("visual reference import reports missing required files", () => {
     },
     { cwd: root, manifest },
   );
+  const lines = formatPageBuilderVisualReferenceImportReport(report).join("\n");
 
   assert.equal(report.status, "invalid");
   assert.equal(report.missing.length, 1);
@@ -157,6 +158,9 @@ test("visual reference import reports missing required files", () => {
     reason: "faq-mobile.png is missing",
     viewport: "mobile",
   });
+  assert.match(lines, /Next: add the missing real design reference PNGs/);
+  assert.match(lines, /Next: rerun pnpm visual:references/);
+  assert.match(lines, /--write --require-complete/);
 });
 
 test("visual reference import Markdown lists missing references", () => {
