@@ -75,7 +75,15 @@ test("release check Markdown lists blockers and visual tasks", () => {
   assert.match(markdown, /hero-banner\.desktop: missing designReference/);
   assert.match(
     markdown,
+    /capture `pnpm visual:capture:fixture -- --component hero-banner --viewport desktop --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output-dir reports\/visual\/page-builder-fixture --write-manifest`/,
+  );
+  assert.match(
+    markdown,
     /reference report `pnpm visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md --require-complete`/,
+  );
+  assert.match(
+    markdown,
+    /import `pnpm visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --require-complete`/,
   );
   assert.match(markdown, /pnpm visual:measure -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --require-complete/);
 });

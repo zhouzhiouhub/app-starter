@@ -192,9 +192,13 @@ function formatVisualTasks(tasks) {
             task.expectedDesignReference,
           )}; preview ${formatCode(
             task.expectedPreviewScreenshot,
+          )}; capture ${formatCode(
+            task.commands?.capture,
           )}${formatOptionalTaskCommand(
             "reference report",
             task.commands?.referenceReport,
+          )}; import ${formatCode(
+            task.commands?.importReference,
           )}; measure ${formatCode(
             task.commands?.measure,
           )}; verify ${formatCode(task.commands?.verify)}`,
