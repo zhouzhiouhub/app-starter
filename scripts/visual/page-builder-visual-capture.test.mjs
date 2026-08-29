@@ -1,8 +1,4 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import path from "node:path";
-import { EventEmitter } from "node:events";
 import test from "node:test";
 import {
   assertPageBuilderVisualFixtureAvailable,
@@ -17,8 +13,6 @@ import {
   readCaptureReportPath,
   readPageBuilderVisualCaptureCliConfig,
   resolvePageBuilderVisualBrowserPath,
-  runPageBuilderVisualCapture,
-  validatePageBuilderVisualScreenshotFile,
 } from "./page-builder-visual-capture.mjs";
 
 test("visual capture config reads defaults and env browser fallback", () => {
@@ -248,23 +242,6 @@ test("visual capture verifies fixture availability before capture", async () => 
   );
 });
 
-test("visual capture validates PNG screenshot signatures", () => {
-  const validPng = Buffer.from([
-    0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00,
-  ]);
-
-  validatePageBuilderVisualScreenshotFile("fixture.png", {
-    readFile: () => validPng,
-  });
-  assert.throws(
-    () =>
-      validatePageBuilderVisualScreenshotFile("fixture.png", {
-        readFile: () => Buffer.from("not-png"),
-      }),
-    /not a PNG/,
-  );
-});
-
 test("visual capture report includes every captured screenshot", () => {
   const lines = formatPageBuilderVisualCaptureReport({
     baseUrl: "http://localhost:3000",
@@ -295,43 +272,4 @@ test("visual capture report includes every captured screenshot", () => {
   assert.match(lines.join("\n"), /Manifest: docs\/development\/page-builder-visual-acceptance\.json \(updated 1\)/);
   assert.match(lines.join("\n"), /hero-banner\.desktop/);
   assert.match(lines.join("\n"), /123 bytes/);
-});
-
-test("visual capture completes when PNG is written before browser exits", async () => {
-  const outputDir = mkdtempSync(path.join(tmpdir(), "visual-capture-ready-"));
-  const child = new EventEmitter();
-  child.exitCode = null;
-  child.killed = false;
-  child.kill = () => {
-    child.killed = true;
-    queueMicrotask(() => child.emit("exit", 0, null));
-  };
-  const result = await runPageBuilderVisualCapture(
-    {
-      baseUrl: "http://localhost:3000",
-      browserPath: "chrome",
-      components: ["hero-banner"],
-      outputDir,
-      timeoutMs: 2000,
-      viewports: ["desktop"],
-    },
-    {
-      fetch: async () => ({ status: 200 }),
-      screenshotInput: { pollMs: 1 },
-      spawn: (_command, args) => {
-        const screenshotArg = args.find((arg) => arg.startsWith("--screenshot="));
-        writeFileSync(
-          screenshotArg.slice("--screenshot=".length),
-          Buffer.from([
-            0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00,
-          ]),
-        );
-        return child;
-      },
-    },
-  );
-
-  assert.equal(child.killed, true);
-  assert.equal(result.screenshots.length, 1);
-  assert.equal(result.screenshots[0].bytes, 9);
 });

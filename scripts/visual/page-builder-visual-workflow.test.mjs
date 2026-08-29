@@ -21,22 +21,14 @@ test("page builder visual workflow captures fixture evidence", async () => {
   assert.match(workflow, /pnpm test:visual/);
   assert.match(
     workflow,
-    /cp docs\/development\/page-builder-visual-acceptance\.json reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/,
+    /pnpm visual:artifact-bundle -- --artifact-dir reports\/visual\/page-builder-fixture/,
   );
-  assert.match(workflow, /pnpm visual:measure/);
-  assert.match(
+  assert.doesNotMatch(
     workflow,
-    /pnpm visual:capture:fixture -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output-dir reports\/visual\/page-builder-fixture --report reports\/visual\/page-builder-fixture\/visual-capture-report\.json --write-manifest/,
-  );
-  assert.match(
-    workflow,
-    /pnpm visual:acceptance -- --checklist --output reports\/visual\/page-builder-fixture\/visual-acceptance-report\.json reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/,
-  );
-  assert.match(
-    workflow,
-    /pnpm visual:artifact-check -- --artifact-dir reports\/visual\/page-builder-fixture/,
+    /cp docs\/development\/page-builder-visual-acceptance\.json/,
   );
   assert.match(workflow, /GITHUB_STEP_SUMMARY/);
+  assert.match(workflow, /Bundle:/);
   assert.match(workflow, /visual-capture-report\.json/);
   assert.match(workflow, /visual-acceptance-report\.json/);
   assert.match(workflow, /page-builder-visual-acceptance\.json/);

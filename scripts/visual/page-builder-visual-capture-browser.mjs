@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { tmpdir } from "node:os";
 import { setTimeout as delay } from "node:timers/promises";
+import { decodePngImage } from "./png-image-reader.mjs";
 
 const pngSignature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 const browserOutputLimit = 1200;
@@ -73,11 +74,7 @@ export async function waitForPageBuilderVisualScreenshot(
 
 export function validatePageBuilderVisualScreenshotFile(outputPath, input = {}) {
   const readFile = input.readFile ?? readFileSync;
-  const header = readFile(outputPath).subarray(0, pngSignature.length);
-
-  if (!header.equals(pngSignature)) {
-    throw new Error(`Screenshot is not a PNG file: ${outputPath}`);
-  }
+  decodePngImage(readFile(outputPath), outputPath);
 }
 
 export function createPageBuilderVisualProfileDir(input = {}) {

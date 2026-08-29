@@ -201,8 +201,11 @@ screenshots. Add `&component=hero-banner`, `rich-text`, `image-gallery`,
 `pnpm visual:capture` against the running fixture server. Use
 `pnpm visual:capture:fixture` to build Web, start the gated fixture server,
 refresh every component screenshot path in the visual acceptance manifest, and
-stop the server. Keep this flag disabled in production and public preview
-environments.
+stop the server. Use
+`pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture`
+to generate the same manifest, capture report, acceptance report, screenshots,
+and artifact check bundle that CI uploads. Keep this flag disabled in production
+and public preview environments.
 
 After sign-in, open `http://localhost:5173/pages` to list and create pages.
 The editor at `/pages/:id` loads the draft schema, can save a draft, and can
@@ -352,6 +355,8 @@ and both the combined gate and project status snapshot with
 `--visual-artifact-dir reports/visual/page-builder-fixture`. The workflow runs
 `pnpm release:preflight` before smoke requests so a
 partial visual artifact pair or partial release notes input set fails early.
+The same visual artifact shape can be reproduced locally with
+`pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture`.
 When `release_tag`,
 `rollback_target`, and `visual_artifact_name` are provided, it runs
 `release:notes` with the generated project status artifact name and uploads

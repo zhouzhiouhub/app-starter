@@ -14,6 +14,7 @@ pnpm visual:acceptance -- --checklist
 pnpm visual:acceptance -- --json
 pnpm visual:acceptance -- --checklist --output reports/visual/page-builder-fixture/visual-acceptance-report.json
 pnpm visual:acceptance -- --require-accepted
+pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture
 pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture
 pnpm visual:capture
 pnpm visual:capture:fixture
@@ -44,6 +45,13 @@ safe `.json` path under `tmp/`, `reports/`, `artifacts/`, or `.tmp/`. When
 evidence tasks. Use
 `pnpm visual:capture:fixture` for the full local workflow: build Web, start the
 gated fixture server, capture the screenshots, and stop the server. Use
+`pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture`
+when you need the full uploadable fixture evidence bundle; it copies the source
+manifest into the artifact directory, captures all 12 viewport screenshots,
+writes `visual-capture-report.json`, runs measurement, writes
+`visual-acceptance-report.json`, and verifies the bundle with
+`visual:artifact-check`.
+Use
 `pnpm visual:references` after placing real design reference PNGs in a retained
 source directory to update `designReference` values and reset stale metrics. Use
 `pnpm visual:measure` after attaching design references to calculate
@@ -103,6 +111,12 @@ To run the full local workflow in one command:
 pnpm visual:capture:fixture
 ```
 
+To build the same artifact bundle shape uploaded by CI:
+
+```powershell
+pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture
+```
+
 To capture into the same directory used by the GitHub Actions artifact and
 point the manifest at those retained screenshots:
 
@@ -125,14 +139,13 @@ binary path problems can be diagnosed from the command output.
 
 The `Page Builder Visual` GitHub Actions workflow runs on visual-related pull
 requests, pushes to `main`, and manual dispatch. It executes `pnpm test:visual`,
-copies the source manifest to
-`reports/visual/page-builder-fixture/page-builder-visual-acceptance.json`, then
-executes
-`pnpm visual:capture:fixture -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json --write-manifest`,
-`pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json`, and
-`pnpm visual:acceptance -- --checklist --output reports/visual/page-builder-fixture/visual-acceptance-report.json reports/visual/page-builder-fixture/page-builder-visual-acceptance.json`,
-then verifies the uploaded bundle with
-`pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture`.
+then executes
+`pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture`.
+The bundle command copies the source manifest to
+`reports/visual/page-builder-fixture/page-builder-visual-acceptance.json`,
+captures all fixture screenshots, runs measurement, writes
+`visual-capture-report.json` and `visual-acceptance-report.json`, and verifies
+the uploaded bundle with `visual:artifact-check`.
 
 The workflow uploads `page-builder-visual-fixture-<run_number>` with the fixture
 screenshots, an artifact-local manifest with captured `previewScreenshot` paths,

@@ -1,4 +1,4 @@
-import { mkdirSync } from "node:fs";
+import { mkdirSync, rmSync } from "node:fs";
 import { spawn } from "node:child_process";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
@@ -80,6 +80,7 @@ async function capturePageBuilderVisualScreenshot(job, input) {
   let child;
 
   try {
+    removeStalePageBuilderVisualScreenshot(job.outputPath, input);
     child = (input.spawn ?? spawn)(input.browserPath, args, {
       stdio: ["ignore", "pipe", "pipe"],
       windowsHide: true,
@@ -128,6 +129,10 @@ async function capturePageBuilderVisualScreenshot(job, input) {
     evidencePath: job.evidencePath,
     viewport: job.viewport,
   };
+}
+
+function removeStalePageBuilderVisualScreenshot(outputPath, input) {
+  (input.removeFile ?? rmSync)(outputPath, { force: true });
 }
 
 async function stopBrowserAfterScreenshot(child, browserExit, stats) {

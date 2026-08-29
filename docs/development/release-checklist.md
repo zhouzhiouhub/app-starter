@@ -57,8 +57,11 @@ later phases are explicitly approved.
   `&component=<hero-banner|rich-text|image-gallery|cta-bar|faq|spec-table>` for
   component-level evidence, run `pnpm visual:capture` against an already
   running fixture server, or run `pnpm visual:capture:fixture` for the full
-  local build/start/capture/stop workflow. Keep the flag disabled outside the
-  capture session.
+  local build/start/capture/stop workflow. Run
+  `pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture`
+  when you need the complete uploadable fixture bundle with manifest, capture
+  report, acceptance report, and artifact check. Keep the flag disabled outside
+  the capture session.
 - Run the `Page Builder Visual` GitHub Actions workflow and keep its
   `page-builder-visual-fixture-<run_number>` artifact with the release notes.
   This artifact includes `visual-acceptance-report.json` for structured review
@@ -146,6 +149,8 @@ later phases are explicitly approved.
 - When `visual_artifact_run_id` was provided, the Production Smoke workflow log
   shows `pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture`
   passing after the download and before smoke requests continue.
+- Local reproduction of the same uploaded visual artifact shape uses
+  `pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture`.
 - `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json`
   exits successfully after the production smoke artifact and accepted Page
   Builder visual manifest are both present.

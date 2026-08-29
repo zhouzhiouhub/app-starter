@@ -165,9 +165,10 @@ test("visual artifact check command is exposed in package and workflows", () => 
     /"visual:artifact-check": "node scripts\/page-builder-visual-artifact-check\.mjs"/,
   );
   assert.match(ciWorkflow, /pnpm visual:artifact-check -- --help/);
+  assert.match(ciWorkflow, /pnpm visual:artifact-bundle -- --help/);
   assert.match(
     pageBuilderWorkflow,
-    /pnpm visual:artifact-check -- --artifact-dir reports\/visual\/page-builder-fixture/,
+    /pnpm visual:artifact-bundle -- --artifact-dir reports\/visual\/page-builder-fixture/,
   );
   assert.match(
     productionSmokeWorkflow,
