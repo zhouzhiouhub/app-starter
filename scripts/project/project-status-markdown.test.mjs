@@ -34,6 +34,22 @@ test("project status CLI writes a Markdown handoff", async () => {
     assert.match(markdown, /Generated: `2026-08-28T00:00:00.000Z`/);
     assert.match(markdown, /Release ready: no/);
     assert.match(markdown, /Production Smoke: blocked/);
+    assert.match(
+      markdown,
+      /- Production Smoke: Production smoke artifact missing/,
+    );
+    assert.match(
+      markdown,
+      / {4}- Run workflow: `GitHub Actions Production Smoke against the production environment`/,
+    );
+    assert.match(
+      markdown,
+      / {4}- Keep artifacts: `production-smoke-report-<run_number>, release-preflight-<run_number>, release-evidence-check-<run_number>, project-status-<run_number>`/,
+    );
+    assert.match(
+      markdown,
+      / {4}- Rerun gate: `pnpm release:check -- --smoke-report <path>`/,
+    );
     assert.match(markdown, /Page Builder Visual: needs-evidence/);
     assert.match(markdown, /## Release Evidence Artifacts/);
     assert.match(

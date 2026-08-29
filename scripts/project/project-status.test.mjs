@@ -53,6 +53,14 @@ test("project status summarizes blocked release evidence", () => {
   assert.equal(artifact.nextActionCount, 14);
   assert.equal(artifact.nextActions.length, 8);
   assert.equal(artifact.nextActions[0].area, "Production Smoke");
+  assert.deepEqual(
+    artifact.nextActions[0].steps.map((step) => step.label),
+    ["Run workflow", "Keep artifacts", "Rerun gate"],
+  );
+  assert.equal(
+    artifact.nextActions[0].steps[1].value,
+    "production-smoke-report-<run_number>, release-preflight-<run_number>, release-evidence-check-<run_number>, project-status-<run_number>",
+  );
   assert.equal(
     artifact.nextActions.some((action) =>
       action.action.includes("pnpm visual:artifact-bundle"),
@@ -163,6 +171,15 @@ test("project status CLI prints readable blocked state", async () => {
     assert.match(text, /Status: needs-evidence/);
     assert.match(text, /Release ready: no/);
     assert.match(text, /Production Smoke: blocked/);
+    assert.match(
+      text,
+      /Run workflow: GitHub Actions Production Smoke against the production environment/,
+    );
+    assert.match(text, /Keep artifacts: production-smoke-report-<run_number>/);
+    assert.match(
+      text,
+      /Rerun gate: pnpm release:check -- --smoke-report <path>/,
+    );
     assert.match(text, /Page Builder Visual: needs-evidence/);
     assert.match(text, /Local verification:/);
     assert.match(text, /TypeScript: pnpm typecheck \(configured\)/);

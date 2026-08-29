@@ -5,6 +5,13 @@ export const projectStatusSchemaVersion = "project-status.v1";
 const maxProjectActionCount = 8;
 const maxProjectTextLength = 420;
 
+const productionSmokeArtifactNames = [
+  "production-smoke-report-<run_number>",
+  "release-preflight-<run_number>",
+  "release-evidence-check-<run_number>",
+  "project-status-<run_number>",
+];
+
 const completedMilestones = [
   "Monorepo apps, shared packages, and extension/custom directories are scaffolded.",
   "MVP page management, Page Builder, preview, publish, rollback, SEO, media, audit logs, and starter pages are implemented.",
@@ -111,15 +118,17 @@ function createProjectNextActions(check) {
   }
 
   return [
-    ...readProjectBlockerActions(check.blockers),
+    ...readProjectBlockerActions(check.blockers, {
+      smokeReportPath: readText(check.smoke?.path),
+    }),
     ...readVisualTaskActions(check.visualChecklist),
   ];
 }
 
-function readProjectBlockerActions(blockers) {
+function readProjectBlockerActions(blockers, context = {}) {
   return blockers
     .filter((blocker) => !isVisualRecordWarning(blocker))
-    .map(createBlockerAction);
+    .map((blocker) => createBlockerAction(blocker, context));
 }
 
 function isVisualRecordWarning(blocker) {
@@ -130,12 +139,38 @@ function isVisualRecordWarning(blocker) {
   );
 }
 
-function createBlockerAction(blocker) {
-  return {
+function createBlockerAction(blocker, context = {}) {
+  const action = {
     action: readText(blocker.action) ?? "Review the release evidence blocker.",
     area: readText(blocker.area) ?? "Release",
     label: readText(blocker.label) ?? "Blocked",
   };
+  const steps = createBlockerActionSteps(action, context);
+
+  return steps.length > 0 ? { ...action, steps } : action;
+}
+
+function createBlockerActionSteps(action, context) {
+  if (
+    action.area !== "Production Smoke" ||
+    action.label !== "Production smoke artifact missing"
+  ) {
+    return [];
+  }
+
+  return [
+    createNextActionStep(
+      "Run workflow",
+      "GitHub Actions Production Smoke against the production environment",
+    ),
+    createNextActionStep("Keep artifacts", productionSmokeArtifactNames.join(", ")),
+    createNextActionStep(
+      "Rerun gate",
+      context.smokeReportPath
+        ? `pnpm release:check -- --smoke-report ${context.smokeReportPath}`
+        : "pnpm release:check -- --smoke-report <path>",
+    ),
+  ];
 }
 
 function readVisualTaskActions(checklist) {
