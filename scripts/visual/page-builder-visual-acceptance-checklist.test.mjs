@@ -43,6 +43,10 @@ test("visual acceptance checklist lists missing release evidence", async () => {
     /hero-banner\.desktop: missing designReference, visualMatchPercent >= 95, maxLayoutDeltaPx <= 5, maxColorDeltaE <= 3, status=accepted/,
   );
   assert.match(lines.join("\n"), /Next: attach missing design references/);
+  assert.match(
+    lines.join("\n"),
+    /Next: attach missing design references, run `pnpm visual:measure -- --write --require-complete`/,
+  );
   assert.match(lines.join("\n"), /expected designReference:/);
   assert.match(lines.join("\n"), /reference report:/);
   assert.match(lines.join("\n"), /capture preview:/);
@@ -55,6 +59,7 @@ test("visual acceptance checklist commands respect custom manifest path", async 
       "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
   });
   const viewport = checklist.components[0].viewports[0];
+  const lines = formatPageBuilderVisualAcceptanceChecklist(checklist).join("\n");
 
   assert.match(viewport.commands.capture, /--manifest reports\/visual/);
   assert.match(viewport.commands.capture, /--output-dir reports\/visual/);
@@ -72,6 +77,10 @@ test("visual acceptance checklist commands respect custom manifest path", async 
   assert.match(
     viewport.commands.verify,
     /--require-accepted reports\/visual\/page-builder-fixture/,
+  );
+  assert.match(
+    lines,
+    /Next: attach missing design references, run `pnpm visual:measure -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --require-complete`/,
   );
 });
 

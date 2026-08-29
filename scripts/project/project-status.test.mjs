@@ -156,6 +156,10 @@ test("project status CLI can print every next action", async () => {
     assert.match(text, /spec-table\.mobile/);
     assert.match(
       text,
+      /spec-table\.mobile.*Run pnpm visual:capture:fixture -- --component spec-table --viewport mobile/s,
+    );
+    assert.match(
+      text,
       /spec-table\.mobile.*Verify with pnpm visual:acceptance -- --require-accepted\./,
     );
     assert.doesNotMatch(text, /pnpm visua\.\.\./);

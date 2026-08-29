@@ -143,12 +143,15 @@ function readVisualTaskActions(checklist) {
     action: [
       `Place ${task.expectedDesignReference}.`,
       `Capture ${task.expectedPreviewScreenshot}.`,
+      task.commands?.capture ? `Run ${task.commands.capture}.` : null,
       task.commands?.referenceReport
         ? `Run ${task.commands.referenceReport}.`
         : null,
-      `Run ${task.commands?.importReference}.`,
-      `Run ${task.commands?.measure}.`,
-      `Verify with ${task.commands?.verify}.`,
+      task.commands?.importReference
+        ? `Run ${task.commands.importReference}.`
+        : null,
+      task.commands?.measure ? `Run ${task.commands.measure}.` : null,
+      task.commands?.verify ? `Verify with ${task.commands.verify}.` : null,
     ]
       .filter(Boolean)
       .join(" "),

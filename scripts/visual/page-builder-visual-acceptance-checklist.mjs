@@ -11,6 +11,7 @@ import {
 } from "./page-builder-visual-acceptance-targets.mjs";
 
 const evidencePathFields = ["designReference", "previewScreenshot"];
+const defaultMeasureCommand = "pnpm visual:measure -- --write --require-complete";
 
 export function createPageBuilderVisualAcceptanceChecklist(
   manifest,
@@ -73,12 +74,25 @@ export function formatPageBuilderVisualAcceptanceChecklist(checklist) {
   }
 
   if (checklist.pendingViewportCount > 0) {
+    const measureCommand =
+      readFirstPendingViewportCommand(checklist, "measure") ??
+      defaultMeasureCommand;
+
     lines.push(
-      "Next: attach missing design references, run `pnpm visual:measure -- --write --require-complete`, then review and mark passing evidence accepted.",
+      `Next: attach missing design references, run \`${measureCommand}\`, then review and mark passing evidence accepted.`,
     );
   }
 
   return lines;
+}
+
+function readFirstPendingViewportCommand(checklist, command) {
+  return (
+    checklist.components
+      ?.flatMap((component) => component.viewports ?? [])
+      .find((viewport) => viewport.ready !== true && viewport.commands?.[command])
+      ?.commands?.[command] ?? null
+  );
 }
 
 function createComponentChecklist(component, record, targets, context) {
