@@ -50,7 +50,19 @@ test("project status CLI writes a Markdown handoff", async () => {
     );
     assert.match(
       markdown,
+      /Page Builder Visual manifest: `reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json`/,
+    );
+    assert.match(
+      markdown,
+      /Page Builder Visual capture report JSON: `reports\/visual\/page-builder-fixture\/visual-capture-report\.json`/,
+    );
+    assert.match(
+      markdown,
       /Page Builder Visual reference import Markdown: `reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md`/,
+    );
+    assert.match(
+      markdown,
+      /Page Builder Visual acceptance JSON: `reports\/visual\/page-builder-fixture\/visual-acceptance-report\.json`/,
     );
     assert.match(
       markdown,
@@ -63,6 +75,18 @@ test("project status CLI writes a Markdown handoff", async () => {
     assert.match(
       markdown,
       /Refresh visual references: `pnpm visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md --require-complete`/,
+    );
+    assert.match(
+      markdown,
+      /Refresh visual capture: `pnpm visual:capture:fixture -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output-dir reports\/visual\/page-builder-fixture --report reports\/visual\/page-builder-fixture\/visual-capture-report\.json --write-manifest`/,
+    );
+    assert.match(
+      markdown,
+      /Refresh visual acceptance report: `pnpm visual:acceptance -- --checklist --output reports\/visual\/page-builder-fixture\/visual-acceptance-report\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-acceptance-report\.md reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json`/,
+    );
+    assert.match(
+      markdown,
+      /Refresh visual artifact check: `pnpm visual:artifact-check -- --artifact-dir reports\/visual\/page-builder-fixture --markdown-output reports\/visual\/page-builder-fixture\/visual-artifact-check-report\.md`/,
     );
     assert.match(
       markdown,
