@@ -5,12 +5,17 @@ import {
   readSmokeLoginConfig,
 } from "../smoke/publish-smoke-login-config.mjs";
 import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
-import { createSmokeProductionReadiness } from "../smoke/smoke-readiness.mjs";
+import {
+  createSmokeProductionReadiness,
+  createSmokeReadinessNextActions,
+} from "../smoke/smoke-readiness.mjs";
 import { normalizeSmokeReportPath } from "../smoke/smoke-report-path-config.mjs";
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
 
 const defaultProductionSmokeReportPath =
   "artifacts/production-smoke/smoke-report.json";
+const maxReadinessFailureActions = 8;
+const maxReadinessFailureActionLength = 260;
 const maxReadinessFailureBlockers = 16;
 const maxReadinessFailureMessageLength = 3000;
 const maxReadinessFailureBlockerLength = 220;
@@ -34,7 +39,16 @@ export function validateProductionSmokeRuntimeReadiness(env = process.env) {
   ];
 
   if (blockers.length > 0) {
-    throw new Error(formatReadinessFailure({ ...readiness, blockers }));
+    throw new Error(
+      formatReadinessFailure({
+        ...readiness,
+        blockers,
+        nextActions: createSmokeReadinessNextActions(
+          blockers,
+          readiness.warnings,
+        ),
+      }),
+    );
   }
 
   return {
@@ -136,9 +150,11 @@ function formatReadinessFailure(readiness) {
   const summary = visibleBlockers.length
     ? `${visibleBlockers.join("; ")}${remaining}`
     : "production readiness returned false without structured blockers";
+  const actionSummary = formatReadinessActionSummary(readiness.nextActions);
+  const actionSuffix = actionSummary ? ` Next actions: ${actionSummary}` : "";
 
   return formatSmokeText(
-    `Production smoke runtime readiness failed before smoke requests (${blockers.length} blockers): ${summary}`,
+    `Production smoke runtime readiness failed before smoke requests (${blockers.length} blockers): ${summary}${actionSuffix}`,
     { maxLength: maxReadinessFailureMessageLength },
   );
 }
@@ -154,6 +170,33 @@ function formatReadinessBlocker(blocker) {
   return formatSmokeText(`${area}/${issue}: ${message}`, {
     fallback: "unknown/unknown: Review the production readiness blocker.",
     maxLength: maxReadinessFailureBlockerLength,
+  });
+}
+
+function formatReadinessActionSummary(actions) {
+  if (!Array.isArray(actions) || actions.length === 0) {
+    return "";
+  }
+
+  const visibleActions = actions
+    .slice(0, maxReadinessFailureActions)
+    .map(formatReadinessAction);
+  const hiddenCount = actions.length - visibleActions.length;
+  const suffix = hiddenCount > 0 ? `; ... and ${hiddenCount} more action(s)` : "";
+
+  return `${visibleActions.join("; ")}${suffix}`;
+}
+
+function formatReadinessAction(action) {
+  const area = readBlockerText(action?.area, "unknown");
+  const message = readBlockerText(
+    action?.action,
+    "Review the production readiness blocker.",
+  );
+
+  return formatSmokeText(`${area}: ${message}`, {
+    fallback: "unknown: Review the production readiness blocker.",
+    maxLength: maxReadinessFailureActionLength,
   });
 }
 

@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import { generateKeyPairSync } from "node:crypto";
 import test from "node:test";
-import { validateProductionSmokeReleaseInputs } from "./production-smoke-release-inputs.mjs";
+import {
+  runProductionSmokeReleaseInputsCli,
+  validateProductionSmokeReleaseInputs,
+} from "./production-smoke-release-inputs.mjs";
 import {
   readProductionSmokeReadinessConfig,
   validateProductionSmokeRuntimeReadiness,
@@ -89,6 +92,10 @@ test("production smoke release input preflight blocks disabled production eviden
   assert.match(error.message, /deployment\.admin\/admin-smoke-not-required/);
   assert.match(error.message, /media\.r2\/r2-upload-smoke-not-required/);
   assert.match(error.message, /revalidation\/revalidation-smoke-not-required/);
+  assert.match(error.message, /Next actions:/);
+  assert.match(error.message, /Set SMOKE_REQUIRE_ADMIN_APP=true/);
+  assert.match(error.message, /Set SMOKE_REQUIRE_R2_UPLOAD=true/);
+  assert.match(error.message, /Set SMOKE_REQUIRE_REVALIDATION=true/);
 });
 
 test("production smoke release input preflight blocks missing smoke login credentials", () => {
@@ -134,6 +141,31 @@ test("production smoke release input preflight blocks invalid smoke login creden
   assert.match(error.message, /\(1 blockers\)/);
   assert.match(error.message, /smoke\.login\/invalid-config/);
   assert.match(error.message, /SMOKE_ADMIN_EMAIL must be a valid email/);
+});
+
+test("production smoke release input preflight CLI prints readiness actions", async () => {
+  const stderr = [];
+  const exitCode = await runProductionSmokeReleaseInputsCli([], {
+    env: {
+      ...createProductionReadyEnv(),
+      DATABASE_URL: "",
+    },
+    stderr: (line) => stderr.push(line),
+    stdout: () => {},
+  });
+  const output = stderr.join("\n");
+
+  assert.equal(exitCode, 1);
+  assert.match(
+    output,
+    /Production smoke runtime readiness failed before smoke requests/,
+  );
+  assert.match(output, /database\.url\/missing-url/);
+  assert.match(output, /Next actions:/);
+  assert.match(
+    output,
+    /Set DATABASE_URL to a production PostgreSQL connection URL outside local or placeholder hosts/,
+  );
 });
 
 function createProductionReadyEnv() {

@@ -6,7 +6,9 @@ import { readReleaseNotesCliConfig } from "./release-notes-config.mjs";
 import { validateProductionSmokeWorkflowArtifacts } from "./production-smoke-release-artifacts.mjs";
 import { validateProductionSmokeRuntimeReadiness } from "./production-smoke-release-readiness.mjs";
 import { validateProductionSmokeRuntimeInputs } from "./production-smoke-release-runtime.mjs";
-import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
+import { formatSmokeText } from "../smoke/smoke-text.mjs";
+
+const maxPreflightErrorMessageLength = 3000;
 
 export function validateProductionSmokeReleaseInputs(env = process.env) {
   validateProductionSmokeWorkflowArtifacts(env);
@@ -67,7 +69,7 @@ export async function runProductionSmokeReleaseInputsCli(args = [], input = {}) 
     return 0;
   } catch (error) {
     stderr(
-      `Production smoke release input validation failed: ${readErrorMessage(
+      `Production smoke release input validation failed: ${readPreflightErrorMessage(
         error,
       )}`,
     );
@@ -212,6 +214,13 @@ function assertNoUnknownArgs(args) {
       `Unknown production smoke release input option: ${unknown[0]}`,
     );
   }
+}
+
+function readPreflightErrorMessage(error) {
+  return formatSmokeText(error instanceof Error ? error.message : error, {
+    fallback: "Unknown production smoke release input validation failure.",
+    maxLength: maxPreflightErrorMessageLength,
+  });
 }
 
 function printHelp(writeLine) {

@@ -98,7 +98,8 @@ later phases are explicitly approved.
   `SMOKE_ADMIN_EMAIL`, `SMOKE_ADMIN_PASSWORD`, `DATABASE_URL`, `REDIS_URL`, MVP
   disabled feature flags, JWT keys, R2/CDN, Preview Token secret, ISR
   revalidation, `SMOKE_REPORT_PATH`, or required smoke gates are not
-  production-ready;
+  production-ready; the failure output includes a bounded blocker and next
+  action summary for the workflow log;
   `visual_artifact_name` and
   `visual_artifact_run_id` must be provided together, and release notes require
   `release_tag`, `rollback_target`, `visual_artifact_name`, and
