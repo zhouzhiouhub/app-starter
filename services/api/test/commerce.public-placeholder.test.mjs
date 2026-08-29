@@ -12,7 +12,10 @@ import { configureApiApplication } from "../dist/common/api-application.js";
 import { PublicCommerceController } from "../dist/modules/commerce/public-commerce.controller.js";
 import { StripeWebhookController } from "../dist/modules/commerce/stripe-webhook.controller.js";
 import { readStripeWebhookPlaceholderContract } from "../dist/modules/commerce/stripe-webhook-placeholder.js";
-import { assertApiConflict } from "./api-error-test-assertions.mjs";
+import {
+  assertApiBadRequest,
+  assertApiConflict,
+} from "./api-error-test-assertions.mjs";
 import { withEnv } from "./env-helper.mjs";
 
 class PublicCommerceRouteTestModule {}
@@ -21,17 +24,28 @@ Module({
   controllers: [PublicCommerceController, StripeWebhookController],
 })(PublicCommerceRouteTestModule);
 
+const validCartIdempotencyKey = "7f10f6d3-02d9-4f3d-a69d-49b26ec63132";
+const validCheckoutIdempotencyKey = "4d3a1fc5-3d10-4bb8-91ef-c8a8fef3c61a";
+
 test("commerce endpoints reject writes while commerce is disabled", () => {
   for (const flag of ["false", "true"]) {
     withEnv({ COMMERCE_ENABLED: flag }, () => {
       const controller = new PublicCommerceController();
 
       const cartError = assertApiConflict(
-        () => controller.addToCart("request-cart-disabled"),
+        () =>
+          controller.addToCart(
+            validCartIdempotencyKey,
+            "request-cart-disabled",
+          ),
         apiErrorCodes.COMMERCE_DISABLED,
       );
       const checkoutError = assertApiConflict(
-        () => controller.checkout("request-checkout-disabled"),
+        () =>
+          controller.checkout(
+            validCheckoutIdempotencyKey,
+            "request-checkout-disabled",
+          ),
         apiErrorCodes.COMMERCE_DISABLED,
       );
 
@@ -58,6 +72,30 @@ test("commerce endpoints reject writes while commerce is disabled", () => {
       });
     });
   }
+});
+
+test("public cart and checkout require idempotency keys before disabled writes", () => {
+  const controller = new PublicCommerceController();
+
+  const cartError = assertApiBadRequest(
+    () => controller.addToCart(undefined, "request-cart-missing-key"),
+    apiErrorCodes.VALIDATION_ERROR,
+  );
+  const checkoutError = assertApiBadRequest(
+    () => controller.checkout("retry-me", "request-checkout-invalid-key"),
+    apiErrorCodes.VALIDATION_ERROR,
+  );
+
+  assert.equal(
+    cartError.getResponse()?.message,
+    "Idempotency-Key header must be a UUID.",
+  );
+  assert.equal(
+    checkoutError.getResponse()?.message,
+    "Idempotency-Key header must be a UUID.",
+  );
+  assert.equal(cartError.getResponse()?.details, undefined);
+  assert.equal(checkoutError.getResponse()?.details, undefined);
 });
 
 test("stripe webhook placeholder rejects events without echoing payloads", () => {
@@ -221,6 +259,10 @@ test("public commerce disabled routes keep the MVP public paths", async () => {
     for (const path of ["cart", "checkout"]) {
       const response = await fetch(`${baseUrl}/public/${path}`, {
         headers: {
+          "Idempotency-Key":
+            path === "cart"
+              ? validCartIdempotencyKey
+              : validCheckoutIdempotencyKey,
           "x-request-id": `request-commerce-${path}`,
         },
         method: "POST",
@@ -271,6 +313,36 @@ test("public commerce disabled routes keep the MVP public paths", async () => {
     });
     assert.equal(webhookText.includes("evt_secret_payload"), false);
     assert.equal(webhookText.includes("secret_signature"), false);
+  } finally {
+    await app.close();
+  }
+});
+
+test("public commerce write routes reject missing idempotency keys", async () => {
+  const app = await createPublicCommerceApp();
+
+  try {
+    const response = await fetch(
+      `${readPublicCommerceBaseUrl(app)}/public/cart`,
+      {
+        body: JSON.stringify({ productId: "product-secret-token" }),
+        headers: {
+          "content-type": "application/json",
+          "x-request-id": "request-cart-missing-key",
+        },
+        method: "POST",
+      },
+    );
+    const text = await response.text();
+    const body = JSON.parse(text);
+    const error = readApiErrorBody(body);
+
+    assert.equal(response.status, 400);
+    assert.equal(error.code, apiErrorCodes.VALIDATION_ERROR);
+    assert.equal(error.message, "Idempotency-Key header must be a UUID.");
+    assert.equal(error.requestId, "request-cart-missing-key");
+    assert.equal(error.details, undefined);
+    assert.equal(text.includes("product-secret-token"), false);
   } finally {
     await app.close();
   }

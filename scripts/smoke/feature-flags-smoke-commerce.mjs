@@ -53,6 +53,8 @@ const smokeStripeWebhookBody = JSON.stringify({
 const smokeStripeWebhookSignature = "t=1,v1=smoke-signature";
 const smokeProductCreateIdempotencyKey = "7f10f6d3-02d9-4f3d-a69d-49b26ec63132";
 const smokeProductUpdateIdempotencyKey = "4d3a1fc5-3d10-4bb8-91ef-c8a8fef3c61a";
+const smokeCartIdempotencyKey = "5da4576f-fd93-4e23-9f8b-a552ef5e65e6";
+const smokeCheckoutIdempotencyKey = "2f1f0653-196e-4d92-a056-2cb12a72f593";
 
 export async function assertCommerceDisabled(input, accessToken) {
   await assertCommerceReservedDetailResponse(
@@ -144,7 +146,10 @@ export async function assertCommerceDisabled(input, accessToken) {
     `${input.apiBaseUrl}/public/cart`,
     {
       body: JSON.stringify({ sku: "smoke-sku", quantity: 1 }),
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Idempotency-Key": smokeCartIdempotencyKey,
+      },
       method: "POST",
     },
     {
@@ -156,7 +161,10 @@ export async function assertCommerceDisabled(input, accessToken) {
     `${input.apiBaseUrl}/public/checkout`,
     {
       body: JSON.stringify({ cartId: "smoke-cart" }),
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Idempotency-Key": smokeCheckoutIdempotencyKey,
+      },
       method: "POST",
     },
     {

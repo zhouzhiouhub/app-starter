@@ -1,4 +1,5 @@
-import { Controller, Get, Post } from "@nestjs/common";
+import { Controller, Get, Headers, Post } from "@nestjs/common";
+import { requireIdempotencyKey } from "../../common/idempotency-key.js";
 import { CurrentRequestId } from "../../common/request-id.decorator.js";
 import { throwCommerceDisabled } from "./commerce-disabled.js";
 import { throwPublicProductUnavailable } from "./public-product-placeholder.js";
@@ -11,7 +12,12 @@ export class PublicCommerceController {
   }
 
   @Post("cart")
-  addToCart(@CurrentRequestId() requestId = "local-dev") {
+  addToCart(
+    @Headers("idempotency-key") idempotencyKey: string | undefined,
+    @CurrentRequestId() requestId = "local-dev",
+  ) {
+    requireIdempotencyKey(idempotencyKey);
+
     return throwCommerceDisabled({
       action: "add-to-cart",
       requestId,
@@ -20,7 +26,12 @@ export class PublicCommerceController {
   }
 
   @Post("checkout")
-  checkout(@CurrentRequestId() requestId = "local-dev") {
+  checkout(
+    @Headers("idempotency-key") idempotencyKey: string | undefined,
+    @CurrentRequestId() requestId = "local-dev",
+  ) {
+    requireIdempotencyKey(idempotencyKey);
+
     return throwCommerceDisabled({
       action: "checkout",
       requestId,

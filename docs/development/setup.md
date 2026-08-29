@@ -406,9 +406,11 @@ empty placeholders, Product Variant / Price / Inventory subresource
 placeholders with disabled Commerce metadata, Admin Product / Order / Payment
 detail 404 placeholders with reserved details, the public product detail 404
 placeholder, Commerce write, cart, checkout, and Webhook disabled details, and
-the Stripe Webhook placeholder, including safe `webhookVerification` readiness
-metadata without signature verification, persistence, event processing, payload,
-or signature echoing, saves a draft, creates a
+the Stripe Webhook placeholder. Public cart and checkout checks include UUID
+`Idempotency-Key` headers before asserting the disabled Commerce response. The
+script also verifies the Stripe Webhook placeholder, including safe
+`webhookVerification` readiness metadata without signature verification,
+persistence, event processing, payload, or signature echoing, saves a draft, creates a
 Preview Token, checks the public preview API and Web `/preview` route,
 publishes a unique page through the Admin API, publishes a rollback candidate,
 rolls back to the first published version, verifies

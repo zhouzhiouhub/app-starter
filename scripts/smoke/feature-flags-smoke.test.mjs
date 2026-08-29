@@ -150,6 +150,10 @@ test("feature flag smoke checks disabled feature placeholders", async () => {
       call.url.endsWith("/products/smoke-product") &&
       call.init.method === "PATCH",
   );
+  const cartCall = calls.find((call) => call.url.endsWith("/public/cart"));
+  const checkoutCall = calls.find((call) =>
+    call.url.endsWith("/public/checkout"),
+  );
   const translationExportCall = calls.find((call) =>
     call.url.endsWith("/translations/export"),
   );
@@ -163,6 +167,8 @@ test("feature flag smoke checks disabled feature placeholders", async () => {
   assertAdminProductPlaceholderCall(adminProductDetailCall, "GET");
   assertAdminProductPlaceholderCall(adminProductCreateCall, "POST");
   assertAdminProductPlaceholderCall(adminProductUpdateCall, "PATCH");
+  assertPublicCommerceWriteCall(cartCall, "add-to-cart");
+  assertPublicCommerceWriteCall(checkoutCall, "checkout");
   assert.ok(webhookCall);
   assert.equal(webhookCall.init.method, "POST");
   assert.equal(webhookCall.init.redirect, "manual");
@@ -215,4 +221,17 @@ function assertAdminProductPlaceholderCall(call, method) {
       /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
     );
   }
+}
+
+function assertPublicCommerceWriteCall(call, expectedAction) {
+  assert.ok(call);
+  assert.equal(call.init.method, "POST");
+  assert.equal(call.init.redirect, "manual");
+  assert.equal(call.init.headers["Content-Type"], "application/json");
+  assert.equal(call.init.headers.Authorization, undefined);
+  assert.match(
+    call.init.headers["Idempotency-Key"],
+    /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+  );
+  assert.equal(call.init.body.includes(expectedAction), false);
 }
