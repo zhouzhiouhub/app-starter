@@ -57,6 +57,50 @@ test("production smoke release input preflight validates workflow artifact paths
   );
 });
 
+test("production smoke release input preflight validates workflow artifact names", () => {
+  assert.deepEqual(
+    validateProductionSmokeReleaseInputs({
+      PROJECT_STATUS_ARTIFACT_NAME: "project-status-123",
+      RELEASE_CHECK_ARTIFACT_NAME: "release-evidence-check-123",
+      RELEASE_NOTES_ARTIFACT_NAME: "release-notes-123",
+      SMOKE_REPORT_ARTIFACT_NAME: "production-smoke-report-123",
+    }),
+    {
+      releaseNotesAllowBlocked: false,
+      releaseNotesEnabled: false,
+      visualArtifactDownloadEnabled: false,
+    },
+  );
+  assert.throws(
+    () =>
+      validateProductionSmokeReleaseInputs({
+        SMOKE_REPORT_ARTIFACT_NAME: "smoke report",
+      }),
+    /Smoke report artifact must use 1-160 safe characters/,
+  );
+  assert.throws(
+    () =>
+      validateProductionSmokeReleaseInputs({
+        RELEASE_CHECK_ARTIFACT_NAME: "release/evidence",
+      }),
+    /Release check artifact must use 1-160 safe characters/,
+  );
+  assert.throws(
+    () =>
+      validateProductionSmokeReleaseInputs({
+        PROJECT_STATUS_ARTIFACT_NAME: "",
+      }),
+    /Project status artifact is required/,
+  );
+  assert.throws(
+    () =>
+      validateProductionSmokeReleaseInputs({
+        RELEASE_NOTES_ARTIFACT_NAME: "release-notes?",
+      }),
+    /Release notes artifact must use 1-160 safe characters/,
+  );
+});
+
 test("production smoke release input preflight validates visual artifact pairs", () => {
   assert.throws(
     () =>
@@ -122,7 +166,7 @@ test("production smoke release input preflight validates release notes config", 
         ...createReleaseNotesEnv(),
         PROJECT_STATUS_ARTIFACT_NAME: "",
       }),
-    /--project-status-artifact requires a value/,
+    /Project status artifact is required/,
   );
   assert.throws(
     () =>
@@ -190,9 +234,12 @@ test("production smoke release input preflight CLI prints help", async () => {
   assert.match(stdout.join("\n"), /pnpm release:preflight/);
   assert.match(stdout.join("\n"), /SMOKE_REPORT_PATH/);
   assert.match(stdout.join("\n"), /RELEASE_CHECK_ARTIFACT_PATH/);
+  assert.match(stdout.join("\n"), /SMOKE_REPORT_ARTIFACT_NAME/);
+  assert.match(stdout.join("\n"), /RELEASE_CHECK_ARTIFACT_NAME/);
   assert.match(stdout.join("\n"), /RELEASE_VISUAL_ARTIFACT_NAME/);
   assert.match(stdout.join("\n"), /PROJECT_STATUS_ARTIFACT_PATH/);
   assert.match(stdout.join("\n"), /PROJECT_STATUS_ARTIFACT_NAME/);
+  assert.match(stdout.join("\n"), /RELEASE_NOTES_ARTIFACT_NAME/);
   assert.match(stdout.join("\n"), /RELEASE_NOTES_ALLOW_BLOCKED/);
 });
 

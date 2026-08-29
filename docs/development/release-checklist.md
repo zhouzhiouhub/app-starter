@@ -71,7 +71,10 @@ later phases are explicitly approved.
   artifact output paths and optional release evidence inputs with
   `pnpm release:preflight`: `SMOKE_REPORT_PATH`,
   `RELEASE_CHECK_ARTIFACT_PATH`, and `PROJECT_STATUS_ARTIFACT_PATH` must be
-  safe repository-relative JSON paths; `visual_artifact_name` and
+  safe repository-relative JSON paths; `SMOKE_REPORT_ARTIFACT_NAME`,
+  `RELEASE_CHECK_ARTIFACT_NAME`, `PROJECT_STATUS_ARTIFACT_NAME`, and
+  `RELEASE_NOTES_ARTIFACT_NAME` must be safe artifact names;
+  `visual_artifact_name` and
   `visual_artifact_run_id` must be provided together, and release notes require
   `release_tag`, `rollback_target`, and `visual_artifact_name` together.
   `allow_blocked_release_notes` must stay disabled for formal release notes and
