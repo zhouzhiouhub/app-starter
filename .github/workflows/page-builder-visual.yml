@@ -68,6 +68,7 @@ jobs:
             echo "- Artifact check Markdown: \`reports/visual/page-builder-fixture/visual-artifact-check-report.md\`"
             echo "- Artifact: \`page-builder-visual-fixture-${{ github.run_number }}\`"
             echo "- Run id for Production Smoke: \`${{ github.run_id }}\`"
+            echo "- Mark reviewed passing evidence with \`pnpm visual:measure -- --write --accept-passing --require-complete\`."
             echo "- Final sign-off still requires real design references and \`pnpm visual:acceptance -- --require-accepted\`."
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload visual fixture artifact

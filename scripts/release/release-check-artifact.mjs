@@ -162,6 +162,7 @@ function createVisualChecklistTaskArtifact(task) {
 
 function createVisualChecklistCommandsArtifact(commands) {
   const artifact = {
+    acceptPassing: readTextOrNull(commands?.acceptPassing),
     capture: readTextOrNull(commands?.capture),
     importReference: readTextOrNull(commands?.importReference),
     measure: readTextOrNull(commands?.measure),

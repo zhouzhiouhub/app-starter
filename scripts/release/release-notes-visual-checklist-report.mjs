@@ -50,6 +50,7 @@ function formatVisualChecklistTask(task) {
     ),
     `  - Import: \`${formatValue(task.commands?.importReference)}\``,
     `  - Measure: \`${formatValue(task.commands?.measure)}\``,
+    ...formatOptionalCommand("Accept passing", task.commands?.acceptPassing),
     `  - Verify: \`${formatValue(task.commands?.verify)}\``,
   ];
 }

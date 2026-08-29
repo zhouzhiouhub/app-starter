@@ -8,6 +8,7 @@ import {
   compareVisualImages,
   decodePngImage,
   formatPageBuilderVisualMeasureReport,
+  formatPageBuilderVisualMeasureUsage,
   measurePageBuilderVisualAcceptanceManifest,
   mvpPageBuilderComponents,
   pageBuilderVisualAcceptanceSchemaVersion,
@@ -215,6 +216,12 @@ test("visual measure report summarizes measured and missing evidence", () => {
 
   assert.match(lines.join("\n"), /Measured viewport evidence: 1\/12/);
   assert.match(lines.join("\n"), /hero-banner\.desktop: 100% match/);
+});
+
+test("visual measure usage keeps accepted sign-off complete", () => {
+  const usage = formatPageBuilderVisualMeasureUsage().join("\n");
+
+  assert.match(usage, /--write --accept-passing --require-complete/);
 });
 
 function createMeasureManifest(input = {}) {

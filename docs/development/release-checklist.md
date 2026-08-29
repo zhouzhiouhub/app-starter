@@ -59,7 +59,9 @@ later phases are explicitly approved.
   to refresh retained screenshots against the same artifact-local manifest.
   Then run
   `pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete`
-  to calculate the viewport metrics. For final MVP sign-off, rerun
+  to calculate the viewport metrics. After design review passes, run
+  `pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --accept-passing --require-complete`
+  to mark passing viewport evidence accepted. For final MVP sign-off, rerun
   `pnpm visual:acceptance -- --require-accepted reports/visual/page-builder-fixture/page-builder-visual-acceptance.json`;
   accepted screenshots must be retained under
   `artifacts/visual/` or `reports/visual/`, and every referenced evidence file

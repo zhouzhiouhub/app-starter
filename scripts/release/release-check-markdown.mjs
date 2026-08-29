@@ -201,6 +201,9 @@ function formatVisualTasks(tasks) {
             task.commands?.importReference,
           )}; measure ${formatCode(
             task.commands?.measure,
+          )}${formatOptionalTaskCommand(
+            "accept passing",
+            task.commands?.acceptPassing,
           )}; verify ${formatCode(task.commands?.verify)}`,
       ),
     ...formatHiddenCount(tasks.length, maxMarkdownItemCount, "visual tasks"),

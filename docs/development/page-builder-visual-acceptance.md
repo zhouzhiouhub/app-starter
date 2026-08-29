@@ -24,6 +24,7 @@ pnpm visual:capture:fixture -- --manifest reports/visual/page-builder-fixture/pa
 pnpm visual:measure
 pnpm visual:measure -- --write
 pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete
+pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --accept-passing --require-complete
 pnpm visual:references -- --source-dir docs/visual/page-builder-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete
 pnpm visual:references -- --source-dir docs/visual/page-builder-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete
 ```
@@ -204,7 +205,8 @@ pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-build
 
 Use `--accept-passing` only when the measured values pass the configured
 thresholds and the design review is ready to mark those viewport records as
-accepted.
+accepted. Keep `--require-complete` on the same command for release sign-off so
+missing reference or screenshot pairs still fail the run.
 The metric reader supports the non-interlaced 8-bit RGB/RGBA PNG files commonly
 exported by browser screenshots and design tools.
 

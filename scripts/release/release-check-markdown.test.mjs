@@ -86,6 +86,7 @@ test("release check Markdown lists blockers and visual tasks", () => {
     /import `pnpm visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --require-complete`/,
   );
   assert.match(markdown, /pnpm visual:measure -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --require-complete/);
+  assert.match(markdown, /accept passing `pnpm visual:measure -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --accept-passing --require-complete`/);
 });
 
 test("release check CLI writes Markdown output", async () => {

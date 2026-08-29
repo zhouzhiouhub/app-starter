@@ -36,6 +36,10 @@ test("release notes failure drafts include visual checklist tasks", () => {
   );
   assert.match(
     markdown,
+    /Accept passing: `pnpm visual:measure -- --write --accept-passing --require-complete`/,
+  );
+  assert.match(
+    markdown,
     /Visual task: \.\.\. and 1 more pending viewport tasks/,
   );
 });
@@ -149,6 +153,8 @@ function createVisualChecklist() {
 function createVisualTask(component, viewport) {
   return {
     commands: {
+      acceptPassing:
+        "pnpm visual:measure -- --write --accept-passing --require-complete",
       capture: `pnpm visual:capture:fixture -- --component ${component} --viewport ${viewport} --write-manifest`,
       importReference:
         "pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete",

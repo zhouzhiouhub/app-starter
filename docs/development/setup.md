@@ -275,6 +275,7 @@ pnpm visual:references -- --source-dir docs/visual/page-builder-references --man
 pnpm visual:references -- --source-dir docs/visual/page-builder-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete
 pnpm visual:capture:fixture -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json --write-manifest
 pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete
+pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --accept-passing --require-complete
 pnpm release:preflight
 pnpm release:check -- --checklist --smoke-report artifacts/production-smoke/smoke-report.json
 pnpm release:check -- --checklist --all-visual-tasks --smoke-report artifacts/production-smoke/smoke-report.json

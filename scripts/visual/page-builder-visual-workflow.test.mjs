@@ -6,6 +6,8 @@ const workflowPath = ".github/workflows/page-builder-visual.yml";
 const readmePath = "README.md";
 const acceptanceDocPath = "docs/development/page-builder-visual-acceptance.md";
 const releaseChecklistPath = "docs/development/release-checklist.md";
+const referenceReadmePath = "docs/visual/page-builder-references/README.md";
+const setupDocPath = "docs/development/setup.md";
 
 test("page builder visual workflow captures fixture evidence", async () => {
   const workflow = await readFile(workflowPath, "utf8");
@@ -43,6 +45,7 @@ test("page builder visual workflow captures fixture evidence", async () => {
   );
   assert.match(workflow, /if-no-files-found: error/);
   assert.match(workflow, /Run id for Production Smoke/);
+  assert.match(workflow, /--accept-passing --require-complete/);
   assert.match(workflow, /retention-days: 14/);
 });
 
@@ -61,11 +64,14 @@ test("page builder visual workflow does not claim final design sign-off", async 
 });
 
 test("visual workflow documentation is linked from release guidance", async () => {
-  const [readme, acceptanceDoc, releaseChecklist] = await Promise.all([
-    readFile(readmePath, "utf8"),
-    readFile(acceptanceDocPath, "utf8"),
-    readFile(releaseChecklistPath, "utf8"),
-  ]);
+  const [readme, acceptanceDoc, releaseChecklist, referenceReadme, setupDoc] =
+    await Promise.all([
+      readFile(readmePath, "utf8"),
+      readFile(acceptanceDocPath, "utf8"),
+      readFile(releaseChecklistPath, "utf8"),
+      readFile(referenceReadmePath, "utf8"),
+      readFile(setupDocPath, "utf8"),
+    ]);
 
   assert.match(readme, /Page Builder Visual/);
   assert.match(readme, /page-builder-visual-fixture-<run_number>/);
@@ -73,6 +79,7 @@ test("visual workflow documentation is linked from release guidance", async () =
   assert.match(readme, /visual-reference-import-report\.md/);
   assert.match(readme, /visual-acceptance-report\.md/);
   assert.match(readme, /visual-artifact-check-report\.md/);
+  assert.match(readme, /--accept-passing --require-complete/);
   assert.match(acceptanceDoc, /## CI Workflow/);
   assert.match(acceptanceDoc, /docs\/visual\/page-builder-references/);
   assert.match(acceptanceDoc, /reports\/visual\/page-builder-fixture/);
@@ -82,6 +89,7 @@ test("visual workflow documentation is linked from release guidance", async () =
   );
   assert.match(acceptanceDoc, /--json/);
   assert.match(acceptanceDoc, /--markdown-output/);
+  assert.match(acceptanceDoc, /--accept-passing --require-complete/);
   assert.match(releaseChecklist, /Page Builder Visual/);
   assert.match(releaseChecklist, /page-builder-visual-fixture-<run_number>/);
   assert.match(
@@ -92,4 +100,7 @@ test("visual workflow documentation is linked from release guidance", async () =
   assert.match(releaseChecklist, /visual-reference-import-report\.md/);
   assert.match(releaseChecklist, /visual-acceptance-report\.md/);
   assert.match(releaseChecklist, /visual-artifact-check-report\.md/);
+  assert.match(releaseChecklist, /--accept-passing --require-complete/);
+  assert.match(referenceReadme, /--accept-passing --require-complete/);
+  assert.match(setupDoc, /--accept-passing --require-complete/);
 });

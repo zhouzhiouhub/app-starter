@@ -29,7 +29,7 @@ export function formatPageBuilderVisualMeasureUsage() {
     "Usage:",
     "  pnpm visual:measure",
     "  pnpm visual:measure -- --write",
-    "  pnpm visual:measure -- --write --accept-passing",
+    "  pnpm visual:measure -- --write --accept-passing --require-complete",
     "",
     "Options:",
     "  --manifest <path>     Visual acceptance manifest path.",

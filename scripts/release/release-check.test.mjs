@@ -216,6 +216,10 @@ test("release check artifact records visual evidence gaps", () => {
     artifact.visual.checklist.pendingTasks[0].commands.referenceReport,
     /visual-reference-import-report\.md/,
   );
+  assert.match(
+    artifact.visual.checklist.pendingTasks[0].commands.acceptPassing,
+    /--accept-passing --require-complete/,
+  );
 });
 
 test("release check blocks pending Page Builder visual evidence", () => {
