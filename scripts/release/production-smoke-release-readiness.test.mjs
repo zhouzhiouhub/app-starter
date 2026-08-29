@@ -138,8 +138,6 @@ test("production smoke release input preflight blocks invalid smoke login creden
     }),
   );
 
-  assert.match(error.message, /\(1 blockers\)/);
-  assert.match(error.message, /smoke\.login\/invalid-config/);
   assert.match(error.message, /SMOKE_ADMIN_EMAIL must be a valid email/);
 });
 

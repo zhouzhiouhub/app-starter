@@ -9,6 +9,9 @@ test("production smoke runtime input preflight accepts optional smoke run inputs
       SMOKE_LOCALE: " de-DE ",
       SMOKE_MARKET: " eu ",
       SMOKE_PAGE_SLUG: " campaign/launch-2026 ",
+      SMOKE_ADMIN_EMAIL: " owner@brand-platform.com ",
+      SMOKE_ADMIN_PASSWORD: " valid-password ",
+      SMOKE_TENANT_SLUG: " brand-store ",
       SMOKE_REQUIRE_ADMIN_APP: "true",
       SMOKE_REQUIRE_R2_UPLOAD: "false",
       SMOKE_REQUIRE_REVALIDATION: "yes",
@@ -17,6 +20,36 @@ test("production smoke runtime input preflight accepts optional smoke run inputs
       SMOKE_STOREFRONT_HOST: " Store.Brand-Platform.com:443 ",
     }),
     undefined,
+  );
+});
+
+test("production smoke release input preflight rejects invalid smoke admin email overrides", () => {
+  assert.throws(
+    () =>
+      validateProductionSmokeReleaseInputs({
+        SMOKE_ADMIN_EMAIL: "owner",
+      }),
+    /SMOKE_ADMIN_EMAIL must be a valid email/,
+  );
+});
+
+test("production smoke release input preflight rejects invalid smoke admin password overrides", () => {
+  assert.throws(
+    () =>
+      validateProductionSmokeReleaseInputs({
+        SMOKE_ADMIN_PASSWORD: "short",
+      }),
+    /SMOKE_ADMIN_PASSWORD must be 8 to 128 characters/,
+  );
+});
+
+test("production smoke release input preflight rejects invalid tenant slug overrides", () => {
+  assert.throws(
+    () =>
+      validateProductionSmokeReleaseInputs({
+        SMOKE_TENANT_SLUG: "-default",
+      }),
+    /SMOKE_TENANT_SLUG must be 1 to 100 lowercase/,
   );
 });
 

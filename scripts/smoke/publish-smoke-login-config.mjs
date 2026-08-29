@@ -29,6 +29,14 @@ export function readSmokeLoginConfig(env = process.env) {
 }
 
 export function assertSmokeLoginConfig({ email, password, tenantSlug }) {
+  normalizeSmokeAdminEmail(email);
+  normalizeSmokeAdminPassword(password);
+  normalizeSmokeTenantSlug(tenantSlug);
+}
+
+export function normalizeSmokeAdminEmail(value) {
+  const email = normalizeSmokeLoginText(value);
+
   if (
     email.length > 254 ||
     !smokeAdminEmailPattern.test(email) ||
@@ -36,6 +44,12 @@ export function assertSmokeLoginConfig({ email, password, tenantSlug }) {
   ) {
     throw new Error("SMOKE_ADMIN_EMAIL must be a valid email address.");
   }
+
+  return email;
+}
+
+export function normalizeSmokeAdminPassword(value) {
+  const password = normalizeSmokeLoginText(value);
 
   if (
     password.length < smokeAdminPasswordMinLength ||
@@ -47,11 +61,19 @@ export function assertSmokeLoginConfig({ email, password, tenantSlug }) {
     );
   }
 
+  return password;
+}
+
+export function normalizeSmokeTenantSlug(value) {
+  const tenantSlug = normalizeSmokeLoginText(value);
+
   if (!smokeTenantSlugPattern.test(tenantSlug)) {
     throw new Error(
       "SMOKE_TENANT_SLUG must be 1 to 100 lowercase letters, numbers, or hyphens, and cannot start or end with a hyphen.",
     );
   }
+
+  return tenantSlug;
 }
 
 export function assertProductionSmokeCredentials(
@@ -84,6 +106,10 @@ export function isProductionSmokeEnvironment(env = process.env) {
 function readEnv(env, name, fallback) {
   const value = env[name]?.trim();
   return value ? value : fallback;
+}
+
+function normalizeSmokeLoginText(value) {
+  return typeof value === "string" ? value.trim() : "";
 }
 
 function hasControlCharacter(value) {

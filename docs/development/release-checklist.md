@@ -93,6 +93,7 @@ later phases are explicitly approved.
   `SMOKE_STOREFRONT_HOST` must be a safe host when set;
   `SMOKE_REQUIRE_ADMIN_APP`, `SMOKE_REQUIRE_R2_UPLOAD`, and
   `SMOKE_REQUIRE_REVALIDATION` must be `true` or `false` when set;
+  `SMOKE_ADMIN_EMAIL`, `SMOKE_ADMIN_PASSWORD`, `SMOKE_TENANT_SLUG`,
   `SMOKE_LOCALE`, `SMOKE_MARKET`, `SMOKE_PAGE_SLUG`,
   `SMOKE_RETRY_ATTEMPTS`, and `SMOKE_RETRY_DELAY_MS` must match
   `smoke:publish` input constraints when set;

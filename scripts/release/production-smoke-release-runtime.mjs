@@ -9,6 +9,11 @@ import {
   normalizeSmokePositiveInt,
   normalizeSmokeSlug,
 } from "../smoke/publish-smoke-config-normalizers.mjs";
+import {
+  normalizeSmokeAdminEmail,
+  normalizeSmokeAdminPassword,
+  normalizeSmokeTenantSlug,
+} from "../smoke/publish-smoke-login-config.mjs";
 import { normalizeSafeStorefrontHost } from "../smoke/storefront-host-validation.mjs";
 
 const smokeBooleanInputNames = [
@@ -20,6 +25,9 @@ const smokeTextInputNormalizers = [
   ["SMOKE_LOCALE", normalizeSmokeLocale],
   ["SMOKE_MARKET", normalizeSmokeMarket],
   ["SMOKE_PAGE_SLUG", normalizeSmokeSlug],
+  ["SMOKE_TENANT_SLUG", normalizeSmokeTenantSlug],
+  ["SMOKE_ADMIN_EMAIL", normalizeSmokeAdminEmail],
+  ["SMOKE_ADMIN_PASSWORD", normalizeSmokeAdminPassword],
 ];
 const smokePositiveIntInputNormalizers = [
   ["SMOKE_RETRY_ATTEMPTS", retryAttemptsRange],
