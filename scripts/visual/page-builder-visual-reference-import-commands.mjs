@@ -40,6 +40,17 @@ export function createPageBuilderVisualReferenceMeasureCommand(report) {
   ]);
 }
 
+export function createPageBuilderVisualReferenceAcceptPassingCommand(report) {
+  return joinCommand([
+    "pnpm",
+    "visual:measure",
+    "--",
+    ...createManifestOption(report),
+    "--write",
+    "--accept-passing",
+  ]);
+}
+
 export function createPageBuilderVisualReferenceAcceptanceCommand(report) {
   return joinCommand([
     "pnpm",

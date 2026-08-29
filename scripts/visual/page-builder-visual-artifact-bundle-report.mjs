@@ -1,3 +1,11 @@
+import {
+  createPageBuilderVisualReferenceAcceptPassingCommand,
+  createPageBuilderVisualReferenceAcceptanceCommand,
+  createPageBuilderVisualReferenceCaptureCommand,
+  createPageBuilderVisualReferenceImportWriteCommand,
+  createPageBuilderVisualReferenceMeasureCommand,
+} from "./page-builder-visual-reference-import-commands.mjs";
+
 export function formatPageBuilderVisualArtifactBundleReport(result) {
   const lines = [
     "Page Builder visual artifact bundle",
@@ -21,9 +29,7 @@ export function formatPageBuilderVisualArtifactBundleReport(result) {
   appendIssueLines(lines, "Artifact issues", result.artifactCheck.issues);
 
   if (result.acceptance.status !== "accepted") {
-    lines.push(
-      "Next: attach real design references, run `pnpm visual:measure -- --write --require-complete`, then review and mark passing evidence accepted.",
-    );
+    appendNextActionLines(lines, result);
   }
 
   return lines;
@@ -58,4 +64,31 @@ function appendIssueLines(lines, label, issues) {
   for (const issue of issues) {
     lines.push(`  - [${issue.severity}] ${issue.message}`);
   }
+}
+
+function appendNextActionLines(lines, result) {
+  const commandReport = {
+    manifestPath: result.paths.manifest,
+    sourceDir: result.referenceImport.sourceDir,
+  };
+
+  lines.push(
+    "Next:",
+    `  - Attach real design references under ${commandReport.sourceDir}.`,
+    `  - Import references with \`${createPageBuilderVisualReferenceImportWriteCommand(
+      commandReport,
+    )}\`.`,
+    `  - Refresh artifact screenshots with \`${createPageBuilderVisualReferenceCaptureCommand(
+      commandReport,
+    )}\`.`,
+    `  - Measure artifact evidence with \`${createPageBuilderVisualReferenceMeasureCommand(
+      commandReport,
+    )}\`.`,
+    `  - When review passes, mark passing evidence accepted with \`${createPageBuilderVisualReferenceAcceptPassingCommand(
+      commandReport,
+    )}\`.`,
+    `  - Verify final sign-off with \`${createPageBuilderVisualReferenceAcceptanceCommand(
+      commandReport,
+    )}\`.`,
+  );
 }

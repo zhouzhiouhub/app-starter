@@ -2,6 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import {
+  createPageBuilderVisualReferenceAcceptPassingCommand,
   createPageBuilderVisualReferenceAcceptanceCommand,
   createPageBuilderVisualReferenceCaptureCommand,
   createPageBuilderVisualReferenceImportWriteCommand,
@@ -86,6 +87,9 @@ function formatNextStep(report) {
       `- Run ${formatCode(
         createPageBuilderVisualReferenceMeasureCommand(report),
       )} after fixture screenshots are attached.`,
+      `- When review passes, run ${formatCode(
+        createPageBuilderVisualReferenceAcceptPassingCommand(report),
+      )}.`,
     ];
   }
 
@@ -96,6 +100,9 @@ function formatNextStep(report) {
       )}.`,
       `- Run ${formatCode(createPageBuilderVisualReferenceMeasureCommand(report))}.`,
       `- Review the measured diff values, then run ${formatCode(
+        createPageBuilderVisualReferenceAcceptPassingCommand(report),
+      )}.`,
+      `- Verify final sign-off with ${formatCode(
         createPageBuilderVisualReferenceAcceptanceCommand(report),
       )}.`,
     ];

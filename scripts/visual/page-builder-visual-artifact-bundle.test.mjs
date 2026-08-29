@@ -208,7 +208,13 @@ test("visual artifact bundle report and usage describe the generated bundle", ()
   assert.match(report, /Reference import: invalid \(0 updates, 12 missing\)/);
   assert.match(report, /Acceptance Markdown: reports\/visual\/page-builder\/visual-acceptance-report\.md/);
   assert.match(report, /Artifact check Markdown: reports\/visual\/page-builder\/visual-artifact-check-report\.md/);
-  assert.match(report, /Next: attach real design references/);
+  assert.match(report, /Next:/);
+  assert.match(report, /Attach real design references under docs\/visual\/page-builder-references/);
+  assert.match(report, /visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder\/page-builder-visual-acceptance\.json --write --require-complete/);
+  assert.match(report, /visual:capture:fixture -- --manifest reports\/visual\/page-builder\/page-builder-visual-acceptance\.json --output-dir reports\/visual\/page-builder --report reports\/visual\/page-builder\/visual-capture-report\.json --write-manifest/);
+  assert.match(report, /visual:measure -- --manifest reports\/visual\/page-builder\/page-builder-visual-acceptance\.json --write --require-complete/);
+  assert.match(report, /visual:measure -- --manifest reports\/visual\/page-builder\/page-builder-visual-acceptance\.json --write --accept-passing/);
+  assert.match(report, /visual:acceptance -- --require-accepted reports\/visual\/page-builder\/page-builder-visual-acceptance\.json/);
   assert.match(usage, /pnpm visual:artifact-bundle/);
   assert.match(usage, /--source-manifest/);
 });
