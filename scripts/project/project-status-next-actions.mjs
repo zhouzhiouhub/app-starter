@@ -9,6 +9,7 @@ const productionSmokeArtifactNames = [
   "project-status-<run_number>",
 ];
 
+const pageBuilderVisualArtifactName = "page-builder-visual-fixture-<run_number>";
 const defaultVisualArtifactDir = "reports/visual/page-builder-fixture";
 const defaultVisualReferenceSourceDir = "docs/visual/page-builder-references";
 
@@ -158,6 +159,7 @@ function createPageBuilderVisualActionSteps(action, context) {
       "Check artifact",
       `pnpm visual:artifact-check -- --artifact-dir ${visualContext.artifactDir} --markdown-output ${visualContext.artifactCheckReportPath}`,
     ),
+    createNextActionStep("Keep artifact", pageBuilderVisualArtifactName),
   ];
 }
 

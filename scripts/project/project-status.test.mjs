@@ -71,15 +71,10 @@ test("project status summarizes blocked release evidence", () => {
   assert.deepEqual(
     artifact.nextActions[1].steps.map((step) => step.label),
     [
-      "Reference source",
-      "Reference report",
-      "Import",
-      "Capture fixture",
+      "Reference source", "Reference report", "Import", "Capture fixture",
       "Measure",
-      "Accept passing",
-      "Verify",
-      "Bundle artifact",
-      "Check artifact",
+      "Accept passing", "Verify", "Bundle artifact", "Check artifact",
+      "Keep artifact",
     ],
   );
   assert.equal(
@@ -88,6 +83,10 @@ test("project status summarizes blocked release evidence", () => {
   );
   assert.equal(
     artifact.nextActions[1].steps.at(-1).value,
+    "page-builder-visual-fixture-<run_number>",
+  );
+  assert.equal(
+    artifact.nextActions[1].steps.at(-2).value,
     "pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture --markdown-output reports/visual/page-builder-fixture/visual-artifact-check-report.md",
   );
   assert.equal(
