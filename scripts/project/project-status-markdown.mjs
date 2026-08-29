@@ -94,6 +94,12 @@ function formatReleaseEvidenceArtifacts() {
     `- Refresh visual capture: ${formatCode(
       "pnpm visual:capture:fixture -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json --write-manifest",
     )}`,
+    `- Refresh visual measurements: ${formatCode(
+      "pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete",
+    )}`,
+    `- Accept passing visual evidence: ${formatCode(
+      "pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --accept-passing --require-complete",
+    )}`,
     `- Refresh visual acceptance report: ${formatCode(
       "pnpm visual:acceptance -- --checklist --output reports/visual/page-builder-fixture/visual-acceptance-report.json --markdown-output reports/visual/page-builder-fixture/visual-acceptance-report.md reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
     )}`,

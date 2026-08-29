@@ -82,6 +82,14 @@ test("project status CLI writes a Markdown handoff", async () => {
     );
     assert.match(
       markdown,
+      /Refresh visual measurements: `pnpm visual:measure -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --require-complete`/,
+    );
+    assert.match(
+      markdown,
+      /Accept passing visual evidence: `pnpm visual:measure -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --accept-passing --require-complete`/,
+    );
+    assert.match(
+      markdown,
       /Refresh visual acceptance report: `pnpm visual:acceptance -- --checklist --output reports\/visual\/page-builder-fixture\/visual-acceptance-report\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-acceptance-report\.md reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json`/,
     );
     assert.match(
