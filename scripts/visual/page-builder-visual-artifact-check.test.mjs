@@ -28,12 +28,35 @@ test("visual artifact check accepts a complete fixture artifact", () => {
     const report = checkPageBuilderVisualArtifact({ artifactDir });
 
     assert.equal(report.status, "complete");
-    assert.equal(report.presentRequiredFileCount, 3);
+    assert.equal(report.presentRequiredFileCount, 4);
     assert.equal(report.presentScreenshotCount, 12);
     assert.deepEqual(report.issues, []);
     assert.match(
       formatPageBuilderVisualArtifactCheckReport(report).join("\n"),
       /Artifact is complete/,
+    );
+  } finally {
+    rmSync(artifactDir, { force: true, recursive: true });
+  }
+});
+
+test("visual artifact check rejects missing reference import Markdown", () => {
+  const artifactDir = createArtifactDir("missing-reference-report");
+
+  try {
+    writeVisualArtifact(artifactDir);
+    rmSync(`${artifactDir}/visual-reference-import-report.md`);
+
+    const report = checkPageBuilderVisualArtifact({ artifactDir });
+    assert.equal(report.status, "invalid");
+    assert.equal(report.presentRequiredFileCount, 3);
+    assert.equal(
+      report.issues.some(
+        (issue) =>
+          issue.code === "missing_artifact_file" &&
+          issue.message.includes("reference import Markdown"),
+      ),
+      true,
     );
   } finally {
     rmSync(artifactDir, { force: true, recursive: true });
@@ -150,6 +173,7 @@ test("visual artifact check command is exposed in package and workflows", () => 
     pageBuilderWorkflow,
     /visual-artifact-check-report\.md/,
   );
+  assert.match(pageBuilderWorkflow, /visual-reference-import-report\.md/);
   assert.match(visualDoc, /pnpm visual:artifact-check/);
   assert.match(releaseChecklist, /pnpm visual:artifact-check/);
 });
@@ -189,6 +213,7 @@ function writeVisualArtifact(artifactDir, input = {}) {
   writeJson(`${artifactDir}/page-builder-visual-acceptance.json`, manifest);
   writeJson(`${artifactDir}/visual-acceptance-report.json`, acceptanceArtifact);
   writeJson(`${artifactDir}/visual-capture-report.json`, captureArtifact);
+  writeText(`${artifactDir}/visual-reference-import-report.md`, "report\n");
 }
 
 function createVisualManifest(artifactDir, input) {
@@ -288,6 +313,10 @@ function writeJson(filePath, value) {
 
 function writePng(filePath, body) {
   writeFileSync(filePath, body);
+}
+
+function writeText(filePath, value) {
+  writeFileSync(filePath, value);
 }
 
 function readText(filePath) {

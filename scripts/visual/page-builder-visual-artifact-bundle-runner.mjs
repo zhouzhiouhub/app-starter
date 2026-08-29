@@ -18,11 +18,16 @@ import {
   measurePageBuilderVisualAcceptanceManifest,
   readPageBuilderVisualMeasureManifest,
 } from "./page-builder-visual-measure.mjs";
+import {
+  importPageBuilderVisualReferences,
+  writePageBuilderVisualReferenceImportMarkdown,
+} from "./page-builder-visual-reference-import.mjs";
 
 export async function runPageBuilderVisualArtifactBundle(config, input = {}) {
   await prepareArtifactManifest(config, input);
 
   const capture = await runCapture(config, input);
+  const referenceImport = await writeReferenceImportReport(config, input);
   const measure = runMeasure(config, input);
   const acceptance = await writeAcceptanceReport(config, input);
   const artifactCheck = runArtifactCheck(config, input);
@@ -35,6 +40,7 @@ export async function runPageBuilderVisualArtifactBundle(config, input = {}) {
     capture,
     measure,
     paths: config.paths,
+    referenceImport,
     sourceManifestPath: config.sourceManifestPath,
   };
 }
@@ -74,6 +80,21 @@ async function runCapture(config, input) {
   );
 
   return capture;
+}
+
+async function writeReferenceImportReport(config, input) {
+  const report = await (input.importReferences ??
+    importPageBuilderVisualReferences)(config.referenceImport, {
+    cwd: input.cwd ?? process.cwd(),
+  });
+
+  await (input.writeReferenceImportMarkdown ??
+    writePageBuilderVisualReferenceImportMarkdown)(
+    config.paths.referenceImportMarkdown,
+    report,
+  );
+
+  return report;
 }
 
 function runMeasure(config, input) {

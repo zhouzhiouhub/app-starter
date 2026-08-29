@@ -1,9 +1,13 @@
 import { defaultPageBuilderVisualAcceptanceManifestPath } from "./page-builder-visual-acceptance.mjs";
 import { readPageBuilderVisualArtifactDir } from "./page-builder-visual-artifact-check.mjs";
-import { artifactFileNames } from "./page-builder-visual-artifact-check-paths.mjs";
+import {
+  artifactFileNames,
+  artifactMarkdownFileNames,
+} from "./page-builder-visual-artifact-check-paths.mjs";
 import { readCaptureManifestPath } from "./page-builder-visual-capture-manifest.mjs";
 import { readPageBuilderVisualFixtureCaptureCliConfig } from "./page-builder-visual-fixture-capture.mjs";
 import { readPageBuilderVisualMeasureCliConfig } from "./page-builder-visual-measure.mjs";
+import { readPageBuilderVisualReferenceImportCliConfig } from "./page-builder-visual-reference-import.mjs";
 
 const forwardedFlagOptions = new Set(["--skip-build"]);
 const forwardedValueOptions = new Set([
@@ -23,6 +27,8 @@ const reservedBundleOptions = new Set([
 
 export const defaultPageBuilderVisualArtifactBundleSourceManifestPath =
   defaultPageBuilderVisualAcceptanceManifestPath;
+export const defaultPageBuilderVisualReferenceSourceDir =
+  "docs/visual/page-builder-references";
 
 export function readPageBuilderVisualArtifactBundleCliConfig(
   argv,
@@ -78,6 +84,15 @@ export function normalizeArtifactBundleConfig(input, env = process.env) {
       paths.manifest,
     ]),
     paths,
+    referenceImport: readPageBuilderVisualReferenceImportCliConfig([
+      "--source-dir",
+      defaultPageBuilderVisualReferenceSourceDir,
+      "--manifest",
+      paths.manifest,
+      "--markdown-output",
+      paths.referenceImportMarkdown,
+      "--require-complete",
+    ]),
     sourceManifestPath,
   };
 }
@@ -89,6 +104,8 @@ export function createPageBuilderVisualArtifactBundlePaths(artifactDir) {
     acceptanceReport: `${artifactDir}/${artifactFileNames.acceptanceReport}`,
     captureReport: `${artifactDir}/${artifactFileNames.captureReport}`,
     manifest: `${artifactDir}/${artifactFileNames.manifest}`,
+    referenceImportMarkdown:
+      `${artifactDir}/${artifactMarkdownFileNames.referenceImportMarkdown}`,
   };
 }
 

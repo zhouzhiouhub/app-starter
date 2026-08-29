@@ -9,9 +9,9 @@ import {
 } from "./page-builder-visual-artifact-check-capture.mjs";
 import {
   addArtifactCheckIssue,
-  artifactFileNames,
   createArtifactPaths,
   isObject,
+  requiredArtifactFileNames,
   resolveRepositoryPath,
 } from "./page-builder-visual-artifact-check-paths.mjs";
 
@@ -26,6 +26,11 @@ export function checkPageBuilderVisualArtifact(config, input = {}) {
   const acceptanceReport = readRequiredJson(
     context.paths.acceptanceReport,
     "acceptance report",
+    context,
+  );
+  validateRequiredText(
+    context.paths.referenceImportMarkdown,
+    "reference import Markdown",
     context,
   );
   const screenshots = validateCaptureReport(captureReport, context);
@@ -85,6 +90,30 @@ function readRequiredJson(filePath, label, context) {
       `${label} must contain valid JSON.`,
     );
     return null;
+  }
+}
+
+function validateRequiredText(filePath, label, context) {
+  try {
+    const resolvedPath = resolveRepositoryPath(context, filePath);
+    const stats = context.stat(resolvedPath);
+
+    if (!stats.isFile() || stats.size <= 0) {
+      addArtifactCheckIssue(
+        context,
+        "invalid_artifact_file",
+        `${label} must be a non-empty file.`,
+      );
+      return;
+    }
+
+    context.presentRequiredFileCount += 1;
+  } catch {
+    addArtifactCheckIssue(
+      context,
+      "missing_artifact_file",
+      `${label} is missing: ${filePath}.`,
+    );
   }
 }
 
@@ -187,7 +216,7 @@ function createArtifactCheckReport(context) {
     issues: context.issues,
     presentRequiredFileCount: context.presentRequiredFileCount,
     presentScreenshotCount: context.presentScreenshotCount,
-    requiredFileCount: Object.keys(artifactFileNames).length,
+    requiredFileCount: Object.keys(requiredArtifactFileNames).length,
     status: errorCount === 0 ? "complete" : "invalid",
   };
 }

@@ -6,9 +6,18 @@ export const artifactFileNames = {
   manifest: "page-builder-visual-acceptance.json",
 };
 
+export const artifactMarkdownFileNames = {
+  referenceImportMarkdown: "visual-reference-import-report.md",
+};
+
+export const requiredArtifactFileNames = {
+  ...artifactFileNames,
+  ...artifactMarkdownFileNames,
+};
+
 export function createArtifactPaths(artifactDir) {
   return Object.fromEntries(
-    Object.entries(artifactFileNames).map(([key, fileName]) => [
+    Object.entries(requiredArtifactFileNames).map(([key, fileName]) => [
       key,
       `${artifactDir}/${fileName}`,
     ]),

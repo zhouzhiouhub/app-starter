@@ -313,8 +313,8 @@ release review notes. Add
 `--markdown-output artifacts/release/project-status.md` when the handoff needs
 a pasteable Markdown checklist; it also records the recommended archive paths
 and refresh commands for the Production Smoke JSON/Markdown, Page Builder
-Visual bundle and artifact check Markdown, combined release gate, project
-status artifact, and release notes. Add `--all-actions` when it needs every
+Visual bundle, reference import Markdown, artifact check Markdown, combined
+release gate, project status artifact, and release notes. Add `--all-actions` when it needs every
 pending next action, including
 full command lines, instead of the default short list.
 

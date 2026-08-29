@@ -52,6 +52,19 @@ test("visual artifact bundle config derives fixed artifact paths", () => {
     config.paths.acceptanceMarkdown,
     "reports/visual/page-builder-fixture/visual-acceptance-report.md",
   );
+  assert.equal(
+    config.paths.referenceImportMarkdown,
+    "reports/visual/page-builder-fixture/visual-reference-import-report.md",
+  );
+  assert.deepEqual(config.referenceImport, {
+    manifestPath:
+      "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
+    markdownOutputPath:
+      "reports/visual/page-builder-fixture/visual-reference-import-report.md",
+    requireComplete: true,
+    sourceDir: "docs/visual/page-builder-references",
+    write: false,
+  });
   assert.equal(config.fixtureCapture.skipBuild, true);
   assert.equal(config.fixtureCapture.webPort, 3010);
   assert.equal(config.fixtureCapture.capture.browserPath, "chrome");
@@ -99,6 +112,8 @@ test("visual artifact bundle writes capture and acceptance reports", async () =>
       capture: async (captureConfig) =>
         createCaptureResult(captureConfig, config.paths.manifest),
       checkArtifact: () => createCompleteArtifactCheck(artifactDir),
+      importReferences: (referenceConfig) =>
+        createReferenceImportReport(referenceConfig),
       generatedAt: "2026-08-29T00:00:00.000Z",
     });
 
@@ -112,8 +127,14 @@ test("visual artifact bundle writes capture and acceptance reports", async () =>
       config.paths.artifactCheckMarkdown,
       "utf8",
     );
+    const referenceImportMarkdown = readFileSync(
+      config.paths.referenceImportMarkdown,
+      "utf8",
+    );
 
     assert.equal(result.capture.screenshots.length, 12);
+    assert.equal(result.referenceImport.status, "invalid");
+    assert.equal(result.referenceImport.missing.length, 12);
     assert.equal(result.measure.status, "needs-evidence");
     assert.equal(result.acceptance.status, "needs-evidence");
     assert.equal(result.artifactCheck.status, "complete");
@@ -124,6 +145,11 @@ test("visual artifact bundle writes capture and acceptance reports", async () =>
     assert.equal(acceptanceReport.checklist.pendingViewportCount, 12);
     assert.match(acceptanceMarkdown, /^# Page Builder Visual Acceptance/m);
     assert.match(acceptanceMarkdown, /hero-banner/);
+    assert.match(
+      referenceImportMarkdown,
+      /^# Page Builder Visual Reference Import/m,
+    );
+    assert.match(referenceImportMarkdown, /Missing references: 12/);
     assert.match(
       artifactCheckMarkdown,
       /^# Page Builder Visual Artifact Check/m,
@@ -161,6 +187,16 @@ test("visual artifact bundle report and usage describe the generated bundle", ()
       captureReport: "reports/visual/page-builder/visual-capture-report.json",
       acceptanceMarkdown: "reports/visual/page-builder/visual-acceptance-report.md",
       manifest: "reports/visual/page-builder/page-builder-visual-acceptance.json",
+      referenceImportMarkdown:
+        "reports/visual/page-builder/visual-reference-import-report.md",
+    },
+    referenceImport: {
+      manifestPath: "reports/visual/page-builder/page-builder-visual-acceptance.json",
+      missing: new Array(12).fill({}),
+      sourceDir: "docs/visual/page-builder-references",
+      status: "invalid",
+      updated: false,
+      updates: [],
     },
     sourceManifestPath: "docs/development/page-builder-visual-acceptance.json",
   }).join("\n");
@@ -168,6 +204,8 @@ test("visual artifact bundle report and usage describe the generated bundle", ()
 
   assert.match(report, /Page Builder visual artifact bundle/);
   assert.match(report, /Artifact check: complete/);
+  assert.match(report, /Reference import Markdown: reports\/visual\/page-builder\/visual-reference-import-report\.md/);
+  assert.match(report, /Reference import: invalid \(0 updates, 12 missing\)/);
   assert.match(report, /Acceptance Markdown: reports\/visual\/page-builder\/visual-acceptance-report\.md/);
   assert.match(report, /Artifact check Markdown: reports\/visual\/page-builder\/visual-artifact-check-report\.md/);
   assert.match(report, /Next: attach real design references/);
@@ -222,10 +260,28 @@ function createCompleteArtifactCheck(artifactDir) {
     artifactDir,
     expectedScreenshotCount: 12,
     issues: [],
-    presentRequiredFileCount: 3,
+    presentRequiredFileCount: 4,
     presentScreenshotCount: 12,
-    requiredFileCount: 3,
+    requiredFileCount: 4,
     status: "complete",
+  };
+}
+
+function createReferenceImportReport(config) {
+  return {
+    complete: false,
+    manifestPath: config.manifestPath,
+    missing: mvpPageBuilderComponents.flatMap((component) =>
+      pageBuilderVisualAcceptanceViewports.map((viewport) => ({
+        component,
+        reason: `${component}-${viewport}.png is missing`,
+        viewport,
+      })),
+    ),
+    sourceDir: config.sourceDir,
+    status: "invalid",
+    updated: false,
+    updates: [],
   };
 }
 

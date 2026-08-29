@@ -16,9 +16,9 @@ export function createCompleteArtifactCheck() {
     expectedScreenshotCount: 12,
     issueCount: 0,
     issues: [],
-    presentRequiredFileCount: 3,
+    presentRequiredFileCount: 4,
     presentScreenshotCount: 12,
-    requiredFileCount: 3,
+    requiredFileCount: 4,
     status: "complete",
   };
 }
@@ -37,9 +37,9 @@ export function createInvalidArtifactCheck() {
         viewport: null,
       },
     ],
-    presentRequiredFileCount: 2,
+    presentRequiredFileCount: 3,
     presentScreenshotCount: 0,
-    requiredFileCount: 3,
+    requiredFileCount: 4,
     status: "invalid",
   };
 }

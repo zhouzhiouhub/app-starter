@@ -54,7 +54,8 @@ gated fixture server, capture the screenshots, and stop the server. Use
 `pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture`
 when you need the full uploadable fixture evidence bundle; it copies the source
 manifest into the artifact directory, captures all 12 viewport screenshots,
-writes `visual-capture-report.json`, runs measurement, writes
+writes `visual-capture-report.json`, writes
+`visual-reference-import-report.md`, runs measurement, writes
 `visual-acceptance-report.json`, `visual-acceptance-report.md`, and
 `visual-artifact-check-report.md`, and verifies the bundle with
 `visual:artifact-check`.
@@ -161,15 +162,17 @@ requests, pushes to `main`, changes under
 The bundle command copies the source manifest to
 `reports/visual/page-builder-fixture/page-builder-visual-acceptance.json`,
 captures all fixture screenshots, runs measurement, writes
-`visual-capture-report.json`, `visual-acceptance-report.json`, and
+`visual-capture-report.json`, `visual-reference-import-report.md`,
+`visual-acceptance-report.json`, and
 `visual-artifact-check-report.md`, and verifies the uploaded bundle with
 `visual:artifact-check`.
 
 The workflow uploads `page-builder-visual-fixture-<run_number>` with the fixture
 screenshots, an artifact-local manifest with captured `previewScreenshot` paths,
-`visual-capture-report.json`, `visual-acceptance-report.json`, and
-`visual-acceptance-report.md` plus `visual-artifact-check-report.md` captured
-under `reports/visual/page-builder-fixture`;
+`visual-capture-report.json`, `visual-reference-import-report.md`,
+`visual-acceptance-report.json`, and `visual-acceptance-report.md` plus
+`visual-artifact-check-report.md` captured under
+`reports/visual/page-builder-fixture`;
 the upload step fails when the bundle is
 missing instead of leaving only a warning. The source manifest under
 `docs/development/` remains unchanged by CI. This artifact is regression

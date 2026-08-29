@@ -64,8 +64,8 @@ later phases are explicitly approved.
   local build/start/capture/stop workflow. Run
   `pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture`
   when you need the complete uploadable fixture bundle with manifest, capture
-  report, acceptance report, and artifact check. Keep the flag disabled outside
-  the capture session.
+  report, reference import Markdown, acceptance report, and artifact check.
+  Keep the flag disabled outside the capture session.
 - Run the `Page Builder Visual` GitHub Actions workflow and keep its
   `page-builder-visual-fixture-<run_number>` artifact with the release notes.
   This artifact includes `visual-acceptance-report.json` for structured review
@@ -170,6 +170,7 @@ later phases are explicitly approved.
   evidence is part of the release review; the artifact contains
   `page-builder-visual-acceptance.json` with artifact-local screenshot paths,
   `visual-capture-report.json` with the captured screenshot list, and
+  `visual-reference-import-report.md` with reference intake status,
   `visual-acceptance-report.json` with the structured acceptance status,
   `visual-acceptance-report.md`, and `visual-artifact-check-report.md`.
 - When `visual_artifact_run_id` was provided, the Production Smoke workflow log
@@ -212,8 +213,8 @@ later phases are explicitly approved.
   artifact is a validated `project-status.v1` snapshot with the full
   `--all-actions` next-action list, untruncated command lines, and
   `project-status.md` handoff checklist, including the production smoke,
-  visual bundle and artifact check Markdown, combined gate, project status, and
-  release notes artifact map.
+  visual bundle, reference import Markdown, artifact check Markdown, combined
+  gate, project status, and release notes artifact map.
 - Production Smoke artifact uploads use `if-no-files-found: error`; missing
   smoke JSON, Smoke Markdown, combined gate JSON/Markdown, project status, or
   release notes files fail the workflow instead of leaving only a warning.
