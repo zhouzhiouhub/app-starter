@@ -596,6 +596,7 @@ POST /api/v1/webhooks/stripe
 - `POST /api/v1/translations/export/preview` 需要 `translation:read`，只返回当前筛选下的可导出数量、样例 key 和缺失 key 摘要，不生成文件。
 - `POST /api/v1/translations/export` 需要 `translation:read`；MVP 返回当前 Tenant、当前筛选条件下的默认 Locale JSON 导出 payload，非默认 Locale 请求仍回退默认 Locale，审计日志只记录条目数量、筛选条件和缺失 key 数量，不记录翻译正文。
 - `POST /api/v1/translations/import` 需要 `translation:write` 和 `Idempotency-Key`；MVP 只允许批量导入默认 Locale 条目，导入前复用预览契约校验重复、非法和非默认 Locale 行，审计日志只记录 create / update 数量，不记录翻译正文。
+- 服务端测试会扫描 Controller，除登录 / 刷新 / 登出、Stripe Webhook、Translation preview / export 这类显式例外外，`POST` / `PUT` / `PATCH` / `DELETE` 业务写入口必须绑定并校验 `Idempotency-Key`。
 - `GET /api/v1/products`、`GET /api/v1/orders` 和 `GET /api/v1/payments` 是后台 Commerce 只读占位契约，MVP 返回空列表，并在 meta 标记 `commerceEnabled`、默认 `market` / `currency`、`writable=false`、`writeDisabledCode=COMMERCE_DISABLED` 和 `reservedPhase=phase-2`。
 - `POST /api/v1/products` 和 `PATCH /api/v1/products/:id` 是受保护的商品写入占位契约，需要 `product:write` 与 `Idempotency-Key`，MVP 返回 `COMMERCE_DISABLED`，并在安全 `details` 标记 `resource=product`、`action=create|update`、`writable=false`、`writeDisabledCode=COMMERCE_DISABLED` 和 `reservedPhase=phase-2`，且不回显请求体或商品 ID。
 - `GET /api/v1/products/:id` 是受保护的后台商品详情占位契约，MVP 返回 `NOT_FOUND`，并在安全 `details` 标记 `resource=product`、`surface=admin`、`action=read`、`available=false`、`writable=false`、`readUnavailableCode=NOT_FOUND` 和 `reservedPhase=phase-2`，且不回显商品 ID。
