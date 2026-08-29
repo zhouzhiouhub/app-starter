@@ -26,4 +26,6 @@ pnpm release:notes -- --release-tag v0.1.0 --workflow-run-url https://github.com
 ```
 
 Failure review drafts may use `--allow-blocked`, but they are not release
-sign-off records.
+sign-off records. They include `Project Next Actions` from the validated
+project status artifact so the blocked production smoke or Page Builder visual
+repair steps stay attached to the failed review.

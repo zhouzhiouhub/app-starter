@@ -24,6 +24,8 @@ test("release records directory documents final sign-off evidence", () => {
   assert.match(readme, /--project-status-artifact project-status-123/);
   assert.match(readme, /page-builder-visual-fixture-<run_number>/);
   assert.match(readme, /Failure review drafts may use `--allow-blocked`/);
+  assert.match(readme, /Project Next Actions/);
+  assert.match(readme, /validated\s+project status artifact/);
 });
 
 test("release checklist points final records at docs releases", () => {
@@ -37,4 +39,6 @@ test("release checklist points final records at docs releases", () => {
     releaseChecklist,
     /Keep the generated `docs\/releases\/<tag>\.md` release record/,
   );
+  assert.match(releaseChecklist, /Project Next Actions/);
+  assert.match(releaseChecklist, /failed run/);
 });

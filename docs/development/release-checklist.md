@@ -274,7 +274,10 @@ later phases are explicitly approved.
   preflight artifact, project status artifact and source path, visual manifest
   path, optional `visual.artifactCheck` summary, pending visual evidence lists,
   visual checklist task summary, and visual issue summary when `--allow-blocked`
-  is used for failure review drafts. The command validates the artifact's smoke
+  is used for failure review drafts. Blocked drafts also include a
+  `Project Next Actions` section from the validated `project-status.v1` file so
+  the first production smoke and visual evidence repair steps stay with the
+  failed review record. The command validates the artifact's smoke
   summary, source metadata, `--workflow-run-url` match, smoke artifact,
   preflight artifact, and project status artifact run-number match,
   `project-status.v1` release-ready and gate-count consistency, traceability
@@ -312,6 +315,9 @@ later phases are explicitly approved.
   combined release gate blockers include the Production Smoke artifact action
   and the `pnpm visual:acceptance -- --checklist` command for visual evidence.
 - Link both the failed run and the fixed run in the release notes.
+- Keep the `Project Next Actions` section from any blocked release notes draft
+  with the failed run so the production smoke and visual evidence repair steps
+  are visible without reopening the JSON artifact.
 - Do not mark the release ready until a new artifact proves the failed gate is
   fixed.
 
