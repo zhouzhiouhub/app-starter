@@ -323,11 +323,12 @@ including
 full command lines, instead of the default short list.
 
 `release:handoff` is a convenience wrapper for release review handoff. It reads
-the same release gate once, then writes `release-check.json`,
-`release-check.md`, `project-status.json`, and `project-status.md` under
-`artifacts/release/` by default so blocked and ready states use matching
-evidence. Blocked evidence still writes the files; add `--require-ready` when
-the handoff should fail until the release gate is ready.
+the same release gate once, then writes `preflight.json`, `preflight.md`,
+`release-check.json`, `release-check.md`, `project-status.json`, and
+`project-status.md` under `artifacts/release/` by default so blocked and ready
+states use matching evidence. Blocked evidence still writes the files; add
+`--require-ready` when the handoff should fail until both release evidence and
+preflight are ready.
 
 After the Page Builder visual manifest has accepted real design evidence,
 `release:check` verifies both evidence streams together: production smoke must

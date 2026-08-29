@@ -5,6 +5,8 @@ import {
 } from "../project/project-status.mjs";
 import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
+import { validateProductionSmokeReleaseInputs } from "./production-smoke-release-inputs.mjs";
+import { writeProductionSmokePreflightReport } from "./production-smoke-preflight-report.mjs";
 import {
   createReleaseEvidenceCheckArtifact,
   readReleaseCheckCliConfig,
@@ -13,16 +15,11 @@ import {
   writeReleaseEvidenceCheckMarkdown,
 } from "./release-check.mjs";
 import {
-  normalizeProjectStatusMarkdownPath,
-  normalizeProjectStatusPath,
-  normalizeReleaseCheckMarkdownPath,
-  normalizeReleaseEvidencePath,
-} from "./release-notes-validation.mjs";
+  createReleaseCheckArgs,
+  readReleaseHandoffCliConfig,
+} from "./release-handoff-config.mjs";
 
-const defaultReleaseCheckOutputPath = "artifacts/release/release-check.json";
-const defaultReleaseCheckMarkdownPath = "artifacts/release/release-check.md";
-const defaultProjectStatusOutputPath = "artifacts/release/project-status.json";
-const defaultProjectStatusMarkdownPath = "artifacts/release/project-status.md";
+export { readReleaseHandoffCliConfig } from "./release-handoff-config.mjs";
 
 export async function runReleaseHandoffCli(args = [], input = {}) {
   const stdout = input.stdout ?? console.log;
@@ -35,11 +32,16 @@ export async function runReleaseHandoffCli(args = [], input = {}) {
 
   try {
     const config = readReleaseHandoffCliConfig(args);
+    const generatedAt = input.generatedAt ?? new Date().toISOString();
+    const preflightReport = await writeReleaseHandoffPreflight(
+      config,
+      input,
+      generatedAt,
+    );
     const releaseCheckConfig = readReleaseCheckCliConfig(
       createReleaseCheckArgs(config),
     );
     const check = await readReleaseEvidenceCheck(releaseCheckConfig, input);
-    const generatedAt = input.generatedAt ?? new Date().toISOString();
     const releaseArtifact = createReleaseEvidenceCheckArtifact(check, {
       generatedAt,
     });
@@ -67,125 +69,37 @@ export async function runReleaseHandoffCli(args = [], input = {}) {
 
     for (const line of formatReleaseHandoffSummary({
       config,
+      preflightReport,
       projectArtifact,
       releaseArtifact,
     })) {
       stdout(line);
     }
 
-    return config.requireReady && !releaseArtifact.releaseReady ? 1 : 0;
+    const handoffReady =
+      releaseArtifact.releaseReady && preflightReport.status === "passed";
+
+    return config.requireReady && !handoffReady ? 1 : 0;
   } catch (error) {
     stderr(`Release handoff failed: ${readErrorMessage(error)}`);
     return 1;
   }
 }
 
-export function readReleaseHandoffCliConfig(args = []) {
-  const normalizedArgs = stripPnpmSeparator(args);
-  const config = {
-    projectStatusMarkdownPath: normalizeProjectStatusMarkdownPath(
-      defaultProjectStatusMarkdownPath,
-    ),
-    projectStatusOutputPath: normalizeProjectStatusPath(
-      defaultProjectStatusOutputPath,
-    ),
-    releaseCheckMarkdownPath: normalizeReleaseCheckMarkdownPath(
-      defaultReleaseCheckMarkdownPath,
-    ),
-    releaseCheckOutputPath: normalizeReleaseEvidencePath(
-      defaultReleaseCheckOutputPath,
-    ),
-    requireReady: false,
-    smokeReportPath: null,
-    visualArtifactDir: null,
-    visualManifestPath: null,
-  };
-
-  for (let index = 0; index < normalizedArgs.length; index += 1) {
-    const arg = normalizedArgs[index];
-
-    if (arg === "--latest") {
-      config.smokeReportPath = null;
-      continue;
-    }
-
-    if (arg === "--require-ready") {
-      config.requireReady = true;
-      continue;
-    }
-
-    if (arg === "--smoke-report") {
-      config.smokeReportPath = readOptionValue(arg, normalizedArgs, index);
-      index += 1;
-      continue;
-    }
-
-    if (arg === "--visual-artifact-dir") {
-      config.visualArtifactDir = readOptionValue(arg, normalizedArgs, index);
-      index += 1;
-      continue;
-    }
-
-    if (arg === "--visual-manifest") {
-      config.visualManifestPath = readOptionValue(arg, normalizedArgs, index);
-      index += 1;
-      continue;
-    }
-
-    if (arg === "--release-check-output") {
-      config.releaseCheckOutputPath = normalizeReleaseEvidencePath(
-        readOptionValue(arg, normalizedArgs, index),
-      );
-      index += 1;
-      continue;
-    }
-
-    if (arg === "--release-check-markdown") {
-      config.releaseCheckMarkdownPath = normalizeReleaseCheckMarkdownPath(
-        readOptionValue(arg, normalizedArgs, index),
-      );
-      index += 1;
-      continue;
-    }
-
-    if (arg === "--project-status-output") {
-      config.projectStatusOutputPath = normalizeProjectStatusPath(
-        readOptionValue(arg, normalizedArgs, index),
-      );
-      index += 1;
-      continue;
-    }
-
-    if (arg === "--project-status-markdown") {
-      config.projectStatusMarkdownPath = normalizeProjectStatusMarkdownPath(
-        readOptionValue(arg, normalizedArgs, index),
-      );
-      index += 1;
-      continue;
-    }
-
-    if (arg.startsWith("-")) {
-      throw new Error(`Unknown release handoff option: ${arg}`);
-    }
-
-    if (config.smokeReportPath) {
-      throw new Error("Provide only one smoke report path.");
-    }
-
-    config.smokeReportPath = arg;
-  }
-
-  return config;
-}
-
 export function formatReleaseHandoffSummary(input) {
   const nextAction = input.projectArtifact.nextActions[0];
+  const handoffReady =
+    input.releaseArtifact.releaseReady &&
+    input.preflightReport.status === "passed";
 
   return [
     "Release handoff written:",
     `  Status: ${input.projectArtifact.status}`,
-    `  Release ready: ${input.releaseArtifact.releaseReady ? "yes" : "no"}`,
+    `  Release ready: ${handoffReady ? "yes" : "no"}`,
     `  Blockers: ${input.releaseArtifact.blockerCount}`,
+    `  Preflight status: ${input.preflightReport.status}`,
+    `  Preflight JSON: ${input.config.preflightOutputPath}`,
+    `  Preflight Markdown: ${input.config.preflightMarkdownPath}`,
     `  Release evidence JSON: ${input.config.releaseCheckOutputPath}`,
     `  Release evidence Markdown: ${input.config.releaseCheckMarkdownPath}`,
     `  Project status JSON: ${input.config.projectStatusOutputPath}`,
@@ -211,6 +125,8 @@ Options:
                                Write release-evidence-check.v1 JSON.
   --release-check-markdown <path>
                                Write release evidence Markdown.
+  --preflight-output <path>    Write production-smoke-preflight.v1 JSON.
+  --preflight-markdown <path>  Write production smoke preflight Markdown.
   --project-status-output <path>
                                Write project-status.v1 JSON.
   --project-status-markdown <path>
@@ -218,34 +134,32 @@ Options:
   -h, --help                   Show this help.
 
 Release handoff:
-  Writes release-check.json, release-check.md, project-status.json, and
-  project-status.md from the same release gate read. Blocked evidence still
-  writes the handoff; use --require-ready when the command should gate release.`);
+  Writes preflight.json, preflight.md, release-check.json, release-check.md,
+  project-status.json, and project-status.md from the same handoff run. Blocked
+  evidence still writes the handoff; use --require-ready when the command should
+  gate release.`);
 }
 
-function createReleaseCheckArgs(config) {
-  const args = [
-    "--checklist",
-    "--all-visual-tasks",
-    "--output",
-    config.releaseCheckOutputPath,
-    "--markdown-output",
-    config.releaseCheckMarkdownPath,
-  ];
+async function writeReleaseHandoffPreflight(config, input, generatedAt) {
+  const env = input.env ?? process.env;
+  const outputs = {
+    jsonOutput: config.preflightOutputPath,
+    markdownOutput: config.preflightMarkdownPath,
+  };
 
-  if (config.smokeReportPath) {
-    args.push("--smoke-report", config.smokeReportPath);
+  try {
+    return await writeProductionSmokePreflightReport(outputs, {
+      env,
+      generatedAt,
+      result: validateProductionSmokeReleaseInputs(env),
+    });
+  } catch (error) {
+    return writeProductionSmokePreflightReport(outputs, {
+      env,
+      error,
+      generatedAt,
+    });
   }
-
-  if (config.visualArtifactDir) {
-    args.push("--visual-artifact-dir", config.visualArtifactDir);
-  }
-
-  if (config.visualManifestPath) {
-    args.push("--visual-manifest", config.visualManifestPath);
-  }
-
-  return args;
 }
 
 function formatNextAction(action) {
@@ -256,18 +170,4 @@ function formatNextAction(action) {
   return formatSmokeText(`${action.area}: ${action.label} - ${action.action}`, {
     maxLength: 420,
   });
-}
-
-function readOptionValue(option, args, index) {
-  const value = args[index + 1];
-
-  if (!value || value.startsWith("--")) {
-    throw new Error(`${option} requires a value.`);
-  }
-
-  return value;
-}
-
-function stripPnpmSeparator(args) {
-  return args[0] === "--" ? args.slice(1) : args;
 }
