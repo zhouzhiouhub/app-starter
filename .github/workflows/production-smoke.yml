@@ -188,7 +188,7 @@ jobs:
           fi
           pnpm project:status -- "${project_status_flags[@]}"
       - name: Generate release notes
-        if: ${{ always() && inputs.release_tag != '' && inputs.rollback_target != '' && inputs.visual_artifact_name != '' }}
+        if: ${{ always() && inputs.release_tag != '' && inputs.rollback_target != '' && inputs.visual_artifact_name != '' && inputs.visual_artifact_run_id != '' }}
         run: |
           storefront_url="$RELEASE_STOREFRONT_URL"
           if [ -z "$storefront_url" ]; then
@@ -241,7 +241,7 @@ jobs:
             else
               echo "- Visual evidence artifact: skipped (set visual_artifact_name and visual_artifact_run_id)"
             fi
-            if [ -n "$RELEASE_TAG" ] && [ -n "$RELEASE_ROLLBACK_TARGET" ] && [ -n "$RELEASE_VISUAL_ARTIFACT_NAME" ]; then
+            if [ -n "$RELEASE_TAG" ] && [ -n "$RELEASE_ROLLBACK_TARGET" ] && [ -n "$RELEASE_VISUAL_ARTIFACT_NAME" ] && [ -n "$RELEASE_VISUAL_ARTIFACT_RUN_ID" ]; then
               echo "- Release notes: \`$RELEASE_NOTES_PATH\`"
               echo "- Release notes artifact: \`$RELEASE_NOTES_ARTIFACT_NAME\`"
               if [ "$RELEASE_NOTES_ALLOW_BLOCKED" = "true" ]; then
@@ -250,7 +250,7 @@ jobs:
                 echo "- Release notes mode: ready evidence only"
               fi
             else
-              echo "- Release notes: skipped (set release_tag, rollback_target, and visual_artifact_name)"
+              echo "- Release notes: skipped (set release_tag, rollback_target, visual_artifact_name, and visual_artifact_run_id)"
             fi
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload smoke report artifact
@@ -278,7 +278,7 @@ jobs:
           if-no-files-found: error
           retention-days: 30
       - name: Upload release notes artifact
-        if: ${{ always() && inputs.release_tag != '' && inputs.rollback_target != '' && inputs.visual_artifact_name != '' }}
+        if: ${{ always() && inputs.release_tag != '' && inputs.rollback_target != '' && inputs.visual_artifact_name != '' && inputs.visual_artifact_run_id != '' }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.RELEASE_NOTES_ARTIFACT_NAME }}

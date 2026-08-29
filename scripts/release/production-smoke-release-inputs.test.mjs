@@ -137,7 +137,7 @@ test("production smoke release input preflight requires release notes as a group
         RELEASE_VISUAL_ARTIFACT_NAME: "",
         RELEASE_VISUAL_ARTIFACT_RUN_ID: "",
       }),
-    /Release notes require release_tag, rollback_target, and visual_artifact_name together/,
+    /Release notes require release_tag, rollback_target, visual_artifact_name, and visual_artifact_run_id together/,
   );
 });
 
@@ -212,7 +212,7 @@ test("production smoke release input preflight validates blocked release note dr
         RELEASE_VISUAL_ARTIFACT_NAME: "",
         RELEASE_VISUAL_ARTIFACT_RUN_ID: "",
       }),
-    /allow_blocked_release_notes requires release_tag, rollback_target, and visual_artifact_name together/,
+    /allow_blocked_release_notes requires release_tag, rollback_target, visual_artifact_name, and visual_artifact_run_id together/,
   );
   assert.throws(
     () =>
@@ -237,6 +237,7 @@ test("production smoke release input preflight CLI prints help", async () => {
   assert.match(stdout.join("\n"), /SMOKE_REPORT_ARTIFACT_NAME/);
   assert.match(stdout.join("\n"), /RELEASE_CHECK_ARTIFACT_NAME/);
   assert.match(stdout.join("\n"), /RELEASE_VISUAL_ARTIFACT_NAME/);
+  assert.match(stdout.join("\n"), /RELEASE_VISUAL_ARTIFACT_RUN_ID/);
   assert.match(stdout.join("\n"), /PROJECT_STATUS_ARTIFACT_PATH/);
   assert.match(stdout.join("\n"), /PROJECT_STATUS_ARTIFACT_NAME/);
   assert.match(stdout.join("\n"), /RELEASE_NOTES_ARTIFACT_NAME/);

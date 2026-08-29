@@ -359,8 +359,8 @@ unsafe artifact names, a partial visual artifact pair, or a partial release
 notes input set fails early.
 The same visual artifact shape can be reproduced locally with
 `pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture`.
-When `release_tag`,
-`rollback_target`, and `visual_artifact_name` are provided, it runs
+When `release_tag`, `rollback_target`, `visual_artifact_name`, and
+`visual_artifact_run_id` are provided, it runs
 `release:notes` with the generated project status artifact name and uploads
 `release-notes-<run_number>`. Keep
 `allow_blocked_release_notes` disabled for a formal release; enable it only to

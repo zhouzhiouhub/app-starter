@@ -117,7 +117,7 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /name: Generate release notes/);
   assert.match(
     workflow,
-    /inputs\.release_tag != '' && inputs\.rollback_target != '' && inputs\.visual_artifact_name != ''/,
+    /inputs\.release_tag != '' && inputs\.rollback_target != '' && inputs\.visual_artifact_name != '' && inputs\.visual_artifact_run_id != ''/,
   );
   assert.match(workflow, /pnpm release:notes --/);
   assert.match(workflow, /release_notes_flags=\(\)/);
@@ -149,13 +149,23 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
     workflow,
     /skipped \(set visual_artifact_name and visual_artifact_run_id\)/,
   );
-  assert.match(workflow, /skipped \(set release_tag, rollback_target, and visual_artifact_name\)/);
+  assert.match(
+    workflow,
+    /skipped \(set release_tag, rollback_target, visual_artifact_name, and visual_artifact_run_id\)/,
+  );
   assert.match(workflow, /SMOKE_REPORT_ARTIFACT_NAME:/);
   assert.match(workflow, /actions\/upload-artifact@v4/);
   assert.match(workflow, /path: \$\{\{ inputs\.report_path \}\}/);
   assert.match(workflow, /path: \$\{\{ env\.RELEASE_CHECK_ARTIFACT_PATH \}\}/);
   assert.match(workflow, /path: \$\{\{ env\.PROJECT_STATUS_ARTIFACT_PATH \}\}/);
   assert.match(workflow, /path: \$\{\{ env\.RELEASE_NOTES_PATH \}\}/);
+  assert.equal(
+    matchCount(
+      workflow,
+      /inputs\.release_tag != '' && inputs\.rollback_target != '' && inputs\.visual_artifact_name != '' && inputs\.visual_artifact_run_id != ''/g,
+    ),
+    2,
+  );
   assert.equal(matchCount(workflow, /if-no-files-found: error/g), 4);
   assert.doesNotMatch(workflow, /if-no-files-found: warn/);
   assert.match(workflow, /retention-days: 30/);

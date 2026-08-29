@@ -15,7 +15,7 @@ export function validateProductionSmokeReleaseInputs(env = process.env) {
 
   if (allowBlockedReleaseNotes && !releaseNotes.enabled) {
     throw new Error(
-      "allow_blocked_release_notes requires release_tag, rollback_target, and visual_artifact_name together.",
+      "allow_blocked_release_notes requires release_tag, rollback_target, visual_artifact_name, and visual_artifact_run_id together.",
     );
   }
 
@@ -96,12 +96,20 @@ function readReleaseNotesInput(env) {
   const visualArtifactName = normalizeOptionalText(
     env.RELEASE_VISUAL_ARTIFACT_NAME,
   );
-  const values = [releaseTag, rollbackTarget, visualArtifactName];
+  const visualArtifactRunId = normalizeOptionalText(
+    env.RELEASE_VISUAL_ARTIFACT_RUN_ID,
+  );
+  const values = [
+    releaseTag,
+    rollbackTarget,
+    visualArtifactName,
+    visualArtifactRunId,
+  ];
   const enabled = values.every(Boolean);
 
   if (!enabled && values.some(Boolean)) {
     throw new Error(
-      "Release notes require release_tag, rollback_target, and visual_artifact_name together.",
+      "Release notes require release_tag, rollback_target, visual_artifact_name, and visual_artifact_run_id together.",
     );
   }
 
@@ -216,11 +224,11 @@ Environment:
   artifact names.
   RELEASE_VISUAL_ARTIFACT_NAME and RELEASE_VISUAL_ARTIFACT_RUN_ID must be set
   together. RELEASE_TAG, RELEASE_ROLLBACK_TARGET, and
-  RELEASE_VISUAL_ARTIFACT_NAME must be set together when release notes should be
-  generated. PROJECT_STATUS_ARTIFACT_PATH and PROJECT_STATUS_ARTIFACT_NAME are
-  required when release notes are generated. RELEASE_NOTES_ALLOW_BLOCKED=true
-  may only be used with release notes inputs to generate a failure review draft
-  from blocked evidence.`);
+  RELEASE_VISUAL_ARTIFACT_NAME plus RELEASE_VISUAL_ARTIFACT_RUN_ID must be set
+  together when release notes should be generated. PROJECT_STATUS_ARTIFACT_PATH
+  and PROJECT_STATUS_ARTIFACT_NAME are required when release notes are generated.
+  RELEASE_NOTES_ALLOW_BLOCKED=true may only be used with release notes inputs to
+  generate a failure review draft from blocked evidence.`);
 }
 
 function isMainModule() {
