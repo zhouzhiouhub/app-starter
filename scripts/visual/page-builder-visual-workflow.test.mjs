@@ -92,6 +92,14 @@ test("visual workflow documentation is linked from release guidance", async () =
   assert.match(acceptanceDoc, /--json/);
   assert.match(acceptanceDoc, /--markdown-output/);
   assert.match(acceptanceDoc, /--accept-passing --require-complete/);
+  assert.match(
+    acceptanceDoc,
+    /import, capture, measure, accept-passing, and final verification commands/,
+  );
+  assert.doesNotMatch(
+    acceptanceDoc,
+    /import, capture, measure, and final verification commands/,
+  );
   assert.match(releaseChecklist, /Page Builder Visual/);
   assert.match(releaseChecklist, /page-builder-visual-fixture-<run_number>/);
   assert.match(

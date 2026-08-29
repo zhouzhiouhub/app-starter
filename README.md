@@ -809,6 +809,6 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 
 1. 在真实 R2 / CDN 环境配置 `MEDIA_CDN_BASE_URL`、R2 凭据和 CDN 域名，确认不是 `example` / `test` / `invalid` / 本地 / 私网域名，执行 `pnpm smoke:publish` 并归档 `SMOKE_REPORT_PATH`。
 2. 按 `infra/README.md` 执行部署 Smoke Test：前台 Vercel、API 独立 Node 服务、Admin 静态托管、Redis 生产连接、环境变量清单和回滚步骤。
-3. 做 Page Builder 视觉验收：保留最新 `Page Builder Visual` workflow 的 `page-builder-visual-fixture-<run_number>` artifact，补真实浏览器截图留档，并将 `docs/development/page-builder-visual-acceptance.json` 中六个核心区块的 Desktop / Mobile 证据从 `needs-evidence` 推进到 `accepted`。
+3. 做 Page Builder 视觉验收：保留最新 `Page Builder Visual` workflow 的 `page-builder-visual-fixture-<run_number>` artifact，补真实浏览器截图留档，在 `reports/visual/page-builder-fixture/page-builder-visual-acceptance.json` 中接入真实设计参考、写入差异指标，并用 `pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --accept-passing --require-complete` 将六个核心区块的 Desktop / Mobile 证据从 `needs-evidence` 推进到 `accepted`。
 4. 在真实生产配置下触发 GitHub Actions `Production Smoke`，传入 Page Builder Visual artifact 名称和 run id，把 smoke、preflight、Smoke Markdown 回看清单、release evidence JSON / Markdown、project status 和 visual artifact、`pnpm smoke:report` 输出、`pnpm smoke:release-check`、带 `--visual-artifact-dir` 的 `pnpm release:handoff -- --require-ready` 结果和回滚目标写入 `pnpm release:notes` 生成的发布记录。
 5. 保持 Commerce 关闭态，继续强化订单 / 支付关闭态分支和 Phase 2 Webhook 验签设计；不进入真实交易。
