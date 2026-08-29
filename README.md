@@ -5,7 +5,7 @@
 当前目标不是一次性复制 Shopify 全量能力，而是先完成一个可长期演进的建站平台工程基础：前台渲染、后台管理壳、API 服务、Page Schema、共享 Renderer、数据库模型、二次开发入口和后续电商/多语言能力预留。
 
 > 状态更新时间：2026-08-29
-> 当前阶段：建站 MVP 的页面管理、站点设置、Page Builder、媒体、SEO、预览令牌、发布历史、回滚、审计日志、前台 ISR 刷新链路、发布 smoke 报告、生产验收报告归档索引、失败回看入口、发布证据强校验、CI artifact 留存策略、Release Checklist、生产部署 / 回滚 runbook、Page Builder 核心区块视觉验收记录清单、Page Builder 视觉验收 CI 和 Localization 默认 Locale 批量导入 / 导出复盘入口、审计结果筛选回跳、审计回跳上下文提示、导入预览问题行草稿定位细节、默认 Locale 长列表批量操作确认已逐步落地；下一步是在真实生产 R2 / CDN 环境执行验收并归档报告。
+> 当前阶段：建站 MVP 的页面管理、站点设置、Page Builder、媒体、SEO、预览令牌、发布历史、回滚、审计日志、前台 ISR 刷新链路、发布 smoke 报告、生产验收报告归档索引、失败回看入口、发布证据强校验、CI artifact 留存策略、Release Checklist、生产部署 / 回滚 runbook 与环境变量矩阵、Page Builder 核心区块视觉验收记录清单、Page Builder 视觉验收 CI 和 Localization 默认 Locale 批量导入 / 导出复盘入口、审计结果筛选回跳、审计回跳上下文提示、导入预览问题行草稿定位细节、默认 Locale 长列表批量操作确认已逐步落地；下一步是在真实生产 R2 / CDN 环境执行验收并归档报告。
 
 ## 1. 当前进度
 
@@ -758,7 +758,7 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 - Audit Logs 后台页面、审计日志只读查询 API 与 `audit:read` 权限。
 - 区块库、区块排序、区块属性面板、Undo / Redo，Desktop / Mobile 画布溢出、左侧裁切和纵向压缩风险发布前检查，以及核心区块视觉验收记录清单 / CLI。
 - 媒体库列表、上传目标、外部媒体登记、归档、`media://` 选择，以及 Page Builder 缺失 / 非图片媒体引用异常态。
-- 生产 smoke 报告 `SMOKE_REPORT_PATH` 归档、`smoke-report.v3` 摘要、失败详情脱敏、`pnpm smoke:report` 最近归档 / 指定报告回看入口、Smoke Markdown 回看清单、`pnpm smoke:release-check` 发布证据强校验，以及 GitHub Actions `Production Smoke` artifact 留存、Release Checklist 和 `infra/README.md` 生产部署 / 回滚 runbook。
+- 生产 smoke 报告 `SMOKE_REPORT_PATH` 归档、`smoke-report.v3` 摘要、失败详情脱敏、`pnpm smoke:report` 最近归档 / 指定报告回看入口、Smoke Markdown 回看清单、`pnpm smoke:release-check` 发布证据强校验，以及 GitHub Actions `Production Smoke` artifact 留存、Release Checklist 和 `infra/README.md` 生产部署 / 回滚 runbook 与环境变量矩阵。
 - Localization 默认 Market / Locale / Translation fallback 视图、默认 Locale 翻译保存、按 ID 更新、分页列表、URL 筛选保留、列表筛选、缺失 key 分组检查、缺失 key 一键回填、缺失 key 修复队列、缺失 key 修复保存自动推进、修复队列跨刷新状态同步、长列表缺失 key 分页、缺失 key 分页页码记忆、缺失 key 分页与筛选联动提示、缺失 key 队列跨筛选恢复提示、键名补全与 context 辅助、修复进度提示、缺失 key 修复定位刷新、缺失 key 修复入口 loading / disabled 状态、保存后的成功定位提示、完成后缺失 key 刷新提示、缺失 key 批量导入草稿、缺失 key 批量草稿与当前筛选差异提示、批量编辑模板提示、导入草稿空状态校验说明、导入草稿空结果预览保护、缺失 key 批量修复校验摘要、导入模板引导、批量导入后的列表定位、成功导入后的修复进度聚焦、批量导入成功后的多 key 跳转、导入结果按 action 筛选、导入结果批量选择和选择保留、导入结果历史保留、导入历史结果清理入口、导入历史结果回放说明、导入历史详情筛选、导入历史筛选空态操作提示、导入历史详情批量生成草稿、从导入结果生成二次修复草稿、二次修复草稿预览提示、导入预览问题行逐项修复提示、导入预览问题行草稿定位细节、历史修复草稿重复键清理、导入 / 缺失队列状态联动、缺失队列完成态反馈、批量修复完成确认、批量修复后服务端确认聚焦、批量修复历史回放定位、批量修复历史回放后的确认清理、批量修复后的历史保留策略说明、批量修复确认后的自动清理建议、批量修复成功后的草稿清空提示、异常重试提示、重复保存提示、写入关闭态、Translation 空态、批量导入/导出预览报告、默认 Locale 批量导入写入、Admin 导入执行结果展示、Admin 默认 Locale JSON 下载、默认 Locale 导入 / 导出审计回看入口、导入 / 导出审计结果筛选回跳、审计回跳后的上下文提示和默认 Locale 长列表批量操作确认。
 - Commerce 已补齐 Product / Variant / Price / Inventory / Order / Payment / WebhookEvent 数据库预留迁移；Products / Orders / Payments 只读空列表占位响应 meta 会明确关闭态、默认市场/币种、不可写和 Phase 2 预留；后台商品创建/更新、前台 cart / checkout 与 Stripe Webhook 写入关闭态会返回共享 Schema 定义的安全 details，其中前台 cart / checkout 会先校验 UUID 格式 `Idempotency-Key`；后台商品详情、订单 / 支付详情和前台商品详情 404 占位也会返回共享 Schema 定义的安全 reserved details；商品子资源、Stripe 可选密钥安全诊断和 Stripe Webhook raw body / 可验签签名形状预留均为显式占位。
 - Settings 默认站点名称、域名与 Analytics 配置展示页。

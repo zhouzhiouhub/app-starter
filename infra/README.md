@@ -37,7 +37,50 @@ later phase is explicitly approved in the design document.
   `STOREFRONT_REVALIDATE_URL`, R2 variables, CDN URL, analytics gates, and the
   non-default smoke admin credentials described in `.env.example`.
 
-### 2. Deploy Services
+### 2. Production Environment Matrix
+
+The `Production Smoke` workflow maps protected GitHub environment values into
+the same runtime variables used by the API, Web, Admin, and smoke runner.
+
+| Runtime variable | GitHub source | Applies to | Smoke evidence |
+|------------------|---------------|------------|----------------|
+| `API_URL` | `${{ secrets.PRODUCTION_API_URL }}` | Smoke runner, Admin build fallback | API health, admin API, publish, rollback |
+| `WEB_URL` | `${{ secrets.PRODUCTION_WEB_URL }}` | Web, smoke runner, Admin build fallback | storefront HTML, robots, sitemap, ISR fallback |
+| `ADMIN_URL` | `${{ secrets.PRODUCTION_ADMIN_URL }}` | Smoke runner | Admin shell, module scripts, stylesheets |
+| `DATABASE_URL` | `${{ secrets.PRODUCTION_DATABASE_URL }}` | API | production PostgreSQL readiness and Prisma migrations |
+| `REDIS_URL` | `${{ secrets.PRODUCTION_REDIS_URL }}` | API | production TLS Redis readiness |
+| `JWT_PRIVATE_KEY` | `${{ secrets.PRODUCTION_JWT_PRIVATE_KEY }}` | API | RS256 signing diagnostics |
+| `JWT_PUBLIC_KEY` | `${{ secrets.PRODUCTION_JWT_PUBLIC_KEY }}` | API | RS256 verification diagnostics |
+| `PREVIEW_TOKEN_SECRET` | `${{ secrets.PRODUCTION_PREVIEW_TOKEN_SECRET }}` | API | preview token readiness |
+| `PREVIEW_TOKEN_PREVIOUS_SECRET` | `${{ secrets.PRODUCTION_PREVIEW_TOKEN_PREVIOUS_SECRET }}` | API | preview token rotation diagnostics |
+| `STOREFRONT_REVALIDATE_SECRET` | `${{ secrets.PRODUCTION_STOREFRONT_REVALIDATE_SECRET }}` | API and Web | publish and rollback ISR revalidation |
+| `STOREFRONT_REVALIDATE_URL` | `${{ secrets.PRODUCTION_STOREFRONT_REVALIDATE_URL }}` | API | deployed Web `/api/revalidate` endpoint |
+| `R2_ACCOUNT_ID` | `${{ secrets.PRODUCTION_R2_ACCOUNT_ID }}` | API | R2 presigned upload diagnostics |
+| `R2_ACCESS_KEY_ID` | `${{ secrets.PRODUCTION_R2_ACCESS_KEY_ID }}` | API | R2 presigned upload diagnostics |
+| `R2_SECRET_ACCESS_KEY` | `${{ secrets.PRODUCTION_R2_SECRET_ACCESS_KEY }}` | API | R2 presigned upload diagnostics |
+| `R2_BUCKET` | `${{ secrets.PRODUCTION_R2_BUCKET }}` | API | R2 object key and upload target checks |
+| `R2_REGION` | `${{ vars.PRODUCTION_R2_REGION }}` | API | R2 endpoint diagnostics |
+| `MEDIA_CDN_BASE_URL` | `${{ vars.PRODUCTION_MEDIA_CDN_BASE_URL }}` | API and Web | CDN URL safety and media delivery traceability |
+| `MEDIA_EXTERNAL_URL_HOSTS` | `${{ vars.PRODUCTION_MEDIA_EXTERNAL_URL_HOSTS }}` | API | external media allowlist diagnostics |
+| `ANALYTICS_ENABLED` | `${{ vars.PRODUCTION_ANALYTICS_ENABLED }}` | Web | analytics runtime gate diagnostics |
+| `ANALYTICS_CONSENT_GRANTED` | `${{ vars.PRODUCTION_ANALYTICS_CONSENT_GRANTED }}` | Web | consent gate diagnostics |
+| `GTM_CONTAINER_ID` | `${{ vars.PRODUCTION_GTM_CONTAINER_ID }}` | Web | GTM provider diagnostics |
+| `GA4_MEASUREMENT_ID` | `${{ vars.PRODUCTION_GA4_MEASUREMENT_ID }}` | Web | GA4 provider diagnostics |
+| `CLARITY_PROJECT_ID` | `${{ vars.PRODUCTION_CLARITY_PROJECT_ID }}` | Web | Clarity provider diagnostics |
+| `COMMERCE_ENABLED` | `"false"` | API, Web, smoke runner | disabled Commerce contract |
+| `MULTI_LOCALE_ENABLED` | `"false"` | API, Web, smoke runner | disabled non-default Locale contract |
+| `SMOKE_ADMIN_EMAIL` | `${{ secrets.PRODUCTION_SMOKE_ADMIN_EMAIL }}` | Smoke runner | login and audit scoped checks |
+| `SMOKE_ADMIN_PASSWORD` | `${{ secrets.PRODUCTION_SMOKE_ADMIN_PASSWORD }}` | Smoke runner | login and audit scoped checks |
+| `SMOKE_REQUIRE_ADMIN_APP` | `${{ inputs.require_admin_app }}` | Smoke runner | Admin static hosting gate |
+| `SMOKE_REQUIRE_R2_UPLOAD` | `${{ inputs.require_r2_upload }}` | Smoke runner | real R2 upload and CDN gate |
+| `SMOKE_REQUIRE_REVALIDATION` | `${{ inputs.require_revalidation }}` | Smoke runner | ISR revalidation gate |
+| `SMOKE_REPORT_PATH` | `${{ inputs.report_path }}` | Smoke runner | archived `smoke-report.v3` JSON |
+
+If the Admin static host cannot proxy `/api/v1` or infer the storefront origin,
+set `VITE_API_URL` and `VITE_WEB_URL` at Admin build time to the same production
+HTTPS values used by `API_URL` and `WEB_URL`.
+
+### 3. Deploy Services
 
 1. Run database migrations against the production PostgreSQL instance:
 
@@ -70,7 +113,7 @@ later phase is explicitly approved in the design document.
    public by default, and `MEDIA_CDN_BASE_URL` is the production CDN origin or
    directory prefix.
 
-### 3. Capture Visual Evidence
+### 4. Capture Visual Evidence
 
 Run the `Page Builder Visual` workflow first and retain the
 `page-builder-visual-fixture-<run_number>` artifact. If final sign-off is in
@@ -84,7 +127,7 @@ pnpm visual:measure -- --write --require-complete
 pnpm visual:acceptance -- --require-accepted
 ```
 
-### 4. Run Production Smoke
+### 5. Run Production Smoke
 
 Trigger the `Production Smoke` GitHub Actions workflow from the protected
 `production` environment.
@@ -109,7 +152,7 @@ The workflow must upload:
   `project-status.md`.
 - `release-notes-<run_number>` when release note inputs were provided.
 
-### 5. Review Gates
+### 6. Review Gates
 
 Before marking the release ready, the archived evidence must pass:
 
@@ -124,7 +167,7 @@ pnpm release:notes -- --release-tag v0.1.0 --workflow-run-url https://github.com
 `release:check` and `release:handoff -- --require-ready` must stay blocked until
 Production Smoke is release-ready and Page Builder visual evidence is accepted.
 
-### 6. Rollback
+### 7. Rollback
 
 Keep rollback target values concrete, such as `main@abcdef1`, a release tag, or
 the previous deployment identifier.

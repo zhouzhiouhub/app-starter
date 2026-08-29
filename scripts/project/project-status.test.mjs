@@ -27,7 +27,7 @@ test("project status summarizes blocked release evidence", () => {
   assert.equal(artifact.releaseReady, false);
   assert.equal(
     artifact.completedMilestones.includes(
-      "Production deployment and rollback runbook is documented for the MVP release path.",
+      "Production deployment, environment variable matrix, and rollback runbook are documented for the MVP release path.",
     ),
     true,
   );

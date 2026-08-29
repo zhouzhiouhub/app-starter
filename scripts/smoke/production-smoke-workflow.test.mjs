@@ -223,6 +223,7 @@ test("infra runbook covers production smoke deployment and rollback", async () =
     /Cloudflare R2 private bucket plus public CDN origin/,
     /COMMERCE_ENABLED=false/,
     /MULTI_LOCALE_ENABLED=false/,
+    /Production Environment Matrix/,
     /prisma migrate deploy --schema prisma\/schema\.prisma/,
     /pnpm --filter @app-starter\/api run prisma:seed/,
     /pnpm --filter @app-starter\/admin build/,
@@ -241,6 +242,34 @@ test("infra runbook covers production smoke deployment and rollback", async () =
     /rollback_target/,
     /Do not run\s+destructive database rollbacks/,
     /Page rollback API or Admin rollback action/,
+  ]) {
+    assert.match(runbook, pattern);
+  }
+});
+
+test("infra runbook maps production environment sources", async () => {
+  const runbook = await readFile(infraReadmePath, "utf8");
+
+  for (const pattern of [
+    /\| `API_URL` \| `\$\{\{ secrets\.PRODUCTION_API_URL \}\}` \|/,
+    /\| `WEB_URL` \| `\$\{\{ secrets\.PRODUCTION_WEB_URL \}\}` \|/,
+    /\| `ADMIN_URL` \| `\$\{\{ secrets\.PRODUCTION_ADMIN_URL \}\}` \|/,
+    /\| `DATABASE_URL` \| `\$\{\{ secrets\.PRODUCTION_DATABASE_URL \}\}` \|/,
+    /\| `REDIS_URL` \| `\$\{\{ secrets\.PRODUCTION_REDIS_URL \}\}` \|/,
+    /\| `JWT_PRIVATE_KEY` \| `\$\{\{ secrets\.PRODUCTION_JWT_PRIVATE_KEY \}\}` \|/,
+    /\| `JWT_PUBLIC_KEY` \| `\$\{\{ secrets\.PRODUCTION_JWT_PUBLIC_KEY \}\}` \|/,
+    /\| `PREVIEW_TOKEN_SECRET` \| `\$\{\{ secrets\.PRODUCTION_PREVIEW_TOKEN_SECRET \}\}` \|/,
+    /\| `STOREFRONT_REVALIDATE_SECRET` \| `\$\{\{ secrets\.PRODUCTION_STOREFRONT_REVALIDATE_SECRET \}\}` \|/,
+    /\| `STOREFRONT_REVALIDATE_URL` \| `\$\{\{ secrets\.PRODUCTION_STOREFRONT_REVALIDATE_URL \}\}` \|/,
+    /\| `R2_SECRET_ACCESS_KEY` \| `\$\{\{ secrets\.PRODUCTION_R2_SECRET_ACCESS_KEY \}\}` \|/,
+    /\| `MEDIA_CDN_BASE_URL` \| `\$\{\{ vars\.PRODUCTION_MEDIA_CDN_BASE_URL \}\}` \|/,
+    /\| `ANALYTICS_ENABLED` \| `\$\{\{ vars\.PRODUCTION_ANALYTICS_ENABLED \}\}` \|/,
+    /\| `COMMERCE_ENABLED` \| `"false"` \|/,
+    /\| `MULTI_LOCALE_ENABLED` \| `"false"` \|/,
+    /\| `SMOKE_ADMIN_EMAIL` \| `\$\{\{ secrets\.PRODUCTION_SMOKE_ADMIN_EMAIL \}\}` \|/,
+    /\| `SMOKE_REQUIRE_R2_UPLOAD` \| `\$\{\{ inputs\.require_r2_upload \}\}` \|/,
+    /\| `SMOKE_REPORT_PATH` \| `\$\{\{ inputs\.report_path \}\}` \|/,
+    /set `VITE_API_URL` and `VITE_WEB_URL` at Admin build time/,
   ]) {
     assert.match(runbook, pattern);
   }
