@@ -42,11 +42,19 @@ test("project status CLI writes a Markdown handoff", async () => {
     );
     assert.match(
       markdown,
+      /Page Builder Visual reference import Markdown: `reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md`/,
+    );
+    assert.match(
+      markdown,
       /Page Builder Visual acceptance Markdown: `reports\/visual\/page-builder-fixture\/visual-acceptance-report\.md`/,
     );
     assert.match(
       markdown,
       /Page Builder Visual artifact check Markdown: `reports\/visual\/page-builder-fixture\/visual-artifact-check-report\.md`/,
+    );
+    assert.match(
+      markdown,
+      /Refresh visual references: `pnpm visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md --require-complete`/,
     );
     assert.match(
       markdown,

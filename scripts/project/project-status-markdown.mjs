@@ -66,6 +66,7 @@ function formatReleaseEvidenceArtifacts() {
     "- Production Smoke JSON: `artifacts/production-smoke/smoke-report.json`",
     "- Production Smoke Markdown: `artifacts/production-smoke/smoke-report.md`",
     "- Page Builder Visual bundle: `reports/visual/page-builder-fixture`",
+    "- Page Builder Visual reference import Markdown: `reports/visual/page-builder-fixture/visual-reference-import-report.md`",
     "- Page Builder Visual acceptance Markdown: `reports/visual/page-builder-fixture/visual-acceptance-report.md`",
     "- Page Builder Visual artifact check Markdown: `reports/visual/page-builder-fixture/visual-artifact-check-report.md`",
     "- Release evidence JSON: `artifacts/release/release-check.json`",
@@ -78,6 +79,9 @@ function formatReleaseEvidenceArtifacts() {
     )}`,
     `- Refresh visual bundle: ${formatCode(
       "pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture",
+    )}`,
+    `- Refresh visual references: ${formatCode(
+      "pnpm visual:references -- --source-dir docs/visual/page-builder-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete",
     )}`,
     `- Refresh combined gate: ${formatCode(
       "pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture --output artifacts/release/release-check.json --markdown-output artifacts/release/release-check.md",
