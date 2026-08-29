@@ -3,8 +3,14 @@
 This record tracks the MVP requirement that the six core Page Builder sections
 reach about 95% visual match against Desktop and Mobile design references.
 
-The source of truth is
-`docs/development/page-builder-visual-acceptance.json`.
+The default manifest is
+`docs/development/page-builder-visual-acceptance.json`; treat it as the
+repository template and local collection record. Release sign-off should use the
+artifact-local copy at
+`reports/visual/page-builder-fixture/page-builder-visual-acceptance.json`, so
+imported references, captured screenshots, measured metrics, and accepted
+statuses are archived with the `page-builder-visual-fixture-<run_number>`
+artifact.
 
 ## Commands
 

@@ -83,6 +83,10 @@ test("visual workflow documentation is linked from release guidance", async () =
   assert.match(readme, /导入\/截图\/测量\/签收\/验收命令/);
   assert.doesNotMatch(readme, /导入\/截图\/测量\/验收命令/);
   assert.match(acceptanceDoc, /## CI Workflow/);
+  assert.match(acceptanceDoc, /repository template and local collection record/);
+  assert.match(acceptanceDoc, /Release sign-off should use the/);
+  assert.match(acceptanceDoc, /artifact-local copy/);
+  assert.match(acceptanceDoc, /page-builder-visual-fixture-<run_number>/);
   assert.match(acceptanceDoc, /docs\/visual\/page-builder-references/);
   assert.match(acceptanceDoc, /reports\/visual\/page-builder-fixture/);
   assert.match(
