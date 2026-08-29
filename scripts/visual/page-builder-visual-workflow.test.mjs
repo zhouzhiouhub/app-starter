@@ -80,6 +80,8 @@ test("visual workflow documentation is linked from release guidance", async () =
   assert.match(readme, /visual-acceptance-report\.md/);
   assert.match(readme, /visual-artifact-check-report\.md/);
   assert.match(readme, /--accept-passing --require-complete/);
+  assert.match(readme, /导入\/截图\/测量\/签收\/验收命令/);
+  assert.doesNotMatch(readme, /导入\/截图\/测量\/验收命令/);
   assert.match(acceptanceDoc, /## CI Workflow/);
   assert.match(acceptanceDoc, /docs\/visual\/page-builder-references/);
   assert.match(acceptanceDoc, /reports\/visual\/page-builder-fixture/);
@@ -101,6 +103,8 @@ test("visual workflow documentation is linked from release guidance", async () =
   assert.match(releaseChecklist, /visual-acceptance-report\.md/);
   assert.match(releaseChecklist, /visual-artifact-check-report\.md/);
   assert.match(releaseChecklist, /--accept-passing --require-complete/);
+  assert.match(releaseChecklist, /import\/capture\/measure\/accept-passing\/verify/);
+  assert.doesNotMatch(releaseChecklist, /import\/capture\/measure\/verify/);
   assert.match(referenceReadme, /--accept-passing --require-complete/);
   assert.match(setupDoc, /--accept-passing --require-complete/);
 });

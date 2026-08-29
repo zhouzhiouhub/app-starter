@@ -47,7 +47,8 @@ later phases are explicitly approved.
   and keep the manifest review output plus per-viewport evidence task list
   with the release notes. The
   checklist names the expected reference PNG, retained screenshot path, and
-  import/capture/measure/verify commands for each Desktop and Mobile viewport.
+  import/capture/measure/accept-passing/verify commands for each Desktop and
+  Mobile viewport.
   After
   placing real design reference PNGs under a retained source directory, run
   `pnpm visual:references -- --source-dir docs/visual/page-builder-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete`
