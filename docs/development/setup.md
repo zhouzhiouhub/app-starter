@@ -277,6 +277,7 @@ pnpm project:status
 pnpm project:status -- --all-actions
 pnpm project:status -- --require-ready
 pnpm project:status -- --json
+pnpm project:status -- --output artifacts/release/project-status.json
 pnpm release:notes -- --release-tag v0.1.0 --workflow-run-url https://github.com/zhouzhiouhub/app-starter/actions/runs/123 --smoke-artifact production-smoke-report-123 --release-artifact release-evidence-check-123 --visual-artifact page-builder-visual-fixture-123 --storefront-url https://store.brand.com --rollback-target main@abcdef1 --output docs/releases/v0.1.0.md
 ```
 
@@ -335,12 +336,16 @@ workflow run URL in both the smoke config and summary, and uploads the report as
 `release:check -- --checklist --all-visual-tasks` gate, prints the release
 readiness checklist with every pending Page Builder visual viewport task, and
 uploads `release-evidence-check-<run_number>` with the
-`release-evidence-check.v1` JSON artifact. If `visual_artifact_name` and
-`visual_artifact_run_id` are provided, it downloads that Page Builder Visual
+`release-evidence-check.v1` JSON artifact. The workflow also runs
+`project:status -- --all-actions` against the same smoke and optional visual
+evidence inputs, uploads `project-status-<run_number>`, and keeps a
+`project-status.v1` handoff snapshot with the full next-action list. If
+`visual_artifact_name` and `visual_artifact_run_id` are provided, it downloads
+that Page Builder Visual
 artifact, including the artifact-local visual manifest and
 `visual-capture-report.json`, to `reports/visual/page-builder-fixture` before
 running `pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture`
-and the combined gate with
+and both the combined gate and project status snapshot with
 `--visual-artifact-dir reports/visual/page-builder-fixture`. The workflow runs
 `pnpm release:preflight` before smoke requests so a
 partial visual artifact pair or partial release notes input set fails early.

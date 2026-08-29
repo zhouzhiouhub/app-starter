@@ -212,7 +212,15 @@ test("project status command is exposed in package and CI", async () => {
   assert.match(ciWorkflow, /pnpm project:status -- --help/);
   assert.match(ciWorkflow, /pnpm project:status -- --all-actions --json/);
   assert.match(readme, /pnpm project:status -- --all-actions/);
+  assert.match(
+    readme,
+    /pnpm project:status -- --output artifacts\/release\/project-status\.json/,
+  );
   assert.match(setupDoc, /pnpm project:status -- --all-actions/);
+  assert.match(
+    setupDoc,
+    /pnpm project:status -- --output artifacts\/release\/project-status\.json/,
+  );
 });
 
 function createBlockedCheck() {

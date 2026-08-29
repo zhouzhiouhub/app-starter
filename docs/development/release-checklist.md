@@ -102,6 +102,7 @@ later phases are explicitly approved.
   linked.
 - The uploaded artifact `release-evidence-check-<run_number>` is attached or
   linked.
+- The uploaded artifact `project-status-<run_number>` is attached or linked.
 - When release note inputs were provided, the uploaded artifact
   `release-notes-<run_number>` is attached or linked.
 - The GitHub step summary records the report path, artifact names, review
@@ -110,6 +111,9 @@ later phases are explicitly approved.
   every pending Page Builder visual viewport task in the log. When visual
   evidence is downloaded, that combined command includes
   `--visual-artifact-dir reports/visual/page-builder-fixture`.
+- The GitHub step summary records the
+  `project:status -- --all-actions --smoke-report artifacts/production-smoke/smoke-report.json --output artifacts/release/project-status.json`
+  command and `project-status-<run_number>` artifact name for release handoff.
 - `pnpm smoke:report -- artifacts/production-smoke/smoke-report.json` output is
   saved in the workflow log.
 - `pnpm smoke:release-check -- artifacts/production-smoke/smoke-report.json`
@@ -167,6 +171,9 @@ later phases are explicitly approved.
 - The `Production Smoke` workflow uploads the same combined release evidence as
   `release-evidence-check-<run_number>`; the artifact includes `smoke.source`
   so release notes can trace the smoke report back to the CI run.
+- The `Production Smoke` workflow uploads `project-status-<run_number>`; the
+  artifact is a validated `project-status.v1` snapshot with the full
+  `--all-actions` next-action list.
 - `pnpm release:notes -- --release-tag <tag> --workflow-run-url <url> --smoke-artifact production-smoke-report-<run_number> --release-artifact release-evidence-check-<run_number> --visual-artifact page-builder-visual-fixture-<run_number> --storefront-url <url> --rollback-target <target> --output docs/releases/<tag>.md`
   writes the final Markdown release record from the ready
   `release-evidence-check.v1` artifact, including the readiness checklist,
