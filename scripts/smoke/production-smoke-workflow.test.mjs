@@ -206,6 +206,7 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   );
   assert.match(workflow, /Project status artifact:/);
   assert.match(workflow, /Project status Markdown:/);
+  assert.match(workflow, /Project next actions:/);
   assert.match(workflow, /Release notes:/);
   assert.match(workflow, /Release notes artifact:/);
   assert.match(workflow, /Release notes mode:/);

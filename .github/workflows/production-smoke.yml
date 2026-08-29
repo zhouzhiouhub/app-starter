@@ -233,6 +233,7 @@ jobs:
             echo "- Combined Markdown: \`$RELEASE_CHECK_MARKDOWN_PATH\`"
             echo "- Project status artifact: \`$PROJECT_STATUS_ARTIFACT_NAME\`"
             echo "- Project status Markdown: \`$PROJECT_STATUS_MARKDOWN_PATH\`"
+            echo "- Project next actions: \`$PROJECT_STATUS_MARKDOWN_PATH\`"
             if [ -n "$RELEASE_VISUAL_ARTIFACT_NAME" ] && [ -n "$RELEASE_VISUAL_ARTIFACT_RUN_ID" ]; then
               echo "- Visual evidence artifact: \`$RELEASE_VISUAL_ARTIFACT_NAME\` from run \`$RELEASE_VISUAL_ARTIFACT_RUN_ID\`"
               echo "- Visual reference import: \`reports/visual/page-builder-fixture/visual-reference-import-report.md\`"
