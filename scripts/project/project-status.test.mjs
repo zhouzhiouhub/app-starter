@@ -27,6 +27,13 @@ test("project status summarizes blocked release evidence", () => {
   assert.equal(artifact.schemaVersion, projectStatusSchemaVersion);
   assert.equal(artifact.status, "needs-evidence");
   assert.equal(artifact.releaseReady, false);
+  assert.deepEqual(artifact.completionSummary, {
+    localMvpScope: "implemented",
+    releaseDecision: "not-ready",
+    releaseEvidenceStatus: "needs-evidence",
+    summary:
+      "MVP implementation is in release verification; final completion still requires retained production smoke and Page Builder visual acceptance evidence.",
+  });
   assert.equal(
     artifact.completedMilestones.includes(
       "Production deployment, environment variable matrix, and rollback runbook are documented for the MVP release path.",
@@ -192,6 +199,10 @@ test("project status CLI prints readable blocked state", async () => {
     assert.match(text, /Project status \(project-status\.v1\)/);
     assert.match(text, /Status: needs-evidence/);
     assert.match(text, /Release ready: no/);
+    assert.match(text, /Completion:/);
+    assert.match(text, /Local MVP scope: implemented/);
+    assert.match(text, /Release evidence: needs-evidence/);
+    assert.match(text, /Release decision: not-ready/);
     assert.match(text, /Production Smoke: blocked/);
     assert.match(
       text,
@@ -319,6 +330,8 @@ test("project status CLI can require release-ready evidence", async () => {
 
   assert.equal(readyExitCode, 0);
   assert.match(readyStdout.join("\n"), /Status: release-ready/);
+  assert.match(readyStdout.join("\n"), /Release evidence: ready/);
+  assert.match(readyStdout.join("\n"), /Release decision: ready-to-release/);
 });
 
 test("project status CLI writes machine-readable status", async () => {
@@ -348,53 +361,14 @@ test("project status CLI writes machine-readable status", async () => {
     assert.equal(exitCode, 0);
     assert.equal(stdout.length, 1);
     assert.equal(JSON.parse(stdout[0]).status, "release-ready");
+    assert.equal(
+      JSON.parse(stdout[0]).completionSummary.releaseDecision,
+      "ready-to-release",
+    );
     assert.equal(artifact.releaseReady, true);
+    assert.equal(artifact.completionSummary.releaseEvidenceStatus, "ready");
     assert.equal(artifact.nextActions[0].area, "Release Notes");
   } finally {
     await rm(outputRoot, { force: true, recursive: true });
   }
-});
-
-test("project status command is exposed in package and CI", async () => {
-  const [packageJson, ciWorkflow, readme, setupDoc] = await Promise.all([
-    readFile("package.json", "utf8"),
-    readFile(".github/workflows/ci.yml", "utf8"),
-    readFile("README.md", "utf8"),
-    readFile("docs/development/setup.md", "utf8"),
-  ]);
-
-  assert.match(
-    packageJson,
-    /"project:status": "node scripts\/project-status\.mjs"/,
-  );
-  assert.match(
-    packageJson,
-    /"test:project": "node --test scripts\/project\/\*\.test\.mjs"/,
-  );
-  assert.match(ciWorkflow, /pnpm project:status -- --help/);
-  assert.match(ciWorkflow, /pnpm project:status -- --all-actions --json/);
-  assert.match(
-    ciWorkflow,
-    /pnpm project:status -- --all-actions --markdown-output tmp\/project-status-handoff\.md/,
-  );
-  assert.match(readme, /pnpm project:status -- --all-actions/);
-  assert.match(
-    readme,
-    /pnpm project:status -- --markdown-output artifacts\/release\/project-status\.md/,
-  );
-  assert.match(
-    readme,
-    /pnpm project:status -- --output artifacts\/release\/project-status\.json/,
-  );
-  assert.match(readme, /Project Next Actions/);
-  assert.match(setupDoc, /pnpm project:status -- --all-actions/);
-  assert.match(
-    setupDoc,
-    /pnpm project:status -- --markdown-output artifacts\/release\/project-status\.md/,
-  );
-  assert.match(
-    setupDoc,
-    /pnpm project:status -- --output artifacts\/release\/project-status\.json/,
-  );
-  assert.match(setupDoc, /Project Next Actions/);
 });

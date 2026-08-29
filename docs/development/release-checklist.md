@@ -259,8 +259,8 @@ later phases are explicitly approved.
   `release-check.json`, `release-check.md`, and `smoke.source` so release notes
   can trace the smoke report back to the CI run.
 - The `Production Smoke` workflow uploads `project-status-<run_number>`; the
-  artifact is a validated `project-status.v1` snapshot with the full
-  `--all-actions` next-action list, untruncated command lines, and
+  artifact is a validated `project-status.v1` snapshot with the completion
+  summary, full `--all-actions` next-action list, untruncated command lines, and
   `project-status.md` handoff checklist, including the production smoke,
   visual bundle, reference import Markdown, artifact check Markdown, combined
   gate, project status, and release notes artifact map. Once the gate is ready,

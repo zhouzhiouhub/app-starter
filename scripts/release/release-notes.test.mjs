@@ -198,6 +198,10 @@ test("release notes require ready evidence unless explicitly allowed", () => {
   assert.match(markdown, /Mode: failure review draft/);
   assert.match(markdown, /failed evidence review only/);
   assert.match(markdown, /Project Status: needs-evidence \(1 blockers, 4 next actions\)/);
+  assert.match(
+    markdown,
+    /Project Completion: not-ready \(implemented local MVP scope, needs-evidence evidence\)/,
+  );
   assert.match(markdown, /## Project Next Actions/);
   assert.match(markdown, / {2}- Reference source: `docs\/visual\/page-builder-references`/);
   assert.match(markdown, /- Page Builder Visual: hero-banner\.desktop/);
@@ -233,33 +237,6 @@ test("release notes require ready evidence unless explicitly allowed", () => {
   assert.match(
     markdown,
     /Artifact issue: unknown: missing_artifact_file \(error\) - capture report is missing\./,
-  );
-});
-
-test("release notes command is exposed in package, CI, and release docs", async () => {
-  const [packageJson, ciWorkflow, releaseChecklist] = await Promise.all([
-    readText("package.json"),
-    readText(".github/workflows/ci.yml"),
-    readText("docs/development/release-checklist.md"),
-  ]);
-
-  assert.match(
-    packageJson,
-    /"release:notes": "node scripts\/release-notes\.mjs"/,
-  );
-  assert.match(ciWorkflow, /pnpm release:notes -- --help/);
-  assert.match(releaseChecklist, /pnpm release:notes/);
-  assert.match(
-    releaseChecklist,
-    /--project-status artifacts\/release\/project-status\.json/,
-  );
-  assert.match(
-    releaseChecklist,
-    /--project-status-artifact project-status-<run_number>/,
-  );
-  assert.match(
-    releaseChecklist,
-    /--preflight-artifact release-preflight-<run_number>/,
   );
 });
 
@@ -348,6 +325,13 @@ function createBlockedReadinessChecklist() {
 
 function createBlockedProjectStatus() {
   return {
+    completionSummary: {
+      localMvpScope: "implemented",
+      releaseDecision: "not-ready",
+      releaseEvidenceStatus: "needs-evidence",
+      summary:
+        "MVP implementation is in release verification; final completion still requires retained production smoke and Page Builder visual acceptance evidence.",
+    },
     nextActionCount: 4,
     nextActions: [
       createVisualNextAction("Visual acceptance pending", [
@@ -390,9 +374,4 @@ function createVisualNextAction(label, steps) {
     label,
     steps: steps.map(([stepLabel, value]) => ({ label: stepLabel, value })),
   };
-}
-
-async function readText(path) {
-  const { readFile } = await import("node:fs/promises");
-  return readFile(path, "utf8");
 }

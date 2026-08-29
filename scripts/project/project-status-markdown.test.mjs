@@ -33,6 +33,14 @@ test("project status CLI writes a Markdown handoff", async () => {
     assert.match(markdown, /^# MVP Release Handoff/m);
     assert.match(markdown, /Generated: `2026-08-28T00:00:00.000Z`/);
     assert.match(markdown, /Release ready: no/);
+    assert.match(markdown, /## Completion Summary/);
+    assert.match(markdown, /Local MVP scope: `implemented`/);
+    assert.match(markdown, /Release evidence: `needs-evidence`/);
+    assert.match(markdown, /Release decision: `not-ready`/);
+    assert.match(
+      markdown,
+      /final completion still requires retained production smoke and Page Builder visual acceptance evidence/,
+    );
     assert.match(markdown, /Production Smoke: blocked/);
     assert.match(
       markdown,

@@ -11,6 +11,8 @@ export function formatProjectStatusArtifact(artifact, options = {}) {
     `  Phase: ${artifact.phase}`,
     `  Status: ${artifact.status}`,
     `  Release ready: ${artifact.releaseReady ? "yes" : "no"}`,
+    "  Completion:",
+    ...formatCompletionSummary(artifact.completionSummary),
     "  Completed milestones:",
     ...artifact.completedMilestones.map((milestone) => `    - ${milestone}`),
     "  Release gate:",
@@ -24,6 +26,15 @@ export function formatProjectStatusArtifact(artifact, options = {}) {
   ];
 
   return lines.map((line) => formatProjectLine(line, options));
+}
+
+function formatCompletionSummary(summary) {
+  return [
+    `    - Local MVP scope: ${summary.localMvpScope}`,
+    `    - Release evidence: ${summary.releaseEvidenceStatus}`,
+    `    - Release decision: ${summary.releaseDecision}`,
+    `    - Summary: ${summary.summary}`,
+  ];
 }
 
 function formatLocalVerification(localVerification) {

@@ -1,7 +1,21 @@
 import { projectStatusSchemaVersion } from "./project-status-artifact.mjs";
+import {
+  assertBoolean,
+  assertCountNotGreater,
+  assertEnum,
+  assertIsoTimestamp,
+  assertNonNegativeNumber,
+  assertNullableString,
+  assertString,
+  assertStringList,
+  isRecord,
+} from "./project-status-validation-primitives.mjs";
 
 const commandStatuses = new Set(["configured"]);
+const localMvpScopeStatuses = new Set(["implemented"]);
 const projectStatuses = new Set(["needs-evidence", "release-ready"]);
+const releaseDecisions = new Set(["not-ready", "ready-to-release"]);
+const releaseEvidenceStatuses = new Set(["needs-evidence", "ready"]);
 const smokeStatuses = new Set(["blocked", "ready"]);
 
 export function assertProjectStatusArtifact(artifact) {
@@ -20,10 +34,51 @@ export function assertProjectStatusArtifact(artifact) {
   assertEnum(artifact.status, projectStatuses, "status");
   assertBoolean(artifact.releaseReady, "releaseReady");
   assertStatusMatchesReleaseReady(artifact);
+  assertCompletionSummary(artifact.completionSummary, artifact.releaseReady);
   assertStringList(artifact.completedMilestones, "completedMilestones");
   assertLocalVerification(artifact.localVerification);
   assertReleaseGate(artifact.releaseGate);
   assertNextActions(artifact);
+}
+
+function assertCompletionSummary(summary, releaseReady) {
+  if (!isRecord(summary)) {
+    throw new Error(
+      "Project status artifact completionSummary must be an object.",
+    );
+  }
+
+  assertEnum(
+    summary.localMvpScope,
+    localMvpScopeStatuses,
+    "completionSummary.localMvpScope",
+  );
+  assertEnum(
+    summary.releaseDecision,
+    releaseDecisions,
+    "completionSummary.releaseDecision",
+  );
+  assertEnum(
+    summary.releaseEvidenceStatus,
+    releaseEvidenceStatuses,
+    "completionSummary.releaseEvidenceStatus",
+  );
+  assertString(summary.summary, "completionSummary.summary");
+
+  const expectedDecision = releaseReady ? "ready-to-release" : "not-ready";
+  const expectedEvidenceStatus = releaseReady ? "ready" : "needs-evidence";
+
+  if (summary.releaseDecision !== expectedDecision) {
+    throw new Error(
+      "Project status artifact completionSummary.releaseDecision must match releaseReady.",
+    );
+  }
+
+  if (summary.releaseEvidenceStatus !== expectedEvidenceStatus) {
+    throw new Error(
+      "Project status artifact completionSummary.releaseEvidenceStatus must match releaseReady.",
+    );
+  }
 }
 
 function assertLocalVerification(localVerification) {
@@ -224,76 +279,4 @@ function assertStatusMatchesReleaseReady(artifact) {
       "Project status artifact status must match releaseReady.",
     );
   }
-}
-
-function assertStringList(value, label) {
-  if (!Array.isArray(value) || value.some((item) => !isNonEmptyString(item))) {
-    throw new Error(`Project status artifact ${label} must be a string array.`);
-  }
-}
-
-function assertBoolean(value, label) {
-  if (typeof value !== "boolean") {
-    throw new Error(`Project status artifact ${label} must be boolean.`);
-  }
-}
-
-function assertCountNotGreater(value, max, label, maxLabel) {
-  if (value > max) {
-    throw new Error(
-      `Project status artifact ${label} must not exceed ${maxLabel}.`,
-    );
-  }
-}
-
-function assertEnum(value, allowed, label) {
-  if (!allowed.has(value)) {
-    throw new Error(
-      `Project status artifact ${label} must be one of: ${[...allowed].join(
-        ", ",
-      )}.`,
-    );
-  }
-}
-
-function assertIsoTimestamp(value, label) {
-  assertString(value, label);
-
-  const timestamp = Date.parse(value);
-
-  if (!Number.isFinite(timestamp) || new Date(timestamp).toISOString() !== value) {
-    throw new Error(
-      `Project status artifact ${label} must be a canonical ISO timestamp.`,
-    );
-  }
-}
-
-function assertNonNegativeNumber(value, label) {
-  if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
-    throw new Error(
-      `Project status artifact ${label} must be a non-negative number.`,
-    );
-  }
-}
-
-function assertNullableString(value, label) {
-  if (value !== null && value !== undefined && !isNonEmptyString(value)) {
-    throw new Error(
-      `Project status artifact ${label} must be a string or null.`,
-    );
-  }
-}
-
-function assertString(value, label) {
-  if (!isNonEmptyString(value)) {
-    throw new Error(`Project status artifact ${label} must be a string.`);
-  }
-}
-
-function isNonEmptyString(value) {
-  return typeof value === "string" && value.length > 0;
-}
-
-function isRecord(value) {
-  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }

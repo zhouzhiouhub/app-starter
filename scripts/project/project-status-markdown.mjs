@@ -15,6 +15,10 @@ export function createProjectStatusMarkdown(artifact) {
     `Status: ${formatCode(artifact.status)}`,
     `Release ready: ${artifact.releaseReady ? "yes" : "no"}`,
     "",
+    "## Completion Summary",
+    "",
+    ...formatCompletionSummary(artifact.completionSummary),
+    "",
     "## Completed Milestones",
     "",
     ...formatCompletedMilestones(artifact.completedMilestones),
@@ -38,6 +42,15 @@ export function createProjectStatusMarkdown(artifact) {
   ];
 
   return `${lines.join("\n")}\n`;
+}
+
+function formatCompletionSummary(summary) {
+  return [
+    `- Local MVP scope: ${formatCode(summary.localMvpScope)}`,
+    `- Release evidence: ${formatCode(summary.releaseEvidenceStatus)}`,
+    `- Release decision: ${formatCode(summary.releaseDecision)}`,
+    `- Summary: ${formatText(summary.summary)}`,
+  ];
 }
 
 export async function writeProjectStatusMarkdown(outputPath, artifact) {

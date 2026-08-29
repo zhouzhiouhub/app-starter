@@ -125,9 +125,20 @@ function formatProjectStatusGate(projectStatus) {
     return [];
   }
 
-  return [
+  const lines = [
     `- Project Status: ${formatInline(projectStatus.status)} (${projectStatus.releaseGate.blockerCount} blockers, ${projectStatus.nextActionCount} next actions)`,
   ];
+  const summary = projectStatus.completionSummary;
+
+  if (summary) {
+    lines.push(
+      `- Project Completion: ${formatInline(summary.releaseDecision)} (${formatInline(
+        summary.localMvpScope,
+      )} local MVP scope, ${formatInline(summary.releaseEvidenceStatus)} evidence)`,
+    );
+  }
+
+  return lines;
 }
 
 function formatSmokeSource(source) {

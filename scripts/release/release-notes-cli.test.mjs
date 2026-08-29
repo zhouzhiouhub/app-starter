@@ -66,6 +66,10 @@ test("release notes CLI writes a Markdown release record", async () => {
       markdown,
       /Project Status: release-ready \(0 blockers, 1 next actions\)/,
     );
+    assert.match(
+      markdown,
+      /Project Completion: ready-to-release \(implemented local MVP scope, ready evidence\)/,
+    );
   } finally {
     await rm(root, { force: true, recursive: true });
   }
@@ -125,6 +129,13 @@ function createReadyArtifact() {
 function createReadyProjectStatus() {
   return {
     completedMilestones: ["MVP release evidence tooling is wired."],
+    completionSummary: {
+      localMvpScope: "implemented",
+      releaseDecision: "ready-to-release",
+      releaseEvidenceStatus: "ready",
+      summary:
+        "MVP implementation and retained release evidence are ready for release notes.",
+    },
     generatedAt: "2026-08-28T00:00:00.000Z",
     localVerification: {
       commandCount: 1,

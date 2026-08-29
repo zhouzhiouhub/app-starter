@@ -21,6 +21,30 @@ test("project status artifact validation rejects inconsistent status", () => {
       }),
     /status must match releaseReady/,
   );
+
+  assert.throws(
+    () =>
+      assertProjectStatusArtifact({
+        ...createArtifact(),
+        completionSummary: {
+          ...createArtifact().completionSummary,
+          releaseDecision: "ready-to-release",
+        },
+      }),
+    /completionSummary\.releaseDecision must match releaseReady/,
+  );
+
+  assert.throws(
+    () =>
+      assertProjectStatusArtifact({
+        ...createArtifact(),
+        completionSummary: {
+          ...createArtifact().completionSummary,
+          releaseEvidenceStatus: "ready",
+        },
+      }),
+    /completionSummary\.releaseEvidenceStatus must match releaseReady/,
+  );
 });
 
 test("project status artifact validation rejects incomplete counts", () => {
@@ -78,6 +102,13 @@ test("project status writer validates artifacts before writing", async () => {
 function createArtifact() {
   return {
     completedMilestones: ["MVP release evidence tooling is wired."],
+    completionSummary: {
+      localMvpScope: "implemented",
+      releaseDecision: "not-ready",
+      releaseEvidenceStatus: "needs-evidence",
+      summary:
+        "MVP implementation is in release verification; final completion still requires retained production smoke and Page Builder visual acceptance evidence.",
+    },
     generatedAt: "2026-08-28T00:00:00.000Z",
     localVerification: {
       commandCount: 1,

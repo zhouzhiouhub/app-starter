@@ -52,6 +52,7 @@ export function createProjectStatusArtifact(check, input = {}) {
   const serializedNextActions = nextActions.slice(0, serializedActionCount);
 
   return {
+    completionSummary: createCompletionSummary(check),
     completedMilestones,
     generatedAt: input.generatedAt ?? new Date().toISOString(),
     localVerification: createLocalVerificationSummary(),
@@ -64,6 +65,19 @@ export function createProjectStatusArtifact(check, input = {}) {
     schemaVersion: projectStatusSchemaVersion,
     status: check.releaseReady ? "release-ready" : "needs-evidence",
     truncatedNextActionCount: nextActions.length - serializedNextActions.length,
+  };
+}
+
+function createCompletionSummary(check) {
+  const releaseReady = check.releaseReady === true;
+
+  return {
+    localMvpScope: "implemented",
+    releaseDecision: releaseReady ? "ready-to-release" : "not-ready",
+    releaseEvidenceStatus: releaseReady ? "ready" : "needs-evidence",
+    summary: releaseReady
+      ? "MVP implementation and retained release evidence are ready for release notes."
+      : "MVP implementation is in release verification; final completion still requires retained production smoke and Page Builder visual acceptance evidence.",
   };
 }
 

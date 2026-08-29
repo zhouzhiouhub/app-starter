@@ -96,6 +96,13 @@ function createReleaseArtifact() {
 function createProjectStatus(overrides = {}) {
   return {
     completedMilestones: ["MVP release evidence tooling is wired."],
+    completionSummary: {
+      localMvpScope: "implemented",
+      releaseDecision: "ready-to-release",
+      releaseEvidenceStatus: "ready",
+      summary:
+        "MVP implementation and retained release evidence are ready for release notes.",
+    },
     generatedAt: "2026-08-28T00:00:00.000Z",
     localVerification: {
       commandCount: 1,

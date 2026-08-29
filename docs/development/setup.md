@@ -310,12 +310,12 @@ and `config.source.workflowRunUrl` so the smoke report can be traced back to a
 specific GitHub Actions run.
 
 `project:status` is an informational wrapper around the same release gate. It
-prints the MVP phase, locally completed milestones, release readiness, and the
-configured local verification commands, and the next concrete actions without
-changing the pass/fail criteria. Add `--require-ready` when the same status
-report should exit non-zero until release evidence is ready. Use `--json` or
-`--output` to produce a validated `project-status.v1` artifact for handoff or
-release review notes. Add
+prints the MVP phase, completion summary, locally completed milestones, release
+readiness, the configured local verification commands, and the next concrete
+actions without changing the pass/fail criteria. Add `--require-ready` when the
+same status report should exit non-zero until release evidence is ready. Use
+`--json` or `--output` to produce a validated `project-status.v1` artifact for
+handoff or release review notes. Add
 `--markdown-output artifacts/release/project-status.md` when the handoff needs
 a pasteable Markdown checklist; it also records the recommended archive paths
 and refresh commands for the Production Smoke JSON/Markdown, Production Smoke
