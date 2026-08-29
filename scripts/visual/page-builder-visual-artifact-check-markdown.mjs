@@ -20,6 +20,7 @@ export function createPageBuilderVisualArtifactCheckMarkdown(report) {
     `- Artifact manifest: ${formatCode(paths.manifest)}`,
     `- Capture report: ${formatCode(paths.captureReport)}`,
     `- Acceptance report: ${formatCode(paths.acceptanceReport)}`,
+    `- Acceptance Markdown: ${formatCode(paths.acceptanceMarkdown)}`,
     `- Reference import Markdown: ${formatCode(paths.referenceImportMarkdown)}`,
     "",
     "## Issues",

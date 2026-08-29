@@ -119,9 +119,9 @@ export function createVisualArtifactCheck(input) {
             severity: "error",
           },
         ],
-    presentRequiredFileCount: complete ? 4 : 3,
+    presentRequiredFileCount: complete ? 5 : 4,
     presentScreenshotCount: complete ? 12 : 0,
-    requiredFileCount: 4,
+    requiredFileCount: 5,
     status: input.status,
   };
 }

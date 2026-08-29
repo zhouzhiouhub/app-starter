@@ -7,6 +7,7 @@ export const artifactFileNames = {
 };
 
 export const artifactMarkdownFileNames = {
+  acceptanceMarkdown: "visual-acceptance-report.md",
   referenceImportMarkdown: "visual-reference-import-report.md",
 };
 

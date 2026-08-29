@@ -3,6 +3,7 @@ import { deflateSync } from "node:zlib";
 import {
   createPageBuilderVisualAcceptanceArtifact,
   createPageBuilderVisualAcceptanceChecklist,
+  createPageBuilderVisualAcceptanceMarkdown,
   mvpPageBuilderComponents,
   pageBuilderVisualAcceptanceSchemaVersion,
   pageBuilderVisualAcceptanceViewports,
@@ -31,6 +32,11 @@ export function writeVisualArtifact(artifactDir, input = {}) {
   const manifest = createVisualManifest(artifactDir, input);
   const screenshotFiles = createScreenshotEntries(artifactDir, input);
   const screenshots = screenshotFiles.map(createCaptureScreenshotEntry);
+  const manifestPath = `${artifactDir}/page-builder-visual-acceptance.json`;
+  const acceptanceChecklist = createPageBuilderVisualAcceptanceChecklist(
+    manifest,
+    { manifestPath },
+  );
 
   for (const screenshot of screenshotFiles) {
     writePng(screenshot.evidencePath, screenshot.body);
@@ -39,7 +45,7 @@ export function writeVisualArtifact(artifactDir, input = {}) {
   const acceptanceReport = validatePageBuilderVisualAcceptanceManifest(manifest);
   const acceptanceArtifact = createPageBuilderVisualAcceptanceArtifact(
     acceptanceReport,
-    { checklist: createPageBuilderVisualAcceptanceChecklist(manifest) },
+    { checklist: acceptanceChecklist },
   );
   const captureArtifact = createPageBuilderVisualCaptureArtifact({
     baseUrl: "http://localhost:3000",
@@ -51,9 +57,18 @@ export function writeVisualArtifact(artifactDir, input = {}) {
     webPort: 3000,
   });
 
-  writeJson(`${artifactDir}/page-builder-visual-acceptance.json`, manifest);
+  writeJson(manifestPath, manifest);
   writeJson(`${artifactDir}/visual-acceptance-report.json`, acceptanceArtifact);
   writeJson(`${artifactDir}/visual-capture-report.json`, captureArtifact);
+  writeText(
+    `${artifactDir}/visual-acceptance-report.md`,
+    input.acceptanceMarkdown ??
+      createPageBuilderVisualAcceptanceMarkdown(
+        acceptanceReport,
+        acceptanceChecklist,
+        { manifestPath },
+      ),
+  );
   writeText(
     `${artifactDir}/visual-reference-import-report.md`,
     input.referenceImportMarkdown ??

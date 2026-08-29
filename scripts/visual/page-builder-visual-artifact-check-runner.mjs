@@ -14,6 +14,10 @@ import {
   requiredArtifactFileNames,
   resolveRepositoryPath,
 } from "./page-builder-visual-artifact-check-paths.mjs";
+import {
+  validateAcceptanceMarkdown,
+  validateReferenceImportMarkdown,
+} from "./page-builder-visual-artifact-check-markdown-validation.mjs";
 
 export function checkPageBuilderVisualArtifact(config, input = {}) {
   const context = createArtifactCheckContext(config, input);
@@ -28,14 +32,19 @@ export function checkPageBuilderVisualArtifact(config, input = {}) {
     "acceptance report",
     context,
   );
-  validateReferenceImportMarkdown(
-    context.paths.referenceImportMarkdown,
-    context,
-  );
   const screenshots = validateCaptureReport(captureReport, context);
   const manifestReport = validateArtifactManifest(manifest, screenshots, context);
 
   validateAcceptanceReport(acceptanceReport, manifestReport, context);
+  validateAcceptanceMarkdown(
+    context.paths.acceptanceMarkdown,
+    manifestReport,
+    context,
+  );
+  validateReferenceImportMarkdown(
+    context.paths.referenceImportMarkdown,
+    context,
+  );
   return createArtifactCheckReport(context);
 }
 
@@ -89,64 +98,6 @@ function readRequiredJson(filePath, label, context) {
       `${label} must contain valid JSON.`,
     );
     return null;
-  }
-}
-
-function validateReferenceImportMarkdown(filePath, context) {
-  const body = readRequiredText(filePath, "reference import Markdown", context);
-
-  if (!body) {
-    return;
-  }
-
-  validateReferenceImportMarkdownContent(body, context);
-}
-
-function readRequiredText(filePath, label, context) {
-  try {
-    const resolvedPath = resolveRepositoryPath(context, filePath);
-    const stats = context.stat(resolvedPath);
-
-    if (!stats.isFile() || stats.size <= 0) {
-      addArtifactCheckIssue(
-        context,
-        "invalid_artifact_file",
-        `${label} must be a non-empty file.`,
-      );
-      return null;
-    }
-
-    context.presentRequiredFileCount += 1;
-    return context.readFile(resolvedPath, "utf8");
-  } catch {
-    addArtifactCheckIssue(
-      context,
-      "missing_artifact_file",
-      `${label} is missing: ${filePath}.`,
-    );
-    return null;
-  }
-}
-
-function validateReferenceImportMarkdownContent(body, context) {
-  const expectedLines = [
-    [/^# Page Builder Visual Reference Import\r?$/mu, "title"],
-    [/^Status: `(invalid|needs-evidence|ready|updated|would-update)`\r?$/mu, "status"],
-    [
-      new RegExp(`^Manifest: \`${escapeRegExp(context.paths.manifest)}\`\\r?$`, "mu"),
-      "manifest path",
-    ],
-    [/^Source dir: `docs\/visual\/page-builder-references`\r?$/mu, "source dir"],
-  ];
-
-  for (const [pattern, label] of expectedLines) {
-    if (!pattern.test(body)) {
-      addArtifactCheckIssue(
-        context,
-        "invalid_artifact_markdown",
-        `reference import Markdown must include the expected ${label}.`,
-      );
-    }
   }
 }
 
@@ -260,8 +211,4 @@ function findManifestPreviewScreenshot(manifest, component, viewport) {
     : null;
 
   return record?.viewports?.[viewport]?.previewScreenshot ?? null;
-}
-
-function escapeRegExp(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
 }

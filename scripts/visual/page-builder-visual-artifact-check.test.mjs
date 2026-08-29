@@ -22,7 +22,7 @@ test("visual artifact check accepts a complete fixture artifact", () => {
     const report = checkPageBuilderVisualArtifact({ artifactDir });
 
     assert.equal(report.status, "complete");
-    assert.equal(report.presentRequiredFileCount, 4);
+    assert.equal(report.presentRequiredFileCount, 5);
     assert.equal(report.presentScreenshotCount, 12);
     assert.deepEqual(report.issues, []);
     assert.match(
@@ -43,12 +43,35 @@ test("visual artifact check rejects missing reference import Markdown", () => {
 
     const report = checkPageBuilderVisualArtifact({ artifactDir });
     assert.equal(report.status, "invalid");
-    assert.equal(report.presentRequiredFileCount, 3);
+    assert.equal(report.presentRequiredFileCount, 4);
     assert.equal(
       report.issues.some(
         (issue) =>
           issue.code === "missing_artifact_file" &&
           issue.message.includes("reference import Markdown"),
+      ),
+      true,
+    );
+  } finally {
+    rmSync(artifactDir, { force: true, recursive: true });
+  }
+});
+
+test("visual artifact check rejects missing acceptance Markdown", () => {
+  const artifactDir = createArtifactDir("missing-acceptance-report");
+
+  try {
+    writeVisualArtifact(artifactDir);
+    rmSync(`${artifactDir}/visual-acceptance-report.md`);
+
+    const report = checkPageBuilderVisualArtifact({ artifactDir });
+    assert.equal(report.status, "invalid");
+    assert.equal(report.presentRequiredFileCount, 4);
+    assert.equal(
+      report.issues.some(
+        (issue) =>
+          issue.code === "missing_artifact_file" &&
+          issue.message.includes("acceptance Markdown"),
       ),
       true,
     );
@@ -68,6 +91,30 @@ test("visual artifact check rejects stale reference import Markdown", () => {
         "Status: `invalid`",
         "Manifest: `docs/development/page-builder-visual-acceptance.json`",
         "Source dir: `docs/visual/page-builder-references`",
+        "",
+      ].join("\n"),
+    });
+
+    const report = checkPageBuilderVisualArtifact({ artifactDir });
+    assert.equal(report.status, "invalid");
+    assert.equal(hasIssue(report, "invalid_artifact_markdown"), true);
+  } finally {
+    rmSync(artifactDir, { force: true, recursive: true });
+  }
+});
+
+test("visual artifact check rejects stale acceptance Markdown", () => {
+  const artifactDir = createArtifactDir("stale-acceptance-report");
+
+  try {
+    writeVisualArtifact(artifactDir, {
+      acceptanceMarkdown: [
+        "# Page Builder Visual Acceptance",
+        "",
+        "Manifest: `docs/development/page-builder-visual-acceptance.json`",
+        "Status: `accepted`",
+        "Components accepted: 6/6",
+        "Viewport evidence accepted: 12/12",
         "",
       ].join("\n"),
     });

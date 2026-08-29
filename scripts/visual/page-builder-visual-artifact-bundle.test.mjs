@@ -260,9 +260,9 @@ function createCompleteArtifactCheck(artifactDir) {
     artifactDir,
     expectedScreenshotCount: 12,
     issues: [],
-    presentRequiredFileCount: 4,
+    presentRequiredFileCount: 5,
     presentScreenshotCount: 12,
-    requiredFileCount: 4,
+    requiredFileCount: 5,
     status: "complete",
   };
 }
