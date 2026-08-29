@@ -88,16 +88,25 @@ test("release handoff writes blocked reports without requiring readiness", async
     assert.match(stdout.join("\n"), /Next action 2: Page Builder Visual/);
     assert.match(
       stdout.join("\n"),
-      /First structured action: Page Builder Visual: hero-banner\.desktop/,
+      /Run workflow: GitHub Actions Production Smoke against the production environment/,
     );
     assert.match(
       stdout.join("\n"),
-      /Reference: docs\/visual\/page-builder-references\/hero-banner-desktop\.png/,
+      /Rerun gate: pnpm release:check -- --smoke-report <path>/,
+    );
+    assert.match(
+      stdout.join("\n"),
+      /Reference source: docs\/visual\/page-builder-references/,
+    );
+    assert.match(
+      stdout.join("\n"),
+      /Capture fixture: pnpm visual:capture:fixture -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/,
     );
     assert.match(
       stdout.join("\n"),
       /Accept passing: pnpm visual:measure -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --accept-passing --require-complete/,
     );
+    assert.doesNotMatch(stdout.join("\n"), /First structured action:/);
     assert.match(
       stdout.join("\n"),
       new RegExp(
@@ -339,19 +348,19 @@ test("release handoff config normalizes paths and is documented", async () => {
   printReleaseHandoffHelp((line) => helpOutput.push(line));
   assert.match(
     helpOutput.join("\n"),
-    /first two next actions.*first structured action steps.*generated project-status Markdown/s,
+    /first two next actions with\s+structured steps.*first hidden structured action.*visible actions do not have steps.*generated project-status Markdown/s,
   );
   assert.match(
     readme,
-    /first two next\s+actions.*first structured next-action steps.*artifacts\/release\/project-status\.md/s,
+    /first two next\s+actions.*structured steps.*structured next action.*artifacts\/release\/project-status\.md/s,
   );
   assert.match(
     setupDoc,
-    /first two next\s+actions.*first structured next-action steps.*artifacts\/release\/project-status\.md/s,
+    /first two next\s+actions with structured steps.*first hidden\s+structured action.*visible actions do not have steps.*artifacts\/release\/project-status\.md/s,
   );
   assert.match(
     releaseChecklist,
-    /first two next\s+actions.*first structured\s+next-action steps.*project-status\.md/s,
+    /first two next\s+actions with structured steps.*first hidden structured action.*visible\s+actions do not have steps.*project-status\.md/s,
   );
 });
 

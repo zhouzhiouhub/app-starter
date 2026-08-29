@@ -138,8 +138,9 @@ Release handoff:
   Writes preflight.json, preflight.md, release-check.json, release-check.md,
   project-status.json, and project-status.md from the same handoff run. Blocked
   evidence still writes the handoff; use --require-ready when the command should
-  gate release. The terminal summary prints the first two next actions, previews
-  the first structured action steps when available, and points any remaining
+  gate release. The terminal summary prints the first two next actions with
+  structured steps when available, previews the first hidden structured action
+  only when the visible actions do not have steps, and points any remaining
   actions to the generated project-status Markdown.`);
 }
 
@@ -179,15 +180,17 @@ function formatNextActions(actions, projectStatusMarkdownPath) {
   const visibleActions = actions.slice(0, 2);
   const hiddenActions = actions.slice(visibleActions.length);
   const hiddenActionCount = hiddenActions.length;
-  const structuredAction = hiddenActions.find(hasStructuredSteps);
+  const structuredAction = visibleActions.some(hasStructuredSteps)
+    ? null
+    : hiddenActions.find(hasStructuredSteps);
 
   if (visibleActions.length === 0) {
     return ["  Next action: None"];
   }
 
   return [
-    ...visibleActions.map(
-      (action, index) => `  Next action ${index + 1}: ${formatNextAction(action)}`,
+    ...visibleActions.flatMap((action, index) =>
+      formatNextActionPreview(action, index + 1),
     ),
     ...formatStructuredActionPreview(structuredAction),
     ...(hiddenActionCount > 0
@@ -198,6 +201,19 @@ function formatNextActions(actions, projectStatusMarkdownPath) {
   ];
 }
 
+function formatNextActionPreview(action, index) {
+  if (!hasStructuredSteps(action)) {
+    return [`  Next action ${index}: ${formatNextAction(action)}`];
+  }
+
+  return [
+    `  Next action ${index}: ${formatSmokeText(`${action.area}: ${action.label}`, {
+      maxLength: 420,
+    })}`,
+    ...formatStructuredSteps(action.steps),
+  ];
+}
+
 function formatStructuredActionPreview(action) {
   if (!hasStructuredSteps(action)) {
     return [];
@@ -205,8 +221,12 @@ function formatStructuredActionPreview(action) {
 
   return [
     `  First structured action: ${action.area}: ${action.label}`,
-    ...action.steps.map((step) => `    ${step.label}: ${step.value}`),
+    ...formatStructuredSteps(action.steps),
   ];
+}
+
+function formatStructuredSteps(steps) {
+  return steps.map((step) => `    ${step.label}: ${step.value}`);
 }
 
 function hasStructuredSteps(action) {
