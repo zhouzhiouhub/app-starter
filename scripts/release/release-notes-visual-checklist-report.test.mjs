@@ -44,6 +44,8 @@ function createReleaseNotesConfig() {
       "production-smoke-report-123",
       "--release-artifact",
       "release-evidence-check-123",
+      "--project-status-artifact",
+      "project-status-123",
       "--visual-artifact",
       "page-builder-visual-fixture-123",
       "--storefront-url",

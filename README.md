@@ -677,7 +677,7 @@ pnpm project:status -- --all-actions
 pnpm project:status -- --require-ready
 pnpm project:status -- --json
 pnpm project:status -- --output artifacts/release/project-status.json
-pnpm release:notes -- --release-tag v0.1.0 --workflow-run-url https://github.com/zhouzhiouhub/app-starter/actions/runs/123 --smoke-artifact production-smoke-report-123 --release-artifact release-evidence-check-123 --visual-artifact page-builder-visual-fixture-123 --storefront-url https://store.brand.com --rollback-target main@abcdef1 --output docs/releases/v0.1.0.md
+pnpm release:notes -- --release-tag v0.1.0 --workflow-run-url https://github.com/zhouzhiouhub/app-starter/actions/runs/123 --smoke-artifact production-smoke-report-123 --release-artifact release-evidence-check-123 --project-status-artifact project-status-123 --visual-artifact page-builder-visual-fixture-123 --storefront-url https://store.brand.com --rollback-target main@abcdef1 --output docs/releases/v0.1.0.md
 ```
 
 Page Builder 核心区块视觉验收记录可单独检查：
@@ -704,7 +704,7 @@ GitHub Actions 里新增了手动触发的 `Production Smoke` workflow，会把�
 
 最终发布前可运行 `pnpm project:status` 获取“当前阶段、已完成里程碑、本地验证矩阵、release gate 和下一步动作”的项目状态摘要；默认只展示前 8 个 next actions，交接排期时加 `--all-actions` 展开全部动作；需要机器可读状态时加 `--json`，需要把它当完成度门禁时加 `--require-ready`。也可运行 `pnpm release:check -- --checklist --smoke-report artifacts/production-smoke/smoke-report.json` 查看生产 Smoke、Page Builder 视觉证据和 release notes 的准备状态；checklist 默认显示前几个视觉 viewport 的目标证据路径和导入/截图/测量/验收命令，发布评审需要完整清单时加 `--all-visual-tasks`。如果使用下载下来的 Page Builder Visual artifact，再追加 `--visual-artifact-dir reports/visual/page-builder-fixture`。去掉 `--checklist` 后同一命令可作为统一门禁，它会同时校验生产 Smoke 发布证据、Page Builder 视觉 accepted 证据，以及可选视觉 artifact 的本地 manifest、capture report、acceptance report 和 12 张可解码且尺寸匹配的截图。需要归档时追加 `--json` 输出机器可读结果，或追加 `--output artifacts/release/release-check.json` 写入 `release-evidence-check.v1` JSON artifact；artifact 内含结构化 `readinessChecklist`、`smoke.source`、`visual.checklist.pendingTasks` 和可选 `visual.artifactCheck`，可直接归档 blocked / ready 任务。当前缺真实设计参考和生产 smoke artifact 时，该命令会阻塞发布。
 
-组合门禁 ready 后，可运行 `pnpm release:notes` 生成最终发布记录 Markdown；命令会强制填写 release tag、workflow run URL、三类 artifact 名称、公开 storefront URL 和 rollback target。默认读取 `artifacts/release/release-check.json`，只有 `release-evidence-check.v1` 为 ready 时才生成正式发布记录；发布记录会同步写出 `readinessChecklist` 和 production smoke source，如果组合门禁记录了 `visual.artifactCheck`，还会写出视觉 artifact 的完整性、文件数、截图数和 artifact issue 摘要。失败复盘模式 `--allow-blocked` 还会把 `visual.checklist.pendingTasks` 摘要写入 Markdown，保留待补证据路径和命令。
+组合门禁 ready 后，可运行 `pnpm release:notes` 生成最终发布记录 Markdown；命令会强制填写 release tag、workflow run URL、四类 artifact 名称、公开 storefront URL 和 rollback target。默认读取 `artifacts/release/release-check.json`，只有 `release-evidence-check.v1` 为 ready 时才生成正式发布记录；发布记录会同步写出 `readinessChecklist`、production smoke source 和 project status artifact，如果组合门禁记录了 `visual.artifactCheck`，还会写出视觉 artifact 的完整性、文件数、截图数和 artifact issue 摘要。失败复盘模式 `--allow-blocked` 还会把 `visual.checklist.pendingTasks` 摘要写入 Markdown，保留待补证据路径和命令。
 
 当 `release-evidence-check.v1` 记录了 `smoke.source` 时，`pnpm release:notes` 还会校验 `--workflow-run-url` 匹配 `smoke.source.workflowRunUrl`，并校验 `--smoke-artifact` 匹配 `production-smoke-report-<runNumber>`，避免发布记录指向错误的 Actions run 或 smoke artifact。
 
@@ -794,5 +794,5 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 1. 在真实 R2 / CDN 环境配置 `MEDIA_CDN_BASE_URL`、R2 凭据和 CDN 域名，确认不是 `example` / `test` / `invalid` / 本地 / 私网域名，执行 `pnpm smoke:publish` 并归档 `SMOKE_REPORT_PATH`。
 2. 补齐部署 Smoke Test：前台 Vercel、API 独立 Node 服务、Admin 静态托管、Redis 生产连接、环境变量清单和回滚步骤。
 3. 做 Page Builder 视觉验收：保留最新 `Page Builder Visual` workflow 的 `page-builder-visual-fixture-<run_number>` artifact，补真实浏览器截图留档，并将 `docs/development/page-builder-visual-acceptance.json` 中六个核心区块的 Desktop / Mobile 证据从 `needs-evidence` 推进到 `accepted`。
-4. 在真实生产配置下触发 GitHub Actions `Production Smoke`，传入 Page Builder Visual artifact 名称和 run id，把 artifact、`pnpm smoke:report` 输出、`pnpm smoke:release-check`、带 `--visual-artifact-dir` 的 `pnpm release:check` 结果和回滚目标写入 `pnpm release:notes` 生成的发布记录。
+4. 在真实生产配置下触发 GitHub Actions `Production Smoke`，传入 Page Builder Visual artifact 名称和 run id，把 smoke、release evidence、project status 和 visual artifact、`pnpm smoke:report` 输出、`pnpm smoke:release-check`、带 `--visual-artifact-dir` 的 `pnpm release:check` 结果和回滚目标写入 `pnpm release:notes` 生成的发布记录。
 5. 保持 Commerce 关闭态，继续强化订单 / 支付关闭态分支和 Phase 2 Webhook 验签设计；不进入真实交易。

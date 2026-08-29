@@ -32,6 +32,7 @@ export function createReleaseNotesMarkdown(config, artifact) {
     `- Production smoke artifact: \`${formatInline(config.smokeArtifact)}\``,
     `- Production smoke source: ${formatSmokeSource(artifact.smoke.source)}`,
     `- Combined release artifact: \`${formatInline(config.releaseArtifact)}\``,
+    `- Project status artifact: \`${formatInline(config.projectStatusArtifact)}\``,
     `- Page Builder visual artifact: \`${formatInline(config.visualArtifact)}\``,
     `- Release check source: \`${formatInline(config.releaseCheckPath)}\``,
     `- Public storefront: ${config.storefrontUrl}`,

@@ -5,6 +5,7 @@ export function assertReleaseNotesSourceConsistency(config, artifact) {
 
   assertWorkflowRunUrlMatchesSource(config, source);
   assertSmokeArtifactMatchesSource(config, source);
+  assertProjectStatusArtifactMatchesSource(config, source);
 }
 
 function assertWorkflowRunUrlMatchesSource(config, source) {
@@ -29,6 +30,20 @@ function assertSmokeArtifactMatchesSource(config, source) {
   if (config.smokeArtifact !== expected) {
     throw new Error(
       "Release notes smoke artifact must match smoke.source.runNumber.",
+    );
+  }
+}
+
+function assertProjectStatusArtifactMatchesSource(config, source) {
+  if (!source?.runNumber) {
+    return;
+  }
+
+  const expected = `project-status-${source.runNumber}`;
+
+  if (config.projectStatusArtifact !== expected) {
+    throw new Error(
+      "Release notes project status artifact must match smoke.source.runNumber.",
     );
   }
 }

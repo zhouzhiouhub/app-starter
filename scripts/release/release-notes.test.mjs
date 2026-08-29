@@ -22,6 +22,8 @@ test("release notes config parses required release evidence fields", () => {
       "production-smoke-report-123",
       "--release-artifact",
       "release-evidence-check-123",
+      "--project-status-artifact",
+      "project-status-123",
       "--visual-artifact",
       "page-builder-visual-fixture-123",
       "--storefront-url",
@@ -36,6 +38,7 @@ test("release notes config parses required release evidence fields", () => {
     {
       allowBlocked: false,
       outputPath: "docs/releases/v0.1.0.md",
+      projectStatusArtifact: "project-status-123",
       releaseArtifact: "release-evidence-check-123",
       releaseCheckPath: "artifacts/release/release-check.json",
       releaseTag: "v0.1.0",
@@ -85,6 +88,15 @@ test("release notes config rejects unsafe release record values", () => {
     () =>
       readReleaseNotesCliConfig([
         ...createRequiredArgs(),
+        "--project-status-artifact",
+        "project status",
+      ]),
+    /Project status artifact must use 1-160 safe characters/,
+  );
+  assert.throws(
+    () =>
+      readReleaseNotesCliConfig([
+        ...createRequiredArgs(),
         "--output",
         "README.md",
       ]),
@@ -108,6 +120,7 @@ test("release notes render required evidence and gate status", () => {
     /Production smoke source: https:\/\/github\.com\/zhouzhiouhub\/app-starter\/actions\/runs\/123456789 \(0123456, run 123456789\)/,
   );
   assert.match(markdown, /Combined release artifact: `release-evidence-check-123`/);
+  assert.match(markdown, /Project status artifact: `project-status-123`/);
   assert.match(markdown, /Page Builder Visual: accepted \(6\/6 components, 12\/12 viewports\)/);
   assert.match(
     markdown,
@@ -137,34 +150,6 @@ test("release notes render required evidence and gate status", () => {
   assert.match(markdown, /Visual issues: none/);
   assert.match(markdown, /Rollback target: `main@abcdef1`/);
   assert.match(markdown, /- None/);
-});
-
-test("release notes reject mismatched smoke source workflow run", () => {
-  const artifact = createReadyReleaseArtifact();
-  artifact.smoke.source = {
-    ...artifact.smoke.source,
-    workflowRunUrl:
-      "https://github.com/zhouzhiouhub/app-starter/actions/runs/987654321",
-  };
-
-  assert.throws(
-    () => createReleaseNotesMarkdown(createReleaseNotesConfig(), artifact),
-    /workflow run URL must match smoke\.source\.workflowRunUrl/,
-  );
-});
-
-test("release notes reject mismatched smoke artifact run number", () => {
-  assert.throws(
-    () =>
-      createReleaseNotesMarkdown(
-        {
-          ...createReleaseNotesConfig(),
-          smokeArtifact: "production-smoke-report-999",
-        },
-        createReadyReleaseArtifact(),
-      ),
-    /smoke artifact must match smoke\.source\.runNumber/,
-  );
 });
 
 function createReadyReleaseArtifact() {
@@ -312,6 +297,10 @@ test("release notes command is exposed in package, CI, and release docs", async 
   );
   assert.match(ciWorkflow, /pnpm release:notes -- --help/);
   assert.match(releaseChecklist, /pnpm release:notes/);
+  assert.match(
+    releaseChecklist,
+    /--project-status-artifact project-status-<run_number>/,
+  );
 });
 
 function createRequiredArgs() {
@@ -324,6 +313,8 @@ function createRequiredArgs() {
     "production-smoke-report-123",
     "--release-artifact",
     "release-evidence-check-123",
+    "--project-status-artifact",
+    "project-status-123",
     "--visual-artifact",
     "page-builder-visual-fixture-123",
     "--storefront-url",

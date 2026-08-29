@@ -26,6 +26,8 @@ test("release notes CLI writes a Markdown release record", async () => {
         "production-smoke-report-123",
         "--release-artifact",
         "release-evidence-check-123",
+        "--project-status-artifact",
+        "project-status-123",
         "--visual-artifact",
         "page-builder-visual-fixture-123",
         "--storefront-url",
@@ -46,6 +48,7 @@ test("release notes CLI writes a Markdown release record", async () => {
 
     assert.match(markdown, /^# Release v0\.1\.0/m);
     assert.match(markdown, /Production smoke source:/);
+    assert.match(markdown, /Project status artifact: `project-status-123`/);
   } finally {
     await rm(root, { force: true, recursive: true });
   }

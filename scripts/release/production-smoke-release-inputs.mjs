@@ -129,6 +129,8 @@ function createReleaseNotesArgs(env, options = {}) {
     env.SMOKE_REPORT_ARTIFACT_NAME,
     "--release-artifact",
     env.RELEASE_CHECK_ARTIFACT_NAME,
+    "--project-status-artifact",
+    env.PROJECT_STATUS_ARTIFACT_NAME,
     "--visual-artifact",
     env.RELEASE_VISUAL_ARTIFACT_NAME,
     "--storefront-url",
@@ -205,6 +207,7 @@ Environment:
   RELEASE_VISUAL_ARTIFACT_NAME and RELEASE_VISUAL_ARTIFACT_RUN_ID must be set
   together. RELEASE_TAG, RELEASE_ROLLBACK_TARGET, and
   RELEASE_VISUAL_ARTIFACT_NAME must be set together when release notes should be
+  generated. PROJECT_STATUS_ARTIFACT_NAME is required when release notes are
   generated. RELEASE_NOTES_ALLOW_BLOCKED=true may only be used with release
   notes inputs to generate a failure review draft from blocked evidence.`);
 }

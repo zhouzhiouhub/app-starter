@@ -14,6 +14,7 @@ export function readReleaseNotesCliConfig(args) {
   const config = {
     allowBlocked: false,
     outputPath: null,
+    projectStatusArtifact: null,
     releaseArtifact: null,
     releaseCheckPath: defaultReleaseCheckPath,
     releaseTag: null,
@@ -43,6 +44,9 @@ function readReleaseNotesOption(arg, args, index, config) {
   switch (arg) {
     case "--output":
       config.outputPath = readOptionValue(arg, args, index);
+      return index + 1;
+    case "--project-status-artifact":
+      config.projectStatusArtifact = readOptionValue(arg, args, index);
       return index + 1;
     case "--release-artifact":
       config.releaseArtifact = readOptionValue(arg, args, index);
@@ -84,6 +88,10 @@ function normalizeReleaseNotesConfig(config) {
       config.releaseArtifact,
     ),
     releaseCheckPath: normalizeReleaseEvidencePath(config.releaseCheckPath),
+    projectStatusArtifact: normalizeArtifactName(
+      "project status artifact",
+      config.projectStatusArtifact,
+    ),
     releaseTag: normalizeReleaseTag(config.releaseTag),
     rollbackTarget: normalizePlainValue("rollback target", config.rollbackTarget),
     smokeArtifact: normalizeArtifactName("smoke artifact", config.smokeArtifact),

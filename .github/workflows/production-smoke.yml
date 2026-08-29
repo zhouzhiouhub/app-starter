@@ -205,6 +205,7 @@ jobs:
             --workflow-run-url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
             --smoke-artifact "$SMOKE_REPORT_ARTIFACT_NAME" \
             --release-artifact "$RELEASE_CHECK_ARTIFACT_NAME" \
+            --project-status-artifact "$PROJECT_STATUS_ARTIFACT_NAME" \
             --visual-artifact "$RELEASE_VISUAL_ARTIFACT_NAME" \
             --storefront-url "$storefront_url" \
             --rollback-target "$RELEASE_ROLLBACK_TARGET" \
