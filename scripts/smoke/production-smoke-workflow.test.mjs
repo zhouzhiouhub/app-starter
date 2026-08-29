@@ -92,38 +92,20 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
     workflow,
     /pnpm visual:artifact-check -- --artifact-dir reports\/visual\/page-builder-fixture --markdown-output reports\/visual\/page-builder-fixture\/visual-artifact-check-report\.md/,
   );
+  assert.match(workflow, /name: Write release handoff artifacts/);
+  assert.match(workflow, /handoff_flags=\(/);
+  assert.match(workflow, /--require-ready/);
+  assert.match(workflow, /--release-check-output "\$RELEASE_CHECK_ARTIFACT_PATH"/);
+  assert.match(workflow, /--release-check-markdown "\$RELEASE_CHECK_MARKDOWN_PATH"/);
+  assert.match(workflow, /--project-status-output "\$PROJECT_STATUS_ARTIFACT_PATH"/);
+  assert.match(workflow, /--project-status-markdown "\$PROJECT_STATUS_MARKDOWN_PATH"/);
   assert.match(
     workflow,
-    /release_check_flags=\(/,
-  );
-  assert.match(workflow, /--all-visual-tasks/);
-  assert.match(workflow, /--markdown-output "\$RELEASE_CHECK_MARKDOWN_PATH"/);
-  assert.match(
-    workflow,
-    /release_check_flags\+=\(--visual-artifact-dir reports\/visual\/page-builder-fixture\)/,
-  );
-  assert.match(
-    workflow,
-    /pnpm release:check -- "\$\{release_check_flags\[@\]\}"/,
-  );
-  assert.match(workflow, /name: Write project status artifact/);
-  assert.match(workflow, /project_status_flags=\(/);
-  assert.match(workflow, /--all-actions/);
-  assert.match(
-    workflow,
-    /--output "\$PROJECT_STATUS_ARTIFACT_PATH"/,
+    /handoff_flags\+=\(--visual-artifact-dir reports\/visual\/page-builder-fixture\)/,
   );
   assert.match(
     workflow,
-    /--markdown-output "\$PROJECT_STATUS_MARKDOWN_PATH"/,
-  );
-  assert.match(
-    workflow,
-    /project_status_flags\+=\(--visual-artifact-dir reports\/visual\/page-builder-fixture\)/,
-  );
-  assert.match(
-    workflow,
-    /pnpm project:status -- "\$\{project_status_flags\[@\]\}"/,
+    /pnpm release:handoff -- "\$\{handoff_flags\[@\]\}"/,
   );
   assert.match(workflow, /name: Generate release notes/);
   assert.match(
@@ -143,14 +125,12 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /Report Markdown:/);
   assert.match(workflow, /Release gate:/);
   assert.match(workflow, /Review Markdown:/);
-  assert.match(workflow, /Combined gate:/);
-  assert.match(workflow, /release:check -- --checklist --all-visual-tasks/);
-  assert.match(workflow, /--markdown-output \$RELEASE_CHECK_MARKDOWN_PATH/);
+  assert.match(workflow, /Release handoff gate:/);
+  assert.match(workflow, /release:handoff -- --require-ready/);
+  assert.match(workflow, /--release-check-markdown \$RELEASE_CHECK_MARKDOWN_PATH/);
   assert.match(workflow, /Combined artifact:/);
   assert.match(workflow, /Combined Markdown:/);
-  assert.match(workflow, /Project status:/);
-  assert.match(workflow, /project:status -- --all-actions/);
-  assert.match(workflow, /--markdown-output \$PROJECT_STATUS_MARKDOWN_PATH/);
+  assert.match(workflow, /--project-status-markdown \$PROJECT_STATUS_MARKDOWN_PATH/);
   assert.match(workflow, /Project status artifact:/);
   assert.match(workflow, /Project status Markdown:/);
   assert.match(workflow, /Release notes:/);
@@ -215,7 +195,7 @@ test("release checklist requires archived smoke evidence", async () => {
   assert.match(checklist, /project-status-<run_number>/);
   assert.match(checklist, /project-status\.v1/);
   assert.match(checklist, /project-status\.md/);
-  assert.match(checklist, /project:status -- --all-actions/);
+  assert.match(checklist, /release:handoff/);
   assert.match(checklist, /summary\.status=passed/);
   assert.match(checklist, /summary\.productionReady=true/);
   assert.match(checklist, /R2\/CDN: passed/);
@@ -235,6 +215,7 @@ test("main CI verifies the smoke report CLI entry point", async () => {
   assert.match(workflow, /pnpm smoke:report -- --help/);
   assert.match(workflow, /pnpm smoke:release-check -- --help/);
   assert.match(workflow, /pnpm release:check -- --help/);
+  assert.match(workflow, /pnpm release:handoff -- --help/);
   assert.match(workflow, /pnpm release:preflight -- --help/);
   assert.match(
     workflow,

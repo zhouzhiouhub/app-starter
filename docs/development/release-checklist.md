@@ -131,16 +131,16 @@ later phases are explicitly approved.
 - When release note inputs were provided, the uploaded artifact
   `release-notes-<run_number>` is attached or linked.
 - The GitHub step summary records the report path, artifact names, review
-  command, source commit, source workflow run URL, and combined
-  `release:check -- --checklist --all-visual-tasks` command with
-  `--markdown-output artifacts/release/release-check.md` so blocked runs keep
-  every pending Page Builder visual viewport task and command line in the log
-  and Markdown artifact.
-  When visual evidence is downloaded, that combined command includes
+  command, source commit, source workflow run URL, and
+  `release:handoff -- --require-ready` command with
+  `--release-check-markdown artifacts/release/release-check.md` and
+  `--project-status-markdown artifacts/release/project-status.md` so blocked
+  runs keep every pending Page Builder visual viewport task and command line in
+  the Markdown artifacts.
+  When visual evidence is downloaded, that handoff command includes
   `--visual-artifact-dir reports/visual/page-builder-fixture`.
-- The GitHub step summary records the
-  `project:status -- --all-actions --smoke-report artifacts/production-smoke/smoke-report.json --output artifacts/release/project-status.json --markdown-output artifacts/release/project-status.md`
-  command and `project-status-<run_number>` artifact name for release handoff.
+- The GitHub step summary records the `project-status-<run_number>` artifact
+  name for release handoff.
 - `pnpm smoke:report -- --markdown-output artifacts/production-smoke/smoke-report.md artifacts/production-smoke/smoke-report.json`
   output is saved in the workflow log, and `smoke-report.md` is uploaded with
   the smoke artifact.

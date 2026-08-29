@@ -364,27 +364,23 @@ the protected `production` environment. It sets
 `SMOKE_REPORT_PATH=artifacts/production-smoke/smoke-report.json`, writes
 `SMOKE_REPORT_MARKDOWN_PATH=artifacts/production-smoke/smoke-report.md` from
 the archived JSON review, requires R2 upload, Admin static hosting, and ISR
-revalidation by default, writes the review and release-check commands to the job
-summary, records the source commit and workflow run URL in both the smoke config
-and summary, and uploads both files as `production-smoke-report-<run_number>`.
-It also runs the combined
-`release:check -- --checklist --all-visual-tasks` gate, prints the release
-readiness checklist with every pending Page Builder visual viewport task and
-full command lines, and uploads `release-evidence-check-<run_number>` with the
-`release-evidence-check.v1` JSON artifact plus `release-check.md` Markdown
-report. The workflow also runs
-`project:status -- --all-actions` against the same smoke and optional visual
-evidence inputs, writes `artifacts/release/project-status.md`, uploads
-`project-status-<run_number>`, and keeps a `project-status.v1` handoff snapshot
-plus a Markdown checklist with the full next-action list and release evidence
-artifact map. If
+revalidation by default, writes the review and release handoff commands to the
+job summary, records the source commit and workflow run URL in both the smoke
+config and summary, and uploads both files as
+`production-smoke-report-<run_number>`. It also runs
+`release:handoff -- --require-ready` against the same smoke and optional visual
+evidence inputs, writes the release readiness checklist with every pending Page
+Builder visual viewport task into `release-check.md`, uploads
+`release-evidence-check-<run_number>` with the `release-evidence-check.v1` JSON
+artifact plus Markdown report, and uploads `project-status-<run_number>` with a
+matching `project-status.v1` handoff snapshot plus Markdown checklist. If
 `visual_artifact_name` and `visual_artifact_run_id` are provided, it downloads
 that Page Builder Visual
 artifact, including the artifact-local visual manifest and
 `visual-capture-report.json`, to `reports/visual/page-builder-fixture` before
 running
 `pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture --markdown-output reports/visual/page-builder-fixture/visual-artifact-check-report.md`
-and both the combined gate and project status snapshot with
+and the release handoff gate with
 `--visual-artifact-dir reports/visual/page-builder-fixture`. The workflow runs
 `pnpm release:preflight` before smoke requests so unsafe artifact output paths,
 an unsafe combined gate, project status, or release notes Markdown output path,
