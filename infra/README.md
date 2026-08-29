@@ -44,6 +44,7 @@ the same runtime variables used by the API, Web, Admin, and smoke runner.
 
 | Runtime variable | GitHub source | Applies to | Smoke evidence |
 |------------------|---------------|------------|----------------|
+| `APP_ENV` | `production` | API, Web, smoke runner | production-mode config diagnostics |
 | `API_URL` | `${{ secrets.PRODUCTION_API_URL }}` | Smoke runner, Admin build fallback | API health, admin API, publish, rollback |
 | `WEB_URL` | `${{ secrets.PRODUCTION_WEB_URL }}` | Web, smoke runner, Admin build fallback | storefront HTML, robots, sitemap, ISR fallback |
 | `ADMIN_URL` | `${{ secrets.PRODUCTION_ADMIN_URL }}` | Smoke runner | Admin shell, module scripts, stylesheets |
@@ -69,11 +70,14 @@ the same runtime variables used by the API, Web, Admin, and smoke runner.
 | `CLARITY_PROJECT_ID` | `${{ vars.PRODUCTION_CLARITY_PROJECT_ID }}` | Web | Clarity provider diagnostics |
 | `COMMERCE_ENABLED` | `"false"` | API, Web, smoke runner | disabled Commerce contract |
 | `MULTI_LOCALE_ENABLED` | `"false"` | API, Web, smoke runner | disabled non-default Locale contract |
+| `STRIPE_SECRET_KEY` | `${{ secrets.PRODUCTION_STRIPE_SECRET_KEY }}` | API | optional Phase 2 Stripe secret format diagnostics |
+| `STRIPE_WEBHOOK_SECRET` | `${{ secrets.PRODUCTION_STRIPE_WEBHOOK_SECRET }}` | API | optional Phase 2 webhook secret format diagnostics |
 | `SMOKE_ADMIN_EMAIL` | `${{ secrets.PRODUCTION_SMOKE_ADMIN_EMAIL }}` | Smoke runner | login and audit scoped checks |
 | `SMOKE_ADMIN_PASSWORD` | `${{ secrets.PRODUCTION_SMOKE_ADMIN_PASSWORD }}` | Smoke runner | login and audit scoped checks |
 | `SMOKE_REQUIRE_ADMIN_APP` | `${{ inputs.require_admin_app }}` | Smoke runner | Admin static hosting gate |
 | `SMOKE_REQUIRE_R2_UPLOAD` | `${{ inputs.require_r2_upload }}` | Smoke runner | real R2 upload and CDN gate |
 | `SMOKE_REQUIRE_REVALIDATION` | `${{ inputs.require_revalidation }}` | Smoke runner | ISR revalidation gate |
+| `SMOKE_STOREFRONT_HOST` | `${{ inputs.storefront_host }}` | Smoke runner | storefront canonical host override diagnostics |
 | `SMOKE_REPORT_PATH` | `${{ inputs.report_path }}` | Smoke runner | archived `smoke-report.v3` JSON |
 
 If the Admin static host cannot proxy `/api/v1` or infer the storefront origin,
