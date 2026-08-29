@@ -101,6 +101,7 @@ jobs:
       RELEASE_VISUAL_ARTIFACT_RUN_ID: ${{ inputs.visual_artifact_run_id }}
       SMOKE_ADMIN_EMAIL: ${{ secrets.PRODUCTION_SMOKE_ADMIN_EMAIL }}
       SMOKE_ADMIN_PASSWORD: ${{ secrets.PRODUCTION_SMOKE_ADMIN_PASSWORD }}
+      SMOKE_REPORT_MARKDOWN_PATH: artifacts/production-smoke/smoke-report.md
       SMOKE_REPORT_PATH: ${{ inputs.report_path }}
       SMOKE_REQUIRE_ADMIN_APP: ${{ inputs.require_admin_app }}
       SMOKE_REQUIRE_R2_UPLOAD: ${{ inputs.require_r2_upload }}
@@ -150,7 +151,7 @@ jobs:
         if: always()
         run: |
           if [ -f "$SMOKE_REPORT_PATH" ]; then
-            pnpm smoke:report -- "$SMOKE_REPORT_PATH"
+            pnpm smoke:report -- --markdown-output "$SMOKE_REPORT_MARKDOWN_PATH" "$SMOKE_REPORT_PATH"
           else
             echo "Smoke report artifact was not created at $SMOKE_REPORT_PATH."
           fi
@@ -220,10 +221,12 @@ jobs:
           {
             echo "## Production Smoke Evidence"
             echo "- Report path: \`$SMOKE_REPORT_PATH\`"
+            echo "- Report Markdown: \`$SMOKE_REPORT_MARKDOWN_PATH\`"
             echo "- Artifact: \`$SMOKE_REPORT_ARTIFACT_NAME\`"
             echo "- Source commit: \`${{ github.sha }}\`"
             echo "- Source workflow run: \`https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\`"
             echo "- Review: \`pnpm smoke:report -- $SMOKE_REPORT_PATH\`"
+            echo "- Review Markdown: \`pnpm smoke:report -- --markdown-output $SMOKE_REPORT_MARKDOWN_PATH $SMOKE_REPORT_PATH\`"
             echo "- Release gate: \`pnpm smoke:release-check -- $SMOKE_REPORT_PATH\`"
             combined_gate="pnpm release:check -- --checklist --all-visual-tasks --smoke-report $SMOKE_REPORT_PATH --output $RELEASE_CHECK_ARTIFACT_PATH"
             if [ -n "$RELEASE_VISUAL_ARTIFACT_NAME" ] && [ -n "$RELEASE_VISUAL_ARTIFACT_RUN_ID" ]; then
@@ -261,7 +264,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.SMOKE_REPORT_ARTIFACT_NAME }}
-          path: ${{ inputs.report_path }}
+          path: |
+            ${{ inputs.report_path }}
+            ${{ env.SMOKE_REPORT_MARKDOWN_PATH }}
           if-no-files-found: error
           retention-days: 30
       - name: Upload combined release evidence artifact

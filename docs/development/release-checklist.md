@@ -73,8 +73,9 @@ later phases are explicitly approved.
   evidence inputs with
   `pnpm release:preflight`: `SMOKE_REPORT_PATH`,
   `RELEASE_CHECK_ARTIFACT_PATH`, and `PROJECT_STATUS_ARTIFACT_PATH` must be
-  safe repository-relative JSON paths; `PROJECT_STATUS_MARKDOWN_PATH` and
-  `RELEASE_NOTES_PATH` must be safe repository-relative Markdown paths;
+  safe repository-relative JSON paths; `SMOKE_REPORT_MARKDOWN_PATH`,
+  `PROJECT_STATUS_MARKDOWN_PATH`, and `RELEASE_NOTES_PATH` must be safe
+  repository-relative Markdown paths;
   `SMOKE_REPORT_ARTIFACT_NAME`,
   `RELEASE_CHECK_ARTIFACT_NAME`, `PROJECT_STATUS_ARTIFACT_NAME`, and
   `RELEASE_NOTES_ARTIFACT_NAME` must be safe artifact names;
@@ -115,7 +116,8 @@ later phases are explicitly approved.
 
 - The `Production Smoke` workflow run is linked from the release notes.
 - The uploaded artifact `production-smoke-report-<run_number>` is attached or
-  linked.
+  linked. It contains both `smoke-report.json` and the Markdown review
+  `smoke-report.md`.
 - The uploaded artifact `release-evidence-check-<run_number>` is attached or
   linked.
 - The uploaded artifact `project-status-<run_number>` is attached or linked.
@@ -132,8 +134,9 @@ later phases are explicitly approved.
 - The GitHub step summary records the
   `project:status -- --all-actions --smoke-report artifacts/production-smoke/smoke-report.json --output artifacts/release/project-status.json --markdown-output artifacts/release/project-status.md`
   command and `project-status-<run_number>` artifact name for release handoff.
-- `pnpm smoke:report -- artifacts/production-smoke/smoke-report.json` output is
-  saved in the workflow log.
+- `pnpm smoke:report -- --markdown-output artifacts/production-smoke/smoke-report.md artifacts/production-smoke/smoke-report.json`
+  output is saved in the workflow log, and `smoke-report.md` is uploaded with
+  the smoke artifact.
 - `pnpm smoke:release-check -- artifacts/production-smoke/smoke-report.json`
   exits successfully in the workflow log.
 - The smoke report shows `summary.status=passed`.
@@ -196,8 +199,8 @@ later phases are explicitly approved.
   `--all-actions` next-action list, untruncated command lines, and
   `project-status.md` handoff checklist.
 - Production Smoke artifact uploads use `if-no-files-found: error`; missing
-  smoke, combined gate, project status, or release notes files fail the workflow
-  instead of leaving only a warning.
+  smoke JSON, Smoke Markdown, combined gate, project status, or release notes
+  files fail the workflow instead of leaving only a warning.
 - `pnpm release:notes -- --release-tag <tag> --workflow-run-url <url> --smoke-artifact production-smoke-report-<run_number> --release-artifact release-evidence-check-<run_number> --project-status artifacts/release/project-status.json --project-status-artifact project-status-<run_number> --visual-artifact page-builder-visual-fixture-<run_number> --storefront-url <url> --rollback-target <target> --output docs/releases/<tag>.md`
   writes the final Markdown release record from the ready
   `release-evidence-check.v1` artifact, including the readiness checklist,
@@ -224,7 +227,7 @@ later phases are explicitly approved.
 ## Failure Review
 
 - Download the workflow artifact or open the checked-out report path.
-- Run `pnpm smoke:report -- artifacts/production-smoke/smoke-report.json`.
+- Run `pnpm smoke:report -- --markdown-output artifacts/production-smoke/smoke-report.md artifacts/production-smoke/smoke-report.json`.
 - Run `pnpm smoke:release-check -- artifacts/production-smoke/smoke-report.json`
   before marking release evidence ready.
 - Run `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json`

@@ -37,7 +37,25 @@ export function normalizeSmokeReportPath(value) {
   return value.trim().replace(/\\/g, "/");
 }
 
-export function readSmokeReportPathIssue(value) {
+export function normalizeSmokeReportMarkdownPath(value) {
+  const context = {
+    extension: ".md",
+    extensionIssue: "non-markdown-extension",
+    label: "Smoke report Markdown",
+    relativeDescription: "relative Markdown report path",
+  };
+  const issue = readSmokeReportPathIssue(value, context);
+
+  if (issue) {
+    throw new Error(readSmokeReportPathErrorMessage(issue, context));
+  }
+
+  return value.trim().replace(/\\/g, "/");
+}
+
+export function readSmokeReportPathIssue(value, options = {}) {
+  const context = createPathIssueContext(options);
+
   if (typeof value !== "string") {
     return "invalid-path";
   }
@@ -68,41 +86,43 @@ export function readSmokeReportPathIssue(value) {
       (segment, index) =>
         !segment ||
         segment === "." ||
-        segment === ".." ||
-        hasReservedWindowsBasename(segment) ||
-        hasJsonIntermediateSegment(segment, index, segments.length) ||
-        hasTrailingDotSegment(segment) ||
-        !reportPathSegmentPattern.test(segment),
+          segment === ".." ||
+          hasReservedWindowsBasename(segment) ||
+          hasReportIntermediateSegment(segment, index, segments.length, context) ||
+          hasTrailingDotSegment(segment) ||
+          !reportPathSegmentPattern.test(segment),
     )
   ) {
     return "unsafe-segments";
   }
 
-  if (!segments.at(-1).toLowerCase().endsWith(".json")) {
-    return "non-json-extension";
+  if (!segments.at(-1).toLowerCase().endsWith(context.extension)) {
+    return context.extensionIssue;
   }
 
   return null;
 }
 
-function readSmokeReportPathErrorMessage(issue) {
+function readSmokeReportPathErrorMessage(issue, options = {}) {
+  const context = createPathIssueContext(options);
+
   if (issue === "empty-path") {
-    return "SMOKE_REPORT_PATH must not be empty.";
+    return `${context.label} must not be empty.`;
   }
 
   if (issue === "absolute-or-null-path" || issue === "invalid-path") {
-    return "SMOKE_REPORT_PATH must be a relative JSON report path.";
+    return `${context.label} must be a ${context.relativeDescription}.`;
   }
 
   if (issue === "unsafe-root") {
-    return "SMOKE_REPORT_PATH must be under tmp/, reports/, artifacts/, or .tmp/.";
+    return `${context.label} must be under tmp/, reports/, artifacts/, or .tmp/.`;
   }
 
   if (issue === "unsafe-segments") {
-    return "SMOKE_REPORT_PATH must use safe path segments without traversal.";
+    return `${context.label} must use safe path segments without traversal.`;
   }
 
-  return "SMOKE_REPORT_PATH must end with .json.";
+  return `${context.label} must end with ${context.extension}.`;
 }
 
 function hasReservedWindowsBasename(segment) {
@@ -110,10 +130,23 @@ function hasReservedWindowsBasename(segment) {
   return reservedWindowsBasenames.has(basename);
 }
 
-function hasJsonIntermediateSegment(segment, index, segmentCount) {
-  return index < segmentCount - 1 && segment.toLowerCase().endsWith(".json");
+function hasReportIntermediateSegment(segment, index, segmentCount, context) {
+  return (
+    index < segmentCount - 1 &&
+    segment.toLowerCase().endsWith(context.extension)
+  );
 }
 
 function hasTrailingDotSegment(segment) {
   return segment.endsWith(".");
+}
+
+function createPathIssueContext(options) {
+  return {
+    extension: options.extension ?? ".json",
+    extensionIssue: options.extensionIssue ?? "non-json-extension",
+    label: options.label ?? "SMOKE_REPORT_PATH",
+    relativeDescription:
+      options.relativeDescription ?? "relative JSON report path",
+  };
 }

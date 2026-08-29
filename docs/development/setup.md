@@ -259,13 +259,16 @@ Retry settings are also validated: `SMOKE_RETRY_ATTEMPTS` must be 1-60 and
 `SMOKE_REPORT_PATH` must be a relative `.json` path under `tmp/`, `reports/`,
 `artifacts/`, or `.tmp/` so report writes cannot target source or system paths.
 Production readiness requires this path so every production smoke run leaves a
-machine-readable artifact.
+machine-readable artifact. Use `pnpm smoke:report -- --markdown-output` to
+write a human-readable Smoke review Markdown file under the same safe archive
+roots.
 
 Review archived smoke reports with:
 
 ```bash
 pnpm smoke:report
 pnpm smoke:report -- --list --limit=10
+pnpm smoke:report -- --markdown-output artifacts/production-smoke/smoke-report.md artifacts/production-smoke/smoke-report.json
 pnpm smoke:report -- reports/production/smoke-report.json
 pnpm smoke:release-check -- artifacts/production-smoke/smoke-report.json
 pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete
@@ -288,7 +291,9 @@ pnpm release:notes -- --release-tag v0.1.0 --workflow-run-url https://github.com
 The review command scans the same safe archive roots, recomputes the report
 summary from the stored checks, and highlights R2 / CDN, Admin static app, and
 publish-flow traceability before showing failed check details and suggested
-fixes. The release-check command exits non-zero unless the archived report
+fixes. Add `--markdown-output artifacts/production-smoke/smoke-report.md` to
+archive the same review as Markdown. The release-check command exits non-zero
+unless the archived report
 has a valid chronological start/finish timeline and proves the required
 production gates, including R2 upload, Admin static app, publish/rollback, SEO,
 and ISR revalidation. Production release evidence must also include
@@ -339,11 +344,13 @@ same reason.
 
 The `Production Smoke` GitHub Actions workflow runs the same command set against
 the protected `production` environment. It sets
-`SMOKE_REPORT_PATH=artifacts/production-smoke/smoke-report.json`, requires R2
-upload, Admin static hosting, and ISR revalidation by default, writes the review
-and release-check commands to the job summary, records the source commit and
-workflow run URL in both the smoke config and summary, and uploads the report as
-`production-smoke-report-<run_number>`. It also runs the combined
+`SMOKE_REPORT_PATH=artifacts/production-smoke/smoke-report.json`, writes
+`SMOKE_REPORT_MARKDOWN_PATH=artifacts/production-smoke/smoke-report.md` from
+the archived JSON review, requires R2 upload, Admin static hosting, and ISR
+revalidation by default, writes the review and release-check commands to the job
+summary, records the source commit and workflow run URL in both the smoke config
+and summary, and uploads both files as `production-smoke-report-<run_number>`.
+It also runs the combined
 `release:check -- --checklist --all-visual-tasks` gate, prints the release
 readiness checklist with every pending Page Builder visual viewport task and
 full command lines, and uploads `release-evidence-check-<run_number>` with the
@@ -459,8 +466,8 @@ report or printed by the CLI. Failed check names, failure messages, structured
 failure details, and production readiness blocker/action strings are also
 normalized and bounded in the written report artifact so malformed diagnostics
 cannot inflate CI artifacts with multi-line or oversized values. The CLI summary
-and `pnpm smoke:report` archive review also normalize dynamic failure labels and
-messages before printing them. API
+and `pnpm smoke:report` archive review, including Markdown output, also normalize
+dynamic failure labels and messages before printing them. API
 HTTP, network, and upload failure messages are normalized and bounded before
 they enter smoke failures. Revalidation diagnostics keep total `pathCount` and
 `tagCount` values while bounding path/tag list fields to safe samples. Rollback

@@ -28,6 +28,7 @@ test("production smoke release input preflight validates workflow artifact paths
       PROJECT_STATUS_MARKDOWN_PATH: "reports/release/project-status.md",
       RELEASE_CHECK_ARTIFACT_PATH: "reports/release/release-check.json",
       RELEASE_NOTES_PATH: "reports/release/release-notes.md",
+      SMOKE_REPORT_MARKDOWN_PATH: "reports/production-smoke/smoke-report.md",
       SMOKE_REPORT_PATH: "reports/production-smoke/smoke-report.json",
     }),
     {
@@ -42,6 +43,13 @@ test("production smoke release input preflight validates workflow artifact paths
         SMOKE_REPORT_PATH: "README.md",
       }),
     /SMOKE_REPORT_PATH must be under tmp\/, reports\/, artifacts\/, or \.tmp\//,
+  );
+  assert.throws(
+    () =>
+      validateProductionSmokeReleaseInputs({
+        SMOKE_REPORT_MARKDOWN_PATH: "artifacts/production-smoke/smoke-report.json",
+      }),
+    /Smoke report Markdown must end with \.md/,
   );
   assert.throws(
     () =>
@@ -307,6 +315,7 @@ test("production smoke release input preflight CLI prints help", async () => {
   assert.equal(exitCode, 0);
   assert.match(stdout.join("\n"), /pnpm release:preflight/);
   assert.match(stdout.join("\n"), /SMOKE_REPORT_PATH/);
+  assert.match(stdout.join("\n"), /SMOKE_REPORT_MARKDOWN_PATH/);
   assert.match(stdout.join("\n"), /RELEASE_CHECK_ARTIFACT_PATH/);
   assert.match(stdout.join("\n"), /RELEASE_NOTES_PATH/);
   assert.match(stdout.join("\n"), /SMOKE_REPORT_ARTIFACT_NAME/);

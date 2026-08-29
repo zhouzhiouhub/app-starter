@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readConfig } from "./publish-smoke-config.mjs";
 import {
+  normalizeSmokeReportMarkdownPath,
   normalizeSmokeReportPath,
   readSmokeReportPathIssue,
 } from "./smoke-report-path-config.mjs";
@@ -55,6 +56,29 @@ test("smoke report path config validates report output paths", () => {
   assert.throws(
     () => normalizeSmokeReportPath("/tmp/smoke-report.json"),
     /SMOKE_REPORT_PATH must be a relative JSON report path/,
+  );
+});
+
+test("smoke report path config validates Markdown review paths", () => {
+  assert.equal(
+    normalizeSmokeReportMarkdownPath(" artifacts\\production-smoke\\smoke-report.md "),
+    "artifacts/production-smoke/smoke-report.md",
+  );
+  assert.equal(
+    normalizeSmokeReportMarkdownPath("reports/production/smoke.MD"),
+    "reports/production/smoke.MD",
+  );
+  assert.throws(
+    () => normalizeSmokeReportMarkdownPath("README.md"),
+    /Smoke report Markdown must be under tmp\/, reports\/, artifacts\/, or \.tmp\//,
+  );
+  assert.throws(
+    () => normalizeSmokeReportMarkdownPath("reports/smoke.md/final.md"),
+    /Smoke report Markdown must use safe path segments without traversal/,
+  );
+  assert.throws(
+    () => normalizeSmokeReportMarkdownPath("tmp/smoke-report.json"),
+    /Smoke report Markdown must end with \.md/,
   );
 });
 

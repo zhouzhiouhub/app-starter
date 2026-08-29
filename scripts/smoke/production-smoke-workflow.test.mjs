@@ -30,6 +30,7 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /actions: read/);
   assert.match(workflow, /contents: read/);
   assert.match(workflow, /SMOKE_REPORT_PATH: \$\{\{ inputs\.report_path \}\}/);
+  assert.match(workflow, /SMOKE_REPORT_MARKDOWN_PATH:/);
   assert.match(workflow, /SMOKE_REQUIRE_ADMIN_APP:/);
   assert.match(workflow, /SMOKE_REQUIRE_R2_UPLOAD:/);
   assert.match(workflow, /SMOKE_REQUIRE_REVALIDATION:/);
@@ -54,7 +55,10 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /APP_ENV: production/);
   assert.match(workflow, /pnpm smoke:publish/);
   assert.match(workflow, /if: always\(\)/);
-  assert.match(workflow, /pnpm smoke:report -- "\$SMOKE_REPORT_PATH"/);
+  assert.match(
+    workflow,
+    /pnpm smoke:report -- --markdown-output "\$SMOKE_REPORT_MARKDOWN_PATH" "\$SMOKE_REPORT_PATH"/,
+  );
   assert.match(workflow, /pnpm smoke:release-check -- "\$SMOKE_REPORT_PATH"/);
   assert.match(workflow, /RELEASE_CHECK_ARTIFACT_PATH:/);
   assert.match(workflow, /RELEASE_CHECK_ARTIFACT_NAME:/);
@@ -134,7 +138,9 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /--project-status-artifact "\$PROJECT_STATUS_ARTIFACT_NAME"/);
   assert.match(workflow, /--release-check "\$RELEASE_CHECK_ARTIFACT_PATH"/);
   assert.match(workflow, /GITHUB_STEP_SUMMARY/);
+  assert.match(workflow, /Report Markdown:/);
   assert.match(workflow, /Release gate:/);
+  assert.match(workflow, /Review Markdown:/);
   assert.match(workflow, /Combined gate:/);
   assert.match(workflow, /release:check -- --checklist --all-visual-tasks/);
   assert.match(workflow, /Combined artifact:/);
@@ -162,7 +168,8 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   );
   assert.match(workflow, /SMOKE_REPORT_ARTIFACT_NAME:/);
   assert.match(workflow, /actions\/upload-artifact@v4/);
-  assert.match(workflow, /path: \$\{\{ inputs\.report_path \}\}/);
+  assert.match(workflow, /\$\{\{ inputs\.report_path \}\}/);
+  assert.match(workflow, /\$\{\{ env\.SMOKE_REPORT_MARKDOWN_PATH \}\}/);
   assert.match(workflow, /path: \$\{\{ env\.RELEASE_CHECK_ARTIFACT_PATH \}\}/);
   assert.match(workflow, /\$\{\{ env\.PROJECT_STATUS_ARTIFACT_PATH \}\}/);
   assert.match(workflow, /\$\{\{ env\.PROJECT_STATUS_MARKDOWN_PATH \}\}/);
