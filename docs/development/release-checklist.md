@@ -93,6 +93,11 @@ later phases are explicitly approved.
   `SMOKE_STOREFRONT_HOST` must be a safe host when set;
   `SMOKE_REQUIRE_ADMIN_APP`, `SMOKE_REQUIRE_R2_UPLOAD`, and
   `SMOKE_REQUIRE_REVALIDATION` must be `true` or `false` when set;
+  when `NODE_ENV`, `APP_ENV`, or `VERCEL_ENV` is `production`, the same
+  preflight also fails before smoke requests if production API/Web/Admin URLs,
+  `DATABASE_URL`, `REDIS_URL`, MVP disabled feature flags, JWT keys, R2/CDN,
+  Preview Token secret, ISR revalidation, `SMOKE_REPORT_PATH`, or required
+  smoke gates are not production-ready;
   `visual_artifact_name` and
   `visual_artifact_run_id` must be provided together, and release notes require
   `release_tag`, `rollback_target`, `visual_artifact_name`, and

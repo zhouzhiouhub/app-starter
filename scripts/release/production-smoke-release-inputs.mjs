@@ -4,6 +4,7 @@ import { pathToFileURL } from "node:url";
 import { normalizeArtifactName } from "./release-notes-validation.mjs";
 import { readReleaseNotesCliConfig } from "./release-notes-config.mjs";
 import { validateProductionSmokeWorkflowArtifacts } from "./production-smoke-release-artifacts.mjs";
+import { validateProductionSmokeRuntimeReadiness } from "./production-smoke-release-readiness.mjs";
 import { validateProductionSmokeRuntimeInputs } from "./production-smoke-release-runtime.mjs";
 import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
 
@@ -28,6 +29,8 @@ export function validateProductionSmokeReleaseInputs(env = process.env) {
       }),
     );
   }
+
+  validateProductionSmokeRuntimeReadiness(env);
 
   return {
     releaseNotesAllowBlocked: allowBlockedReleaseNotes,
@@ -235,6 +238,10 @@ Environment:
   SMOKE_STOREFRONT_HOST must be a safe host when provided, and
   SMOKE_REQUIRE_ADMIN_APP, SMOKE_REQUIRE_R2_UPLOAD, and
   SMOKE_REQUIRE_REVALIDATION must be true or false when provided.
+  When NODE_ENV, APP_ENV, or VERCEL_ENV is production, also validates runtime
+  production readiness before smoke requests: production API/Web/Admin URLs,
+  DATABASE_URL, REDIS_URL, MVP disabled feature flags, JWT keys, R2/CDN,
+  Preview Token secret, ISR revalidation, and required smoke gates.
   RELEASE_NOTES_ALLOW_BLOCKED=true may only be used with release notes inputs to
   generate a failure review draft from blocked evidence.`);
 }
