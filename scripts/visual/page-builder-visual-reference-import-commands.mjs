@@ -48,6 +48,7 @@ export function createPageBuilderVisualReferenceAcceptPassingCommand(report) {
     ...createManifestOption(report),
     "--write",
     "--accept-passing",
+    "--require-complete",
   ]);
 }
 

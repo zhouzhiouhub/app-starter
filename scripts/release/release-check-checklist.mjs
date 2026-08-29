@@ -148,6 +148,7 @@ function readPendingVisualTasks(checklist) {
 
 function createVisualTaskSummary(task) {
   return {
+    acceptPassing: task.commands?.acceptPassing ?? null,
     capture: task.commands?.capture ?? null,
     component: task.component,
     expectedDesignReference: task.expectedDesignReference,
@@ -182,6 +183,9 @@ function formatVisualTasks(item) {
     }
     lines.push(`        Import: ${task.importReference}`);
     lines.push(`        Measure: ${task.measure}`);
+    if (task.acceptPassing) {
+      lines.push(`        Accept passing: ${task.acceptPassing}`);
+    }
     lines.push(`        Verify: ${task.verify}`);
   }
 

@@ -10,8 +10,9 @@ import {
   readPageBuilderVisualAcceptanceTargets,
 } from "./page-builder-visual-acceptance-targets.mjs";
 
+export { formatPageBuilderVisualAcceptanceChecklist } from "./page-builder-visual-acceptance-checklist-report.mjs";
+
 const evidencePathFields = ["designReference", "previewScreenshot"];
-const defaultMeasureCommand = "pnpm visual:measure -- --write --require-complete";
 
 export function createPageBuilderVisualAcceptanceChecklist(
   manifest,
@@ -55,44 +56,6 @@ export function createPageBuilderVisualAcceptanceChecklist(
     targets,
     viewportCount,
   };
-}
-
-export function formatPageBuilderVisualAcceptanceChecklist(checklist) {
-  const lines = [
-    "Evidence checklist:",
-    `  Viewports ready: ${checklist.readyViewportCount}/${checklist.viewportCount}`,
-  ];
-
-  for (const component of checklist.components) {
-    lines.push(`  - ${component.component}: ${component.status}`);
-
-    for (const viewport of component.viewports) {
-      for (const line of formatViewportChecklist(viewport)) {
-        lines.push(line);
-      }
-    }
-  }
-
-  if (checklist.pendingViewportCount > 0) {
-    const measureCommand =
-      readFirstPendingViewportCommand(checklist, "measure") ??
-      defaultMeasureCommand;
-
-    lines.push(
-      `Next: attach missing design references, run \`${measureCommand}\`, then review and mark passing evidence accepted.`,
-    );
-  }
-
-  return lines;
-}
-
-function readFirstPendingViewportCommand(checklist, command) {
-  return (
-    checklist.components
-      ?.flatMap((component) => component.viewports ?? [])
-      .find((viewport) => viewport.ready !== true && viewport.commands?.[command])
-      ?.commands?.[command] ?? null
-  );
 }
 
 function createComponentChecklist(component, record, targets, context) {
@@ -270,25 +233,6 @@ function readMetricTask(value, mode, threshold, label) {
 
 function readStatus(status) {
   return typeof status === "string" && status ? status : "missing";
-}
-
-function formatViewportChecklist(viewport) {
-  const label = `    ${viewport.component}.${viewport.viewport}`;
-
-  if (viewport.ready) {
-    return [`${label}: ready`];
-  }
-
-  return [
-    `${label}: missing ${viewport.missing.join(", ")}`,
-    `      expected designReference: ${viewport.expectedDesignReference}`,
-    `      expected previewScreenshot: ${viewport.expectedPreviewScreenshot}`,
-    `      reference report: ${viewport.commands.referenceReport}`,
-    `      import reference: ${viewport.commands.importReference}`,
-    `      capture preview: ${viewport.commands.capture}`,
-    `      measure evidence: ${viewport.commands.measure}`,
-    `      verify accepted: ${viewport.commands.verify}`,
-  ];
 }
 
 function isUnset(value) {

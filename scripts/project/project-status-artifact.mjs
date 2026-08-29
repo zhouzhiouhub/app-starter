@@ -151,6 +151,9 @@ function readVisualTaskActions(checklist) {
         ? `Run ${task.commands.importReference}.`
         : null,
       task.commands?.measure ? `Run ${task.commands.measure}.` : null,
+      task.commands?.acceptPassing
+        ? `Run ${task.commands.acceptPassing} after review passes.`
+        : null,
       task.commands?.verify ? `Verify with ${task.commands.verify}.` : null,
     ]
       .filter(Boolean)

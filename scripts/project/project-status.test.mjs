@@ -16,6 +16,7 @@ import {
   projectStatusSchemaVersion,
   readProjectStatusCliConfig,
 } from "./project-status.mjs";
+import { createBlockedCheck } from "./project-status-test-fixtures.mjs";
 
 test("project status summarizes blocked release evidence", () => {
   const artifact = createProjectStatusArtifact(createBlockedCheck(), {
@@ -157,6 +158,10 @@ test("project status CLI can print every next action", async () => {
     assert.match(
       text,
       /spec-table\.mobile.*Run pnpm visual:capture:fixture -- --component spec-table --viewport mobile/s,
+    );
+    assert.match(
+      text,
+      /spec-table\.mobile.*Run pnpm visual:measure -- --write --accept-passing --require-complete after review passes/s,
     );
     assert.match(
       text,
@@ -311,90 +316,3 @@ test("project status command is exposed in package and CI", async () => {
     /pnpm project:status -- --output artifacts\/release\/project-status\.json/,
   );
 });
-
-function createBlockedCheck() {
-  return {
-    blockers: [
-      {
-        action: "Run the Production Smoke workflow.",
-        area: "Production Smoke",
-        label: "Production smoke artifact missing",
-      },
-      {
-        action:
-          "Run pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture to refresh retained fixture evidence.",
-        area: "Page Builder Visual",
-        label: "Visual acceptance pending",
-      },
-    ],
-    releaseReady: false,
-    smoke: {
-      groups: [],
-      path: null,
-      releaseReady: false,
-      summary: {
-        status: "missing",
-      },
-    },
-    visual: {
-      acceptedComponentCount: 0,
-      acceptedViewportCount: 0,
-      componentCount: 6,
-      records: createVisualRecords(),
-      status: "needs-evidence",
-      viewportCount: 12,
-    },
-    visualChecklist: createVisualChecklist(),
-  };
-}
-
-function createVisualRecords() {
-  return mvpComponents.map((component) => ({
-    accepted: false,
-    component,
-  }));
-}
-
-function createVisualChecklist() {
-  const components = mvpComponents.map((component) => ({
-    component,
-    viewports: [
-      createVisualTask(component, "desktop"),
-      createVisualTask(component, "mobile"),
-    ],
-  }));
-
-  return {
-    components,
-    pendingViewportCount: 12,
-    readyViewportCount: 0,
-    viewportCount: 12,
-  };
-}
-
-const mvpComponents = [
-  "hero-banner",
-  "rich-text",
-  "image-gallery",
-  "cta-bar",
-  "faq",
-  "spec-table",
-];
-
-function createVisualTask(component, viewport) {
-  return {
-    commands: {
-      importReference:
-        "pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete",
-      measure: "pnpm visual:measure -- --write --require-complete",
-      referenceReport:
-        "pnpm visual:references -- --source-dir docs/visual/page-builder-references --markdown-output artifacts/visual/visual-reference-import-report.md --require-complete",
-      verify: "pnpm visual:acceptance -- --require-accepted",
-    },
-    component,
-    expectedDesignReference: `docs/visual/page-builder-references/${component}-${viewport}.png`,
-    expectedPreviewScreenshot: `artifacts/visual/page-builder-visual-fixture-${component}-${viewport}.png`,
-    ready: false,
-    viewport,
-  };
-}

@@ -13,6 +13,7 @@ export function createPageBuilderVisualViewportActions(
 
   return {
     commands: {
+      acceptPassing: createPageBuilderVisualAcceptPassingCommand(context),
       capture:
         createPageBuilderVisualViewportCaptureCommand(component, viewport, context),
       importReference: createPageBuilderVisualReferenceImportCommand(context),
@@ -115,6 +116,18 @@ function createPageBuilderVisualMeasureCommand(context) {
     "--",
     ...createManifestOption(context),
     "--write",
+    "--require-complete",
+  ]);
+}
+
+function createPageBuilderVisualAcceptPassingCommand(context) {
+  return joinCommand([
+    "pnpm",
+    "visual:measure",
+    "--",
+    ...createManifestOption(context),
+    "--write",
+    "--accept-passing",
     "--require-complete",
   ]);
 }

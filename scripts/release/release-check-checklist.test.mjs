@@ -76,6 +76,7 @@ test("release readiness checklist carries blocker actions", () => {
   assert.match(lines, /Reference report: pnpm visual:references/);
   assert.match(lines, /visual-reference-import-report\.md/);
   assert.match(lines, /Capture: pnpm visual:capture:fixture/);
+  assert.match(lines, /Accept passing: pnpm visual:measure -- --write --accept-passing --require-complete/);
   assert.match(lines, /\.\.\. and 1 more visual viewport tasks/);
   assert.match(lines, /Use --all-visual-tasks with --checklist/);
   assert.match(lines, /Release notes record: waiting for evidence/);
@@ -138,6 +139,7 @@ test("release readiness checklist formatter can preserve full task command lines
                 "docs/visual/page-builder-references/spec-table-mobile.png",
               expectedPreviewScreenshot:
                 "artifacts/visual/page-builder-visual-fixture-spec-table-mobile.png",
+              acceptPassing: longCommand,
               importReference: longCommand,
               measure: longCommand,
               missing: ["designReference"],
@@ -183,6 +185,8 @@ function createVisualChecklist() {
 function createVisualTask(component, viewport) {
   return {
     commands: {
+      acceptPassing:
+        "pnpm visual:measure -- --write --accept-passing --require-complete",
       capture: `pnpm visual:capture:fixture -- --component ${component} --viewport ${viewport} --write-manifest`,
       importReference:
         "pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete",

@@ -20,6 +20,7 @@ test("visual acceptance checklist lists missing release evidence", async () => {
   assert.equal(checklist.readyViewportCount, 0);
   assert.equal(checklist.pendingViewportCount, 12);
   assert.deepEqual(checklist.components[0].viewports[0].commands, {
+    acceptPassing: "pnpm visual:measure -- --write --accept-passing --require-complete",
     capture:
       "pnpm visual:capture:fixture -- --component hero-banner --viewport desktop --write-manifest",
     importReference:
@@ -45,7 +46,7 @@ test("visual acceptance checklist lists missing release evidence", async () => {
   assert.match(lines.join("\n"), /Next: attach missing design references/);
   assert.match(
     lines.join("\n"),
-    /Next: attach missing design references, run `pnpm visual:measure -- --write --require-complete`/,
+    /Next: attach missing design references, run `pnpm visual:measure -- --write --require-complete`, review measured diff values, run `pnpm visual:measure -- --write --accept-passing --require-complete`/,
   );
   assert.match(lines.join("\n"), /expected designReference:/);
   assert.match(lines.join("\n"), /reference report:/);
@@ -64,6 +65,9 @@ test("visual acceptance checklist commands respect custom manifest path", async 
   assert.match(viewport.commands.capture, /--manifest reports\/visual/);
   assert.match(viewport.commands.capture, /--output-dir reports\/visual/);
   assert.match(viewport.commands.importReference, /--manifest reports\/visual/);
+  assert.match(viewport.commands.acceptPassing, /--manifest reports\/visual/);
+  assert.match(viewport.commands.acceptPassing, /--accept-passing/);
+  assert.match(viewport.commands.acceptPassing, /--require-complete/);
   assert.match(viewport.commands.measure, /--manifest reports\/visual/);
   assert.match(viewport.commands.referenceReport, /--manifest reports\/visual/);
   assert.match(
@@ -80,7 +84,7 @@ test("visual acceptance checklist commands respect custom manifest path", async 
   );
   assert.match(
     lines,
-    /Next: attach missing design references, run `pnpm visual:measure -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --require-complete`/,
+    /run `pnpm visual:measure -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --accept-passing --require-complete`/,
   );
 });
 
