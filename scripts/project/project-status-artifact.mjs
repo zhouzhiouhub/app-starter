@@ -1,16 +1,13 @@
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
+import {
+  createProjectNextActions,
+  readPendingVisualTasks,
+} from "./project-status-next-actions.mjs";
 
 export const projectStatusSchemaVersion = "project-status.v1";
 
 const maxProjectActionCount = 8;
 const maxProjectTextLength = 420;
-
-const productionSmokeArtifactNames = [
-  "production-smoke-report-<run_number>",
-  "release-preflight-<run_number>",
-  "release-evidence-check-<run_number>",
-  "project-status-<run_number>",
-];
 
 const completedMilestones = [
   "Monorepo apps, shared packages, and extension/custom directories are scaffolded.",
@@ -103,134 +100,6 @@ function createReleaseGateSummary(check) {
       viewportCount: check.visual.viewportCount,
     },
   };
-}
-
-function createProjectNextActions(check) {
-  if (check.releaseReady) {
-    return [
-      {
-        action:
-          "Run pnpm release:notes with release tag, workflow run URL, artifact names, storefront URL, and rollback target.",
-        area: "Release Notes",
-        label: "Generate release record",
-      },
-    ];
-  }
-
-  return [
-    ...readProjectBlockerActions(check.blockers, {
-      smokeReportPath: readText(check.smoke?.path),
-    }),
-    ...readVisualTaskActions(check.visualChecklist),
-  ];
-}
-
-function readProjectBlockerActions(blockers, context = {}) {
-  return blockers
-    .filter((blocker) => !isVisualRecordWarning(blocker))
-    .map((blocker) => createBlockerAction(blocker, context));
-}
-
-function isVisualRecordWarning(blocker) {
-  return (
-    blocker.area === "Page Builder Visual" &&
-    typeof blocker.label === "string" &&
-    blocker.label.startsWith("record_")
-  );
-}
-
-function createBlockerAction(blocker, context = {}) {
-  const action = {
-    action: readText(blocker.action) ?? "Review the release evidence blocker.",
-    area: readText(blocker.area) ?? "Release",
-    label: readText(blocker.label) ?? "Blocked",
-  };
-  const steps = createBlockerActionSteps(action, context);
-
-  return steps.length > 0 ? { ...action, steps } : action;
-}
-
-function createBlockerActionSteps(action, context) {
-  if (
-    action.area !== "Production Smoke" ||
-    action.label !== "Production smoke artifact missing"
-  ) {
-    return [];
-  }
-
-  return [
-    createNextActionStep(
-      "Run workflow",
-      "GitHub Actions Production Smoke against the production environment",
-    ),
-    createNextActionStep("Keep artifacts", productionSmokeArtifactNames.join(", ")),
-    createNextActionStep(
-      "Rerun gate",
-      context.smokeReportPath
-        ? `pnpm release:check -- --smoke-report ${context.smokeReportPath}`
-        : "pnpm release:check -- --smoke-report <path>",
-    ),
-  ];
-}
-
-function readVisualTaskActions(checklist) {
-  return readPendingVisualTasks(checklist).map((task) => ({
-    action: [
-      `Place ${task.expectedDesignReference}.`,
-      `Capture ${task.expectedPreviewScreenshot}.`,
-      task.commands?.capture ? `Run ${task.commands.capture}.` : null,
-      task.commands?.referenceReport
-        ? `Run ${task.commands.referenceReport}.`
-        : null,
-      task.commands?.importReference
-        ? `Run ${task.commands.importReference}.`
-        : null,
-      task.commands?.measure ? `Run ${task.commands.measure}.` : null,
-      task.commands?.acceptPassing
-        ? `Run ${task.commands.acceptPassing} after review passes.`
-        : null,
-      task.commands?.verify ? `Verify with ${task.commands.verify}.` : null,
-    ]
-      .filter(Boolean)
-      .join(" "),
-    area: "Page Builder Visual",
-    label: `${task.component}.${task.viewport}`,
-    steps: createVisualTaskActionSteps(task),
-  }));
-}
-
-function createVisualTaskActionSteps(task) {
-  return [
-    createNextActionStep("Reference", task.expectedDesignReference),
-    createNextActionStep("Preview", task.expectedPreviewScreenshot),
-    createNextActionStep("Capture", task.commands?.capture),
-    createNextActionStep("Reference report", task.commands?.referenceReport),
-    createNextActionStep("Import", task.commands?.importReference),
-    createNextActionStep("Measure", task.commands?.measure),
-    createNextActionStep("Accept passing", task.commands?.acceptPassing),
-    createNextActionStep("Verify", task.commands?.verify),
-  ].filter(Boolean);
-}
-
-function createNextActionStep(label, value) {
-  return typeof value === "string" && value.length > 0
-    ? {
-        label,
-        value,
-      }
-    : null;
-}
-
-function readPendingVisualTasks(checklist) {
-  if (!Array.isArray(checklist?.components)) {
-    return [];
-  }
-
-  return checklist.components.flatMap((component) =>
-    Array.isArray(component.viewports)
-      ? component.viewports.filter((viewport) => viewport.ready !== true)
-      : [],
-  );
 }
 
 function readPendingCount(records) {

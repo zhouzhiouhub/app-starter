@@ -51,6 +51,26 @@ test("project status CLI writes a Markdown handoff", async () => {
       / {4}- Rerun gate: `pnpm release:check -- --smoke-report <path>`/,
     );
     assert.match(markdown, /Page Builder Visual: needs-evidence/);
+    assert.match(
+      markdown,
+      /- Page Builder Visual: Visual acceptance pending/,
+    );
+    assert.match(
+      markdown,
+      / {4}- Reference source: `docs\/visual\/page-builder-references`/,
+    );
+    assert.match(
+      markdown,
+      / {4}- Reference report: `pnpm visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md --require-complete`/,
+    );
+    assert.match(
+      markdown,
+      / {4}- Capture fixture: `pnpm visual:capture:fixture -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output-dir reports\/visual\/page-builder-fixture --report reports\/visual\/page-builder-fixture\/visual-capture-report\.json --write-manifest`/,
+    );
+    assert.match(
+      markdown,
+      / {4}- Accept passing: `pnpm visual:measure -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --accept-passing --require-complete`/,
+    );
     assert.match(markdown, /## Release Evidence Artifacts/);
     assert.match(
       markdown,

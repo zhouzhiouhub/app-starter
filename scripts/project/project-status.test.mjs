@@ -67,6 +67,23 @@ test("project status summarizes blocked release evidence", () => {
     ),
     true,
   );
+  assert.equal(artifact.nextActions[1].area, "Page Builder Visual");
+  assert.deepEqual(
+    artifact.nextActions[1].steps.map((step) => step.label),
+    [
+      "Reference source",
+      "Reference report",
+      "Import",
+      "Capture fixture",
+      "Measure",
+      "Accept passing",
+      "Verify",
+    ],
+  );
+  assert.equal(
+    artifact.nextActions[1].steps[3].value,
+    "pnpm visual:capture:fixture -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json --write-manifest",
+  );
   assert.equal(
     artifact.nextActions.some((action) => action.label === "hero-banner.desktop"),
     true,
@@ -181,6 +198,13 @@ test("project status CLI prints readable blocked state", async () => {
       /Rerun gate: pnpm release:check -- --smoke-report <path>/,
     );
     assert.match(text, /Page Builder Visual: needs-evidence/);
+    assert.match(text, /Page Builder Visual: Visual acceptance pending/);
+    assert.match(
+      text,
+      /Reference report: pnpm visual:references -- --source-dir docs\/visual\/page-builder-references/,
+    );
+    assert.match(text, /Capture fixture: pnpm visual:capture:fixture/);
+    assert.match(text, /Accept passing: pnpm visual:measure/);
     assert.match(text, /Local verification:/);
     assert.match(text, /TypeScript: pnpm typecheck \(configured\)/);
     assert.match(text, /hero-banner\.desktop/);
