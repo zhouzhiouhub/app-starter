@@ -10,6 +10,7 @@ const completedMilestones = [
   "MVP page management, Page Builder, preview, publish, rollback, SEO, media, audit logs, and starter pages are implemented.",
   "Commerce and multi-locale expansion remain explicit disabled placeholders for MVP.",
   "Production smoke, visual acceptance, release evidence, and release notes tooling are wired.",
+  "Production deployment and rollback runbook is documented for the MVP release path.",
 ];
 
 const localVerificationCommands = [

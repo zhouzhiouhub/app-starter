@@ -6,6 +6,8 @@ later phases are explicitly approved.
 
 ## Before Production Smoke
 
+- Review [`infra/README.md`](../../infra/README.md) for the production
+  deployment sequence, evidence flow, and rollback runbook.
 - Configure the GitHub `production` environment with the required smoke secrets:
   `PRODUCTION_API_URL`, `PRODUCTION_WEB_URL`, `PRODUCTION_ADMIN_URL`,
   `PRODUCTION_DATABASE_URL`, `PRODUCTION_REDIS_URL`,

@@ -5,6 +5,7 @@ import test from "node:test";
 const workflowPath = ".github/workflows/production-smoke.yml";
 const ciWorkflowPath = ".github/workflows/ci.yml";
 const checklistPath = "docs/development/release-checklist.md";
+const infraReadmePath = "infra/README.md";
 
 test("production smoke workflow archives and reviews smoke reports", async () => {
   const workflow = await readFile(workflowPath, "utf8");
@@ -207,6 +208,42 @@ test("release checklist requires archived smoke evidence", async () => {
   assert.match(checklist, /failure review draft/);
   assert.match(checklist, /--all-visual-tasks/);
   assert.match(checklist, /visual-reference-import-report\.md/);
+  assert.match(checklist, /\.\.\/\.\.\/infra\/README\.md/);
+});
+
+test("infra runbook covers production smoke deployment and rollback", async () => {
+  const runbook = await readFile(infraReadmePath, "utf8");
+
+  for (const pattern of [
+    /apps\/web`: Vercel/,
+    /apps\/admin`: static hosting/,
+    /services\/api`: independent Node\.js service/,
+    /managed PostgreSQL/,
+    /managed Redis over TLS/,
+    /Cloudflare R2 private bucket plus public CDN origin/,
+    /COMMERCE_ENABLED=false/,
+    /MULTI_LOCALE_ENABLED=false/,
+    /prisma migrate deploy --schema prisma\/schema\.prisma/,
+    /pnpm --filter @app-starter\/api run prisma:seed/,
+    /pnpm --filter @app-starter\/admin build/,
+    /page-builder-visual-fixture-<run_number>/,
+    /pnpm visual:acceptance -- --require-accepted/,
+    /Production Smoke/,
+    /require_admin_app=true/,
+    /require_r2_upload=true/,
+    /require_revalidation=true/,
+    /production-smoke-report-<run_number>/,
+    /release-evidence-check-<run_number>/,
+    /project-status-<run_number>/,
+    /pnpm smoke:release-check -- artifacts\/production-smoke\/smoke-report\.json/,
+    /pnpm release:handoff -- --require-ready/,
+    /pnpm release:notes -- --release-tag/,
+    /rollback_target/,
+    /Do not run\s+destructive database rollbacks/,
+    /Page rollback API or Admin rollback action/,
+  ]) {
+    assert.match(runbook, pattern);
+  }
 });
 
 test("main CI verifies the smoke report CLI entry point", async () => {

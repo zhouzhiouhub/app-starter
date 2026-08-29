@@ -25,6 +25,12 @@ test("project status summarizes blocked release evidence", () => {
   assert.equal(artifact.schemaVersion, projectStatusSchemaVersion);
   assert.equal(artifact.status, "needs-evidence");
   assert.equal(artifact.releaseReady, false);
+  assert.equal(
+    artifact.completedMilestones.includes(
+      "Production deployment and rollback runbook is documented for the MVP release path.",
+    ),
+    true,
+  );
   assert.equal(artifact.releaseGate.smoke.status, "blocked");
   assert.equal(artifact.releaseGate.visual.status, "needs-evidence");
   assert.equal(artifact.releaseGate.visual.pendingTaskCount, 12);

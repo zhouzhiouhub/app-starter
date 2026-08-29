@@ -397,6 +397,8 @@ pass `--allow-blocked` and generate a failure review draft from blocked
 evidence. Use
 [`release-checklist.md`](./release-checklist.md) to attach the workflow run,
 artifact, report review, and rollback target to release notes.
+Use [`infra/README.md`](../../infra/README.md) as the production deployment and
+rollback runbook for the same evidence flow.
 
 The script logs in with `SMOKE_ADMIN_EMAIL` / `SMOKE_ADMIN_PASSWORD` (falling
 back to the seeded admin), verifies the MVP disabled feature flags
