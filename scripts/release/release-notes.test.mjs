@@ -50,13 +50,19 @@ test("release notes render required evidence and gate status", () => {
     /Page Builder Visual Artifact: complete \(5\/5 files, 12\/12 screenshots\)/,
   );
   assert.match(markdown, /## Readiness Checklist/);
-  assert.match(
+  assert.match(markdown, /Production Smoke report: ready/);
+  assert.doesNotMatch(
     markdown,
-    /Production Smoke report: ready; detail: Report path: artifacts\/production-smoke\/smoke-report\.json/,
+    /Production Smoke report: ready; detail:/u,
   );
   assert.match(
     markdown,
-    /Page Builder Visual evidence: ready; detail: 6\/6 components, 12\/12 viewports, artifact complete/,
+    / {2}- Detail: Report path: artifacts\/production-smoke\/smoke-report\.json/,
+  );
+  assert.match(markdown, /Page Builder Visual evidence: ready/);
+  assert.match(
+    markdown,
+    / {2}- Detail: 6\/6 components, 12\/12 viewports, artifact complete/,
   );
   assert.match(markdown, /Release notes record: ready to generate/);
   assert.match(
@@ -191,13 +197,22 @@ test("release notes require ready evidence unless explicitly allowed", () => {
   assert.match(markdown, /Mode: failure review draft/);
   assert.match(markdown, /failed evidence review only/);
   assert.match(markdown, /Page Builder Visual: Visual acceptance pending/);
-  assert.match(
+  assert.match(markdown, /Page Builder Visual evidence: needs-evidence/);
+  assert.doesNotMatch(
     markdown,
-    /Page Builder Visual evidence: needs-evidence; detail: 0\/6 components, 0\/12 viewports, artifact invalid/,
+    /Page Builder Visual evidence: needs-evidence; detail:/u,
   );
   assert.match(
     markdown,
-    /bundle: pnpm visual:artifact-bundle -- --artifact-dir reports\/visual\/page-builder-fixture/,
+    / {2}- Detail: 0\/6 components, 0\/12 viewports, artifact invalid/,
+  );
+  assert.match(
+    markdown,
+    / {2}- Action: Attach real visual evidence\./,
+  );
+  assert.match(
+    markdown,
+    / {2}- Bundle: `pnpm visual:artifact-bundle -- --artifact-dir reports\/visual\/page-builder-fixture`/,
   );
   assert.match(markdown, /Pending components: hero-banner, rich-text/);
   assert.match(

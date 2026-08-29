@@ -100,22 +100,24 @@ function formatReadinessChecklist(checklist) {
     return ["- Not recorded"];
   }
 
-  return items.map(formatReadinessChecklistItem);
+  return items.flatMap(formatReadinessChecklistItem);
 }
 
 function formatReadinessChecklistItem(item) {
   return [
     `- ${formatInline(item.label)}: ${formatInline(item.status)}`,
-    formatChecklistField("detail", item.detail),
-    formatChecklistField("action", item.action),
-    formatChecklistField("bundle", item.bundleCommand),
-  ]
-    .filter(Boolean)
-    .join("; ");
+    ...formatChecklistField("Detail", item.detail),
+    ...formatChecklistField("Action", item.action),
+    ...formatChecklistCommand("Bundle", item.bundleCommand),
+  ];
 }
 
 function formatChecklistField(label, value) {
-  return hasText(value) ? `${label}: ${formatInline(value)}` : null;
+  return hasText(value) ? [`  - ${label}: ${formatInline(value)}`] : [];
+}
+
+function formatChecklistCommand(label, value) {
+  return hasText(value) ? [`  - ${label}: \`${formatInline(value)}\``] : [];
 }
 
 function formatVisualEvidence(visual) {
