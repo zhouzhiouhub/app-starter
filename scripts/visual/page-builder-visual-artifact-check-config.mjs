@@ -1,4 +1,6 @@
 import { readCaptureOutputDir } from "./page-builder-visual-capture-config.mjs";
+import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
+import { normalizeVisualAcceptanceMarkdownOutputPath } from "./page-builder-visual-acceptance-output-paths.mjs";
 
 export const defaultPageBuilderVisualArtifactDir =
   "reports/visual/page-builder-fixture";
@@ -17,6 +19,8 @@ export function readPageBuilderVisualArtifactCheckCliConfig(
       env.PAGE_BUILDER_VISUAL_ARTIFACT_DIR ??
       defaultPageBuilderVisualArtifactDir,
     json: false,
+    markdownOutputPath:
+      env.PAGE_BUILDER_VISUAL_ARTIFACT_CHECK_MARKDOWN_PATH ?? null,
   };
 
   for (let index = 0; index < args.length; index += 1) {
@@ -32,7 +36,23 @@ export function readPageBuilderVisualArtifactCheckCliConfig(
   return {
     artifactDir: readPageBuilderVisualArtifactDir(input.artifactDir),
     json: input.json,
+    markdownOutputPath: input.markdownOutputPath
+      ? normalizeVisualArtifactCheckMarkdownOutputPath(input.markdownOutputPath)
+      : null,
   };
+}
+
+export function normalizeVisualArtifactCheckMarkdownOutputPath(value) {
+  try {
+    return normalizeVisualAcceptanceMarkdownOutputPath(value);
+  } catch (error) {
+    throw new Error(
+      readErrorMessage(error).replaceAll(
+        "Visual acceptance Markdown",
+        "Visual artifact check Markdown",
+      ),
+    );
+  }
 }
 
 function readArtifactCheckOption(option, args, index, input) {
@@ -43,6 +63,9 @@ function readArtifactCheckOption(option, args, index, input) {
     case "--json":
       input.json = true;
       return index;
+    case "--markdown-output":
+      input.markdownOutputPath = readOptionValue(option, args, index);
+      return index + 1;
     default:
       throw new Error(`Unknown visual artifact check option: ${option}`);
   }

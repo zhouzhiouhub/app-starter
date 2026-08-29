@@ -311,8 +311,9 @@ release review notes. Add
 `--markdown-output artifacts/release/project-status.md` when the handoff needs
 a pasteable Markdown checklist; it also records the recommended archive paths
 and refresh commands for the Production Smoke JSON/Markdown, Page Builder
-Visual bundle, combined release gate, project status artifact, and release
-notes. Add `--all-actions` when it needs every pending next action, including
+Visual bundle and artifact check Markdown, combined release gate, project
+status artifact, and release notes. Add `--all-actions` when it needs every
+pending next action, including
 full command lines, instead of the default short list.
 
 After the Page Builder visual manifest has accepted real design evidence,
@@ -366,7 +367,8 @@ artifact map. If
 that Page Builder Visual
 artifact, including the artifact-local visual manifest and
 `visual-capture-report.json`, to `reports/visual/page-builder-fixture` before
-running `pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture`
+running
+`pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture --markdown-output reports/visual/page-builder-fixture/visual-artifact-check-report.md`
 and both the combined gate and project status snapshot with
 `--visual-artifact-dir reports/visual/page-builder-fixture`. The workflow runs
 `pnpm release:preflight` before smoke requests so unsafe artifact output paths,

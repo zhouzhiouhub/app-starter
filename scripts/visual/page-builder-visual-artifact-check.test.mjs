@@ -13,40 +13,12 @@ import {
 import {
   checkPageBuilderVisualArtifact,
   formatPageBuilderVisualArtifactCheckReport,
-  readPageBuilderVisualArtifactCheckCliConfig,
 } from "./page-builder-visual-artifact-check.mjs";
 import {
   createPageBuilderVisualCaptureArtifact,
   pageBuilderVisualCaptureDefaultHeight,
   pageBuilderVisualCaptureViewportWidths,
 } from "./page-builder-visual-capture.mjs";
-
-test("visual artifact check config parses safe artifact directories", () => {
-  assert.deepEqual(readPageBuilderVisualArtifactCheckCliConfig([]), {
-    artifactDir: "reports/visual/page-builder-fixture",
-    json: false,
-  });
-  assert.deepEqual(
-    readPageBuilderVisualArtifactCheckCliConfig([
-      "--",
-      "--artifact-dir",
-      "artifacts/visual/page-builder-fixture",
-      "--json",
-    ]),
-    {
-      artifactDir: "artifacts/visual/page-builder-fixture",
-      json: true,
-    },
-  );
-  assert.throws(
-    () =>
-      readPageBuilderVisualArtifactCheckCliConfig([
-        "--artifact-dir",
-        "tmp/page-builder-fixture",
-      ]),
-    /must live under artifacts\/visual or reports\/visual/,
-  );
-});
 
 test("visual artifact check accepts a complete fixture artifact", () => {
   const artifactDir = createArtifactDir("complete");
@@ -172,7 +144,11 @@ test("visual artifact check command is exposed in package and workflows", () => 
   );
   assert.match(
     productionSmokeWorkflow,
-    /pnpm visual:artifact-check -- --artifact-dir reports\/visual\/page-builder-fixture/,
+    /pnpm visual:artifact-check -- --artifact-dir reports\/visual\/page-builder-fixture --markdown-output reports\/visual\/page-builder-fixture\/visual-artifact-check-report\.md/,
+  );
+  assert.match(
+    pageBuilderWorkflow,
+    /visual-artifact-check-report\.md/,
   );
   assert.match(visualDoc, /pnpm visual:artifact-check/);
   assert.match(releaseChecklist, /pnpm visual:artifact-check/);

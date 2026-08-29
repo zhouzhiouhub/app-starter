@@ -33,6 +33,7 @@ test("page builder visual workflow captures fixture evidence", async () => {
   assert.match(workflow, /visual-capture-report\.json/);
   assert.match(workflow, /visual-acceptance-report\.json/);
   assert.match(workflow, /visual-acceptance-report\.md/);
+  assert.match(workflow, /visual-artifact-check-report\.md/);
   assert.match(workflow, /page-builder-visual-acceptance\.json/);
   assert.match(workflow, /actions\/upload-artifact@v4/);
   assert.match(
@@ -69,6 +70,7 @@ test("visual workflow documentation is linked from release guidance", async () =
   assert.match(readme, /page-builder-visual-fixture-<run_number>/);
   assert.match(readme, /visual-acceptance-report\.json/);
   assert.match(readme, /visual-acceptance-report\.md/);
+  assert.match(readme, /visual-artifact-check-report\.md/);
   assert.match(acceptanceDoc, /## CI Workflow/);
   assert.match(acceptanceDoc, /docs\/visual\/page-builder-references/);
   assert.match(acceptanceDoc, /reports\/visual\/page-builder-fixture/);
@@ -78,4 +80,5 @@ test("visual workflow documentation is linked from release guidance", async () =
   assert.match(releaseChecklist, /page-builder-visual-fixture-<run_number>/);
   assert.match(releaseChecklist, /visual-acceptance-report\.json/);
   assert.match(releaseChecklist, /visual-acceptance-report\.md/);
+  assert.match(releaseChecklist, /visual-artifact-check-report\.md/);
 });

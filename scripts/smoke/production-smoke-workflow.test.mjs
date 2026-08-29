@@ -89,7 +89,7 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /name: Check Page Builder visual evidence artifact/);
   assert.match(
     workflow,
-    /pnpm visual:artifact-check -- --artifact-dir reports\/visual\/page-builder-fixture/,
+    /pnpm visual:artifact-check -- --artifact-dir reports\/visual\/page-builder-fixture --markdown-output reports\/visual\/page-builder-fixture\/visual-artifact-check-report\.md/,
   );
   assert.match(
     workflow,
@@ -158,6 +158,7 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /ready evidence only/);
   assert.match(workflow, /Visual evidence artifact:/);
   assert.match(workflow, /Visual artifact check:/);
+  assert.match(workflow, /visual-artifact-check-report\.md/);
   assert.match(
     workflow,
     /skipped \(set visual_artifact_name and visual_artifact_run_id\)/,

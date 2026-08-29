@@ -67,6 +67,7 @@ function formatReleaseEvidenceArtifacts() {
     "- Production Smoke Markdown: `artifacts/production-smoke/smoke-report.md`",
     "- Page Builder Visual bundle: `reports/visual/page-builder-fixture`",
     "- Page Builder Visual acceptance Markdown: `reports/visual/page-builder-fixture/visual-acceptance-report.md`",
+    "- Page Builder Visual artifact check Markdown: `reports/visual/page-builder-fixture/visual-artifact-check-report.md`",
     "- Release evidence JSON: `artifacts/release/release-check.json`",
     "- Project status JSON: `artifacts/release/project-status.json`",
     "- Project status Markdown: `artifacts/release/project-status.md`",

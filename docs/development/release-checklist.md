@@ -161,12 +161,14 @@ later phases are explicitly approved.
   evidence is part of the release review; the artifact contains
   `page-builder-visual-acceptance.json` with artifact-local screenshot paths,
   `visual-capture-report.json` with the captured screenshot list, and
-  `visual-acceptance-report.json` with the structured acceptance status.
+  `visual-acceptance-report.json` with the structured acceptance status,
+  `visual-acceptance-report.md`, and `visual-artifact-check-report.md`.
 - When `visual_artifact_run_id` was provided, the Production Smoke workflow log
   shows the Page Builder Visual artifact download before the combined release
   gate.
 - When `visual_artifact_run_id` was provided, the Production Smoke workflow log
-  shows `pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture`
+  shows
+  `pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture --markdown-output reports/visual/page-builder-fixture/visual-artifact-check-report.md`
   passing after the download and before smoke requests continue.
 - Local reproduction of the same uploaded visual artifact shape uses
   `pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture`.
@@ -199,7 +201,8 @@ later phases are explicitly approved.
   artifact is a validated `project-status.v1` snapshot with the full
   `--all-actions` next-action list, untruncated command lines, and
   `project-status.md` handoff checklist, including the production smoke,
-  visual bundle, combined gate, project status, and release notes artifact map.
+  visual bundle and artifact check Markdown, combined gate, project status, and
+  release notes artifact map.
 - Production Smoke artifact uploads use `if-no-files-found: error`; missing
   smoke JSON, Smoke Markdown, combined gate, project status, or release notes
   files fail the workflow instead of leaving only a warning.
