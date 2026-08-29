@@ -138,7 +138,8 @@ Release handoff:
   Writes preflight.json, preflight.md, release-check.json, release-check.md,
   project-status.json, and project-status.md from the same handoff run. Blocked
   evidence still writes the handoff; use --require-ready when the command should
-  gate release.`);
+  gate release. The terminal summary prints the first two next actions and
+  points any remaining actions to the generated project-status Markdown.`);
 }
 
 async function writeReleaseHandoffPreflight(config, input, generatedAt) {

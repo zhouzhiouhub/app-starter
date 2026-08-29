@@ -244,7 +244,9 @@ later phases are explicitly approved.
   counts.
 - `pnpm release:handoff -- --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture`
   writes the preflight JSON/Markdown, combined release evidence JSON/Markdown,
-  and project status JSON/Markdown from the same handoff run. It is safe for
+  and project status JSON/Markdown from the same handoff run. The terminal
+  summary prints the first two next actions and points any remaining work to
+  `project-status.md`. It is safe for
   blocked review handoff because it still writes the files; add
   `--require-ready` when it should fail until release evidence and preflight are
   ready.

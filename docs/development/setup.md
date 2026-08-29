@@ -328,7 +328,9 @@ full command lines, instead of the default short list.
 the same release gate once, then writes `preflight.json`, `preflight.md`,
 `release-check.json`, `release-check.md`, `project-status.json`, and
 `project-status.md` under `artifacts/release/` by default so blocked and ready
-states use matching evidence. Blocked evidence still writes the files; add
+states use matching evidence. Its terminal summary prints the first two next
+actions and points remaining actions to
+`artifacts/release/project-status.md`. Blocked evidence still writes the files; add
 `--require-ready` when the handoff should fail until both release evidence and
 preflight are ready.
 

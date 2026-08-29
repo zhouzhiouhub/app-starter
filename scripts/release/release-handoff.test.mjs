@@ -12,6 +12,7 @@ import {
   createVisualArtifactCheck,
 } from "./release-check-test-fixtures.mjs";
 import {
+  printReleaseHandoffHelp,
   readReleaseHandoffCliConfig,
   runReleaseHandoffCli,
 } from "./release-handoff.mjs";
@@ -251,6 +252,7 @@ test("release handoff require-ready blocks failed production preflight", async (
 });
 
 test("release handoff config normalizes paths and is documented", async () => {
+  const helpOutput = [];
   const config = readReleaseHandoffCliConfig([
     "--",
     "--smoke-report",
@@ -321,6 +323,24 @@ test("release handoff config normalizes paths and is documented", async () => {
   assert.match(readme, /pnpm release:handoff/);
   assert.match(setupDoc, /pnpm release:handoff/);
   assert.match(releaseChecklist, /pnpm release:handoff/);
+
+  printReleaseHandoffHelp((line) => helpOutput.push(line));
+  assert.match(
+    helpOutput.join("\n"),
+    /first two next actions.*generated project-status Markdown/s,
+  );
+  assert.match(
+    readme,
+    /first two next\s+actions.*artifacts\/release\/project-status\.md/s,
+  );
+  assert.match(
+    setupDoc,
+    /first two next\s+actions.*artifacts\/release\/project-status\.md/s,
+  );
+  assert.match(
+    releaseChecklist,
+    /first two next\s+actions.*project-status\.md/s,
+  );
 });
 
 function createOutputRoot(label) {
