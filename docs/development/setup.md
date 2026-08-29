@@ -290,7 +290,7 @@ pnpm project:status -- --markdown-output artifacts/release/project-status.md
 pnpm release:handoff
 pnpm release:handoff -- --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture
 pnpm release:handoff -- --require-ready
-pnpm release:notes -- --release-tag v0.1.0 --workflow-run-url https://github.com/zhouzhiouhub/app-starter/actions/runs/123 --smoke-artifact production-smoke-report-123 --release-artifact release-evidence-check-123 --project-status artifacts/release/project-status.json --project-status-artifact project-status-123 --visual-artifact page-builder-visual-fixture-123 --storefront-url https://store.brand.com --rollback-target main@abcdef1 --output docs/releases/v0.1.0.md
+pnpm release:notes -- --release-tag v0.1.0 --workflow-run-url https://github.com/zhouzhiouhub/app-starter/actions/runs/123 --smoke-artifact production-smoke-report-123 --preflight-artifact release-preflight-123 --release-artifact release-evidence-check-123 --project-status artifacts/release/project-status.json --project-status-artifact project-status-123 --visual-artifact page-builder-visual-fixture-123 --storefront-url https://store.brand.com --rollback-target main@abcdef1 --output docs/releases/v0.1.0.md
 ```
 
 The review command scans the same safe archive roots, recomputes the report
@@ -349,17 +349,18 @@ then verifies the artifact-local manifest, capture report, acceptance report,
 and all 12 PNG screenshots, and writes the result under
 `visual.artifactCheck`.
 After that artifact is ready, `release:notes` writes the final Markdown release
-record, including the readiness checklist, project status artifact and source
-path, any recorded `visual.artifactCheck` summary, and the production smoke
-source run. It validates the `project-status.v1` file against the same release
-evidence gate and refuses blocked evidence unless `--allow-blocked` is used for
-a failure review draft.
+record, including the readiness checklist, preflight artifact, project status
+artifact and source path, any recorded `visual.artifactCheck` summary, and the
+production smoke source run. It validates the `project-status.v1` file against
+the same release evidence gate and refuses blocked evidence unless
+`--allow-blocked` is used for a failure review draft.
 When the artifact records `smoke.source.workflowRunUrl`, the CLI
 `--workflow-run-url` must match it so release records cannot point at a
 different GitHub Actions run. When it records `smoke.source.runNumber`,
-`--smoke-artifact` and `--project-status-artifact` must match
-`production-smoke-report-<runNumber>` and `project-status-<runNumber>` for the
-same reason.
+`--smoke-artifact`, `--preflight-artifact`, and `--project-status-artifact`
+must match `production-smoke-report-<runNumber>`,
+`release-preflight-<runNumber>`, and `project-status-<runNumber>` for the same
+reason.
 
 The `Production Smoke` GitHub Actions workflow runs the same command set against
 the protected `production` environment. It sets
@@ -396,8 +397,8 @@ The same visual artifact shape can be reproduced locally with
 `pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture`.
 When `release_tag`, `rollback_target`, `visual_artifact_name`, and
 `visual_artifact_run_id` are provided, it runs
-`release:notes` with the generated project status artifact name and uploads
-`release-notes-<run_number>`. Keep
+`release:notes` with the generated preflight and project status artifact names
+and uploads `release-notes-<run_number>`. Keep
 `allow_blocked_release_notes` disabled for a formal release; enable it only to
 pass `--allow-blocked` and generate a failure review draft from blocked
 evidence. Use

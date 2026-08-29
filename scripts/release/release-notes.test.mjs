@@ -20,18 +20,31 @@ test("release notes render required evidence and gate status", () => {
   assert.match(markdown, /Status: ready/);
   assert.match(markdown, /Mode: release sign-off/);
   assert.doesNotMatch(markdown, /failed evidence review only/);
-  assert.match(markdown, /Production smoke artifact: `production-smoke-report-123`/);
+  assert.match(
+    markdown,
+    /Production smoke artifact: `production-smoke-report-123`/,
+  );
+  assert.match(
+    markdown,
+    /Production smoke preflight artifact: `release-preflight-123`/,
+  );
   assert.match(
     markdown,
     /Production smoke source: https:\/\/github\.com\/zhouzhiouhub\/app-starter\/actions\/runs\/123456789 \(0123456, run 123456789\)/,
   );
-  assert.match(markdown, /Combined release artifact: `release-evidence-check-123`/);
+  assert.match(
+    markdown,
+    /Combined release artifact: `release-evidence-check-123`/,
+  );
   assert.match(markdown, /Project status artifact: `project-status-123`/);
   assert.match(
     markdown,
     /Project status source: `artifacts\/release\/project-status\.json`/,
   );
-  assert.match(markdown, /Page Builder Visual: accepted \(6\/6 components, 12\/12 viewports\)/);
+  assert.match(
+    markdown,
+    /Page Builder Visual: accepted \(6\/6 components, 12\/12 viewports\)/,
+  );
   assert.match(
     markdown,
     /Page Builder Visual Artifact: complete \(5\/5 files, 12\/12 screenshots\)/,
@@ -51,7 +64,10 @@ test("release notes render required evidence and gate status", () => {
     /Manifest: `docs\/development\/page-builder-visual-acceptance\.json`/,
   );
   assert.match(markdown, /Artifact check: complete/);
-  assert.match(markdown, /Artifact dir: `reports\/visual\/page-builder-fixture`/);
+  assert.match(
+    markdown,
+    /Artifact dir: `reports\/visual\/page-builder-fixture`/,
+  );
   assert.match(markdown, /Artifact files: 5\/5/);
   assert.match(markdown, /Artifact screenshots: 12\/12/);
   assert.match(markdown, /Artifact issues: none/);
@@ -219,6 +235,10 @@ test("release notes command is exposed in package, CI, and release docs", async 
     releaseChecklist,
     /--project-status-artifact project-status-<run_number>/,
   );
+  assert.match(
+    releaseChecklist,
+    /--preflight-artifact release-preflight-<run_number>/,
+  );
 });
 
 function createRequiredArgs() {
@@ -229,6 +249,8 @@ function createRequiredArgs() {
     "https://github.com/zhouzhiouhub/app-starter/actions/runs/123456789",
     "--smoke-artifact",
     "production-smoke-report-123",
+    "--preflight-artifact",
+    "release-preflight-123",
     "--release-artifact",
     "release-evidence-check-123",
     "--project-status-artifact",

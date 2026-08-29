@@ -12,6 +12,8 @@ test("release notes config parses required release evidence fields", () => {
       "https://github.com/zhouzhiouhub/app-starter/actions/runs/123",
       "--smoke-artifact",
       "production-smoke-report-123",
+      "--preflight-artifact",
+      "release-preflight-123",
       "--release-artifact",
       "release-evidence-check-123",
       "--project-status",
@@ -32,6 +34,7 @@ test("release notes config parses required release evidence fields", () => {
     {
       allowBlocked: false,
       outputPath: "docs/releases/v0.1.0.md",
+      preflightArtifact: "release-preflight-123",
       projectStatusArtifact: "project-status-123",
       projectStatusPath: "artifacts/release/project-status.json",
       releaseArtifact: "release-evidence-check-123",
@@ -83,6 +86,15 @@ test("release notes config rejects unsafe release record values", () => {
     () =>
       readReleaseNotesCliConfig([
         ...createRequiredArgs(),
+        "--preflight-artifact",
+        "release preflight",
+      ]),
+    /Preflight artifact must use 1-160 safe characters/,
+  );
+  assert.throws(
+    () =>
+      readReleaseNotesCliConfig([
+        ...createRequiredArgs(),
         "--project-status-artifact",
         "project status",
       ]),
@@ -116,6 +128,8 @@ function createRequiredArgs() {
     "https://github.com/zhouzhiouhub/app-starter/actions/runs/123456789",
     "--smoke-artifact",
     "production-smoke-report-123",
+    "--preflight-artifact",
+    "release-preflight-123",
     "--release-artifact",
     "release-evidence-check-123",
     "--project-status-artifact",

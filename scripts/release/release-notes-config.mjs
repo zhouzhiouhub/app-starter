@@ -16,6 +16,7 @@ export function readReleaseNotesCliConfig(args) {
   const config = {
     allowBlocked: false,
     outputPath: null,
+    preflightArtifact: null,
     projectStatusArtifact: null,
     projectStatusPath: defaultProjectStatusPath,
     releaseArtifact: null,
@@ -50,6 +51,9 @@ function readReleaseNotesOption(arg, args, index, config) {
       return index + 1;
     case "--project-status-artifact":
       config.projectStatusArtifact = readOptionValue(arg, args, index);
+      return index + 1;
+    case "--preflight-artifact":
+      config.preflightArtifact = readOptionValue(arg, args, index);
       return index + 1;
     case "--project-status":
       config.projectStatusPath = readOptionValue(arg, args, index);
@@ -100,10 +104,23 @@ function normalizeReleaseNotesConfig(config) {
     ),
     projectStatusPath: normalizeProjectStatusPath(config.projectStatusPath),
     releaseTag: normalizeReleaseTag(config.releaseTag),
-    rollbackTarget: normalizePlainValue("rollback target", config.rollbackTarget),
-    smokeArtifact: normalizeArtifactName("smoke artifact", config.smokeArtifact),
+    rollbackTarget: normalizePlainValue(
+      "rollback target",
+      config.rollbackTarget,
+    ),
+    smokeArtifact: normalizeArtifactName(
+      "smoke artifact",
+      config.smokeArtifact,
+    ),
+    preflightArtifact: normalizeArtifactName(
+      "preflight artifact",
+      config.preflightArtifact,
+    ),
     storefrontUrl: normalizeStorefrontUrl(config.storefrontUrl),
-    visualArtifact: normalizeArtifactName("visual artifact", config.visualArtifact),
+    visualArtifact: normalizeArtifactName(
+      "visual artifact",
+      config.visualArtifact,
+    ),
     workflowRunUrl: normalizeWorkflowRunUrl(config.workflowRunUrl),
   };
 }

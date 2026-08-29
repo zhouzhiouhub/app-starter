@@ -6,6 +6,12 @@ import {
   validateProductionSmokeReleaseInputs,
 } from "./production-smoke-release-inputs.mjs";
 
+const disabledEvidenceResult = {
+  releaseNotesAllowBlocked: false,
+  releaseNotesEnabled: false,
+  visualArtifactDownloadEnabled: false,
+};
+
 test("production smoke release input preflight accepts disabled optional evidence", () => {
   const result = validateProductionSmokeReleaseInputs({
     RELEASE_ROLLBACK_TARGET: "",
@@ -14,11 +20,7 @@ test("production smoke release input preflight accepts disabled optional evidenc
     RELEASE_VISUAL_ARTIFACT_RUN_ID: "",
   });
 
-  assert.deepEqual(result, {
-    releaseNotesAllowBlocked: false,
-    releaseNotesEnabled: false,
-    visualArtifactDownloadEnabled: false,
-  });
+  assert.deepEqual(result, disabledEvidenceResult);
 });
 
 test("production smoke release input preflight validates workflow artifact paths", () => {
@@ -32,11 +34,7 @@ test("production smoke release input preflight validates workflow artifact paths
       SMOKE_REPORT_MARKDOWN_PATH: "reports/production-smoke/smoke-report.md",
       SMOKE_REPORT_PATH: "reports/production-smoke/smoke-report.json",
     }),
-    {
-      releaseNotesAllowBlocked: false,
-      releaseNotesEnabled: false,
-      visualArtifactDownloadEnabled: false,
-    },
+    disabledEvidenceResult,
   );
   assert.throws(
     () =>
@@ -48,7 +46,8 @@ test("production smoke release input preflight validates workflow artifact paths
   assert.throws(
     () =>
       validateProductionSmokeReleaseInputs({
-        SMOKE_REPORT_MARKDOWN_PATH: "artifacts/production-smoke/smoke-report.json",
+        SMOKE_REPORT_MARKDOWN_PATH:
+          "artifacts/production-smoke/smoke-report.json",
       }),
     /Smoke report Markdown must end with \.md/,
   );
@@ -109,13 +108,10 @@ test("production smoke release input preflight validates workflow artifact names
       PROJECT_STATUS_ARTIFACT_NAME: "project-status-123",
       RELEASE_CHECK_ARTIFACT_NAME: "release-evidence-check-123",
       RELEASE_NOTES_ARTIFACT_NAME: "release-notes-123",
+      RELEASE_PREFLIGHT_ARTIFACT_NAME: "release-preflight-123",
       SMOKE_REPORT_ARTIFACT_NAME: "production-smoke-report-123",
     }),
-    {
-      releaseNotesAllowBlocked: false,
-      releaseNotesEnabled: false,
-      visualArtifactDownloadEnabled: false,
-    },
+    disabledEvidenceResult,
   );
   assert.throws(
     () =>
@@ -145,6 +141,13 @@ test("production smoke release input preflight validates workflow artifact names
       }),
     /Release notes artifact must use 1-160 safe characters/,
   );
+  assert.throws(
+    () =>
+      validateProductionSmokeReleaseInputs({
+        RELEASE_PREFLIGHT_ARTIFACT_NAME: "release preflight",
+      }),
+    /Release preflight artifact must use 1-160 safe characters/,
+  );
 });
 
 test("production smoke release input preflight validates smoke runtime inputs", () => {
@@ -155,11 +158,7 @@ test("production smoke release input preflight validates smoke runtime inputs", 
       SMOKE_REQUIRE_REVALIDATION: "yes",
       SMOKE_STOREFRONT_HOST: " Store.Brand-Platform.com:443 ",
     }),
-    {
-      releaseNotesAllowBlocked: false,
-      releaseNotesEnabled: false,
-      visualArtifactDownloadEnabled: false,
-    },
+    disabledEvidenceResult,
   );
   assert.throws(
     () =>
@@ -286,6 +285,14 @@ test("production smoke release input preflight validates release notes config", 
     () =>
       validateProductionSmokeReleaseInputs({
         ...createReleaseNotesEnv(),
+        RELEASE_PREFLIGHT_ARTIFACT_NAME: "",
+      }),
+    /Release preflight artifact is required/,
+  );
+  assert.throws(
+    () =>
+      validateProductionSmokeReleaseInputs({
+        ...createReleaseNotesEnv(),
         WEB_URL: "https://example.com",
       }),
     /Storefront URL must use a real production HTTPS host/,
@@ -321,25 +328,16 @@ test("production smoke release input preflight CLI prints help", async () => {
   });
 
   assert.equal(exitCode, 0);
-  assert.match(stdout.join("\n"), /pnpm release:preflight/);
-  assert.match(stdout.join("\n"), /SMOKE_REPORT_PATH/);
-  assert.match(stdout.join("\n"), /SMOKE_REPORT_MARKDOWN_PATH/);
-  assert.match(stdout.join("\n"), /RELEASE_CHECK_ARTIFACT_PATH/);
-  assert.match(stdout.join("\n"), /RELEASE_CHECK_MARKDOWN_PATH/);
-  assert.match(stdout.join("\n"), /RELEASE_NOTES_PATH/);
-  assert.match(stdout.join("\n"), /SMOKE_REPORT_ARTIFACT_NAME/);
-  assert.match(stdout.join("\n"), /RELEASE_CHECK_ARTIFACT_NAME/);
-  assert.match(stdout.join("\n"), /RELEASE_VISUAL_ARTIFACT_NAME/);
-  assert.match(stdout.join("\n"), /RELEASE_VISUAL_ARTIFACT_RUN_ID/);
-  assert.match(stdout.join("\n"), /PROJECT_STATUS_ARTIFACT_PATH/);
-  assert.match(stdout.join("\n"), /PROJECT_STATUS_ARTIFACT_NAME/);
-  assert.match(stdout.join("\n"), /PROJECT_STATUS_MARKDOWN_PATH/);
-  assert.match(stdout.join("\n"), /RELEASE_NOTES_ARTIFACT_NAME/);
-  assert.match(stdout.join("\n"), /SMOKE_STOREFRONT_HOST/);
-  assert.match(stdout.join("\n"), /SMOKE_REQUIRE_ADMIN_APP/);
-  assert.match(stdout.join("\n"), /SMOKE_REQUIRE_R2_UPLOAD/);
-  assert.match(stdout.join("\n"), /SMOKE_REQUIRE_REVALIDATION/);
-  assert.match(stdout.join("\n"), /RELEASE_NOTES_ALLOW_BLOCKED/);
+  const help = stdout.join("\n");
+  const expectedVariables =
+    "SMOKE_REPORT_PATH SMOKE_REPORT_MARKDOWN_PATH RELEASE_CHECK_ARTIFACT_PATH RELEASE_CHECK_MARKDOWN_PATH RELEASE_NOTES_PATH SMOKE_REPORT_ARTIFACT_NAME RELEASE_CHECK_ARTIFACT_NAME RELEASE_PREFLIGHT_ARTIFACT_NAME RELEASE_VISUAL_ARTIFACT_NAME RELEASE_VISUAL_ARTIFACT_RUN_ID PROJECT_STATUS_ARTIFACT_PATH PROJECT_STATUS_ARTIFACT_NAME PROJECT_STATUS_MARKDOWN_PATH RELEASE_NOTES_ARTIFACT_NAME SMOKE_STOREFRONT_HOST SMOKE_REQUIRE_ADMIN_APP SMOKE_REQUIRE_R2_UPLOAD SMOKE_REQUIRE_REVALIDATION RELEASE_NOTES_ALLOW_BLOCKED".split(
+      " ",
+    );
+
+  assert.match(help, /pnpm release:preflight/);
+  for (const variable of expectedVariables) {
+    assert.match(help, new RegExp(variable));
+  }
 });
 
 test("production smoke release input preflight CLI rejects unknown options", async () => {
@@ -385,6 +383,7 @@ function createReleaseNotesEnv() {
     RELEASE_CHECK_ARTIFACT_NAME: "release-evidence-check-123",
     RELEASE_CHECK_ARTIFACT_PATH: "artifacts/release/release-check.json",
     RELEASE_NOTES_PATH: "artifacts/release/release-notes.md",
+    RELEASE_PREFLIGHT_ARTIFACT_NAME: "release-preflight-123",
     RELEASE_ROLLBACK_TARGET: "main@abcdef1",
     RELEASE_STOREFRONT_URL: "",
     RELEASE_TAG: "v0.1.0",

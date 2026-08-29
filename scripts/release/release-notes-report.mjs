@@ -34,6 +34,9 @@ export function createReleaseNotesMarkdown(config, artifact, projectStatus) {
     "",
     `- Workflow run: ${config.workflowRunUrl}`,
     `- Production smoke artifact: \`${formatInline(config.smokeArtifact)}\``,
+    `- Production smoke preflight artifact: \`${formatInline(
+      config.preflightArtifact,
+    )}\``,
     `- Production smoke source: ${formatSmokeSource(artifact.smoke.source)}`,
     `- Combined release artifact: \`${formatInline(config.releaseArtifact)}\``,
     `- Project status artifact: \`${formatInline(config.projectStatusArtifact)}\``,
@@ -175,9 +178,9 @@ function formatVisualArtifactIssues(issues) {
     return ["- Artifact issues: none"];
   }
 
-  const visible = issues.slice(0, maxVisualArtifactIssueLines).map(
-    (issue) => `- Artifact issue: ${formatVisualIssue(issue)}`,
-  );
+  const visible = issues
+    .slice(0, maxVisualArtifactIssueLines)
+    .map((issue) => `- Artifact issue: ${formatVisualIssue(issue)}`);
   const hidden = issues.length - visible.length;
 
   if (hidden > 0) {
@@ -192,9 +195,9 @@ function formatVisualIssues(issues) {
     return ["- Visual issues: none"];
   }
 
-  const visible = issues.slice(0, maxVisualIssueLines).map(
-    (issue) => `- Visual issue: ${formatVisualIssue(issue)}`,
-  );
+  const visible = issues
+    .slice(0, maxVisualIssueLines)
+    .map((issue) => `- Visual issue: ${formatVisualIssue(issue)}`);
   const hidden = issues.length - visible.length;
 
   if (hidden > 0) {
@@ -229,12 +232,14 @@ function formatBlockers(blockers) {
     return ["- None"];
   }
 
-  const visible = blockers.slice(0, maxBlockerLines).map(
-    (blocker) =>
-      `- ${formatInline(blocker.area)}: ${formatInline(blocker.label)} - ${formatInline(
-        blocker.action,
-      )}`,
-  );
+  const visible = blockers
+    .slice(0, maxBlockerLines)
+    .map(
+      (blocker) =>
+        `- ${formatInline(blocker.area)}: ${formatInline(blocker.label)} - ${formatInline(
+          blocker.action,
+        )}`,
+    );
   const hidden = blockers.length - visible.length;
 
   if (hidden > 0) {
@@ -273,7 +278,10 @@ function formatInlineList(values) {
 }
 
 function formatInline(value) {
-  return formatSmokeText(value, { fallback: "unknown", maxLength: maxTextLength });
+  return formatSmokeText(value, {
+    fallback: "unknown",
+    maxLength: maxTextLength,
+  });
 }
 
 function hasText(value) {

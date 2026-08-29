@@ -88,8 +88,9 @@ later phases are explicitly approved.
   `RELEASE_CHECK_MARKDOWN_PATH`, `PROJECT_STATUS_MARKDOWN_PATH`, and
   `RELEASE_NOTES_PATH` must be safe repository-relative Markdown paths;
   `SMOKE_REPORT_ARTIFACT_NAME`,
-  `RELEASE_CHECK_ARTIFACT_NAME`, `PROJECT_STATUS_ARTIFACT_NAME`, and
-  `RELEASE_NOTES_ARTIFACT_NAME` must be safe artifact names;
+  `RELEASE_CHECK_ARTIFACT_NAME`, `PROJECT_STATUS_ARTIFACT_NAME`,
+  `RELEASE_NOTES_ARTIFACT_NAME`, and `RELEASE_PREFLIGHT_ARTIFACT_NAME` must be
+  safe artifact names;
   `SMOKE_STOREFRONT_HOST` must be a safe host when set;
   `SMOKE_REQUIRE_ADMIN_APP`, `SMOKE_REQUIRE_R2_UPLOAD`, and
   `SMOKE_REQUIRE_REVALIDATION` must be `true` or `false` when set;
@@ -110,7 +111,8 @@ later phases are explicitly approved.
   `visual_artifact_name` and
   `visual_artifact_run_id` must be provided together, and release notes require
   `release_tag`, `rollback_target`, `visual_artifact_name`, and
-  `visual_artifact_run_id` together.
+  `visual_artifact_run_id` together; release notes also require
+  `RELEASE_PREFLIGHT_ARTIFACT_NAME`.
   `allow_blocked_release_notes` must stay disabled for formal release notes and
   may only be enabled with the release note inputs to create a failure review
   draft from blocked evidence.
@@ -143,6 +145,8 @@ later phases are explicitly approved.
 - The uploaded artifact `production-smoke-report-<run_number>` is attached or
   linked. It contains both `smoke-report.json` and the Markdown review
   `smoke-report.md`.
+- The uploaded artifact `release-preflight-<run_number>` is attached or linked.
+  It contains both `preflight.json` and `preflight.md`.
 - The uploaded artifact `release-evidence-check-<run_number>` is attached or
   linked. It contains both `release-check.json` and the Markdown review
   `release-check.md`.
@@ -254,17 +258,17 @@ later phases are explicitly approved.
   preflight JSON/Markdown, smoke JSON, Smoke Markdown, combined gate
   JSON/Markdown, project status, or release notes files fail the workflow
   instead of leaving only a warning.
-- `pnpm release:notes -- --release-tag <tag> --workflow-run-url <url> --smoke-artifact production-smoke-report-<run_number> --release-artifact release-evidence-check-<run_number> --project-status artifacts/release/project-status.json --project-status-artifact project-status-<run_number> --visual-artifact page-builder-visual-fixture-<run_number> --storefront-url <url> --rollback-target <target> --output docs/releases/<tag>.md`
+- `pnpm release:notes -- --release-tag <tag> --workflow-run-url <url> --smoke-artifact production-smoke-report-<run_number> --preflight-artifact release-preflight-<run_number> --release-artifact release-evidence-check-<run_number> --project-status artifacts/release/project-status.json --project-status-artifact project-status-<run_number> --visual-artifact page-builder-visual-fixture-<run_number> --storefront-url <url> --rollback-target <target> --output docs/releases/<tag>.md`
   writes the final Markdown release record from the ready
   `release-evidence-check.v1` artifact, including the readiness checklist,
-  project status artifact and source path, visual manifest path, optional
-  `visual.artifactCheck` summary, pending visual evidence lists, visual
-  checklist task summary, and visual issue summary when `--allow-blocked` is
-  used for failure review drafts. The command validates the artifact's smoke
-  summary, source metadata, `--workflow-run-url` match, smoke artifact and
-  project status artifact run-number match, `project-status.v1` release-ready
-  and gate-count consistency, traceability groups, readiness checklist, visual
-  counts, optional
+  preflight artifact, project status artifact and source path, visual manifest
+  path, optional `visual.artifactCheck` summary, pending visual evidence lists,
+  visual checklist task summary, and visual issue summary when `--allow-blocked`
+  is used for failure review drafts. The command validates the artifact's smoke
+  summary, source metadata, `--workflow-run-url` match, smoke artifact,
+  preflight artifact, and project status artifact run-number match,
+  `project-status.v1` release-ready and gate-count consistency, traceability
+  groups, readiness checklist, visual counts, optional
   visual artifact check, pending lists, and issue entries before writing the
   Markdown record; a ready artifact must also have no blockers, internally
   consistent smoke status, ready production smoke with source metadata, fully
@@ -309,9 +313,10 @@ later phases are explicitly approved.
 - Keep the project status artifact for at least the workflow retention window.
 - Keep the generated release notes artifact for at least the workflow retention
   window when it was produced by `Production Smoke`.
-- Record the release tag, workflow run URL, smoke artifact name, combined release
-  artifact name, project status artifact name, production smoke source run,
-  public storefront URL, and rollback target in the release notes.
+- Record the release tag, workflow run URL, smoke artifact name, preflight
+  artifact name, combined release artifact name, project status artifact name,
+  production smoke source run, public storefront URL, and rollback target in the
+  release notes.
 - Keep the generated `docs/releases/<tag>.md` release record with the release
   evidence bundle.
 - If a P0 or P1 issue happens, attach the failed smoke report review to the

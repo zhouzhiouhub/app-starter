@@ -5,6 +5,7 @@ export function assertReleaseNotesSourceConsistency(config, artifact) {
 
   assertWorkflowRunUrlMatchesSource(config, source);
   assertSmokeArtifactMatchesSource(config, source);
+  assertPreflightArtifactMatchesSource(config, source);
   assertProjectStatusArtifactMatchesSource(config, source);
 }
 
@@ -13,7 +14,9 @@ function assertWorkflowRunUrlMatchesSource(config, source) {
     return;
   }
 
-  if (normalizeWorkflowRunUrl(source.workflowRunUrl) !== config.workflowRunUrl) {
+  if (
+    normalizeWorkflowRunUrl(source.workflowRunUrl) !== config.workflowRunUrl
+  ) {
     throw new Error(
       "Release notes workflow run URL must match smoke.source.workflowRunUrl.",
     );
@@ -44,6 +47,20 @@ function assertProjectStatusArtifactMatchesSource(config, source) {
   if (config.projectStatusArtifact !== expected) {
     throw new Error(
       "Release notes project status artifact must match smoke.source.runNumber.",
+    );
+  }
+}
+
+function assertPreflightArtifactMatchesSource(config, source) {
+  if (!source?.runNumber) {
+    return;
+  }
+
+  const expected = `release-preflight-${source.runNumber}`;
+
+  if (config.preflightArtifact !== expected) {
+    throw new Error(
+      "Release notes preflight artifact must match smoke.source.runNumber.",
     );
   }
 }

@@ -11,6 +11,34 @@ const workflowPath = ".github/workflows/production-smoke.yml";
 const ciWorkflowPath = ".github/workflows/ci.yml";
 const checklistPath = "docs/development/release-checklist.md";
 const infraReadmePath = "infra/README.md";
+const expectedMatrixSources = [
+  ["API_URL", "${{ secrets.PRODUCTION_API_URL }}"],
+  ["WEB_URL", "${{ secrets.PRODUCTION_WEB_URL }}"],
+  ["ADMIN_URL", "${{ secrets.PRODUCTION_ADMIN_URL }}"],
+  ["DATABASE_URL", "${{ secrets.PRODUCTION_DATABASE_URL }}"],
+  ["REDIS_URL", "${{ secrets.PRODUCTION_REDIS_URL }}"],
+  ["JWT_PRIVATE_KEY", "${{ secrets.PRODUCTION_JWT_PRIVATE_KEY }}"],
+  ["JWT_PUBLIC_KEY", "${{ secrets.PRODUCTION_JWT_PUBLIC_KEY }}"],
+  ["PREVIEW_TOKEN_SECRET", "${{ secrets.PRODUCTION_PREVIEW_TOKEN_SECRET }}"],
+  [
+    "STOREFRONT_REVALIDATE_SECRET",
+    "${{ secrets.PRODUCTION_STOREFRONT_REVALIDATE_SECRET }}",
+  ],
+  [
+    "STOREFRONT_REVALIDATE_URL",
+    "${{ secrets.PRODUCTION_STOREFRONT_REVALIDATE_URL }}",
+  ],
+  ["R2_SECRET_ACCESS_KEY", "${{ secrets.PRODUCTION_R2_SECRET_ACCESS_KEY }}"],
+  ["MEDIA_CDN_BASE_URL", "${{ vars.PRODUCTION_MEDIA_CDN_BASE_URL }}"],
+  ["ANALYTICS_ENABLED", "${{ vars.PRODUCTION_ANALYTICS_ENABLED }}"],
+  ["COMMERCE_ENABLED", '"false"'],
+  ["MULTI_LOCALE_ENABLED", '"false"'],
+  ["STRIPE_SECRET_KEY", "${{ secrets.PRODUCTION_STRIPE_SECRET_KEY }}"],
+  ["SMOKE_ADMIN_EMAIL", "${{ secrets.PRODUCTION_SMOKE_ADMIN_EMAIL }}"],
+  ["SMOKE_REQUIRE_R2_UPLOAD", "${{ inputs.require_r2_upload }}"],
+  ["SMOKE_STOREFRONT_HOST", "${{ inputs.storefront_host }}"],
+  ["SMOKE_REPORT_PATH", "${{ inputs.report_path }}"],
+];
 
 test("production smoke workflow archives and reviews smoke reports", async () => {
   const workflow = await readFile(workflowPath, "utf8");
@@ -145,6 +173,12 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
     workflow,
     /--workflow-run-url "https:\/\/github\.com\/\$\{\{ github\.repository \}\}\/actions\/runs\/\$\{\{ github\.run_id \}\}"/,
   );
+  assert.match(workflow, /--smoke-artifact "\$SMOKE_REPORT_ARTIFACT_NAME"/);
+  assert.match(
+    workflow,
+    /--preflight-artifact "\$RELEASE_PREFLIGHT_ARTIFACT_NAME"/,
+  );
+  assert.match(workflow, /--release-artifact "\$RELEASE_CHECK_ARTIFACT_NAME"/);
   assert.match(workflow, /--project-status "\$PROJECT_STATUS_ARTIFACT_PATH"/);
   assert.match(
     workflow,
@@ -233,6 +267,7 @@ test("release checklist requires archived smoke evidence", async () => {
 
   assert.match(checklist, /Production Smoke/);
   assert.match(checklist, /artifacts\/production-smoke\/smoke-report\.json/);
+  assert.match(checklist, /release-preflight-<run_number>/);
   assert.match(checklist, /project-status-<run_number>/);
   assert.match(checklist, /project-status\.v1/);
   assert.match(checklist, /project-status\.md/);
@@ -274,6 +309,7 @@ test("infra runbook covers production smoke deployment and rollback", async () =
     /require_r2_upload=true/,
     /require_revalidation=true/,
     /production-smoke-report-<run_number>/,
+    /release-preflight-<run_number>/,
     /release-evidence-check-<run_number>/,
     /project-status-<run_number>/,
     /pnpm smoke:release-check -- artifacts\/production-smoke\/smoke-report\.json/,
@@ -311,31 +347,13 @@ test("infra runbook maps production environment sources", async () => {
     );
   }
 
-  for (const pattern of [
-    /\| `API_URL` \| `\$\{\{ secrets\.PRODUCTION_API_URL \}\}` \|/,
-    /\| `WEB_URL` \| `\$\{\{ secrets\.PRODUCTION_WEB_URL \}\}` \|/,
-    /\| `ADMIN_URL` \| `\$\{\{ secrets\.PRODUCTION_ADMIN_URL \}\}` \|/,
-    /\| `DATABASE_URL` \| `\$\{\{ secrets\.PRODUCTION_DATABASE_URL \}\}` \|/,
-    /\| `REDIS_URL` \| `\$\{\{ secrets\.PRODUCTION_REDIS_URL \}\}` \|/,
-    /\| `JWT_PRIVATE_KEY` \| `\$\{\{ secrets\.PRODUCTION_JWT_PRIVATE_KEY \}\}` \|/,
-    /\| `JWT_PUBLIC_KEY` \| `\$\{\{ secrets\.PRODUCTION_JWT_PUBLIC_KEY \}\}` \|/,
-    /\| `PREVIEW_TOKEN_SECRET` \| `\$\{\{ secrets\.PRODUCTION_PREVIEW_TOKEN_SECRET \}\}` \|/,
-    /\| `STOREFRONT_REVALIDATE_SECRET` \| `\$\{\{ secrets\.PRODUCTION_STOREFRONT_REVALIDATE_SECRET \}\}` \|/,
-    /\| `STOREFRONT_REVALIDATE_URL` \| `\$\{\{ secrets\.PRODUCTION_STOREFRONT_REVALIDATE_URL \}\}` \|/,
-    /\| `R2_SECRET_ACCESS_KEY` \| `\$\{\{ secrets\.PRODUCTION_R2_SECRET_ACCESS_KEY \}\}` \|/,
-    /\| `MEDIA_CDN_BASE_URL` \| `\$\{\{ vars\.PRODUCTION_MEDIA_CDN_BASE_URL \}\}` \|/,
-    /\| `ANALYTICS_ENABLED` \| `\$\{\{ vars\.PRODUCTION_ANALYTICS_ENABLED \}\}` \|/,
-    /\| `COMMERCE_ENABLED` \| `"false"` \|/,
-    /\| `MULTI_LOCALE_ENABLED` \| `"false"` \|/,
-    /\| `STRIPE_SECRET_KEY` \| `\$\{\{ secrets\.PRODUCTION_STRIPE_SECRET_KEY \}\}` \|/,
-    /\| `SMOKE_ADMIN_EMAIL` \| `\$\{\{ secrets\.PRODUCTION_SMOKE_ADMIN_EMAIL \}\}` \|/,
-    /\| `SMOKE_REQUIRE_R2_UPLOAD` \| `\$\{\{ inputs\.require_r2_upload \}\}` \|/,
-    /\| `SMOKE_STOREFRONT_HOST` \| `\$\{\{ inputs\.storefront_host \}\}` \|/,
-    /\| `SMOKE_REPORT_PATH` \| `\$\{\{ inputs\.report_path \}\}` \|/,
-    /set `VITE_API_URL` and `VITE_WEB_URL` at Admin build time/,
-  ]) {
-    assert.match(runbook, pattern);
+  for (const [variable, source] of expectedMatrixSources) {
+    assert.match(runbook, matrixSourcePattern(variable, source));
   }
+  assert.match(
+    runbook,
+    /set `VITE_API_URL` and `VITE_WEB_URL` at Admin build time/,
+  );
 });
 
 test("main CI verifies the smoke report CLI entry point", async () => {
@@ -355,4 +373,16 @@ test("main CI verifies the smoke report CLI entry point", async () => {
 
 function matchCount(value, pattern) {
   return [...value.matchAll(pattern)].length;
+}
+
+function matrixSourcePattern(variable, source) {
+  return new RegExp(
+    `\\|\\s*\`${escapeRegExp(variable)}\`\\s*\\|\\s*\`${escapeRegExp(
+      source,
+    )}\`\\s*\\|`,
+  );
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

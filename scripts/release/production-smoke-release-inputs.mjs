@@ -179,6 +179,8 @@ function createReleaseNotesArgs(env, options = {}) {
     createWorkflowRunUrl(env),
     "--smoke-artifact",
     env.SMOKE_REPORT_ARTIFACT_NAME,
+    "--preflight-artifact",
+    env.RELEASE_PREFLIGHT_ARTIFACT_NAME,
     "--release-artifact",
     env.RELEASE_CHECK_ARTIFACT_NAME,
     "--project-status",

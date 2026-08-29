@@ -41,14 +41,13 @@ export async function runReleaseNotesCli(args, input = {}) {
 
 function isMainModule() {
   return (
-    process.argv[1] &&
-    import.meta.url === pathToFileURL(process.argv[1]).href
+    process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href
   );
 }
 
 function printHelp(writeLine) {
   writeLine(`Usage:
-  pnpm release:notes -- --release-tag v0.1.0 --workflow-run-url https://github.com/owner/repo/actions/runs/123 --smoke-artifact production-smoke-report-123 --release-artifact release-evidence-check-123 --project-status artifacts/release/project-status.json --project-status-artifact project-status-123 --visual-artifact page-builder-visual-fixture-123 --storefront-url https://store.brand.com --rollback-target main@abcdef1 --output docs/releases/v0.1.0.md
+  pnpm release:notes -- --release-tag v0.1.0 --workflow-run-url https://github.com/owner/repo/actions/runs/123 --smoke-artifact production-smoke-report-123 --preflight-artifact release-preflight-123 --release-artifact release-evidence-check-123 --project-status artifacts/release/project-status.json --project-status-artifact project-status-123 --visual-artifact page-builder-visual-fixture-123 --storefront-url https://store.brand.com --rollback-target main@abcdef1 --output docs/releases/v0.1.0.md
 
 Options:
   --allow-blocked             Generate a failure review draft from blocked evidence.
@@ -56,6 +55,7 @@ Options:
   --project-status <path>     project-status.v1 JSON path.
   --project-status-artifact <name>
                               Project status handoff artifact name.
+  --preflight-artifact <name> Production smoke preflight artifact name.
   --release-artifact <name>   Combined release evidence artifact name.
   --release-check <path>      release-evidence-check.v1 JSON path.
   --release-tag <tag>         Release tag or version.
@@ -67,9 +67,9 @@ Options:
 
 Consistency:
   The project-status.v1 artifact must match release-evidence-check.v1 readiness
-  and gate counts. --workflow-run-url, --smoke-artifact, and
-  --project-status-artifact must match smoke.source when release evidence records
-  production smoke source metadata.
+  and gate counts. --workflow-run-url, --smoke-artifact,
+  --preflight-artifact, and --project-status-artifact must match smoke.source
+  when release evidence records production smoke source metadata.
 
   -h, --help                  Show this help.`);
 }

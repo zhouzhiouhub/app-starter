@@ -56,13 +56,14 @@ Environment:
   PROJECT_STATUS_MARKDOWN_PATH, and RELEASE_NOTES_PATH must be safe
   repository-relative Markdown paths.
   SMOKE_REPORT_ARTIFACT_NAME, RELEASE_CHECK_ARTIFACT_NAME,
-  PROJECT_STATUS_ARTIFACT_NAME, and RELEASE_NOTES_ARTIFACT_NAME must be safe
-  artifact names.
+  PROJECT_STATUS_ARTIFACT_NAME, RELEASE_NOTES_ARTIFACT_NAME, and
+  RELEASE_PREFLIGHT_ARTIFACT_NAME must be safe artifact names.
   RELEASE_VISUAL_ARTIFACT_NAME and RELEASE_VISUAL_ARTIFACT_RUN_ID must be set
   together. RELEASE_TAG, RELEASE_ROLLBACK_TARGET, and
   RELEASE_VISUAL_ARTIFACT_NAME plus RELEASE_VISUAL_ARTIFACT_RUN_ID must be set
   together when release notes should be generated. PROJECT_STATUS_ARTIFACT_PATH
   and PROJECT_STATUS_ARTIFACT_NAME are required when release notes are generated.
+  RELEASE_PREFLIGHT_ARTIFACT_NAME is also required for release notes evidence.
   SMOKE_STOREFRONT_HOST must be a safe host when provided, and
   SMOKE_REQUIRE_ADMIN_APP, SMOKE_REQUIRE_R2_UPLOAD, and
   SMOKE_REQUIRE_REVALIDATION must be true or false when provided.

@@ -34,7 +34,10 @@ test("release notes failure drafts include visual checklist tasks", () => {
     markdown,
     /Import: `pnpm visual:references -- --source-dir docs\/visual\/page-builder-references --write --require-complete`/,
   );
-  assert.match(markdown, /Visual task: \.\.\. and 1 more pending viewport tasks/);
+  assert.match(
+    markdown,
+    /Visual task: \.\.\. and 1 more pending viewport tasks/,
+  );
 });
 
 function createReleaseNotesConfig() {
@@ -46,6 +49,8 @@ function createReleaseNotesConfig() {
       "https://github.com/zhouzhiouhub/app-starter/actions/runs/123456789",
       "--smoke-artifact",
       "production-smoke-report-123",
+      "--preflight-artifact",
+      "release-preflight-123",
       "--release-artifact",
       "release-evidence-check-123",
       "--project-status-artifact",

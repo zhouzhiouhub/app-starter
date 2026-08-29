@@ -51,6 +51,20 @@ test("release notes reject mismatched project status artifact run number", () =>
   );
 });
 
+test("release notes reject mismatched preflight artifact run number", () => {
+  assert.throws(
+    () =>
+      createReleaseNotesMarkdown(
+        {
+          ...createReleaseNotesConfig(),
+          preflightArtifact: "release-preflight-999",
+        },
+        createReadyReleaseArtifact(),
+      ),
+    /preflight artifact must match smoke\.source\.runNumber/,
+  );
+});
+
 function createReadyReleaseArtifact() {
   return {
     releaseReady: true,
@@ -68,6 +82,8 @@ function createReleaseNotesConfig() {
     "https://github.com/zhouzhiouhub/app-starter/actions/runs/123456789",
     "--smoke-artifact",
     "production-smoke-report-123",
+    "--preflight-artifact",
+    "release-preflight-123",
     "--release-artifact",
     "release-evidence-check-123",
     "--project-status-artifact",

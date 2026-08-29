@@ -29,6 +29,8 @@ test("release notes CLI writes a Markdown release record", async () => {
         "https://github.com/zhouzhiouhub/app-starter/actions/runs/123456789",
         "--smoke-artifact",
         "production-smoke-report-123",
+        "--preflight-artifact",
+        "release-preflight-123",
         "--release-artifact",
         "release-evidence-check-123",
         "--project-status",
@@ -55,8 +57,15 @@ test("release notes CLI writes a Markdown release record", async () => {
 
     assert.match(markdown, /^# Release v0\.1\.0/m);
     assert.match(markdown, /Production smoke source:/);
+    assert.match(
+      markdown,
+      /Production smoke preflight artifact: `release-preflight-123`/,
+    );
     assert.match(markdown, /Project status artifact: `project-status-123`/);
-    assert.match(markdown, /Project Status: release-ready \(0 blockers, 1 next actions\)/);
+    assert.match(
+      markdown,
+      /Project Status: release-ready \(0 blockers, 1 next actions\)/,
+    );
   } finally {
     await rm(root, { force: true, recursive: true });
   }

@@ -36,7 +36,7 @@ export function parseProductionEnvironmentMatrix(runbook) {
   const section = runbook.slice(start, end);
 
   for (const line of section.split(/\r?\n/)) {
-    const match = line.match(/^\| `([^`]+)` \| `([^`]+)` \|/);
+    const match = line.match(/^\|\s*`([^`]+)`\s*\|\s*`([^`]+)`\s*\|/);
 
     if (!match) {
       continue;
