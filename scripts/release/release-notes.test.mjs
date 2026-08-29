@@ -191,11 +191,18 @@ test("release notes require ready evidence unless explicitly allowed", () => {
   const markdown = createReleaseNotesMarkdown(
     { ...createReleaseNotesConfig(), allowBlocked: true },
     artifact,
+    createBlockedProjectStatus(),
   );
 
   assert.match(markdown, /Status: blocked/);
   assert.match(markdown, /Mode: failure review draft/);
   assert.match(markdown, /failed evidence review only/);
+  assert.match(markdown, /Project Status: needs-evidence \(1 blockers, 4 next actions\)/);
+  assert.match(markdown, /## Project Next Actions/);
+  assert.match(markdown, / {2}- Reference source: `docs\/visual\/page-builder-references`/);
+  assert.match(markdown, /- Page Builder Visual: hero-banner\.desktop/);
+  assert.match(markdown, /- \.\.\. and 1 more project next actions/);
+  assert.doesNotMatch(markdown, /- Page Builder Visual: rich-text\.desktop/);
   assert.match(markdown, /Page Builder Visual: Visual acceptance pending/);
   assert.match(markdown, /Page Builder Visual evidence: needs-evidence/);
   assert.doesNotMatch(
@@ -336,6 +343,52 @@ function createBlockedReadinessChecklist() {
       },
     ],
     releaseReady: false,
+  };
+}
+
+function createBlockedProjectStatus() {
+  return {
+    nextActionCount: 4,
+    nextActions: [
+      createVisualNextAction("Visual acceptance pending", [
+        ["Reference source", "docs/visual/page-builder-references"],
+      ]),
+      createVisualNextAction("hero-banner.desktop", [
+        ["Capture", "pnpm visual:capture:fixture -- --write-manifest"],
+      ]),
+      createVisualNextAction("hero-banner.mobile", []),
+      createVisualNextAction("rich-text.desktop", []),
+    ],
+    releaseGate: {
+      blockerCount: 1,
+      smoke: {
+        path: "artifacts/production-smoke/smoke-report.json",
+        status: "ready",
+        summaryStatus: "passed",
+      },
+      visual: {
+        acceptedComponentCount: 0,
+        acceptedViewportCount: 0,
+        artifactStatus: "invalid",
+        componentCount: 6,
+        pendingComponentCount: 2,
+        pendingTaskCount: 0,
+        pendingViewportCount: 2,
+        status: "needs-evidence",
+        viewportCount: 12,
+      },
+    },
+    releaseReady: false,
+    status: "needs-evidence",
+  };
+}
+
+function createVisualNextAction(label, steps) {
+  return {
+    action: "Attach real visual evidence.",
+    area: "Page Builder Visual",
+    label,
+    steps: steps.map(([stepLabel, value]) => ({ label: stepLabel, value })),
   };
 }
 

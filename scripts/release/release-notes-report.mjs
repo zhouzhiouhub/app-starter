@@ -3,6 +3,7 @@ import { dirname } from "node:path";
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { assertReleaseNotesProjectStatusConsistency } from "./release-notes-project-status-consistency.mjs";
 import { assertReleaseNotesSourceConsistency } from "./release-notes-source-consistency.mjs";
+import { formatProjectNextActions } from "./release-notes-project-actions-report.mjs";
 import { formatVisualChecklist } from "./release-notes-visual-checklist-report.mjs";
 
 const maxBlockerLines = 12;
@@ -57,7 +58,7 @@ export function createReleaseNotesMarkdown(config, artifact, projectStatus) {
     "## Readiness Checklist",
     "",
     ...formatReadinessChecklist(artifact.readinessChecklist),
-    "",
+    ...formatProjectNextActions(projectStatus, artifact),
     "## Visual Evidence",
     "",
     ...formatVisualEvidence(artifact.visual),
