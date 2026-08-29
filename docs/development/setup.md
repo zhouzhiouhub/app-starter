@@ -281,6 +281,7 @@ pnpm project:status -- --all-actions
 pnpm project:status -- --require-ready
 pnpm project:status -- --json
 pnpm project:status -- --output artifacts/release/project-status.json
+pnpm project:status -- --markdown-output artifacts/release/project-status.md
 pnpm release:notes -- --release-tag v0.1.0 --workflow-run-url https://github.com/zhouzhiouhub/app-starter/actions/runs/123 --smoke-artifact production-smoke-report-123 --release-artifact release-evidence-check-123 --project-status artifacts/release/project-status.json --project-status-artifact project-status-123 --visual-artifact page-builder-visual-fixture-123 --storefront-url https://store.brand.com --rollback-target main@abcdef1 --output docs/releases/v0.1.0.md
 ```
 
@@ -301,8 +302,11 @@ configured local verification commands, and the next concrete actions without
 changing the pass/fail criteria. Add `--require-ready` when the same status
 report should exit non-zero until release evidence is ready. Use `--json` or
 `--output` to produce a validated `project-status.v1` artifact for handoff or
-release review notes. Add `--all-actions` when the handoff needs every pending
-next action, including full command lines, instead of the default short list.
+release review notes. Add
+`--markdown-output artifacts/release/project-status.md` when the handoff needs
+a pasteable Markdown checklist, and add `--all-actions` when it needs every
+pending next action, including full command lines, instead of the default short
+list.
 
 After the Page Builder visual manifest has accepted real design evidence,
 `release:check` verifies both evidence streams together: production smoke must
@@ -345,8 +349,9 @@ readiness checklist with every pending Page Builder visual viewport task and
 full command lines, and uploads `release-evidence-check-<run_number>` with the
 `release-evidence-check.v1` JSON artifact. The workflow also runs
 `project:status -- --all-actions` against the same smoke and optional visual
-evidence inputs, uploads `project-status-<run_number>`, and keeps a
-`project-status.v1` handoff snapshot with the full next-action list. If
+evidence inputs, writes `artifacts/release/project-status.md`, uploads
+`project-status-<run_number>`, and keeps a `project-status.v1` handoff snapshot
+plus a Markdown checklist with the full next-action list. If
 `visual_artifact_name` and `visual_artifact_run_id` are provided, it downloads
 that Page Builder Visual
 artifact, including the artifact-local visual manifest and
@@ -355,9 +360,9 @@ running `pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builde
 and both the combined gate and project status snapshot with
 `--visual-artifact-dir reports/visual/page-builder-fixture`. The workflow runs
 `pnpm release:preflight` before smoke requests so unsafe artifact output paths,
-an unsafe release notes output path, unsafe artifact names, unsafe storefront
-hosts, invalid smoke boolean inputs, a partial visual artifact pair, or a partial
-release notes input set fails early.
+an unsafe project status or release notes Markdown output path, unsafe artifact
+names, unsafe storefront hosts, invalid smoke boolean inputs, a partial visual
+artifact pair, or a partial release notes input set fails early.
 The same visual artifact shape can be reproduced locally with
 `pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture`.
 When `release_tag`, `rollback_target`, `visual_artifact_name`, and

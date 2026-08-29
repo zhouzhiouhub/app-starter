@@ -60,6 +60,7 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /RELEASE_CHECK_ARTIFACT_NAME:/);
   assert.match(workflow, /PROJECT_STATUS_ARTIFACT_NAME:/);
   assert.match(workflow, /PROJECT_STATUS_ARTIFACT_PATH:/);
+  assert.match(workflow, /PROJECT_STATUS_MARKDOWN_PATH:/);
   assert.match(workflow, /RELEASE_NOTES_ARTIFACT_NAME:/);
   assert.match(
     workflow,
@@ -108,6 +109,10 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   );
   assert.match(
     workflow,
+    /--markdown-output "\$PROJECT_STATUS_MARKDOWN_PATH"/,
+  );
+  assert.match(
+    workflow,
     /project_status_flags\+=\(--visual-artifact-dir reports\/visual\/page-builder-fixture\)/,
   );
   assert.match(
@@ -135,7 +140,9 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /Combined artifact:/);
   assert.match(workflow, /Project status:/);
   assert.match(workflow, /project:status -- --all-actions/);
+  assert.match(workflow, /--markdown-output \$PROJECT_STATUS_MARKDOWN_PATH/);
   assert.match(workflow, /Project status artifact:/);
+  assert.match(workflow, /Project status Markdown:/);
   assert.match(workflow, /Release notes:/);
   assert.match(workflow, /Release notes artifact:/);
   assert.match(workflow, /Release notes mode:/);
@@ -157,7 +164,8 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /actions\/upload-artifact@v4/);
   assert.match(workflow, /path: \$\{\{ inputs\.report_path \}\}/);
   assert.match(workflow, /path: \$\{\{ env\.RELEASE_CHECK_ARTIFACT_PATH \}\}/);
-  assert.match(workflow, /path: \$\{\{ env\.PROJECT_STATUS_ARTIFACT_PATH \}\}/);
+  assert.match(workflow, /\$\{\{ env\.PROJECT_STATUS_ARTIFACT_PATH \}\}/);
+  assert.match(workflow, /\$\{\{ env\.PROJECT_STATUS_MARKDOWN_PATH \}\}/);
   assert.match(workflow, /path: \$\{\{ env\.RELEASE_NOTES_PATH \}\}/);
   assert.equal(
     matchCount(
@@ -191,6 +199,7 @@ test("release checklist requires archived smoke evidence", async () => {
   assert.match(checklist, /artifacts\/production-smoke\/smoke-report\.json/);
   assert.match(checklist, /project-status-<run_number>/);
   assert.match(checklist, /project-status\.v1/);
+  assert.match(checklist, /project-status\.md/);
   assert.match(checklist, /project:status -- --all-actions/);
   assert.match(checklist, /summary\.status=passed/);
   assert.match(checklist, /summary\.productionReady=true/);
@@ -211,6 +220,10 @@ test("main CI verifies the smoke report CLI entry point", async () => {
   assert.match(workflow, /pnpm smoke:release-check -- --help/);
   assert.match(workflow, /pnpm release:check -- --help/);
   assert.match(workflow, /pnpm release:preflight -- --help/);
+  assert.match(
+    workflow,
+    /pnpm project:status -- --all-actions --markdown-output tmp\/project-status-handoff\.md/,
+  );
   assert.match(workflow, /pnpm visual:artifact-check -- --help/);
 });
 

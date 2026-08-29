@@ -72,8 +72,9 @@ later phases are explicitly approved.
   evidence inputs with
   `pnpm release:preflight`: `SMOKE_REPORT_PATH`,
   `RELEASE_CHECK_ARTIFACT_PATH`, and `PROJECT_STATUS_ARTIFACT_PATH` must be
-  safe repository-relative JSON paths; `RELEASE_NOTES_PATH` must be a safe
-  repository-relative Markdown path; `SMOKE_REPORT_ARTIFACT_NAME`,
+  safe repository-relative JSON paths; `PROJECT_STATUS_MARKDOWN_PATH` and
+  `RELEASE_NOTES_PATH` must be safe repository-relative Markdown paths;
+  `SMOKE_REPORT_ARTIFACT_NAME`,
   `RELEASE_CHECK_ARTIFACT_NAME`, `PROJECT_STATUS_ARTIFACT_NAME`, and
   `RELEASE_NOTES_ARTIFACT_NAME` must be safe artifact names;
   `SMOKE_STOREFRONT_HOST` must be a safe host when set;
@@ -117,6 +118,8 @@ later phases are explicitly approved.
 - The uploaded artifact `release-evidence-check-<run_number>` is attached or
   linked.
 - The uploaded artifact `project-status-<run_number>` is attached or linked.
+  It contains both `project-status.json` and the Markdown handoff checklist
+  `project-status.md`.
 - When release note inputs were provided, the uploaded artifact
   `release-notes-<run_number>` is attached or linked.
 - The GitHub step summary records the report path, artifact names, review
@@ -126,7 +129,7 @@ later phases are explicitly approved.
   When visual evidence is downloaded, that combined command includes
   `--visual-artifact-dir reports/visual/page-builder-fixture`.
 - The GitHub step summary records the
-  `project:status -- --all-actions --smoke-report artifacts/production-smoke/smoke-report.json --output artifacts/release/project-status.json`
+  `project:status -- --all-actions --smoke-report artifacts/production-smoke/smoke-report.json --output artifacts/release/project-status.json --markdown-output artifacts/release/project-status.md`
   command and `project-status-<run_number>` artifact name for release handoff.
 - `pnpm smoke:report -- artifacts/production-smoke/smoke-report.json` output is
   saved in the workflow log.
@@ -189,7 +192,8 @@ later phases are explicitly approved.
   so release notes can trace the smoke report back to the CI run.
 - The `Production Smoke` workflow uploads `project-status-<run_number>`; the
   artifact is a validated `project-status.v1` snapshot with the full
-  `--all-actions` next-action list and untruncated command lines.
+  `--all-actions` next-action list, untruncated command lines, and
+  `project-status.md` handoff checklist.
 - Production Smoke artifact uploads use `if-no-files-found: error`; missing
   smoke, combined gate, project status, or release notes files fail the workflow
   instead of leaving only a warning.

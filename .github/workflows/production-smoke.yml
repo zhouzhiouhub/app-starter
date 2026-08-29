@@ -107,6 +107,7 @@ jobs:
       SMOKE_REQUIRE_REVALIDATION: ${{ inputs.require_revalidation }}
       PROJECT_STATUS_ARTIFACT_NAME: project-status-${{ github.run_number }}
       PROJECT_STATUS_ARTIFACT_PATH: artifacts/release/project-status.json
+      PROJECT_STATUS_MARKDOWN_PATH: artifacts/release/project-status.md
       SMOKE_REPORT_ARTIFACT_NAME: production-smoke-report-${{ github.run_number }}
       SMOKE_SOURCE_COMMIT_SHA: ${{ github.sha }}
       SMOKE_SOURCE_REPOSITORY: ${{ github.repository }}
@@ -182,6 +183,7 @@ jobs:
             --all-actions
             --smoke-report "$SMOKE_REPORT_PATH"
             --output "$PROJECT_STATUS_ARTIFACT_PATH"
+            --markdown-output "$PROJECT_STATUS_MARKDOWN_PATH"
           )
           if [ -n "$RELEASE_VISUAL_ARTIFACT_NAME" ] && [ -n "$RELEASE_VISUAL_ARTIFACT_RUN_ID" ]; then
             project_status_flags+=(--visual-artifact-dir reports/visual/page-builder-fixture)
@@ -229,12 +231,13 @@ jobs:
             fi
             echo "- Combined gate: \`$combined_gate\`"
             echo "- Combined artifact: \`$RELEASE_CHECK_ARTIFACT_NAME\`"
-            project_status="pnpm project:status -- --all-actions --smoke-report $SMOKE_REPORT_PATH --output $PROJECT_STATUS_ARTIFACT_PATH"
+            project_status="pnpm project:status -- --all-actions --smoke-report $SMOKE_REPORT_PATH --output $PROJECT_STATUS_ARTIFACT_PATH --markdown-output $PROJECT_STATUS_MARKDOWN_PATH"
             if [ -n "$RELEASE_VISUAL_ARTIFACT_NAME" ] && [ -n "$RELEASE_VISUAL_ARTIFACT_RUN_ID" ]; then
               project_status="$project_status --visual-artifact-dir reports/visual/page-builder-fixture"
             fi
             echo "- Project status: \`$project_status\`"
             echo "- Project status artifact: \`$PROJECT_STATUS_ARTIFACT_NAME\`"
+            echo "- Project status Markdown: \`$PROJECT_STATUS_MARKDOWN_PATH\`"
             if [ -n "$RELEASE_VISUAL_ARTIFACT_NAME" ] && [ -n "$RELEASE_VISUAL_ARTIFACT_RUN_ID" ]; then
               echo "- Visual evidence artifact: \`$RELEASE_VISUAL_ARTIFACT_NAME\` from run \`$RELEASE_VISUAL_ARTIFACT_RUN_ID\`"
               echo "- Visual artifact check: \`pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture\`"
@@ -274,7 +277,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.PROJECT_STATUS_ARTIFACT_NAME }}
-          path: ${{ env.PROJECT_STATUS_ARTIFACT_PATH }}
+          path: |
+            ${{ env.PROJECT_STATUS_ARTIFACT_PATH }}
+            ${{ env.PROJECT_STATUS_MARKDOWN_PATH }}
           if-no-files-found: error
           retention-days: 30
       - name: Upload release notes artifact

@@ -51,6 +51,13 @@ export function normalizeProjectStatusPath(value) {
   });
 }
 
+export function normalizeProjectStatusMarkdownPath(value) {
+  return normalizeSafeRelativePath("Project status Markdown", value, {
+    extension: ".md",
+    requireReleaseSubdir: true,
+  });
+}
+
 export function normalizeReleaseTag(value) {
   const normalized = normalizePlainValue("release tag", value);
 

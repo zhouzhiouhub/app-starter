@@ -7,6 +7,7 @@ import {
   formatProjectStatusArtifact,
   readProjectStatusCliConfig,
   writeProjectStatusArtifact,
+  writeProjectStatusMarkdown,
 } from "./project/project-status.mjs";
 import { readReleaseEvidenceCheck } from "./release/release-check.mjs";
 import { readErrorMessage } from "./smoke/smoke-error-message.mjs";
@@ -26,8 +27,9 @@ export async function runProjectStatusCli(args, input = {}) {
       config.releaseCheckConfig,
       input,
     );
+    const generatedAt = input.generatedAt ?? new Date().toISOString();
     const artifact = createProjectStatusArtifact(check, {
-      generatedAt: input.generatedAt,
+      generatedAt,
       includeAllActions: config.allActions,
     });
 
@@ -35,6 +37,18 @@ export async function runProjectStatusCli(args, input = {}) {
 
     if (config.outputPath) {
       await writeProjectStatusArtifact(config.outputPath, artifact);
+    }
+
+    if (config.markdownOutputPath) {
+      await writeProjectStatusMarkdown(
+        config.markdownOutputPath,
+        config.allActions
+          ? artifact
+          : createProjectStatusArtifact(check, {
+              generatedAt,
+              includeAllActions: true,
+            }),
+      );
     }
 
     if (config.json) {
@@ -48,6 +62,10 @@ export async function runProjectStatusCli(args, input = {}) {
 
       if (config.outputPath) {
         stdout(`Project status artifact written: ${config.outputPath}`);
+      }
+
+      if (config.markdownOutputPath) {
+        stdout(`Project status Markdown written: ${config.markdownOutputPath}`);
       }
     }
 
@@ -72,6 +90,7 @@ function printHelp(writeLine) {
   pnpm project:status -- --json
   pnpm project:status -- --require-ready
   pnpm project:status -- --output artifacts/release/project-status.json
+  pnpm project:status -- --markdown-output artifacts/release/project-status.md
   pnpm project:status -- --smoke-report artifacts/production-smoke/smoke-report.json
   pnpm project:status -- --visual-artifact-dir reports/visual/page-builder-fixture
 
@@ -80,6 +99,7 @@ Options:
                              text output keeps full action lines.
   --json                     Print the machine-readable project status report.
   --output <path>            Write a validated project-status.v1 JSON report under tmp/, reports/, artifacts/, or .tmp/.
+  --markdown-output <path>   Write a Markdown handoff report under docs/releases, artifacts/release, reports/release, tmp/, or .tmp/.
   --require-ready            Exit 1 unless the current release gate is ready.
   --smoke-report <path>      Read a specific production smoke report.
   --visual-artifact-dir <dir>

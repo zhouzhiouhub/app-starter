@@ -74,12 +74,22 @@ test("project status config keeps all-actions local", () => {
     "--",
     "--all-actions",
     "--json",
+    "--markdown-output",
+    "artifacts/release/project-status.md",
     "--require-ready",
   ]);
 
   assert.equal(config.allActions, true);
   assert.equal(config.json, true);
+  assert.equal(
+    config.markdownOutputPath,
+    "artifacts/release/project-status.md",
+  );
   assert.equal(config.requireReady, true);
+  assert.throws(
+    () => readProjectStatusCliConfig(["--markdown-output", "README.md"]),
+    /Project status Markdown must use safe path segments/,
+  );
 });
 
 test("project status CLI prints readable blocked state", async () => {
@@ -255,12 +265,24 @@ test("project status command is exposed in package and CI", async () => {
   );
   assert.match(ciWorkflow, /pnpm project:status -- --help/);
   assert.match(ciWorkflow, /pnpm project:status -- --all-actions --json/);
+  assert.match(
+    ciWorkflow,
+    /pnpm project:status -- --all-actions --markdown-output tmp\/project-status-handoff\.md/,
+  );
   assert.match(readme, /pnpm project:status -- --all-actions/);
+  assert.match(
+    readme,
+    /pnpm project:status -- --markdown-output artifacts\/release\/project-status\.md/,
+  );
   assert.match(
     readme,
     /pnpm project:status -- --output artifacts\/release\/project-status\.json/,
   );
   assert.match(setupDoc, /pnpm project:status -- --all-actions/);
+  assert.match(
+    setupDoc,
+    /pnpm project:status -- --markdown-output artifacts\/release\/project-status\.md/,
+  );
   assert.match(
     setupDoc,
     /pnpm project:status -- --output artifacts\/release\/project-status\.json/,
