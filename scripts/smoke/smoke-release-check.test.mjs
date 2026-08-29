@@ -240,6 +240,26 @@ test("smoke release check reads latest archived report", async () => {
   }
 });
 
+test("smoke release check explains missing archived reports", async () => {
+  const emptyArchiveRoot = `${archiveRoot}-empty`;
+
+  await rm(emptyArchiveRoot, { force: true, recursive: true });
+  await mkdir(emptyArchiveRoot, { recursive: true });
+
+  try {
+    await assert.rejects(
+      () =>
+        readSmokeReleaseCheckArtifact({
+          reportPath: null,
+          roots: [emptyArchiveRoot],
+        }),
+      /Production Smoke workflow.*production-smoke-report-<run_number>.*SMOKE_REPORT_PATH=artifacts\/production-smoke\/smoke-report\.json pnpm smoke:publish/s,
+    );
+  } finally {
+    await rm(emptyArchiveRoot, { force: true, recursive: true });
+  }
+});
+
 function hasBlocker(result, label) {
   return result.blockers.some((blocker) => blocker.label === label);
 }

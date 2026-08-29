@@ -19,6 +19,7 @@ import {
   createVisualEvidenceAction,
   visualArtifactAction,
 } from "./release-check-visual-actions.mjs";
+import { createMissingSmokeArtifactAction } from "./release-check-smoke-actions.mjs";
 export {
   createReleaseEvidenceReadinessChecklist,
   formatReleaseEvidenceReadinessChecklist,
@@ -156,26 +157,6 @@ function createMissingSmokeReleaseCheck(error, smokeReportPath) {
       status: "missing",
     },
   };
-}
-
-function createMissingSmokeArtifactAction(error, smokeReportPath) {
-  const cause = readErrorMessage(error);
-
-  if (smokeReportPath) {
-    return [
-      "Run the Production Smoke workflow and keep the",
-      "production-smoke-report-<run_number> artifact, or place its",
-      `smoke-report.json at ${smokeReportPath}; then rerun pnpm release:check.`,
-      `Cause: ${cause}`,
-    ].join(" ");
-  }
-
-  return [
-    "Run the Production Smoke workflow and keep the",
-    "production-smoke-report-<run_number> artifact, or pass --smoke-report",
-    "<path> to an archived report; then rerun pnpm release:check.",
-    `Cause: ${cause}`,
-  ].join(" ");
 }
 
 function createInvalidVisualAcceptanceReport(error) {

@@ -310,6 +310,9 @@ test("release check reports missing smoke and pending visual together", async ()
         blocker.label === "Production smoke artifact missing" &&
         blocker.action.includes("Production Smoke workflow") &&
         blocker.action.includes("production-smoke-report-<run_number>") &&
+        blocker.action.includes("release-preflight-<run_number>") &&
+        blocker.action.includes("release-evidence-check-<run_number>") &&
+        blocker.action.includes("project-status-<run_number>") &&
         blocker.action.includes("--smoke-report <path>"),
     ),
     true,

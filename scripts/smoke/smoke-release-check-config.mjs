@@ -39,7 +39,7 @@ export async function readSmokeReleaseCheckArtifact(config) {
 
   if (artifacts.length === 0) {
     throw new Error(
-      "No smoke reports found. Run SMOKE_REPORT_PATH=artifacts/production-smoke/smoke-report.json pnpm smoke:publish first.",
+      "No smoke reports found. Run the Production Smoke workflow and keep production-smoke-report-<run_number>, or run SMOKE_REPORT_PATH=artifacts/production-smoke/smoke-report.json pnpm smoke:publish for a local archived report.",
     );
   }
 
