@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import {
+  parseProductionEnvironmentMatrix,
+  parseProductionSmokeWorkflowEnvironment,
+  shouldDocumentRuntimeEnvironmentVariable,
+} from "./production-environment-docs.mjs";
 
 const workflowPath = ".github/workflows/production-smoke.yml";
 const ciWorkflowPath = ".github/workflows/ci.yml";
@@ -252,7 +257,7 @@ test("infra runbook maps production environment sources", async () => {
     readFile(infraReadmePath, "utf8"),
     readFile(workflowPath, "utf8"),
   ]);
-  const documentedMatrix = parseRunbookEnvironmentMatrix(runbook);
+  const documentedMatrix = parseProductionEnvironmentMatrix(runbook);
   const workflowEnvironment = parseProductionSmokeWorkflowEnvironment(workflow);
   const workflowRuntimeVariables = [...workflowEnvironment.keys()]
     .filter(shouldDocumentRuntimeEnvironmentVariable)
@@ -312,65 +317,4 @@ test("main CI verifies the smoke report CLI entry point", async () => {
 
 function matchCount(value, pattern) {
   return [...value.matchAll(pattern)].length;
-}
-
-function parseProductionSmokeWorkflowEnvironment(workflow) {
-  const lines = workflow.split(/\r?\n/);
-  const start = lines.findIndex((line) => line === "    env:");
-  assert.notEqual(start, -1, "Production Smoke workflow env block is missing.");
-
-  const environment = new Map();
-
-  for (const line of lines.slice(start + 1)) {
-    if (line === "    steps:") {
-      break;
-    }
-
-    const match = line.match(/^ {6}([A-Z0-9_]+): (.+)$/);
-    if (!match) {
-      continue;
-    }
-
-    const [, name, value] = match;
-    assert.equal(environment.has(name), false, `${name} is duplicated.`);
-    environment.set(name, value);
-  }
-
-  assert.notEqual(environment.size, 0, "Production Smoke env block is empty.");
-  return environment;
-}
-
-function parseRunbookEnvironmentMatrix(runbook) {
-  const start = runbook.indexOf("### 2. Production Environment Matrix");
-  assert.notEqual(start, -1, "Production Environment Matrix section is missing.");
-
-  const end = runbook.indexOf("\n### 3.", start);
-  assert.notEqual(end, -1, "Production Environment Matrix section is unbounded.");
-
-  const matrix = new Map();
-  const section = runbook.slice(start, end);
-
-  for (const line of section.split(/\r?\n/)) {
-    const match = line.match(/^\| `([^`]+)` \| `([^`]+)` \|/);
-    if (!match) {
-      continue;
-    }
-
-    const [, variable, source] = match;
-    assert.equal(matrix.has(variable), false, `${variable} is duplicated.`);
-    matrix.set(variable, source);
-  }
-
-  assert.notEqual(matrix.size, 0, "Production Environment Matrix is empty.");
-  return matrix;
-}
-
-function shouldDocumentRuntimeEnvironmentVariable(variable) {
-  return (
-    !variable.startsWith("PROJECT_STATUS_") &&
-    !variable.startsWith("RELEASE_") &&
-    !variable.startsWith("SMOKE_SOURCE_") &&
-    variable !== "SMOKE_REPORT_ARTIFACT_NAME" &&
-    variable !== "SMOKE_REPORT_MARKDOWN_PATH"
-  );
 }

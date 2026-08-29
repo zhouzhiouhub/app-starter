@@ -18,10 +18,15 @@ later phases are explicitly approved.
   `PRODUCTION_PREVIEW_TOKEN_SECRET`, `PRODUCTION_JWT_PRIVATE_KEY`,
   `PRODUCTION_JWT_PUBLIC_KEY`, `PRODUCTION_STOREFRONT_REVALIDATE_SECRET`, and
   `PRODUCTION_STOREFRONT_REVALIDATE_URL`.
+- Configure optional production secrets only when they are intentionally used:
+  `PRODUCTION_PREVIEW_TOKEN_PREVIOUS_SECRET` during preview-token rotation, and
+  `PRODUCTION_STRIPE_SECRET_KEY` plus `PRODUCTION_STRIPE_WEBHOOK_SECRET` should
+  remain empty unless Phase 2 Commerce is explicitly enabled.
 - Configure the GitHub `production` environment vars used by the smoke runner:
   `PRODUCTION_MEDIA_CDN_BASE_URL`, `PRODUCTION_R2_REGION`,
-  `PRODUCTION_ANALYTICS_ENABLED`, `PRODUCTION_ANALYTICS_CONSENT_GRANTED`, and
-  any enabled analytics provider IDs.
+  `PRODUCTION_MEDIA_EXTERNAL_URL_HOSTS`, `PRODUCTION_ANALYTICS_ENABLED`,
+  `PRODUCTION_ANALYTICS_CONSENT_GRANTED`, `PRODUCTION_GTM_CONTAINER_ID`,
+  `PRODUCTION_GA4_MEASUREMENT_ID`, and `PRODUCTION_CLARITY_PROJECT_ID`.
 - Confirm `API_URL`, `WEB_URL`, and `ADMIN_URL` point to production HTTPS
   origins, with `API_URL` ending at the origin or exact `/api/v1` base.
 - Confirm `COMMERCE_ENABLED=false` and `MULTI_LOCALE_ENABLED=false` in the API,
