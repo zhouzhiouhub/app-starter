@@ -386,6 +386,7 @@ test("project status command is exposed in package and CI", async () => {
     readme,
     /pnpm project:status -- --output artifacts\/release\/project-status\.json/,
   );
+  assert.match(readme, /Project Next Actions/);
   assert.match(setupDoc, /pnpm project:status -- --all-actions/);
   assert.match(
     setupDoc,
