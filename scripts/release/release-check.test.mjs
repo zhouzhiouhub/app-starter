@@ -83,13 +83,18 @@ test("release check creates bounded JSON artifacts", () => {
   assert.equal(artifact.generatedAt, "2026-08-28T00:00:00.000Z");
   assert.equal(artifact.status, "ready");
   assert.equal(artifact.releaseReady, true);
-  assert.equal(artifact.smoke.path, "artifacts/production-smoke/smoke-report.json");
+  assert.equal(
+    artifact.smoke.path,
+    "artifacts/production-smoke/smoke-report.json",
+  );
   assert.equal(
     artifact.smoke.source.workflowRunUrl,
     "https://github.com/zhouzhiouhub/app-starter/actions/runs/123456789",
   );
   assert.deepEqual(
-    artifact.smoke.traceability.map((group) => `${group.label}:${group.status}`),
+    artifact.smoke.traceability.map(
+      (group) => `${group.label}:${group.status}`,
+    ),
     ["R2/CDN:passed", "Admin static app:passed", "Publish flow:passed"],
   );
   assert.equal(artifact.visual.status, "accepted");
@@ -276,7 +281,10 @@ test("release check summarizes smoke and visual blockers", () => {
   });
   const lines = formatReleaseEvidenceCheck(check);
 
-  assert.equal(lines.some((line) => line.includes("Status: blocked")), true);
+  assert.equal(
+    lines.some((line) => line.includes("Status: blocked")),
+    true,
+  );
   assert.equal(
     lines.some((line) => line.includes("Production Smoke")),
     true,
@@ -307,9 +315,7 @@ test("release check reports missing smoke and pending visual together", async ()
     true,
   );
   assert.equal(
-    check.blockers.some(
-      (blocker) => blocker.area === "Page Builder Visual",
-    ),
+    check.blockers.some((blocker) => blocker.area === "Page Builder Visual"),
     true,
   );
 });
@@ -326,7 +332,10 @@ test("release check keeps explicit missing smoke report paths visible", async ()
   );
   const lines = formatReleaseEvidenceCheck(check);
 
-  assert.equal(check.smoke.path, "artifacts/production-smoke/smoke-report.json");
+  assert.equal(
+    check.smoke.path,
+    "artifacts/production-smoke/smoke-report.json",
+  );
   assert.equal(
     lines.some((line) =>
       line.includes(
@@ -353,8 +362,17 @@ test("release check command is exposed in package, CI, and release docs", async 
     releaseChecklist,
     /pnpm release:check -- --smoke-report artifacts\/production-smoke\/smoke-report\.json/,
   );
-  assert.match(releaseChecklist, /--markdown-output artifacts\/release\/release-check\.md/);
-  assert.match(releaseChecklist, /--visual-artifact-dir reports\/visual\/page-builder-fixture/);
-  assert.match(releaseChecklist, /--output artifacts\/release\/release-check\.json/);
+  assert.match(
+    releaseChecklist,
+    /--markdown-output artifacts\/release\/release-check\.md/,
+  );
+  assert.match(
+    releaseChecklist,
+    /--visual-artifact-dir reports\/visual\/page-builder-fixture/,
+  );
+  assert.match(
+    releaseChecklist,
+    /--output artifacts\/release\/release-check\.json/,
+  );
   assert.match(releaseChecklist, /release-evidence-check\.v1/);
 });

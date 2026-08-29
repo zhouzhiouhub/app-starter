@@ -15,21 +15,15 @@ import {
   createReleaseEvidenceCheckArtifact,
   writeReleaseEvidenceCheckArtifact,
 } from "./release-check-artifact.mjs";
+import {
+  createVisualEvidenceAction,
+  visualArtifactAction,
+} from "./release-check-visual-actions.mjs";
 export {
   createReleaseEvidenceReadinessChecklist,
   formatReleaseEvidenceReadinessChecklist,
 } from "./release-check-checklist.mjs";
 import { formatReleaseEvidenceCheck } from "./release-check-report.mjs";
-
-const visualEvidenceAction =
-  "Run pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture " +
-  "to refresh retained fixture evidence, run pnpm visual:acceptance -- --checklist, attach real design references " +
-  "and browser screenshots, run pnpm visual:measure -- --write --require-complete, " +
-  "then pnpm visual:acceptance -- --require-accepted.";
-
-const visualArtifactAction =
-  "Run pnpm visual:artifact-check against the downloaded Page Builder Visual " +
-  "artifact, then rerun Production Smoke with a complete artifact pair.";
 
 export {
   createReleaseEvidenceCheckArtifact,
@@ -210,7 +204,7 @@ function readReleaseEvidenceBlockers(input) {
   return [
     ...readSmokeEvidenceBlockers(input.smoke),
     ...readVisualArtifactBlockers(input.visualArtifact),
-    ...readVisualEvidenceBlockers(input.visual),
+    ...readVisualEvidenceBlockers(input.visual, input.visualArtifact),
   ];
 }
 
@@ -226,14 +220,14 @@ function readSmokeEvidenceBlockers(smoke) {
   }));
 }
 
-function readVisualEvidenceBlockers(visual) {
+function readVisualEvidenceBlockers(visual, artifact) {
   if (visual.status === "accepted") {
     return [];
   }
 
   return [
     {
-      action: visualEvidenceAction,
+      action: createVisualEvidenceAction(artifact),
       area: "Page Builder Visual",
       label:
         visual.status === "invalid"
