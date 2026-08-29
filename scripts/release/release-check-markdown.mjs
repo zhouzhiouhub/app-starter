@@ -184,34 +184,41 @@ function formatVisualTasks(tasks) {
   return [
     ...tasks
       .slice(0, maxMarkdownItemCount)
-      .map(
-        (task) =>
-          `- ${formatText(task.component)}.${formatText(
-            task.viewport,
-          )}: missing ${formatMissing(task.missing)}; reference ${formatCode(
-            task.expectedDesignReference,
-          )}; preview ${formatCode(
-            task.expectedPreviewScreenshot,
-          )}; capture ${formatCode(
-            task.commands?.capture,
-          )}${formatOptionalTaskCommand(
-            "reference report",
-            task.commands?.referenceReport,
-          )}; import ${formatCode(
-            task.commands?.importReference,
-          )}; measure ${formatCode(
-            task.commands?.measure,
-          )}${formatOptionalTaskCommand(
-            "accept passing",
-            task.commands?.acceptPassing,
-          )}; verify ${formatCode(task.commands?.verify)}`,
-      ),
+      .flatMap(formatVisualTask),
     ...formatHiddenCount(tasks.length, maxMarkdownItemCount, "visual tasks"),
   ];
 }
 
-function formatOptionalTaskCommand(label, command) {
-  return command ? `; ${label} ${formatCode(command)}` : "";
+function formatVisualTask(task) {
+  const lines = [
+    `- ${formatText(task.component)}.${formatText(
+      task.viewport,
+    )}: missing ${formatMissing(task.missing)}`,
+    `  - Reference: ${formatCode(task.expectedDesignReference)}`,
+    `  - Preview: ${formatCode(task.expectedPreviewScreenshot)}`,
+    `  - Capture: ${formatCode(task.commands?.capture)}`,
+  ];
+
+  if (task.commands?.referenceReport) {
+    lines.push(
+      `  - Reference report: ${formatCode(task.commands.referenceReport)}`,
+    );
+  }
+
+  lines.push(
+    `  - Import: ${formatCode(task.commands?.importReference)}`,
+    `  - Measure: ${formatCode(task.commands?.measure)}`,
+  );
+
+  if (task.commands?.acceptPassing) {
+    lines.push(
+      `  - Accept passing: ${formatCode(task.commands.acceptPassing)}`,
+    );
+  }
+
+  lines.push(`  - Verify: ${formatCode(task.commands?.verify)}`);
+
+  return lines;
 }
 
 function formatList(label, values) {

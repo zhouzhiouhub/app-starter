@@ -73,20 +73,42 @@ test("release check Markdown lists blockers and visual tasks", () => {
   assert.match(markdown, /Artifact issues:/);
   assert.match(markdown, /missing_artifact_file/);
   assert.match(markdown, /hero-banner\.desktop: missing designReference/);
-  assert.match(
+  assert.doesNotMatch(
     markdown,
-    /capture `pnpm visual:capture:fixture -- --component hero-banner --viewport desktop --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output-dir reports\/visual\/page-builder-fixture --write-manifest`/,
+    /hero-banner\.desktop: missing designReference; reference/u,
   );
   assert.match(
     markdown,
-    /reference report `pnpm visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md --require-complete`/,
+    / {2}- Reference: `docs\/visual\/page-builder-references\/hero-banner-desktop\.png`/,
   );
   assert.match(
     markdown,
-    /import `pnpm visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --require-complete`/,
+    / {2}- Preview: `reports\/visual\/page-builder-fixture\/page-builder-visual-fixture-hero-banner-desktop\.png`/,
   );
-  assert.match(markdown, /pnpm visual:measure -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --require-complete/);
-  assert.match(markdown, /accept passing `pnpm visual:measure -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --accept-passing --require-complete`/);
+  assert.match(
+    markdown,
+    / {2}- Capture: `pnpm visual:capture:fixture -- --component hero-banner --viewport desktop --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output-dir reports\/visual\/page-builder-fixture --write-manifest`/,
+  );
+  assert.match(
+    markdown,
+    / {2}- Reference report: `pnpm visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md --require-complete`/,
+  );
+  assert.match(
+    markdown,
+    / {2}- Import: `pnpm visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --require-complete`/,
+  );
+  assert.match(
+    markdown,
+    / {2}- Measure: `pnpm visual:measure -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --require-complete`/,
+  );
+  assert.match(
+    markdown,
+    / {2}- Accept passing: `pnpm visual:measure -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --accept-passing --require-complete`/,
+  );
+  assert.match(
+    markdown,
+    / {2}- Verify: `pnpm visual:acceptance -- --require-accepted reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json`/,
+  );
 });
 
 test("release check CLI writes Markdown output", async () => {
