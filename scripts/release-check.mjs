@@ -9,6 +9,7 @@ import {
   readReleaseCheckCliConfig,
   readReleaseEvidenceCheck,
   writeReleaseEvidenceCheckArtifact,
+  writeReleaseEvidenceCheckMarkdown,
 } from "./release/release-check.mjs";
 import { readErrorMessage } from "./smoke/smoke-error-message.mjs";
 
@@ -26,6 +27,13 @@ export async function runReleaseCheckCli(args, input = {}) {
 
     if (config.outputPath) {
       await writeReleaseEvidenceCheckArtifact(config.outputPath, artifact);
+    }
+
+    if (config.markdownOutputPath) {
+      await writeReleaseEvidenceCheckMarkdown(
+        config.markdownOutputPath,
+        artifact,
+      );
     }
 
     if (config.json) {
@@ -49,6 +57,12 @@ export async function runReleaseCheckCli(args, input = {}) {
 
       if (config.outputPath) {
         writeLine(`Release evidence artifact written: ${config.outputPath}`);
+      }
+
+      if (config.markdownOutputPath) {
+        writeLine(
+          `Release evidence Markdown written: ${config.markdownOutputPath}`,
+        );
       }
     }
 
@@ -76,6 +90,7 @@ function printHelp(writeLine) {
   pnpm release:check -- --visual-artifact-dir reports/visual/page-builder-fixture
   pnpm release:check -- --json
   pnpm release:check -- --output artifacts/release/release-check.json
+  pnpm release:check -- --markdown-output artifacts/release/release-check.md
   pnpm release:check -- artifacts/production-smoke/smoke-report.json
 
 Options:
@@ -85,6 +100,7 @@ Options:
   --checklist                Print release evidence readiness tasks.
   --json                     Print the machine-readable release evidence report.
   --output <path>            Write a JSON report under tmp/, reports/, artifacts/, or .tmp/.
+  --markdown-output <path>   Write a Markdown release evidence report under docs/releases, artifacts/release, reports/release, tmp/, or .tmp/.
   --smoke-report <path>      Check a specific production smoke report.
   --visual-artifact-dir <dir>
                              Check a downloaded Page Builder Visual artifact.

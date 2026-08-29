@@ -37,6 +37,10 @@ export {
   readReleaseCheckCliConfig,
   writeReleaseEvidenceCheckArtifact,
 };
+export {
+  createReleaseEvidenceCheckMarkdown,
+  writeReleaseEvidenceCheckMarkdown,
+} from "./release-check-markdown.mjs";
 
 export async function readReleaseEvidenceCheck(config, input = {}) {
   const smokeArtifact = await readOptionalSmokeArtifact(config, input);

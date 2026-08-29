@@ -74,8 +74,8 @@ later phases are explicitly approved.
   `pnpm release:preflight`: `SMOKE_REPORT_PATH`,
   `RELEASE_CHECK_ARTIFACT_PATH`, and `PROJECT_STATUS_ARTIFACT_PATH` must be
   safe repository-relative JSON paths; `SMOKE_REPORT_MARKDOWN_PATH`,
-  `PROJECT_STATUS_MARKDOWN_PATH`, and `RELEASE_NOTES_PATH` must be safe
-  repository-relative Markdown paths;
+  `RELEASE_CHECK_MARKDOWN_PATH`, `PROJECT_STATUS_MARKDOWN_PATH`, and
+  `RELEASE_NOTES_PATH` must be safe repository-relative Markdown paths;
   `SMOKE_REPORT_ARTIFACT_NAME`,
   `RELEASE_CHECK_ARTIFACT_NAME`, `PROJECT_STATUS_ARTIFACT_NAME`, and
   `RELEASE_NOTES_ARTIFACT_NAME` must be safe artifact names;
@@ -119,7 +119,8 @@ later phases are explicitly approved.
   linked. It contains both `smoke-report.json` and the Markdown review
   `smoke-report.md`.
 - The uploaded artifact `release-evidence-check-<run_number>` is attached or
-  linked.
+  linked. It contains both `release-check.json` and the Markdown review
+  `release-check.md`.
 - The uploaded artifact `project-status-<run_number>` is attached or linked.
   It contains both `project-status.json` and the Markdown handoff checklist
   `project-status.md`; the Markdown handoff lists the release evidence artifact
@@ -128,8 +129,10 @@ later phases are explicitly approved.
   `release-notes-<run_number>` is attached or linked.
 - The GitHub step summary records the report path, artifact names, review
   command, source commit, source workflow run URL, and combined
-  `release:check -- --checklist --all-visual-tasks` command so blocked runs keep
-  every pending Page Builder visual viewport task and command line in the log.
+  `release:check -- --checklist --all-visual-tasks` command with
+  `--markdown-output artifacts/release/release-check.md` so blocked runs keep
+  every pending Page Builder visual viewport task and command line in the log
+  and Markdown artifact.
   When visual evidence is downloaded, that combined command includes
   `--visual-artifact-dir reports/visual/page-builder-fixture`.
 - The GitHub step summary records the
@@ -184,10 +187,11 @@ later phases are explicitly approved.
   tasks with their expected evidence paths and commands. Add
   `--all-visual-tasks` when the release review needs every pending Page Builder
   visual viewport task and full command line in the same output.
-- `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --output artifacts/release/release-check.json`
-  writes the combined `release-evidence-check.v1` artifact for the release
-  record; its `readinessChecklist` lists the Production Smoke, Page Builder
-  visual, and release notes tasks, while `visual.pendingComponents`,
+- `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --output artifacts/release/release-check.json --markdown-output artifacts/release/release-check.md`
+  writes the combined `release-evidence-check.v1` artifact and matching
+  Markdown review for the release record; its `readinessChecklist` lists the
+  Production Smoke, Page Builder visual, and release notes tasks, while
+  `visual.pendingComponents`,
   `visual.pendingViewports`, `visual.issues`, and
   `visual.checklist.pendingTasks` identify any remaining Page Builder visual
   evidence gaps and their per-viewport commands when the gate is blocked. When
@@ -195,8 +199,9 @@ later phases are explicitly approved.
   `visual.artifactCheck` with required file, validated screenshot, and issue
   counts.
 - The `Production Smoke` workflow uploads the same combined release evidence as
-  `release-evidence-check-<run_number>`; the artifact includes `smoke.source`
-  so release notes can trace the smoke report back to the CI run.
+  `release-evidence-check-<run_number>`; the artifact includes
+  `release-check.json`, `release-check.md`, and `smoke.source` so release notes
+  can trace the smoke report back to the CI run.
 - The `Production Smoke` workflow uploads `project-status-<run_number>`; the
   artifact is a validated `project-status.v1` snapshot with the full
   `--all-actions` next-action list, untruncated command lines, and
@@ -204,8 +209,8 @@ later phases are explicitly approved.
   visual bundle and artifact check Markdown, combined gate, project status, and
   release notes artifact map.
 - Production Smoke artifact uploads use `if-no-files-found: error`; missing
-  smoke JSON, Smoke Markdown, combined gate, project status, or release notes
-  files fail the workflow instead of leaving only a warning.
+  smoke JSON, Smoke Markdown, combined gate JSON/Markdown, project status, or
+  release notes files fail the workflow instead of leaving only a warning.
 - `pnpm release:notes -- --release-tag <tag> --workflow-run-url <url> --smoke-artifact production-smoke-report-<run_number> --release-artifact release-evidence-check-<run_number> --project-status artifacts/release/project-status.json --project-status-artifact project-status-<run_number> --visual-artifact page-builder-visual-fixture-<run_number> --storefront-url <url> --rollback-target <target> --output docs/releases/<tag>.md`
   writes the final Markdown release record from the ready
   `release-evidence-check.v1` artifact, including the readiness checklist,
@@ -235,7 +240,8 @@ later phases are explicitly approved.
 - Run `pnpm smoke:report -- --markdown-output artifacts/production-smoke/smoke-report.md artifacts/production-smoke/smoke-report.json`.
 - Run `pnpm smoke:release-check -- artifacts/production-smoke/smoke-report.json`
   before marking release evidence ready.
-- Run `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json`
+- Run
+  `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --markdown-output artifacts/release/release-check.md`
   before marking the combined production and visual evidence ready.
 - Add `--visual-artifact-dir reports/visual/page-builder-fixture` when the
   release depends on screenshots from a downloaded Page Builder Visual artifact.

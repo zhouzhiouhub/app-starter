@@ -7,6 +7,7 @@ test("release check config parses defaults and evidence paths", () => {
     allVisualTasks: false,
     checklist: false,
     json: false,
+    markdownOutputPath: null,
     outputPath: null,
     smokeReportPath: null,
     visualArtifactDir: null,
@@ -26,6 +27,7 @@ test("release check config parses defaults and evidence paths", () => {
       allVisualTasks: true,
       checklist: true,
       json: false,
+      markdownOutputPath: null,
       outputPath: null,
       smokeReportPath: "artifacts/production-smoke/smoke-report.json",
       visualArtifactDir: null,
@@ -41,6 +43,7 @@ test("release check config parses defaults and evidence paths", () => {
       allVisualTasks: false,
       checklist: false,
       json: false,
+      markdownOutputPath: null,
       outputPath: null,
       smokeReportPath: null,
       visualArtifactDir: "reports/visual/page-builder-fixture",
@@ -59,6 +62,7 @@ test("release check config parses defaults and evidence paths", () => {
       allVisualTasks: false,
       checklist: false,
       json: false,
+      markdownOutputPath: null,
       outputPath: null,
       smokeReportPath: null,
       visualArtifactDir: "reports/visual/page-builder-fixture",
@@ -71,6 +75,7 @@ test("release check config parses defaults and evidence paths", () => {
       allVisualTasks: false,
       checklist: false,
       json: false,
+      markdownOutputPath: null,
       outputPath: null,
       smokeReportPath: "artifacts/production-smoke/smoke-report.json",
       visualArtifactDir: null,
@@ -97,11 +102,14 @@ test("release check config parses JSON artifact output", () => {
       "--json",
       "--output",
       "artifacts/release/release-check.json",
+      "--markdown-output",
+      "artifacts/release/release-check.md",
     ]),
     {
       allVisualTasks: false,
       checklist: false,
       json: true,
+      markdownOutputPath: "artifacts/release/release-check.md",
       outputPath: "artifacts/release/release-check.json",
       smokeReportPath: null,
       visualArtifactDir: null,
@@ -111,5 +119,13 @@ test("release check config parses JSON artifact output", () => {
   assert.throws(
     () => readReleaseCheckCliConfig(["--output", "release-check.json"]),
     /Release check output must be under tmp\/, reports\/, artifacts\/, or \.tmp\//,
+  );
+  assert.throws(
+    () =>
+      readReleaseCheckCliConfig([
+        "--markdown-output",
+        "artifacts/release/release-check.json",
+      ]),
+    /Release check Markdown must end with \.md/,
   );
 });

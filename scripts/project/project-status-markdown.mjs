@@ -69,6 +69,7 @@ function formatReleaseEvidenceArtifacts() {
     "- Page Builder Visual acceptance Markdown: `reports/visual/page-builder-fixture/visual-acceptance-report.md`",
     "- Page Builder Visual artifact check Markdown: `reports/visual/page-builder-fixture/visual-artifact-check-report.md`",
     "- Release evidence JSON: `artifacts/release/release-check.json`",
+    "- Release evidence Markdown: `artifacts/release/release-check.md`",
     "- Project status JSON: `artifacts/release/project-status.json`",
     "- Project status Markdown: `artifacts/release/project-status.md`",
     "- Release notes Markdown: `docs/releases/<tag>.md`",
@@ -79,7 +80,7 @@ function formatReleaseEvidenceArtifacts() {
       "pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture",
     )}`,
     `- Refresh combined gate: ${formatCode(
-      "pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture --output artifacts/release/release-check.json",
+      "pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture --output artifacts/release/release-check.json --markdown-output artifacts/release/release-check.md",
     )}`,
     `- Refresh status handoff: ${formatCode(
       "pnpm project:status -- --all-actions --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture --output artifacts/release/project-status.json --markdown-output artifacts/release/project-status.md",

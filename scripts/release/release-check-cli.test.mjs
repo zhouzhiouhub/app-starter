@@ -19,6 +19,7 @@ test("release check CLI help explains visual artifact input", async () => {
 
   assert.equal(exitCode, 0);
   assert.match(help, /--all-visual-tasks/);
+  assert.match(help, /--markdown-output <path>/);
   assert.match(help, /--visual-artifact-dir <dir>/);
   assert.match(help, /downloaded Page Builder Visual artifact/);
 });
@@ -72,6 +73,44 @@ test("release check CLI writes JSON artifact output", async () => {
       true,
     );
   } finally {
+    await rm(outputRoot, { force: true, recursive: true });
+  }
+});
+
+test("release check CLI writes Markdown output", async () => {
+  const emptyArchiveRoot = mkdtempSync(
+    path.join(tmpdir(), "release-markdown-"),
+  );
+  const outputRoot = `tmp/release-check-markdown-cli-${process.pid}-${Date.now()}`;
+  const outputPath = `${outputRoot}/release-check.md`;
+  const stdout = [];
+
+  await rm(outputRoot, { force: true, recursive: true });
+
+  try {
+    const exitCode = await runReleaseCheckCli(
+      ["--markdown-output", outputPath],
+      {
+        smokeRoots: [emptyArchiveRoot],
+        stdout: (line) => stdout.push(line),
+        visualManifest: createPendingVisualManifest(),
+      },
+    );
+    const markdown = await readFile(outputPath, "utf8");
+
+    assert.equal(exitCode, 1);
+    assert.match(markdown, /^# Release Evidence Check/m);
+    assert.match(markdown, /Release ready: no/);
+    assert.match(markdown, /Production Smoke report: blocked/);
+    assert.match(markdown, /hero-banner\.desktop/);
+    assert.equal(
+      stdout.some((line) =>
+        line.includes(`Release evidence Markdown written: ${outputPath}`),
+      ),
+      true,
+    );
+  } finally {
+    await rm(emptyArchiveRoot, { force: true, recursive: true });
     await rm(outputRoot, { force: true, recursive: true });
   }
 });

@@ -349,6 +349,7 @@ test("release check command is exposed in package, CI, and release docs", async 
     releaseChecklist,
     /pnpm release:check -- --smoke-report artifacts\/production-smoke\/smoke-report\.json/,
   );
+  assert.match(releaseChecklist, /--markdown-output artifacts\/release\/release-check\.md/);
   assert.match(releaseChecklist, /--visual-artifact-dir reports\/visual\/page-builder-fixture/);
   assert.match(releaseChecklist, /--output artifacts\/release\/release-check\.json/);
   assert.match(releaseChecklist, /release-evidence-check\.v1/);

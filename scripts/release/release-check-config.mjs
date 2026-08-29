@@ -3,12 +3,14 @@ import { readPageBuilderVisualArtifactDir } from "../visual/page-builder-visual-
 import { createArtifactPaths } from "../visual/page-builder-visual-artifact-check-paths.mjs";
 import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
 import { normalizeSmokeReportPath } from "../smoke/smoke-report-path-config.mjs";
+import { normalizeReleaseCheckMarkdownPath } from "./release-notes-validation.mjs";
 
 export function readReleaseCheckCliConfig(args) {
   const config = {
     allVisualTasks: false,
     checklist: false,
     json: false,
+    markdownOutputPath: null,
     outputPath: null,
     smokeReportPath: null,
     visualArtifactDir: null,
@@ -42,6 +44,14 @@ export function readReleaseCheckCliConfig(args) {
 
     if (arg === "--output") {
       config.outputPath = normalizeReleaseCheckOutputPath(
+        readOptionValue(arg, normalizedArgs, index),
+      );
+      index += 1;
+      continue;
+    }
+
+    if (arg === "--markdown-output") {
+      config.markdownOutputPath = normalizeReleaseCheckMarkdownPath(
         readOptionValue(arg, normalizedArgs, index),
       );
       index += 1;

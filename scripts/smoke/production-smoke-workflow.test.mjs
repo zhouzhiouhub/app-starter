@@ -62,6 +62,7 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /pnpm smoke:release-check -- "\$SMOKE_REPORT_PATH"/);
   assert.match(workflow, /RELEASE_CHECK_ARTIFACT_PATH:/);
   assert.match(workflow, /RELEASE_CHECK_ARTIFACT_NAME:/);
+  assert.match(workflow, /RELEASE_CHECK_MARKDOWN_PATH:/);
   assert.match(workflow, /PROJECT_STATUS_ARTIFACT_NAME:/);
   assert.match(workflow, /PROJECT_STATUS_ARTIFACT_PATH:/);
   assert.match(workflow, /PROJECT_STATUS_MARKDOWN_PATH:/);
@@ -96,6 +97,7 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
     /release_check_flags=\(/,
   );
   assert.match(workflow, /--all-visual-tasks/);
+  assert.match(workflow, /--markdown-output "\$RELEASE_CHECK_MARKDOWN_PATH"/);
   assert.match(
     workflow,
     /release_check_flags\+=\(--visual-artifact-dir reports\/visual\/page-builder-fixture\)/,
@@ -143,7 +145,9 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /Review Markdown:/);
   assert.match(workflow, /Combined gate:/);
   assert.match(workflow, /release:check -- --checklist --all-visual-tasks/);
+  assert.match(workflow, /--markdown-output \$RELEASE_CHECK_MARKDOWN_PATH/);
   assert.match(workflow, /Combined artifact:/);
+  assert.match(workflow, /Combined Markdown:/);
   assert.match(workflow, /Project status:/);
   assert.match(workflow, /project:status -- --all-actions/);
   assert.match(workflow, /--markdown-output \$PROJECT_STATUS_MARKDOWN_PATH/);
@@ -171,7 +175,8 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /actions\/upload-artifact@v4/);
   assert.match(workflow, /\$\{\{ inputs\.report_path \}\}/);
   assert.match(workflow, /\$\{\{ env\.SMOKE_REPORT_MARKDOWN_PATH \}\}/);
-  assert.match(workflow, /path: \$\{\{ env\.RELEASE_CHECK_ARTIFACT_PATH \}\}/);
+  assert.match(workflow, /\$\{\{ env\.RELEASE_CHECK_ARTIFACT_PATH \}\}/);
+  assert.match(workflow, /\$\{\{ env\.RELEASE_CHECK_MARKDOWN_PATH \}\}/);
   assert.match(workflow, /\$\{\{ env\.PROJECT_STATUS_ARTIFACT_PATH \}\}/);
   assert.match(workflow, /\$\{\{ env\.PROJECT_STATUS_MARKDOWN_PATH \}\}/);
   assert.match(workflow, /path: \$\{\{ env\.RELEASE_NOTES_PATH \}\}/);

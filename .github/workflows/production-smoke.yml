@@ -91,6 +91,7 @@ jobs:
       REDIS_URL: ${{ secrets.PRODUCTION_REDIS_URL }}
       RELEASE_CHECK_ARTIFACT_NAME: release-evidence-check-${{ github.run_number }}
       RELEASE_CHECK_ARTIFACT_PATH: artifacts/release/release-check.json
+      RELEASE_CHECK_MARKDOWN_PATH: artifacts/release/release-check.md
       RELEASE_NOTES_ARTIFACT_NAME: release-notes-${{ github.run_number }}
       RELEASE_NOTES_ALLOW_BLOCKED: ${{ inputs.allow_blocked_release_notes }}
       RELEASE_NOTES_PATH: ${{ inputs.release_notes_path }}
@@ -172,6 +173,7 @@ jobs:
             --all-visual-tasks
             --smoke-report "$SMOKE_REPORT_PATH"
             --output "$RELEASE_CHECK_ARTIFACT_PATH"
+            --markdown-output "$RELEASE_CHECK_MARKDOWN_PATH"
           )
           if [ -n "$RELEASE_VISUAL_ARTIFACT_NAME" ] && [ -n "$RELEASE_VISUAL_ARTIFACT_RUN_ID" ]; then
             release_check_flags+=(--visual-artifact-dir reports/visual/page-builder-fixture)
@@ -228,12 +230,13 @@ jobs:
             echo "- Review: \`pnpm smoke:report -- $SMOKE_REPORT_PATH\`"
             echo "- Review Markdown: \`pnpm smoke:report -- --markdown-output $SMOKE_REPORT_MARKDOWN_PATH $SMOKE_REPORT_PATH\`"
             echo "- Release gate: \`pnpm smoke:release-check -- $SMOKE_REPORT_PATH\`"
-            combined_gate="pnpm release:check -- --checklist --all-visual-tasks --smoke-report $SMOKE_REPORT_PATH --output $RELEASE_CHECK_ARTIFACT_PATH"
+            combined_gate="pnpm release:check -- --checklist --all-visual-tasks --smoke-report $SMOKE_REPORT_PATH --output $RELEASE_CHECK_ARTIFACT_PATH --markdown-output $RELEASE_CHECK_MARKDOWN_PATH"
             if [ -n "$RELEASE_VISUAL_ARTIFACT_NAME" ] && [ -n "$RELEASE_VISUAL_ARTIFACT_RUN_ID" ]; then
               combined_gate="$combined_gate --visual-artifact-dir reports/visual/page-builder-fixture"
             fi
             echo "- Combined gate: \`$combined_gate\`"
             echo "- Combined artifact: \`$RELEASE_CHECK_ARTIFACT_NAME\`"
+            echo "- Combined Markdown: \`$RELEASE_CHECK_MARKDOWN_PATH\`"
             project_status="pnpm project:status -- --all-actions --smoke-report $SMOKE_REPORT_PATH --output $PROJECT_STATUS_ARTIFACT_PATH --markdown-output $PROJECT_STATUS_MARKDOWN_PATH"
             if [ -n "$RELEASE_VISUAL_ARTIFACT_NAME" ] && [ -n "$RELEASE_VISUAL_ARTIFACT_RUN_ID" ]; then
               project_status="$project_status --visual-artifact-dir reports/visual/page-builder-fixture"
@@ -274,7 +277,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.RELEASE_CHECK_ARTIFACT_NAME }}
-          path: ${{ env.RELEASE_CHECK_ARTIFACT_PATH }}
+          path: |
+            ${{ env.RELEASE_CHECK_ARTIFACT_PATH }}
+            ${{ env.RELEASE_CHECK_MARKDOWN_PATH }}
           if-no-files-found: error
           retention-days: 30
       - name: Upload project status artifact

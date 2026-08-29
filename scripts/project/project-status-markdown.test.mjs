@@ -50,7 +50,7 @@ test("project status CLI writes a Markdown handoff", async () => {
     );
     assert.match(
       markdown,
-      /Refresh combined gate: `pnpm release:check -- --smoke-report artifacts\/production-smoke\/smoke-report\.json --visual-artifact-dir reports\/visual\/page-builder-fixture --output artifacts\/release\/release-check\.json`/,
+      /Refresh combined gate: `pnpm release:check -- --smoke-report artifacts\/production-smoke\/smoke-report\.json --visual-artifact-dir reports\/visual\/page-builder-fixture --output artifacts\/release\/release-check\.json --markdown-output artifacts\/release\/release-check\.md`/,
     );
     assert.match(
       markdown,

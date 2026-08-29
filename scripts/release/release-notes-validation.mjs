@@ -44,6 +44,13 @@ export function normalizeReleaseEvidencePath(value) {
   });
 }
 
+export function normalizeReleaseCheckMarkdownPath(value) {
+  return normalizeSafeRelativePath("Release check Markdown", value, {
+    extension: ".md",
+    requireReleaseSubdir: true,
+  });
+}
+
 export function normalizeProjectStatusPath(value) {
   return normalizeSafeRelativePath("Project status artifact", value, {
     extension: ".json",
