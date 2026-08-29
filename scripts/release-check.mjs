@@ -109,7 +109,9 @@ Options:
 
 Release evidence:
   The gate passes only when production smoke evidence is release-ready and
-  Page Builder visual acceptance is fully accepted with retained evidence.`);
+  Page Builder visual acceptance is fully accepted with retained evidence.
+  Ready text output also prints the release:notes handoff steps for the final
+  release record.`);
 }
 
 if (isMainModule()) {

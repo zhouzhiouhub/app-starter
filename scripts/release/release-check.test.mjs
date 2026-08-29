@@ -34,9 +34,12 @@ test("release check accepts complete smoke and visual evidence", () => {
   assert.equal(check.releaseReady, true);
   assert.equal(check.smoke.releaseReady, true);
   assert.equal(check.visual.status, "accepted");
-  assert.deepEqual(formatReleaseEvidenceCheck(check).slice(-1), [
-    "  Evidence is ready for release notes.",
-  ]);
+  assert.equal(
+    formatReleaseEvidenceCheck(check).includes(
+      "  Evidence is ready for release notes.",
+    ),
+    true,
+  );
 });
 
 test("release check accepts a complete visual artifact", () => {

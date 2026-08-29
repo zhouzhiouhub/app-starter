@@ -22,6 +22,7 @@ test("release check CLI help explains visual artifact input", async () => {
   assert.match(help, /--markdown-output <path>/);
   assert.match(help, /--visual-artifact-dir <dir>/);
   assert.match(help, /downloaded Page Builder Visual artifact/);
+  assert.match(help, /release:notes handoff steps/);
 });
 
 test("release check CLI prints machine-readable JSON", async () => {

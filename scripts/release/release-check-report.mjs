@@ -1,4 +1,5 @@
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
+import { createReleaseNotesHandoffSteps } from "./release-notes-handoff-steps.mjs";
 
 const maxReleaseBlockerCount = 12;
 const maxReleaseLineLength = 420;
@@ -26,9 +27,17 @@ export function formatReleaseEvidenceCheck(check) {
     lines.push(...formatReleaseBlockers(check.blockers));
   } else {
     lines.push("  Evidence is ready for release notes.");
+    lines.push("  Release notes handoff:");
+    lines.push(...formatReleaseNotesHandoffSteps());
   }
 
   return lines.map(formatReleaseLine);
+}
+
+function formatReleaseNotesHandoffSteps() {
+  return createReleaseNotesHandoffSteps().map(
+    (step) => `    ${step.label}: ${step.value}`,
+  );
 }
 
 function formatReleaseBlockers(blockers) {
