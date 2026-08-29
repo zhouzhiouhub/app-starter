@@ -98,11 +98,20 @@ function createProductionSmokeActionSteps(action, context) {
     createNextActionStep("Keep artifacts", productionSmokeArtifactNames.join(", ")),
     createNextActionStep(
       "Rerun gate",
-      context.smokeReportPath
-        ? `pnpm release:check -- --smoke-report ${context.smokeReportPath}`
-        : "pnpm release:check -- --smoke-report <path>",
+      createReleaseCheckCommand(context),
     ),
   ];
+}
+
+function createReleaseCheckCommand(context) {
+  const smokeReportPath = context.smokeReportPath ?? "<path>";
+  const command = [`pnpm release:check -- --smoke-report ${smokeReportPath}`];
+
+  if (context.visualArtifactDir) {
+    command.push(`--visual-artifact-dir ${context.visualArtifactDir}`);
+  }
+
+  return command.join(" ");
 }
 
 function createPageBuilderVisualActionSteps(action, context) {
