@@ -87,7 +87,7 @@ export async function runReleaseHandoffCli(args = [], input = {}) {
 }
 
 export function formatReleaseHandoffSummary(input) {
-  const nextAction = input.projectArtifact.nextActions[0];
+  const nextActions = input.projectArtifact.nextActions ?? [];
   const handoffReady =
     input.releaseArtifact.releaseReady &&
     input.preflightReport.status === "passed";
@@ -104,7 +104,8 @@ export function formatReleaseHandoffSummary(input) {
     `  Release evidence Markdown: ${input.config.releaseCheckMarkdownPath}`,
     `  Project status JSON: ${input.config.projectStatusOutputPath}`,
     `  Project status Markdown: ${input.config.projectStatusMarkdownPath}`,
-    `  Next action: ${formatNextAction(nextAction)}`,
+    `  Next actions: ${nextActions.length}`,
+    ...formatNextActions(nextActions),
   ];
 }
 
@@ -170,4 +171,24 @@ function formatNextAction(action) {
   return formatSmokeText(`${action.area}: ${action.label} - ${action.action}`, {
     maxLength: 420,
   });
+}
+
+function formatNextActions(actions) {
+  const visibleActions = actions.slice(0, 2);
+  const hiddenActionCount = actions.length - visibleActions.length;
+
+  if (visibleActions.length === 0) {
+    return ["  Next action: None"];
+  }
+
+  return [
+    ...visibleActions.map(
+      (action, index) => `  Next action ${index + 1}: ${formatNextAction(action)}`,
+    ),
+    ...(hiddenActionCount > 0
+      ? [
+          `  Remaining next actions: ${hiddenActionCount} (see project status Markdown for the full list)`,
+        ]
+      : []),
+  ];
 }

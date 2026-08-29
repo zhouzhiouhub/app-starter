@@ -82,6 +82,10 @@ test("release handoff writes blocked reports without requiring readiness", async
     assert.match(stdout.join("\n"), /Release ready: no/);
     assert.match(stdout.join("\n"), /Preflight status: passed/);
     assert.match(stdout.join("\n"), /Preflight JSON:/);
+    assert.match(stdout.join("\n"), /Next actions: 14/);
+    assert.match(stdout.join("\n"), /Next action 1: Production Smoke/);
+    assert.match(stdout.join("\n"), /Next action 2: Page Builder Visual/);
+    assert.match(stdout.join("\n"), /Remaining next actions: 12/);
   } finally {
     await rm(outputRoot, { force: true, recursive: true });
     await rm(smokeRoot, { force: true, recursive: true });
@@ -177,7 +181,8 @@ test("release handoff accepts ready smoke and visual evidence", async () => {
     assert.equal(projectArtifact.status, "release-ready");
     assert.equal(preflightArtifact.status, "passed");
     assert.match(stdout.join("\n"), /Release ready: yes/);
-    assert.match(stdout.join("\n"), /Next action: Release Notes/);
+    assert.match(stdout.join("\n"), /Next actions: 1/);
+    assert.match(stdout.join("\n"), /Next action 1: Release Notes/);
   } finally {
     await rm(outputRoot, { force: true, recursive: true });
   }
