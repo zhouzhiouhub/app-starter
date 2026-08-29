@@ -7,8 +7,10 @@ import { runPageBuilderVisualCapture } from "./page-builder-visual-capture.mjs";
 test("visual capture can write preview screenshot paths back to the manifest", async () => {
   const root = `tmp/visual-capture-manifest-${process.pid}-${Date.now()}`;
   const manifestPath = `${root}/manifest.json`;
+  const outputDir = createTestOutputDir("manifest");
 
   rmSync(root, { force: true, recursive: true });
+  rmSync(outputDir, { force: true, recursive: true });
   mkdirSync(root, { recursive: true });
   writeFileSync(manifestPath, `${JSON.stringify(createManifest(), null, 2)}\n`);
 
@@ -19,7 +21,7 @@ test("visual capture can write preview screenshot paths back to the manifest", a
         browserPath: "chrome",
         components: ["hero-banner"],
         manifestPath,
-        outputDir: "reports/visual/page-builder-fixture",
+        outputDir,
         timeoutMs: 2000,
         viewports: ["desktop"],
         writeManifest: true,
@@ -39,7 +41,7 @@ test("visual capture can write preview screenshot paths back to the manifest", a
     assert.equal(updated.records[0].status, "needs-evidence");
     assert.equal(
       evidence.previewScreenshot,
-      "reports/visual/page-builder-fixture/page-builder-visual-fixture-hero-banner-desktop.png",
+      `${outputDir}/page-builder-visual-fixture-hero-banner-desktop.png`,
     );
     assert.equal(evidence.status, "needs-evidence");
     assert.equal(evidence.visualMatchPercent, null);
@@ -48,14 +50,17 @@ test("visual capture can write preview screenshot paths back to the manifest", a
     assert.equal(evidence.designReference, "docs/visual/hero-banner-desktop.png");
   } finally {
     rmSync(root, { force: true, recursive: true });
+    rmSync(outputDir, { force: true, recursive: true });
   }
 });
 
 test("visual capture rejects manifest updates for missing viewport slots", async () => {
   const root = `tmp/visual-capture-missing-${process.pid}-${Date.now()}`;
   const manifestPath = `${root}/manifest.json`;
+  const outputDir = createTestOutputDir("missing");
 
   rmSync(root, { force: true, recursive: true });
+  rmSync(outputDir, { force: true, recursive: true });
   mkdirSync(root, { recursive: true });
   writeFileSync(manifestPath, `${JSON.stringify({ records: [] })}\n`);
 
@@ -68,7 +73,7 @@ test("visual capture rejects manifest updates for missing viewport slots", async
             browserPath: "chrome",
             components: ["hero-banner"],
             manifestPath,
-            outputDir: "reports/visual/page-builder-fixture",
+            outputDir,
             timeoutMs: 2000,
             viewports: ["desktop"],
             writeManifest: true,
@@ -83,8 +88,13 @@ test("visual capture rejects manifest updates for missing viewport slots", async
     );
   } finally {
     rmSync(root, { force: true, recursive: true });
+    rmSync(outputDir, { force: true, recursive: true });
   }
 });
+
+function createTestOutputDir(label) {
+  return `reports/visual/capture-${label}-${process.pid}-${Date.now()}`;
+}
 
 function createSuccessfulBrowser(args) {
   const child = new EventEmitter();
