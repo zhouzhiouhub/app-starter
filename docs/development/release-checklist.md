@@ -67,9 +67,11 @@ later phases are explicitly approved.
   This artifact includes `visual-acceptance-report.json` for structured review
   status and proves fixture capture regression only; final visual sign-off still
   requires accepted real design evidence.
-- Before running smoke requests, the `Production Smoke` workflow preflights the
-  optional release evidence inputs with `pnpm release:preflight`:
-  `visual_artifact_name` and
+- Before running smoke requests, the `Production Smoke` workflow preflights
+  artifact output paths and optional release evidence inputs with
+  `pnpm release:preflight`: `SMOKE_REPORT_PATH`,
+  `RELEASE_CHECK_ARTIFACT_PATH`, and `PROJECT_STATUS_ARTIFACT_PATH` must be
+  safe repository-relative JSON paths; `visual_artifact_name` and
   `visual_artifact_run_id` must be provided together, and release notes require
   `release_tag`, `rollback_target`, and `visual_artifact_name` together.
   `allow_blocked_release_notes` must stay disabled for formal release notes and

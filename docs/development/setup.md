@@ -354,8 +354,8 @@ artifact, including the artifact-local visual manifest and
 running `pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture`
 and both the combined gate and project status snapshot with
 `--visual-artifact-dir reports/visual/page-builder-fixture`. The workflow runs
-`pnpm release:preflight` before smoke requests so a
-partial visual artifact pair or partial release notes input set fails early.
+`pnpm release:preflight` before smoke requests so unsafe artifact output paths,
+a partial visual artifact pair, or a partial release notes input set fails early.
 The same visual artifact shape can be reproduced locally with
 `pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture`.
 When `release_tag`,

@@ -4,8 +4,15 @@ import { pathToFileURL } from "node:url";
 import { normalizeArtifactName } from "./release-notes-validation.mjs";
 import { readReleaseNotesCliConfig } from "./release-notes-config.mjs";
 import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
+import { normalizeSmokeReportPath } from "../smoke/smoke-report-path-config.mjs";
+
+const defaultSmokeReportPath = "artifacts/production-smoke/smoke-report.json";
+const defaultReleaseCheckArtifactPath = "artifacts/release/release-check.json";
+const defaultProjectStatusArtifactPath = "artifacts/release/project-status.json";
 
 export function validateProductionSmokeReleaseInputs(env = process.env) {
+  validateWorkflowArtifactPaths(env);
+
   const visualArtifact = readVisualArtifactInput(env);
   const releaseNotes = readReleaseNotesInput(env);
   const allowBlockedReleaseNotes = readReleaseNotesAllowBlockedInput(env);
@@ -29,6 +36,38 @@ export function validateProductionSmokeReleaseInputs(env = process.env) {
     releaseNotesEnabled: releaseNotes.enabled,
     visualArtifactDownloadEnabled: visualArtifact.enabled,
   };
+}
+
+function validateWorkflowArtifactPaths(env) {
+  normalizeSmokeReportPath(
+    readWorkflowPathEnv(env, "SMOKE_REPORT_PATH", defaultSmokeReportPath),
+  );
+  normalizeJsonArtifactPath(
+    "Release check artifact",
+    readWorkflowPathEnv(
+      env,
+      "RELEASE_CHECK_ARTIFACT_PATH",
+      defaultReleaseCheckArtifactPath,
+    ),
+  );
+  normalizeJsonArtifactPath(
+    "Project status artifact",
+    readWorkflowPathEnv(
+      env,
+      "PROJECT_STATUS_ARTIFACT_PATH",
+      defaultProjectStatusArtifactPath,
+    ),
+  );
+}
+
+function normalizeJsonArtifactPath(label, value) {
+  try {
+    return normalizeSmokeReportPath(value);
+  } catch (error) {
+    throw new Error(
+      readErrorMessage(error).replaceAll("SMOKE_REPORT_PATH", label),
+    );
+  }
 }
 
 export async function runProductionSmokeReleaseInputsCli(args = [], input = {}) {
@@ -188,6 +227,14 @@ function formatEnabled(value) {
   return value ? "enabled" : "disabled";
 }
 
+function readWorkflowPathEnv(env, name, fallback) {
+  if (!Object.hasOwn(env, name)) {
+    return fallback;
+  }
+
+  return env[name];
+}
+
 function assertNoUnknownArgs(args) {
   const unknown = args.filter((arg) => arg !== "--");
 
@@ -206,6 +253,8 @@ Checks:
   Validates Production Smoke release evidence inputs before smoke requests run.
 
 Environment:
+  SMOKE_REPORT_PATH, RELEASE_CHECK_ARTIFACT_PATH, and
+  PROJECT_STATUS_ARTIFACT_PATH must be safe repository-relative JSON paths.
   RELEASE_VISUAL_ARTIFACT_NAME and RELEASE_VISUAL_ARTIFACT_RUN_ID must be set
   together. RELEASE_TAG, RELEASE_ROLLBACK_TARGET, and
   RELEASE_VISUAL_ARTIFACT_NAME must be set together when release notes should be

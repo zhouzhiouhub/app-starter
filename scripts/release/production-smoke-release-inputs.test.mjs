@@ -21,6 +21,42 @@ test("production smoke release input preflight accepts disabled optional evidenc
   });
 });
 
+test("production smoke release input preflight validates workflow artifact paths", () => {
+  assert.deepEqual(
+    validateProductionSmokeReleaseInputs({
+      PROJECT_STATUS_ARTIFACT_PATH: "reports/release/project-status.json",
+      RELEASE_CHECK_ARTIFACT_PATH: "reports/release/release-check.json",
+      SMOKE_REPORT_PATH: "reports/production-smoke/smoke-report.json",
+    }),
+    {
+      releaseNotesAllowBlocked: false,
+      releaseNotesEnabled: false,
+      visualArtifactDownloadEnabled: false,
+    },
+  );
+  assert.throws(
+    () =>
+      validateProductionSmokeReleaseInputs({
+        SMOKE_REPORT_PATH: "README.md",
+      }),
+    /SMOKE_REPORT_PATH must be under tmp\/, reports\/, artifacts\/, or \.tmp\//,
+  );
+  assert.throws(
+    () =>
+      validateProductionSmokeReleaseInputs({
+        RELEASE_CHECK_ARTIFACT_PATH: "release-check.json",
+      }),
+    /Release check artifact must be under tmp\/, reports\/, artifacts\/, or \.tmp\//,
+  );
+  assert.throws(
+    () =>
+      validateProductionSmokeReleaseInputs({
+        PROJECT_STATUS_ARTIFACT_PATH: "reports/release/project-status.txt",
+      }),
+    /Project status artifact must end with \.json/,
+  );
+});
+
 test("production smoke release input preflight validates visual artifact pairs", () => {
   assert.throws(
     () =>
@@ -152,6 +188,8 @@ test("production smoke release input preflight CLI prints help", async () => {
 
   assert.equal(exitCode, 0);
   assert.match(stdout.join("\n"), /pnpm release:preflight/);
+  assert.match(stdout.join("\n"), /SMOKE_REPORT_PATH/);
+  assert.match(stdout.join("\n"), /RELEASE_CHECK_ARTIFACT_PATH/);
   assert.match(stdout.join("\n"), /RELEASE_VISUAL_ARTIFACT_NAME/);
   assert.match(stdout.join("\n"), /PROJECT_STATUS_ARTIFACT_PATH/);
   assert.match(stdout.join("\n"), /PROJECT_STATUS_ARTIFACT_NAME/);
