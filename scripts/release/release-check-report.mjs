@@ -18,7 +18,7 @@ export function formatReleaseEvidenceCheck(check) {
   if (check.visualArtifact) {
     lines.push(
       `  Visual artifact: ${check.visualArtifact.status} ` +
-        `(${formatReleaseValue(check.visualArtifact.artifactDir, "unknown")})`,
+        formatVisualArtifactDetails(check.visualArtifact),
     );
   }
 
@@ -52,6 +52,32 @@ function formatReleaseBlockers(blockers) {
   }
 
   return lines;
+}
+
+function formatVisualArtifactDetails(artifact) {
+  const detailText = [
+    formatReleaseValue(artifact.artifactDir, "unknown"),
+    formatVisualArtifactCount(
+      artifact.presentRequiredFileCount,
+      artifact.requiredFileCount,
+      "files",
+    ),
+    formatVisualArtifactCount(
+      artifact.presentScreenshotCount,
+      artifact.expectedScreenshotCount,
+      "screenshots",
+    ),
+  ].filter(Boolean);
+
+  return detailText.length > 0 ? `(${detailText.join(", ")})` : "";
+}
+
+function formatVisualArtifactCount(present, expected, label) {
+  if (!Number.isFinite(present) || !Number.isFinite(expected)) {
+    return null;
+  }
+
+  return `${present}/${expected} ${label}`;
 }
 
 function formatReleaseValue(value, fallback) {

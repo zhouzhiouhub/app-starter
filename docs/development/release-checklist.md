@@ -248,7 +248,8 @@ later phases are explicitly approved.
   Builder visual manifest are both present.
 - When `visual_artifact_run_id` was provided,
   `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture`
-  exits successfully and records `visual.artifactCheck.status=complete`.
+  exits successfully, prints the visual artifact path plus file and screenshot
+  counts, and records `visual.artifactCheck.status=complete`.
 - `pnpm release:check -- --checklist --smoke-report artifacts/production-smoke/smoke-report.json`
   prints the Production Smoke, Page Builder Visual, and release notes readiness
   tasks for release review, including the first Page Builder visual viewport

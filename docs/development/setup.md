@@ -366,8 +366,8 @@ for CI artifacts and release records.
 When the release uses a downloaded Page Builder Visual artifact, add
 `--visual-artifact-dir reports/visual/page-builder-fixture`; the combined gate
 then verifies the artifact-local manifest, capture report, acceptance report,
-and all 12 PNG screenshots, and writes the result under
-`visual.artifactCheck`.
+and all 12 PNG screenshots, prints the artifact path plus file and screenshot
+counts in the text summary, and writes the result under `visual.artifactCheck`.
 After that artifact is ready, `release:notes` writes the final Markdown release
 record, including the readiness checklist, main CI local verification run and
 artifact, preflight artifact, project status artifact and source path, any

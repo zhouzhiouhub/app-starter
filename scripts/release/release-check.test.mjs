@@ -61,7 +61,9 @@ test("release check accepts a complete visual artifact", () => {
   assert.equal(check.visualArtifact.status, "complete");
   assert.equal(
     formatReleaseEvidenceCheck(check).some((line) =>
-      line.includes("Visual artifact: complete"),
+      line.includes(
+        "Visual artifact: complete (reports/visual/page-builder-fixture, 6/6 files, 12/12 screenshots)",
+      ),
     ),
     true,
   );
