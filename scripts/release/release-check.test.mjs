@@ -198,6 +198,10 @@ test("release check artifact records visual evidence gaps", () => {
     "hero-banner.mobile",
   ]);
   const pendingTask = artifact.visual.checklist.pendingTasks[0];
+  assert.equal(
+    artifact.visual.checklist.manifestPath,
+    "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
+  );
   assert.equal(artifact.visual.checklist.pendingViewportCount, 12);
   assert.equal(artifact.visual.checklist.pendingTaskCount, 12);
   assert.equal(

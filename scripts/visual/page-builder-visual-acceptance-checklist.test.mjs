@@ -55,13 +55,15 @@ test("visual acceptance checklist lists missing release evidence", async () => {
 
 test("visual acceptance checklist commands respect custom manifest path", async () => {
   const manifest = await readPageBuilderVisualAcceptanceManifest();
+  const manifestPath =
+    "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json";
   const checklist = createPageBuilderVisualAcceptanceChecklist(manifest, {
-    manifestPath:
-      "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
+    manifestPath,
   });
   const viewport = checklist.components[0].viewports[0];
   const lines = formatPageBuilderVisualAcceptanceChecklist(checklist).join("\n");
 
+  assert.equal(checklist.manifestPath, manifestPath);
   assert.match(viewport.commands.capture, /--manifest reports\/visual/);
   assert.match(viewport.commands.capture, /--output-dir reports\/visual/);
   assert.match(viewport.commands.importReference, /--manifest reports\/visual/);

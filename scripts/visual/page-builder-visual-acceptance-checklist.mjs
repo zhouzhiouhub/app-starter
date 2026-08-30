@@ -51,6 +51,7 @@ export function createPageBuilderVisualAcceptanceChecklist(
 
   return {
     components,
+    manifestPath: context.manifestPath,
     pendingViewportCount: viewportCount - readyViewportCount,
     readyViewportCount,
     targets,

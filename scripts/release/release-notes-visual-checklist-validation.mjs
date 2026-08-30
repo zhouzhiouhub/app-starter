@@ -23,6 +23,7 @@ export function assertOptionalVisualChecklist(checklist) {
     throw new Error("Release check artifact visual.checklist must be an object.");
   }
 
+  assertNullableString(checklist.manifestPath, "visual.checklist.manifestPath");
   assertNonNegativeNumber(
     checklist.pendingViewportCount,
     "visual.checklist.pendingViewportCount",

@@ -137,6 +137,7 @@ function createVisualChecklistArtifact(checklist) {
   const pendingTasks = readPendingVisualChecklistTasks(checklist);
 
   return {
+    manifestPath: readTextOrNull(checklist.manifestPath),
     pendingTaskCount: pendingTasks.length,
     pendingTasks: pendingTasks
       .slice(0, maxVisualChecklistTaskCount)
