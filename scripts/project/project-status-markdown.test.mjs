@@ -69,7 +69,7 @@ test("project status CLI writes a Markdown handoff", async () => {
     );
     assert.match(
       markdown,
-      / {4}- Reference report: `pnpm visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md --require-complete`/,
+      / {4}- Reference report: `pnpm visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md --require-complete`/,
     );
     assert.match(
       markdown,
@@ -116,10 +116,10 @@ test("project status CLI writes a Markdown handoff", async () => {
       markdown,
       /Page Builder Visual artifact check Markdown: `reports\/visual\/page-builder-fixture\/visual-artifact-check-report\.md`/,
     );
-    assert.match(
-      markdown,
-      /Refresh visual references: `pnpm visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md --require-complete`/,
-    );
+  assert.match(
+    markdown,
+      /Refresh visual references: `pnpm visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md --require-complete`/,
+  );
     assert.match(
       markdown,
       /Refresh visual capture: `pnpm visual:capture:fixture -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output-dir reports\/visual\/page-builder-fixture --report reports\/visual\/page-builder-fixture\/visual-capture-report\.json --write-manifest`/,

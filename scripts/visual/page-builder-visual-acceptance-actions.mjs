@@ -103,6 +103,8 @@ function createPageBuilderVisualReferenceReportCommand(context) {
     "--source-dir",
     context.referenceSourceDir,
     ...createManifestOption(context),
+    "--output",
+    createPageBuilderVisualReferenceJsonReportPath(context),
     "--markdown-output",
     createPageBuilderVisualReferenceReportPath(context),
     "--require-complete",
@@ -172,6 +174,10 @@ function joinCommand(parts) {
 
 function createPageBuilderVisualReferenceReportPath(context) {
   return `${context.captureOutputDir}/visual-reference-import-report.md`;
+}
+
+function createPageBuilderVisualReferenceJsonReportPath(context) {
+  return `${context.captureOutputDir}/visual-reference-import-report.json`;
 }
 
 function inferCaptureOutputDir(manifestPath) {

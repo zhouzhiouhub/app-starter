@@ -4,6 +4,7 @@ export const artifactFileNames = {
   acceptanceReport: "visual-acceptance-report.json",
   captureReport: "visual-capture-report.json",
   manifest: "page-builder-visual-acceptance.json",
+  referenceImportReport: "visual-reference-import-report.json",
 };
 
 export const artifactMarkdownFileNames = {

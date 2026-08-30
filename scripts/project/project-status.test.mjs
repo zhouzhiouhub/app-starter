@@ -118,7 +118,7 @@ test("project status summarizes blocked release evidence", () => {
   );
   assert.equal(
     artifact.nextActions.some((action) =>
-      action.action.includes("visual-reference-import-report.md"),
+      action.action.includes("visual-reference-import-report.json"),
     ),
     true,
   );

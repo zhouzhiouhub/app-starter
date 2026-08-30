@@ -3,6 +3,7 @@ import {
   pageBuilderVisualAcceptanceSchemaVersion,
   validatePageBuilderVisualAcceptanceManifest,
 } from "./page-builder-visual-acceptance.mjs";
+import { pageBuilderVisualReferenceImportSchemaVersion } from "./page-builder-visual-reference-import.mjs";
 import {
   createExpectedScreenshotKeys,
   validateCaptureReport,
@@ -32,10 +33,16 @@ export function checkPageBuilderVisualArtifact(config, input = {}) {
     "acceptance report",
     context,
   );
+  const referenceImportReport = readRequiredJson(
+    context.paths.referenceImportReport,
+    "reference import report",
+    context,
+  );
   const screenshots = validateCaptureReport(captureReport, context);
   const manifestReport = validateArtifactManifest(manifest, screenshots, context);
 
   validateAcceptanceReport(acceptanceReport, manifestReport, context);
+  validateReferenceImportReport(referenceImportReport, context);
   validateAcceptanceMarkdown(
     context.paths.acceptanceMarkdown,
     manifestReport,
@@ -187,6 +194,48 @@ function validateAcceptanceReportMatchesManifest(report, manifestReport, context
         `acceptance report ${field} must match the artifact manifest review.`,
       );
     }
+  }
+}
+
+function validateReferenceImportReport(report, context) {
+  if (!isObject(report)) {
+    return;
+  }
+
+  if (report.schemaVersion !== pageBuilderVisualReferenceImportSchemaVersion) {
+    addArtifactCheckIssue(
+      context,
+      "invalid_reference_import_schema",
+      `reference import report schemaVersion must be ${pageBuilderVisualReferenceImportSchemaVersion}.`,
+    );
+  }
+
+  if (
+    report.manifestPath !== context.paths.manifest ||
+    report.sourceDir !== "docs/visual/page-builder-references"
+  ) {
+    addArtifactCheckIssue(
+      context,
+      "reference_import_report_mismatch",
+      "reference import report must match the artifact manifest and source dir.",
+    );
+  }
+
+  validateReferenceImportReportCounts(report, context);
+}
+
+function validateReferenceImportReportCounts(report, context) {
+  if (
+    !Array.isArray(report.missing) ||
+    !Array.isArray(report.updates) ||
+    report.missingCount !== report.missing.length ||
+    report.updateCount !== report.updates.length
+  ) {
+    addArtifactCheckIssue(
+      context,
+      "reference_import_report_mismatch",
+      "reference import report counts must match its missing and update lists.",
+    );
   }
 }
 

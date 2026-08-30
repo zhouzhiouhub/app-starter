@@ -89,6 +89,8 @@ export function normalizeArtifactBundleConfig(input, env = process.env) {
       defaultPageBuilderVisualReferenceSourceDir,
       "--manifest",
       paths.manifest,
+      "--output",
+      paths.referenceImportReport,
       "--markdown-output",
       paths.referenceImportMarkdown,
       "--require-complete",
@@ -105,6 +107,8 @@ export function createPageBuilderVisualArtifactBundlePaths(artifactDir) {
     acceptanceReport: `${artifactDir}/${artifactFileNames.acceptanceReport}`,
     captureReport: `${artifactDir}/${artifactFileNames.captureReport}`,
     manifest: `${artifactDir}/${artifactFileNames.manifest}`,
+    referenceImportReport:
+      `${artifactDir}/${artifactFileNames.referenceImportReport}`,
     referenceImportMarkdown:
       `${artifactDir}/${artifactMarkdownFileNames.referenceImportMarkdown}`,
   };

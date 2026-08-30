@@ -51,8 +51,8 @@ later phases are explicitly approved.
   Mobile viewport.
   After
   placing real design reference PNGs under a retained source directory, run
-  `pnpm visual:references -- --source-dir docs/visual/page-builder-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete`
-  to keep the reference intake report with missing or imported PNG paths. Then
+  `pnpm visual:references -- --source-dir docs/visual/page-builder-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output reports/visual/page-builder-fixture/visual-reference-import-report.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete`
+  to keep JSON and Markdown reference intake reports with missing or imported PNG paths. Then
   run
   `pnpm visual:references -- --source-dir docs/visual/page-builder-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete`.
   Then run
@@ -79,7 +79,8 @@ later phases are explicitly approved.
   local build/start/capture/stop workflow. Run
   `pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture`
   when you need the complete uploadable fixture bundle with manifest, capture
-  report, reference import Markdown, acceptance report, and artifact check.
+  report, reference import JSON / Markdown, acceptance report, and artifact
+  check.
   Keep the flag disabled outside the capture session.
 - Run the `Page Builder Visual` GitHub Actions workflow and keep its
   `page-builder-visual-fixture-<run_number>` artifact with the release notes.
@@ -205,15 +206,17 @@ later phases are explicitly approved.
 - The Page Builder visual acceptance manifest covers all six MVP core sections
   and links the final accepted Desktop / Mobile evidence when MVP visual sign-off
   is requested; every linked evidence file is retained with the release.
-- The reference intake report
-  `reports/visual/page-builder-fixture/visual-reference-import-report.md` is
+- The reference intake reports
+  `reports/visual/page-builder-fixture/visual-reference-import-report.json` and
+  `reports/visual/page-builder-fixture/visual-reference-import-report.md` are
   retained when real design PNGs were imported for the release review.
 - The latest `Page Builder Visual` workflow run and
   `page-builder-visual-fixture-<run_number>` artifact are linked when visual
   evidence is part of the release review; the artifact contains
   `page-builder-visual-acceptance.json` with artifact-local screenshot paths,
-  `visual-capture-report.json` with the captured screenshot list, and
-  `visual-reference-import-report.md` with reference intake status,
+  `visual-capture-report.json` with the captured screenshot list,
+  `visual-reference-import-report.json` with machine-readable reference intake
+  status, `visual-reference-import-report.md` with the human-readable intake,
   `visual-acceptance-report.json` with the structured acceptance status,
   `visual-acceptance-report.md`, and `visual-artifact-check-report.md`.
 - When `visual_artifact_run_id` was provided, the Production Smoke workflow log
@@ -223,13 +226,14 @@ later phases are explicitly approved.
   shows
   `pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture --markdown-output reports/visual/page-builder-fixture/visual-artifact-check-report.md`
   passing after the download and before smoke requests continue. The check
-  confirms the reference import Markdown and visual acceptance Markdown belong
-  to the artifact-local manifest.
+  confirms the reference import JSON / Markdown and visual acceptance Markdown
+  belong to the artifact-local manifest.
 - When `visual_artifact_run_id` was provided, the Production Smoke workflow
   summary lists
-  `reports/visual/page-builder-fixture/visual-reference-import-report.md` beside
-  the visual artifact check report, so release review can trace which real
-  reference PNGs were imported or still missing.
+  `reports/visual/page-builder-fixture/visual-reference-import-report.json` and
+  `reports/visual/page-builder-fixture/visual-reference-import-report.md`
+  beside the visual artifact check report, so release review can trace which
+  real reference PNGs were imported or still missing.
 - Local reproduction of the same uploaded visual artifact shape uses
   `pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture`.
 - `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json`
@@ -272,7 +276,7 @@ later phases are explicitly approved.
   artifact is a validated `project-status.v1` snapshot with the completion
   summary, full `--all-actions` next-action list, untruncated command lines, and
   `project-status.md` handoff checklist, including the production smoke,
-  visual bundle, reference import Markdown, artifact check Markdown, combined
+  visual bundle, reference import JSON / Markdown, artifact check Markdown, combined
   gate, project status, and release notes artifact map. Once the gate is ready,
   the next-action list reduces to the structured `release:notes` handoff:
   command, evidence args, review args, input evidence, output record,

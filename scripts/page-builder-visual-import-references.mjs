@@ -2,9 +2,11 @@
 
 import { pathToFileURL } from "node:url";
 import {
+  createPageBuilderVisualReferenceImportArtifact,
   formatPageBuilderVisualReferenceImportReport,
   importPageBuilderVisualReferences,
   readPageBuilderVisualReferenceImportCliConfig,
+  writePageBuilderVisualReferenceImportArtifact,
   writePageBuilderVisualReferenceImportMarkdown,
 } from "./visual/page-builder-visual-reference-import.mjs";
 import { readErrorMessage } from "./smoke/smoke-error-message.mjs";
@@ -18,6 +20,14 @@ export async function runPageBuilderVisualReferenceImportCli(args) {
   try {
     const config = readPageBuilderVisualReferenceImportCliConfig(args);
     const report = importPageBuilderVisualReferences(config);
+    const artifact = createPageBuilderVisualReferenceImportArtifact(report);
+
+    if (config.outputPath) {
+      await writePageBuilderVisualReferenceImportArtifact(
+        config.outputPath,
+        artifact,
+      );
+    }
 
     if (config.markdownOutputPath) {
       await writePageBuilderVisualReferenceImportMarkdown(
@@ -26,14 +36,22 @@ export async function runPageBuilderVisualReferenceImportCli(args) {
       );
     }
 
-    for (const line of formatPageBuilderVisualReferenceImportReport(report)) {
-      console.log(line);
-    }
+    if (config.json) {
+      console.log(JSON.stringify(artifact, null, 2));
+    } else {
+      for (const line of formatPageBuilderVisualReferenceImportReport(report)) {
+        console.log(line);
+      }
 
-    if (config.markdownOutputPath) {
-      console.log(
-        `Visual reference import Markdown written: ${config.markdownOutputPath}`,
-      );
+      if (config.outputPath) {
+        console.log(`Visual reference import artifact written: ${config.outputPath}`);
+      }
+
+      if (config.markdownOutputPath) {
+        console.log(
+          `Visual reference import Markdown written: ${config.markdownOutputPath}`,
+        );
+      }
     }
 
     return report.status === "invalid" ? 1 : 0;
@@ -57,11 +75,15 @@ function printHelp() {
   pnpm visual:references -- --source-dir docs/visual/page-builder-references
   pnpm visual:references -- --source-dir docs/visual/page-builder-references --write
   pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete
-  pnpm visual:references -- --source-dir docs/visual/page-builder-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete
+  pnpm visual:references -- --source-dir docs/visual/page-builder-references --json
+  pnpm visual:references -- --source-dir docs/visual/page-builder-references --output reports/visual/page-builder-fixture/visual-reference-import-report.json
+  pnpm visual:references -- --source-dir docs/visual/page-builder-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output reports/visual/page-builder-fixture/visual-reference-import-report.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete
 
 Options:
   --source-dir <dir>     Directory containing <component>-<viewport>.png files.
   --manifest <path>      Visual acceptance manifest path.
+  --json                 Print the machine-readable reference intake report.
+  --output <path>        Write a JSON report under tmp/, reports/, artifacts/, or .tmp/.
   --markdown-output <path>
                          Write a Markdown reference intake report.
   --write                Update designReference values in the manifest.

@@ -55,7 +55,7 @@ test("release notes render required evidence and gate status", () => {
   );
   assert.match(
     markdown,
-    /Page Builder Visual Artifact: complete \(5\/5 files, 12\/12 screenshots\)/,
+    /Page Builder Visual Artifact: complete \(6\/6 files, 12\/12 screenshots\)/,
   );
   assert.match(markdown, /## Readiness Checklist/);
   assert.match(markdown, /Production Smoke report: ready/);
@@ -82,7 +82,7 @@ test("release notes render required evidence and gate status", () => {
     markdown,
     /Artifact dir: `reports\/visual\/page-builder-fixture`/,
   );
-  assert.match(markdown, /Artifact files: 5\/5/);
+  assert.match(markdown, /Artifact files: 6\/6/);
   assert.match(markdown, /Artifact screenshots: 12\/12/);
   assert.match(markdown, /Artifact issues: none/);
   assert.match(markdown, /Pending components: none/);

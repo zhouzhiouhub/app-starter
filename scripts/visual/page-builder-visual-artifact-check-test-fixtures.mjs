@@ -14,6 +14,7 @@ import {
   pageBuilderVisualCaptureDefaultHeight,
   pageBuilderVisualCaptureViewportWidths,
 } from "./page-builder-visual-capture.mjs";
+import { createPageBuilderVisualReferenceImportArtifact } from "./page-builder-visual-reference-import.mjs";
 
 export const corruptPngBytes = Buffer.concat([
   createPngSignature(),
@@ -47,6 +48,9 @@ export function writeVisualArtifact(artifactDir, input = {}) {
     acceptanceReport,
     { checklist: acceptanceChecklist },
   );
+  const referenceImportArtifact = createPageBuilderVisualReferenceImportArtifact(
+    createReferenceImportReport(artifactDir),
+  );
   const captureArtifact = createPageBuilderVisualCaptureArtifact({
     baseUrl: "http://localhost:3000",
     browserPath: "google-chrome",
@@ -60,6 +64,10 @@ export function writeVisualArtifact(artifactDir, input = {}) {
   writeJson(manifestPath, manifest);
   writeJson(`${artifactDir}/visual-acceptance-report.json`, acceptanceArtifact);
   writeJson(`${artifactDir}/visual-capture-report.json`, captureArtifact);
+  writeJson(
+    `${artifactDir}/visual-reference-import-report.json`,
+    input.referenceImportReport ?? referenceImportArtifact,
+  );
   writeText(
     `${artifactDir}/visual-acceptance-report.md`,
     input.acceptanceMarkdown ??
@@ -185,6 +193,18 @@ function writePng(filePath, body) {
 
 function writeText(filePath, value) {
   writeFileSync(filePath, value);
+}
+
+function createReferenceImportReport(artifactDir) {
+  return {
+    complete: false,
+    manifestPath: `${artifactDir}/page-builder-visual-acceptance.json`,
+    missing: [],
+    sourceDir: "docs/visual/page-builder-references",
+    status: "needs-evidence",
+    updated: false,
+    updates: [],
+  };
 }
 
 function createReferenceImportMarkdown(artifactDir) {

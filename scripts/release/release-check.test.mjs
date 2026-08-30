@@ -131,7 +131,7 @@ test("release check artifact records visual artifact completeness", () => {
     artifact.visual.artifactCheck.artifactDir,
     "reports/visual/page-builder-fixture",
   );
-  assert.equal(artifact.visual.artifactCheck.presentRequiredFileCount, 5);
+  assert.equal(artifact.visual.artifactCheck.presentRequiredFileCount, 6);
   assert.equal(artifact.visual.artifactCheck.presentScreenshotCount, 12);
   assert.deepEqual(artifact.visual.artifactCheck.issues, []);
 });

@@ -27,7 +27,7 @@ test("visual acceptance checklist lists missing release evidence", async () => {
       "pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete",
     measure: "pnpm visual:measure -- --write --require-complete",
     referenceReport:
-      "pnpm visual:references -- --source-dir docs/visual/page-builder-references --markdown-output artifacts/visual/visual-reference-import-report.md --require-complete",
+      "pnpm visual:references -- --source-dir docs/visual/page-builder-references --output artifacts/visual/visual-reference-import-report.json --markdown-output artifacts/visual/visual-reference-import-report.md --require-complete",
     verify: "pnpm visual:acceptance -- --require-accepted",
   });
   assert.equal(
@@ -70,6 +70,10 @@ test("visual acceptance checklist commands respect custom manifest path", async 
   assert.match(viewport.commands.acceptPassing, /--require-complete/);
   assert.match(viewport.commands.measure, /--manifest reports\/visual/);
   assert.match(viewport.commands.referenceReport, /--manifest reports\/visual/);
+  assert.match(
+    viewport.commands.referenceReport,
+    /--output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.json/,
+  );
   assert.match(
     viewport.commands.referenceReport,
     /--markdown-output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md/,

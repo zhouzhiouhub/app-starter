@@ -19,7 +19,9 @@ import {
   readPageBuilderVisualMeasureManifest,
 } from "./page-builder-visual-measure.mjs";
 import {
+  createPageBuilderVisualReferenceImportArtifact,
   importPageBuilderVisualReferences,
+  writePageBuilderVisualReferenceImportArtifact,
   writePageBuilderVisualReferenceImportMarkdown,
 } from "./page-builder-visual-reference-import.mjs";
 
@@ -87,6 +89,15 @@ async function writeReferenceImportReport(config, input) {
     importPageBuilderVisualReferences)(config.referenceImport, {
     cwd: input.cwd ?? process.cwd(),
   });
+  const artifact = createPageBuilderVisualReferenceImportArtifact(report, {
+    generatedAt: input.generatedAt,
+  });
+
+  await (input.writeReferenceImportArtifact ??
+    writePageBuilderVisualReferenceImportArtifact)(
+    config.paths.referenceImportReport,
+    artifact,
+  );
 
   await (input.writeReferenceImportMarkdown ??
     writePageBuilderVisualReferenceImportMarkdown)(

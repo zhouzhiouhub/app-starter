@@ -271,7 +271,7 @@ pnpm smoke:report -- --list --limit=10
 pnpm smoke:report -- --markdown-output artifacts/production-smoke/smoke-report.md artifacts/production-smoke/smoke-report.json
 pnpm smoke:report -- reports/production/smoke-report.json
 pnpm smoke:release-check -- artifacts/production-smoke/smoke-report.json
-pnpm visual:references -- --source-dir docs/visual/page-builder-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete
+pnpm visual:references -- --source-dir docs/visual/page-builder-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output reports/visual/page-builder-fixture/visual-reference-import-report.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete
 pnpm visual:references -- --source-dir docs/visual/page-builder-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete
 pnpm visual:capture:fixture -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json --write-manifest
 pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete
@@ -322,8 +322,8 @@ them as `local-verification-<run_number>` for local verification handoff. Add
 `--markdown-output artifacts/release/project-status.md` when the handoff needs
 a pasteable Markdown checklist; it also records the recommended archive paths
 and refresh commands for the Production Smoke JSON/Markdown, Production Smoke
-preflight JSON/Markdown, Page Builder Visual bundle, reference import Markdown,
-artifact check Markdown, combined release gate, project status artifact, and
+preflight JSON/Markdown, Page Builder Visual bundle, reference import JSON /
+Markdown, artifact check Markdown, combined release gate, project status artifact, and
 release notes. Add `--all-actions` when it needs every pending next action,
 including
 full command lines, instead of the default short list. When the gate is ready,

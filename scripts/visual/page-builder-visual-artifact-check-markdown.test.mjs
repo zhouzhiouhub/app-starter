@@ -14,11 +14,15 @@ test("visual artifact check Markdown summarizes complete bundles", () => {
 
   assert.match(markdown, /^# Page Builder Visual Artifact Check/m);
   assert.match(markdown, /Status: `complete`/);
-  assert.match(markdown, /Required files: 5\/5/);
+  assert.match(markdown, /Required files: 6\/6/);
   assert.match(markdown, /Screenshots: 12\/12/);
   assert.match(
     markdown,
     /Artifact manifest: `reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json`/,
+  );
+  assert.match(
+    markdown,
+    /Reference import report: `reports\/visual\/page-builder-fixture\/visual-reference-import-report\.json`/,
   );
   assert.match(
     markdown,
@@ -100,9 +104,9 @@ function createArtifactCheckReport(overrides = {}) {
     artifactDir: "reports/visual/page-builder-fixture",
     expectedScreenshotCount: 12,
     issues: [],
-    presentRequiredFileCount: 5,
+    presentRequiredFileCount: 6,
     presentScreenshotCount: 12,
-    requiredFileCount: 5,
+    requiredFileCount: 6,
     status: "complete",
     ...overrides,
   };

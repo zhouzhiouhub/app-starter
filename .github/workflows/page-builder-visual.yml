@@ -61,6 +61,7 @@ jobs:
             echo "## Page Builder Visual Evidence"
             echo "- Bundle: \`pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture\`"
             echo "- Capture report: \`reports/visual/page-builder-fixture/visual-capture-report.json\`"
+            echo "- Reference import report: \`reports/visual/page-builder-fixture/visual-reference-import-report.json\`"
             echo "- Reference import Markdown: \`reports/visual/page-builder-fixture/visual-reference-import-report.md\`"
             echo "- Artifact manifest: \`reports/visual/page-builder-fixture/page-builder-visual-acceptance.json\`"
             echo "- Acceptance report: \`reports/visual/page-builder-fixture/visual-acceptance-report.json\`"

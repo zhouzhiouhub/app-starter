@@ -133,7 +133,7 @@ function createPageBuilderVisualActionSteps(action, context) {
     createNextActionStep("Reference source", defaultVisualReferenceSourceDir),
     createNextActionStep(
       "Reference report",
-      `pnpm visual:references -- --source-dir ${defaultVisualReferenceSourceDir} --manifest ${visualContext.manifestPath} --markdown-output ${visualContext.referenceReportPath} --require-complete`,
+      `pnpm visual:references -- --source-dir ${defaultVisualReferenceSourceDir} --manifest ${visualContext.manifestPath} --output ${visualContext.referenceJsonReportPath} --markdown-output ${visualContext.referenceReportPath} --require-complete`,
     ),
     createNextActionStep(
       "Import",
@@ -175,6 +175,7 @@ function createPageBuilderVisualActionContext(context) {
     artifactCheckReportPath: `${artifactDir}/visual-artifact-check-report.md`,
     captureReportPath: `${artifactDir}/visual-capture-report.json`,
     manifestPath: `${artifactDir}/page-builder-visual-acceptance.json`,
+    referenceJsonReportPath: `${artifactDir}/visual-reference-import-report.json`,
     referenceReportPath: `${artifactDir}/visual-reference-import-report.md`,
   };
 }

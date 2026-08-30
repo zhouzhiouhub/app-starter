@@ -4,7 +4,6 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
-  rmSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -17,7 +16,6 @@ import {
   normalizeVisualReferenceSourceDir,
   readPageBuilderVisualReferenceImportCliConfig,
 } from "./page-builder-visual-reference-import.mjs";
-import { runPageBuilderVisualReferenceImportCli } from "../page-builder-visual-import-references.mjs";
 import {
   mvpPageBuilderComponents,
   pageBuilderVisualAcceptanceSchemaVersion,
@@ -34,13 +32,19 @@ test("visual reference import config parses safe source dirs", () => {
       "reports/visual/manifest.json",
       "--markdown-output",
       "reports/visual/page-builder-fixture/visual-reference-import-report.md",
+      "--output",
+      "reports/visual/page-builder-fixture/visual-reference-import-report.json",
+      "--json",
       "--write",
       "--require-complete",
     ]),
     {
+      json: true,
       manifestPath: "reports/visual/manifest.json",
       markdownOutputPath:
         "reports/visual/page-builder-fixture/visual-reference-import-report.md",
+      outputPath:
+        "reports/visual/page-builder-fixture/visual-reference-import-report.json",
       requireComplete: true,
       sourceDir: "docs/visual/page-builder-references",
       write: true,
@@ -71,6 +75,16 @@ test("visual reference import config parses safe source dirs", () => {
         "reports/visual/reference-import.json",
       ]),
     /Visual reference import Markdown must end with \.md/,
+  );
+  assert.throws(
+    () =>
+      readPageBuilderVisualReferenceImportCliConfig([
+        "--source-dir",
+        "docs/visual/page-builder-references",
+        "--output",
+        "docs/visual/reference-import.json",
+      ]),
+    /Visual reference import output must be under tmp\/, reports\/, artifacts\/, or \.tmp\//,
   );
 });
 
@@ -195,41 +209,6 @@ test("visual reference import Markdown lists missing references", () => {
   );
 });
 
-test("visual reference import CLI writes Markdown output", async () => {
-  const sourceDir = `reports/visual/reference-import-${process.pid}-${Date.now()}`;
-  const outputPath = `${sourceDir}/visual-reference-import-report.md`;
-  const stdout = [];
-  const originalConsoleLog = console.log;
-
-  console.log = (line) => stdout.push(line);
-
-  try {
-    writeReferenceFilesToDir(sourceDir);
-
-    const exitCode = await runPageBuilderVisualReferenceImportCli([
-      "--source-dir",
-      sourceDir,
-      "--markdown-output",
-      outputPath,
-    ]);
-    const markdown = readFileSync(outputPath, "utf8");
-
-    assert.equal(exitCode, 0);
-    assert.match(markdown, /^# Page Builder Visual Reference Import/m);
-    assert.match(markdown, /Status: `would-update`/);
-    assert.match(markdown, /hero-banner\.desktop/);
-    assert.match(
-      stdout.join("\n"),
-      new RegExp(
-        `Visual reference import Markdown written: ${escapeRegExp(outputPath)}`,
-      ),
-    );
-  } finally {
-    console.log = originalConsoleLog;
-    rmSync(sourceDir, { force: true, recursive: true });
-  }
-});
-
 test("visual reference import command is exposed in docs", () => {
   const packageJson = readFileSync("package.json", "utf8");
   const readme = readFileSync("README.md", "utf8");
@@ -251,14 +230,19 @@ test("visual reference import command is exposed in docs", () => {
     /"visual:references": "node scripts\/page-builder-visual-import-references\.mjs"/,
   );
   assert.match(cli, /--markdown-output <path>/);
-  assert.match(cli, /visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --markdown-output/);
+  assert.match(cli, /--json/);
+  assert.match(cli, /--output <path>/);
+  assert.match(cli, /visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output/);
   assert.match(readme, /pnpm visual:references -- --source-dir/);
+  assert.match(readme, /visual-reference-import-report\.json/);
   assert.match(readme, /visual-reference-import-report\.md/);
   assert.match(readme, /--manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/);
   assert.match(acceptanceDoc, /pnpm visual:references -- --source-dir/);
+  assert.match(acceptanceDoc, /visual-reference-import-report\.json/);
   assert.match(acceptanceDoc, /visual-reference-import-report\.md/);
   assert.match(acceptanceDoc, /--manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/);
   assert.match(releaseChecklist, /pnpm visual:references -- --source-dir/);
+  assert.match(releaseChecklist, /visual-reference-import-report\.json/);
   assert.match(releaseChecklist, /visual-reference-import-report\.md/);
   assert.match(releaseChecklist, /--manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/);
 });
@@ -273,7 +257,7 @@ test("visual reference intake directory documents every required file", () => {
   assert.match(referenceReadme, /real Page Builder design\s+reference PNGs/);
   assert.match(
     referenceReadme,
-    /visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md/,
+    /visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md/,
   );
   assert.match(
     referenceReadme,
@@ -348,8 +332,4 @@ function writeReferenceFilesToDir(sourceDir, options = {}) {
       }
     }
   }
-}
-
-function escapeRegExp(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
 }

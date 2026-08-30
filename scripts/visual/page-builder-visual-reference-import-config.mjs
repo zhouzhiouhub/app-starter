@@ -1,5 +1,8 @@
 import { defaultPageBuilderVisualAcceptanceManifestPath } from "./page-builder-visual-acceptance-constants.mjs";
-import { normalizeVisualAcceptanceMarkdownOutputPath } from "./page-builder-visual-acceptance-output-paths.mjs";
+import {
+  normalizeVisualAcceptanceMarkdownOutputPath,
+  normalizeVisualAcceptanceOutputPath,
+} from "./page-builder-visual-acceptance-output-paths.mjs";
 import { normalizeDirectoryPathSeparators } from "../safe-path-separators.mjs";
 import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
 
@@ -9,8 +12,10 @@ const unsafeSourceDirCharacters = new Set(["`", '"', "'"]);
 export function readPageBuilderVisualReferenceImportCliConfig(argv) {
   const args = stripPnpmSeparator(argv);
   const input = {
+    json: false,
     manifestPath: defaultPageBuilderVisualAcceptanceManifestPath,
     markdownOutputPath: null,
+    outputPath: null,
     requireComplete: false,
     sourceDir: null,
     write: false,
@@ -31,11 +36,15 @@ export function readPageBuilderVisualReferenceImportCliConfig(argv) {
   }
 
   return {
+    json: input.json,
     manifestPath: input.manifestPath,
     markdownOutputPath: input.markdownOutputPath
       ? normalizeVisualReferenceImportMarkdownOutputPath(
           input.markdownOutputPath,
         )
+      : null,
+    outputPath: input.outputPath
+      ? normalizeVisualReferenceImportOutputPath(input.outputPath)
       : null,
     requireComplete: input.requireComplete,
     sourceDir: normalizeVisualReferenceSourceDir(input.sourceDir),
@@ -81,13 +90,32 @@ export function normalizeVisualReferenceImportMarkdownOutputPath(value) {
   }
 }
 
+export function normalizeVisualReferenceImportOutputPath(value) {
+  try {
+    return normalizeVisualAcceptanceOutputPath(value);
+  } catch (error) {
+    throw new Error(
+      readErrorMessage(error).replaceAll(
+        "Visual acceptance output",
+        "Visual reference import output",
+      ),
+    );
+  }
+}
+
 function readReferenceImportOption(option, args, index, input) {
   switch (option) {
+    case "--json":
+      input.json = true;
+      return index;
     case "--manifest":
       input.manifestPath = readOptionValue(option, args, index);
       return index + 1;
     case "--markdown-output":
       input.markdownOutputPath = readOptionValue(option, args, index);
+      return index + 1;
+    case "--output":
+      input.outputPath = readOptionValue(option, args, index);
       return index + 1;
     case "--require-complete":
       input.requireComplete = true;

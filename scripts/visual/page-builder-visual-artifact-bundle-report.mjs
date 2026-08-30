@@ -13,6 +13,7 @@ export function formatPageBuilderVisualArtifactBundleReport(result) {
     `Source manifest: ${result.sourceManifestPath}`,
     `Artifact manifest: ${result.paths.manifest}`,
     `Capture report: ${result.paths.captureReport}`,
+    `Reference import report: ${result.paths.referenceImportReport}`,
     `Reference import Markdown: ${result.paths.referenceImportMarkdown}`,
     `Acceptance report: ${result.paths.acceptanceReport}`,
     `Acceptance Markdown: ${result.paths.acceptanceMarkdown}`,

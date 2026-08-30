@@ -215,7 +215,9 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /failure review draft/);
   assert.match(workflow, /ready evidence only/);
   assert.match(workflow, /Visual evidence artifact:/);
-  assert.match(workflow, /Visual reference import:/);
+  assert.match(workflow, /Visual reference import report:/);
+  assert.match(workflow, /visual-reference-import-report\.json/);
+  assert.match(workflow, /Visual reference import Markdown:/);
   assert.match(workflow, /visual-reference-import-report\.md/);
   assert.match(workflow, /Visual artifact check:/);
   assert.match(workflow, /visual-artifact-check-report\.md/);

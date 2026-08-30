@@ -22,7 +22,7 @@ test("visual artifact check accepts a complete fixture artifact", () => {
     const report = checkPageBuilderVisualArtifact({ artifactDir });
 
     assert.equal(report.status, "complete");
-    assert.equal(report.presentRequiredFileCount, 5);
+    assert.equal(report.presentRequiredFileCount, 6);
     assert.equal(report.presentScreenshotCount, 12);
     assert.deepEqual(report.issues, []);
     assert.match(
@@ -43,7 +43,7 @@ test("visual artifact check rejects missing reference import Markdown", () => {
 
     const report = checkPageBuilderVisualArtifact({ artifactDir });
     assert.equal(report.status, "invalid");
-    assert.equal(report.presentRequiredFileCount, 4);
+    assert.equal(report.presentRequiredFileCount, 5);
     assert.equal(
       report.issues.some(
         (issue) =>
@@ -52,6 +52,31 @@ test("visual artifact check rejects missing reference import Markdown", () => {
       ),
       true,
     );
+  } finally {
+    rmSync(artifactDir, { force: true, recursive: true });
+  }
+});
+
+test("visual artifact check rejects invalid reference import JSON", () => {
+  const artifactDir = createArtifactDir("invalid-reference-json");
+
+  try {
+    writeVisualArtifact(artifactDir, {
+      referenceImportReport: {
+        schemaVersion: "wrong",
+        manifestPath: "docs/development/page-builder-visual-acceptance.json",
+        missing: [],
+        missingCount: 1,
+        sourceDir: "docs/visual/page-builder-references",
+        updates: [],
+        updateCount: 0,
+      },
+    });
+
+    const report = checkPageBuilderVisualArtifact({ artifactDir });
+    assert.equal(report.status, "invalid");
+    assert.equal(hasIssue(report, "invalid_reference_import_schema"), true);
+    assert.equal(hasIssue(report, "reference_import_report_mismatch"), true);
   } finally {
     rmSync(artifactDir, { force: true, recursive: true });
   }
@@ -66,7 +91,7 @@ test("visual artifact check rejects missing acceptance Markdown", () => {
 
     const report = checkPageBuilderVisualArtifact({ artifactDir });
     assert.equal(report.status, "invalid");
-    assert.equal(report.presentRequiredFileCount, 4);
+    assert.equal(report.presentRequiredFileCount, 5);
     assert.equal(
       report.issues.some(
         (issue) =>
@@ -226,6 +251,7 @@ test("visual artifact check command is exposed in package and workflows", () => 
     /pnpm visual:artifact-check -- --artifact-dir reports\/visual\/page-builder-fixture --markdown-output reports\/visual\/page-builder-fixture\/visual-artifact-check-report\.md/,
   );
   assert.match(pageBuilderWorkflow, /visual-artifact-check-report\.md/);
+  assert.match(pageBuilderWorkflow, /visual-reference-import-report\.json/);
   assert.match(pageBuilderWorkflow, /visual-reference-import-report\.md/);
   assert.match(visualDoc, /pnpm visual:artifact-check/);
   assert.match(releaseChecklist, /pnpm visual:artifact-check/);

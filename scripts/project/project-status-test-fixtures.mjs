@@ -68,7 +68,7 @@ function createVisualTask(component, viewport) {
         "pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete",
       measure: "pnpm visual:measure -- --write --require-complete",
       referenceReport:
-        "pnpm visual:references -- --source-dir docs/visual/page-builder-references --markdown-output artifacts/visual/visual-reference-import-report.md --require-complete",
+        "pnpm visual:references -- --source-dir docs/visual/page-builder-references --output artifacts/visual/visual-reference-import-report.json --markdown-output artifacts/visual/visual-reference-import-report.md --require-complete",
       verify: "pnpm visual:acceptance -- --require-accepted",
     },
     component,
