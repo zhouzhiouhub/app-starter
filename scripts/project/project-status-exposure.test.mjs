@@ -18,6 +18,8 @@ test("project status command is exposed in package and CI", async () => {
     packageJson,
     /"test:project": "node --test scripts\/project\/\*\.test\.mjs"/,
   );
+  assert.match(packageJson, /"verify:local": "pnpm run check:install/);
+  assert.match(packageJson, /pnpm project:status -- --all-actions --output tmp\/project-status\.json --markdown-output tmp\/project-status-handoff\.md/);
   assert.match(ciWorkflow, /pnpm project:status -- --help/);
   assert.match(ciWorkflow, /pnpm project:status -- --all-actions --json/);
   const localVerificationCommand =
@@ -39,6 +41,7 @@ test("project status command is exposed in package and CI", async () => {
   assert.match(ciWorkflow, /tmp\/project-status\.json/);
   assert.match(ciWorkflow, /tmp\/project-status-handoff\.md/);
   assert.match(readme, /pnpm project:status -- --all-actions/);
+  assert.match(readme, /pnpm run verify:local/);
   assert.match(readme, /local-verification-<run_number>/);
   assert.match(readme, /完成度摘要/);
   assert.match(
@@ -51,6 +54,7 @@ test("project status command is exposed in package and CI", async () => {
   );
   assert.match(readme, /Project Next Actions/);
   assert.match(setupDoc, /pnpm project:status -- --all-actions/);
+  assert.match(setupDoc, /pnpm run verify:local/);
   assert.match(setupDoc, /completion summary/);
   assert.match(
     setupDoc,

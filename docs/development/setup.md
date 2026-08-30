@@ -266,6 +266,7 @@ roots.
 Review archived smoke reports with:
 
 ```bash
+pnpm run verify:local
 pnpm smoke:report
 pnpm smoke:report -- --list --limit=10
 pnpm smoke:report -- --markdown-output artifacts/production-smoke/smoke-report.md artifacts/production-smoke/smoke-report.json
@@ -315,7 +316,10 @@ readiness, the configured local verification commands, and the next concrete
 actions without changing the pass/fail criteria. Add `--require-ready` when the
 same status report should exit non-zero until release evidence is ready. Use
 `--json` or `--output` to produce a validated `project-status.v1` artifact for
-handoff or release review notes. The main CI workflow writes
+handoff or release review notes. After dependencies are installed,
+`pnpm run verify:local` runs `check:file-size`, `typecheck`, `lint`, `test`,
+and `build` sequentially, then writes the same `tmp/project-status.json` and
+`tmp/project-status-handoff.md` local handoff files. The main CI workflow writes
 `tmp/project-status.json` and `tmp/project-status-handoff.md` after
 `check:file-size`, `typecheck`, `lint`, `test`, and `build` pass, then uploads
 them as `local-verification-<run_number>` for local verification handoff. Add

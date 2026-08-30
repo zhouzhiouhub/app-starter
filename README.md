@@ -614,6 +614,12 @@ POST /api/v1/webhooks/stripe
 
 ## 12. 常用验证命令
 
+完整本地验收矩阵（安装依赖后按顺序运行，并生成 `tmp/project-status.json` 与 `tmp/project-status-handoff.md`）：
+
+```powershell
+pnpm run verify:local
+```
+
 类型检查：
 
 ```powershell
@@ -736,6 +742,7 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 
 当前已验证通过：
 
+- `pnpm run verify:local`
 - `pnpm run predev`
 - `pnpm --filter @app-starter/admin build`
 - `pnpm --filter @app-starter/web build`

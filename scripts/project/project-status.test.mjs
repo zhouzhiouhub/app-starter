@@ -43,7 +43,7 @@ test("project status summarizes blocked release evidence", () => {
   assert.equal(artifact.releaseGate.smoke.status, "blocked");
   assert.equal(artifact.releaseGate.visual.status, "needs-evidence");
   assert.equal(artifact.releaseGate.visual.pendingTaskCount, 12);
-  assert.equal(artifact.localVerification.commandCount, 6);
+  assert.equal(artifact.localVerification.commandCount, 7);
   assert.equal(artifact.nextActionLimit, 8);
   assert.equal(artifact.truncatedNextActionCount, 6);
   assert.deepEqual(
@@ -55,6 +55,7 @@ test("project status summarizes blocked release evidence", () => {
       "pnpm lint",
       "pnpm test",
       "pnpm build",
+      "pnpm project:status -- --all-actions --output tmp/project-status.json --markdown-output tmp/project-status-handoff.md",
     ],
   );
   assert.equal(artifact.nextActionCount, 14);
@@ -242,6 +243,7 @@ test("project status CLI prints readable blocked state", async () => {
     assert.match(text, /Accept passing: pnpm visual:measure/);
     assert.match(text, /Local verification:/);
     assert.match(text, /TypeScript: pnpm typecheck \(configured\)/);
+    assert.match(text, /Project status handoff: pnpm project:status/);
     assert.match(text, /hero-banner\.desktop/);
     assert.match(text, /Use --all-actions to list every next action/);
   } finally {

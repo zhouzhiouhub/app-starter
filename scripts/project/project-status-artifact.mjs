@@ -42,6 +42,11 @@ const localVerificationCommands = [
     command: "pnpm build",
     label: "Build",
   },
+  {
+    command:
+      "pnpm project:status -- --all-actions --output tmp/project-status.json --markdown-output tmp/project-status-handoff.md",
+    label: "Project status handoff",
+  },
 ];
 
 export function createProjectStatusArtifact(check, input = {}) {

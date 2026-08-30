@@ -157,8 +157,11 @@ later phases are explicitly approved.
   `project-status.json` and `project-status-handoff.md` generated after
   `check:file-size`, `typecheck`, `lint`, `test`, and `build` have passed. This
   artifact supports local verification handoff and does not replace Production
-  Smoke evidence. Pass this run URL and artifact name to `release:notes` as
-  `--local-verification-run-url` and `--local-verification-artifact`.
+  Smoke evidence. Locally, `pnpm run verify:local` runs the same checks in
+  sequence after dependencies are installed and writes the same `tmp/` handoff
+  files for review. Pass the main CI run URL and artifact name to
+  `release:notes` as `--local-verification-run-url` and
+  `--local-verification-artifact`.
 - The `Production Smoke` workflow run is linked from the release notes.
 - The uploaded artifact `production-smoke-report-<run_number>` is attached or
   linked. It contains both `smoke-report.json` and the Markdown review

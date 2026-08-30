@@ -32,6 +32,7 @@
     "test:smoke": "node --test scripts/smoke/*.test.mjs",
     "test:visual": "node --test scripts/visual/*.test.mjs",
     "typecheck": "pnpm -r --if-present typecheck",
+    "verify:local": "pnpm run check:install && pnpm run check:file-size && pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm project:status -- --all-actions --output tmp/project-status.json --markdown-output tmp/project-status-handoff.md",
     "visual:acceptance": "node scripts/page-builder-visual-acceptance.mjs",
     "visual:artifact-bundle": "node scripts/page-builder-visual-artifact-bundle.mjs",
     "visual:artifact-check": "node scripts/page-builder-visual-artifact-check.mjs",
