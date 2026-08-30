@@ -9,6 +9,7 @@ import {
   writeProjectStatusArtifact,
   writeProjectStatusMarkdown,
 } from "./project/project-status.mjs";
+import { applyProjectStatusVisualArtifactDiscovery } from "./project/project-status-visual-artifact-config.mjs";
 import { readReleaseEvidenceCheck } from "./release/release-check.mjs";
 import { readErrorMessage } from "./smoke/smoke-error-message.mjs";
 
@@ -23,8 +24,12 @@ export async function runProjectStatusCli(args, input = {}) {
 
   try {
     const config = readProjectStatusCliConfig(args);
-    const check = await readReleaseEvidenceCheck(
+    const releaseCheckConfig = applyProjectStatusVisualArtifactDiscovery(
       config.releaseCheckConfig,
+      input,
+    );
+    const check = await readReleaseEvidenceCheck(
+      releaseCheckConfig,
       input,
     );
     const generatedAt = input.generatedAt ?? new Date().toISOString();
@@ -110,7 +115,8 @@ Options:
 Project status:
   This wraps release:check. It summarizes completed MVP milestones, the current
   release gate, and the next concrete actions; --require-ready turns the same
-  summary into a completion gate.`);
+  summary into a completion gate. When the default Page Builder Visual artifact
+  exists locally, it is included automatically unless visual inputs are explicit.`);
 }
 
 if (isMainModule()) {
