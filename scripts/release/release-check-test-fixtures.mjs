@@ -121,6 +121,8 @@ export function createVisualArtifactCheck(input) {
         ],
     presentRequiredFileCount: complete ? 6 : 5,
     presentScreenshotCount: complete ? 12 : 0,
+    presentDesignReferenceCount: complete ? 12 : 0,
+    referencedDesignReferenceCount: complete ? 12 : 1,
     requiredFileCount: 6,
     status: input.status,
   };

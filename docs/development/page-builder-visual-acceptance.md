@@ -92,7 +92,8 @@ manifest, capture report, acceptance report, and all 12 screenshot PNGs are
 present, internally consistent, decodable, and sized to the capture viewport.
 When the manifest already contains `designReference` values, the same check
 also verifies those retained reference files are readable PNGs before the
-evidence can pass artifact integrity review.
+evidence can pass artifact integrity review, and reports the readable reference
+count against the number of filled `designReference` paths.
 The check also verifies that `visual-reference-import-report.json` and
 `visual-reference-import-report.md` are retained for the artifact-local manifest
 and default reference intake directory, and that `visual-acceptance-report.md`

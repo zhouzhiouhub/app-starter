@@ -22,6 +22,8 @@ test("visual artifact check accepts readable design reference PNGs", () => {
     const report = checkPageBuilderVisualArtifact({ artifactDir });
 
     assert.equal(report.status, "complete");
+    assert.equal(report.presentDesignReferenceCount, 1);
+    assert.equal(report.referencedDesignReferenceCount, 1);
     assert.equal(hasIssue(report, "invalid_design_reference_file"), false);
   } finally {
     rmSync(artifactDir, { force: true, recursive: true });
@@ -39,6 +41,8 @@ test("visual artifact check rejects corrupt design reference PNGs", () => {
     const report = checkPageBuilderVisualArtifact({ artifactDir });
 
     assert.equal(report.status, "invalid");
+    assert.equal(report.presentDesignReferenceCount, 0);
+    assert.equal(report.referencedDesignReferenceCount, 1);
     assert.equal(hasIssue(report, "invalid_design_reference_file"), true);
   } finally {
     rmSync(artifactDir, { force: true, recursive: true });

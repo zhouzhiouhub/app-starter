@@ -5,6 +5,7 @@ export function formatPageBuilderVisualArtifactCheckReport(report) {
     `Artifact dir: ${report.artifactDir}`,
     `Required files: ${report.presentRequiredFileCount}/${report.requiredFileCount}`,
     `Screenshots: ${report.presentScreenshotCount}/${report.expectedScreenshotCount}`,
+    ...formatDesignReferences(report),
   ];
 
   if (report.issues.length > 0) {
@@ -18,6 +19,19 @@ export function formatPageBuilderVisualArtifactCheckReport(report) {
   }
 
   return lines;
+}
+
+function formatDesignReferences(report) {
+  if (
+    !Number.isFinite(report.presentDesignReferenceCount) ||
+    !Number.isFinite(report.referencedDesignReferenceCount)
+  ) {
+    return [];
+  }
+
+  return [
+    `Design references: ${report.presentDesignReferenceCount}/${report.referencedDesignReferenceCount}`,
+  ];
 }
 
 export function formatPageBuilderVisualArtifactCheckUsage() {

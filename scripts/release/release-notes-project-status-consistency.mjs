@@ -94,6 +94,8 @@ function assertVisualArtifactCheckMatches(releaseCheck, projectCheck) {
     "expectedScreenshotCount",
     "presentRequiredFileCount",
     "presentScreenshotCount",
+    "presentDesignReferenceCount",
+    "referencedDesignReferenceCount",
     "requiredFileCount",
     "status",
   ]) {

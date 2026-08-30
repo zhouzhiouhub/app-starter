@@ -60,6 +60,10 @@ test("project status completion checklist summarizes blocked evidence", () => {
     checklist.items[2].evidence,
     /12 Page Builder visual viewport tasks still need accepted evidence/u,
   );
+  assert.match(
+    checklist.items[3].evidence,
+    /12\/12 design references/u,
+  );
   assert.equal(
     checklist.items[2].nextSteps.find(
       (step) => step.label === "Reference report",

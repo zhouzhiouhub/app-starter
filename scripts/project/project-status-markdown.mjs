@@ -155,6 +155,11 @@ function formatVisualArtifactCounts(artifactCheck) {
       artifactCheck.expectedScreenshotCount,
       "screenshots",
     ),
+    formatVisualArtifactCount(
+      artifactCheck.presentDesignReferenceCount,
+      artifactCheck.referencedDesignReferenceCount,
+      "design references",
+    ),
   ].filter(Boolean);
 
   return countText.length > 0 ? ` (${countText.join(", ")})` : "";

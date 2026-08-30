@@ -139,11 +139,23 @@ function createVisualArtifactCheckSummary(check) {
   return {
     artifactDir: readText(check.artifactDir),
     expectedScreenshotCount: readCount(check.expectedScreenshotCount),
+    ...createOptionalCount(
+      "presentDesignReferenceCount",
+      check.presentDesignReferenceCount,
+    ),
     presentRequiredFileCount: readCount(check.presentRequiredFileCount),
     presentScreenshotCount: readCount(check.presentScreenshotCount),
+    ...createOptionalCount(
+      "referencedDesignReferenceCount",
+      check.referencedDesignReferenceCount,
+    ),
     requiredFileCount: readCount(check.requiredFileCount),
     status: readText(check.status) ?? "unknown",
   };
+}
+
+function createOptionalCount(field, value) {
+  return Number.isFinite(value) ? { [field]: value } : {};
 }
 
 function readPendingCount(records) {

@@ -131,7 +131,21 @@ function formatArtifactCheck(check) {
     `- Artifact dir: ${formatNullableCode(check.artifactDir)}`,
     `- Artifact files: ${check.presentRequiredFileCount}/${check.requiredFileCount}`,
     `- Artifact screenshots: ${check.presentScreenshotCount}/${check.expectedScreenshotCount}`,
+    ...formatArtifactDesignReferences(check),
     ...formatVisualIssues(check.issues, "Artifact issues"),
+  ];
+}
+
+function formatArtifactDesignReferences(check) {
+  if (
+    !Number.isFinite(check.presentDesignReferenceCount) ||
+    !Number.isFinite(check.referencedDesignReferenceCount)
+  ) {
+    return [];
+  }
+
+  return [
+    `- Artifact design references: ${check.presentDesignReferenceCount}/${check.referencedDesignReferenceCount}`,
   ];
 }
 

@@ -42,6 +42,7 @@ test("release check Markdown summarizes ready evidence", () => {
   assert.match(markdown, /Manifest: `reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json`/);
   assert.match(markdown, /Checklist manifest: `reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json`/);
   assert.match(markdown, /Artifact check: complete/);
+  assert.match(markdown, /Artifact design references: 12\/12/);
   assert.match(markdown, /## Readiness Checklist/);
   assert.match(markdown, /Release notes record: ready to generate/);
   assert.match(

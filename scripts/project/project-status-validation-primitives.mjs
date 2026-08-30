@@ -42,6 +42,12 @@ export function assertNonNegativeNumber(value, label) {
   }
 }
 
+export function assertOptionalNonNegativeNumber(value, label) {
+  if (value !== undefined) {
+    assertNonNegativeNumber(value, label);
+  }
+}
+
 export function assertNullableString(value, label) {
   if (value !== null && value !== undefined && !isNonEmptyString(value)) {
     throw new Error(

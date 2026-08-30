@@ -46,6 +46,14 @@ export function assertOptionalVisualArtifactCheck(check) {
     "visual.artifactCheck.presentRequiredFileCount",
   );
   assertOptionalNonNegativeNumber(
+    check.presentDesignReferenceCount,
+    "visual.artifactCheck.presentDesignReferenceCount",
+  );
+  assertOptionalNonNegativeNumber(
+    check.referencedDesignReferenceCount,
+    "visual.artifactCheck.referencedDesignReferenceCount",
+  );
+  assertOptionalNonNegativeNumber(
     check.issueCount,
     "visual.artifactCheck.issueCount",
   );
@@ -61,8 +69,20 @@ export function assertOptionalVisualArtifactCheck(check) {
     "visual.artifactCheck.presentRequiredFileCount",
     "visual.artifactCheck.requiredFileCount",
   );
+  assertOptionalCountDoesNotExceed(
+    check.presentDesignReferenceCount,
+    check.referencedDesignReferenceCount,
+    "visual.artifactCheck.presentDesignReferenceCount",
+    "visual.artifactCheck.referencedDesignReferenceCount",
+  );
   assertOptionalVisualIssues(check.issues);
   assertVisualArtifactIssueCountConsistency(check);
+}
+
+function assertOptionalCountDoesNotExceed(value, max, label, maxLabel) {
+  if (value !== undefined && max !== undefined) {
+    assertCountDoesNotExceed(value, max, label, maxLabel);
+  }
 }
 
 export function hasInvalidVisualArtifactCheck(check) {

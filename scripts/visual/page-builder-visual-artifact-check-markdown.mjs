@@ -14,6 +14,7 @@ export function createPageBuilderVisualArtifactCheckMarkdown(report) {
     `Status: ${formatCode(report.status)}`,
     `Required files: ${report.presentRequiredFileCount}/${report.requiredFileCount}`,
     `Screenshots: ${report.presentScreenshotCount}/${report.expectedScreenshotCount}`,
+    ...formatDesignReferences(report),
     "",
     "## Required Files",
     "",
@@ -35,6 +36,19 @@ export function createPageBuilderVisualArtifactCheckMarkdown(report) {
   ];
 
   return `${lines.join("\n")}\n`;
+}
+
+function formatDesignReferences(report) {
+  if (
+    !Number.isFinite(report.presentDesignReferenceCount) ||
+    !Number.isFinite(report.referencedDesignReferenceCount)
+  ) {
+    return [];
+  }
+
+  return [
+    `Design references: ${report.presentDesignReferenceCount}/${report.referencedDesignReferenceCount}`,
+  ];
 }
 
 export async function writePageBuilderVisualArtifactCheckMarkdown(

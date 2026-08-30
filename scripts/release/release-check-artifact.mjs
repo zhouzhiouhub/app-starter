@@ -204,11 +204,23 @@ function createVisualArtifactCheckArtifact(check) {
     expectedScreenshotCount: check.expectedScreenshotCount,
     issueCount: check.issues.length,
     issues: issues.map(createVisualIssueArtifact),
+    ...createOptionalCount(
+      "presentDesignReferenceCount",
+      check.presentDesignReferenceCount,
+    ),
     presentRequiredFileCount: check.presentRequiredFileCount,
     presentScreenshotCount: check.presentScreenshotCount,
+    ...createOptionalCount(
+      "referencedDesignReferenceCount",
+      check.referencedDesignReferenceCount,
+    ),
     requiredFileCount: check.requiredFileCount,
     status: check.status,
   };
+}
+
+function createOptionalCount(field, value) {
+  return Number.isFinite(value) ? { [field]: value } : {};
 }
 
 function createVisualIssueArtifact(issue) {

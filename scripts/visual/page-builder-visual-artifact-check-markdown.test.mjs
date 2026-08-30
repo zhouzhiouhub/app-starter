@@ -16,6 +16,7 @@ test("visual artifact check Markdown summarizes complete bundles", () => {
   assert.match(markdown, /Status: `complete`/);
   assert.match(markdown, /Required files: 6\/6/);
   assert.match(markdown, /Screenshots: 12\/12/);
+  assert.match(markdown, /Design references: 0\/0/);
   assert.match(
     markdown,
     /Artifact manifest: `reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json`/,
@@ -123,6 +124,8 @@ function createArtifactCheckReport(overrides = {}) {
     issues: [],
     presentRequiredFileCount: 6,
     presentScreenshotCount: 12,
+    presentDesignReferenceCount: 0,
+    referencedDesignReferenceCount: 0,
     requiredFileCount: 6,
     status: "complete",
     ...overrides,

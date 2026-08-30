@@ -118,8 +118,15 @@ function formatArtifactCounts(artifact) {
     artifact.expectedScreenshotCount,
     "screenshots",
   );
+  const designReferences = formatCount(
+    artifact.presentDesignReferenceCount,
+    artifact.referencedDesignReferenceCount,
+    "design references",
+  );
 
-  const counts = [files, screenshots].filter(Boolean).join(", ");
+  const counts = [files, screenshots, designReferences]
+    .filter(Boolean)
+    .join(", ");
 
   return counts.length > 0 ? `${counts}.` : null;
 }

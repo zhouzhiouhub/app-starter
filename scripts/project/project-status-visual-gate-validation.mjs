@@ -2,6 +2,7 @@ import {
   assertCountNotGreater,
   assertNonNegativeNumber,
   assertNullableString,
+  assertOptionalNonNegativeNumber,
   assertString,
   isRecord,
 } from "./project-status-validation-primitives.mjs";
@@ -88,6 +89,14 @@ function assertNullableVisualArtifactCheck(visual) {
       `releaseGate.visual.artifactCheck.${field}`,
     );
   }
+  assertOptionalNonNegativeNumber(
+    check.presentDesignReferenceCount,
+    "releaseGate.visual.artifactCheck.presentDesignReferenceCount",
+  );
+  assertOptionalNonNegativeNumber(
+    check.referencedDesignReferenceCount,
+    "releaseGate.visual.artifactCheck.referencedDesignReferenceCount",
+  );
 
   if (
     visual.artifactStatus !== null &&
@@ -111,4 +120,15 @@ function assertNullableVisualArtifactCheck(visual) {
     "releaseGate.visual.artifactCheck.presentScreenshotCount",
     "expectedScreenshotCount",
   );
+  if (
+    check.presentDesignReferenceCount !== undefined &&
+    check.referencedDesignReferenceCount !== undefined
+  ) {
+    assertCountNotGreater(
+      check.presentDesignReferenceCount,
+      check.referencedDesignReferenceCount,
+      "releaseGate.visual.artifactCheck.presentDesignReferenceCount",
+      "referencedDesignReferenceCount",
+    );
+  }
 }

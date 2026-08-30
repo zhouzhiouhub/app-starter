@@ -13,8 +13,10 @@ test("project status summarizes visual artifact counts", () => {
   check.visualArtifact = {
     artifactDir: "reports/visual/page-builder-fixture",
     expectedScreenshotCount: 12,
+    presentDesignReferenceCount: 12,
     presentRequiredFileCount: 6,
     presentScreenshotCount: 12,
+    referencedDesignReferenceCount: 12,
     requiredFileCount: 6,
     status: "complete",
   };
@@ -27,18 +29,20 @@ test("project status summarizes visual artifact counts", () => {
   assert.deepEqual(artifact.releaseGate.visual.artifactCheck, {
     artifactDir: "reports/visual/page-builder-fixture",
     expectedScreenshotCount: 12,
+    presentDesignReferenceCount: 12,
     presentRequiredFileCount: 6,
     presentScreenshotCount: 12,
+    referencedDesignReferenceCount: 12,
     requiredFileCount: 6,
     status: "complete",
   });
   assert.match(
     terminalText,
-    /Page Builder Visual: needs-evidence, components 0\/6, viewports 0\/12, pending tasks 12, artifact complete \(reports\/visual\/page-builder-fixture, 6\/6 files, 12\/12 screenshots\)/,
+    /Page Builder Visual: needs-evidence, components 0\/6, viewports 0\/12, pending tasks 12, artifact complete \(reports\/visual\/page-builder-fixture, 6\/6 files, 12\/12 screenshots, 12\/12 design references\)/,
   );
   assert.match(
     markdown,
-    /Page Builder Visual: needs-evidence, 0\/6 components, 0\/12 viewports, 12 pending tasks, artifact complete \(reports\/visual\/page-builder-fixture, 6\/6 files, 12\/12 screenshots\)/,
+    /Page Builder Visual: needs-evidence, 0\/6 components, 0\/12 viewports, 12 pending tasks, artifact complete \(reports\/visual\/page-builder-fixture, 6\/6 files, 12\/12 screenshots, 12\/12 design references\)/,
   );
 });
 

@@ -52,6 +52,7 @@ function validateDesignReferencePng(component, viewport, value, context) {
     return;
   }
 
+  context.referencedDesignReferenceCount += 1;
   const evidencePath = readSafeDesignReferencePath(value);
   const label = `${component}.${viewport}`;
 
@@ -78,6 +79,7 @@ function validateDesignReferencePng(component, viewport, value, context) {
     }
 
     decodePngImage(readReferenceBuffer(resolvedPath, context), evidencePath);
+    context.presentDesignReferenceCount += 1;
   } catch (error) {
     addArtifactCheckIssue(
       context,

@@ -23,7 +23,9 @@ export function formatPageBuilderVisualArtifactBundleReport(result) {
     `Reference import: ${result.referenceImport.status} (${result.referenceImport.updates.length} updates, ${result.referenceImport.missing.length} missing)`,
     `Measurement: ${result.measure.status} (${result.measure.measuredViewportCount}/${result.measure.targetViewportCount} measured, ${result.measure.missingViewportCount} missing)`,
     `Acceptance: ${result.acceptance.status} (${result.acceptance.acceptedComponentCount}/${result.acceptance.componentCount} components, ${result.acceptance.acceptedViewportCount}/${result.acceptance.viewportCount} viewports)`,
-    `Artifact check: ${result.artifactCheck.status} (${result.artifactCheck.presentRequiredFileCount}/${result.artifactCheck.requiredFileCount} files, ${result.artifactCheck.presentScreenshotCount}/${result.artifactCheck.expectedScreenshotCount} screenshots)`,
+    `Artifact check: ${result.artifactCheck.status} (${formatArtifactCheckCounts(
+      result.artifactCheck,
+    )})`,
   ];
 
   appendIssueLines(lines, "Measurement issues", result.measure.issues);
@@ -35,6 +37,27 @@ export function formatPageBuilderVisualArtifactBundleReport(result) {
   }
 
   return lines;
+}
+
+function formatArtifactCheckCounts(check) {
+  return [
+    `${check.presentRequiredFileCount}/${check.requiredFileCount} files`,
+    `${check.presentScreenshotCount}/${check.expectedScreenshotCount} screenshots`,
+    formatDesignReferenceCounts(check),
+  ]
+    .filter(Boolean)
+    .join(", ");
+}
+
+function formatDesignReferenceCounts(check) {
+  if (
+    !Number.isFinite(check.presentDesignReferenceCount) ||
+    !Number.isFinite(check.referencedDesignReferenceCount)
+  ) {
+    return null;
+  }
+
+  return `${check.presentDesignReferenceCount}/${check.referencedDesignReferenceCount} design references`;
 }
 
 export function formatPageBuilderVisualArtifactBundleUsage() {
