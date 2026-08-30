@@ -5,7 +5,9 @@ reference PNGs used during MVP visual acceptance.
 
 Do not use fixture screenshots, generated placeholders, or temporary exports as
 accepted design references. Final sign-off requires images exported from the
-approved design source for each MVP core section and viewport.
+approved design source for each MVP core section and viewport. Each file must be
+a non-empty PNG that can be parsed by the visual measurement tooling; a renamed
+or corrupted file is rejected during intake.
 
 ## Required Files
 

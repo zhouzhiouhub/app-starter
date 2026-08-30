@@ -7,6 +7,7 @@ import {
   mvpPageBuilderComponents,
   pageBuilderVisualAcceptanceViewports,
 } from "./page-builder-visual-acceptance.mjs";
+import { createTestPng } from "./page-builder-visual-artifact-check-test-fixtures.mjs";
 
 test("visual reference import CLI writes Markdown output", async () => {
   const sourceDir = `reports/visual/reference-import-${process.pid}-${Date.now()}`;
@@ -92,7 +93,7 @@ function writeReferenceFilesToDir(sourceDir, options = {}) {
       const fileName = `${component}-${viewport}.png`;
 
       if (fileName !== options.skip) {
-        writeFileSync(path.join(sourceDir, fileName), Buffer.from("png"));
+        writeFileSync(path.join(sourceDir, fileName), createTestPng(2, 1));
       }
     }
   }

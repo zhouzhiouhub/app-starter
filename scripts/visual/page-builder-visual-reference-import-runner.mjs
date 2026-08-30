@@ -4,6 +4,7 @@ import {
   mvpPageBuilderComponents,
   pageBuilderVisualAcceptanceViewports,
 } from "./page-builder-visual-acceptance-constants.mjs";
+import { readPngImage } from "./png-image-reader.mjs";
 
 export function readPageBuilderVisualReferenceImportManifest(manifestPath) {
   return JSON.parse(readFileSync(manifestPath, "utf8"));
@@ -104,6 +105,15 @@ function updateViewportReference(input) {
     return;
   }
 
+  if (file.pngError) {
+    input.missing.push({
+      component: input.component,
+      reason: `${file.name} must be a readable PNG: ${file.pngError}`,
+      viewport: input.viewport,
+    });
+    return;
+  }
+
   const nextPath = `${input.config.sourceDir}/${file.name}`;
 
   if (evidence.designReference === nextPath) {
@@ -136,18 +146,30 @@ function readReferenceFiles(sourceDir, cwd) {
     if (!entry.isFile() || path.extname(entry.name).toLowerCase() !== ".png") {
       continue;
     }
+    const filePath = path.join(resolvedSourceDir, entry.name);
+    const size = readFileSize(filePath);
 
     files.set(entry.name, {
-      empty: readFileSize(resolvedSourceDir, entry.name) <= 0,
+      empty: size <= 0,
       name: entry.name,
+      pngError: size <= 0 ? null : readReferencePngError(filePath),
     });
   }
 
   return { files, sourceDirStatus };
 }
 
-function readFileSize(resolvedSourceDir, fileName) {
-  return lstatSync(path.join(resolvedSourceDir, fileName)).size;
+function readFileSize(filePath) {
+  return lstatSync(filePath).size;
+}
+
+function readReferencePngError(filePath) {
+  try {
+    readPngImage(filePath);
+    return null;
+  } catch (error) {
+    return readErrorMessage(error);
+  }
 }
 
 function readSourceDirStatus(resolvedSourceDir) {
@@ -188,4 +210,8 @@ function readImportStatus(config, updates, missing) {
   }
 
   return missing.length > 0 ? "needs-evidence" : "ready";
+}
+
+function readErrorMessage(error) {
+  return error instanceof Error ? error.message : String(error);
 }

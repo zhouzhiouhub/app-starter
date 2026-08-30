@@ -9,6 +9,7 @@ import {
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { createTestPng } from "./page-builder-visual-artifact-check-test-fixtures.mjs";
 import {
   formatPageBuilderVisualReferenceImportReport,
   createPageBuilderVisualReferenceImportMarkdown,
@@ -285,6 +286,7 @@ test("visual reference intake directory documents every required file", () => {
   const referenceReadme = readFileSync(readmePath, "utf8");
 
   assert.match(referenceReadme, /real Page Builder design\s+reference PNGs/);
+  assert.match(referenceReadme, /corrupted file is rejected during intake/);
   assert.match(
     referenceReadme,
     /visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md/,
@@ -358,7 +360,11 @@ function writeReferenceFilesToDir(sourceDir, options = {}) {
       const fileName = `${component}-${viewport}.png`;
 
       if (fileName !== options.skip) {
-        writeFileSync(path.join(sourceDir, fileName), Buffer.from("png"));
+        const body =
+          options.override?.fileName === fileName
+            ? options.override.body
+            : createTestPng(2, 1);
+        writeFileSync(path.join(sourceDir, fileName), body);
       }
     }
   }
