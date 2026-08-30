@@ -16,6 +16,7 @@ import {
 import { assertVisualArtifact } from "./release-notes-visual-evidence-validation.mjs";
 
 const releaseArtifactStatuses = new Set(["ready", "blocked"]);
+const smokeMarkdownStatuses = new Set(["complete", "invalid", "missing"]);
 
 export function assertReleaseEvidenceCheckArtifact(artifact) {
   if (!isPlainRecord(artifact)) {
@@ -91,7 +92,9 @@ function assertReleaseReadinessConsistency(artifact) {
   }
 
   if (artifact.blockerCount !== 0 || artifact.blockers.length !== 0) {
-    throw new Error("Release check artifact ready evidence must have no blockers.");
+    throw new Error(
+      "Release check artifact ready evidence must have no blockers.",
+    );
   }
 
   if (
@@ -108,6 +111,15 @@ function assertReleaseReadinessConsistency(artifact) {
   if (!hasReadySmokeSourceArtifact(artifact.smoke.source)) {
     throw new Error(
       "Release check artifact ready evidence must include production smoke source metadata.",
+    );
+  }
+
+  if (
+    artifact.smoke.markdown &&
+    artifact.smoke.markdown.status !== "complete"
+  ) {
+    throw new Error(
+      "Release check artifact ready evidence must include complete production smoke Markdown when recorded.",
     );
   }
 
@@ -147,9 +159,12 @@ function assertSmokeArtifact(smoke) {
   assertBoolean(smoke.summary.productionReady, "smoke.summary.productionReady");
   assertString(smoke.summary.status, "smoke.summary.status");
   assertSmokeReadySummaryConsistency(smoke);
+  assertOptionalSmokeMarkdownArtifact(smoke.markdown);
 
   if (!Array.isArray(smoke.traceability)) {
-    throw new Error("Release check artifact smoke.traceability must be an array.");
+    throw new Error(
+      "Release check artifact smoke.traceability must be an array.",
+    );
   }
 
   for (const group of smoke.traceability) {
@@ -165,7 +180,62 @@ function assertSmokeArtifact(smoke) {
   }
 }
 
-function assertStatusValueMatchesBoolean(status, ready, statusLabel, readyLabel) {
+function assertOptionalSmokeMarkdownArtifact(markdown) {
+  if (markdown === undefined) {
+    return;
+  }
+
+  if (!isPlainRecord(markdown)) {
+    throw new Error(
+      "Release check artifact smoke.markdown must be an object when present.",
+    );
+  }
+
+  assertNullableString(markdown.path, "smoke.markdown.path");
+  assertEnum(markdown.status, smokeMarkdownStatuses, "smoke.markdown.status");
+  assertNonNegativeNumber(markdown.issueCount, "smoke.markdown.issueCount");
+
+  if (!Array.isArray(markdown.issues)) {
+    throw new Error(
+      "Release check artifact smoke.markdown.issues must be an array.",
+    );
+  }
+
+  if (markdown.issueCount < markdown.issues.length) {
+    throw new Error(
+      "Release check artifact smoke.markdown.issueCount must cover serialized issues.",
+    );
+  }
+
+  for (const issue of markdown.issues) {
+    assertSmokeMarkdownIssue(issue);
+  }
+
+  if (markdown.status === "complete" && markdown.issueCount !== 0) {
+    throw new Error(
+      "Release check artifact complete smoke.markdown must have no issues.",
+    );
+  }
+}
+
+function assertSmokeMarkdownIssue(issue) {
+  if (!isPlainRecord(issue)) {
+    throw new Error(
+      "Release check artifact smoke.markdown.issues must contain objects.",
+    );
+  }
+
+  assertString(issue.code, "smoke.markdown.issues.code");
+  assertString(issue.message, "smoke.markdown.issues.message");
+  assertString(issue.severity, "smoke.markdown.issues.severity");
+}
+
+function assertStatusValueMatchesBoolean(
+  status,
+  ready,
+  statusLabel,
+  readyLabel,
+) {
   const expected = ready ? "ready" : "blocked";
 
   if (status !== expected) {

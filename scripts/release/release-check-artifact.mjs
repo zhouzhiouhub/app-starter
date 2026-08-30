@@ -2,6 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { createReleaseEvidenceReadinessChecklist } from "./release-check-checklist.mjs";
+import { createSmokeMarkdownArtifact } from "./release-check-smoke-markdown-artifact.mjs";
 
 export const releaseEvidenceCheckSchemaVersion = "release-evidence-check.v1";
 
@@ -72,7 +73,7 @@ function createReadinessChecklistStepsArtifact(steps) {
 }
 
 function createSmokeArtifact(smoke) {
-  return {
+  const artifact = {
     path: readTextOrNull(smoke.path),
     releaseReady: smoke.releaseReady,
     source: createSmokeSourceArtifact(smoke.source),
@@ -89,6 +90,13 @@ function createSmokeArtifact(smoke) {
       status: readTextOrNull(group.status) ?? "unknown",
     })),
   };
+  const markdown = createSmokeMarkdownArtifact(smoke.markdown);
+
+  if (markdown) {
+    artifact.markdown = markdown;
+  }
+
+  return artifact;
 }
 
 function createSmokeSourceArtifact(source) {

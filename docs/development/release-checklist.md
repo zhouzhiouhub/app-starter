@@ -192,7 +192,9 @@ later phases are explicitly approved.
   output is saved in the workflow log, and `smoke-report.md` is uploaded with
   the smoke artifact.
 - `pnpm smoke:release-check -- artifacts/production-smoke/smoke-report.json`
-  exits successfully in the workflow log.
+  exits successfully in the workflow log. The gate also checks the same-directory
+  companion `smoke-report.md` and blocks release evidence when that Markdown is
+  missing or does not match the JSON report path, schema, and status.
 - The smoke report shows `summary.status=passed`.
 - The smoke report includes canonical ISO `startedAt` and `finishedAt`
   timestamps, with `finishedAt` not earlier than `startedAt`.
@@ -332,7 +334,8 @@ later phases are explicitly approved.
 - Download the workflow artifact or open the checked-out report path.
 - Run `pnpm smoke:report -- --markdown-output artifacts/production-smoke/smoke-report.md artifacts/production-smoke/smoke-report.json`.
 - Run `pnpm smoke:release-check -- artifacts/production-smoke/smoke-report.json`
-  before marking release evidence ready.
+  before marking release evidence ready; this also verifies the companion
+  `artifacts/production-smoke/smoke-report.md`.
 - Run
   `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --markdown-output artifacts/release/release-check.md`
   before marking the combined production and visual evidence ready.

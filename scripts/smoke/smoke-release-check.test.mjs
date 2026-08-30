@@ -13,6 +13,11 @@ import {
   recordSmokeCheck,
   refreshSmokeReportSummary,
 } from "./smoke-report.mjs";
+import { createSmokeReportReviewMarkdown } from "./smoke-report-markdown.mjs";
+import {
+  createMissingSmokeReportMarkdownCompanion,
+  createSmokeReportMarkdownCompanionCheck,
+} from "./smoke-report-markdown-companion.mjs";
 import { createStarterPagesSmokeDetails } from "./starter-pages-smoke.mjs";
 
 const archiveRoot = `tmp/smoke-release-check-test-${process.pid}`;
@@ -25,7 +30,10 @@ test("smoke release check accepts full production evidence", () => {
   });
 
   assert.equal(result.releaseReady, true);
-  assert.equal(result.source.commitSha, "0123456789abcdef0123456789abcdef01234567");
+  assert.equal(
+    result.source.commitSha,
+    "0123456789abcdef0123456789abcdef01234567",
+  );
   assert.deepEqual(
     result.groups.map((group) => `${group.label}:${group.status}`),
     ["R2/CDN:passed", "Admin static app:passed", "Publish flow:passed"],
@@ -42,6 +50,47 @@ test("smoke release check accepts full production evidence", () => {
   assert.deepEqual(formatSmokeReleaseCheck({ report }).slice(-1), [
     "  Evidence is ready for release notes.",
   ]);
+});
+
+test("smoke release check requires archived companion Markdown", () => {
+  const report = createCompleteReleaseReport();
+  const path = "artifacts/production-smoke/smoke-report.json";
+  const result = createSmokeReleaseCheck({
+    markdown: createMissingSmokeReportMarkdownCompanion(path),
+    path,
+    report,
+  });
+  const lines = formatSmokeReleaseCheck({
+    markdown: createMissingSmokeReportMarkdownCompanion(path),
+    path,
+    report,
+  });
+
+  assert.equal(result.releaseReady, false);
+  assert.equal(hasBlocker(result, "Smoke report Markdown missing"), true);
+  assert.equal(
+    lines.some((line) =>
+      line.includes(
+        "Review Markdown: missing artifacts/production-smoke/smoke-report.md",
+      ),
+    ),
+    true,
+  );
+});
+
+test("smoke release check accepts complete archived companion Markdown", () => {
+  const report = createCompleteReleaseReport();
+  const path = "artifacts/production-smoke/smoke-report.json";
+  const markdown = createSmokeReportMarkdownCompanionCheck({
+    content: createSmokeReportReviewMarkdown({ path, report }),
+    path: "artifacts/production-smoke/smoke-report.md",
+    report,
+    reportPath: path,
+  });
+  const result = createSmokeReleaseCheck({ markdown, path, report });
+
+  assert.equal(result.releaseReady, true);
+  assert.equal(result.markdown.status, "complete");
 });
 
 test("smoke release check blocks optional gate reports", () => {
@@ -90,7 +139,10 @@ test("smoke release check blocks missing traceability checks", () => {
 
   const lines = formatSmokeReleaseCheck({ report });
 
-  assert.equal(lines.some((line) => line.includes("Status: blocked")), true);
+  assert.equal(
+    lines.some((line) => line.includes("Status: blocked")),
+    true,
+  );
   assert.equal(
     lines.some((line) => line.includes("R2/CDN traceability missing")),
     true,
@@ -172,7 +224,9 @@ test("smoke release check blocks starter page title and path drift", () => {
   assert.equal(result.releaseReady, false);
   assert.equal(
     result.blockers.some((blocker) =>
-      blocker.action.includes('seeded privacy public API title="Privacy Policy"'),
+      blocker.action.includes(
+        'seeded privacy public API title="Privacy Policy"',
+      ),
     ),
     true,
   );
@@ -201,7 +255,10 @@ test("smoke release check blocks invalid report timelines", () => {
   const reversedResult = createSmokeReleaseCheck({ report: reversedReport });
 
   assert.equal(reversedResult.releaseReady, false);
-  assert.equal(hasBlocker(reversedResult, "Smoke report timeline invalid"), true);
+  assert.equal(
+    hasBlocker(reversedResult, "Smoke report timeline invalid"),
+    true,
+  );
 });
 
 test("smoke release check parses pnpm separator and explicit path", () => {

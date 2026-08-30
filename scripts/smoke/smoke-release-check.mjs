@@ -38,33 +38,41 @@ export function createSmokeReleaseCheck(artifact) {
   const summary = createSmokeReportSummary(report);
   const blockers = [];
   const groups = readReleaseTraceabilityGroups(report);
+  const markdown = readSmokeMarkdownCheck(artifact);
   const source = normalizeSmokeSourceMetadata(report?.config?.source);
   const timeline = readSmokeReportTimeline(report);
 
   addRequirement(blockers, isSmokeSummaryPassed(summary), {
-    action: "Rerun production smoke until summary.status=passed and no checks fail.",
+    action:
+      "Rerun production smoke until summary.status=passed and no checks fail.",
     label: "Smoke report not passed",
   });
   addRequirement(blockers, summary.productionReady === true, {
-    action: "Resolve productionReadiness blockers before marking the release ready.",
+    action:
+      "Resolve productionReadiness blockers before marking the release ready.",
     label: "Production readiness gates blocked",
   });
   addRequirement(blockers, timeline.startedAt !== null, {
-    action: "Use a completed smoke report artifact with a valid startedAt timestamp.",
+    action:
+      "Use a completed smoke report artifact with a valid startedAt timestamp.",
     label: "Smoke report start timestamp missing",
   });
   addRequirement(blockers, timeline.finishedAt !== null, {
-    action: "Use a completed smoke report artifact with a valid finishedAt timestamp.",
+    action:
+      "Use a completed smoke report artifact with a valid finishedAt timestamp.",
     label: "Smoke report finish timestamp missing",
   });
   addRequirement(blockers, isChronologicalTimeline(timeline), {
-    action: "Use a completed smoke report artifact whose finishedAt is not earlier than startedAt.",
+    action:
+      "Use a completed smoke report artifact whose finishedAt is not earlier than startedAt.",
     label: "Smoke report timeline invalid",
   });
   addRequirement(blockers, hasText(report?.storefrontUrl), {
-    action: "Capture storefrontUrl in the smoke report before saving release evidence.",
+    action:
+      "Capture storefrontUrl in the smoke report before saving release evidence.",
     label: "Public storefront URL missing",
   });
+  addSmokeMarkdownRequirement(blockers, markdown);
   addSmokeSourceRequirements(blockers, source);
 
   for (const gate of requiredConfigGates) {
@@ -83,6 +91,7 @@ export function createSmokeReleaseCheck(artifact) {
   return {
     blockers,
     groups,
+    markdown,
     path: readArtifactPath(artifact, report),
     releaseReady: blockers.length === 0,
     source,
@@ -99,6 +108,7 @@ export function formatSmokeReleaseCheck(artifact) {
     `  Smoke report: ${isSmokeSummaryPassed(check.summary) ? "passed" : "blocked"}`,
     `  Production gates: ${check.summary.productionReady === true ? "passed" : "blocked"}`,
     `  Required gates: R2 upload ${formatRequiredGate(config.requireR2Upload)}, Admin app ${formatRequiredGate(config.requireAdminApp)}, revalidation ${formatRequiredGate(config.requireRevalidation)}`,
+    ...formatSmokeMarkdownLines(check.markdown),
     `  Source: ${formatSmokeSource(check.source)}`,
     `  Traceability: ${check.groups
       .map((group) => `${group.label} ${group.status}`)
@@ -133,6 +143,32 @@ function addSmokeSourceRequirements(blockers, source) {
   }
 }
 
+function addSmokeMarkdownRequirement(blockers, markdown) {
+  if (!markdown || markdown.status === "complete") {
+    return;
+  }
+
+  blockers.push({
+    action: readSmokeMarkdownAction(markdown),
+    label:
+      markdown.status === "missing"
+        ? "Smoke report Markdown missing"
+        : "Smoke report Markdown invalid",
+  });
+}
+
+function readSmokeMarkdownAction(markdown) {
+  const firstIssue = Array.isArray(markdown.issues)
+    ? markdown.issues.find((issue) => hasText(issue?.message))
+    : null;
+
+  if (firstIssue) {
+    return firstIssue.message;
+  }
+
+  return `Regenerate smoke report Markdown at ${markdown.path}.`;
+}
+
 function createMissingSmokeSourceAction(field) {
   return [
     "Run Production Smoke from GitHub Actions so",
@@ -150,6 +186,10 @@ function isSmokeSummaryPassed(summary) {
 
 function readArtifactPath(artifact, report) {
   return artifact?.path ?? report?.config?.reportPath ?? null;
+}
+
+function readSmokeMarkdownCheck(artifact) {
+  return artifact?.markdown ?? null;
 }
 
 function readSmokeReportTimeline(report) {
@@ -197,6 +237,19 @@ function formatSmokeSource(source) {
     `run ${source.runId}`,
     source.workflowRunUrl,
   ].join(" ");
+}
+
+function formatSmokeMarkdownLines(markdown) {
+  if (!markdown) {
+    return [];
+  }
+
+  return [
+    `  Review Markdown: ${markdown.status} ${formatReleaseValue(
+      markdown.path,
+      "unknown",
+    )}`,
+  ];
 }
 
 function formatReleaseBlockers(blockers) {

@@ -12,6 +12,7 @@ export function formatReleaseEvidenceCheck(check) {
     `  Production Smoke: ${check.smoke.releaseReady ? "ready" : "blocked"}`,
     `  Page Builder Visual: ${check.visual.status}`,
     `  Smoke report: ${formatReleaseValue(check.smoke.path, "latest archive")}`,
+    ...formatSmokeMarkdownLines(check.smoke.markdown),
     `  Visual manifest: ${formatReleaseValue(check.visualManifestPath, "unknown")}`,
   ];
 
@@ -70,6 +71,19 @@ function formatVisualArtifactDetails(artifact) {
   ].filter(Boolean);
 
   return detailText.length > 0 ? `(${detailText.join(", ")})` : "";
+}
+
+function formatSmokeMarkdownLines(markdown) {
+  if (!markdown) {
+    return [];
+  }
+
+  return [
+    `  Smoke Markdown: ${formatReleaseValue(
+      markdown.path,
+      "unknown",
+    )} ${formatReleaseValue(markdown.status, "unknown")}`,
+  ];
 }
 
 function formatVisualArtifactCount(present, expected, label) {

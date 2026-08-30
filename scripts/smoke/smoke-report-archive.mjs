@@ -1,6 +1,7 @@
 import { readdir, readFile, stat } from "node:fs/promises";
 import { join } from "node:path";
 import { smokeReportSchemaVersion } from "./smoke-report-contract.mjs";
+import { readSmokeReportMarkdownCompanion } from "./smoke-report-markdown-companion.mjs";
 import { normalizeSmokeReportPath } from "./smoke-report-path-config.mjs";
 import { createSmokeReportSummary } from "./smoke-report-summary.mjs";
 
@@ -22,11 +23,18 @@ export async function readSmokeReportArtifact(reportPath, options = {}) {
   ]);
   const report = parseSmokeReportArtifact(content, normalizedPath);
 
-  return createSmokeReportArchiveEntry({
+  const archiveEntry = createSmokeReportArchiveEntry({
     mtimeMs: stats.mtimeMs,
     path: normalizedPath,
     report,
   });
+
+  return {
+    ...archiveEntry,
+    markdown: await readSmokeReportMarkdownCompanion(normalizedPath, report, {
+      baseDir: options.baseDir,
+    }),
+  };
 }
 
 export async function discoverSmokeReportArtifacts(options = {}) {
@@ -55,7 +63,7 @@ export async function discoverSmokeReportArtifacts(options = {}) {
 }
 
 export function createSmokeReportArchiveEntry(input) {
-  return {
+  const entry = {
     finishedAt: readIsoTimestamp(input.report?.finishedAt),
     mtimeMs: Number.isFinite(input.mtimeMs) ? input.mtimeMs : 0,
     path: input.path,
@@ -63,6 +71,12 @@ export function createSmokeReportArchiveEntry(input) {
     startedAt: readIsoTimestamp(input.report?.startedAt),
     summary: createSmokeReportSummary(input.report),
   };
+
+  if (input.markdown) {
+    entry.markdown = input.markdown;
+  }
+
+  return entry;
 }
 
 export function parseSmokeReportArtifact(content, reportPath = "smoke report") {

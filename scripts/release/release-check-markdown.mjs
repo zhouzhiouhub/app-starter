@@ -3,6 +3,7 @@ import { dirname } from "node:path";
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { assertReleaseEvidenceCheckArtifact } from "./release-notes-artifact-validation.mjs";
 import { formatReadinessChecklistMarkdown } from "./release-readiness-checklist-markdown.mjs";
+import { formatSmokeMarkdownSummary } from "./release-check-smoke-markdown-summary.mjs";
 
 const maxMarkdownItemCount = 20;
 const maxMarkdownTextLength = 420;
@@ -58,6 +59,7 @@ function formatSmokeSummary(smoke) {
   return [
     `- Status: ${formatText(smoke.status)}`,
     `- Report path: ${formatNullableCode(smoke.path)}`,
+    ...formatSmokeMarkdownSummary(smoke.markdown),
     `- Summary: ${formatText(smoke.summary.status)}, ${smoke.summary.checkCount} checks, ${smoke.summary.failedCheckCount} failed`,
     `- Production ready: ${smoke.summary.productionReady ? "yes" : "no"}`,
     ...formatSmokeSource(smoke.source),
@@ -118,7 +120,9 @@ function formatChecklistManifest(checklist) {
     return [];
   }
 
-  return [`- Checklist manifest: ${formatNullableCode(checklist.manifestPath)}`];
+  return [
+    `- Checklist manifest: ${formatNullableCode(checklist.manifestPath)}`,
+  ];
 }
 
 function formatArtifactCheck(check) {
@@ -193,9 +197,7 @@ function formatVisualTasks(tasks) {
   }
 
   return [
-    ...tasks
-      .slice(0, maxMarkdownItemCount)
-      .flatMap(formatVisualTask),
+    ...tasks.slice(0, maxMarkdownItemCount).flatMap(formatVisualTask),
     ...formatHiddenCount(tasks.length, maxMarkdownItemCount, "visual tasks"),
   ];
 }
@@ -242,7 +244,9 @@ function formatList(label, values) {
 
   return [
     `- ${label}: ${visible.join(", ")}`,
-    ...(hidden > 0 ? [`  - ... and ${hidden} more ${label.toLowerCase()}`] : []),
+    ...(hidden > 0
+      ? [`  - ... and ${hidden} more ${label.toLowerCase()}`]
+      : []),
   ];
 }
 

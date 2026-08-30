@@ -302,10 +302,11 @@ summary from the stored checks, and highlights R2 / CDN, Admin static app, and
 publish-flow traceability before showing failed check details and suggested
 fixes. Add `--markdown-output artifacts/production-smoke/smoke-report.md` to
 archive the same review as Markdown. The release-check command exits non-zero
-unless the archived report
-has a valid chronological start/finish timeline and proves the required
-production gates, including R2 upload, Admin static app, publish/rollback, SEO,
-and ISR revalidation. Production release evidence must also include
+unless the archived report has a valid chronological start/finish timeline,
+the same-directory companion Markdown review is present and consistent, and the
+report proves the required production gates, including R2 upload, Admin static
+app, publish/rollback, SEO, and ISR revalidation. Production release evidence
+must also include
 `config.source.commitSha`, `config.source.repository`, `config.source.runId`,
 and `config.source.workflowRunUrl` so the smoke report can be traced back to a
 specific GitHub Actions run.

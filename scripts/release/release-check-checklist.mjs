@@ -16,7 +16,10 @@ export function createReleaseEvidenceReadinessChecklist(check, options = {}) {
   };
 }
 
-export function formatReleaseEvidenceReadinessChecklist(checklist, options = {}) {
+export function formatReleaseEvidenceReadinessChecklist(
+  checklist,
+  options = {},
+) {
   const lines = ["Release readiness checklist:"];
 
   for (const item of checklist.items) {
@@ -44,7 +47,7 @@ export function formatReleaseEvidenceReadinessChecklist(checklist, options = {})
 function createSmokeChecklistItem(check) {
   if (check.smoke.releaseReady) {
     return {
-      detail: `Report path: ${check.smoke.path ?? "latest archive"}`,
+      detail: createSmokeChecklistDetail(check.smoke),
       label: "Production Smoke report",
       status: "ready",
     };
@@ -52,10 +55,22 @@ function createSmokeChecklistItem(check) {
 
   return {
     action: readFirstBlockerAction(check, "Production Smoke"),
-    detail: `Report path: ${check.smoke.path ?? "latest archive"}`,
+    detail: createSmokeChecklistDetail(check.smoke),
     label: "Production Smoke report",
     status: "blocked",
   };
+}
+
+function createSmokeChecklistDetail(smoke) {
+  const details = [`Report path: ${smoke.path ?? "latest archive"}`];
+
+  if (smoke.markdown) {
+    details.push(
+      `Markdown: ${smoke.markdown.status} ${smoke.markdown.path ?? "unknown"}`,
+    );
+  }
+
+  return details.join(", ");
 }
 
 function createVisualChecklistItem(check, options) {
