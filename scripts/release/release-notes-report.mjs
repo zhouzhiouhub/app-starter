@@ -120,7 +120,9 @@ function formatVisualArtifactGate(check) {
   }
 
   return [
-    `- Page Builder Visual Artifact: ${formatInline(check.status)} (${check.presentRequiredFileCount}/${check.requiredFileCount} files, ${check.presentScreenshotCount}/${check.expectedScreenshotCount} screenshots)`,
+    `- Page Builder Visual Artifact: ${formatInline(check.status)} (${formatInline(
+      check.artifactDir,
+    )}, ${check.presentRequiredFileCount}/${check.requiredFileCount} files, ${check.presentScreenshotCount}/${check.expectedScreenshotCount} screenshots)`,
   ];
 }
 

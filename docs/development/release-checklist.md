@@ -300,7 +300,7 @@ later phases are explicitly approved.
   `release-evidence-check.v1` artifact, including the readiness checklist,
   main CI local verification run and artifact, preflight artifact, project
   status artifact and source path, visual manifest path, optional
-  `visual.artifactCheck` summary, pending visual evidence lists, visual
+  `visual.artifactCheck` path and count summary, pending visual evidence lists, visual
   checklist task summary, and visual issue summary when `--allow-blocked` is
   used for failure review drafts. Blocked drafts also include a
   `Project Next Actions` section from the validated `project-status.v1` file so

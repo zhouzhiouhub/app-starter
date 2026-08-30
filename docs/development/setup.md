@@ -371,7 +371,7 @@ counts in the text summary, and writes the result under `visual.artifactCheck`.
 After that artifact is ready, `release:notes` writes the final Markdown release
 record, including the readiness checklist, main CI local verification run and
 artifact, preflight artifact, project status artifact and source path, any
-recorded `visual.artifactCheck` summary, and the production smoke source run.
+recorded `visual.artifactCheck` path and count summary, and the production smoke source run.
 It validates the `project-status.v1` file against
 the same release evidence gate and refuses blocked evidence unless
 `--allow-blocked` is used for a failure review draft. Blocked drafts include a
