@@ -19,6 +19,29 @@ test("project next actions preserve visual artifact dir on release gate reruns",
     rerunGate.value,
     "pnpm release:check -- --smoke-report <path> --visual-artifact-dir reports/visual/page-builder-fixture",
   );
+  assert.deepEqual(
+    productionSmoke.steps.map((step) => step.label),
+    [
+      "Run workflow",
+      "Local verification inputs",
+      "Visual evidence inputs",
+      "Release note inputs",
+      "Keep artifacts",
+      "Rerun gate",
+    ],
+  );
+  assert.equal(
+    productionSmoke.steps[1].value,
+    "local_verification_run_url=<main CI run URL>, local_verification_artifact_name=local-verification-<run_number>",
+  );
+  assert.equal(
+    productionSmoke.steps[2].value,
+    "visual_artifact_name=page-builder-visual-fixture-<run_number>, visual_artifact_run_id=<Page Builder Visual workflow run id>",
+  );
+  assert.equal(
+    productionSmoke.steps[3].value,
+    "release_tag=<tag>, rollback_target=<target>, storefront_url=<public HTTPS storefront URL>",
+  );
 });
 
 test("project next actions structure the ready release notes handoff", () => {

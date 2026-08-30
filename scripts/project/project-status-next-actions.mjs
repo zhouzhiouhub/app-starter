@@ -11,6 +11,19 @@ const productionSmokeArtifactNames = [
 ];
 
 const pageBuilderVisualArtifactName = "page-builder-visual-fixture-<run_number>";
+const productionSmokeLocalVerificationInputs = [
+  "local_verification_run_url=<main CI run URL>",
+  "local_verification_artifact_name=local-verification-<run_number>",
+];
+const productionSmokeReleaseNoteInputs = [
+  "release_tag=<tag>",
+  "rollback_target=<target>",
+  "storefront_url=<public HTTPS storefront URL>",
+];
+const productionSmokeVisualInputs = [
+  "visual_artifact_name=page-builder-visual-fixture-<run_number>",
+  "visual_artifact_run_id=<Page Builder Visual workflow run id>",
+];
 const defaultVisualArtifactDir = "reports/visual/page-builder-fixture";
 const defaultVisualReferenceSourceDir = "docs/visual/page-builder-references";
 
@@ -99,6 +112,18 @@ function createProductionSmokeActionSteps(action, context) {
     createNextActionStep(
       "Run workflow",
       "GitHub Actions Production Smoke against the production environment",
+    ),
+    createNextActionStep(
+      "Local verification inputs",
+      productionSmokeLocalVerificationInputs.join(", "),
+    ),
+    createNextActionStep(
+      "Visual evidence inputs",
+      productionSmokeVisualInputs.join(", "),
+    ),
+    createNextActionStep(
+      "Release note inputs",
+      productionSmokeReleaseNoteInputs.join(", "),
     ),
     createNextActionStep("Keep artifacts", productionSmokeArtifactNames.join(", ")),
     createNextActionStep(

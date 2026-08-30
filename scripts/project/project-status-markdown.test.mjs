@@ -52,6 +52,18 @@ test("project status CLI writes a Markdown handoff", async () => {
     );
     assert.match(
       markdown,
+      / {4}- Local verification inputs: `local_verification_run_url=<main CI run URL>, local_verification_artifact_name=local-verification-<run_number>`/,
+    );
+    assert.match(
+      markdown,
+      / {4}- Visual evidence inputs: `visual_artifact_name=page-builder-visual-fixture-<run_number>, visual_artifact_run_id=<Page Builder Visual workflow run id>`/,
+    );
+    assert.match(
+      markdown,
+      / {4}- Release note inputs: `release_tag=<tag>, rollback_target=<target>, storefront_url=<public HTTPS storefront URL>`/,
+    );
+    assert.match(
+      markdown,
       / {4}- Keep artifacts: `production-smoke-report-<run_number>, release-preflight-<run_number>, release-evidence-check-<run_number>, project-status-<run_number>`/,
     );
     assert.match(
