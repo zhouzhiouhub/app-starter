@@ -105,6 +105,7 @@ function createReleaseGateSummary(check) {
     visual: {
       acceptedComponentCount: check.visual.acceptedComponentCount,
       acceptedViewportCount: check.visual.acceptedViewportCount,
+      artifactCheck: createVisualArtifactCheckSummary(check.visualArtifact),
       artifactStatus: readText(check.visualArtifact?.status),
       componentCount: check.visual.componentCount,
       pendingComponentCount: readPendingCount(check.visual.records),
@@ -113,6 +114,20 @@ function createReleaseGateSummary(check) {
       status: check.visual.status,
       viewportCount: check.visual.viewportCount,
     },
+  };
+}
+
+function createVisualArtifactCheckSummary(check) {
+  if (!check) {
+    return null;
+  }
+
+  return {
+    expectedScreenshotCount: readCount(check.expectedScreenshotCount),
+    presentRequiredFileCount: readCount(check.presentRequiredFileCount),
+    presentScreenshotCount: readCount(check.presentScreenshotCount),
+    requiredFileCount: readCount(check.requiredFileCount),
+    status: readText(check.status) ?? "unknown",
   };
 }
 
@@ -142,4 +157,8 @@ function readText(value) {
   }
 
   return formatSmokeText(value, { maxLength: maxProjectTextLength });
+}
+
+function readCount(value) {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
 }

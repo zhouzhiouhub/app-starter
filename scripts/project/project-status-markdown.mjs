@@ -133,12 +133,51 @@ function formatVisualGate(visual) {
     `${visual.acceptedComponentCount}/${visual.componentCount} components`,
     `${visual.acceptedViewportCount}/${visual.viewportCount} viewports`,
     `${visual.pendingTaskCount} pending tasks`,
-    visual.artifactStatus
-      ? `artifact ${formatText(visual.artifactStatus)}`
-      : null,
+    formatVisualArtifactSummary(visual),
   ]
     .filter(Boolean)
     .join(", ");
+}
+
+function formatVisualArtifactSummary(visual) {
+  const status = visual.artifactCheck?.status ?? visual.artifactStatus;
+
+  if (!status) {
+    return null;
+  }
+
+  return `artifact ${formatText(status)}${formatVisualArtifactCounts(
+    visual.artifactCheck,
+  )}`;
+}
+
+function formatVisualArtifactCounts(artifactCheck) {
+  if (!artifactCheck) {
+    return "";
+  }
+
+  const countText = [
+    formatVisualArtifactCount(
+      artifactCheck.presentRequiredFileCount,
+      artifactCheck.requiredFileCount,
+      "files",
+    ),
+    formatVisualArtifactCount(
+      artifactCheck.presentScreenshotCount,
+      artifactCheck.expectedScreenshotCount,
+      "screenshots",
+    ),
+  ].filter(Boolean);
+
+  return countText.length > 0 ? ` (${countText.join(", ")})` : "";
+}
+
+function formatVisualArtifactCount(present, expected, label) {
+  if (!Number.isFinite(present) || !Number.isFinite(expected)) {
+    return null;
+  }
+
+  return `${present}/${expected} ${label}`;
 }
 
 function formatLocalVerification(localVerification) {

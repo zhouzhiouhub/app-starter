@@ -1,7 +1,6 @@
 import { projectStatusSchemaVersion } from "./project-status-artifact.mjs";
 import {
   assertBoolean,
-  assertCountNotGreater,
   assertEnum,
   assertIsoTimestamp,
   assertNonNegativeNumber,
@@ -10,6 +9,7 @@ import {
   assertStringList,
   isRecord,
 } from "./project-status-validation-primitives.mjs";
+import { assertVisualGate } from "./project-status-visual-gate-validation.mjs";
 
 const commandStatuses = new Set(["configured"]);
 const localMvpScopeStatuses = new Set(["implemented"]);
@@ -136,57 +136,6 @@ function assertSmokeGate(smoke) {
       "Project status artifact ready smoke gate must have zero blockers.",
     );
   }
-}
-
-function assertVisualGate(visual) {
-  if (!isRecord(visual)) {
-    throw new Error(
-      "Project status artifact releaseGate.visual must be an object.",
-    );
-  }
-
-  assertString(visual.status, "releaseGate.visual.status");
-  assertNullableString(
-    visual.artifactStatus,
-    "releaseGate.visual.artifactStatus",
-  );
-
-  for (const field of [
-    "acceptedComponentCount",
-    "acceptedViewportCount",
-    "componentCount",
-    "pendingComponentCount",
-    "pendingTaskCount",
-    "pendingViewportCount",
-    "viewportCount",
-  ]) {
-    assertNonNegativeNumber(visual[field], `releaseGate.visual.${field}`);
-  }
-
-  assertCountNotGreater(
-    visual.acceptedComponentCount,
-    visual.componentCount,
-    "releaseGate.visual.acceptedComponentCount",
-    "componentCount",
-  );
-  assertCountNotGreater(
-    visual.acceptedViewportCount,
-    visual.viewportCount,
-    "releaseGate.visual.acceptedViewportCount",
-    "viewportCount",
-  );
-  assertCountNotGreater(
-    visual.pendingComponentCount,
-    visual.componentCount,
-    "releaseGate.visual.pendingComponentCount",
-    "componentCount",
-  );
-  assertCountNotGreater(
-    visual.pendingViewportCount,
-    visual.viewportCount,
-    "releaseGate.visual.pendingViewportCount",
-    "viewportCount",
-  );
 }
 
 function assertNextActions(artifact) {

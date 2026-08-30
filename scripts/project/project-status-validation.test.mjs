@@ -79,6 +79,23 @@ test("project status artifact validation rejects incomplete counts", () => {
   );
 });
 
+test("project status artifact validation rejects invalid visual artifact counts", () => {
+  const artifact = createArtifact();
+  artifact.releaseGate.visual.artifactStatus = "complete";
+  artifact.releaseGate.visual.artifactCheck = {
+    expectedScreenshotCount: 12,
+    presentRequiredFileCount: 6,
+    presentScreenshotCount: 13,
+    requiredFileCount: 6,
+    status: "complete",
+  };
+
+  assert.throws(
+    () => assertProjectStatusArtifact(artifact),
+    /artifactCheck\.presentScreenshotCount must not exceed/,
+  );
+});
+
 test("project status writer validates artifacts before writing", async () => {
   const outputPath = `tmp/project-status-invalid-${process.pid}-${Date.now()}.json`;
 

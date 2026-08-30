@@ -43,6 +43,10 @@ function assertVisualGateMatches(releaseVisual, projectVisual) {
     expectedArtifactStatus,
     "releaseGate.visual.artifactStatus",
   );
+  assertVisualArtifactCheckMatches(
+    releaseVisual.artifactCheck,
+    projectVisual.artifactCheck,
+  );
 
   for (const field of [
     "acceptedComponentCount",
@@ -72,6 +76,32 @@ function assertVisualGateMatches(releaseVisual, projectVisual) {
     releaseVisual.checklist?.pendingTaskCount ?? 0,
     "releaseGate.visual.pendingTaskCount",
   );
+}
+
+function assertVisualArtifactCheckMatches(releaseCheck, projectCheck) {
+  if (!projectCheck) {
+    return;
+  }
+
+  if (!releaseCheck) {
+    throw new Error(
+      "Release notes project status releaseGate.visual.artifactCheck must match release-evidence-check.v1.",
+    );
+  }
+
+  for (const field of [
+    "expectedScreenshotCount",
+    "presentRequiredFileCount",
+    "presentScreenshotCount",
+    "requiredFileCount",
+    "status",
+  ]) {
+    assertMatches(
+      projectCheck[field],
+      releaseCheck[field],
+      `releaseGate.visual.artifactCheck.${field}`,
+    );
+  }
 }
 
 function readPendingViewportCount(visual) {

@@ -60,10 +60,49 @@ function formatVisualGate(visual) {
     `components ${visual.acceptedComponentCount}/${visual.componentCount}`,
     `viewports ${visual.acceptedViewportCount}/${visual.viewportCount}`,
     `pending tasks ${visual.pendingTaskCount}`,
-    visual.artifactStatus ? `artifact ${visual.artifactStatus}` : null,
+    formatVisualArtifactSummary(visual),
   ]
     .filter(Boolean)
     .join(", ");
+}
+
+function formatVisualArtifactSummary(visual) {
+  const status = visual.artifactCheck?.status ?? visual.artifactStatus;
+
+  if (!status) {
+    return null;
+  }
+
+  return `artifact ${status}${formatVisualArtifactCounts(visual.artifactCheck)}`;
+}
+
+function formatVisualArtifactCounts(artifactCheck) {
+  if (!artifactCheck) {
+    return "";
+  }
+
+  const countText = [
+    formatVisualArtifactCount(
+      artifactCheck.presentRequiredFileCount,
+      artifactCheck.requiredFileCount,
+      "files",
+    ),
+    formatVisualArtifactCount(
+      artifactCheck.presentScreenshotCount,
+      artifactCheck.expectedScreenshotCount,
+      "screenshots",
+    ),
+  ].filter(Boolean);
+
+  return countText.length > 0 ? ` (${countText.join(", ")})` : "";
+}
+
+function formatVisualArtifactCount(present, expected, label) {
+  if (!Number.isFinite(present) || !Number.isFinite(expected)) {
+    return null;
+  }
+
+  return `${present}/${expected} ${label}`;
 }
 
 function formatProjectNextActions(artifact) {

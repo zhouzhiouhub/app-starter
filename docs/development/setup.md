@@ -332,7 +332,9 @@ steps for the command, evidence args, review args, input evidence, output
 record, `release-notes` artifact, and formal mode without `--allow-blocked`.
 For local status checks, `project:status` automatically includes the default
 Page Builder Visual artifact when all required files already exist under
-`reports/visual/page-builder-fixture`. Explicit `--visual-artifact-dir` or
+`reports/visual/page-builder-fixture`, prints its file and screenshot counts in
+the release gate summary, and records them under
+`releaseGate.visual.artifactCheck`. Explicit `--visual-artifact-dir` or
 `--visual-manifest` inputs still take precedence, and `release:check` continues
 to require an explicit `--visual-artifact-dir` when release review should use a
 downloaded visual artifact.
