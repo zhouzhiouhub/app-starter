@@ -365,10 +365,17 @@ test("main CI verifies the smoke report CLI entry point", async () => {
   assert.match(workflow, /pnpm release:check -- --help/);
   assert.match(workflow, /pnpm release:handoff -- --help/);
   assert.match(workflow, /pnpm release:preflight -- --help/);
+  const localVerificationCommand =
+    "pnpm project:status -- --all-actions --output tmp/project-status.json --markdown-output tmp/project-status-handoff.md";
   assert.match(
     workflow,
-    /pnpm project:status -- --all-actions --markdown-output tmp\/project-status-handoff\.md/,
+    new RegExp(escapeRegExp(localVerificationCommand)),
   );
+  assert.equal(
+    workflow.indexOf("pnpm build") < workflow.indexOf(localVerificationCommand),
+    true,
+  );
+  assert.match(workflow, /local-verification-\$\{\{ github\.run_number \}\}/);
   assert.match(workflow, /pnpm visual:artifact-check -- --help/);
 });
 

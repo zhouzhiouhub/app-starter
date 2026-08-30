@@ -20,11 +20,26 @@ test("project status command is exposed in package and CI", async () => {
   );
   assert.match(ciWorkflow, /pnpm project:status -- --help/);
   assert.match(ciWorkflow, /pnpm project:status -- --all-actions --json/);
+  const localVerificationCommand =
+    "pnpm project:status -- --all-actions --output tmp/project-status.json --markdown-output tmp/project-status-handoff.md";
   assert.match(
     ciWorkflow,
-    /pnpm project:status -- --all-actions --markdown-output tmp\/project-status-handoff\.md/,
+    new RegExp(escapeRegExp(localVerificationCommand)),
   );
+  assert.equal(
+    ciWorkflow.indexOf("pnpm build") <
+      ciWorkflow.indexOf(localVerificationCommand),
+    true,
+  );
+  assert.match(
+    ciWorkflow,
+    /name: local-verification-\$\{\{ github\.run_number \}\}/,
+  );
+  assert.match(ciWorkflow, /if-no-files-found: error/);
+  assert.match(ciWorkflow, /tmp\/project-status\.json/);
+  assert.match(ciWorkflow, /tmp\/project-status-handoff\.md/);
   assert.match(readme, /pnpm project:status -- --all-actions/);
+  assert.match(readme, /local-verification-<run_number>/);
   assert.match(readme, /完成度摘要/);
   assert.match(
     readme,
@@ -47,3 +62,7 @@ test("project status command is exposed in package and CI", async () => {
   );
   assert.match(setupDoc, /Project Next Actions/);
 });
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+}

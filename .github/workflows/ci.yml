@@ -29,7 +29,6 @@ jobs:
       - run: pnpm smoke:release-check -- --help
       - run: pnpm project:status -- --help
       - run: pnpm project:status -- --all-actions --json
-      - run: pnpm project:status -- --all-actions --markdown-output tmp/project-status-handoff.md
       - run: pnpm release:check -- --help
       - run: pnpm release:handoff -- --help
       - run: pnpm release:notes -- --help
@@ -37,3 +36,12 @@ jobs:
       - run: pnpm visual:artifact-bundle -- --help
       - run: pnpm visual:artifact-check -- --help
       - run: pnpm build
+      - run: pnpm project:status -- --all-actions --output tmp/project-status.json --markdown-output tmp/project-status-handoff.md
+      - name: Upload local verification handoff
+        uses: actions/upload-artifact@v4
+        with:
+          name: local-verification-${{ github.run_number }}
+          if-no-files-found: error
+          path: |
+            tmp/project-status.json
+            tmp/project-status-handoff.md

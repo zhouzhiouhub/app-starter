@@ -315,7 +315,10 @@ readiness, the configured local verification commands, and the next concrete
 actions without changing the pass/fail criteria. Add `--require-ready` when the
 same status report should exit non-zero until release evidence is ready. Use
 `--json` or `--output` to produce a validated `project-status.v1` artifact for
-handoff or release review notes. Add
+handoff or release review notes. The main CI workflow writes
+`tmp/project-status.json` and `tmp/project-status-handoff.md` after
+`check:file-size`, `typecheck`, `lint`, `test`, and `build` pass, then uploads
+them as `local-verification-<run_number>` for local verification handoff. Add
 `--markdown-output artifacts/release/project-status.md` when the handoff needs
 a pasteable Markdown checklist; it also records the recommended archive paths
 and refresh commands for the Production Smoke JSON/Markdown, Production Smoke

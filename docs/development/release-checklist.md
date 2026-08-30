@@ -148,6 +148,12 @@ later phases are explicitly approved.
 
 ## Required Evidence
 
+- The main CI run is linked when local verification evidence is reviewed. Its
+  uploaded `local-verification-<run_number>` artifact contains
+  `project-status.json` and `project-status-handoff.md` generated after
+  `check:file-size`, `typecheck`, `lint`, `test`, and `build` have passed. This
+  artifact supports local verification handoff and does not replace Production
+  Smoke evidence.
 - The `Production Smoke` workflow run is linked from the release notes.
 - The uploaded artifact `production-smoke-report-<run_number>` is attached or
   linked. It contains both `smoke-report.json` and the Markdown review
