@@ -178,7 +178,8 @@ Release handoff:
   Writes preflight.json, preflight.md, release-check.json, release-check.md,
   project-status.json, and project-status.md from the same handoff run. Blocked
   evidence still writes the handoff; use --require-ready when the command should
-  gate release. The terminal summary prints the first two next actions with
+  gate release. The terminal summary prints Production Smoke, Page Builder Visual,
+  and optional visual artifact statuses. It then prints the first two next actions with
   structured steps when available, previews the first hidden structured action
   only when the visible actions do not have steps, and points any remaining
   actions to the generated project-status Markdown.`);
