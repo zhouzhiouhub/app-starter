@@ -16,6 +16,8 @@ test("release notes command is exposed in package, CI, and release docs", async 
   assert.match(ciWorkflow, /pnpm release:notes -- --help/);
   assert.match(releaseChecklist, /pnpm release:notes/);
   assert.match(releaseChecklist, /completion\s+summary/);
+  assert.match(releaseChecklist, /project completion checklist/);
+  assert.match(releaseChecklist, /Project Completion Checklist/);
   assert.match(
     releaseChecklist,
     /--project-status artifacts\/release\/project-status\.json/,

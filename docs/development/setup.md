@@ -379,14 +379,15 @@ and all 12 PNG screenshots, prints the artifact path plus file and screenshot
 counts in the text summary, and writes the result under `visual.artifactCheck`.
 After that artifact is ready, `release:notes` writes the final Markdown release
 record, including the readiness checklist, main CI local verification run and
-artifact, preflight artifact, project status artifact and source path, any
-recorded `visual.artifactCheck` path and count summary, and the production smoke source run.
+artifact, preflight artifact, project status artifact and source path, the
+project completion checklist, any recorded `visual.artifactCheck` path and count
+summary, and the production smoke source run.
 It validates the `project-status.v1` file against
 the same release evidence gate and refuses blocked evidence unless
-`--allow-blocked` is used for a failure review draft. Blocked drafts include a
-`Project Next Actions` section from the validated project status snapshot so the
-first production smoke and visual evidence repair steps stay attached to the
-failed review.
+`--allow-blocked` is used for a failure review draft. Blocked drafts include the
+`Project Completion Checklist` and `Project Next Actions` sections from the
+validated project status snapshot so the first production smoke and visual
+evidence repair steps stay attached to the failed review.
 When the artifact records `smoke.source.workflowRunUrl`, the CLI
 `--workflow-run-url` must match it so release records cannot point at a
 different GitHub Actions run. When it records `smoke.source.runNumber`,

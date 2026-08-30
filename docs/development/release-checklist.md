@@ -313,7 +313,7 @@ later phases are explicitly approved.
   summary, source metadata, `--workflow-run-url` match, smoke artifact,
   preflight artifact, and project status artifact run-number match,
   `project-status.v1` release-ready and gate-count consistency, traceability
-  groups, readiness checklist, visual counts, optional
+  groups, readiness checklist, project completion checklist, visual counts, optional
   visual artifact check, pending lists, and issue entries before writing the
   Markdown record; a ready artifact must also have no blockers, internally
   consistent smoke status, ready production smoke with source metadata, fully
@@ -348,9 +348,10 @@ later phases are explicitly approved.
   combined release gate blockers include the Production Smoke artifact action
   and the `pnpm visual:acceptance -- --checklist` command for visual evidence.
 - Link both the failed run and the fixed run in the release notes.
-- Keep the `Project Next Actions` section from any blocked release notes draft
-  with the failed run so the production smoke and visual evidence repair steps
-  are visible without reopening the JSON artifact.
+- Keep the `Project Completion Checklist` and `Project Next Actions` sections
+  from any blocked release notes draft with the failed run so the production
+  smoke and visual evidence repair steps are visible without reopening the JSON
+  artifact.
 - Do not mark the release ready until a new artifact proves the failed gate is
   fixed.
 

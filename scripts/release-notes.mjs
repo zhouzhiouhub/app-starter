@@ -51,8 +51,9 @@ function printHelp(writeLine) {
 
 Options:
   --allow-blocked             Generate a failure review draft from blocked evidence.
-                              Drafts include Project Next Actions from
-                              project-status.v1 when that artifact is provided.
+                              Drafts include the Project Completion Checklist
+                              and Project Next Actions from project-status.v1
+                              when that artifact is provided.
   --local-verification-artifact <name>
                               Main CI local verification artifact name.
   --local-verification-run-url <url>

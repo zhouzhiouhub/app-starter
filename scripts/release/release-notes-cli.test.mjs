@@ -75,6 +75,9 @@ test("release notes CLI writes a Markdown release record", async () => {
       markdown,
       /Project Completion: ready-to-release \(implemented local MVP scope, ready evidence\)/,
     );
+    assert.match(markdown, /## Project Completion Checklist/);
+    assert.match(markdown, /Complete: 3\/3/);
+    assert.match(markdown, /Production Smoke release evidence: complete/);
   } finally {
     await rm(root, { force: true, recursive: true });
   }
@@ -91,6 +94,7 @@ test("release notes CLI help documents blocked draft next actions", async () => 
   assert.match(help, /--allow-blocked/);
   assert.match(help, /--local-verification-artifact/);
   assert.match(help, /--local-verification-run-url/);
+  assert.match(help, /Project Completion Checklist/);
   assert.match(help, /Project Next Actions/);
   assert.match(help, /project-status\.v1/);
 });
@@ -143,6 +147,16 @@ function createReadyProjectStatus() {
       summary:
         "MVP implementation and retained release evidence are ready for release notes.",
     },
+    completionChecklist: {
+      completeCount: 3,
+      itemCount: 3,
+      items: [
+        createCompletionItem("Local MVP implementation scope", "complete"),
+        createCompletionItem("Production Smoke release evidence", "complete"),
+        createCompletionItem("Page Builder visual acceptance evidence", "complete"),
+      ],
+      needsEvidenceCount: 0,
+    },
     generatedAt: "2026-08-28T00:00:00.000Z",
     localVerification: {
       commandCount: 1,
@@ -189,5 +203,14 @@ function createReadyProjectStatus() {
     schemaVersion: "project-status.v1",
     status: "release-ready",
     truncatedNextActionCount: 0,
+  };
+}
+
+function createCompletionItem(label, status) {
+  return {
+    evidence: `${label} is retained.`,
+    label,
+    nextAction: null,
+    status,
   };
 }

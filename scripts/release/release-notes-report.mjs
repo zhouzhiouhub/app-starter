@@ -4,6 +4,7 @@ import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { assertReleaseNotesProjectStatusConsistency } from "./release-notes-project-status-consistency.mjs";
 import { assertReleaseNotesSourceConsistency } from "./release-notes-source-consistency.mjs";
 import { formatProjectNextActions } from "./release-notes-project-actions-report.mjs";
+import { formatProjectCompletionChecklist } from "./release-notes-project-completion-report.mjs";
 import { formatReadinessChecklistMarkdown } from "./release-readiness-checklist-markdown.mjs";
 import { formatVisualChecklist } from "./release-notes-visual-checklist-report.mjs";
 
@@ -59,6 +60,8 @@ export function createReleaseNotesMarkdown(config, artifact, projectStatus) {
     `- Page Builder Visual: ${artifact.visual.status} (${artifact.visual.acceptedComponentCount}/${artifact.visual.componentCount} components, ${artifact.visual.acceptedViewportCount}/${artifact.visual.viewportCount} viewports)`,
     ...formatProjectStatusGate(projectStatus),
     ...formatVisualArtifactGate(artifact.visual.artifactCheck),
+    "",
+    ...formatProjectCompletionChecklist(projectStatus),
     "",
     "## Readiness Checklist",
     "",
