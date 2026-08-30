@@ -13,6 +13,18 @@ export function createReleaseNotesHandoffSteps() {
         "--smoke-artifact production-smoke-report-<run_number>",
         "--preflight-artifact release-preflight-<run_number>",
         "--release-artifact release-evidence-check-<run_number>",
+      ].join(" "),
+    ),
+    createStep(
+      "Local verification args",
+      [
+        "--local-verification-run-url <main-ci-run-url>",
+        "--local-verification-artifact local-verification-<run_number>",
+      ].join(" "),
+    ),
+    createStep(
+      "Project and visual args",
+      [
         "--project-status artifacts/release/project-status.json",
         "--project-status-artifact project-status-<run_number>",
         "--visual-artifact page-builder-visual-fixture-<run_number>",

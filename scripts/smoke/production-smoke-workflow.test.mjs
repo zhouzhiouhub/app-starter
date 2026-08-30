@@ -162,7 +162,7 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /name: Generate release notes/);
   assert.match(
     workflow,
-    /inputs\.release_tag != '' && inputs\.rollback_target != '' && inputs\.visual_artifact_name != '' && inputs\.visual_artifact_run_id != ''/,
+    /inputs\.release_tag != '' && inputs\.rollback_target != '' && inputs\.local_verification_run_url != '' && inputs\.local_verification_artifact_name != '' && inputs\.visual_artifact_name != '' && inputs\.visual_artifact_run_id != ''/,
   );
   assert.match(workflow, /pnpm release:notes --/);
   assert.match(workflow, /release_notes_flags=\(\)/);
@@ -225,7 +225,7 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   );
   assert.match(
     workflow,
-    /skipped \(set release_tag, rollback_target, visual_artifact_name, and visual_artifact_run_id\)/,
+    /skipped \(set release_tag, rollback_target, local_verification_run_url, local_verification_artifact_name, visual_artifact_name, and visual_artifact_run_id\)/,
   );
   assert.match(workflow, /SMOKE_REPORT_ARTIFACT_NAME:/);
   assert.match(workflow, /actions\/upload-artifact@v4/);
@@ -241,7 +241,7 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.equal(
     matchCount(
       workflow,
-      /inputs\.release_tag != '' && inputs\.rollback_target != '' && inputs\.visual_artifact_name != '' && inputs\.visual_artifact_run_id != ''/g,
+      /inputs\.release_tag != '' && inputs\.rollback_target != '' && inputs\.local_verification_run_url != '' && inputs\.local_verification_artifact_name != '' && inputs\.visual_artifact_name != '' && inputs\.visual_artifact_run_id != ''/g,
     ),
     2,
   );
@@ -270,6 +270,7 @@ test("release checklist requires archived smoke evidence", async () => {
   assert.match(checklist, /artifacts\/production-smoke\/smoke-report\.json/);
   assert.match(checklist, /release-preflight-<run_number>/);
   assert.match(checklist, /project-status-<run_number>/);
+  assert.match(checklist, /local-verification-<run_number>/);
   assert.match(checklist, /project-status\.v1/);
   assert.match(checklist, /project-status\.md/);
   assert.match(checklist, /release:handoff/);

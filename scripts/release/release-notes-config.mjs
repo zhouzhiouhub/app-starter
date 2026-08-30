@@ -1,5 +1,6 @@
 import {
   normalizeArtifactName,
+  normalizeLocalVerificationArtifactName,
   normalizePlainValue,
   normalizeProjectStatusPath,
   normalizeReleaseEvidencePath,
@@ -15,6 +16,8 @@ const defaultProjectStatusPath = "artifacts/release/project-status.json";
 export function readReleaseNotesCliConfig(args) {
   const config = {
     allowBlocked: false,
+    localVerificationArtifact: null,
+    localVerificationRunUrl: null,
     outputPath: null,
     preflightArtifact: null,
     projectStatusArtifact: null,
@@ -46,6 +49,12 @@ export function readReleaseNotesCliConfig(args) {
 
 function readReleaseNotesOption(arg, args, index, config) {
   switch (arg) {
+    case "--local-verification-artifact":
+      config.localVerificationArtifact = readOptionValue(arg, args, index);
+      return index + 1;
+    case "--local-verification-run-url":
+      config.localVerificationRunUrl = readOptionValue(arg, args, index);
+      return index + 1;
     case "--output":
       config.outputPath = readOptionValue(arg, args, index);
       return index + 1;
@@ -96,6 +105,12 @@ function normalizeReleaseNotesConfig(config) {
     releaseArtifact: normalizeArtifactName(
       "release artifact",
       config.releaseArtifact,
+    ),
+    localVerificationArtifact: normalizeLocalVerificationArtifactName(
+      config.localVerificationArtifact,
+    ),
+    localVerificationRunUrl: normalizeWorkflowRunUrl(
+      config.localVerificationRunUrl,
     ),
     releaseCheckPath: normalizeReleaseEvidencePath(config.releaseCheckPath),
     projectStatusArtifact: normalizeArtifactName(

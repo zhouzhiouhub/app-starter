@@ -34,6 +34,14 @@ on:
         description: "Optional rollback target for Markdown release notes"
         required: false
         default: ""
+      local_verification_run_url:
+        description: "Main CI GitHub Actions run URL for local verification evidence"
+        required: false
+        default: ""
+      local_verification_artifact_name:
+        description: "Main CI local verification artifact name"
+        required: false
+        default: ""
       visual_artifact_name:
         description: "Optional Page Builder Visual artifact name for release notes and evidence"
         required: false
@@ -91,6 +99,8 @@ jobs:
       RELEASE_CHECK_ARTIFACT_NAME: release-evidence-check-${{ github.run_number }}
       RELEASE_CHECK_ARTIFACT_PATH: artifacts/release/release-check.json
       RELEASE_CHECK_MARKDOWN_PATH: artifacts/release/release-check.md
+      RELEASE_LOCAL_VERIFICATION_ARTIFACT_NAME: ${{ inputs.local_verification_artifact_name }}
+      RELEASE_LOCAL_VERIFICATION_RUN_URL: ${{ inputs.local_verification_run_url }}
       RELEASE_NOTES_ARTIFACT_NAME: release-notes-${{ github.run_number }}
       RELEASE_NOTES_ALLOW_BLOCKED: ${{ inputs.allow_blocked_release_notes }}
       RELEASE_NOTES_PATH: ${{ inputs.release_notes_path }}
@@ -183,7 +193,7 @@ jobs:
           fi
           pnpm release:handoff -- "${handoff_flags[@]}"
       - name: Generate release notes
-        if: ${{ always() && inputs.release_tag != '' && inputs.rollback_target != '' && inputs.visual_artifact_name != '' && inputs.visual_artifact_run_id != '' }}
+        if: ${{ always() && inputs.release_tag != '' && inputs.rollback_target != '' && inputs.local_verification_run_url != '' && inputs.local_verification_artifact_name != '' && inputs.visual_artifact_name != '' && inputs.visual_artifact_run_id != '' }}
         run: |
           storefront_url="$RELEASE_STOREFRONT_URL"
           if [ -z "$storefront_url" ]; then
@@ -198,6 +208,8 @@ jobs:
             "${release_notes_flags[@]}" \
             --release-tag "$RELEASE_TAG" \
             --workflow-run-url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --local-verification-run-url "$RELEASE_LOCAL_VERIFICATION_RUN_URL" \
+            --local-verification-artifact "$RELEASE_LOCAL_VERIFICATION_ARTIFACT_NAME" \
             --smoke-artifact "$SMOKE_REPORT_ARTIFACT_NAME" \
             --preflight-artifact "$RELEASE_PREFLIGHT_ARTIFACT_NAME" \
             --release-artifact "$RELEASE_CHECK_ARTIFACT_NAME" \
@@ -241,7 +253,9 @@ jobs:
             else
               echo "- Visual evidence artifact: skipped (set visual_artifact_name and visual_artifact_run_id)"
             fi
-            if [ -n "$RELEASE_TAG" ] && [ -n "$RELEASE_ROLLBACK_TARGET" ] && [ -n "$RELEASE_VISUAL_ARTIFACT_NAME" ] && [ -n "$RELEASE_VISUAL_ARTIFACT_RUN_ID" ]; then
+            if [ -n "$RELEASE_TAG" ] && [ -n "$RELEASE_ROLLBACK_TARGET" ] && [ -n "$RELEASE_LOCAL_VERIFICATION_RUN_URL" ] && [ -n "$RELEASE_LOCAL_VERIFICATION_ARTIFACT_NAME" ] && [ -n "$RELEASE_VISUAL_ARTIFACT_NAME" ] && [ -n "$RELEASE_VISUAL_ARTIFACT_RUN_ID" ]; then
+              echo "- Local verification run: \`$RELEASE_LOCAL_VERIFICATION_RUN_URL\`"
+              echo "- Local verification artifact: \`$RELEASE_LOCAL_VERIFICATION_ARTIFACT_NAME\`"
               echo "- Release notes: \`$RELEASE_NOTES_PATH\`"
               echo "- Release notes artifact: \`$RELEASE_NOTES_ARTIFACT_NAME\`"
               if [ "$RELEASE_NOTES_ALLOW_BLOCKED" = "true" ]; then
@@ -250,7 +264,7 @@ jobs:
                 echo "- Release notes mode: ready evidence only"
               fi
             else
-              echo "- Release notes: skipped (set release_tag, rollback_target, visual_artifact_name, and visual_artifact_run_id)"
+              echo "- Release notes: skipped (set release_tag, rollback_target, local_verification_run_url, local_verification_artifact_name, visual_artifact_name, and visual_artifact_run_id)"
             fi
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload smoke report artifact
@@ -294,7 +308,7 @@ jobs:
           if-no-files-found: error
           retention-days: 30
       - name: Upload release notes artifact
-        if: ${{ always() && inputs.release_tag != '' && inputs.rollback_target != '' && inputs.visual_artifact_name != '' && inputs.visual_artifact_run_id != '' }}
+        if: ${{ always() && inputs.release_tag != '' && inputs.rollback_target != '' && inputs.local_verification_run_url != '' && inputs.local_verification_artifact_name != '' && inputs.visual_artifact_name != '' && inputs.visual_artifact_run_id != '' }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.RELEASE_NOTES_ARTIFACT_NAME }}

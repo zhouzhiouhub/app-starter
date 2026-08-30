@@ -293,7 +293,7 @@ pnpm project:status -- --markdown-output artifacts/release/project-status.md
 pnpm release:handoff
 pnpm release:handoff -- --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture
 pnpm release:handoff -- --require-ready
-pnpm release:notes -- --release-tag v0.1.0 --workflow-run-url https://github.com/zhouzhiouhub/app-starter/actions/runs/123 --smoke-artifact production-smoke-report-123 --preflight-artifact release-preflight-123 --release-artifact release-evidence-check-123 --project-status artifacts/release/project-status.json --project-status-artifact project-status-123 --visual-artifact page-builder-visual-fixture-123 --storefront-url https://store.brand.com --rollback-target main@abcdef1 --output docs/releases/v0.1.0.md
+pnpm release:notes -- --release-tag v0.1.0 --workflow-run-url https://github.com/zhouzhiouhub/app-starter/actions/runs/123 --local-verification-run-url https://github.com/zhouzhiouhub/app-starter/actions/runs/122 --local-verification-artifact local-verification-122 --smoke-artifact production-smoke-report-123 --preflight-artifact release-preflight-123 --release-artifact release-evidence-check-123 --project-status artifacts/release/project-status.json --project-status-artifact project-status-123 --visual-artifact page-builder-visual-fixture-123 --storefront-url https://store.brand.com --rollback-target main@abcdef1 --output docs/releases/v0.1.0.md
 ```
 
 The review command scans the same safe archive roots, recomputes the report
@@ -361,9 +361,10 @@ then verifies the artifact-local manifest, capture report, acceptance report,
 and all 12 PNG screenshots, and writes the result under
 `visual.artifactCheck`.
 After that artifact is ready, `release:notes` writes the final Markdown release
-record, including the readiness checklist, preflight artifact, project status
-artifact and source path, any recorded `visual.artifactCheck` summary, and the
-production smoke source run. It validates the `project-status.v1` file against
+record, including the readiness checklist, main CI local verification run and
+artifact, preflight artifact, project status artifact and source path, any
+recorded `visual.artifactCheck` summary, and the production smoke source run.
+It validates the `project-status.v1` file against
 the same release evidence gate and refuses blocked evidence unless
 `--allow-blocked` is used for a failure review draft. Blocked drafts include a
 `Project Next Actions` section from the validated project status snapshot so the
@@ -375,7 +376,9 @@ different GitHub Actions run. When it records `smoke.source.runNumber`,
 `--smoke-artifact`, `--preflight-artifact`, and `--project-status-artifact`
 must match `production-smoke-report-<runNumber>`,
 `release-preflight-<runNumber>`, and `project-status-<runNumber>` for the same
-reason.
+reason. `--local-verification-run-url` records the separate main CI run, while
+`--local-verification-artifact` must use the `local-verification-<run_number>`
+naming pattern.
 
 The `Production Smoke` GitHub Actions workflow runs the same command set against
 the protected `production` environment. It sets
@@ -410,10 +413,11 @@ it uploads `release-preflight-<run_number>` so passed and failed preflight runs
 retain the structured blocker summary.
 The same visual artifact shape can be reproduced locally with
 `pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture`.
-When `release_tag`, `rollback_target`, `visual_artifact_name`, and
-`visual_artifact_run_id` are provided, it runs
-`release:notes` with the generated preflight and project status artifact names
-and uploads `release-notes-<run_number>`. Keep
+When `release_tag`, `rollback_target`, `local_verification_run_url`,
+`local_verification_artifact_name`, `visual_artifact_name`, and
+`visual_artifact_run_id` are provided, it runs `release:notes` with the
+generated preflight and project status artifact names plus the main CI local
+verification artifact, then uploads `release-notes-<run_number>`. Keep
 `allow_blocked_release_notes` disabled for a formal release; enable it only to
 pass `--allow-blocked` and generate a failure review draft from blocked
 evidence. Use

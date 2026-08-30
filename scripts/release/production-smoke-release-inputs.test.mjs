@@ -223,10 +223,12 @@ test("production smoke release input preflight requires release notes as a group
       validateProductionSmokeReleaseInputs({
         RELEASE_ROLLBACK_TARGET: "",
         RELEASE_TAG: "v0.1.0",
+        RELEASE_LOCAL_VERIFICATION_ARTIFACT_NAME: "",
+        RELEASE_LOCAL_VERIFICATION_RUN_URL: "",
         RELEASE_VISUAL_ARTIFACT_NAME: "",
         RELEASE_VISUAL_ARTIFACT_RUN_ID: "",
       }),
-    /Release notes require release_tag, rollback_target, visual_artifact_name, and visual_artifact_run_id together/,
+    /Release notes require release_tag, rollback_target, visual_artifact_name, visual_artifact_run_id, local_verification_run_url, and local_verification_artifact_name together/,
   );
 });
 
@@ -309,7 +311,7 @@ test("production smoke release input preflight validates blocked release note dr
         RELEASE_VISUAL_ARTIFACT_NAME: "",
         RELEASE_VISUAL_ARTIFACT_RUN_ID: "",
       }),
-    /allow_blocked_release_notes requires release_tag, rollback_target, visual_artifact_name, and visual_artifact_run_id together/,
+    /allow_blocked_release_notes requires release_tag, rollback_target, visual_artifact_name, visual_artifact_run_id, local_verification_run_url, and local_verification_artifact_name together/,
   );
   assert.throws(
     () =>
@@ -330,7 +332,7 @@ test("production smoke release input preflight CLI prints help", async () => {
   assert.equal(exitCode, 0);
   const help = stdout.join("\n");
   const expectedVariables =
-    "SMOKE_REPORT_PATH SMOKE_REPORT_MARKDOWN_PATH RELEASE_CHECK_ARTIFACT_PATH RELEASE_CHECK_MARKDOWN_PATH RELEASE_NOTES_PATH SMOKE_REPORT_ARTIFACT_NAME RELEASE_CHECK_ARTIFACT_NAME RELEASE_PREFLIGHT_ARTIFACT_NAME RELEASE_VISUAL_ARTIFACT_NAME RELEASE_VISUAL_ARTIFACT_RUN_ID PROJECT_STATUS_ARTIFACT_PATH PROJECT_STATUS_ARTIFACT_NAME PROJECT_STATUS_MARKDOWN_PATH RELEASE_NOTES_ARTIFACT_NAME SMOKE_STOREFRONT_HOST SMOKE_REQUIRE_ADMIN_APP SMOKE_REQUIRE_R2_UPLOAD SMOKE_REQUIRE_REVALIDATION RELEASE_NOTES_ALLOW_BLOCKED".split(
+    "SMOKE_REPORT_PATH SMOKE_REPORT_MARKDOWN_PATH RELEASE_CHECK_ARTIFACT_PATH RELEASE_CHECK_MARKDOWN_PATH RELEASE_NOTES_PATH SMOKE_REPORT_ARTIFACT_NAME RELEASE_CHECK_ARTIFACT_NAME RELEASE_PREFLIGHT_ARTIFACT_NAME RELEASE_VISUAL_ARTIFACT_NAME RELEASE_VISUAL_ARTIFACT_RUN_ID RELEASE_LOCAL_VERIFICATION_RUN_URL RELEASE_LOCAL_VERIFICATION_ARTIFACT_NAME PROJECT_STATUS_ARTIFACT_PATH PROJECT_STATUS_ARTIFACT_NAME PROJECT_STATUS_MARKDOWN_PATH RELEASE_NOTES_ARTIFACT_NAME SMOKE_STOREFRONT_HOST SMOKE_REQUIRE_ADMIN_APP SMOKE_REQUIRE_R2_UPLOAD SMOKE_REQUIRE_REVALIDATION RELEASE_NOTES_ALLOW_BLOCKED".split(
       " ",
     );
 
@@ -380,6 +382,9 @@ function createReleaseNotesEnv() {
     GITHUB_RUN_ID: "123456",
     PROJECT_STATUS_ARTIFACT_NAME: "project-status-123",
     PROJECT_STATUS_ARTIFACT_PATH: "artifacts/release/project-status.json",
+    RELEASE_LOCAL_VERIFICATION_ARTIFACT_NAME: "local-verification-122",
+    RELEASE_LOCAL_VERIFICATION_RUN_URL:
+      "https://github.com/zhouzhiouhub/app-starter/actions/runs/123455",
     RELEASE_CHECK_ARTIFACT_NAME: "release-evidence-check-123",
     RELEASE_CHECK_ARTIFACT_PATH: "artifacts/release/release-check.json",
     RELEASE_NOTES_PATH: "artifacts/release/release-notes.md",

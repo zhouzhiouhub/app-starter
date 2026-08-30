@@ -209,6 +209,7 @@ test("release handoff accepts ready smoke and visual evidence", async () => {
       "utf8",
     );
     const stdoutText = stdout.join("\n");
+    const readyOutputText = [stdoutText, projectMarkdown].join("\n");
 
     assert.equal(exitCode, 0);
     assert.equal(releaseArtifact.status, "ready");
@@ -217,24 +218,17 @@ test("release handoff accepts ready smoke and visual evidence", async () => {
     assert.match(stdoutText, /Release ready: yes/);
     assert.match(stdoutText, /Next actions: 1/);
     assert.match(stdoutText, /Next action 1: Release Notes/);
-    assert.match(
-      stdoutText,
+    for (const pattern of [
       /Command: pnpm release:notes -- --release-tag <tag>/,
-    );
-    assert.match(
-      stdoutText,
       /Evidence args: --smoke-artifact production-smoke-report-<run_number>/,
-    );
-    assert.match(stdoutText, /Formal mode: Run without --allow-blocked/);
-    assert.match(projectMarkdown, /Release Notes: Generate release record/);
-    assert.match(
-      projectMarkdown,
-      /Evidence args: `--smoke-artifact production-smoke-report-<run_number>/,
-    );
-    assert.match(
-      projectMarkdown,
+      /Local verification args:/,
+      /Project and visual args:/,
+      /Formal mode: Run without --allow-blocked/,
+      /Release Notes: Generate release record/,
       /Keep artifact: `release-notes-<run_number>`/,
-    );
+    ]) {
+      assert.match(readyOutputText, pattern);
+    }
   } finally {
     await rm(outputRoot, { force: true, recursive: true });
   }

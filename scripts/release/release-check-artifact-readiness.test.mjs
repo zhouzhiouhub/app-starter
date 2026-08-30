@@ -23,6 +23,8 @@ test("release check artifact includes ready checklist tasks", () => {
     [
       "Command",
       "Evidence args",
+      "Local verification args",
+      "Project and visual args",
       "Review args",
       "Input evidence",
       "Output",
@@ -31,7 +33,13 @@ test("release check artifact includes ready checklist tasks", () => {
     ],
   );
   assert.match(releaseNotesItem.steps[1].value, /--release-artifact/);
+  assert.match(
+    releaseNotesItem.steps[2].value,
+    /--local-verification-artifact local-verification-<run_number>/,
+  );
   assert.doesNotMatch(releaseNotesItem.steps[1].value, /\.\.\./);
+  assert.doesNotMatch(releaseNotesItem.steps[2].value, /\.\.\./);
+  assert.doesNotMatch(releaseNotesItem.steps[3].value, /\.\.\./);
 });
 
 test("release check artifact includes blocked checklist actions", () => {

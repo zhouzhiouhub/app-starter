@@ -117,7 +117,8 @@ later phases are explicitly approved.
   has retained evidence;
   `visual_artifact_name` and
   `visual_artifact_run_id` must be provided together, and release notes require
-  `release_tag`, `rollback_target`, `visual_artifact_name`, and
+  `release_tag`, `rollback_target`, `local_verification_run_url`,
+  `local_verification_artifact_name`, `visual_artifact_name`, and
   `visual_artifact_run_id` together; release notes also require
   `RELEASE_PREFLIGHT_ARTIFACT_NAME`.
   `allow_blocked_release_notes` must stay disabled for formal release notes and
@@ -140,8 +141,10 @@ later phases are explicitly approved.
    running `release:check` with
    `--visual-artifact-dir reports/visual/page-builder-fixture`.
 7. To generate release notes in the same run, set `release_tag`,
-   `rollback_target`, `visual_artifact_name`, `visual_artifact_run_id`, and
-   optionally `storefront_url` plus `release_notes_path`.
+   `rollback_target`, `local_verification_run_url`,
+   `local_verification_artifact_name`, `visual_artifact_name`,
+   `visual_artifact_run_id`, and optionally `storefront_url` plus
+   `release_notes_path`.
 8. Keep `allow_blocked_release_notes` disabled for release sign-off. Enable it
    only when the run is expected to fail and you need a `--allow-blocked`
    failure review draft attached to the artifacts.
@@ -153,7 +156,8 @@ later phases are explicitly approved.
   `project-status.json` and `project-status-handoff.md` generated after
   `check:file-size`, `typecheck`, `lint`, `test`, and `build` have passed. This
   artifact supports local verification handoff and does not replace Production
-  Smoke evidence.
+  Smoke evidence. Pass this run URL and artifact name to `release:notes` as
+  `--local-verification-run-url` and `--local-verification-artifact`.
 - The `Production Smoke` workflow run is linked from the release notes.
 - The uploaded artifact `production-smoke-report-<run_number>` is attached or
   linked. It contains both `smoke-report.json` and the Markdown review
@@ -278,13 +282,14 @@ later phases are explicitly approved.
   preflight JSON/Markdown, smoke JSON, Smoke Markdown, combined gate
   JSON/Markdown, project status, or release notes files fail the workflow
   instead of leaving only a warning.
-- `pnpm release:notes -- --release-tag <tag> --workflow-run-url <url> --smoke-artifact production-smoke-report-<run_number> --preflight-artifact release-preflight-<run_number> --release-artifact release-evidence-check-<run_number> --project-status artifacts/release/project-status.json --project-status-artifact project-status-<run_number> --visual-artifact page-builder-visual-fixture-<run_number> --storefront-url <url> --rollback-target <target> --output docs/releases/<tag>.md`
+- `pnpm release:notes -- --release-tag <tag> --workflow-run-url <url> --local-verification-run-url <main-ci-run-url> --local-verification-artifact local-verification-<run_number> --smoke-artifact production-smoke-report-<run_number> --preflight-artifact release-preflight-<run_number> --release-artifact release-evidence-check-<run_number> --project-status artifacts/release/project-status.json --project-status-artifact project-status-<run_number> --visual-artifact page-builder-visual-fixture-<run_number> --storefront-url <url> --rollback-target <target> --output docs/releases/<tag>.md`
   writes the final Markdown release record from the ready
   `release-evidence-check.v1` artifact, including the readiness checklist,
-  preflight artifact, project status artifact and source path, visual manifest
-  path, optional `visual.artifactCheck` summary, pending visual evidence lists,
-  visual checklist task summary, and visual issue summary when `--allow-blocked`
-  is used for failure review drafts. Blocked drafts also include a
+  main CI local verification run and artifact, preflight artifact, project
+  status artifact and source path, visual manifest path, optional
+  `visual.artifactCheck` summary, pending visual evidence lists, visual
+  checklist task summary, and visual issue summary when `--allow-blocked` is
+  used for failure review drafts. Blocked drafts also include a
   `Project Next Actions` section from the validated `project-status.v1` file so
   the first production smoke and visual evidence repair steps stay with the
   failed review record. The command validates the artifact's smoke
@@ -298,7 +303,8 @@ later phases are explicitly approved.
   accepted visual evidence with no pending or issue entries, and any recorded
   visual artifact check must be complete.
 - The `Production Smoke` workflow can generate the same Markdown release record
-  when `release_tag`, `rollback_target`, `visual_artifact_name`, and
+  when `release_tag`, `rollback_target`, `local_verification_run_url`,
+  `local_verification_artifact_name`, `visual_artifact_name`, and
   `visual_artifact_run_id` inputs are provided. When
   `allow_blocked_release_notes=true`, the same step passes
   `--allow-blocked`; the uploaded notes are marked `Mode: failure review draft`
@@ -339,10 +345,11 @@ later phases are explicitly approved.
 - Keep the project status artifact for at least the workflow retention window.
 - Keep the generated release notes artifact for at least the workflow retention
   window when it was produced by `Production Smoke`.
-- Record the release tag, workflow run URL, smoke artifact name, preflight
-  artifact name, combined release artifact name, project status artifact name,
-  production smoke source run, public storefront URL, and rollback target in the
-  release notes.
+- Record the release tag, workflow run URL, main CI local verification run URL,
+  local verification artifact name, smoke artifact name, preflight artifact
+  name, combined release artifact name, project status artifact name, production
+  smoke source run, public storefront URL, and rollback target in the release
+  notes.
 - Keep the generated `docs/releases/<tag>.md` release record with the release
   evidence bundle.
 - If a P0 or P1 issue happens, attach the failed smoke report review to the

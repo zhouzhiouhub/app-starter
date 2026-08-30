@@ -47,12 +47,16 @@ function isMainModule() {
 
 function printHelp(writeLine) {
   writeLine(`Usage:
-  pnpm release:notes -- --release-tag v0.1.0 --workflow-run-url https://github.com/owner/repo/actions/runs/123 --smoke-artifact production-smoke-report-123 --preflight-artifact release-preflight-123 --release-artifact release-evidence-check-123 --project-status artifacts/release/project-status.json --project-status-artifact project-status-123 --visual-artifact page-builder-visual-fixture-123 --storefront-url https://store.brand.com --rollback-target main@abcdef1 --output docs/releases/v0.1.0.md
+  pnpm release:notes -- --release-tag v0.1.0 --workflow-run-url https://github.com/owner/repo/actions/runs/123 --local-verification-run-url https://github.com/owner/repo/actions/runs/122 --local-verification-artifact local-verification-122 --smoke-artifact production-smoke-report-123 --preflight-artifact release-preflight-123 --release-artifact release-evidence-check-123 --project-status artifacts/release/project-status.json --project-status-artifact project-status-123 --visual-artifact page-builder-visual-fixture-123 --storefront-url https://store.brand.com --rollback-target main@abcdef1 --output docs/releases/v0.1.0.md
 
 Options:
   --allow-blocked             Generate a failure review draft from blocked evidence.
                               Drafts include Project Next Actions from
                               project-status.v1 when that artifact is provided.
+  --local-verification-artifact <name>
+                              Main CI local verification artifact name.
+  --local-verification-run-url <url>
+                              Main CI GitHub Actions run URL.
   --output <path>             Write Markdown under docs/releases, artifacts/release, reports/release, tmp/, or .tmp/.
   --project-status <path>     project-status.v1 JSON path.
   --project-status-artifact <name>

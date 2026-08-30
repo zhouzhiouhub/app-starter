@@ -28,6 +28,8 @@ const reservedWindowsBasenames = new Set([
   "prn",
 ]);
 const safeArtifactNamePattern = /^[A-Za-z0-9._-]{1,160}$/u;
+const safeLocalVerificationArtifactNamePattern =
+  /^local-verification-[0-9]{1,20}$/u;
 const safePathSegmentPattern = /^[A-Za-z0-9._-]+$/u;
 const safeReleaseTagPattern = /^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$/u;
 
@@ -84,6 +86,18 @@ export function normalizeArtifactName(label, value) {
   if (!safeArtifactNamePattern.test(normalized)) {
     throw new Error(
       `${capitalize(label)} must use 1-160 safe characters: letters, numbers, dot, underscore, or dash.`,
+    );
+  }
+
+  return normalized;
+}
+
+export function normalizeLocalVerificationArtifactName(value) {
+  const normalized = normalizeArtifactName("local verification artifact", value);
+
+  if (!safeLocalVerificationArtifactNamePattern.test(normalized)) {
+    throw new Error(
+      "Local verification artifact must use the local-verification-<run_number> naming pattern.",
     );
   }
 

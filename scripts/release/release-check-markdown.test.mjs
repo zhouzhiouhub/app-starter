@@ -51,6 +51,13 @@ test("release check Markdown summarizes ready evidence", () => {
     markdown,
     / {4}- Evidence args: `--smoke-artifact production-smoke-report-<run_number>/,
   );
+  assert.match(markdown, /--local-verification-run-url <main-ci-run-url>/);
+  assert.match(
+    markdown,
+    /--local-verification-artifact local-verification-<run_number>/,
+  );
+  assert.match(markdown, / {4}- Local verification args:/);
+  assert.match(markdown, / {4}- Project and visual args:/);
   assert.match(
     markdown,
     / {4}- Keep artifact: `release-notes-<run_number>`/,

@@ -1,5 +1,6 @@
 import {
   normalizeArtifactName,
+  normalizeLocalVerificationArtifactName,
   normalizeProjectStatusMarkdownPath,
   normalizeReleaseCheckMarkdownPath,
   normalizeReleaseNotesOutputPath,
@@ -24,6 +25,7 @@ const defaultReleaseCheckArtifactName = "release-evidence-check-local";
 const defaultProjectStatusArtifactName = "project-status-local";
 const defaultReleaseNotesArtifactName = "release-notes-local";
 const defaultReleasePreflightArtifactName = "release-preflight-local";
+const defaultLocalVerificationArtifactName = "";
 
 export function validateProductionSmokeWorkflowArtifacts(env) {
   validateWorkflowArtifactPaths(env);
@@ -117,6 +119,15 @@ function validateWorkflowArtifactNames(env) {
       defaultReleasePreflightArtifactName,
     ),
   );
+  const localVerificationArtifactName = readWorkflowEnv(
+    env,
+    "RELEASE_LOCAL_VERIFICATION_ARTIFACT_NAME",
+    defaultLocalVerificationArtifactName,
+  );
+
+  if (localVerificationArtifactName) {
+    normalizeLocalVerificationArtifactName(localVerificationArtifactName);
+  }
 }
 
 function normalizeJsonArtifactPath(label, value) {

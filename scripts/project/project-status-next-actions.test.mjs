@@ -33,6 +33,8 @@ test("project next actions structure the ready release notes handoff", () => {
     [
       "Command",
       "Evidence args",
+      "Local verification args",
+      "Project and visual args",
       "Review args",
       "Input evidence",
       "Output",
@@ -42,17 +44,21 @@ test("project next actions structure the ready release notes handoff", () => {
   );
   assert.match(releaseNotesAction.steps[0].value, /pnpm release:notes --/);
   assert.match(
-    releaseNotesAction.steps[1].value,
+    releaseNotesAction.steps[2].value,
+    /--local-verification-artifact local-verification-<run_number>/,
+  );
+  assert.match(
+    releaseNotesAction.steps[3].value,
     /--project-status artifacts\/release\/project-status\.json/,
   );
   assert.equal(
-    releaseNotesAction.steps[3].value,
+    releaseNotesAction.steps[5].value,
     "artifacts/release/release-check.json, artifacts/release/project-status.json",
   );
-  assert.equal(releaseNotesAction.steps[4].value, "docs/releases/<tag>.md");
+  assert.equal(releaseNotesAction.steps[6].value, "docs/releases/<tag>.md");
   assert.equal(
-    releaseNotesAction.steps[5].value,
+    releaseNotesAction.steps[7].value,
     "release-notes-<run_number>",
   );
-  assert.match(releaseNotesAction.steps[6].value, /without --allow-blocked/);
+  assert.match(releaseNotesAction.steps[8].value, /without --allow-blocked/);
 });

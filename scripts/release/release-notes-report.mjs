@@ -35,6 +35,10 @@ export function createReleaseNotesMarkdown(config, artifact, projectStatus) {
     "## Evidence",
     "",
     `- Workflow run: ${config.workflowRunUrl}`,
+    `- Local verification run: ${config.localVerificationRunUrl}`,
+    `- Local verification artifact: \`${formatInline(
+      config.localVerificationArtifact,
+    )}\``,
     `- Production smoke artifact: \`${formatInline(config.smokeArtifact)}\``,
     `- Production smoke preflight artifact: \`${formatInline(
       config.preflightArtifact,

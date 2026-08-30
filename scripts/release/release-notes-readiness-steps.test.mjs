@@ -30,6 +30,13 @@ test("release notes render release record handoff steps", () => {
     markdown,
     /--project-status artifacts\/release\/project-status\.json/,
   );
+  assert.match(markdown, /--local-verification-run-url <main-ci-run-url>/);
+  assert.match(
+    markdown,
+    /--local-verification-artifact local-verification-<run_number>/,
+  );
+  assert.match(markdown, / {4}- Local verification args:/);
+  assert.match(markdown, / {4}- Project and visual args:/);
   assert.match(
     markdown,
     / {4}- Review args: `--storefront-url <url> --rollback-target <target>`/,
@@ -44,6 +51,10 @@ function createReleaseNotesConfig() {
     "v0.1.0",
     "--workflow-run-url",
     "https://github.com/zhouzhiouhub/app-starter/actions/runs/123456789",
+    "--local-verification-run-url",
+    "https://github.com/zhouzhiouhub/app-starter/actions/runs/123456788",
+    "--local-verification-artifact",
+    "local-verification-122",
     "--smoke-artifact",
     "production-smoke-report-123",
     "--preflight-artifact",

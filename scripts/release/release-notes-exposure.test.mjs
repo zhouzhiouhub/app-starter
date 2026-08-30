@@ -26,6 +26,11 @@ test("release notes command is exposed in package, CI, and release docs", async 
   );
   assert.match(
     releaseChecklist,
+    /--local-verification-artifact local-verification-<run_number>/,
+  );
+  assert.match(releaseChecklist, /--local-verification-run-url <main-ci-run-url>/);
+  assert.match(
+    releaseChecklist,
     /--preflight-artifact release-preflight-<run_number>/,
   );
 });

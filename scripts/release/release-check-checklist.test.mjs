@@ -33,6 +33,13 @@ test("release readiness checklist summarizes ready evidence", () => {
     lines,
     /Evidence args: --smoke-artifact production-smoke-report-<run_number>/,
   );
+  assert.match(lines, /--local-verification-run-url <main-ci-run-url>/);
+  assert.match(
+    lines,
+    /--local-verification-artifact local-verification-<run_number>/,
+  );
+  assert.match(lines, /Local verification args:/);
+  assert.match(lines, /Project and visual args:/);
   assert.match(lines, /Output: docs\/releases\/<tag>\.md/);
   assert.match(lines, /Keep artifact: release-notes-<run_number>/);
   assert.match(lines, /Formal mode: Run without --allow-blocked/);

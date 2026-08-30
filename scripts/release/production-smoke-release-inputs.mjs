@@ -25,7 +25,7 @@ export function validateProductionSmokeReleaseInputs(env = process.env) {
 
   if (allowBlockedReleaseNotes && !releaseNotes.enabled) {
     throw new Error(
-      "allow_blocked_release_notes requires release_tag, rollback_target, visual_artifact_name, and visual_artifact_run_id together.",
+      "allow_blocked_release_notes requires release_tag, rollback_target, visual_artifact_name, visual_artifact_run_id, local_verification_run_url, and local_verification_artifact_name together.",
     );
   }
 
@@ -134,6 +134,12 @@ function readVisualArtifactInput(env) {
 function readReleaseNotesInput(env) {
   const releaseTag = normalizeOptionalText(env.RELEASE_TAG);
   const rollbackTarget = normalizeOptionalText(env.RELEASE_ROLLBACK_TARGET);
+  const localVerificationArtifact = normalizeOptionalText(
+    env.RELEASE_LOCAL_VERIFICATION_ARTIFACT_NAME,
+  );
+  const localVerificationRunUrl = normalizeOptionalText(
+    env.RELEASE_LOCAL_VERIFICATION_RUN_URL,
+  );
   const visualArtifactName = normalizeOptionalText(
     env.RELEASE_VISUAL_ARTIFACT_NAME,
   );
@@ -143,6 +149,8 @@ function readReleaseNotesInput(env) {
   const values = [
     releaseTag,
     rollbackTarget,
+    localVerificationArtifact,
+    localVerificationRunUrl,
     visualArtifactName,
     visualArtifactRunId,
   ];
@@ -150,7 +158,7 @@ function readReleaseNotesInput(env) {
 
   if (!enabled && values.some(Boolean)) {
     throw new Error(
-      "Release notes require release_tag, rollback_target, visual_artifact_name, and visual_artifact_run_id together.",
+      "Release notes require release_tag, rollback_target, visual_artifact_name, visual_artifact_run_id, local_verification_run_url, and local_verification_artifact_name together.",
     );
   }
 
@@ -177,6 +185,10 @@ function createReleaseNotesArgs(env, options = {}) {
     env.RELEASE_TAG,
     "--workflow-run-url",
     createWorkflowRunUrl(env),
+    "--local-verification-run-url",
+    env.RELEASE_LOCAL_VERIFICATION_RUN_URL,
+    "--local-verification-artifact",
+    env.RELEASE_LOCAL_VERIFICATION_ARTIFACT_NAME,
     "--smoke-artifact",
     env.SMOKE_REPORT_ARTIFACT_NAME,
     "--preflight-artifact",

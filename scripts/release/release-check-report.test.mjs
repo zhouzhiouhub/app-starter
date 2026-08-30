@@ -30,6 +30,13 @@ test("release check report prints release notes handoff steps when ready", () =>
     lines,
     /Evidence args: --smoke-artifact production-smoke-report-<run_number>/,
   );
+  assert.match(lines, /--local-verification-run-url <main-ci-run-url>/);
+  assert.match(
+    lines,
+    /--local-verification-artifact local-verification-<run_number>/,
+  );
+  assert.match(lines, /Local verification args:/);
+  assert.match(lines, /Project and visual args:/);
   assert.match(lines, /Review args: --storefront-url <url>/);
   assert.match(lines, /Keep artifact: release-notes-<run_number>/);
   assert.match(lines, /Formal mode: Run without --allow-blocked/);

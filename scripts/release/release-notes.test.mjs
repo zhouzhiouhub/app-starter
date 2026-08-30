@@ -26,6 +26,14 @@ test("release notes render required evidence and gate status", () => {
   );
   assert.match(
     markdown,
+    /Local verification run: https:\/\/github\.com\/zhouzhiouhub\/app-starter\/actions\/runs\/123456788/,
+  );
+  assert.match(
+    markdown,
+    /Local verification artifact: `local-verification-122`/,
+  );
+  assert.match(
+    markdown,
     /Production smoke preflight artifact: `release-preflight-123`/,
   );
   assert.match(
@@ -246,6 +254,10 @@ function createRequiredArgs() {
     "v0.1.0",
     "--workflow-run-url",
     "https://github.com/zhouzhiouhub/app-starter/actions/runs/123456789",
+    "--local-verification-run-url",
+    "https://github.com/zhouzhiouhub/app-starter/actions/runs/123456788",
+    "--local-verification-artifact",
+    "local-verification-122",
     "--smoke-artifact",
     "production-smoke-report-123",
     "--preflight-artifact",

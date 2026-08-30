@@ -58,11 +58,15 @@ Environment:
   SMOKE_REPORT_ARTIFACT_NAME, RELEASE_CHECK_ARTIFACT_NAME,
   PROJECT_STATUS_ARTIFACT_NAME, RELEASE_NOTES_ARTIFACT_NAME, and
   RELEASE_PREFLIGHT_ARTIFACT_NAME must be safe artifact names.
+  RELEASE_LOCAL_VERIFICATION_ARTIFACT_NAME must use the
+  local-verification-<run_number> artifact naming pattern.
   RELEASE_VISUAL_ARTIFACT_NAME and RELEASE_VISUAL_ARTIFACT_RUN_ID must be set
   together. RELEASE_TAG, RELEASE_ROLLBACK_TARGET, and
-  RELEASE_VISUAL_ARTIFACT_NAME plus RELEASE_VISUAL_ARTIFACT_RUN_ID must be set
-  together when release notes should be generated. PROJECT_STATUS_ARTIFACT_PATH
-  and PROJECT_STATUS_ARTIFACT_NAME are required when release notes are generated.
+  RELEASE_VISUAL_ARTIFACT_NAME plus RELEASE_VISUAL_ARTIFACT_RUN_ID,
+  RELEASE_LOCAL_VERIFICATION_RUN_URL, and
+  RELEASE_LOCAL_VERIFICATION_ARTIFACT_NAME must be set together when release
+  notes should be generated. PROJECT_STATUS_ARTIFACT_PATH and
+  PROJECT_STATUS_ARTIFACT_NAME are required when release notes are generated.
   RELEASE_PREFLIGHT_ARTIFACT_NAME is also required for release notes evidence.
   SMOKE_STOREFRONT_HOST must be a safe host when provided, and
   SMOKE_REQUIRE_ADMIN_APP, SMOKE_REQUIRE_R2_UPLOAD, and

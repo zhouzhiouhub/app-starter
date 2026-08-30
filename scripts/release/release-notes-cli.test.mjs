@@ -27,6 +27,10 @@ test("release notes CLI writes a Markdown release record", async () => {
         "v0.1.0",
         "--workflow-run-url",
         "https://github.com/zhouzhiouhub/app-starter/actions/runs/123456789",
+        "--local-verification-run-url",
+        "https://github.com/zhouzhiouhub/app-starter/actions/runs/123456788",
+        "--local-verification-artifact",
+        "local-verification-122",
         "--smoke-artifact",
         "production-smoke-report-123",
         "--preflight-artifact",
@@ -56,6 +60,7 @@ test("release notes CLI writes a Markdown release record", async () => {
     const markdown = await readFile(outputPath, "utf8");
 
     assert.match(markdown, /^# Release v0\.1\.0/m);
+    assert.match(markdown, /Local verification artifact: `local-verification-122`/);
     assert.match(markdown, /Production smoke source:/);
     assert.match(
       markdown,
@@ -84,6 +89,8 @@ test("release notes CLI help documents blocked draft next actions", async () => 
 
   assert.equal(exitCode, 0);
   assert.match(help, /--allow-blocked/);
+  assert.match(help, /--local-verification-artifact/);
+  assert.match(help, /--local-verification-run-url/);
   assert.match(help, /Project Next Actions/);
   assert.match(help, /project-status\.v1/);
 });

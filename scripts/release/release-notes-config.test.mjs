@@ -10,6 +10,10 @@ test("release notes config parses required release evidence fields", () => {
       "v0.1.0",
       "--workflow-run-url",
       "https://github.com/zhouzhiouhub/app-starter/actions/runs/123",
+      "--local-verification-run-url",
+      "https://github.com/zhouzhiouhub/app-starter/actions/runs/122",
+      "--local-verification-artifact",
+      "local-verification-122",
       "--smoke-artifact",
       "production-smoke-report-123",
       "--preflight-artifact",
@@ -33,6 +37,9 @@ test("release notes config parses required release evidence fields", () => {
     ]),
     {
       allowBlocked: false,
+      localVerificationArtifact: "local-verification-122",
+      localVerificationRunUrl:
+        "https://github.com/zhouzhiouhub/app-starter/actions/runs/122",
       outputPath: "docs/releases/v0.1.0.md",
       preflightArtifact: "release-preflight-123",
       projectStatusArtifact: "project-status-123",
@@ -95,6 +102,33 @@ test("release notes config rejects unsafe release record values", () => {
     () =>
       readReleaseNotesCliConfig([
         ...createRequiredArgs(),
+        "--local-verification-artifact",
+        "local verification",
+      ]),
+    /Local verification artifact must use 1-160 safe characters/,
+  );
+  assert.throws(
+    () =>
+      readReleaseNotesCliConfig([
+        ...createRequiredArgs(),
+        "--local-verification-artifact",
+        "production-smoke-report-123",
+      ]),
+    /Local verification artifact must use the local-verification-<run_number> naming pattern/,
+  );
+  assert.throws(
+    () =>
+      readReleaseNotesCliConfig([
+        ...createRequiredArgs(),
+        "--local-verification-run-url",
+        "https://github.com/zhouzhiouhub/app-starter/pulls/1",
+      ]),
+    /Workflow run URL must be a GitHub Actions run URL/,
+  );
+  assert.throws(
+    () =>
+      readReleaseNotesCliConfig([
+        ...createRequiredArgs(),
         "--project-status-artifact",
         "project status",
       ]),
@@ -126,6 +160,10 @@ function createRequiredArgs() {
     "v0.1.0",
     "--workflow-run-url",
     "https://github.com/zhouzhiouhub/app-starter/actions/runs/123456789",
+    "--local-verification-run-url",
+    "https://github.com/zhouzhiouhub/app-starter/actions/runs/123456788",
+    "--local-verification-artifact",
+    "local-verification-122",
     "--smoke-artifact",
     "production-smoke-report-123",
     "--preflight-artifact",
