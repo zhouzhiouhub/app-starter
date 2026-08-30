@@ -9,6 +9,7 @@ import {
   assertStringList,
   isRecord,
 } from "./project-status-validation-primitives.mjs";
+import { assertCompletionChecklist } from "./project-status-completion-checklist-validation.mjs";
 import { assertVisualGate } from "./project-status-visual-gate-validation.mjs";
 
 const commandStatuses = new Set(["configured"]);
@@ -35,6 +36,7 @@ export function assertProjectStatusArtifact(artifact) {
   assertBoolean(artifact.releaseReady, "releaseReady");
   assertStatusMatchesReleaseReady(artifact);
   assertCompletionSummary(artifact.completionSummary, artifact.releaseReady);
+  assertCompletionChecklist(artifact.completionChecklist, artifact.releaseReady);
   assertStringList(artifact.completedMilestones, "completedMilestones");
   assertLocalVerification(artifact.localVerification);
   assertReleaseGate(artifact.releaseGate);

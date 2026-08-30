@@ -13,6 +13,8 @@ export function formatProjectStatusArtifact(artifact, options = {}) {
     `  Release ready: ${artifact.releaseReady ? "yes" : "no"}`,
     "  Completion:",
     ...formatCompletionSummary(artifact.completionSummary),
+    "  Completion checklist:",
+    ...formatCompletionChecklist(artifact.completionChecklist),
     "  Completed milestones:",
     ...artifact.completedMilestones.map((milestone) => `    - ${milestone}`),
     "  Release gate:",
@@ -35,6 +37,24 @@ function formatCompletionSummary(summary) {
     `    - Release decision: ${summary.releaseDecision}`,
     `    - Summary: ${summary.summary}`,
   ];
+}
+
+function formatCompletionChecklist(checklist) {
+  if (!checklist || !Array.isArray(checklist.items)) {
+    return ["    - Not recorded"];
+  }
+
+  return checklist.items.flatMap(formatCompletionChecklistItem);
+}
+
+function formatCompletionChecklistItem(item) {
+  const lines = [`    - ${item.label}: ${item.status} - ${item.evidence}`];
+
+  if (typeof item.nextAction === "string") {
+    lines.push(`      Next: ${item.nextAction}`);
+  }
+
+  return lines;
 }
 
 function formatLocalVerification(localVerification) {

@@ -19,6 +19,10 @@ export function createProjectStatusMarkdown(artifact) {
     "",
     ...formatCompletionSummary(artifact.completionSummary),
     "",
+    "## Completion Checklist",
+    "",
+    ...formatCompletionChecklist(artifact.completionChecklist),
+    "",
     "## Completed Milestones",
     "",
     ...formatCompletedMilestones(artifact.completedMilestones),
@@ -51,6 +55,32 @@ function formatCompletionSummary(summary) {
     `- Release decision: ${formatCode(summary.releaseDecision)}`,
     `- Summary: ${formatText(summary.summary)}`,
   ];
+}
+
+function formatCompletionChecklist(checklist) {
+  if (!checklist || !Array.isArray(checklist.items)) {
+    return ["- Not recorded"];
+  }
+
+  return [
+    `- Complete: ${checklist.completeCount}/${checklist.itemCount}`,
+    `- Needs evidence: ${checklist.needsEvidenceCount}/${checklist.itemCount}`,
+    ...checklist.items.flatMap(formatCompletionChecklistItem),
+  ];
+}
+
+function formatCompletionChecklistItem(item) {
+  const lines = [
+    `- ${formatText(item.label)}: ${formatCode(item.status)} - ${formatText(
+      item.evidence,
+    )}`,
+  ];
+
+  if (typeof item.nextAction === "string") {
+    lines.push(`  Next: ${formatText(item.nextAction, { maxLength: 1200 })}`);
+  }
+
+  return lines;
 }
 
 export async function writeProjectStatusMarkdown(outputPath, artifact) {

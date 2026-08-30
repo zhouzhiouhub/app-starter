@@ -1,4 +1,5 @@
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
+import { createProjectCompletionChecklist } from "./project-status-completion-checklist.mjs";
 import {
   createProjectNextActions,
   readPendingVisualTasks,
@@ -63,6 +64,7 @@ export function createProjectStatusArtifact(check, input = {}) {
 
   return {
     completionSummary: createCompletionSummary(check),
+    completionChecklist: createProjectCompletionChecklist(check),
     completedMilestones,
     generatedAt: input.generatedAt ?? new Date().toISOString(),
     localVerification: createLocalVerificationSummary(),

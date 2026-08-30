@@ -45,6 +45,7 @@ test("project status command is exposed in package and CI", async () => {
   assert.match(readme, /pnpm project:status -- --all-actions/);
   assert.match(readme, /pnpm run verify:local/);
   assert.match(readme, /local-verification-<run_number>/);
+  assert.match(readme, /completionChecklist/);
   assert.match(readme, /完成度摘要/);
   assert.match(
     readme,
@@ -58,6 +59,8 @@ test("project status command is exposed in package and CI", async () => {
   assert.match(setupDoc, /pnpm project:status -- --all-actions/);
   assert.match(setupDoc, /pnpm run verify:local/);
   assert.match(setupDoc, /completion summary/);
+  assert.match(setupDoc, /completion checklist/);
+  assert.match(setupDoc, /completionChecklist/);
   assert.match(
     setupDoc,
     /pnpm project:status -- --markdown-output artifacts\/release\/project-status\.md/,
