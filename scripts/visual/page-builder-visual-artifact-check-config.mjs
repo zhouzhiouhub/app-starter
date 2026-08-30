@@ -1,6 +1,9 @@
 import { readCaptureOutputDir } from "./page-builder-visual-capture-config.mjs";
 import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
-import { normalizeVisualAcceptanceMarkdownOutputPath } from "./page-builder-visual-acceptance-output-paths.mjs";
+import {
+  normalizeVisualAcceptanceMarkdownOutputPath,
+  normalizeVisualAcceptanceOutputPath,
+} from "./page-builder-visual-acceptance-output-paths.mjs";
 
 export const defaultPageBuilderVisualArtifactDir =
   "reports/visual/page-builder-fixture";
@@ -21,6 +24,7 @@ export function readPageBuilderVisualArtifactCheckCliConfig(
     json: false,
     markdownOutputPath:
       env.PAGE_BUILDER_VISUAL_ARTIFACT_CHECK_MARKDOWN_PATH ?? null,
+    outputPath: env.PAGE_BUILDER_VISUAL_ARTIFACT_CHECK_OUTPUT_PATH ?? null,
   };
 
   for (let index = 0; index < args.length; index += 1) {
@@ -39,6 +43,9 @@ export function readPageBuilderVisualArtifactCheckCliConfig(
     markdownOutputPath: input.markdownOutputPath
       ? normalizeVisualArtifactCheckMarkdownOutputPath(input.markdownOutputPath)
       : null,
+    outputPath: input.outputPath
+      ? normalizeVisualArtifactCheckOutputPath(input.outputPath)
+      : null,
   };
 }
 
@@ -55,6 +62,19 @@ export function normalizeVisualArtifactCheckMarkdownOutputPath(value) {
   }
 }
 
+export function normalizeVisualArtifactCheckOutputPath(value) {
+  try {
+    return normalizeVisualAcceptanceOutputPath(value);
+  } catch (error) {
+    throw new Error(
+      readErrorMessage(error).replaceAll(
+        "Visual acceptance output",
+        "Visual artifact check output",
+      ),
+    );
+  }
+}
+
 function readArtifactCheckOption(option, args, index, input) {
   switch (option) {
     case "--artifact-dir":
@@ -63,6 +83,9 @@ function readArtifactCheckOption(option, args, index, input) {
     case "--json":
       input.json = true;
       return index;
+    case "--output":
+      input.outputPath = readOptionValue(option, args, index);
+      return index + 1;
     case "--markdown-output":
       input.markdownOutputPath = readOptionValue(option, args, index);
       return index + 1;

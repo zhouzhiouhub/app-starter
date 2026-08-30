@@ -248,8 +248,9 @@ test("visual artifact check command is exposed in package and workflows", () => 
   );
   assert.match(
     productionSmokeWorkflow,
-    /pnpm visual:artifact-check -- --artifact-dir reports\/visual\/page-builder-fixture --markdown-output reports\/visual\/page-builder-fixture\/visual-artifact-check-report\.md/,
+    /pnpm visual:artifact-check -- --artifact-dir reports\/visual\/page-builder-fixture --output reports\/visual\/page-builder-fixture\/visual-artifact-check-report\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-artifact-check-report\.md/,
   );
+  assert.match(pageBuilderWorkflow, /visual-artifact-check-report\.json/);
   assert.match(pageBuilderWorkflow, /visual-artifact-check-report\.md/);
   assert.match(pageBuilderWorkflow, /visual-reference-import-report\.json/);
   assert.match(pageBuilderWorkflow, /visual-reference-import-report\.md/);

@@ -73,7 +73,7 @@ function formatNextStep(report) {
   return [
     "- Fix the artifact issues above.",
     "- Rerun `pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture`.",
-    "- Rerun `pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture --markdown-output reports/visual/page-builder-fixture/visual-artifact-check-report.md`.",
+    "- Rerun `pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture --output reports/visual/page-builder-fixture/visual-artifact-check-report.json --markdown-output reports/visual/page-builder-fixture/visual-artifact-check-report.md`.",
   ];
 }
 

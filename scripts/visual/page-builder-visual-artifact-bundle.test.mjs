@@ -45,6 +45,10 @@ test("visual artifact bundle config derives fixed artifact paths", () => {
     "reports/visual/page-builder-fixture/visual-acceptance-report.json",
   );
   assert.equal(
+    config.paths.artifactCheckReport,
+    "reports/visual/page-builder-fixture/visual-artifact-check-report.json",
+  );
+  assert.equal(
     config.paths.artifactCheckMarkdown,
     "reports/visual/page-builder-fixture/visual-artifact-check-report.md",
   );
@@ -127,6 +131,7 @@ test("visual artifact bundle writes capture and acceptance reports", async () =>
     const captureReport = readJson(config.paths.captureReport);
     const acceptanceReport = readJson(config.paths.acceptanceReport);
     const referenceImportReport = readJson(config.paths.referenceImportReport);
+    const artifactCheckReport = readJson(config.paths.artifactCheckReport);
     const acceptanceMarkdown = readFileSync(
       config.paths.acceptanceMarkdown,
       "utf8",
@@ -156,6 +161,8 @@ test("visual artifact bundle writes capture and acceptance reports", async () =>
       "page-builder-visual-reference-import.v1",
     );
     assert.equal(referenceImportReport.missingCount, 12);
+    assert.equal(artifactCheckReport.status, "complete");
+    assert.equal(artifactCheckReport.requiredFileCount, 6);
     assert.match(acceptanceMarkdown, /^# Page Builder Visual Acceptance/m);
     assert.match(acceptanceMarkdown, /hero-banner/);
     assert.match(
@@ -194,6 +201,8 @@ test("visual artifact bundle report and usage describe the generated bundle", ()
       targetViewportCount: 12,
     },
     paths: {
+      artifactCheckReport:
+        "reports/visual/page-builder/visual-artifact-check-report.json",
       artifactCheckMarkdown:
         "reports/visual/page-builder/visual-artifact-check-report.md",
       acceptanceReport: "reports/visual/page-builder/visual-acceptance-report.json",
@@ -223,6 +232,7 @@ test("visual artifact bundle report and usage describe the generated bundle", ()
   assert.match(report, /Reference import Markdown: reports\/visual\/page-builder\/visual-reference-import-report\.md/);
   assert.match(report, /Reference import: invalid \(0 updates, 12 missing\)/);
   assert.match(report, /Acceptance Markdown: reports\/visual\/page-builder\/visual-acceptance-report\.md/);
+  assert.match(report, /Artifact check report: reports\/visual\/page-builder\/visual-artifact-check-report\.json/);
   assert.match(report, /Artifact check Markdown: reports\/visual\/page-builder\/visual-artifact-check-report\.md/);
   assert.match(report, /Next:/);
   assert.match(report, /Attach real design references under docs\/visual\/page-builder-references/);

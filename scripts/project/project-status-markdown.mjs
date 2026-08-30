@@ -87,6 +87,7 @@ function formatReleaseEvidenceArtifacts() {
     "- Page Builder Visual reference import Markdown: `reports/visual/page-builder-fixture/visual-reference-import-report.md`",
     "- Page Builder Visual acceptance JSON: `reports/visual/page-builder-fixture/visual-acceptance-report.json`",
     "- Page Builder Visual acceptance Markdown: `reports/visual/page-builder-fixture/visual-acceptance-report.md`",
+    "- Page Builder Visual artifact check JSON: `reports/visual/page-builder-fixture/visual-artifact-check-report.json`",
     "- Page Builder Visual artifact check Markdown: `reports/visual/page-builder-fixture/visual-artifact-check-report.md`",
     "- Release evidence JSON: `artifacts/release/release-check.json`",
     "- Release evidence Markdown: `artifacts/release/release-check.md`",
@@ -118,7 +119,7 @@ function formatReleaseEvidenceArtifacts() {
       "pnpm visual:acceptance -- --checklist --output reports/visual/page-builder-fixture/visual-acceptance-report.json --markdown-output reports/visual/page-builder-fixture/visual-acceptance-report.md reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
     )}`,
     `- Refresh visual artifact check: ${formatCode(
-      "pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture --markdown-output reports/visual/page-builder-fixture/visual-artifact-check-report.md",
+      "pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture --output reports/visual/page-builder-fixture/visual-artifact-check-report.json --markdown-output reports/visual/page-builder-fixture/visual-artifact-check-report.md",
     )}`,
     `- Refresh release handoff: ${formatCode(
       "pnpm release:handoff -- --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture",

@@ -323,8 +323,8 @@ them as `local-verification-<run_number>` for local verification handoff. Add
 a pasteable Markdown checklist; it also records the recommended archive paths
 and refresh commands for the Production Smoke JSON/Markdown, Production Smoke
 preflight JSON/Markdown, Page Builder Visual bundle, reference import JSON /
-Markdown, artifact check Markdown, combined release gate, project status artifact, and
-release notes. Add `--all-actions` when it needs every pending next action,
+Markdown, artifact check JSON / Markdown, combined release gate, project status
+artifact, and release notes. Add `--all-actions` when it needs every pending next action,
 including
 full command lines, instead of the default short list. When the gate is ready,
 the next action expands the final `pnpm release:notes` handoff into structured
@@ -400,7 +400,7 @@ that Page Builder Visual
 artifact, including the artifact-local visual manifest and
 `visual-capture-report.json`, to `reports/visual/page-builder-fixture` before
 running
-`pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture --markdown-output reports/visual/page-builder-fixture/visual-artifact-check-report.md`
+`pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture --output reports/visual/page-builder-fixture/visual-artifact-check-report.json --markdown-output reports/visual/page-builder-fixture/visual-artifact-check-report.md`
 and the release handoff gate with
 `--visual-artifact-dir reports/visual/page-builder-fixture`. The workflow runs
 `pnpm release:preflight` with

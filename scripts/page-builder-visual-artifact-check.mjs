@@ -5,6 +5,7 @@ import {
   formatPageBuilderVisualArtifactCheckReport,
   formatPageBuilderVisualArtifactCheckUsage,
   readPageBuilderVisualArtifactCheckCliConfig,
+  writePageBuilderVisualArtifactCheckArtifact,
   writePageBuilderVisualArtifactCheckMarkdown,
 } from "./visual/page-builder-visual-artifact-check.mjs";
 import { readErrorMessage } from "./smoke/smoke-error-message.mjs";
@@ -26,6 +27,13 @@ export async function runPageBuilderVisualArtifactCheckCli(args, input = {}) {
       { cwd: input.cwd },
     );
 
+    if (config.outputPath) {
+      await (input.writeArtifact ?? writePageBuilderVisualArtifactCheckArtifact)(
+        config.outputPath,
+        report,
+      );
+    }
+
     if (config.markdownOutputPath) {
       await (input.writeMarkdown ??
         writePageBuilderVisualArtifactCheckMarkdown)(
@@ -43,6 +51,10 @@ export async function runPageBuilderVisualArtifactCheckCli(args, input = {}) {
         stdout(
           `Visual artifact check Markdown written: ${config.markdownOutputPath}`,
         );
+      }
+
+      if (config.outputPath) {
+        stdout(`Visual artifact check artifact written: ${config.outputPath}`);
       }
     }
 

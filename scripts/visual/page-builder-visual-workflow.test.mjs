@@ -36,6 +36,7 @@ test("page builder visual workflow captures fixture evidence", async () => {
   assert.match(workflow, /visual-reference-import-report\.md/);
   assert.match(workflow, /visual-acceptance-report\.json/);
   assert.match(workflow, /visual-acceptance-report\.md/);
+  assert.match(workflow, /visual-artifact-check-report\.json/);
   assert.match(workflow, /visual-artifact-check-report\.md/);
   assert.match(workflow, /page-builder-visual-acceptance\.json/);
   assert.match(workflow, /actions\/upload-artifact@v4/);
@@ -78,6 +79,7 @@ test("visual workflow documentation is linked from release guidance", async () =
   assert.match(readme, /visual-acceptance-report\.json/);
   assert.match(readme, /visual-reference-import-report\.md/);
   assert.match(readme, /visual-acceptance-report\.md/);
+  assert.match(readme, /visual-artifact-check-report\.json/);
   assert.match(readme, /visual-artifact-check-report\.md/);
   assert.match(readme, /--accept-passing --require-complete/);
   assert.match(readme, /导入\/截图\/测量\/签收\/验收命令/);
@@ -113,6 +115,7 @@ test("visual workflow documentation is linked from release guidance", async () =
   assert.match(releaseChecklist, /visual-acceptance-report\.json/);
   assert.match(releaseChecklist, /visual-reference-import-report\.md/);
   assert.match(releaseChecklist, /visual-acceptance-report\.md/);
+  assert.match(releaseChecklist, /visual-artifact-check-report\.json/);
   assert.match(releaseChecklist, /visual-artifact-check-report\.md/);
   assert.match(releaseChecklist, /--accept-passing --require-complete/);
   assert.match(releaseChecklist, /import\/capture\/measure\/accept-passing\/verify/);

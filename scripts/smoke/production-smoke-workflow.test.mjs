@@ -133,7 +133,7 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /name: Check Page Builder visual evidence artifact/);
   assert.match(
     workflow,
-    /pnpm visual:artifact-check -- --artifact-dir reports\/visual\/page-builder-fixture --markdown-output reports\/visual\/page-builder-fixture\/visual-artifact-check-report\.md/,
+    /pnpm visual:artifact-check -- --artifact-dir reports\/visual\/page-builder-fixture --output reports\/visual\/page-builder-fixture\/visual-artifact-check-report\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-artifact-check-report\.md/,
   );
   assert.match(workflow, /name: Write release handoff artifacts/);
   assert.match(workflow, /handoff_flags=\(/);
@@ -219,8 +219,8 @@ test("production smoke workflow archives and reviews smoke reports", async () =>
   assert.match(workflow, /visual-reference-import-report\.json/);
   assert.match(workflow, /Visual reference import Markdown:/);
   assert.match(workflow, /visual-reference-import-report\.md/);
-  assert.match(workflow, /Visual artifact check:/);
-  assert.match(workflow, /visual-artifact-check-report\.md/);
+  assert.match(workflow, /Visual artifact check report:.*visual-artifact-check-report\.json/s);
+  assert.match(workflow, /Visual artifact check Markdown:.*visual-artifact-check-report\.md/s);
   assert.match(
     workflow,
     /skipped \(set visual_artifact_name and visual_artifact_run_id\)/,

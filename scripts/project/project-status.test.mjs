@@ -94,7 +94,7 @@ test("project status summarizes blocked release evidence", () => {
   );
   assert.equal(
     artifact.nextActions[1].steps.at(-2).value,
-    "pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture --markdown-output reports/visual/page-builder-fixture/visual-artifact-check-report.md",
+    "pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture --output reports/visual/page-builder-fixture/visual-artifact-check-report.json --markdown-output reports/visual/page-builder-fixture/visual-artifact-check-report.md",
   );
   assert.equal(
     artifact.nextActions.some((action) => action.label === "hero-banner.desktop"),

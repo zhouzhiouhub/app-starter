@@ -158,7 +158,7 @@ jobs:
           path: reports/visual/page-builder-fixture
       - name: Check Page Builder visual evidence artifact
         if: ${{ inputs.visual_artifact_name != '' && inputs.visual_artifact_run_id != '' }}
-        run: pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture --markdown-output reports/visual/page-builder-fixture/visual-artifact-check-report.md
+        run: pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture --output reports/visual/page-builder-fixture/visual-artifact-check-report.json --markdown-output reports/visual/page-builder-fixture/visual-artifact-check-report.md
       - run: pnpm smoke:publish
       - name: Review archived smoke report
         if: always()
@@ -250,7 +250,9 @@ jobs:
               echo "- Visual evidence artifact: \`$RELEASE_VISUAL_ARTIFACT_NAME\` from run \`$RELEASE_VISUAL_ARTIFACT_RUN_ID\`"
               echo "- Visual reference import report: \`reports/visual/page-builder-fixture/visual-reference-import-report.json\`"
               echo "- Visual reference import Markdown: \`reports/visual/page-builder-fixture/visual-reference-import-report.md\`"
-              echo "- Visual artifact check: \`pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture --markdown-output reports/visual/page-builder-fixture/visual-artifact-check-report.md\`"
+              echo "- Visual artifact check report: \`reports/visual/page-builder-fixture/visual-artifact-check-report.json\`"
+              echo "- Visual artifact check Markdown: \`reports/visual/page-builder-fixture/visual-artifact-check-report.md\`"
+              echo "- Visual artifact check: \`pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture --output reports/visual/page-builder-fixture/visual-artifact-check-report.json --markdown-output reports/visual/page-builder-fixture/visual-artifact-check-report.md\`"
             else
               echo "- Visual evidence artifact: skipped (set visual_artifact_name and visual_artifact_run_id)"
             fi

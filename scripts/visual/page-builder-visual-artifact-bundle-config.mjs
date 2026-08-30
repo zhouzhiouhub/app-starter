@@ -101,6 +101,8 @@ export function normalizeArtifactBundleConfig(input, env = process.env) {
 
 export function createPageBuilderVisualArtifactBundlePaths(artifactDir) {
   return {
+    artifactCheckReport:
+      `${artifactDir}/visual-artifact-check-report.json`,
     artifactCheckMarkdown: `${artifactDir}/visual-artifact-check-report.md`,
     acceptanceMarkdown:
       `${artifactDir}/${artifactMarkdownFileNames.acceptanceMarkdown}`,

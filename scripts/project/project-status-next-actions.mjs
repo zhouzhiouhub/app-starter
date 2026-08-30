@@ -161,7 +161,7 @@ function createPageBuilderVisualActionSteps(action, context) {
     ),
     createNextActionStep(
       "Check artifact",
-      `pnpm visual:artifact-check -- --artifact-dir ${visualContext.artifactDir} --markdown-output ${visualContext.artifactCheckReportPath}`,
+      `pnpm visual:artifact-check -- --artifact-dir ${visualContext.artifactDir} --output ${visualContext.artifactCheckJsonReportPath} --markdown-output ${visualContext.artifactCheckReportPath}`,
     ),
     createNextActionStep("Keep artifact", pageBuilderVisualArtifactName),
   ];
@@ -172,6 +172,8 @@ function createPageBuilderVisualActionContext(context) {
 
   return {
     artifactDir,
+    artifactCheckJsonReportPath:
+      `${artifactDir}/visual-artifact-check-report.json`,
     artifactCheckReportPath: `${artifactDir}/visual-artifact-check-report.md`,
     captureReportPath: `${artifactDir}/visual-capture-report.json`,
     manifestPath: `${artifactDir}/page-builder-visual-acceptance.json`,

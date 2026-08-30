@@ -17,6 +17,7 @@ export function formatPageBuilderVisualArtifactBundleReport(result) {
     `Reference import Markdown: ${result.paths.referenceImportMarkdown}`,
     `Acceptance report: ${result.paths.acceptanceReport}`,
     `Acceptance Markdown: ${result.paths.acceptanceMarkdown}`,
+    `Artifact check report: ${result.paths.artifactCheckReport}`,
     `Artifact check Markdown: ${result.paths.artifactCheckMarkdown}`,
     `Captured screenshots: ${result.capture.screenshots.length}`,
     `Reference import: ${result.referenceImport.status} (${result.referenceImport.updates.length} updates, ${result.referenceImport.missing.length} missing)`,

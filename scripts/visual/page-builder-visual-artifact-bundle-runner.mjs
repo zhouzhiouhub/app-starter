@@ -7,8 +7,11 @@ import {
   writePageBuilderVisualAcceptanceArtifact,
   writePageBuilderVisualAcceptanceMarkdown,
 } from "./page-builder-visual-acceptance.mjs";
-import { checkPageBuilderVisualArtifact } from "./page-builder-visual-artifact-check.mjs";
-import { writePageBuilderVisualArtifactCheckMarkdown } from "./page-builder-visual-artifact-check-markdown.mjs";
+import {
+  checkPageBuilderVisualArtifact,
+  writePageBuilderVisualArtifactCheckArtifact,
+  writePageBuilderVisualArtifactCheckMarkdown,
+} from "./page-builder-visual-artifact-check.mjs";
 import {
   createPageBuilderVisualCaptureArtifact,
   runPageBuilderVisualFixtureCapture,
@@ -33,7 +36,7 @@ export async function runPageBuilderVisualArtifactBundle(config, input = {}) {
   const measure = runMeasure(config, input);
   const acceptance = await writeAcceptanceReport(config, input);
   const artifactCheck = runArtifactCheck(config, input);
-  await writeArtifactCheckMarkdown(config, input, artifactCheck);
+  await writeArtifactCheckReports(config, input, artifactCheck);
 
   return {
     acceptance,
@@ -156,7 +159,12 @@ function runArtifactCheck(config, input) {
   );
 }
 
-async function writeArtifactCheckMarkdown(config, input, report) {
+async function writeArtifactCheckReports(config, input, report) {
+  await (input.writeArtifactCheckArtifact ??
+    writePageBuilderVisualArtifactCheckArtifact)(
+    config.paths.artifactCheckReport,
+    report,
+  );
   await (input.writeArtifactCheckMarkdown ??
     writePageBuilderVisualArtifactCheckMarkdown)(
     config.paths.artifactCheckMarkdown,

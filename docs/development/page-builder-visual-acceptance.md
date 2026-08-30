@@ -23,7 +23,7 @@ pnpm visual:acceptance -- --markdown-output reports/visual/page-builder-fixture/
 pnpm visual:acceptance -- --require-accepted
 pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture
 pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture
-pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture --markdown-output reports/visual/page-builder-fixture/visual-artifact-check-report.md
+pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture --output reports/visual/page-builder-fixture/visual-artifact-check-report.json --markdown-output reports/visual/page-builder-fixture/visual-artifact-check-report.md
 pnpm visual:capture
 pnpm visual:capture:fixture
 pnpm visual:capture:fixture -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json --write-manifest
@@ -65,7 +65,7 @@ manifest into the artifact directory, captures all 12 viewport screenshots,
 writes `visual-capture-report.json`, writes
 `visual-reference-import-report.json`, `visual-reference-import-report.md`, runs measurement, writes
 `visual-acceptance-report.json`, `visual-acceptance-report.md`, and
-`visual-artifact-check-report.md`, and verifies the bundle with
+`visual-artifact-check-report.json`, `visual-artifact-check-report.md`, and verifies the bundle with
 `visual:artifact-check`.
 Use
 `pnpm visual:references` after placing real design reference PNGs in a retained
@@ -95,9 +95,9 @@ The check also verifies that `visual-reference-import-report.json` and
 and default reference intake directory, and that `visual-acceptance-report.md`
 is retained with status and counts matching the artifact-local manifest.
 Add
-`--markdown-output reports/visual/page-builder-fixture/visual-artifact-check-report.md`
-when the artifact integrity result should be retained as a human-readable
-release review file.
+`--output reports/visual/page-builder-fixture/visual-artifact-check-report.json --markdown-output reports/visual/page-builder-fixture/visual-artifact-check-report.md`
+when the artifact integrity result should be retained as machine-readable and
+human-readable release review files.
 
 Reference import expects files named `<component>-<viewport>.png`, such as
 `hero-banner-desktop.png` and `hero-banner-mobile.png`. It is dry-run by
@@ -179,7 +179,7 @@ captures all fixture screenshots, runs measurement, writes
 `visual-capture-report.json`, `visual-reference-import-report.json`,
 `visual-reference-import-report.md`,
 `visual-acceptance-report.json`, `visual-acceptance-report.md`, and
-`visual-artifact-check-report.md`, and verifies the uploaded bundle with
+`visual-artifact-check-report.json`, `visual-artifact-check-report.md`, and verifies the uploaded bundle with
 `visual:artifact-check`.
 
 The workflow uploads `page-builder-visual-fixture-<run_number>` with the fixture
@@ -187,7 +187,7 @@ screenshots, an artifact-local manifest with captured `previewScreenshot` paths,
 `visual-capture-report.json`, `visual-reference-import-report.json`,
 `visual-reference-import-report.md`,
 `visual-acceptance-report.json`, and `visual-acceptance-report.md` plus
-`visual-artifact-check-report.md` captured under
+`visual-artifact-check-report.json` and `visual-artifact-check-report.md` captured under
 `reports/visual/page-builder-fixture`;
 the upload step fails when the bundle is
 missing instead of leaving only a warning. The source manifest under

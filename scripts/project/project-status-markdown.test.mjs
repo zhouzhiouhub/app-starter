@@ -114,6 +114,10 @@ test("project status CLI writes a Markdown handoff", async () => {
     );
     assert.match(
       markdown,
+      /Page Builder Visual artifact check JSON: `reports\/visual\/page-builder-fixture\/visual-artifact-check-report\.json`/,
+    );
+    assert.match(
+      markdown,
       /Page Builder Visual artifact check Markdown: `reports\/visual\/page-builder-fixture\/visual-artifact-check-report\.md`/,
     );
   assert.match(
@@ -138,7 +142,7 @@ test("project status CLI writes a Markdown handoff", async () => {
     );
     assert.match(
       markdown,
-      /Refresh visual artifact check: `pnpm visual:artifact-check -- --artifact-dir reports\/visual\/page-builder-fixture --markdown-output reports\/visual\/page-builder-fixture\/visual-artifact-check-report\.md`/,
+      /Refresh visual artifact check: `pnpm visual:artifact-check -- --artifact-dir reports\/visual\/page-builder-fixture --output reports\/visual\/page-builder-fixture\/visual-artifact-check-report\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-artifact-check-report\.md`/,
     );
     assert.match(
       markdown,

@@ -58,33 +58,48 @@ test("visual artifact check Markdown lists issues and repair command", () => {
   assert.match(markdown, /missing_artifact_file/);
   assert.doesNotMatch(markdown, /abcdefghijklmnopqrstuvwxyz123456/);
   assert.match(markdown, /pnpm visual:artifact-bundle -- --artifact-dir/);
+  assert.match(markdown, /--output reports\/visual\/page-builder-fixture\/visual-artifact-check-report\.json/);
   assert.match(markdown, /--markdown-output reports\/visual\/page-builder-fixture\/visual-artifact-check-report\.md/);
 });
 
-test("visual artifact check CLI writes Markdown output", async () => {
+test("visual artifact check CLI writes JSON and Markdown output", async () => {
   const outputRoot = `tmp/visual-artifact-check-markdown-${process.pid}-${Date.now()}`;
-  const outputPath = `${outputRoot}/visual-artifact-check-report.md`;
+  const jsonOutputPath = `${outputRoot}/visual-artifact-check-report.json`;
+  const markdownOutputPath = `${outputRoot}/visual-artifact-check-report.md`;
   const stdout = [];
 
   await rm(outputRoot, { force: true, recursive: true });
 
   try {
     const exitCode = await runPageBuilderVisualArtifactCheckCli(
-      ["--markdown-output", outputPath],
+      [
+        "--output",
+        jsonOutputPath,
+        "--markdown-output",
+        markdownOutputPath,
+      ],
       {
         checkArtifact: () => createArtifactCheckReport(),
         stdout: (line) => stdout.push(line),
       },
     );
-    const markdown = await readFile(outputPath, "utf8");
+    const artifact = JSON.parse(await readFile(jsonOutputPath, "utf8"));
+    const markdown = await readFile(markdownOutputPath, "utf8");
 
     assert.equal(exitCode, 0);
+    assert.equal(artifact.status, "complete");
     assert.match(markdown, /Page Builder Visual Artifact Check/);
     assert.match(stdout.join("\n"), /Artifact is complete/);
     assert.match(
       stdout.join("\n"),
       new RegExp(
-        `Visual artifact check Markdown written: ${escapeRegExp(outputPath)}`,
+        `Visual artifact check Markdown written: ${escapeRegExp(markdownOutputPath)}`,
+      ),
+    );
+    assert.match(
+      stdout.join("\n"),
+      new RegExp(
+        `Visual artifact check artifact written: ${escapeRegExp(jsonOutputPath)}`,
       ),
     );
   } finally {
@@ -96,6 +111,8 @@ test("visual artifact check usage documents Markdown output", () => {
   const usage = formatPageBuilderVisualArtifactCheckUsage().join("\n");
 
   assert.match(usage, /--markdown-output/);
+  assert.match(usage, /--output/);
+  assert.match(usage, /visual-artifact-check-report\.json/);
   assert.match(usage, /visual-artifact-check-report\.md/);
 });
 

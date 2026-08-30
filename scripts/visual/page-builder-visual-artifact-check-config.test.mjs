@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  normalizeVisualArtifactCheckOutputPath,
   normalizeVisualArtifactCheckMarkdownOutputPath,
   readPageBuilderVisualArtifactCheckCliConfig,
 } from "./page-builder-visual-artifact-check.mjs";
@@ -10,12 +11,15 @@ test("visual artifact check config parses safe artifact directories", () => {
     artifactDir: "reports/visual/page-builder-fixture",
     json: false,
     markdownOutputPath: null,
+    outputPath: null,
   });
   assert.deepEqual(
     readPageBuilderVisualArtifactCheckCliConfig([
       "--",
       "--artifact-dir",
       "artifacts/visual/page-builder-fixture",
+      "--output",
+      "artifacts/visual/page-builder-fixture/visual-artifact-check-report.json",
       "--markdown-output",
       "artifacts/visual/page-builder-fixture/visual-artifact-check-report.md",
       "--json",
@@ -25,6 +29,8 @@ test("visual artifact check config parses safe artifact directories", () => {
       json: true,
       markdownOutputPath:
         "artifacts/visual/page-builder-fixture/visual-artifact-check-report.md",
+      outputPath:
+        "artifacts/visual/page-builder-fixture/visual-artifact-check-report.json",
     },
   );
   assert.deepEqual(
@@ -39,11 +45,18 @@ test("visual artifact check config parses safe artifact directories", () => {
       json: false,
       markdownOutputPath:
         "reports/visual/page-builder-fixture/visual-artifact-check-report.md",
+      outputPath: null,
     },
   );
 });
 
 test("visual artifact check config rejects unsafe Markdown paths", () => {
+  assert.equal(
+    normalizeVisualArtifactCheckOutputPath(
+      "reports\\visual\\page-builder-fixture\\visual-artifact-check-report.json",
+    ),
+    "reports/visual/page-builder-fixture/visual-artifact-check-report.json",
+  );
   assert.equal(
     normalizeVisualArtifactCheckMarkdownOutputPath(
       "reports\\visual\\page-builder-fixture\\visual-artifact-check-report.md",
@@ -57,6 +70,14 @@ test("visual artifact check config rejects unsafe Markdown paths", () => {
         "tmp/page-builder-fixture",
       ]),
     /must live under artifacts\/visual or reports\/visual/,
+  );
+  assert.throws(
+    () =>
+      readPageBuilderVisualArtifactCheckCliConfig([
+        "--output",
+        "docs/visual/page-builder-fixture/visual-artifact-check-report.json",
+      ]),
+    /Visual artifact check output must be under tmp\/, reports\/, artifacts\/, or \.tmp\//,
   );
   assert.throws(
     () =>
