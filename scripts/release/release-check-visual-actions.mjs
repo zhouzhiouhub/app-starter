@@ -9,12 +9,7 @@ import {
   createPageBuilderVisualReferenceMeasureCommand,
 } from "../visual/page-builder-visual-reference-import-commands.mjs";
 
-const defaultVisualEvidenceAction =
-  "Run pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture " +
-  "to refresh retained fixture evidence, run pnpm visual:acceptance -- --checklist, attach real design references " +
-  "and browser screenshots, run pnpm visual:measure -- --write --require-complete, " +
-  "run pnpm visual:measure -- --write --accept-passing --require-complete after review passes, " +
-  "then pnpm visual:acceptance -- --require-accepted.";
+const defaultVisualEvidenceAction = createDefaultVisualEvidenceAction();
 
 export const visualArtifactAction =
   "Run pnpm visual:artifact-check against the downloaded Page Builder Visual " +
@@ -60,6 +55,57 @@ export function createVisualEvidenceAction(artifact) {
   ].join(" ");
 }
 
+function createDefaultVisualEvidenceAction() {
+  const paths = createArtifactPaths(defaultPageBuilderVisualArtifactDir);
+  const commandReport = {
+    manifestPath: paths.manifest,
+    sourceDir: defaultPageBuilderVisualReferenceSourceDir,
+  };
+
+  return [
+    `Run pnpm visual:artifact-bundle -- --artifact-dir ${defaultPageBuilderVisualArtifactDir} to refresh retained fixture evidence,`,
+    `run ${createVisualChecklistCommand(paths)} to archive the checklist,`,
+    `attach real design references under ${commandReport.sourceDir},`,
+    `run ${createVisualReferenceReportCommand(commandReport, paths)} to archive reference import review,`,
+    `run ${createPageBuilderVisualReferenceImportWriteCommand(commandReport)},`,
+    `run ${createPageBuilderVisualReferenceCaptureCommand(commandReport)},`,
+    `run ${createPageBuilderVisualReferenceMeasureCommand(commandReport)},`,
+    `run ${createPageBuilderVisualReferenceAcceptPassingCommand(commandReport)} after review passes,`,
+    `then ${createPageBuilderVisualReferenceAcceptanceCommand(commandReport)}.`,
+  ].join(" ");
+}
+
+function createVisualChecklistCommand(paths) {
+  return joinCommand([
+    "pnpm",
+    "visual:acceptance",
+    "--",
+    "--checklist",
+    "--output",
+    paths.acceptanceReport,
+    "--markdown-output",
+    paths.acceptanceMarkdown,
+    paths.manifest,
+  ]);
+}
+
+function createVisualReferenceReportCommand(report, paths) {
+  return joinCommand([
+    "pnpm",
+    "visual:references",
+    "--",
+    "--source-dir",
+    report.sourceDir,
+    "--manifest",
+    report.manifestPath,
+    "--output",
+    paths.referenceImportReport,
+    "--markdown-output",
+    paths.referenceImportMarkdown,
+    "--require-complete",
+  ]);
+}
+
 function isVisualArtifactManifestPath(value) {
   const normalized = value?.replaceAll("\\", "/");
 
@@ -76,4 +122,8 @@ function readText(value) {
 
   const trimmed = value.trim();
   return trimmed ? trimmed.replaceAll("\\", "/") : null;
+}
+
+function joinCommand(parts) {
+  return parts.join(" ");
 }

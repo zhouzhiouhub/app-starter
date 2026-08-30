@@ -9,8 +9,26 @@ test("visual evidence action starts with fixture bundle before artifact completi
   const action = createVisualEvidenceAction(null);
 
   assert.match(action, /pnpm visual:artifact-bundle/);
-  assert.match(action, /pnpm visual:acceptance -- --checklist/);
-  assert.match(action, /pnpm visual:measure -- --write --accept-passing --require-complete/);
+  assert.match(
+    action,
+    /visual:acceptance -- --checklist --output reports\/visual\/page-builder-fixture\/visual-acceptance-report\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-acceptance-report\.md reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/,
+  );
+  assert.match(
+    action,
+    /visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.json/,
+  );
+  assert.match(
+    action,
+    /pnpm visual:capture:fixture -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output-dir reports\/visual\/page-builder-fixture --report reports\/visual\/page-builder-fixture\/visual-capture-report\.json --write-manifest/,
+  );
+  assert.match(
+    action,
+    /pnpm visual:measure -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --accept-passing --require-complete/,
+  );
+  assert.match(
+    action,
+    /pnpm visual:acceptance -- --require-accepted reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/,
+  );
 });
 
 test("visual evidence action uses artifact-local manifest after artifact completion", () => {
