@@ -98,6 +98,9 @@ export function formatReleaseHandoffSummary(input) {
     `  Release ready: ${handoffReady ? "yes" : "no"}`,
     `  Blockers: ${input.releaseArtifact.blockerCount}`,
     `  Preflight status: ${input.preflightReport.status}`,
+    `  Production Smoke: ${input.releaseArtifact.smoke.status}`,
+    `  Page Builder Visual: ${input.releaseArtifact.visual.status}`,
+    ...formatVisualArtifactStatus(input.releaseArtifact.visual.artifactCheck),
     `  Preflight JSON: ${input.config.preflightOutputPath}`,
     `  Preflight Markdown: ${input.config.preflightMarkdownPath}`,
     `  Release evidence JSON: ${input.config.releaseCheckOutputPath}`,
@@ -107,6 +110,43 @@ export function formatReleaseHandoffSummary(input) {
     `  Next actions: ${nextActions.length}`,
     ...formatNextActions(nextActions, input.config.projectStatusMarkdownPath),
   ];
+}
+
+function formatVisualArtifactStatus(artifactCheck) {
+  if (!artifactCheck) {
+    return ["  Visual artifact: not provided"];
+  }
+
+  return [
+    `  Visual artifact: ${artifactCheck.status}${formatVisualArtifactCounts(
+      artifactCheck,
+    )}`,
+  ];
+}
+
+function formatVisualArtifactCounts(artifactCheck) {
+  const countText = [
+    formatVisualArtifactCount(
+      artifactCheck.presentRequiredFileCount,
+      artifactCheck.requiredFileCount,
+      "files",
+    ),
+    formatVisualArtifactCount(
+      artifactCheck.presentScreenshotCount,
+      artifactCheck.expectedScreenshotCount,
+      "screenshots",
+    ),
+  ].filter(Boolean);
+
+  return countText.length > 0 ? ` (${countText.join(", ")})` : "";
+}
+
+function formatVisualArtifactCount(present, expected, label) {
+  if (!Number.isFinite(present) || !Number.isFinite(expected)) {
+    return null;
+  }
+
+  return `${present}/${expected} ${label}`;
 }
 
 export function printReleaseHandoffHelp(writeLine) {
