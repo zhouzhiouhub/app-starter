@@ -54,6 +54,15 @@ function formatCompletionChecklistItem(item) {
     lines.push(`      Next: ${item.nextAction}`);
   }
 
+  if (Array.isArray(item.nextSteps) && item.nextSteps.length > 0) {
+    lines.push("      Next steps:");
+    lines.push(
+      ...item.nextSteps.map(
+        (step) => `        - ${step.label}: ${step.value}`,
+      ),
+    );
+  }
+
   return lines;
 }
 

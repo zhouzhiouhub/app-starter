@@ -64,7 +64,7 @@ export function createProjectStatusArtifact(check, input = {}) {
 
   return {
     completionSummary: createCompletionSummary(check),
-    completionChecklist: createProjectCompletionChecklist(check),
+    completionChecklist: createProjectCompletionChecklist(check, nextActions),
     completedMilestones,
     generatedAt: input.generatedAt ?? new Date().toISOString(),
     localVerification: createLocalVerificationSummary(),

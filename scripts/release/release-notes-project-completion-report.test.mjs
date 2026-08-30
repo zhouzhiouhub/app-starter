@@ -27,6 +27,11 @@ test("release notes include the project completion checklist", () => {
     /Page Builder visual acceptance evidence: needs-evidence/,
   );
   assert.match(markdown, /Next: Attach real visual evidence\./);
+  assert.match(markdown, /Next steps:/);
+  assert.match(
+    markdown,
+    /Reference report: `pnpm visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md --require-complete`/,
+  );
 });
 
 test("project completion checklist formatter skips legacy project status", () => {
@@ -136,6 +141,13 @@ function createBlockedProjectStatus() {
           "Page Builder visual acceptance evidence",
           "needs-evidence",
           "Attach real visual evidence.",
+          [
+            {
+              label: "Reference report",
+              value:
+                "pnpm visual:references -- --source-dir docs/visual/page-builder-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output reports/visual/page-builder-fixture/visual-reference-import-report.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete",
+            },
+          ],
         ),
         createCompletionItem(
           "Page Builder visual artifact bundle",
@@ -185,11 +197,12 @@ function createInvalidArtifactCheckSummary() {
   };
 }
 
-function createCompletionItem(label, status, nextAction = null) {
+function createCompletionItem(label, status, nextAction = null, nextSteps = []) {
   return {
     evidence: `${label} is ${status}.`,
     label,
     nextAction,
+    nextSteps,
     status,
   };
 }

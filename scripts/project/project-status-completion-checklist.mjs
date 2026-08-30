@@ -2,13 +2,14 @@ import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { readPendingVisualTasks } from "./project-status-next-actions.mjs";
 
 const maxChecklistTextLength = 420;
+const maxChecklistStepTextLength = 1200;
 
-export function createProjectCompletionChecklist(check) {
+export function createProjectCompletionChecklist(check, nextActions = []) {
   const items = [
     createLocalMvpScopeItem(),
-    createProductionSmokeItem(check),
-    createPageBuilderVisualItem(check),
-    ...createVisualArtifactItems(check),
+    createProductionSmokeItem(check, nextActions),
+    createPageBuilderVisualItem(check, nextActions),
+    ...createVisualArtifactItems(check, nextActions),
   ];
 
   return {
@@ -28,7 +29,7 @@ function createLocalMvpScopeItem() {
   });
 }
 
-function createProductionSmokeItem(check) {
+function createProductionSmokeItem(check, nextActions) {
   const complete = check.smoke?.releaseReady === true;
 
   return createChecklistItem({
@@ -39,11 +40,16 @@ function createProductionSmokeItem(check) {
     nextAction: complete
       ? null
       : readBlockerAction(check, "Production Smoke"),
+    nextSteps: complete
+      ? []
+      : readActionSteps(nextActions, "Production Smoke", [
+          "Production smoke artifact missing",
+        ]),
     status: complete ? "complete" : "needs-evidence",
   });
 }
 
-function createPageBuilderVisualItem(check) {
+function createPageBuilderVisualItem(check, nextActions) {
   const complete = check.visual?.status === "accepted";
   const pendingTaskCount = readPendingVisualTasks(check.visualChecklist).length;
 
@@ -58,11 +64,17 @@ function createPageBuilderVisualItem(check) {
           "Visual acceptance invalid",
           "Visual acceptance pending",
         ]),
+    nextSteps: complete
+      ? []
+      : readActionSteps(nextActions, "Page Builder Visual", [
+          "Visual acceptance invalid",
+          "Visual acceptance pending",
+        ]),
     status: complete ? "complete" : "needs-evidence",
   });
 }
 
-function createVisualArtifactItems(check) {
+function createVisualArtifactItems(check, nextActions) {
   if (!check.visualArtifact) {
     return [];
   }
@@ -83,6 +95,11 @@ function createVisualArtifactItems(check) {
       nextAction: complete
         ? null
         : readBlockerAction(check, "Page Builder Visual", [
+            "Visual artifact invalid",
+          ]),
+      nextSteps: complete
+        ? []
+        : readActionSteps(nextActions, "Page Builder Visual", [
             "Visual artifact invalid",
           ]),
       status: complete ? "complete" : "needs-evidence",
@@ -125,13 +142,35 @@ function readBlockerAction(check, area, labels = []) {
   return blocker?.action;
 }
 
+function readActionSteps(nextActions, area, labels) {
+  const action = nextActions.find(
+    (item) => item.area === area && labels.includes(item.label),
+  );
+
+  return Array.isArray(action?.steps) ? action.steps : [];
+}
+
 function createChecklistItem(input) {
   return {
     evidence: readText(input.evidence) ?? "unknown",
     label: readText(input.label) ?? "unknown",
     nextAction: readText(input.nextAction),
+    nextSteps: normalizeNextSteps(input.nextSteps),
     status: input.status,
   };
+}
+
+function normalizeNextSteps(steps) {
+  if (!Array.isArray(steps)) {
+    return [];
+  }
+
+  return steps
+    .map((step) => ({
+      label: readText(step?.label) ?? "unknown",
+      value: readStepText(step?.value) ?? "unknown",
+    }))
+    .filter((step) => step.label !== "unknown" && step.value !== "unknown");
 }
 
 function countChecklistStatus(items, status) {
@@ -144,4 +183,12 @@ function readText(value) {
   }
 
   return formatSmokeText(value, { maxLength: maxChecklistTextLength });
+}
+
+function readStepText(value) {
+  if (typeof value !== "string" || value.length === 0) {
+    return null;
+  }
+
+  return formatSmokeText(value, { maxLength: maxChecklistStepTextLength });
 }

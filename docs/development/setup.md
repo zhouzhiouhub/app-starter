@@ -316,7 +316,9 @@ completed milestones, release readiness, the configured local verification
 commands, and the next concrete actions without changing the pass/fail criteria.
 The validated `project-status.v1` artifact also includes a `completionChecklist`
 that separates completed local scope from production Smoke and Page Builder
-visual evidence that still needs retained proof. Add `--require-ready` when the
+visual evidence that still needs retained proof; incomplete checklist items also
+carry structured `nextSteps` so handoff packets can preserve runnable evidence
+commands beside the short completion summary. Add `--require-ready` when the
 same status report should exit non-zero until release evidence is ready. Use
 `--json` or `--output` to produce a validated `project-status.v1` artifact for
 handoff or release review notes. Its `localVerification` block records the

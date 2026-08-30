@@ -59,11 +59,35 @@ function assertCompletionChecklistItem(item) {
   assertString(item.evidence, "completionChecklist.items.evidence");
   assertString(item.label, "completionChecklist.items.label");
   assertNullableString(item.nextAction, "completionChecklist.items.nextAction");
+  assertCompletionChecklistNextSteps(item.nextSteps);
   assertEnum(
     item.status,
     completionChecklistStatuses,
     "completionChecklist.items.status",
   );
+}
+
+function assertCompletionChecklistNextSteps(nextSteps) {
+  if (nextSteps === undefined) {
+    return;
+  }
+
+  if (!Array.isArray(nextSteps)) {
+    throw new Error(
+      "Project status artifact completionChecklist.items.nextSteps must be an array.",
+    );
+  }
+
+  for (const step of nextSteps) {
+    if (!isRecord(step)) {
+      throw new Error(
+        "Project status artifact completionChecklist.items.nextSteps must contain objects.",
+      );
+    }
+
+    assertString(step.label, "completionChecklist.items.nextSteps.label");
+    assertString(step.value, "completionChecklist.items.nextSteps.value");
+  }
 }
 
 function assertCompletionChecklistCounts(checklist) {

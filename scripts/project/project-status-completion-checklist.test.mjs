@@ -41,18 +41,44 @@ test("project status completion checklist summarizes blocked evidence", () => {
     checklist.items[1].nextAction,
     /Run the Production Smoke workflow/u,
   );
+  assert.deepEqual(
+    checklist.items[1].nextSteps.map((step) => step.label),
+    [
+      "Run workflow",
+      "Local verification inputs",
+      "Visual evidence inputs",
+      "Release note inputs",
+      "Keep artifacts",
+      "Rerun gate",
+    ],
+  );
+  assert.equal(
+    checklist.items[1].nextSteps.at(-1).value,
+    "pnpm release:check -- --smoke-report <path> --visual-artifact-dir reports/visual/page-builder-fixture",
+  );
   assert.match(
     checklist.items[2].evidence,
     /12 Page Builder visual viewport tasks still need accepted evidence/u,
+  );
+  assert.equal(
+    checklist.items[2].nextSteps.find(
+      (step) => step.label === "Reference report",
+    ).value,
+    "pnpm visual:references -- --source-dir docs/visual/page-builder-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output reports/visual/page-builder-fixture/visual-reference-import-report.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete",
   );
   assert.match(terminalText, /Completion checklist:/);
   assert.match(
     terminalText,
     /Production Smoke release evidence: needs-evidence/u,
   );
+  assert.match(terminalText, /Next steps:/u);
   assert.match(markdown, /## Completion Checklist/);
   assert.match(markdown, /Complete: 2\/4/);
   assert.match(markdown, /Needs evidence: 2\/4/);
+  assert.match(
+    markdown,
+    /Reference report: `pnpm visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md --require-complete`/u,
+  );
 });
 
 test("project status completion checklist is complete when release evidence is ready", async () => {
@@ -81,7 +107,10 @@ test("project status completion checklist is complete when release evidence is r
     assert.equal(artifact.completionChecklist.needsEvidenceCount, 0);
     assert.equal(
       artifact.completionChecklist.items.every(
-        (item) => item.status === "complete" && item.nextAction === null,
+        (item) =>
+          item.status === "complete" &&
+          item.nextAction === null &&
+          item.nextSteps.length === 0,
       ),
       true,
     );
@@ -124,5 +153,24 @@ test("project status validation rejects stale completion checklist data", () => 
         },
       }),
     /completionChecklist\.items\.status/u,
+  );
+
+  assert.throws(
+    () =>
+      assertProjectStatusArtifact({
+        ...artifact,
+        completionChecklist: {
+          ...artifact.completionChecklist,
+          items: artifact.completionChecklist.items.map((item, index) =>
+            index === 0
+              ? {
+                  ...item,
+                  nextSteps: [{ label: "Run workflow" }],
+                }
+              : item,
+          ),
+        },
+      }),
+    /completionChecklist\.items\.nextSteps\.value/u,
   );
 });

@@ -37,6 +37,20 @@ function formatProjectCompletionItem(item) {
     );
   }
 
+  if (Array.isArray(item.nextSteps) && item.nextSteps.length > 0) {
+    lines.push("  - Next steps:");
+    lines.push(
+      ...item.nextSteps
+        .filter((step) => hasText(step?.label) && hasText(step?.value))
+        .map(
+          (step) =>
+            `    - ${formatInline(step.label)}: \`${formatInline(step.value, {
+              maxLength: maxProjectCompletionActionLength,
+            })}\``,
+        ),
+    );
+  }
+
   return lines;
 }
 
