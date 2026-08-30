@@ -90,6 +90,7 @@ function assertVisualArtifactCheckMatches(releaseCheck, projectCheck) {
   }
 
   for (const field of [
+    "artifactDir",
     "expectedScreenshotCount",
     "presentRequiredFileCount",
     "presentScreenshotCount",

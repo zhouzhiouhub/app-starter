@@ -31,6 +31,10 @@ test("project status discovers a complete default visual artifact", async () => 
     assert.equal(exitCode, 0);
     assert.equal(artifact.releaseGate.visual.artifactStatus, "complete");
     assert.equal(
+      artifact.releaseGate.visual.artifactCheck.artifactDir,
+      defaultPageBuilderVisualArtifactDir,
+    );
+    assert.equal(
       artifact.releaseGate.visual.pendingTaskCount,
       12,
     );

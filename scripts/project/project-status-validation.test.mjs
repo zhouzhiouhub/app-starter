@@ -83,6 +83,7 @@ test("project status artifact validation rejects invalid visual artifact counts"
   const artifact = createArtifact();
   artifact.releaseGate.visual.artifactStatus = "complete";
   artifact.releaseGate.visual.artifactCheck = {
+    artifactDir: "reports/visual/page-builder-fixture",
     expectedScreenshotCount: 12,
     presentRequiredFileCount: 6,
     presentScreenshotCount: 13,

@@ -238,8 +238,8 @@ later phases are explicitly approved.
 - Local reproduction of the same uploaded visual artifact shape uses
   `pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture`.
 - Once that default local artifact contains every required report and screenshot,
-  plain `pnpm project:status` includes `artifact complete` plus file and
-  screenshot counts in its informational release gate summary and carries
+  plain `pnpm project:status` includes `artifact complete` plus artifact path,
+  file, and screenshot counts in its informational release gate summary and carries
   `--visual-artifact-dir reports/visual/page-builder-fixture` into rerun
   commands. `release:check` still requires the explicit flag when the formal
   gate should read that artifact.
@@ -264,8 +264,8 @@ later phases are explicitly approved.
   `visual.checklist.pendingTasks` identify any remaining Page Builder visual
   evidence gaps and their per-viewport commands when the gate is blocked. When
   `--visual-artifact-dir` is provided, the same artifact includes
-  `visual.artifactCheck` with required file, validated screenshot, and issue
-  counts.
+  `visual.artifactCheck` with artifact path, required file, validated
+  screenshot, and issue counts.
 - `pnpm release:handoff -- --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture`
   writes the preflight JSON/Markdown, combined release evidence JSON/Markdown,
   and project status JSON/Markdown from the same handoff run. The terminal

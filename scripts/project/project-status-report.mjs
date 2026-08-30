@@ -73,15 +73,16 @@ function formatVisualArtifactSummary(visual) {
     return null;
   }
 
-  return `artifact ${status}${formatVisualArtifactCounts(visual.artifactCheck)}`;
+  return `artifact ${status}${formatVisualArtifactDetails(visual.artifactCheck)}`;
 }
 
-function formatVisualArtifactCounts(artifactCheck) {
+function formatVisualArtifactDetails(artifactCheck) {
   if (!artifactCheck) {
     return "";
   }
 
-  const countText = [
+  const detailText = [
+    formatVisualArtifactDir(artifactCheck.artifactDir),
     formatVisualArtifactCount(
       artifactCheck.presentRequiredFileCount,
       artifactCheck.requiredFileCount,
@@ -94,7 +95,13 @@ function formatVisualArtifactCounts(artifactCheck) {
     ),
   ].filter(Boolean);
 
-  return countText.length > 0 ? ` (${countText.join(", ")})` : "";
+  return detailText.length > 0 ? ` (${detailText.join(", ")})` : "";
+}
+
+function formatVisualArtifactDir(artifactDir) {
+  return typeof artifactDir === "string" && artifactDir.length > 0
+    ? artifactDir
+    : null;
 }
 
 function formatVisualArtifactCount(present, expected, label) {

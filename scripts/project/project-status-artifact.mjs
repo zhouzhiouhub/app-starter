@@ -123,6 +123,7 @@ function createVisualArtifactCheckSummary(check) {
   }
 
   return {
+    artifactDir: readText(check.artifactDir),
     expectedScreenshotCount: readCount(check.expectedScreenshotCount),
     presentRequiredFileCount: readCount(check.presentRequiredFileCount),
     presentScreenshotCount: readCount(check.presentScreenshotCount),

@@ -71,6 +71,10 @@ function assertNullableVisualArtifactCheck(visual) {
     );
   }
 
+  assertNullableString(
+    check.artifactDir,
+    "releaseGate.visual.artifactCheck.artifactDir",
+  );
   assertString(check.status, "releaseGate.visual.artifactCheck.status");
 
   for (const field of [

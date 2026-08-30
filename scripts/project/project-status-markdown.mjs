@@ -157,6 +157,7 @@ function formatVisualArtifactCounts(artifactCheck) {
   }
 
   const countText = [
+    formatVisualArtifactDir(artifactCheck.artifactDir),
     formatVisualArtifactCount(
       artifactCheck.presentRequiredFileCount,
       artifactCheck.requiredFileCount,
@@ -170,6 +171,12 @@ function formatVisualArtifactCounts(artifactCheck) {
   ].filter(Boolean);
 
   return countText.length > 0 ? ` (${countText.join(", ")})` : "";
+}
+
+function formatVisualArtifactDir(artifactDir) {
+  return typeof artifactDir === "string" && artifactDir.length > 0
+    ? formatText(artifactDir)
+    : null;
 }
 
 function formatVisualArtifactCount(present, expected, label) {
