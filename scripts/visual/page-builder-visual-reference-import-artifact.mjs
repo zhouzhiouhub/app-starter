@@ -21,6 +21,7 @@ export function createPageBuilderVisualReferenceImportArtifact(
     missingCount: missing.length,
     schemaVersion: pageBuilderVisualReferenceImportSchemaVersion,
     sourceDir: report.sourceDir,
+    sourceDirStatus: report.sourceDirStatus ?? "ready",
     status: report.status,
     updated: report.updated === true,
     updateCount: updates.length,

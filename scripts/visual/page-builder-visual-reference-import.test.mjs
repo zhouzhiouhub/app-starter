@@ -177,6 +177,35 @@ test("visual reference import reports missing required files", () => {
   assert.match(lines, /--write --require-complete/);
 });
 
+test("visual reference import reports missing source directory", () => {
+  const root = createFixtureRoot();
+  const manifest = createManifest({ accepted: false });
+  const report = importPageBuilderVisualReferences(
+    {
+      manifestPath: "docs/development/page-builder-visual-acceptance.json",
+      requireComplete: true,
+      sourceDir: "docs/visual/page-builder-references",
+      write: false,
+    },
+    { cwd: root, manifest },
+  );
+  const lines = formatPageBuilderVisualReferenceImportReport(report).join("\n");
+
+  assert.equal(report.status, "invalid");
+  assert.equal(report.sourceDirStatus, "missing");
+  assert.equal(report.missing.length, 12);
+  assert.deepEqual(report.missing[0], {
+    component: "hero-banner",
+    reason: "source dir is missing",
+    viewport: "desktop",
+  });
+  assert.match(lines, /Source dir status: missing/);
+  assert.match(
+    lines,
+    /hero-banner\.desktop: source dir is missing; expected docs\/visual\/page-builder-references\/hero-banner-desktop\.png/,
+  );
+});
+
 test("visual reference import Markdown lists missing references", () => {
   const root = createFixtureRoot();
   const manifest = createManifest({ accepted: false });
@@ -196,6 +225,7 @@ test("visual reference import Markdown lists missing references", () => {
 
   assert.match(markdown, /^# Page Builder Visual Reference Import/m);
   assert.match(markdown, /Status: `invalid`/);
+  assert.match(markdown, /Source dir status: `ready`/);
   assert.match(markdown, /References updated: 11/);
   assert.match(markdown, /Missing references: 1/);
   assert.match(markdown, /## Missing References/);

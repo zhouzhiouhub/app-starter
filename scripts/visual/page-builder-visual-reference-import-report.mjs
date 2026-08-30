@@ -10,6 +10,7 @@ export function formatPageBuilderVisualReferenceImportReport(report) {
     `  Status: ${report.status}`,
     `  Manifest: ${report.manifestPath}`,
     `  Source dir: ${report.sourceDir}`,
+    `  Source dir status: ${report.sourceDirStatus ?? "ready"}`,
     `  References updated: ${report.updates.length}`,
     `  Missing references: ${report.missing.length}`,
   ];

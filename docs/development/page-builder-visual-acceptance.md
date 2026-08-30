@@ -103,7 +103,10 @@ Reference import expects files named `<component>-<viewport>.png`, such as
 `hero-banner-desktop.png` and `hero-banner-mobile.png`. It is dry-run by
 default; pass `--write` to update the manifest, `--markdown-output` to retain
 the intake report, and `--require-complete` to fail when any of the 12 MVP
-reference PNGs is missing.
+reference PNGs is missing. If the source directory has not been created yet or
+points at a file instead of a directory, the importer records `sourceDirStatus`
+and still writes the full missing-reference checklist to the JSON/Markdown
+reports.
 
 ## Fixture Route
 

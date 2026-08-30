@@ -71,6 +71,7 @@ test("visual reference import CLI writes JSON output", async () => {
       "page-builder-visual-reference-import.v1",
     );
     assert.equal(artifact.status, "invalid");
+    assert.equal(artifact.sourceDirStatus, "ready");
     assert.equal(artifact.missingCount, 1);
     assert.equal(
       artifact.missing[0].expectedPath,

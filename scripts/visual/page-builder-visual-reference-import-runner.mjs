@@ -22,7 +22,7 @@ export function importPageBuilderVisualReferences(config, input = {}) {
     input.manifest ??
     readPageBuilderVisualReferenceImportManifest(config.manifestPath);
   const manifest = config.write ? sourceManifest : structuredClone(sourceManifest);
-  const references = readReferenceFiles(config.sourceDir, cwd);
+  const referenceInput = readReferenceFiles(config.sourceDir, cwd);
   const updates = [];
   const missing = [];
 
@@ -35,7 +35,8 @@ export function importPageBuilderVisualReferences(config, input = {}) {
         config,
         missing,
         record,
-        references,
+        references: referenceInput.files,
+        sourceDirStatus: referenceInput.sourceDirStatus,
         updates,
         viewport,
       });
@@ -51,6 +52,7 @@ export function importPageBuilderVisualReferences(config, input = {}) {
     manifestPath: config.manifestPath,
     missing,
     sourceDir: config.sourceDir,
+    sourceDirStatus: referenceInput.sourceDirStatus,
     status: readImportStatus(config, updates, missing),
     updated: config.write && updates.length > 0,
     updates,
@@ -67,6 +69,15 @@ function updateViewportReference(input) {
     input.missing.push({
       component: input.component,
       reason: "manifest viewport evidence slot is missing",
+      viewport: input.viewport,
+    });
+    return;
+  }
+
+  if (input.sourceDirStatus !== "ready") {
+    input.missing.push({
+      component: input.component,
+      reason: createSourceDirMissingReason(input.sourceDirStatus),
       viewport: input.viewport,
     });
     return;
@@ -115,6 +126,11 @@ function updateViewportReference(input) {
 function readReferenceFiles(sourceDir, cwd) {
   const resolvedSourceDir = path.resolve(cwd, sourceDir);
   const files = new Map();
+  const sourceDirStatus = readSourceDirStatus(resolvedSourceDir);
+
+  if (sourceDirStatus !== "ready") {
+    return { files, sourceDirStatus };
+  }
 
   for (const entry of readdirSync(resolvedSourceDir, { withFileTypes: true })) {
     if (!entry.isFile() || path.extname(entry.name).toLowerCase() !== ".png") {
@@ -127,11 +143,27 @@ function readReferenceFiles(sourceDir, cwd) {
     });
   }
 
-  return files;
+  return { files, sourceDirStatus };
 }
 
 function readFileSize(resolvedSourceDir, fileName) {
   return lstatSync(path.join(resolvedSourceDir, fileName)).size;
+}
+
+function readSourceDirStatus(resolvedSourceDir) {
+  try {
+    return lstatSync(resolvedSourceDir).isDirectory()
+      ? "ready"
+      : "not-directory";
+  } catch {
+    return "missing";
+  }
+}
+
+function createSourceDirMissingReason(sourceDirStatus) {
+  return sourceDirStatus === "not-directory"
+    ? "source dir must be a directory"
+    : "source dir is missing";
 }
 
 function findRecord(manifest, component) {

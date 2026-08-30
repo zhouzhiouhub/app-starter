@@ -18,6 +18,7 @@ export function createPageBuilderVisualReferenceImportMarkdown(report) {
     `Status: ${formatCode(report.status)}`,
     `Manifest: ${formatCode(report.manifestPath)}`,
     `Source dir: ${formatCode(report.sourceDir)}`,
+    `Source dir status: ${formatCode(report.sourceDirStatus ?? "ready")}`,
     `References updated: ${report.updates.length}`,
     `Missing references: ${report.missing.length}`,
     "",
