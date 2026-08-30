@@ -82,6 +82,46 @@ test("visual artifact check rejects invalid reference import JSON", () => {
   }
 });
 
+test("visual artifact check rejects invalid reference source dir status", () => {
+  const artifactDir = createArtifactDir("invalid-reference-source-status");
+
+  try {
+    writeVisualArtifact(artifactDir, {
+      referenceImportReport: createReferenceImportReportOverride(artifactDir, {
+        sourceDirStatus: "unknown",
+      }),
+    });
+
+    const report = checkPageBuilderVisualArtifact({ artifactDir });
+    assert.equal(report.status, "invalid");
+    assert.equal(hasIssue(report, "invalid_reference_source_dir_status"), true);
+  } finally {
+    rmSync(artifactDir, { force: true, recursive: true });
+  }
+});
+
+test("visual artifact check rejects stale reference source dir status Markdown", () => {
+  const artifactDir = createArtifactDir("stale-reference-source-status");
+
+  try {
+    writeVisualArtifact(artifactDir, {
+      referenceImportReport: createReferenceImportReportOverride(artifactDir, {
+        sourceDirStatus: "missing",
+      }),
+      referenceImportMarkdown: createReferenceImportMarkdownOverride(
+        artifactDir,
+        { sourceDirStatus: "ready" },
+      ),
+    });
+
+    const report = checkPageBuilderVisualArtifact({ artifactDir });
+    assert.equal(report.status, "invalid");
+    assert.equal(hasIssue(report, "invalid_artifact_markdown"), true);
+  } finally {
+    rmSync(artifactDir, { force: true, recursive: true });
+  }
+});
+
 test("visual artifact check rejects missing acceptance Markdown", () => {
   const artifactDir = createArtifactDir("missing-acceptance-report");
 
@@ -257,3 +297,36 @@ test("visual artifact check command is exposed in package and workflows", () => 
   assert.match(visualDoc, /pnpm visual:artifact-check/);
   assert.match(releaseChecklist, /pnpm visual:artifact-check/);
 });
+
+function createReferenceImportReportOverride(artifactDir, override = {}) {
+  return {
+    complete: false,
+    manifestPath: `${artifactDir}/page-builder-visual-acceptance.json`,
+    missing: [],
+    missingCount: 0,
+    schemaVersion: "page-builder-visual-reference-import.v1",
+    sourceDir: "docs/visual/page-builder-references",
+    sourceDirStatus: "ready",
+    status: "needs-evidence",
+    updated: false,
+    updateCount: 0,
+    updates: [],
+    ...override,
+  };
+}
+
+function createReferenceImportMarkdownOverride(artifactDir, override = {}) {
+  const sourceDirStatus = override.sourceDirStatus ?? "ready";
+
+  return [
+    "# Page Builder Visual Reference Import",
+    "",
+    "Status: `needs-evidence`",
+    `Manifest: \`${artifactDir}/page-builder-visual-acceptance.json\``,
+    "Source dir: `docs/visual/page-builder-references`",
+    `Source dir status: \`${sourceDirStatus}\``,
+    "References updated: 0",
+    "Missing references: 0",
+    "",
+  ].join("\n");
+}

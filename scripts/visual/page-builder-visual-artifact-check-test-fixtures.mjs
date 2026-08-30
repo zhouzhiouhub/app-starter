@@ -214,6 +214,7 @@ function createReferenceImportMarkdown(artifactDir) {
     "Status: `invalid`",
     `Manifest: \`${artifactDir}/page-builder-visual-acceptance.json\``,
     "Source dir: `docs/visual/page-builder-references`",
+    "Source dir status: `ready`",
     "References updated: 0",
     "Missing references: 12",
     "",

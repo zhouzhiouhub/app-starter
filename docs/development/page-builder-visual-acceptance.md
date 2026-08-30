@@ -204,7 +204,9 @@ files to `reports/visual/page-builder-fixture` before running the combined
 release gate. The combined gate then runs with
 `--visual-artifact-dir reports/visual/page-builder-fixture`, reads the
 artifact-local manifest by default, and records the artifact check result in
-`release-evidence-check.v1` as `visual.artifactCheck`. The Page Builder Visual
+`release-evidence-check.v1` as `visual.artifactCheck`. The artifact check also
+validates any recorded reference-import `sourceDirStatus` value and the matching
+Markdown line. The Page Builder Visual
 workflow summary prints the run id to use with the Production Smoke
 `visual_artifact_run_id` input.
 When the same default artifact is complete on a local machine, plain

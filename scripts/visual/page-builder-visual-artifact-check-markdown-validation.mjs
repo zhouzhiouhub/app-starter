@@ -4,14 +4,14 @@ import {
   resolveRepositoryPath,
 } from "./page-builder-visual-artifact-check-paths.mjs";
 
-export function validateReferenceImportMarkdown(filePath, context) {
+export function validateReferenceImportMarkdown(filePath, report, context) {
   const body = readRequiredText(filePath, "reference import Markdown", context);
 
   if (!body) {
     return;
   }
 
-  validateReferenceImportMarkdownContent(body, context);
+  validateReferenceImportMarkdownContent(body, report, context);
 }
 
 export function validateAcceptanceMarkdown(filePath, manifestReport, context) {
@@ -50,7 +50,7 @@ function readRequiredText(filePath, label, context) {
   }
 }
 
-function validateReferenceImportMarkdownContent(body, context) {
+function validateReferenceImportMarkdownContent(body, report, context) {
   const expectedLines = [
     [/^# Page Builder Visual Reference Import\r?$/mu, "title"],
     [
@@ -65,6 +65,7 @@ function validateReferenceImportMarkdownContent(body, context) {
       "manifest path",
     ],
     [/^Source dir: `docs\/visual\/page-builder-references`\r?$/mu, "source dir"],
+    ...createReferenceImportSourceDirStatusLines(report),
   ];
 
   validateExpectedMarkdownLines(
@@ -73,6 +74,22 @@ function validateReferenceImportMarkdownContent(body, context) {
     "reference import Markdown",
     context,
   );
+}
+
+function createReferenceImportSourceDirStatusLines(report) {
+  if (!isObject(report) || typeof report.sourceDirStatus !== "string") {
+    return [];
+  }
+
+  return [
+    [
+      new RegExp(
+        `^Source dir status: \`${escapeRegExp(report.sourceDirStatus)}\`\\r?$`,
+        "mu",
+      ),
+      "source dir status",
+    ],
+  ];
 }
 
 function validateAcceptanceMarkdownContent(body, manifestReport, context) {
