@@ -196,13 +196,15 @@ function writeText(filePath, value) {
 }
 
 function createReferenceImportReport(artifactDir) {
+  const missing = createReferenceMissingEntries();
   return {
     complete: false,
     manifestPath: `${artifactDir}/page-builder-visual-acceptance.json`,
-    missing: [],
+    missing, missingCount: missing.length,
     sourceDir: "docs/visual/page-builder-references",
-    status: "needs-evidence",
-    updated: false,
+    sourceDirStatus: "ready",
+    status: "invalid",
+    updated: false, updateCount: 0,
     updates: [],
   };
 }
@@ -219,6 +221,14 @@ function createReferenceImportMarkdown(artifactDir) {
     "Missing references: 12",
     "",
   ].join("\n");
+}
+
+function createReferenceMissingEntries() {
+  return mvpPageBuilderComponents.flatMap((component) =>
+    pageBuilderVisualAcceptanceViewports.map((viewport) => ({
+      component, reason: `${component}-${viewport}.png is missing`, viewport,
+    })),
+  );
 }
 
 function createScreenshotPng(viewport) {

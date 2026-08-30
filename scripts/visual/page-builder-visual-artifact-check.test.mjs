@@ -100,6 +100,28 @@ test("visual artifact check rejects invalid reference source dir status", () => 
   }
 });
 
+test("visual artifact check rejects invalid reference import status", () => {
+  const artifactDir = createArtifactDir("invalid-reference-import-status");
+
+  try {
+    writeVisualArtifact(artifactDir, {
+      referenceImportReport: createReferenceImportReportOverride(artifactDir, {
+        status: "complete",
+      }),
+      referenceImportMarkdown: createReferenceImportMarkdownOverride(
+        artifactDir,
+        { status: "complete" },
+      ),
+    });
+
+    const report = checkPageBuilderVisualArtifact({ artifactDir });
+    assert.equal(report.status, "invalid");
+    assert.equal(hasIssue(report, "invalid_reference_import_status"), true);
+  } finally {
+    rmSync(artifactDir, { force: true, recursive: true });
+  }
+});
+
 test("visual artifact check rejects stale reference source dir status Markdown", () => {
   const artifactDir = createArtifactDir("stale-reference-source-status");
 
@@ -111,6 +133,40 @@ test("visual artifact check rejects stale reference source dir status Markdown",
       referenceImportMarkdown: createReferenceImportMarkdownOverride(
         artifactDir,
         { sourceDirStatus: "ready" },
+      ),
+    });
+
+    const report = checkPageBuilderVisualArtifact({ artifactDir });
+    assert.equal(report.status, "invalid");
+    assert.equal(hasIssue(report, "invalid_artifact_markdown"), true);
+  } finally {
+    rmSync(artifactDir, { force: true, recursive: true });
+  }
+});
+
+test("visual artifact check rejects stale reference import count Markdown", () => {
+  const artifactDir = createArtifactDir("stale-reference-counts");
+
+  try {
+    writeVisualArtifact(artifactDir, {
+      referenceImportReport: createReferenceImportReportOverride(artifactDir, {
+        missing: [
+          {
+            component: "faq",
+            expectedPath: "docs/visual/page-builder-references/faq-mobile.png",
+            reason: "faq-mobile.png is missing",
+            viewport: "mobile",
+          },
+        ],
+        missingCount: 1,
+        status: "invalid",
+      }),
+      referenceImportMarkdown: createReferenceImportMarkdownOverride(
+        artifactDir,
+        {
+          missingCount: 0,
+          status: "invalid",
+        },
       ),
     });
 
@@ -316,17 +372,20 @@ function createReferenceImportReportOverride(artifactDir, override = {}) {
 }
 
 function createReferenceImportMarkdownOverride(artifactDir, override = {}) {
+  const missingCount = override.missingCount ?? 0;
   const sourceDirStatus = override.sourceDirStatus ?? "ready";
+  const status = override.status ?? "needs-evidence";
+  const updateCount = override.updateCount ?? 0;
 
   return [
     "# Page Builder Visual Reference Import",
     "",
-    "Status: `needs-evidence`",
+    `Status: \`${status}\``,
     `Manifest: \`${artifactDir}/page-builder-visual-acceptance.json\``,
     "Source dir: `docs/visual/page-builder-references`",
     `Source dir status: \`${sourceDirStatus}\``,
-    "References updated: 0",
-    "Missing references: 0",
+    `References updated: ${updateCount}`,
+    `Missing references: ${missingCount}`,
     "",
   ].join("\n");
 }

@@ -53,10 +53,7 @@ function readRequiredText(filePath, label, context) {
 function validateReferenceImportMarkdownContent(body, report, context) {
   const expectedLines = [
     [/^# Page Builder Visual Reference Import\r?$/mu, "title"],
-    [
-      /^Status: `(invalid|needs-evidence|ready|updated|would-update)`\r?$/mu,
-      "status",
-    ],
+    createReferenceImportStatusLine(report),
     [
       new RegExp(
         `^Manifest: \`${escapeRegExp(context.paths.manifest)}\`\\r?$`,
@@ -66,6 +63,7 @@ function validateReferenceImportMarkdownContent(body, report, context) {
     ],
     [/^Source dir: `docs\/visual\/page-builder-references`\r?$/mu, "source dir"],
     ...createReferenceImportSourceDirStatusLines(report),
+    ...createReferenceImportCountLines(report),
   ];
 
   validateExpectedMarkdownLines(
@@ -74,6 +72,18 @@ function validateReferenceImportMarkdownContent(body, report, context) {
     "reference import Markdown",
     context,
   );
+}
+
+function createReferenceImportStatusLine(report) {
+  const statusPattern =
+    isObject(report) && typeof report.status === "string"
+      ? escapeRegExp(report.status)
+      : "(invalid|needs-evidence|ready|updated|would-update)";
+
+  return [
+    new RegExp(`^Status: \`${statusPattern}\`\\r?$`, "mu"),
+    "status",
+  ];
 }
 
 function createReferenceImportSourceDirStatusLines(report) {
@@ -90,6 +100,33 @@ function createReferenceImportSourceDirStatusLines(report) {
       "source dir status",
     ],
   ];
+}
+
+function createReferenceImportCountLines(report) {
+  if (!isObject(report)) {
+    return [];
+  }
+
+  return [
+    ...createReferenceImportCountLine(
+      report.updateCount,
+      "References updated",
+      "update count",
+    ),
+    ...createReferenceImportCountLine(
+      report.missingCount,
+      "Missing references",
+      "missing count",
+    ),
+  ];
+}
+
+function createReferenceImportCountLine(value, text, label) {
+  if (!Number.isFinite(value)) {
+    return [];
+  }
+
+  return [[new RegExp(`^${text}: ${value}\\r?$`, "mu"), label]];
 }
 
 function validateAcceptanceMarkdownContent(body, manifestReport, context) {

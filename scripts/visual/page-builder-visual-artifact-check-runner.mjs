@@ -3,7 +3,6 @@ import {
   pageBuilderVisualAcceptanceSchemaVersion,
   validatePageBuilderVisualAcceptanceManifest,
 } from "./page-builder-visual-acceptance.mjs";
-import { pageBuilderVisualReferenceImportSchemaVersion } from "./page-builder-visual-reference-import.mjs";
 import {
   createExpectedScreenshotKeys,
   validateCaptureReport,
@@ -19,12 +18,7 @@ import {
   validateAcceptanceMarkdown,
   validateReferenceImportMarkdown,
 } from "./page-builder-visual-artifact-check-markdown-validation.mjs";
-
-const referenceSourceDirStatuses = new Set([
-  "missing",
-  "not-directory",
-  "ready",
-]);
+import { validateReferenceImportReport } from "./page-builder-visual-artifact-check-reference-import.mjs";
 
 export function checkPageBuilderVisualArtifact(config, input = {}) {
   const context = createArtifactCheckContext(config, input);
@@ -201,63 +195,6 @@ function validateAcceptanceReportMatchesManifest(report, manifestReport, context
         `acceptance report ${field} must match the artifact manifest review.`,
       );
     }
-  }
-}
-
-function validateReferenceImportReport(report, context) {
-  if (!isObject(report)) {
-    return;
-  }
-
-  if (report.schemaVersion !== pageBuilderVisualReferenceImportSchemaVersion) {
-    addArtifactCheckIssue(
-      context,
-      "invalid_reference_import_schema",
-      `reference import report schemaVersion must be ${pageBuilderVisualReferenceImportSchemaVersion}.`,
-    );
-  }
-
-  if (
-    report.manifestPath !== context.paths.manifest ||
-    report.sourceDir !== "docs/visual/page-builder-references"
-  ) {
-    addArtifactCheckIssue(
-      context,
-      "reference_import_report_mismatch",
-      "reference import report must match the artifact manifest and source dir.",
-    );
-  }
-
-  validateReferenceImportSourceDirStatus(report, context);
-  validateReferenceImportReportCounts(report, context);
-}
-
-function validateReferenceImportSourceDirStatus(report, context) {
-  if (report.sourceDirStatus === undefined) {
-    return;
-  }
-
-  if (!referenceSourceDirStatuses.has(report.sourceDirStatus)) {
-    addArtifactCheckIssue(
-      context,
-      "invalid_reference_source_dir_status",
-      "reference import report sourceDirStatus must be ready, missing, or not-directory.",
-    );
-  }
-}
-
-function validateReferenceImportReportCounts(report, context) {
-  if (
-    !Array.isArray(report.missing) ||
-    !Array.isArray(report.updates) ||
-    report.missingCount !== report.missing.length ||
-    report.updateCount !== report.updates.length
-  ) {
-    addArtifactCheckIssue(
-      context,
-      "reference_import_report_mismatch",
-      "reference import report counts must match its missing and update lists.",
-    );
   }
 }
 
