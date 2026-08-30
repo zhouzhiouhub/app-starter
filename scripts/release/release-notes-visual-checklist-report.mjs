@@ -13,7 +13,10 @@ export function formatVisualChecklist(checklist) {
     : [];
 
   if (pendingTasks.length === 0) {
-    return ["- Visual checklist tasks: none"];
+    return [
+      formatManifest(checklist.manifestPath),
+      "- Visual checklist tasks: none",
+    ];
   }
 
   const visibleTasks = pendingTasks
@@ -22,6 +25,7 @@ export function formatVisualChecklist(checklist) {
   const hiddenCount = pendingTasks.length - maxVisualChecklistTaskLines;
 
   return [
+    formatManifest(checklist.manifestPath),
     `- Visual checklist tasks: ${formatCount(
       checklist,
       pendingTasks,
@@ -29,6 +33,10 @@ export function formatVisualChecklist(checklist) {
     ...visibleTasks,
     ...formatHiddenTaskCount(hiddenCount),
   ];
+}
+
+function formatManifest(manifestPath) {
+  return `- Visual checklist manifest: \`${formatValue(manifestPath)}\``;
 }
 
 function formatCount(checklist, pendingTasks) {

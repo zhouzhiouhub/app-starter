@@ -13,6 +13,10 @@ test("release notes failure drafts include visual checklist tasks", () => {
   );
 
   assert.match(markdown, /Mode: failure review draft/);
+  assert.match(
+    markdown,
+    /Visual checklist manifest: `reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json`/,
+  );
   assert.match(markdown, /Visual checklist tasks: 5 pending viewport tasks/);
   assert.match(
     markdown,
@@ -146,6 +150,8 @@ function createVisualChecklist() {
   ];
 
   return {
+    manifestPath:
+      "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
     pendingTaskCount: tasks.length,
     pendingTasks: tasks,
     pendingViewportCount: tasks.length,

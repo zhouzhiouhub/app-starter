@@ -102,6 +102,7 @@ function formatVisualSummary(visual) {
   return [
     `- Status: ${formatText(visual.status)}`,
     `- Manifest: ${formatNullableCode(visual.manifestPath)}`,
+    ...formatChecklistManifest(visual.checklist),
     `- Components accepted: ${visual.acceptedComponentCount}/${visual.componentCount}`,
     `- Viewports accepted: ${visual.acceptedViewportCount}/${visual.viewportCount}`,
     `- Issues: ${visual.issueCount} total, ${visual.errorCount} errors, ${visual.warningCount} warnings`,
@@ -110,6 +111,14 @@ function formatVisualSummary(visual) {
     ...formatList("Pending viewports", visual.pendingViewports),
     ...formatVisualIssues(visual.issues),
   ];
+}
+
+function formatChecklistManifest(checklist) {
+  if (!checklist) {
+    return [];
+  }
+
+  return [`- Checklist manifest: ${formatNullableCode(checklist.manifestPath)}`];
 }
 
 function formatArtifactCheck(check) {

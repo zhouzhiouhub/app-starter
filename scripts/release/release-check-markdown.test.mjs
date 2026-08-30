@@ -40,6 +40,7 @@ test("release check Markdown summarizes ready evidence", () => {
   assert.match(markdown, /Report path: `artifacts\/production-smoke\/smoke-report\.json`/);
   assert.match(markdown, /Source workflow URL: https:\/\/github\.com\/zhouzhiouhub\/app-starter\/actions\/runs\/123456789/);
   assert.match(markdown, /Manifest: `reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json`/);
+  assert.match(markdown, /Checklist manifest: `reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json`/);
   assert.match(markdown, /Artifact check: complete/);
   assert.match(markdown, /## Readiness Checklist/);
   assert.match(markdown, /Release notes record: ready to generate/);
@@ -114,6 +115,7 @@ test("release check Markdown lists blockers and visual tasks", () => {
   assert.match(markdown, /Page Builder Visual: Visual artifact invalid/);
   assert.match(markdown, /Artifact issues:/);
   assert.match(markdown, /missing_artifact_file/);
+  assert.match(markdown, /Checklist manifest: `reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json`/);
   assert.match(markdown, /hero-banner\.desktop: missing designReference/);
   assert.doesNotMatch(
     markdown,
