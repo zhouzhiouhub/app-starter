@@ -237,6 +237,12 @@ later phases are explicitly approved.
   real reference PNGs were imported or still missing.
 - Local reproduction of the same uploaded visual artifact shape uses
   `pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture`.
+- Once that default local artifact contains every required report and screenshot,
+  plain `pnpm project:status` includes `artifact complete` in its informational
+  release gate summary and carries
+  `--visual-artifact-dir reports/visual/page-builder-fixture` into rerun
+  commands. `release:check` still requires the explicit flag when the formal
+  gate should read that artifact.
 - `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json`
   exits successfully after the production smoke artifact and accepted Page
   Builder visual manifest are both present.

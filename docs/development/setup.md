@@ -330,6 +330,12 @@ full command lines, instead of the default short list. When the gate is ready,
 the next action expands the final `pnpm release:notes` handoff into structured
 steps for the command, evidence args, review args, input evidence, output
 record, `release-notes` artifact, and formal mode without `--allow-blocked`.
+For local status checks, `project:status` automatically includes the default
+Page Builder Visual artifact when all required files already exist under
+`reports/visual/page-builder-fixture`. Explicit `--visual-artifact-dir` or
+`--visual-manifest` inputs still take precedence, and `release:check` continues
+to require an explicit `--visual-artifact-dir` when release review should use a
+downloaded visual artifact.
 
 `release:handoff` is a convenience wrapper for release review handoff. It reads
 the same release gate once, then writes `preflight.json`, `preflight.md`,
@@ -413,6 +419,10 @@ it uploads `release-preflight-<run_number>` so passed and failed preflight runs
 retain the structured blocker summary.
 The same visual artifact shape can be reproduced locally with
 `pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture`.
+After that default bundle is complete, plain `pnpm project:status` includes the
+local artifact check in its informational summary and rerun commands; use
+`pnpm release:check -- --visual-artifact-dir reports/visual/page-builder-fixture`
+when the release gate itself must evaluate the same artifact.
 When `release_tag`, `rollback_target`, `local_verification_run_url`,
 `local_verification_artifact_name`, `visual_artifact_name`, and
 `visual_artifact_run_id` are provided, it runs `release:notes` with the

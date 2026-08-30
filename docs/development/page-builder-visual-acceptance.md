@@ -204,6 +204,11 @@ artifact-local manifest by default, and records the artifact check result in
 `release-evidence-check.v1` as `visual.artifactCheck`. The Page Builder Visual
 workflow summary prints the run id to use with the Production Smoke
 `visual_artifact_run_id` input.
+When the same default artifact is complete on a local machine, plain
+`pnpm project:status` automatically includes it in the informational status
+summary. Keep using explicit `--visual-artifact-dir reports/visual/page-builder-fixture`
+for `release:check` and production handoff commands that must formally evaluate
+the downloaded artifact.
 
 After real Desktop and Mobile design reference PNGs are attached to the
 manifest, calculate the metrics with:

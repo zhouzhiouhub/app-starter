@@ -60,6 +60,14 @@ test("project status command is exposed in package and CI", async () => {
     setupDoc,
     /pnpm project:status -- --output artifacts\/release\/project-status\.json/,
   );
+  assert.match(
+    setupDoc,
+    /project:status` automatically includes the default\s+Page Builder Visual artifact/,
+  );
+  assert.match(
+    setupDoc,
+    /release:check` continues\s+to require an explicit `--visual-artifact-dir`/,
+  );
   assert.match(setupDoc, /Project Next Actions/);
 });
 
