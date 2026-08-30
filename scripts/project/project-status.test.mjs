@@ -242,6 +242,9 @@ test("project status CLI prints readable blocked state", async () => {
     assert.match(text, /Capture fixture: pnpm visual:capture:fixture/);
     assert.match(text, /Accept passing: pnpm visual:measure/);
     assert.match(text, /Local verification:/);
+    assert.match(text, /Shortcut: pnpm run verify:local/);
+    assert.match(text, /Handoff JSON: tmp\/project-status\.json/);
+    assert.match(text, /Handoff Markdown: tmp\/project-status-handoff\.md/);
     assert.match(text, /TypeScript: pnpm typecheck \(configured\)/);
     assert.match(text, /Project status handoff: pnpm project:status/);
     assert.match(text, /hero-banner\.desktop/);

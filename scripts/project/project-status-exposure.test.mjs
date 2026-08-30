@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { createProjectStatusArtifact } from "./project-status.mjs";
+import { createBlockedCheck } from "./project-status-test-fixtures.mjs";
 
 test("project status command is exposed in package and CI", async () => {
   const [packageJson, ciWorkflow, readme, setupDoc] = await Promise.all([
@@ -75,6 +77,70 @@ test("project status command is exposed in package and CI", async () => {
   assert.match(setupDoc, /Project Next Actions/);
 });
 
+test("project status local verification matches package and CI commands", async () => {
+  const [packageJsonText, ciWorkflow] = await Promise.all([
+    readFile("package.json", "utf8"),
+    readFile(".github/workflows/ci.yml", "utf8"),
+  ]);
+  const packageJson = JSON.parse(packageJsonText);
+  const artifact = createProjectStatusArtifact(createBlockedCheck(), {
+    generatedAt: "2026-08-28T00:00:00.000Z",
+  });
+  const artifactCommands = artifact.localVerification.commands.map(
+    (item) => item.command,
+  );
+  const packageVerificationCommands = readPackageScriptCommands(
+    packageJson.scripts["verify:local"],
+  );
+
+  assert.equal(artifact.localVerification.shortcut, "pnpm run verify:local");
+  assert.deepEqual(artifact.localVerification.handoff, {
+    jsonPath: "tmp/project-status.json",
+    markdownPath: "tmp/project-status-handoff.md",
+  });
+  assert.deepEqual(packageVerificationCommands, [
+    "pnpm run check:install",
+    ...artifactCommands.slice(1),
+  ]);
+  assertOrderedSubset(readWorkflowRunCommands(ciWorkflow), artifactCommands);
+  assert.match(
+    ciWorkflow,
+    new RegExp(escapeRegExp(artifact.localVerification.handoff.jsonPath)),
+  );
+  assert.match(
+    ciWorkflow,
+    new RegExp(escapeRegExp(artifact.localVerification.handoff.markdownPath)),
+  );
+});
+
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+}
+
+function readPackageScriptCommands(script) {
+  assert.equal(typeof script, "string");
+
+  return script.split(" && ").map((command) => command.trim());
+}
+
+function readWorkflowRunCommands(workflow) {
+  return workflow
+    .split(/\r?\n/u)
+    .map((line) => line.match(/^\s*-\s+run:\s+(.+)$/u)?.[1]?.trim())
+    .filter(Boolean);
+}
+
+function assertOrderedSubset(commands, expectedCommands) {
+  let startIndex = 0;
+
+  for (const expectedCommand of expectedCommands) {
+    const foundIndex = commands.indexOf(expectedCommand, startIndex);
+
+    assert.notEqual(
+      foundIndex,
+      -1,
+      `${expectedCommand} must appear in the CI verification flow.`,
+    );
+    startIndex = foundIndex + 1;
+  }
 }

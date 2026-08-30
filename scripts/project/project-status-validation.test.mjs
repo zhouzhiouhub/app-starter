@@ -79,6 +79,43 @@ test("project status artifact validation rejects incomplete counts", () => {
   );
 });
 
+test("project status artifact validation accepts legacy local verification shape", () => {
+  const artifact = createArtifact();
+
+  delete artifact.localVerification.handoff;
+  delete artifact.localVerification.shortcut;
+
+  assert.doesNotThrow(() => assertProjectStatusArtifact(artifact));
+});
+
+test("project status artifact validation rejects invalid handoff metadata", () => {
+  assert.throws(
+    () =>
+      assertProjectStatusArtifact({
+        ...createArtifact(),
+        localVerification: {
+          ...createArtifact().localVerification,
+          shortcut: "",
+        },
+      }),
+    /localVerification\.shortcut must be a string/,
+  );
+
+  assert.throws(
+    () =>
+      assertProjectStatusArtifact({
+        ...createArtifact(),
+        localVerification: {
+          ...createArtifact().localVerification,
+          handoff: {
+            jsonPath: "tmp/project-status.json",
+          },
+        },
+      }),
+    /localVerification\.handoff\.markdownPath must be a string/,
+  );
+});
+
 test("project status artifact validation rejects invalid visual artifact counts", () => {
   const artifact = createArtifact();
   artifact.releaseGate.visual.artifactStatus = "complete";
@@ -137,6 +174,11 @@ function createArtifact() {
           status: "configured",
         },
       ],
+      handoff: {
+        jsonPath: "tmp/project-status.json",
+        markdownPath: "tmp/project-status-handoff.md",
+      },
+      shortcut: "pnpm run verify:local",
       source: "CI verify job and local package scripts",
     },
     nextActionCount: 1,

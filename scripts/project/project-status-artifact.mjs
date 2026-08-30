@@ -8,6 +8,11 @@ export const projectStatusSchemaVersion = "project-status.v1";
 
 const maxProjectActionCount = 8;
 const maxProjectTextLength = 420;
+const localVerificationShortcut = "pnpm run verify:local";
+const localVerificationHandoff = {
+  jsonPath: "tmp/project-status.json",
+  markdownPath: "tmp/project-status-handoff.md",
+};
 
 const completedMilestones = [
   "Monorepo apps, shared packages, and extension/custom directories are scaffolded.",
@@ -94,6 +99,8 @@ function createLocalVerificationSummary() {
       label: item.label,
       status: "configured",
     })),
+    handoff: localVerificationHandoff,
+    shortcut: localVerificationShortcut,
     source: "CI verify job and local package scripts",
   };
 }

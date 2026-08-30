@@ -164,6 +164,13 @@ test("project status CLI writes a Markdown handoff", async () => {
       markdown,
       /Refresh release handoff: `pnpm release:handoff -- --smoke-report artifacts\/production-smoke\/smoke-report\.json --visual-artifact-dir reports\/visual\/page-builder-fixture`/,
     );
+    assert.match(markdown, /## Local Verification/);
+    assert.match(markdown, /Shortcut: `pnpm run verify:local`/);
+    assert.match(markdown, /Handoff JSON: `tmp\/project-status\.json`/);
+    assert.match(
+      markdown,
+      /Handoff Markdown: `tmp\/project-status-handoff\.md`/,
+    );
     assert.match(markdown, /spec-table\.mobile/);
     assert.match(markdown, / {2}Steps:/);
     assert.match(

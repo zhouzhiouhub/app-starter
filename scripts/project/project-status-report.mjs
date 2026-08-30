@@ -42,9 +42,32 @@ function formatLocalVerification(localVerification) {
     return ["    - Not recorded"];
   }
 
-  return localVerification.commands.map(
-    (item) => `    - ${item.label}: ${item.command} (${item.status})`,
-  );
+  return [
+    ...formatLocalVerificationShortcut(localVerification),
+    ...localVerification.commands.map(
+      (item) => `    - ${item.label}: ${item.command} (${item.status})`,
+    ),
+  ];
+}
+
+function formatLocalVerificationShortcut(localVerification) {
+  const lines = [];
+
+  if (typeof localVerification.shortcut === "string") {
+    lines.push(`    - Shortcut: ${localVerification.shortcut}`);
+  }
+
+  if (typeof localVerification.handoff?.jsonPath === "string") {
+    lines.push(`    - Handoff JSON: ${localVerification.handoff.jsonPath}`);
+  }
+
+  if (typeof localVerification.handoff?.markdownPath === "string") {
+    lines.push(
+      `    - Handoff Markdown: ${localVerification.handoff.markdownPath}`,
+    );
+  }
+
+  return lines;
 }
 
 export async function writeProjectStatusArtifact(outputPath, artifact) {

@@ -188,12 +188,39 @@ function formatVisualArtifactCount(present, expected, label) {
 }
 
 function formatLocalVerification(localVerification) {
-  return localVerification.commands.map(
-    (item) =>
-      `- ${formatText(item.label)}: ${formatCode(item.command)} (${formatText(
-        item.status,
-      )})`,
-  );
+  return [
+    ...formatLocalVerificationShortcut(localVerification),
+    ...localVerification.commands.map(
+      (item) =>
+        `- ${formatText(item.label)}: ${formatCode(item.command)} (${formatText(
+          item.status,
+        )})`,
+    ),
+  ];
+}
+
+function formatLocalVerificationShortcut(localVerification) {
+  const lines = [];
+
+  if (typeof localVerification.shortcut === "string") {
+    lines.push(`- Shortcut: ${formatCode(localVerification.shortcut)}`);
+  }
+
+  if (typeof localVerification.handoff?.jsonPath === "string") {
+    lines.push(
+      `- Handoff JSON: ${formatCode(localVerification.handoff.jsonPath)}`,
+    );
+  }
+
+  if (typeof localVerification.handoff?.markdownPath === "string") {
+    lines.push(
+      `- Handoff Markdown: ${formatCode(
+        localVerification.handoff.markdownPath,
+      )}`,
+    );
+  }
+
+  return lines;
 }
 
 function formatNextActions(artifact) {

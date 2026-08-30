@@ -89,6 +89,7 @@ function assertLocalVerification(localVerification) {
   }
 
   assertString(localVerification.source, "localVerification.source");
+  assertLocalVerificationShortcut(localVerification);
   assertNonNegativeNumber(
     localVerification.commandCount,
     "localVerification.commandCount",
@@ -109,6 +110,31 @@ function assertLocalVerification(localVerification) {
   for (const command of localVerification.commands) {
     assertCommand(command);
   }
+}
+
+function assertLocalVerificationShortcut(localVerification) {
+  if (localVerification.shortcut !== undefined) {
+    assertString(localVerification.shortcut, "localVerification.shortcut");
+  }
+
+  if (localVerification.handoff === undefined) {
+    return;
+  }
+
+  if (!isRecord(localVerification.handoff)) {
+    throw new Error(
+      "Project status artifact localVerification.handoff must be an object.",
+    );
+  }
+
+  assertString(
+    localVerification.handoff.jsonPath,
+    "localVerification.handoff.jsonPath",
+  );
+  assertString(
+    localVerification.handoff.markdownPath,
+    "localVerification.handoff.markdownPath",
+  );
 }
 
 function assertReleaseGate(releaseGate) {

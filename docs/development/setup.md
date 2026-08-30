@@ -316,7 +316,9 @@ readiness, the configured local verification commands, and the next concrete
 actions without changing the pass/fail criteria. Add `--require-ready` when the
 same status report should exit non-zero until release evidence is ready. Use
 `--json` or `--output` to produce a validated `project-status.v1` artifact for
-handoff or release review notes. After dependencies are installed,
+handoff or release review notes. Its `localVerification` block records the
+`pnpm run verify:local` shortcut plus the JSON and Markdown handoff paths so CI
+and local status packets expose the same entrypoint. After dependencies are installed,
 `pnpm run verify:local` runs `check:file-size`, `typecheck`, `lint`, `test`,
 and `build` sequentially, then writes the same `tmp/project-status.json` and
 `tmp/project-status-handoff.md` local handoff files. The main CI workflow writes
