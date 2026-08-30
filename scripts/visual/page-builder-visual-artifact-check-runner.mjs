@@ -211,6 +211,7 @@ function createArtifactCheckReport(context) {
   return {
     artifactDir: context.artifactDir,
     expectedScreenshotCount: context.expectedScreenshots.size,
+    issueCount: context.issues.length,
     issues: context.issues,
     presentDesignReferenceCount: context.presentDesignReferenceCount,
     presentRequiredFileCount: context.presentRequiredFileCount,

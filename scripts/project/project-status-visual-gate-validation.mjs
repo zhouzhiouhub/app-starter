@@ -77,6 +77,10 @@ function assertNullableVisualArtifactCheck(visual) {
     "releaseGate.visual.artifactCheck.artifactDir",
   );
   assertString(check.status, "releaseGate.visual.artifactCheck.status");
+  assertOptionalNonNegativeNumber(
+    check.issueCount,
+    "releaseGate.visual.artifactCheck.issueCount",
+  );
 
   for (const field of [
     "expectedScreenshotCount",
@@ -129,6 +133,11 @@ function assertNullableVisualArtifactCheck(visual) {
       check.referencedDesignReferenceCount,
       "releaseGate.visual.artifactCheck.presentDesignReferenceCount",
       "referencedDesignReferenceCount",
+    );
+  }
+  if (check.status === "complete" && (check.issueCount ?? 0) > 0) {
+    throw new Error(
+      "Project status artifact complete releaseGate.visual.artifactCheck must have no issues.",
     );
   }
 }

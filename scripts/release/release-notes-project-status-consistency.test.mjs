@@ -107,6 +107,27 @@ test("release notes project status consistency rejects visual artifact dir misma
   );
 });
 
+test("release notes project status consistency rejects visual artifact issue count mismatches", () => {
+  const releaseArtifact = createReleaseArtifact();
+  const projectStatus = createProjectStatus();
+
+  releaseArtifact.visual.artifactCheck = createCompleteArtifactCheck();
+  projectStatus.releaseGate.visual.artifactCheck = {
+    ...createCompleteArtifactCheck(),
+    issueCount: 1,
+  };
+  projectStatus.releaseGate.visual.artifactStatus = "complete";
+
+  assert.throws(
+    () =>
+      assertReleaseNotesProjectStatusConsistency(
+        releaseArtifact,
+        projectStatus,
+      ),
+    /project status releaseGate\.visual\.artifactCheck\.issueCount must match release-evidence-check\.v1/,
+  );
+});
+
 function createReleaseArtifact() {
   return {
     blockerCount: 0,
@@ -139,6 +160,7 @@ function createCompleteArtifactCheck() {
   return {
     artifactDir: "reports/visual/page-builder-fixture",
     expectedScreenshotCount: 12,
+    issueCount: 0,
     presentRequiredFileCount: 6,
     presentScreenshotCount: 12,
     requiredFileCount: 6,

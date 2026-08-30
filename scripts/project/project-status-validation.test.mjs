@@ -134,6 +134,25 @@ test("project status artifact validation rejects invalid visual artifact counts"
   );
 });
 
+test("project status artifact validation rejects complete visual artifact issues", () => {
+  const artifact = createArtifact();
+  artifact.releaseGate.visual.artifactStatus = "complete";
+  artifact.releaseGate.visual.artifactCheck = {
+    artifactDir: "reports/visual/page-builder-fixture",
+    expectedScreenshotCount: 12,
+    issueCount: 1,
+    presentRequiredFileCount: 6,
+    presentScreenshotCount: 12,
+    requiredFileCount: 6,
+    status: "complete",
+  };
+
+  assert.throws(
+    () => assertProjectStatusArtifact(artifact),
+    /complete releaseGate\.visual\.artifactCheck must have no issues/,
+  );
+});
+
 test("project status writer validates artifacts before writing", async () => {
   const outputPath = `tmp/project-status-invalid-${process.pid}-${Date.now()}.json`;
 

@@ -154,6 +154,7 @@ function createVisualArtifactCheckSummary(check) {
   return {
     artifactDir: readText(check.artifactDir),
     expectedScreenshotCount: readCount(check.expectedScreenshotCount),
+    issueCount: readVisualArtifactIssueCount(check),
     ...createOptionalCount(
       "presentDesignReferenceCount",
       check.presentDesignReferenceCount,
@@ -167,6 +168,13 @@ function createVisualArtifactCheckSummary(check) {
     requiredFileCount: readCount(check.requiredFileCount),
     status: readText(check.status) ?? "unknown",
   };
+}
+
+function readVisualArtifactIssueCount(check) {
+  return (
+    readCount(check.issueCount) ??
+    (Array.isArray(check.issues) ? check.issues.length : 0)
+  );
 }
 
 function createOptionalCount(field, value) {

@@ -156,6 +156,7 @@ function formatVisualArtifactDetails(artifactCheck) {
 
   const detailText = [
     formatVisualArtifactDir(artifactCheck.artifactDir),
+    formatVisualArtifactIssueCount(artifactCheck.issueCount),
     formatVisualArtifactCount(
       artifactCheck.presentRequiredFileCount,
       artifactCheck.requiredFileCount,
@@ -174,6 +175,10 @@ function formatVisualArtifactDetails(artifactCheck) {
   ].filter(Boolean);
 
   return detailText.length > 0 ? ` (${detailText.join(", ")})` : "";
+}
+
+function formatVisualArtifactIssueCount(issueCount) {
+  return Number.isFinite(issueCount) ? `${issueCount} issues` : null;
 }
 
 function formatVisualArtifactDir(artifactDir) {

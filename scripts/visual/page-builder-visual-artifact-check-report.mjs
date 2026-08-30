@@ -3,6 +3,7 @@ export function formatPageBuilderVisualArtifactCheckReport(report) {
     "Page Builder visual artifact check",
     `Status: ${report.status}`,
     `Artifact dir: ${report.artifactDir}`,
+    `Issues: ${readIssueCount(report)}`,
     `Required files: ${report.presentRequiredFileCount}/${report.requiredFileCount}`,
     `Screenshots: ${report.presentScreenshotCount}/${report.expectedScreenshotCount}`,
     ...formatDesignReferences(report),
@@ -32,6 +33,14 @@ function formatDesignReferences(report) {
   return [
     `Design references: ${report.presentDesignReferenceCount}/${report.referencedDesignReferenceCount}`,
   ];
+}
+
+function readIssueCount(report) {
+  if (Number.isFinite(report.issueCount)) {
+    return report.issueCount;
+  }
+
+  return Array.isArray(report.issues) ? report.issues.length : 0;
 }
 
 export function formatPageBuilderVisualArtifactCheckUsage() {

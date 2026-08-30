@@ -13,6 +13,7 @@ test("project status summarizes visual artifact counts", () => {
   check.visualArtifact = {
     artifactDir: "reports/visual/page-builder-fixture",
     expectedScreenshotCount: 12,
+    issueCount: 0,
     presentDesignReferenceCount: 12,
     presentRequiredFileCount: 6,
     presentScreenshotCount: 12,
@@ -29,6 +30,7 @@ test("project status summarizes visual artifact counts", () => {
   assert.deepEqual(artifact.releaseGate.visual.artifactCheck, {
     artifactDir: "reports/visual/page-builder-fixture",
     expectedScreenshotCount: 12,
+    issueCount: 0,
     presentDesignReferenceCount: 12,
     presentRequiredFileCount: 6,
     presentScreenshotCount: 12,
@@ -38,11 +40,11 @@ test("project status summarizes visual artifact counts", () => {
   });
   assert.match(
     terminalText,
-    /Page Builder Visual: needs-evidence, components 0\/6, viewports 0\/12, pending tasks 12, artifact complete \(reports\/visual\/page-builder-fixture, 6\/6 files, 12\/12 screenshots, 12\/12 design references\)/,
+    /Page Builder Visual: needs-evidence, components 0\/6, viewports 0\/12, pending tasks 12, artifact complete \(reports\/visual\/page-builder-fixture, 0 issues, 6\/6 files, 12\/12 screenshots, 12\/12 design references\)/,
   );
   assert.match(
     markdown,
-    /Page Builder Visual: needs-evidence, 0\/6 components, 0\/12 viewports, 12 pending tasks, artifact complete \(reports\/visual\/page-builder-fixture, 6\/6 files, 12\/12 screenshots, 12\/12 design references\)/,
+    /Page Builder Visual: needs-evidence, 0\/6 components, 0\/12 viewports, 12 pending tasks, artifact complete \(reports\/visual\/page-builder-fixture, 0 issues, 6\/6 files, 12\/12 screenshots, 12\/12 design references\)/,
   );
 });
 
@@ -55,7 +57,13 @@ test("project status docs mention visual artifact path and counts", async () => 
 
   assert.match(readme, /artifact complete` 及 artifact 路径、文件\/截图计数/);
   assert.match(readme, /releaseGate\.visual\.artifactCheck/);
-  assert.match(setupDoc, /prints its artifact path, file, and\s+screenshot counts/s);
+  assert.match(
+    setupDoc,
+    /prints its artifact path, issue count,\s+file count, and screenshot counts/s,
+  );
   assert.match(setupDoc, /releaseGate\.visual\.artifactCheck/);
-  assert.match(releaseChecklist, /artifact path,\s+file, and screenshot counts/s);
+  assert.match(
+    releaseChecklist,
+    /artifact path,\s+issue, file, and screenshot counts/s,
+  );
 });

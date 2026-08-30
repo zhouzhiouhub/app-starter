@@ -15,18 +15,18 @@ test("release check docs mention visual artifact text summary counts", async () 
   );
   assert.match(
     setupDoc,
-    /prints the artifact path plus file and screenshot\s+counts in the text summary/s,
+    /prints the artifact path plus issue, file, and\s+screenshot counts in the text summary/s,
   );
   assert.match(
     setupDoc,
-    /readinessChecklist` with the same release tasks, visual artifact path\/count\s+details/s,
+    /readinessChecklist` with the same release tasks, visual artifact path, issue,\s+and count details/s,
   );
   assert.match(
     releaseChecklist,
-    /prints the visual artifact path plus file and screenshot\s+counts/s,
+    /prints the visual artifact path plus issue, file, and\s+screenshot counts/s,
   );
   assert.match(
     releaseChecklist,
-    /readinessChecklist` lists the\s+Production Smoke, Page Builder visual, and release notes tasks, including the\s+visual artifact path and counts/s,
+    /readinessChecklist` lists the\s+Production Smoke, Page Builder visual, and release notes tasks, including the\s+visual artifact path, issue count, and counts/s,
   );
 });

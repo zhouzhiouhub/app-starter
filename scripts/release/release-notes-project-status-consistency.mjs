@@ -105,6 +105,19 @@ function assertVisualArtifactCheckMatches(releaseCheck, projectCheck) {
       `releaseGate.visual.artifactCheck.${field}`,
     );
   }
+  assertOptionalArtifactIssueCountMatches(releaseCheck, projectCheck);
+}
+
+function assertOptionalArtifactIssueCountMatches(releaseCheck, projectCheck) {
+  if (projectCheck.issueCount === undefined) {
+    return;
+  }
+
+  assertMatches(
+    projectCheck.issueCount,
+    releaseCheck.issueCount,
+    "releaseGate.visual.artifactCheck.issueCount",
+  );
 }
 
 function readPendingViewportCount(visual) {

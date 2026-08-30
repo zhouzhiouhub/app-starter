@@ -344,8 +344,9 @@ steps for the command, evidence args, review args, input evidence, output
 record, `release-notes` artifact, and formal mode without `--allow-blocked`.
 For local status checks, `project:status` automatically includes the default
 Page Builder Visual artifact when all required files already exist under
-`reports/visual/page-builder-fixture`, prints its artifact path, file, and
-screenshot counts in the release gate summary, and records the same path and counts under
+`reports/visual/page-builder-fixture`, prints its artifact path, issue count,
+file count, and screenshot counts in the release gate summary, and records the
+same path and counts under
 `releaseGate.visual.artifactCheck`. Explicit `--visual-artifact-dir` or
 `--visual-manifest` inputs still take precedence, and `release:check` continues
 to require an explicit `--visual-artifact-dir` when release review should use a
@@ -373,18 +374,20 @@ write the combined `release-evidence-check.v1` artifact under a safe archive
 path. Add `--markdown-output artifacts/release/release-check.md` to retain the
 same combined gate status, readiness checklist, blockers, and pending visual
 tasks as a human-readable report. New JSON artifacts also include a structured
-`readinessChecklist` with the same release tasks, visual artifact path/count
-details, and `smoke.source` metadata for CI artifacts and release records.
+`readinessChecklist` with the same release tasks, visual artifact path, issue,
+and count details, and `smoke.source` metadata for CI artifacts and release
+records.
 When the release uses a downloaded Page Builder Visual artifact, add
 `--visual-artifact-dir reports/visual/page-builder-fixture`; the combined gate
 then verifies the artifact-local manifest, capture report, acceptance report,
-and all 12 PNG screenshots, prints the artifact path plus file and screenshot
-counts in the text summary, and writes the result under `visual.artifactCheck`.
+and all 12 PNG screenshots, prints the artifact path plus issue, file, and
+screenshot counts in the text summary, and writes the result under
+`visual.artifactCheck`.
 After that artifact is ready, `release:notes` writes the final Markdown release
 record, including the readiness checklist, main CI local verification run and
 artifact, preflight artifact, project status artifact and source path, the
-project completion checklist, any recorded `visual.artifactCheck` path and count
-summary, and the production smoke source run.
+project completion checklist, any recorded `visual.artifactCheck` path, issue
+count, and count summary, and the production smoke source run.
 It validates the `project-status.v1` file against
 the same release evidence gate and refuses blocked evidence unless
 `--allow-blocked` is used for a failure review draft. Blocked drafts include the

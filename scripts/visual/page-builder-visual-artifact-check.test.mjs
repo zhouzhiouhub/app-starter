@@ -22,12 +22,13 @@ test("visual artifact check accepts a complete fixture artifact", () => {
     const report = checkPageBuilderVisualArtifact({ artifactDir });
 
     assert.equal(report.status, "complete");
+    assert.equal(report.issueCount, 0);
     assert.equal(report.presentRequiredFileCount, 6);
     assert.equal(report.presentScreenshotCount, 12);
     assert.deepEqual(report.issues, []);
     assert.match(
       formatPageBuilderVisualArtifactCheckReport(report).join("\n"),
-      /Artifact is complete/,
+      /Issues: 0[\s\S]*Artifact is complete/,
     );
   } finally {
     rmSync(artifactDir, { force: true, recursive: true });
@@ -43,6 +44,7 @@ test("visual artifact check rejects missing reference import Markdown", () => {
 
     const report = checkPageBuilderVisualArtifact({ artifactDir });
     assert.equal(report.status, "invalid");
+    assert.equal(report.issueCount, report.issues.length);
     assert.equal(report.presentRequiredFileCount, 5);
     assert.equal(
       report.issues.some(

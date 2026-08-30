@@ -108,6 +108,7 @@ function createVisualArtifactItems(check, nextActions) {
 }
 
 function formatArtifactCounts(artifact) {
+  const issues = formatIssueCount(readArtifactIssueCount(artifact));
   const files = formatCount(
     artifact.presentRequiredFileCount,
     artifact.requiredFileCount,
@@ -124,11 +125,23 @@ function formatArtifactCounts(artifact) {
     "design references",
   );
 
-  const counts = [files, screenshots, designReferences]
+  const counts = [issues, files, screenshots, designReferences]
     .filter(Boolean)
     .join(", ");
 
   return counts.length > 0 ? `${counts}.` : null;
+}
+
+function readArtifactIssueCount(artifact) {
+  if (Number.isFinite(artifact.issueCount)) {
+    return artifact.issueCount;
+  }
+
+  return Array.isArray(artifact.issues) ? artifact.issues.length : null;
+}
+
+function formatIssueCount(issueCount) {
+  return Number.isFinite(issueCount) ? `${issueCount} issues` : null;
 }
 
 function formatCount(present, expected, label) {

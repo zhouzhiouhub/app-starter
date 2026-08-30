@@ -14,6 +14,7 @@ test("visual artifact check Markdown summarizes complete bundles", () => {
 
   assert.match(markdown, /^# Page Builder Visual Artifact Check/m);
   assert.match(markdown, /Status: `complete`/);
+  assert.match(markdown, /Issues: 0/);
   assert.match(markdown, /Required files: 6\/6/);
   assert.match(markdown, /Screenshots: 12\/12/);
   assert.match(markdown, /Design references: 0\/0/);
@@ -56,6 +57,7 @@ test("visual artifact check Markdown lists issues and repair command", () => {
   );
 
   assert.match(markdown, /Status: `invalid`/);
+  assert.match(markdown, /Issues: 1/);
   assert.match(markdown, /missing_artifact_file/);
   assert.doesNotMatch(markdown, /abcdefghijklmnopqrstuvwxyz123456/);
   assert.match(markdown, /pnpm visual:artifact-bundle -- --artifact-dir/);
@@ -118,10 +120,13 @@ test("visual artifact check usage documents Markdown output", () => {
 });
 
 function createArtifactCheckReport(overrides = {}) {
+  const issues = overrides.issues ?? [];
+
   return {
     artifactDir: "reports/visual/page-builder-fixture",
     expectedScreenshotCount: 12,
-    issues: [],
+    issueCount: overrides.issueCount ?? issues.length,
+    issues,
     presentRequiredFileCount: 6,
     presentScreenshotCount: 12,
     presentDesignReferenceCount: 0,

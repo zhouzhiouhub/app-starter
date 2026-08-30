@@ -62,7 +62,7 @@ test("project status completion checklist summarizes blocked evidence", () => {
   );
   assert.match(
     checklist.items[3].evidence,
-    /12\/12 design references/u,
+    /0 issues, 6\/6 files, 12\/12 screenshots, 12\/12 design references/u,
   );
   assert.equal(
     checklist.items[2].nextSteps.find(
