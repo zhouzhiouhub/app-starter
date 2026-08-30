@@ -271,7 +271,7 @@ test("project status CLI can print every next action", async () => {
     );
     assert.match(
       text,
-      /spec-table\.mobile[\s\S]*Accept passing: pnpm visual:measure -- --write --accept-passing --require-complete/,
+      /spec-table\.mobile[\s\S]*Accept passing: pnpm visual:measure -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --accept-passing --require-complete/,
     );
     assert.match(
       text,

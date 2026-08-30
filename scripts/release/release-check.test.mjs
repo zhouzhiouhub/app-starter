@@ -197,13 +197,18 @@ test("release check artifact records visual evidence gaps", () => {
     "hero-banner.desktop",
     "hero-banner.mobile",
   ]);
+  const pendingTask = artifact.visual.checklist.pendingTasks[0];
   assert.equal(artifact.visual.checklist.pendingViewportCount, 12);
   assert.equal(artifact.visual.checklist.pendingTaskCount, 12);
   assert.equal(
-    artifact.visual.checklist.pendingTasks[0].expectedDesignReference,
+    pendingTask.expectedDesignReference,
     "docs/visual/page-builder-references/hero-banner-desktop.png",
   );
-  assert.deepEqual(artifact.visual.checklist.pendingTasks[0].missing, [
+  assert.equal(
+    pendingTask.expectedPreviewScreenshot,
+    "reports/visual/page-builder-fixture/page-builder-visual-fixture-hero-banner-desktop.png",
+  );
+  assert.deepEqual(pendingTask.missing, [
     "designReference",
     "previewScreenshot",
     "visualMatchPercent >= 95",
@@ -212,16 +217,16 @@ test("release check artifact records visual evidence gaps", () => {
     "status=accepted",
   ]);
   assert.match(
-    artifact.visual.checklist.pendingTasks[0].commands.capture,
-    /pnpm visual:capture:fixture/,
+    pendingTask.commands.capture,
+    /--manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output-dir reports\/visual\/page-builder-fixture/,
   );
   assert.match(
-    artifact.visual.checklist.pendingTasks[0].commands.referenceReport,
-    /visual-reference-import-report\.md/,
+    pendingTask.commands.referenceReport,
+    /--output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md/,
   );
   assert.match(
-    artifact.visual.checklist.pendingTasks[0].commands.acceptPassing,
-    /--accept-passing --require-complete/,
+    pendingTask.commands.acceptPassing,
+    /--manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --accept-passing --require-complete/,
   );
 });
 

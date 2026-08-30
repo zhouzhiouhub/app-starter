@@ -17,6 +17,7 @@ import {
 } from "./release-check-artifact.mjs";
 import {
   createVisualEvidenceAction,
+  readVisualChecklistManifestPath,
   visualArtifactAction,
 } from "./release-check-visual-actions.mjs";
 import { createMissingSmokeArtifactAction } from "./release-check-smoke-actions.mjs";
@@ -68,7 +69,7 @@ export function createReleaseEvidenceCheck(input) {
     input.visualManifest,
     {
       evidenceRoot: input.visualEvidenceRoot,
-      manifestPath: input.visualManifestPath,
+      manifestPath: readVisualChecklistManifestPath(input),
     },
   );
   const blockers = readReleaseEvidenceBlockers({
