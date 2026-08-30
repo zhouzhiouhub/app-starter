@@ -344,7 +344,7 @@ the same release gate once, then writes `preflight.json`, `preflight.md`,
 `release-check.json`, `release-check.md`, `project-status.json`, and
 `project-status.md` under `artifacts/release/` by default so blocked and ready
 states use matching evidence. Its terminal summary prints Production Smoke,
-Page Builder Visual, and optional visual artifact statuses. It then prints the first two next actions with structured steps when available, previews the first hidden
+Page Builder Visual, and optional visual artifact status, path, and counts. It then prints the first two next actions with structured steps when available, previews the first hidden
 structured action only when the visible actions do not have steps, and
 points remaining actions to `artifacts/release/project-status.md`. Blocked
 evidence still writes the files; add `--require-ready` when the handoff should

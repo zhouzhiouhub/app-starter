@@ -270,7 +270,7 @@ later phases are explicitly approved.
   writes the preflight JSON/Markdown, combined release evidence JSON/Markdown,
   and project status JSON/Markdown from the same handoff run. The terminal
   summary prints Production Smoke, Page Builder Visual, and optional visual
-  artifact statuses. It then prints the first two next actions with structured steps when available, previews the first hidden structured action only when
+  artifact status, path, and counts. It then prints the first two next actions with structured steps when available, previews the first hidden structured action only when
   the visible actions do not have steps, and points any remaining work to
   `project-status.md`.
   It is safe for blocked review handoff because it still writes the files; add

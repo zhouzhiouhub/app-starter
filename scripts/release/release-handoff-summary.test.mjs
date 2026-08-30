@@ -27,6 +27,7 @@ test("release handoff summary exposes release evidence statuses", () => {
       smoke: { status: "blocked" },
       visual: {
         artifactCheck: {
+          artifactDir: "reports/visual/page-builder-fixture",
           expectedScreenshotCount: 12,
           presentRequiredFileCount: 6,
           presentScreenshotCount: 12,
@@ -41,7 +42,10 @@ test("release handoff summary exposes release evidence statuses", () => {
 
   assert.match(text, /Production Smoke: blocked/);
   assert.match(text, /Page Builder Visual: needs-evidence/);
-  assert.match(text, /Visual artifact: complete \(6\/6 files, 12\/12 screenshots\)/);
+  assert.match(
+    text,
+    /Visual artifact: complete \(reports\/visual\/page-builder-fixture, 6\/6 files, 12\/12 screenshots\)/,
+  );
 });
 
 test("release handoff docs describe terminal evidence statuses", async () => {
@@ -56,7 +60,7 @@ test("release handoff docs describe terminal evidence statuses", async () => {
   for (const text of [helpOutput.join("\n"), setupDoc, releaseChecklist]) {
     assert.match(
       text,
-      /terminal\s+summary prints Production Smoke,\s+Page Builder\s+Visual,\s+and optional visual\s+artifact statuses/s,
+      /terminal\s+summary prints Production Smoke,\s+Page Builder\s+Visual,\s+and optional visual\s+artifact status,\s+path,\s+and counts/s,
     );
     assert.match(
       text,
@@ -66,6 +70,6 @@ test("release handoff docs describe terminal evidence statuses", async () => {
 
   assert.match(
     readme,
-    /终端摘要会先打印 Production Smoke、Page Builder Visual 和 Visual artifact 状态，然后打印 first two next actions/s,
+    /终端摘要会先打印 Production Smoke、Page Builder Visual 和 Visual artifact 状态、路径和计数，然后打印 first two next actions/s,
   );
 });

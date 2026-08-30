@@ -118,14 +118,15 @@ function formatVisualArtifactStatus(artifactCheck) {
   }
 
   return [
-    `  Visual artifact: ${artifactCheck.status}${formatVisualArtifactCounts(
+    `  Visual artifact: ${artifactCheck.status}${formatVisualArtifactDetails(
       artifactCheck,
     )}`,
   ];
 }
 
-function formatVisualArtifactCounts(artifactCheck) {
-  const countText = [
+function formatVisualArtifactDetails(artifactCheck) {
+  const detailText = [
+    formatVisualArtifactDir(artifactCheck.artifactDir),
     formatVisualArtifactCount(
       artifactCheck.presentRequiredFileCount,
       artifactCheck.requiredFileCount,
@@ -138,7 +139,13 @@ function formatVisualArtifactCounts(artifactCheck) {
     ),
   ].filter(Boolean);
 
-  return countText.length > 0 ? ` (${countText.join(", ")})` : "";
+  return detailText.length > 0 ? ` (${detailText.join(", ")})` : "";
+}
+
+function formatVisualArtifactDir(artifactDir) {
+  return typeof artifactDir === "string" && artifactDir.length > 0
+    ? formatSmokeText(artifactDir, { maxLength: 160 })
+    : null;
 }
 
 function formatVisualArtifactCount(present, expected, label) {
@@ -179,7 +186,7 @@ Release handoff:
   project-status.json, and project-status.md from the same handoff run. Blocked
   evidence still writes the handoff; use --require-ready when the command should
   gate release. The terminal summary prints Production Smoke, Page Builder Visual,
-  and optional visual artifact statuses. It then prints the first two next actions with
+  and optional visual artifact status, path, and counts. It then prints the first two next actions with
   structured steps when available, previews the first hidden structured action
   only when the visible actions do not have steps, and points any remaining
   actions to the generated project-status Markdown.`);
