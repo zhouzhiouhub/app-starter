@@ -17,7 +17,14 @@ test("release check artifact includes ready checklist tasks", () => {
   const releaseNotesItem = artifact.readinessChecklist.items.find(
     (item) => item.label === "Release notes record",
   );
+  const visualItem = artifact.readinessChecklist.items.find(
+    (item) => item.label === "Page Builder Visual evidence",
+  );
 
+  assert.equal(
+    visualItem?.detail,
+    "6/6 components, 12/12 viewports, artifact complete (reports/visual/page-builder-fixture, 6/6 files, 12/12 screenshots)",
+  );
   assert.deepEqual(
     releaseNotesItem.steps.map((step) => step.label),
     [
@@ -52,6 +59,10 @@ test("release check artifact includes blocked checklist actions", () => {
 
   assert.equal(artifact.readinessChecklist.releaseReady, false);
   assert.equal(visualItem?.status, "needs-evidence");
+  assert.equal(
+    visualItem?.detail,
+    "0/6 components, 0/12 viewports, artifact invalid (reports/visual/page-builder-fixture, 5/6 files, 0/12 screenshots)",
+  );
   assert.match(visualItem?.action, /pnpm visual:acceptance -- --checklist/);
   assert.equal(
     visualItem?.bundleCommand,
@@ -71,6 +82,7 @@ function createReadyCheck() {
     releaseReady: true,
     smoke: createSmokeCheck({ releaseReady: true }),
     visual: createVisualCheck({ status: "accepted" }),
+    visualArtifact: createCompleteVisualArtifact(),
     visualManifestPath: "docs/development/page-builder-visual-acceptance.json",
   };
 }
@@ -92,6 +104,7 @@ function createBlockedCheck() {
     releaseReady: false,
     smoke: createSmokeCheck({ releaseReady: false }),
     visual: createVisualCheck({ status: "needs-evidence" }),
+    visualArtifact: createInvalidVisualArtifact(),
     visualArtifactDir: "reports/visual/page-builder-fixture",
     visualManifestPath: "docs/development/page-builder-visual-acceptance.json",
   };
@@ -144,5 +157,29 @@ function createVisualCheck(input) {
     status: input.status,
     viewportCount: 12,
     warningCount: 0,
+  };
+}
+
+function createCompleteVisualArtifact() {
+  return {
+    artifactDir: "reports/visual/page-builder-fixture",
+    expectedScreenshotCount: 12,
+    issues: [],
+    presentRequiredFileCount: 6,
+    presentScreenshotCount: 12,
+    requiredFileCount: 6,
+    status: "complete",
+  };
+}
+
+function createInvalidVisualArtifact() {
+  return {
+    artifactDir: "reports/visual/page-builder-fixture",
+    expectedScreenshotCount: 12,
+    issues: [],
+    presentRequiredFileCount: 5,
+    presentScreenshotCount: 0,
+    requiredFileCount: 6,
+    status: "invalid",
   };
 }

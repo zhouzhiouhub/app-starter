@@ -70,7 +70,7 @@ test("release notes render required evidence and gate status", () => {
   assert.match(markdown, /Page Builder Visual evidence: ready/);
   assert.match(
     markdown,
-    / {2}- Detail: 6\/6 components, 12\/12 viewports, artifact complete/,
+    / {2}- Detail: 6\/6 components, 12\/12 viewports, artifact complete \(reports\/visual\/page-builder-fixture, 6\/6 files, 12\/12 screenshots\)/,
   );
   assert.match(markdown, /Release notes record: ready to generate/);
   assert.match(
@@ -223,7 +223,7 @@ test("release notes require ready evidence unless explicitly allowed", () => {
   );
   assert.match(
     markdown,
-    / {2}- Detail: 0\/6 components, 0\/12 viewports, artifact invalid/,
+    / {2}- Detail: 0\/6 components, 0\/12 viewports, artifact invalid \(reports\/visual\/page-builder-fixture, 5\/6 files, 0\/12 screenshots\)/,
   );
   assert.match(
     markdown,
@@ -291,7 +291,8 @@ function createReadyReadinessChecklist() {
       },
       {
         action: null,
-        detail: "6/6 components, 12/12 viewports, artifact complete",
+        detail:
+          "6/6 components, 12/12 viewports, artifact complete (reports/visual/page-builder-fixture, 6/6 files, 12/12 screenshots)",
         label: "Page Builder Visual evidence",
         status: "ready",
       },
@@ -320,7 +321,8 @@ function createBlockedReadinessChecklist() {
         action: "Attach real visual evidence.",
         bundleCommand:
           "pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture",
-        detail: "0/6 components, 0/12 viewports, artifact invalid",
+        detail:
+          "0/6 components, 0/12 viewports, artifact invalid (reports/visual/page-builder-fixture, 5/6 files, 0/12 screenshots)",
         label: "Page Builder Visual evidence",
         status: "needs-evidence",
       },

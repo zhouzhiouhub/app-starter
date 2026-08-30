@@ -62,7 +62,7 @@ function createVisualChecklistItem(check, options) {
   const detail = [
     `${check.visual.acceptedComponentCount}/${check.visual.componentCount} components`,
     `${check.visual.acceptedViewportCount}/${check.visual.viewportCount} viewports`,
-    check.visualArtifact ? `artifact ${check.visualArtifact.status}` : null,
+    formatVisualArtifactDetail(check.visualArtifact),
   ]
     .filter(Boolean)
     .join(", ");
@@ -92,6 +92,38 @@ function createVisualArtifactBundleCommand(check) {
     defaultPageBuilderVisualArtifactDir;
 
   return `pnpm visual:artifact-bundle -- --artifact-dir ${artifactDir}`;
+}
+
+function formatVisualArtifactDetail(artifact) {
+  if (!artifact) {
+    return null;
+  }
+
+  const details = [
+    artifact.artifactDir,
+    formatVisualArtifactCount(
+      artifact.presentRequiredFileCount,
+      artifact.requiredFileCount,
+      "files",
+    ),
+    formatVisualArtifactCount(
+      artifact.presentScreenshotCount,
+      artifact.expectedScreenshotCount,
+      "screenshots",
+    ),
+  ].filter(Boolean);
+
+  return `artifact ${artifact.status}${
+    details.length > 0 ? ` (${details.join(", ")})` : ""
+  }`;
+}
+
+function formatVisualArtifactCount(present, expected, label) {
+  if (!Number.isFinite(present) || !Number.isFinite(expected)) {
+    return null;
+  }
+
+  return `${present}/${expected} ${label}`;
 }
 
 function createReleaseNotesChecklistItem(check) {

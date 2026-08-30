@@ -259,7 +259,8 @@ later phases are explicitly approved.
 - `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --output artifacts/release/release-check.json --markdown-output artifacts/release/release-check.md`
   writes the combined `release-evidence-check.v1` artifact and matching
   Markdown review for the release record; its `readinessChecklist` lists the
-  Production Smoke, Page Builder visual, and release notes tasks, while
+  Production Smoke, Page Builder visual, and release notes tasks, including the
+  visual artifact path and counts when present, while
   `visual.pendingComponents`,
   `visual.pendingViewports`, `visual.issues`, and
   `visual.checklist.pendingTasks` identify any remaining Page Builder visual

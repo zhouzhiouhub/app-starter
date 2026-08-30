@@ -20,12 +20,17 @@ test("release readiness checklist summarizes ready evidence", () => {
       status: "accepted",
       viewportCount: 12,
     },
+    visualArtifact: createCompleteVisualArtifact(),
   });
   const lines = formatReleaseEvidenceReadinessChecklist(checklist).join("\n");
 
   assert.equal(checklist.releaseReady, true);
   assert.match(lines, /Production Smoke report: ready/);
   assert.match(lines, /Page Builder Visual evidence: ready/);
+  assert.match(
+    lines,
+    /Detail: 6\/6 components, 12\/12 viewports, artifact complete \(reports\/visual\/page-builder-fixture, 6\/6 files, 12\/12 screenshots\)/,
+  );
   assert.match(lines, /Release notes record: ready to generate/);
   assert.match(lines, /Steps:/);
   assert.match(lines, /Command: pnpm release:notes -- --release-tag <tag>/);
@@ -71,6 +76,7 @@ test("release readiness checklist carries blocker actions", () => {
       status: "invalid",
       viewportCount: 12,
     },
+    visualArtifact: createInvalidVisualArtifact(),
     visualArtifactDir: "reports/visual/page-builder-fixture",
     visualChecklist: createVisualChecklist(),
   });
@@ -79,6 +85,10 @@ test("release readiness checklist carries blocker actions", () => {
   assert.equal(checklist.releaseReady, false);
   assert.match(lines, /Run the Production Smoke workflow/);
   assert.match(lines, /Run pnpm visual:acceptance -- --checklist/);
+  assert.match(
+    lines,
+    /Detail: 0\/6 components, 0\/12 viewports, artifact invalid \(reports\/visual\/page-builder-fixture, 5\/6 files, 0\/12 screenshots\)/,
+  );
   assert.match(lines, /Visual tasks:/);
   assert.match(lines, /hero-banner\.desktop: missing designReference/);
   assert.match(
@@ -179,6 +189,28 @@ test("release readiness checklist formatter can preserve full task command lines
   assert.equal(truncatedText.includes(endMarker), false);
   assert.equal(fullText.includes(endMarker), true);
 });
+
+function createCompleteVisualArtifact() {
+  return {
+    artifactDir: "reports/visual/page-builder-fixture",
+    expectedScreenshotCount: 12,
+    presentRequiredFileCount: 6,
+    presentScreenshotCount: 12,
+    requiredFileCount: 6,
+    status: "complete",
+  };
+}
+
+function createInvalidVisualArtifact() {
+  return {
+    artifactDir: "reports/visual/page-builder-fixture",
+    expectedScreenshotCount: 12,
+    presentRequiredFileCount: 5,
+    presentScreenshotCount: 0,
+    requiredFileCount: 6,
+    status: "invalid",
+  };
+}
 
 function createVisualChecklist() {
   return {

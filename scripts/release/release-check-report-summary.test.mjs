@@ -9,13 +9,24 @@ test("release check docs mention visual artifact text summary counts", async () 
     readFile("docs/development/release-checklist.md", "utf8"),
   ]);
 
-  assert.match(readme, /普通文本摘要会显示 visual artifact 路径、文件\/截图计数/);
+  assert.match(
+    readme,
+    /普通文本摘要和 `readinessChecklist` 视觉条目都会显示 visual artifact 路径、文件\/截图计数/,
+  );
   assert.match(
     setupDoc,
     /prints the artifact path plus file and screenshot\s+counts in the text summary/s,
   );
   assert.match(
+    setupDoc,
+    /readinessChecklist` with the same release tasks, visual artifact path\/count\s+details/s,
+  );
+  assert.match(
     releaseChecklist,
     /prints the visual artifact path plus file and screenshot\s+counts/s,
+  );
+  assert.match(
+    releaseChecklist,
+    /readinessChecklist` lists the\s+Production Smoke, Page Builder visual, and release notes tasks, including the\s+visual artifact path and counts/s,
   );
 });

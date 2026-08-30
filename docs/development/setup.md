@@ -361,8 +361,8 @@ write the combined `release-evidence-check.v1` artifact under a safe archive
 path. Add `--markdown-output artifacts/release/release-check.md` to retain the
 same combined gate status, readiness checklist, blockers, and pending visual
 tasks as a human-readable report. New JSON artifacts also include a structured
-`readinessChecklist` with the same release tasks plus `smoke.source` metadata
-for CI artifacts and release records.
+`readinessChecklist` with the same release tasks, visual artifact path/count
+details, and `smoke.source` metadata for CI artifacts and release records.
 When the release uses a downloaded Page Builder Visual artifact, add
 `--visual-artifact-dir reports/visual/page-builder-fixture`; the combined gate
 then verifies the artifact-local manifest, capture report, acceptance report,
