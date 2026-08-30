@@ -8,6 +8,9 @@ import {
   validateCaptureReport,
 } from "./page-builder-visual-artifact-check-capture.mjs";
 import {
+  validateManifestDesignReferencePngs,
+} from "./page-builder-visual-artifact-check-design-references.mjs";
+import {
   addArtifactCheckIssue,
   createArtifactPaths,
   isObject,
@@ -127,6 +130,7 @@ function validateArtifactManifest(manifest, screenshots, context) {
   }
 
   validateManifestScreenshotPaths(manifest, screenshots, context);
+  validateManifestDesignReferencePngs(manifest, context);
   return report;
 }
 
