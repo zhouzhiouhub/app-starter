@@ -2,6 +2,7 @@ import { formatSmokeText } from "../smoke/smoke-text.mjs";
 
 const maxProjectNextActionLines = 3;
 const maxTextLength = 180;
+const maxStepTextLength = 420;
 
 export function formatProjectNextActions(projectStatus, artifact) {
   if (!projectStatus || artifact.releaseReady === true) {
@@ -57,20 +58,24 @@ function formatProjectNextActionSteps(steps) {
     .filter((step) => hasText(step?.label) && hasText(step?.value))
     .map(
       (step) =>
-        `  - ${formatInline(step.label)}: \`${formatInline(step.value)}\``,
+        `  - ${formatInline(step.label)}: \`${formatInline(step.value, {
+          maxLength: maxStepTextLength,
+        })}\``,
     );
 }
 
 function formatProjectNextActionDetail(action) {
   return hasText(action.action)
-    ? [`  - Action: ${formatInline(action.action)}`]
+    ? [`  - Action: ${formatInline(action.action, {
+        maxLength: maxStepTextLength,
+      })}`]
     : [];
 }
 
-function formatInline(value) {
+function formatInline(value, options = {}) {
   return formatSmokeText(value, {
     fallback: "unknown",
-    maxLength: maxTextLength,
+    maxLength: options.maxLength ?? maxTextLength,
   });
 }
 
