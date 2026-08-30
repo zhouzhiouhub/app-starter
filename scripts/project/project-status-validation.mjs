@@ -17,6 +17,7 @@ const localMvpScopeStatuses = new Set(["implemented"]);
 const projectStatuses = new Set(["needs-evidence", "release-ready"]);
 const releaseDecisions = new Set(["not-ready", "ready-to-release"]);
 const releaseEvidenceStatuses = new Set(["needs-evidence", "ready"]);
+const smokeMarkdownStatuses = new Set(["complete", "invalid", "missing"]);
 const smokeStatuses = new Set(["blocked", "ready"]);
 
 export function assertProjectStatusArtifact(artifact) {
@@ -36,7 +37,10 @@ export function assertProjectStatusArtifact(artifact) {
   assertBoolean(artifact.releaseReady, "releaseReady");
   assertStatusMatchesReleaseReady(artifact);
   assertCompletionSummary(artifact.completionSummary, artifact.releaseReady);
-  assertCompletionChecklist(artifact.completionChecklist, artifact.releaseReady);
+  assertCompletionChecklist(
+    artifact.completionChecklist,
+    artifact.releaseReady,
+  );
   assertStringList(artifact.completedMilestones, "completedMilestones");
   assertLocalVerification(artifact.localVerification);
   assertReleaseGate(artifact.releaseGate);
@@ -151,19 +155,53 @@ function assertReleaseGate(releaseGate) {
 
 function assertSmokeGate(smoke) {
   if (!isRecord(smoke)) {
-    throw new Error("Project status artifact releaseGate.smoke must be an object.");
+    throw new Error(
+      "Project status artifact releaseGate.smoke must be an object.",
+    );
   }
 
   assertNonNegativeNumber(smoke.blockerCount, "releaseGate.smoke.blockerCount");
   assertNullableString(smoke.path, "releaseGate.smoke.path");
   assertEnum(smoke.status, smokeStatuses, "releaseGate.smoke.status");
   assertString(smoke.summaryStatus, "releaseGate.smoke.summaryStatus");
+  assertOptionalSmokeMarkdown(smoke.markdown);
 
   if (smoke.status === "ready" && smoke.blockerCount !== 0) {
     throw new Error(
       "Project status artifact ready smoke gate must have zero blockers.",
     );
   }
+
+  if (smoke.status === "ready" && smoke.markdown?.status !== undefined) {
+    assertEnum(
+      smoke.markdown.status,
+      new Set(["complete"]),
+      "releaseGate.smoke.markdown.status",
+    );
+  }
+}
+
+function assertOptionalSmokeMarkdown(markdown) {
+  if (markdown === undefined || markdown === null) {
+    return;
+  }
+
+  if (!isRecord(markdown)) {
+    throw new Error(
+      "Project status artifact releaseGate.smoke.markdown must be an object when present.",
+    );
+  }
+
+  assertNullableString(markdown.path, "releaseGate.smoke.markdown.path");
+  assertEnum(
+    markdown.status,
+    smokeMarkdownStatuses,
+    "releaseGate.smoke.markdown.status",
+  );
+  assertNonNegativeNumber(
+    markdown.issueCount,
+    "releaseGate.smoke.markdown.issueCount",
+  );
 }
 
 function assertNextActions(artifact) {
@@ -219,12 +257,16 @@ function assertNextActionSteps(steps) {
   }
 
   if (!Array.isArray(steps)) {
-    throw new Error("Project status artifact nextActions.steps must be an array.");
+    throw new Error(
+      "Project status artifact nextActions.steps must be an array.",
+    );
   }
 
   for (const step of steps) {
     if (!isRecord(step)) {
-      throw new Error("Project status artifact nextActions.steps must contain objects.");
+      throw new Error(
+        "Project status artifact nextActions.steps must contain objects.",
+      );
     }
 
     assertString(step.label, "nextActions.steps.label");
@@ -252,8 +294,6 @@ function assertStatusMatchesReleaseReady(artifact) {
   const expected = artifact.releaseReady ? "release-ready" : "needs-evidence";
 
   if (artifact.status !== expected) {
-    throw new Error(
-      "Project status artifact status must match releaseReady.",
-    );
+    throw new Error("Project status artifact status must match releaseReady.");
   }
 }

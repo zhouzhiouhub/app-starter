@@ -106,12 +106,35 @@ function formatCompletedMilestones(milestones) {
 
 function formatReleaseGate(gate) {
   return [
-    `- Production Smoke: ${formatText(gate.smoke.status)} (${formatText(
-      gate.smoke.summaryStatus,
-    )})`,
+    `- Production Smoke: ${formatSmokeGate(gate.smoke)}`,
     `- Page Builder Visual: ${formatVisualGate(gate.visual)}`,
     `- Blockers: ${gate.blockerCount}`,
   ];
+}
+
+function formatSmokeGate(smoke) {
+  return [
+    `${formatText(smoke.status)} (${formatText(smoke.summaryStatus)})`,
+    formatSmokeMarkdownSummary(smoke.markdown),
+  ]
+    .filter(Boolean)
+    .join(", ");
+}
+
+function formatSmokeMarkdownSummary(markdown) {
+  if (!markdown) {
+    return null;
+  }
+
+  return `Markdown ${formatText(markdown.status)}${formatSmokeMarkdownDetails(
+    markdown,
+  )}`;
+}
+
+function formatSmokeMarkdownDetails(markdown) {
+  return typeof markdown.path === "string" && markdown.path.length > 0
+    ? ` (${formatText(markdown.path)})`
+    : "";
 }
 
 function formatVisualGate(visual) {

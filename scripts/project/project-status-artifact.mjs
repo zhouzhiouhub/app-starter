@@ -112,6 +112,7 @@ function createReleaseGateSummary(check) {
     blockerCount: check.blockers.length,
     smoke: {
       blockerCount: countBlockers(check, "Production Smoke"),
+      markdown: createSmokeMarkdownSummary(check.smoke.markdown),
       path: readText(check.smoke.path),
       status: check.smoke.releaseReady ? "ready" : "blocked",
       summaryStatus: readText(check.smoke.summary?.status) ?? "unknown",
@@ -124,10 +125,24 @@ function createReleaseGateSummary(check) {
       componentCount: check.visual.componentCount,
       pendingComponentCount: readPendingCount(check.visual.records),
       pendingTaskCount: readVisualPendingTaskCount(check.visualChecklist),
-      pendingViewportCount: readVisualPendingViewportCount(check.visualChecklist),
+      pendingViewportCount: readVisualPendingViewportCount(
+        check.visualChecklist,
+      ),
       status: check.visual.status,
       viewportCount: check.visual.viewportCount,
     },
+  };
+}
+
+function createSmokeMarkdownSummary(markdown) {
+  if (!markdown) {
+    return null;
+  }
+
+  return {
+    issueCount: readCount(markdown.issueCount) ?? 0,
+    path: readText(markdown.path),
+    status: readText(markdown.status) ?? "unknown",
   };
 }
 

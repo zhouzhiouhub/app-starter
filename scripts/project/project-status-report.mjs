@@ -18,7 +18,7 @@ export function formatProjectStatusArtifact(artifact, options = {}) {
     "  Completed milestones:",
     ...artifact.completedMilestones.map((milestone) => `    - ${milestone}`),
     "  Release gate:",
-    `    - Production Smoke: ${artifact.releaseGate.smoke.status} (${artifact.releaseGate.smoke.summaryStatus})`,
+    `    - Production Smoke: ${formatSmokeGate(artifact.releaseGate.smoke)}`,
     `    - Page Builder Visual: ${formatVisualGate(artifact.releaseGate.visual)}`,
     `    - Blockers: ${artifact.releaseGate.blockerCount}`,
     "  Local verification:",
@@ -57,9 +57,7 @@ function formatCompletionChecklistItem(item) {
   if (Array.isArray(item.nextSteps) && item.nextSteps.length > 0) {
     lines.push("      Next steps:");
     lines.push(
-      ...item.nextSteps.map(
-        (step) => `        - ${step.label}: ${step.value}`,
-      ),
+      ...item.nextSteps.map((step) => `        - ${step.label}: ${step.value}`),
     );
   }
 
@@ -104,6 +102,29 @@ export async function writeProjectStatusArtifact(outputPath, artifact) {
 
   await mkdir(dirname(outputPath), { recursive: true });
   await writeFile(outputPath, `${JSON.stringify(artifact, null, 2)}\n`, "utf8");
+}
+
+function formatSmokeGate(smoke) {
+  return [
+    `${smoke.status} (${smoke.summaryStatus})`,
+    formatSmokeMarkdownSummary(smoke.markdown),
+  ]
+    .filter(Boolean)
+    .join(", ");
+}
+
+function formatSmokeMarkdownSummary(markdown) {
+  if (!markdown) {
+    return null;
+  }
+
+  return `Markdown ${markdown.status}${formatSmokeMarkdownDetails(markdown)}`;
+}
+
+function formatSmokeMarkdownDetails(markdown) {
+  return typeof markdown.path === "string" && markdown.path.length > 0
+    ? ` (${markdown.path})`
+    : "";
 }
 
 function formatVisualGate(visual) {
@@ -170,7 +191,10 @@ function formatVisualArtifactCount(present, expected, label) {
 }
 
 function formatProjectNextActions(artifact) {
-  if (!Array.isArray(artifact.nextActions) || artifact.nextActions.length === 0) {
+  if (
+    !Array.isArray(artifact.nextActions) ||
+    artifact.nextActions.length === 0
+  ) {
     return ["    - None"];
   }
 
