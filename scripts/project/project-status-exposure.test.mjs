@@ -160,11 +160,8 @@ test("placeholder packages without test files skip bare node test", async () => 
   }
 });
 
-test("workspace packages with tests use explicit test file globs", async () => {
+test("workspace packages with dist tests use explicit test file globs", async () => {
   const packagePaths = [
-    "apps/admin/package.json",
-    "apps/web/package.json",
-    "packages/analytics/package.json",
     "packages/renderer/package.json",
     "packages/schema/package.json",
     "packages/ui/package.json",
@@ -183,6 +180,29 @@ test("workspace packages with tests use explicit test file globs", async () => {
       packageJson.scripts?.test,
       "node --test test/*.test.mjs",
       `${packagePath} should avoid platform-specific node --test discovery.`,
+    );
+  }
+});
+
+test("workspace packages with source imports use the TypeScript test loader", async () => {
+  const packagePaths = [
+    "apps/admin/package.json",
+    "apps/web/package.json",
+    "packages/analytics/package.json",
+  ];
+
+  const packages = await Promise.all(
+    packagePaths.map(async (packagePath) => ({
+      packagePath,
+      packageJson: JSON.parse(await readFile(packagePath, "utf8")),
+    })),
+  );
+
+  for (const { packagePath, packageJson } of packages) {
+    assert.equal(
+      packageJson.scripts?.test,
+      "node --import ../../scripts/register-typescript-test-loader.mjs --test test/*.test.mjs",
+      `${packagePath} should run TypeScript source imports on Node 20.`,
     );
   }
 });
