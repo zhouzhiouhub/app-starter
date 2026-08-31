@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import {
-  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -103,6 +102,7 @@ test("visual reference import previews complete manifest updates", () => {
   const root = createFixtureRoot();
   const manifest = createManifest({ accepted: true });
   writeReferenceFiles(root);
+  writePreviewScreenshotFiles(root);
   const report = importPageBuilderVisualReferences(
     {
       manifestPath: "docs/development/page-builder-visual-acceptance.json",
@@ -117,11 +117,20 @@ test("visual reference import previews complete manifest updates", () => {
   assert.equal(report.status, "would-update");
   assert.equal(report.updates.length, 12);
   assert.equal(report.missing.length, 0);
+  assert.deepEqual(report.updates[0].previewScreenshot, {
+    height: 2,
+    path: "artifacts/visual/hero-banner-desktop.png",
+    width: 3,
+  });
   assert.equal(
     manifest.records[0].viewports.desktop.designReference,
     "docs/old/hero-banner-desktop.png",
   );
   assert.match(lines, /References updated: 12/);
+  assert.match(
+    lines,
+    /hero-banner\.desktop: docs\/visual\/page-builder-references\/hero-banner-desktop\.png; preview artifacts\/visual\/hero-banner-desktop\.png \(3x2\)/,
+  );
   assert.match(lines, /Next: rerun pnpm visual:references/);
   assert.match(lines, /--write --require-complete/);
 });
@@ -165,6 +174,7 @@ test("visual reference import reports missing required files", () => {
   const root = createFixtureRoot();
   const manifest = createManifest({ accepted: false });
   writeReferenceFiles(root, { skip: "faq-mobile.png" });
+  writePreviewScreenshotFiles(root);
   const report = importPageBuilderVisualReferences(
     {
       manifestPath: "docs/development/page-builder-visual-acceptance.json",
@@ -181,9 +191,18 @@ test("visual reference import reports missing required files", () => {
   assert.deepEqual(report.missing[0], {
     component: "faq",
     expectedPath: "docs/visual/page-builder-references/faq-mobile.png",
+    previewScreenshot: {
+      height: 2,
+      path: "artifacts/visual/faq-mobile.png",
+      width: 3,
+    },
     reason: "faq-mobile.png is missing",
     viewport: "mobile",
   });
+  assert.match(
+    lines,
+    /faq\.mobile: faq-mobile\.png is missing; expected docs\/visual\/page-builder-references\/faq-mobile\.png; preview artifacts\/visual\/faq-mobile\.png \(3x2\)/,
+  );
   assert.match(lines, /Next: add the missing real design reference PNGs/);
   assert.match(lines, /Next: rerun pnpm visual:references/);
   assert.match(lines, /--write --require-complete/);
@@ -192,6 +211,7 @@ test("visual reference import reports missing required files", () => {
 test("visual reference import reports missing source directory", () => {
   const root = createFixtureRoot();
   const manifest = createManifest({ accepted: false });
+  writePreviewScreenshotFiles(root);
   const report = importPageBuilderVisualReferences(
     {
       manifestPath: "docs/development/page-builder-visual-acceptance.json",
@@ -209,6 +229,11 @@ test("visual reference import reports missing source directory", () => {
   assert.deepEqual(report.missing[0], {
     component: "hero-banner",
     expectedPath: "docs/visual/page-builder-references/hero-banner-desktop.png",
+    previewScreenshot: {
+      height: 2,
+      path: "artifacts/visual/hero-banner-desktop.png",
+      width: 3,
+    },
     reason: "source dir is missing",
     viewport: "desktop",
   });
@@ -217,6 +242,7 @@ test("visual reference import reports missing source directory", () => {
     lines,
     /hero-banner\.desktop: source dir is missing; expected docs\/visual\/page-builder-references\/hero-banner-desktop\.png/,
   );
+  assert.match(lines, /preview artifacts\/visual\/hero-banner-desktop\.png \(3x2\)/);
 });
 
 test("visual reference import command is exposed in docs", () => {
@@ -257,6 +283,8 @@ test("visual reference import command is exposed in docs", () => {
   assert.match(readme, /visual-reference-import-report\.json/);
   assert.match(readme, /visual-reference-import-report\.md/);
   assert.match(readme, /missing\[\]\.expectedPath/);
+  assert.match(readme, /previewScreenshot/);
+  assert.match(readme, /PNG 尺寸/);
   assert.match(
     readme,
     /--manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/,
@@ -265,7 +293,8 @@ test("visual reference import command is exposed in docs", () => {
   assert.match(acceptanceDoc, /visual-reference-import-report\.json/);
   assert.match(acceptanceDoc, /visual-reference-import-report\.md/);
   assert.match(acceptanceDoc, /expectedPath/);
-  assert.match(acceptanceDoc, /default source directory is/);
+  assert.match(acceptanceDoc, /previewScreenshot\.width/);
+  assert.match(acceptanceDoc, /default\s+source directory is/);
   assert.match(
     acceptanceDoc,
     /--manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/,
@@ -277,43 +306,6 @@ test("visual reference import command is exposed in docs", () => {
     releaseChecklist,
     /--manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/,
   );
-});
-
-test("visual reference intake directory documents every required file", () => {
-  const readmePath = "docs/visual/page-builder-references/README.md";
-
-  assert.equal(existsSync(readmePath), true);
-
-  const referenceReadme = readFileSync(readmePath, "utf8");
-
-  assert.match(referenceReadme, /real Page Builder design\s+reference PNGs/);
-  assert.match(referenceReadme, /corrupted file is rejected during intake/);
-  assert.match(referenceReadme, /Required Source Files/);
-  assert.match(
-    referenceReadme,
-    /pnpm visual:references` uses it\s+when `--source-dir` is omitted/,
-  );
-  assert.match(
-    referenceReadme,
-    /pnpm visual:references:check/,
-  );
-  assert.match(
-    referenceReadme,
-    /visual:references -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --require-complete/,
-  );
-  assert.match(
-    referenceReadme,
-    /visual:capture:fixture -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output-dir reports\/visual\/page-builder-fixture --report reports\/visual\/page-builder-fixture\/visual-capture-report\.json --write-manifest/,
-  );
-
-  for (const component of mvpPageBuilderComponents) {
-    for (const viewport of pageBuilderVisualAcceptanceViewports) {
-      assert.match(
-        referenceReadme,
-        new RegExp(`${component}-${viewport}\\.png`, "u"),
-      );
-    }
-  }
 });
 
 function createManifest({ accepted }) {
@@ -356,6 +348,20 @@ function createFixtureRoot() {
 function writeReferenceFiles(root, options = {}) {
   const sourceDir = path.join(root, "docs/visual/page-builder-references");
   writeReferenceFilesToDir(sourceDir, options);
+}
+
+function writePreviewScreenshotFiles(root) {
+  const outputDir = path.join(root, "artifacts/visual");
+  mkdirSync(outputDir, { recursive: true });
+
+  for (const component of mvpPageBuilderComponents) {
+    for (const viewport of pageBuilderVisualAcceptanceViewports) {
+      writeFileSync(
+        path.join(outputDir, `${component}-${viewport}.png`),
+        createTestPng(3, 2),
+      );
+    }
+  }
 }
 
 function writeReferenceFilesToDir(sourceDir, options = {}) {

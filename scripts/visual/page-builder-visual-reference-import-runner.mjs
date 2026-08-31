@@ -4,6 +4,7 @@ import {
   mvpPageBuilderComponents,
   pageBuilderVisualAcceptanceViewports,
 } from "./page-builder-visual-acceptance-constants.mjs";
+import { readPageBuilderVisualReferencePreviewScreenshot } from "./page-builder-visual-reference-preview-screenshot.mjs";
 import { readPngImage } from "./png-image-reader.mjs";
 
 export function readPageBuilderVisualReferenceImportManifest(manifestPath) {
@@ -36,6 +37,7 @@ export function importPageBuilderVisualReferences(config, input = {}) {
       updateViewportReference({
         component,
         config,
+        cwd,
         missing,
         record,
         references: referenceInput.files,
@@ -67,18 +69,29 @@ export function importPageBuilderVisualReferences(config, input = {}) {
 
 function updateViewportReference(input) {
   const evidence = input.record?.viewports?.[input.viewport];
+  const previewScreenshot = readPageBuilderVisualReferencePreviewScreenshot(
+    evidence,
+    input.cwd,
+  );
+  const referenceInput = {
+    ...input,
+    previewScreenshot,
+  };
   const file = input.references.get(
     createReferenceFileName(input.component, input.viewport),
   );
 
   if (!evidence) {
-    addMissingReference(input, "manifest viewport evidence slot is missing");
+    addMissingReference(
+      referenceInput,
+      "manifest viewport evidence slot is missing",
+    );
     return;
   }
 
   if (input.sourceDirStatus !== "ready") {
     addMissingReference(
-      input,
+      referenceInput,
       createSourceDirMissingReason(input.sourceDirStatus),
     );
     return;
@@ -86,20 +99,23 @@ function updateViewportReference(input) {
 
   if (!file) {
     addMissingReference(
-      input,
+      referenceInput,
       `${createReferenceFileName(input.component, input.viewport)} is missing`,
     );
     return;
   }
 
   if (file.empty) {
-    addMissingReference(input, `${file.name} must be a non-empty design PNG`);
+    addMissingReference(
+      referenceInput,
+      `${file.name} must be a non-empty design PNG`,
+    );
     return;
   }
 
   if (file.pngError) {
     addMissingReference(
-      input,
+      referenceInput,
       `${file.name} must be a readable PNG: ${file.pngError}`,
     );
     return;
@@ -120,6 +136,7 @@ function updateViewportReference(input) {
   input.updates.push({
     component: input.component,
     designReference: nextPath,
+    ...(previewScreenshot ? { previewScreenshot } : {}),
     viewport: input.viewport,
   });
 }
@@ -132,6 +149,9 @@ function addMissingReference(input, reason) {
       input.component,
       input.viewport,
     ),
+    ...(input.previewScreenshot
+      ? { previewScreenshot: input.previewScreenshot }
+      : {}),
     reason,
     viewport: input.viewport,
   });

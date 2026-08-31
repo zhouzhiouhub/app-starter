@@ -92,15 +92,24 @@ function formatRequiredSourceFile(input) {
 }
 
 function formatRequiredSourceFileDetail(input) {
+  const previewScreenshot = formatPreviewScreenshot(
+    input.missing?.previewScreenshot ?? input.update?.previewScreenshot,
+  );
+  const previewDetail = previewScreenshot
+    ? `; preview ${previewScreenshot}`
+    : "";
+
   if (input.missing) {
-    return ` - ${formatText(input.missing.reason)}`;
+    return ` - ${formatText(input.missing.reason)}${previewDetail}`;
   }
 
   if (input.update) {
-    return ` - imports ${formatCode(input.update.designReference)}`;
+    return ` - imports ${formatCode(
+      input.update.designReference,
+    )}${previewDetail}`;
   }
 
-  return "";
+  return previewDetail ? ` - preview ${previewScreenshot}` : "";
 }
 
 function readRequiredSourceFileStatus(input) {
@@ -146,7 +155,9 @@ function formatUpdates(updates) {
     (update) =>
       `- ${formatText(update.component)}.${formatText(
         update.viewport,
-      )}: ${formatCode(update.designReference)}`,
+      )}: ${formatCode(update.designReference)}${formatPreviewDetail(
+        update.previewScreenshot,
+      )}`,
   );
 }
 
@@ -161,7 +172,7 @@ function formatMissingReferences(report) {
         missing.viewport,
       )}: ${formatText(missing.reason)}; expected ${formatCode(
         createExpectedReferencePath(report.sourceDir, missing),
-      )}`,
+      )}${formatPreviewDetail(missing.previewScreenshot)}`,
   );
 }
 
@@ -220,6 +231,37 @@ function createExpectedReferencePath(sourceDir, reference) {
 
 function formatCode(value) {
   return `\`${formatText(value).replaceAll("`", "'")}\``;
+}
+
+function formatPreviewDetail(previewScreenshot) {
+  const formatted = formatPreviewScreenshot(previewScreenshot);
+
+  return formatted ? `; preview ${formatted}` : "";
+}
+
+function formatPreviewScreenshot(previewScreenshot) {
+  if (
+    !previewScreenshot ||
+    typeof previewScreenshot !== "object" ||
+    Array.isArray(previewScreenshot) ||
+    typeof previewScreenshot.path !== "string" ||
+    previewScreenshot.path.length === 0
+  ) {
+    return "";
+  }
+
+  const dimensions =
+    Number.isFinite(previewScreenshot.width) &&
+    Number.isFinite(previewScreenshot.height)
+      ? ` (${previewScreenshot.width}x${previewScreenshot.height})`
+      : "";
+  const error =
+    typeof previewScreenshot.error === "string" &&
+    previewScreenshot.error.length > 0
+      ? ` (unreadable: ${formatText(previewScreenshot.error)})`
+      : "";
+
+  return `${formatCode(previewScreenshot.path)}${dimensions}${error}`;
 }
 
 function formatText(value) {

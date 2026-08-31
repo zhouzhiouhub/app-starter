@@ -20,7 +20,9 @@ export function formatPageBuilderVisualReferenceImportReport(report) {
 
     for (const update of report.updates) {
       lines.push(
-        `    - ${update.component}.${update.viewport}: ${update.designReference}`,
+        `    - ${update.component}.${update.viewport}: ${
+          update.designReference
+        }${formatPreviewDetail(update.previewScreenshot)}`,
       );
     }
   }
@@ -33,7 +35,7 @@ export function formatPageBuilderVisualReferenceImportReport(report) {
         `    - ${missing.component}.${missing.viewport}: ${missing.reason}; expected ${createExpectedReferencePath(
           report.sourceDir,
           missing,
-        )}`,
+        )}${formatPreviewDetail(missing.previewScreenshot)}`,
       );
     }
   }
@@ -74,4 +76,34 @@ function createExpectedReferencePath(sourceDir, missing) {
     missing.expectedPath.length > 0
     ? missing.expectedPath
     : `${sourceDir}/${missing.component}-${missing.viewport}.png`;
+}
+
+function formatPreviewDetail(previewScreenshot) {
+  if (
+    !previewScreenshot ||
+    typeof previewScreenshot !== "object" ||
+    Array.isArray(previewScreenshot) ||
+    typeof previewScreenshot.path !== "string" ||
+    previewScreenshot.path.length === 0
+  ) {
+    return "";
+  }
+
+  return `; preview ${previewScreenshot.path}${formatPreviewMetadata(
+    previewScreenshot,
+  )}`;
+}
+
+function formatPreviewMetadata(previewScreenshot) {
+  if (
+    Number.isFinite(previewScreenshot.width) &&
+    Number.isFinite(previewScreenshot.height)
+  ) {
+    return ` (${previewScreenshot.width}x${previewScreenshot.height})`;
+  }
+
+  return typeof previewScreenshot.error === "string" &&
+    previewScreenshot.error.length > 0
+    ? ` (unreadable: ${previewScreenshot.error})`
+    : "";
 }

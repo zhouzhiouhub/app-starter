@@ -17,6 +17,7 @@ test("visual reference import Markdown lists required source files", () => {
   const root = createFixtureRoot();
   const manifest = createManifest({ accepted: false });
   writeReferenceFiles(root, { skip: "faq-mobile.png" });
+  writePreviewScreenshotFiles(root);
   const report = importPageBuilderVisualReferences(
     {
       manifestPath: "docs/development/page-builder-visual-acceptance.json",
@@ -40,7 +41,7 @@ test("visual reference import Markdown lists required source files", () => {
   assert.match(markdown, /## Missing References/);
   assert.match(
     markdown,
-    /faq\.mobile: faq-mobile\.png is missing; expected `docs\/visual\/page-builder-references\/faq-mobile\.png`/,
+    /faq\.mobile: faq-mobile\.png is missing; expected `docs\/visual\/page-builder-references\/faq-mobile\.png`; preview `artifacts\/visual\/faq-mobile\.png` \(3x2\)/,
   );
   assert.match(
     markdown,
@@ -58,11 +59,11 @@ function assertRequiredSourceFiles(markdown) {
   assert.equal((requiredSourceFiles.match(/^- /gm) ?? []).length, 12);
   assert.match(
     requiredSourceFiles,
-    /hero-banner\.desktop: would-update; `docs\/visual\/page-builder-references\/hero-banner-desktop\.png` - imports `docs\/visual\/page-builder-references\/hero-banner-desktop\.png`/,
+    /hero-banner\.desktop: would-update; `docs\/visual\/page-builder-references\/hero-banner-desktop\.png` - imports `docs\/visual\/page-builder-references\/hero-banner-desktop\.png`; preview `artifacts\/visual\/hero-banner-desktop\.png` \(3x2\)/,
   );
   assert.match(
     requiredSourceFiles,
-    /faq\.mobile: missing; `docs\/visual\/page-builder-references\/faq-mobile\.png` - faq-mobile\.png is missing/,
+    /faq\.mobile: missing; `docs\/visual\/page-builder-references\/faq-mobile\.png` - faq-mobile\.png is missing; preview `artifacts\/visual\/faq-mobile\.png` \(3x2\)/,
   );
   assert.match(
     requiredSourceFiles,
@@ -128,6 +129,20 @@ function writeReferenceFiles(root, options = {}) {
       if (fileName !== options.skip) {
         writeFileSync(path.join(sourceDir, fileName), createTestPng(2, 1));
       }
+    }
+  }
+}
+
+function writePreviewScreenshotFiles(root) {
+  const outputDir = path.join(root, "artifacts/visual");
+  mkdirSync(outputDir, { recursive: true });
+
+  for (const component of mvpPageBuilderComponents) {
+    for (const viewport of ["desktop", "mobile"]) {
+      writeFileSync(
+        path.join(outputDir, `${component}-${viewport}.png`),
+        createTestPng(3, 2),
+      );
     }
   }
 }

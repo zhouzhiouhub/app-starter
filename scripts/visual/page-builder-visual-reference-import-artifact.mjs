@@ -38,12 +38,12 @@ export async function writePageBuilderVisualReferenceImportArtifact(
 }
 
 function createMissingReferenceArtifact(missing, sourceDir) {
-  return {
+  return withOptionalPreviewScreenshot({
     component: missing.component,
     expectedPath: readExpectedPath(missing, sourceDir),
     reason: missing.reason,
     viewport: missing.viewport,
-  };
+  }, missing);
 }
 
 function readExpectedPath(missing, sourceDir) {
@@ -54,9 +54,46 @@ function readExpectedPath(missing, sourceDir) {
 }
 
 function createReferenceUpdateArtifact(update) {
-  return {
+  return withOptionalPreviewScreenshot({
     component: update.component,
     designReference: update.designReference,
     viewport: update.viewport,
+  }, update);
+}
+
+function withOptionalPreviewScreenshot(output, input) {
+  const previewScreenshot = readPreviewScreenshot(input.previewScreenshot);
+
+  return previewScreenshot
+    ? {
+        ...output,
+        previewScreenshot,
+      }
+    : output;
+}
+
+function readPreviewScreenshot(previewScreenshot) {
+  if (
+    !previewScreenshot ||
+    typeof previewScreenshot !== "object" ||
+    Array.isArray(previewScreenshot) ||
+    typeof previewScreenshot.path !== "string" ||
+    previewScreenshot.path.length === 0
+  ) {
+    return null;
+  }
+
+  return {
+    path: previewScreenshot.path,
+    ...(Number.isFinite(previewScreenshot.height)
+      ? { height: previewScreenshot.height }
+      : {}),
+    ...(Number.isFinite(previewScreenshot.width)
+      ? { width: previewScreenshot.width }
+      : {}),
+    ...(typeof previewScreenshot.error === "string" &&
+    previewScreenshot.error.length > 0
+      ? { error: previewScreenshot.error }
+      : {}),
   };
 }
