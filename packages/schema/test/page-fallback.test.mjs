@@ -58,6 +58,33 @@ test("privacy and terms fallback pages keep global chrome visible", () => {
   assert.equal(privacyPage.chrome.footer.enabled, true);
   assert.equal(privacyPage.chrome.footer.variant, "default");
   assert.equal(privacyPage.sections[0]?.component, "rich-text");
+  assert.equal(
+    privacyPage.sections[0]?.props.title.i18nKey,
+    "page.privacy.title",
+  );
+  assert.equal(
+    privacyPage.sections[0]?.props.content.i18nKey,
+    "page.privacy.content",
+  );
+  assert.match(
+    privacyPage.sections[0]?.props.content.defaultValue,
+    /Information we collect/,
+  );
+  assert.doesNotMatch(
+    privacyPage.sections[0]?.props.content.defaultValue,
+    /placeholder/i,
+  );
+
+  const termsPage = createFallbackPage({ slug: "legal/terms-of-service" });
+  assert.equal(termsPage.meta.title, "Terms of Service");
+  assert.equal(
+    termsPage.sections[0]?.props.title.i18nKey,
+    "page.terms.title",
+  );
+  assert.match(
+    termsPage.sections[0]?.props.content.defaultValue,
+    /Use of the site/,
+  );
 });
 
 test("404 fallback pages use the system template", () => {
@@ -72,6 +99,15 @@ test("404 fallback pages use the system template", () => {
   assert.equal(notFoundPage.seo.noIndex, true);
   assert.equal(notFoundPage.sections[0]?.id, "system-hero");
   assert.equal(notFoundPage.sections[0]?.props.eyebrow, "404");
+  assert.equal(notFoundPage.sections[0]?.props.ctaHref, "/");
+  assert.equal(
+    notFoundPage.sections[0]?.props.title.i18nKey,
+    "page.not-found.title",
+  );
+  assert.equal(
+    notFoundPage.sections[1]?.props.content.i18nKey,
+    "page.not-found.content",
+  );
 });
 
 test("fallback pages inherit site chrome content without turning chrome off", () => {

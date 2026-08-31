@@ -126,16 +126,18 @@ function isNoIndexFallbackPage(slug: string): boolean {
 
 function getFallbackPageTitle(slug: string): string {
   const normalizedSlug = slug.toLowerCase().replace(/^\/+|\/+$/g, "");
+  const leafSlug =
+    normalizedSlug.split("/").filter(Boolean).pop() ?? normalizedSlug;
 
-  if (normalizedSlug === "privacy" || normalizedSlug.endsWith("/privacy")) {
+  if (leafSlug === "privacy" || leafSlug === "privacy-policy") {
     return "Privacy Policy";
   }
 
-  if (normalizedSlug === "terms" || normalizedSlug.endsWith("/terms")) {
+  if (leafSlug === "terms" || leafSlug === "terms-of-service") {
     return "Terms of Service";
   }
 
-  if (normalizedSlug === "404" || normalizedSlug.endsWith("/404")) {
+  if (leafSlug === "404") {
     return "Page not found";
   }
 
