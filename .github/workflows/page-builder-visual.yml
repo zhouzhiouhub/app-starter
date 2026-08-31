@@ -52,6 +52,42 @@ jobs:
       - run: pnpm run check:file-size
       - run: pnpm --filter @app-starter/schema build
       - run: pnpm test:visual
+      - name: Write visual test diagnostics
+        if: failure()
+        shell: bash
+        run: |
+          mkdir -p reports/visual/page-builder-diagnostics
+          {
+            echo "## Page Builder Visual Test Diagnostics"
+            echo "- Node: \`$(node -v)\`"
+            echo "- pnpm: \`$(pnpm -v)\`"
+            echo "- Working directory: \`$(pwd)\`"
+            if test -f packages/schema/dist/index.js; then
+              echo "- Schema dist: \`present\`"
+            else
+              echo "- Schema dist: \`missing\`"
+            fi
+            echo "- Test entry: \`node scripts/visual/run-visual-tests.mjs\`"
+            echo "- Rerun log: \`reports/visual/page-builder-diagnostics/test-visual-rerun.log\`"
+            echo ""
+            echo "### Visual Test Files"
+            find scripts/visual -maxdepth 1 -name "*.test.mjs" | sort | sed "s#^#- \`#; s#$#\`#"
+            echo ""
+            echo "### Rerun Tail"
+            echo "\`\`\`text"
+          } >> "$GITHUB_STEP_SUMMARY"
+          node scripts/visual/run-visual-tests.mjs \
+            > reports/visual/page-builder-diagnostics/test-visual-rerun.log 2>&1 || true
+          tail -n 120 reports/visual/page-builder-diagnostics/test-visual-rerun.log >> "$GITHUB_STEP_SUMMARY"
+          echo "\`\`\`" >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload visual diagnostics artifact
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: page-builder-visual-diagnostics-${{ github.run_number }}
+          path: reports/visual/page-builder-diagnostics
+          if-no-files-found: error
+          retention-days: 14
       - run: pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture
         env:
           PAGE_BUILDER_VISUAL_BROWSER: google-chrome
