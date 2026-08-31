@@ -1,30 +1,36 @@
-import { Alert, Button, Typography } from "antd";
-import { useNavigate } from "react-router-dom";
+import { ReloadOutlined } from "@ant-design/icons";
 import { customAdminRoutes } from "@app-starter/custom-admin";
+import { Alert, Button, Skeleton, Space } from "antd";
+import { DashboardOverview } from "../../features/dashboard/components/dashboard-overview";
+import { useDashboardSummary } from "../../features/dashboard/hooks/use-dashboard-summary";
 
 export function DashboardPage() {
-  const navigate = useNavigate();
+  const { error, isLoading, load, summary } =
+    useDashboardSummary(customAdminRoutes);
 
   return (
-    <div>
-      <Typography.Title level={3}>Dashboard</Typography.Title>
-      <Typography.Paragraph>
-        Phase 1 is site-building first. Create and publish pages from the Pages
-        module.
-      </Typography.Paragraph>
-      <Alert
-        action={
-          <Button onClick={() => navigate("/pages")} type="primary">
-            Open pages
-          </Button>
-        }
-        message="Page list, create page, draft save, and publish are available."
-        showIcon
-        style={{ marginBottom: 24 }}
-        type="info"
-      />
-      <Typography.Title level={4}>Custom admin routes</Typography.Title>
-      <pre>{JSON.stringify(customAdminRoutes, null, 2)}</pre>
-    </div>
+    <Space direction="vertical" size={16} style={{ width: "100%" }}>
+      {error ? (
+        <Alert
+          action={
+            <Button icon={<ReloadOutlined />} onClick={load}>
+              Retry
+            </Button>
+          }
+          message={error}
+          showIcon
+          type="error"
+        />
+      ) : null}
+      {summary ? (
+        <DashboardOverview
+          isRefreshing={isLoading}
+          onRefresh={load}
+          summary={summary}
+        />
+      ) : (
+        <Skeleton active paragraph={{ rows: 10 }} title />
+      )}
+    </Space>
   );
 }
