@@ -42,6 +42,15 @@ test("project status CLI writes a Markdown handoff", async () => {
       /final completion still requires retained production smoke and Page Builder visual acceptance evidence/,
     );
     assert.match(markdown, /Production Smoke: blocked/);
+    assert.match(markdown, /### Missing Production Smoke Evidence/);
+    assert.match(
+      markdown,
+      /Smoke report JSON: `artifacts\/production-smoke\/smoke-report\.json`/,
+    );
+    assert.match(
+      markdown,
+      /Release evidence artifact: `release-evidence-check-<run_number>`/,
+    );
     assert.match(
       markdown,
       /- Production Smoke: Production smoke artifact missing/,
@@ -71,10 +80,7 @@ test("project status CLI writes a Markdown handoff", async () => {
       / {4}- Rerun gate: `pnpm release:check -- --smoke-report <path>`/,
     );
     assert.match(markdown, /Page Builder Visual: needs-evidence/);
-    assert.match(
-      markdown,
-      /- Page Builder Visual: Visual acceptance pending/,
-    );
+    assert.match(markdown, /- Page Builder Visual: Visual acceptance pending/);
     assert.match(
       markdown,
       / {4}- Reference source: `docs\/visual\/page-builder-references`/,

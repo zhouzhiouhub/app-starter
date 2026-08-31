@@ -3,6 +3,7 @@ import { dirname } from "node:path";
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { assertProjectStatusArtifact } from "./project-status-validation.mjs";
 import { formatReleaseEvidenceArtifacts } from "./project-status-release-evidence-artifacts.mjs";
+import { formatMissingProductionSmokeEvidence } from "./project-status-markdown-smoke-evidence.mjs";
 import {
   formatMissingVisualReferenceFiles,
   formatVisualReferenceImport,
@@ -113,6 +114,7 @@ function formatReleaseGate(gate) {
     `- Production Smoke: ${formatSmokeGate(gate.smoke)}`,
     `- Page Builder Visual: ${formatVisualGate(gate.visual)}`,
     `- Blockers: ${gate.blockerCount}`,
+    ...formatMissingProductionSmokeEvidence(gate.smoke),
     ...formatMissingVisualReferenceFiles(gate.visual),
   ];
 }

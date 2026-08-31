@@ -342,6 +342,10 @@ full command lines, instead of the default short list. When the gate is ready,
 the next action expands the final `pnpm release:notes` handoff into structured
 steps for the command, evidence args, review args, input evidence, output
 record, `release-notes` artifact, and formal mode without `--allow-blocked`.
+When production smoke evidence is missing, the Markdown handoff adds a
+`Missing Production Smoke Evidence` section with the workflow, Smoke
+JSON/Markdown paths, preflight artifact, release evidence artifact, and project
+status artifact to keep.
 For local status checks, `project:status` automatically includes the default
 Page Builder Visual artifact when all required files already exist under
 `reports/visual/page-builder-fixture`, prints its artifact path, issue count,
@@ -362,7 +366,8 @@ states use matching evidence. Its terminal summary prints Production Smoke,
 Page Builder Visual, and optional visual artifact status, path, and counts. It then prints the first two next actions with structured steps when available, previews the first hidden
 structured action only when the visible actions do not have steps, and
 points remaining actions to `artifacts/release/project-status.md`, whose
-release gate section lists any missing Page Builder reference PNG paths. Blocked
+release gate section lists any missing production Smoke evidence and Page
+Builder reference PNG paths. Blocked
 evidence still writes the files; add `--require-ready` when the handoff should
 fail until both release evidence and preflight are ready.
 
