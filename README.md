@@ -730,6 +730,8 @@ GitHub Actions 里新增了手动触发的 `Production Smoke` workflow，会把�
 
 Page Builder Visual artifact check 还会要求 `visual-reference-import-report.json` 与 `visual-reference-import-report.md` 同时保留，并校验 JSON schema、artifact-local manifest 路径、默认参考图目录、`sourceDirStatus`、状态、missing/update 计数和 `missing[].expectedPath` 一致；运行时可追加 `--output reports/visual/page-builder-fixture/visual-artifact-check-report.json` 留存机器可读完整性检查结果。
 
+`visual-reference-import-report.md` 会在 `Required Source Files` 小节固定列出 12 个 Page Builder 组件/视口源 PNG，并标记 `missing`、`ready`、`would-update` 或 `updated` 状态，方便补齐真实设计参考图时逐项核对。
+
 `release-check.md` 和 `project-status.md` 在缺生产 Smoke 时都会新增 `Missing Production Smoke Evidence` 小节，列出 workflow、Smoke JSON / Markdown、preflight、release evidence 和 project status artifact；`visual.artifactCheck.referenceImport.missingReferences` 会保留缺失参考图路径清单；终端摘要预览第一条缺失路径，`release-check.md` 和 `project-status.md` 在缺图时都会新增 `Missing Visual References` 小节，Markdown 报告列出可读路径，完整明细仍以 `visual-reference-import-report.json` 为准。
 
 需要一次性生成本地交接包时，可运行 `pnpm release:handoff -- --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture`。它会从同一次 handoff 运行写出 `artifacts/release/preflight.json`、`artifacts/release/preflight.md`、`artifacts/release/release-check.json`、`artifacts/release/release-check.md`、`artifacts/release/project-status.json` 和 `artifacts/release/project-status.md`；终端摘要会先打印 Production Smoke、Page Builder Visual 和 Visual artifact 状态、路径和计数，然后打印 first two next actions，并在可用时直接展开它们的 structured steps；如果前两条没有 steps，才预览第一条隐藏的 structured next action，并把剩余动作指向 `artifacts/release/project-status.md` 的完整清单；证据 blocked 时仍会写出交接材料，只有 release evidence 与 preflight 都 ready 时，加 `--require-ready` 才会放行。

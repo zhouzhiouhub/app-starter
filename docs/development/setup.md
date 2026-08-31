@@ -297,6 +297,11 @@ pnpm release:handoff -- --require-ready
 pnpm release:notes -- --release-tag v0.1.0 --workflow-run-url https://github.com/zhouzhiouhub/app-starter/actions/runs/123 --local-verification-run-url https://github.com/zhouzhiouhub/app-starter/actions/runs/122 --local-verification-artifact local-verification-122 --smoke-artifact production-smoke-report-123 --preflight-artifact release-preflight-123 --release-artifact release-evidence-check-123 --project-status artifacts/release/project-status.json --project-status-artifact project-status-123 --visual-artifact page-builder-visual-fixture-123 --storefront-url https://store.brand.com --rollback-target main@abcdef1 --output docs/releases/v0.1.0.md
 ```
 
+The visual reference import Markdown report includes a `Required Source Files`
+section with all 12 Page Builder component and viewport source PNGs, marking
+each as `missing`, `ready`, `would-update`, or `updated` before visual evidence
+is measured or accepted.
+
 The review command scans the same safe archive roots, recomputes the report
 summary from the stored checks, and highlights R2 / CDN, Admin static app, and
 publish-flow traceability before showing failed check details and suggested

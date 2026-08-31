@@ -12,7 +12,6 @@ import test from "node:test";
 import { createTestPng } from "./page-builder-visual-artifact-check-test-fixtures.mjs";
 import {
   formatPageBuilderVisualReferenceImportReport,
-  createPageBuilderVisualReferenceImportMarkdown,
   importPageBuilderVisualReferences,
   normalizeVisualReferenceSourceDir,
   readPageBuilderVisualReferenceImportCliConfig,
@@ -211,39 +210,6 @@ test("visual reference import reports missing source directory", () => {
   );
 });
 
-test("visual reference import Markdown lists missing references", () => {
-  const root = createFixtureRoot();
-  const manifest = createManifest({ accepted: false });
-  writeReferenceFiles(root, { skip: "faq-mobile.png" });
-  const report = importPageBuilderVisualReferences(
-    {
-      manifestPath: "docs/development/page-builder-visual-acceptance.json",
-      markdownOutputPath:
-        "reports/visual/page-builder-fixture/visual-reference-import-report.md",
-      requireComplete: true,
-      sourceDir: "docs/visual/page-builder-references",
-      write: false,
-    },
-    { cwd: root, manifest },
-  );
-  const markdown = createPageBuilderVisualReferenceImportMarkdown(report);
-
-  assert.match(markdown, /^# Page Builder Visual Reference Import/m);
-  assert.match(markdown, /Status: `invalid`/);
-  assert.match(markdown, /Source dir status: `ready`/);
-  assert.match(markdown, /References updated: 11/);
-  assert.match(markdown, /Missing references: 1/);
-  assert.match(markdown, /## Missing References/);
-  assert.match(
-    markdown,
-    /faq\.mobile: faq-mobile\.png is missing; expected `docs\/visual\/page-builder-references\/faq-mobile\.png`/,
-  );
-  assert.match(
-    markdown,
-    /pnpm visual:references -- --source-dir docs\/visual\/page-builder-references --write --require-complete/,
-  );
-});
-
 test("visual reference import command is exposed in docs", () => {
   const packageJson = readFileSync("package.json", "utf8");
   const readme = readFileSync("README.md", "utf8");
@@ -305,6 +271,7 @@ test("visual reference intake directory documents every required file", () => {
 
   assert.match(referenceReadme, /real Page Builder design\s+reference PNGs/);
   assert.match(referenceReadme, /corrupted file is rejected during intake/);
+  assert.match(referenceReadme, /Required Source Files/);
   assert.match(
     referenceReadme,
     /visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md/,

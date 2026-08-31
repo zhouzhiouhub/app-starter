@@ -2,6 +2,10 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import {
+  mvpPageBuilderComponents,
+  pageBuilderVisualAcceptanceViewports,
+} from "./page-builder-visual-acceptance-constants.mjs";
+import {
   createPageBuilderVisualReferenceAcceptPassingCommand,
   createPageBuilderVisualReferenceAcceptanceCommand,
   createPageBuilderVisualReferenceCaptureCommand,
@@ -21,6 +25,10 @@ export function createPageBuilderVisualReferenceImportMarkdown(report) {
     `Source dir status: ${formatCode(report.sourceDirStatus ?? "ready")}`,
     `References updated: ${report.updates.length}`,
     `Missing references: ${report.missing.length}`,
+    "",
+    "## Required Source Files",
+    "",
+    ...formatRequiredSourceFiles(report),
     "",
     "## Updates",
     "",
@@ -49,6 +57,84 @@ export async function writePageBuilderVisualReferenceImportMarkdown(
     createPageBuilderVisualReferenceImportMarkdown(report),
     "utf8",
   );
+}
+
+function formatRequiredSourceFiles(report) {
+  const missingByViewport = createReferenceLookup(report.missing);
+  const updatesByViewport = createReferenceLookup(report.updates);
+
+  return mvpPageBuilderComponents.flatMap((component) =>
+    pageBuilderVisualAcceptanceViewports.map((viewport) =>
+      formatRequiredSourceFile({
+        component,
+        missing: missingByViewport.get(createReferenceKey(component, viewport)),
+        report,
+        update: updatesByViewport.get(createReferenceKey(component, viewport)),
+        viewport,
+      }),
+    ),
+  );
+}
+
+function formatRequiredSourceFile(input) {
+  const expectedPath = createExpectedReferencePath(input.report.sourceDir, {
+    component: input.component,
+    expectedPath: input.missing?.expectedPath,
+    viewport: input.viewport,
+  });
+  const status = readRequiredSourceFileStatus(input);
+
+  return `- ${formatText(input.component)}.${formatText(
+    input.viewport,
+  )}: ${status}; ${formatCode(expectedPath)}${formatRequiredSourceFileDetail(
+    input,
+  )}`;
+}
+
+function formatRequiredSourceFileDetail(input) {
+  if (input.missing) {
+    return ` - ${formatText(input.missing.reason)}`;
+  }
+
+  if (input.update) {
+    return ` - imports ${formatCode(input.update.designReference)}`;
+  }
+
+  return "";
+}
+
+function readRequiredSourceFileStatus(input) {
+  if (input.missing) {
+    return "missing";
+  }
+
+  if (!input.update) {
+    return "ready";
+  }
+
+  if (input.report.status === "updated" || input.report.updated === true) {
+    return "updated";
+  }
+
+  return "would-update";
+}
+
+function createReferenceLookup(items) {
+  const lookup = new Map();
+
+  if (!Array.isArray(items)) {
+    return lookup;
+  }
+
+  for (const item of items) {
+    lookup.set(createReferenceKey(item.component, item.viewport), item);
+  }
+
+  return lookup;
+}
+
+function createReferenceKey(component, viewport) {
+  return `${component}:${viewport}`;
 }
 
 function formatUpdates(updates) {
@@ -125,11 +211,11 @@ function formatNextStep(report) {
   ];
 }
 
-function createExpectedReferencePath(sourceDir, missing) {
-  return typeof missing.expectedPath === "string" &&
-    missing.expectedPath.length > 0
-    ? missing.expectedPath
-    : `${sourceDir}/${missing.component}-${missing.viewport}.png`;
+function createExpectedReferencePath(sourceDir, reference) {
+  return typeof reference.expectedPath === "string" &&
+    reference.expectedPath.length > 0
+    ? reference.expectedPath
+    : `${sourceDir}/${reference.component}-${reference.viewport}.png`;
 }
 
 function formatCode(value) {
