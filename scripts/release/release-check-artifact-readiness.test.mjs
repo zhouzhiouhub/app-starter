@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import {
+  createProductionSmokeDispatchCommand,
+} from "../smoke/production-smoke-dispatch-command.mjs";
 import { createReleaseEvidenceCheckArtifact } from "./release-check.mjs";
 
 test("release check artifact includes ready checklist tasks", () => {
@@ -53,11 +56,29 @@ test("release check artifact includes blocked checklist actions", () => {
   const artifact = createReleaseEvidenceCheckArtifact(createBlockedCheck(), {
     generatedAt: "2026-08-28T00:00:00.000Z",
   });
+  const smokeItem = artifact.readinessChecklist.items.find(
+    (item) => item.label === "Production Smoke report",
+  );
   const visualItem = artifact.readinessChecklist.items.find(
     (item) => item.label === "Page Builder Visual evidence",
   );
 
   assert.equal(artifact.readinessChecklist.releaseReady, false);
+  assert.deepEqual(
+    smokeItem.steps.map((step) => step.label),
+    [
+      "Dispatch template",
+      "Local verification inputs",
+      "Visual evidence inputs",
+      "Release note inputs",
+      "Keep artifacts",
+      "Rerun gate",
+    ],
+  );
+  assert.equal(
+    smokeItem.steps[0].value,
+    createProductionSmokeDispatchCommand(),
+  );
   assert.equal(visualItem?.status, "needs-evidence");
   assert.equal(
     visualItem?.detail,

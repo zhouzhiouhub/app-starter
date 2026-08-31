@@ -38,6 +38,7 @@ export function createReleaseEvidenceCheckMarkdown(artifact) {
     "",
     ...formatReadinessChecklistMarkdown(artifact.readinessChecklist, {
       maxTextLength: maxMarkdownTextLength,
+      maxStepTextLength: 520,
     }),
     "",
     "## Blockers",

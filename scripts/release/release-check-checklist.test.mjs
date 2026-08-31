@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  createProductionSmokeDispatchCommand,
+} from "../smoke/production-smoke-dispatch-command.mjs";
+import {
   createReleaseEvidenceReadinessChecklist,
   formatReleaseEvidenceReadinessChecklist,
 } from "./release-check.mjs";
@@ -51,6 +54,7 @@ test("release readiness checklist summarizes ready evidence", () => {
 });
 
 test("release readiness checklist carries blocker actions", () => {
+  const dispatchCommand = createProductionSmokeDispatchCommand();
   const checklist = createReleaseEvidenceReadinessChecklist({
     blockers: [
       {
@@ -84,6 +88,7 @@ test("release readiness checklist carries blocker actions", () => {
 
   assert.equal(checklist.releaseReady, false);
   assert.match(lines, /Run the Production Smoke workflow/);
+  assert.ok(lines.includes(`Dispatch template: ${dispatchCommand}`));
   assert.match(lines, /Run pnpm visual:acceptance -- --checklist/);
   assert.match(
     lines,
