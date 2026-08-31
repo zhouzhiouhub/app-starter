@@ -7,6 +7,7 @@ import { createArtifactPaths } from "./page-builder-visual-artifact-check-paths.
 import { pageBuilderVisualCaptureDefaultOutputDir } from "./page-builder-visual-capture-constants.mjs";
 
 const defaultReferenceCheckCommand = "pnpm visual:references:check";
+const defaultMissingPathsCommand = "pnpm --silent visual:references:missing";
 
 export function createPageBuilderVisualReferenceCaptureCommand(report) {
   const captureOutputDir = inferVisualArtifactDir(report.manifestPath);
@@ -46,6 +47,22 @@ export function createPageBuilderVisualReferenceReportCommand(report) {
 
 export function createPageBuilderVisualReferenceCheckCommand(report) {
   return createPageBuilderVisualReferenceReportCommand(report);
+}
+
+export function createPageBuilderVisualReferenceMissingPathsCommand(report) {
+  if (isDefaultReferenceCheckContext(report)) {
+    return defaultMissingPathsCommand;
+  }
+
+  return joinCommand([
+    "pnpm",
+    "--silent",
+    "visual:references",
+    "--",
+    ...createSourceDirOption(report),
+    ...createManifestOption(report),
+    "--missing-paths",
+  ]);
 }
 
 export function createPageBuilderVisualReferenceImportWriteCommand(report) {

@@ -7,6 +7,7 @@ import {
   createPageBuilderVisualReferenceCaptureCommand,
   createPageBuilderVisualReferenceImportWriteCommand,
   createPageBuilderVisualReferenceMeasureCommand,
+  createPageBuilderVisualReferenceMissingPathsCommand,
   createPageBuilderVisualReferenceReportCommand,
 } from "../visual/page-builder-visual-reference-import-commands.mjs";
 
@@ -48,6 +49,7 @@ export function createVisualEvidenceAction(artifact) {
   return [
     "Fixture artifact is complete.",
     `Attach real design references under ${commandReport.sourceDir},`,
+    `run ${createPageBuilderVisualReferenceMissingPathsCommand(commandReport)} when the design owner needs a path-only missing reference list,`,
     `run ${createPageBuilderVisualReferenceReportCommand(commandReport)} to archive reference import review,`,
     `run ${createPageBuilderVisualReferenceImportWriteCommand(commandReport)},`,
     `run ${createPageBuilderVisualReferenceCaptureCommand(commandReport)},`,
@@ -68,6 +70,7 @@ function createDefaultVisualEvidenceAction() {
     `Run pnpm visual:artifact-bundle -- --artifact-dir ${defaultPageBuilderVisualArtifactDir} to refresh retained fixture evidence,`,
     `run ${createVisualChecklistCommand(paths)} to archive the checklist,`,
     `attach real design references under ${commandReport.sourceDir},`,
+    `run ${createPageBuilderVisualReferenceMissingPathsCommand(commandReport)} when the design owner needs a path-only missing reference list,`,
     `run ${createPageBuilderVisualReferenceReportCommand(commandReport)} to archive reference import review,`,
     `run ${createPageBuilderVisualReferenceImportWriteCommand(commandReport)},`,
     `run ${createPageBuilderVisualReferenceCaptureCommand(commandReport)},`,

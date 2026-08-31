@@ -3,7 +3,10 @@ import {
   createProductionSmokeDispatchCommand,
 } from "../smoke/production-smoke-dispatch-command.mjs";
 import { createReleaseNotesHandoffSteps } from "../release/release-notes-handoff-steps.mjs";
-import { createPageBuilderVisualReferenceCheckCommand } from "../visual/page-builder-visual-reference-import-commands.mjs";
+import {
+  createPageBuilderVisualReferenceCheckCommand,
+  createPageBuilderVisualReferenceMissingPathsCommand,
+} from "../visual/page-builder-visual-reference-import-commands.mjs";
 
 const maxProjectTextLength = 420;
 
@@ -162,6 +165,13 @@ function createPageBuilderVisualActionSteps(action, context) {
 
   return [
     createNextActionStep("Reference source", defaultVisualReferenceSourceDir),
+    createNextActionStep(
+      "Missing paths",
+      createPageBuilderVisualReferenceMissingPathsCommand({
+        manifestPath: visualContext.manifestPath,
+        sourceDir: defaultVisualReferenceSourceDir,
+      }),
+    ),
     createNextActionStep(
       "Reference report",
       createPageBuilderVisualReferenceCheckCommand({

@@ -53,6 +53,25 @@ test("project next actions preserve visual artifact dir on release gate reruns",
   );
 });
 
+test("project next actions include copy-ready missing visual reference paths", () => {
+  const actions = createProjectNextActions({
+    ...createBlockedCheck(),
+    visualArtifactDir: "reports/visual/page-builder-fixture",
+  });
+  const visual = actions.find(
+    (action) => action.label === "Visual acceptance pending",
+  );
+  const missingPaths = visual.steps.find(
+    (step) => step.label === "Missing paths",
+  );
+
+  assert.equal(missingPaths.value, "pnpm --silent visual:references:missing");
+  assert.deepEqual(
+    visual.steps.slice(0, 3).map((step) => step.label),
+    ["Reference source", "Missing paths", "Reference report"],
+  );
+});
+
 test("project next actions structure the ready release notes handoff", () => {
   const [releaseNotesAction] = createProjectNextActions({
     releaseReady: true,

@@ -102,14 +102,15 @@ test("project status summarizes blocked release evidence", () => {
   assert.deepEqual(
     artifact.nextActions[1].steps.map((step) => step.label),
     [
-      "Reference source", "Reference report", "Import", "Capture fixture",
+      "Reference source", "Missing paths", "Reference report", "Import",
+      "Capture fixture",
       "Measure",
       "Accept passing", "Verify", "Bundle artifact", "Check artifact",
       "Keep artifact",
     ],
   );
   assert.equal(
-    artifact.nextActions[1].steps[3].value,
+    artifact.nextActions[1].steps[4].value,
     "pnpm visual:capture:fixture -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json --write-manifest",
   );
   assert.equal(
@@ -146,6 +147,10 @@ test("project status summarizes blocked release evidence", () => {
   );
   assert.equal(
     artifact.nextActions[1].steps[1].value,
+    "pnpm --silent visual:references:missing",
+  );
+  assert.equal(
+    artifact.nextActions[1].steps[2].value,
     "pnpm visual:references:check",
   );
 });
@@ -241,6 +246,10 @@ test("project status CLI prints readable blocked state", async () => {
     );
     assert.match(text, /Page Builder Visual: needs-evidence/);
     assert.match(text, /Page Builder Visual: Visual acceptance pending/);
+    assert.match(
+      text,
+      /Missing paths: pnpm --silent visual:references:missing/,
+    );
     assert.match(
       text,
       /Preview: reports\/visual\/page-builder-fixture\/page-builder-visual-fixture-hero-banner-desktop\.png \(1440x1000\)/,

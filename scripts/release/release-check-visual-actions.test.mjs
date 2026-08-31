@@ -17,6 +17,7 @@ test("visual evidence action starts with fixture bundle before artifact completi
     action,
     /visual:references:check/,
   );
+  assert.match(action, /pnpm --silent visual:references:missing/);
   assert.match(
     action,
     /pnpm visual:capture:fixture -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output-dir reports\/visual\/page-builder-fixture --report reports\/visual\/page-builder-fixture\/visual-capture-report\.json --write-manifest/,
@@ -39,6 +40,7 @@ test("visual evidence action uses artifact-local manifest after artifact complet
 
   assert.match(action, /Fixture artifact is complete/);
   assert.doesNotMatch(action, /pnpm visual:artifact-bundle/);
+  assert.match(action, /pnpm --silent visual:references:missing/);
   assert.match(action, /pnpm visual:references:check/);
   assert.match(
     action,
