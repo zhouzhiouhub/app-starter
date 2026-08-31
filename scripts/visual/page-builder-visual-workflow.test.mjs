@@ -37,6 +37,7 @@ test("page builder visual workflow captures fixture evidence", async () => {
   assert.match(workflow, /node scripts\/visual\/run-visual-tests\.mjs/);
   assert.match(workflow, /visual-test-diagnostics\.md/);
   assert.match(workflow, /test-visual-rerun\.log/);
+  assert.match(workflow, /::error title=Visual test diagnostics::rerun exit/);
   assert.match(workflow, /tail -n 120/);
   assert.match(workflow, /exit 0/);
   assert.match(workflow, /Upload visual diagnostics artifact/);
