@@ -3,6 +3,12 @@ import {
   addArtifactCheckIssue,
   isObject,
 } from "./page-builder-visual-artifact-check-paths.mjs";
+import {
+  hasDuplicateReferenceKeys,
+  hasOverlappingReferenceKeys,
+  isValidMissingReferenceEntry,
+  isValidUpdateReferenceEntry,
+} from "./page-builder-visual-reference-import-entries.mjs";
 
 const referenceSourceDirStatuses = new Set([
   "missing",
@@ -46,6 +52,9 @@ export function validateReferenceImportReport(report, context) {
   validateReferenceImportSourceDirStatus(report, context);
   validateReferenceImportReportCounts(report, context);
   validateReferenceImportMissingEntries(report, context);
+  validateReferenceImportUpdateEntries(report, context);
+  validateReferenceImportUniqueEntries(report, context);
+  validateReferenceImportDisjointEntries(report, context);
 }
 
 export function createReferenceImportSummary(report) {
@@ -118,33 +127,54 @@ function validateReferenceImportMissingEntries(report, context) {
     addArtifactCheckIssue(
       context,
       "invalid_reference_import_missing_entry",
-      "reference import report missing entries must include component, viewport, reason, and a matching expectedPath.",
+      "reference import report missing entries must include a known MVP component, viewport, reason, and a matching expectedPath.",
     );
   }
 }
 
-function isValidMissingReferenceEntry(item, sourceDir) {
-  if (
-    !isObject(item) ||
-    !isNonEmptyString(sourceDir) ||
-    !isNonEmptyString(item.component) ||
-    !isNonEmptyString(item.viewport) ||
-    !isNonEmptyString(item.reason)
-  ) {
-    return false;
+function validateReferenceImportUpdateEntries(report, context) {
+  if (!Array.isArray(report.updates)) {
+    return;
   }
 
-  return (
-    item.expectedPath === `${sourceDir}/${item.component}-${item.viewport}.png`
+  const hasInvalidUpdateEntry = report.updates.some(
+    (item) => !isValidUpdateReferenceEntry(item, report.sourceDir),
   );
+
+  if (hasInvalidUpdateEntry) {
+    addArtifactCheckIssue(
+      context,
+      "invalid_reference_import_update_entry",
+      "reference import report update entries must include a known MVP component, viewport, and matching designReference.",
+    );
+  }
+}
+
+function validateReferenceImportUniqueEntries(report, context) {
+  if (
+    hasDuplicateReferenceKeys(report.missing) ||
+    hasDuplicateReferenceKeys(report.updates)
+  ) {
+    addArtifactCheckIssue(
+      context,
+      "duplicate_reference_import_entry",
+      "reference import report missing and update entries must not repeat a component viewport pair.",
+    );
+  }
+}
+
+function validateReferenceImportDisjointEntries(report, context) {
+  if (hasOverlappingReferenceKeys(report.missing, report.updates)) {
+    addArtifactCheckIssue(
+      context,
+      "reference_import_report_mismatch",
+      "reference import report missing and update entries must not overlap.",
+    );
+  }
 }
 
 function readText(value) {
   return typeof value === "string" && value.length > 0 ? value : null;
-}
-
-function isNonEmptyString(value) {
-  return typeof value === "string" && value.length > 0;
 }
 
 function readItemCount(value, items) {
