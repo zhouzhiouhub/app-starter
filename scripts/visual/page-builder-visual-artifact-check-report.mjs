@@ -7,6 +7,7 @@ export function formatPageBuilderVisualArtifactCheckReport(report) {
     `Required files: ${report.presentRequiredFileCount}/${report.requiredFileCount}`,
     `Screenshots: ${report.presentScreenshotCount}/${report.expectedScreenshotCount}`,
     ...formatDesignReferences(report),
+    ...formatReferenceImport(report.referenceImport),
   ];
 
   if (report.issues.length > 0) {
@@ -33,6 +34,30 @@ function formatDesignReferences(report) {
   return [
     `Design references: ${report.presentDesignReferenceCount}/${report.referencedDesignReferenceCount}`,
   ];
+}
+
+function formatReferenceImport(referenceImport) {
+  if (!referenceImport) {
+    return [];
+  }
+
+  const details = [
+    formatReferenceImportSource(referenceImport),
+    `${referenceImport.missingCount} missing`,
+    `${referenceImport.updateCount} updates`,
+  ].filter(Boolean);
+
+  return [
+    `Reference import: ${referenceImport.status}${
+      details.length > 0 ? ` (${details.join(", ")})` : ""
+    }`,
+  ];
+}
+
+function formatReferenceImportSource(referenceImport) {
+  return typeof referenceImport.sourceDirStatus === "string"
+    ? `${referenceImport.sourceDirStatus} source`
+    : null;
 }
 
 function readIssueCount(report) {

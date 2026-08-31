@@ -161,12 +161,32 @@ function createVisualArtifactCheckSummary(check) {
     ),
     presentRequiredFileCount: readCount(check.presentRequiredFileCount),
     presentScreenshotCount: readCount(check.presentScreenshotCount),
+    ...createOptionalReferenceImportSummary(check.referenceImport),
     ...createOptionalCount(
       "referencedDesignReferenceCount",
       check.referencedDesignReferenceCount,
     ),
     requiredFileCount: readCount(check.requiredFileCount),
     status: readText(check.status) ?? "unknown",
+  };
+}
+
+function createOptionalReferenceImportSummary(referenceImport) {
+  if (!referenceImport) {
+    return {};
+  }
+
+  return {
+    referenceImport: {
+      complete: referenceImport.complete === true,
+      manifestPath: readText(referenceImport.manifestPath),
+      missingCount: readCount(referenceImport.missingCount) ?? 0,
+      sourceDir: readText(referenceImport.sourceDir),
+      sourceDirStatus: readText(referenceImport.sourceDirStatus) ?? "unknown",
+      status: readText(referenceImport.status) ?? "unknown",
+      updated: referenceImport.updated === true,
+      updateCount: readCount(referenceImport.updateCount) ?? 0,
+    },
   };
 }
 

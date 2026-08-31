@@ -106,6 +106,7 @@ function assertVisualArtifactCheckMatches(releaseCheck, projectCheck) {
     );
   }
   assertOptionalArtifactIssueCountMatches(releaseCheck, projectCheck);
+  assertOptionalReferenceImportMatches(releaseCheck, projectCheck);
 }
 
 function assertOptionalArtifactIssueCountMatches(releaseCheck, projectCheck) {
@@ -118,6 +119,35 @@ function assertOptionalArtifactIssueCountMatches(releaseCheck, projectCheck) {
     releaseCheck.issueCount,
     "releaseGate.visual.artifactCheck.issueCount",
   );
+}
+
+function assertOptionalReferenceImportMatches(releaseCheck, projectCheck) {
+  if (projectCheck.referenceImport === undefined) {
+    return;
+  }
+
+  if (!releaseCheck.referenceImport) {
+    throw new Error(
+      "Release notes project status releaseGate.visual.artifactCheck.referenceImport must match release-evidence-check.v1.",
+    );
+  }
+
+  for (const field of [
+    "complete",
+    "manifestPath",
+    "missingCount",
+    "sourceDir",
+    "sourceDirStatus",
+    "status",
+    "updated",
+    "updateCount",
+  ]) {
+    assertMatches(
+      projectCheck.referenceImport[field],
+      releaseCheck.referenceImport[field],
+      `releaseGate.visual.artifactCheck.referenceImport.${field}`,
+    );
+  }
 }
 
 function readPendingViewportCount(visual) {

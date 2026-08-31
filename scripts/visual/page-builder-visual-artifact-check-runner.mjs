@@ -21,7 +21,10 @@ import {
   validateAcceptanceMarkdown,
   validateReferenceImportMarkdown,
 } from "./page-builder-visual-artifact-check-markdown-validation.mjs";
-import { validateReferenceImportReport } from "./page-builder-visual-artifact-check-reference-import.mjs";
+import {
+  createReferenceImportSummary,
+  validateReferenceImportReport,
+} from "./page-builder-visual-artifact-check-reference-import.mjs";
 
 export function checkPageBuilderVisualArtifact(config, input = {}) {
   const context = createArtifactCheckContext(config, input);
@@ -46,6 +49,7 @@ export function checkPageBuilderVisualArtifact(config, input = {}) {
 
   validateAcceptanceReport(acceptanceReport, manifestReport, context);
   validateReferenceImportReport(referenceImportReport, context);
+  context.referenceImport = createReferenceImportSummary(referenceImportReport);
   validateAcceptanceMarkdown(
     context.paths.acceptanceMarkdown,
     manifestReport,
@@ -67,6 +71,7 @@ function createArtifactCheckContext(config, input) {
     presentDesignReferenceCount: 0,
     issues: [],
     paths: createArtifactPaths(config.artifactDir),
+    referenceImport: null,
     referencedDesignReferenceCount: 0,
     presentRequiredFileCount: 0,
     presentScreenshotCount: 0,
@@ -216,10 +221,15 @@ function createArtifactCheckReport(context) {
     presentDesignReferenceCount: context.presentDesignReferenceCount,
     presentRequiredFileCount: context.presentRequiredFileCount,
     presentScreenshotCount: context.presentScreenshotCount,
+    ...createOptionalReferenceImport(context.referenceImport),
     referencedDesignReferenceCount: context.referencedDesignReferenceCount,
     requiredFileCount: Object.keys(requiredArtifactFileNames).length,
     status: errorCount === 0 ? "complete" : "invalid",
   };
+}
+
+function createOptionalReferenceImport(referenceImport) {
+  return referenceImport ? { referenceImport } : {};
 }
 
 function findManifestPreviewScreenshot(manifest, component, viewport) {

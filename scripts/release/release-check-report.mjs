@@ -58,6 +58,7 @@ function formatReleaseBlockers(blockers) {
 function formatVisualArtifactDetails(artifact) {
   const detailText = [
     formatReleaseValue(artifact.artifactDir, "unknown"),
+    formatVisualArtifactIssueCount(artifact.issueCount),
     formatVisualArtifactCount(
       artifact.presentRequiredFileCount,
       artifact.requiredFileCount,
@@ -68,9 +69,25 @@ function formatVisualArtifactDetails(artifact) {
       artifact.expectedScreenshotCount,
       "screenshots",
     ),
+    formatReferenceImport(artifact.referenceImport),
   ].filter(Boolean);
 
   return detailText.length > 0 ? `(${detailText.join(", ")})` : "";
+}
+
+function formatVisualArtifactIssueCount(issueCount) {
+  return Number.isFinite(issueCount) ? `${issueCount} issues` : null;
+}
+
+function formatReferenceImport(referenceImport) {
+  if (!referenceImport) {
+    return null;
+  }
+
+  return `references ${formatReleaseValue(
+    referenceImport.status,
+    "unknown",
+  )}, ${referenceImport.missingCount} missing`;
 }
 
 function formatSmokeMarkdownLines(markdown) {

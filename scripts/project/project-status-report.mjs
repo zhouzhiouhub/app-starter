@@ -172,9 +172,18 @@ function formatVisualArtifactDetails(artifactCheck) {
       artifactCheck.referencedDesignReferenceCount,
       "design references",
     ),
+    formatVisualReferenceImport(artifactCheck.referenceImport),
   ].filter(Boolean);
 
   return detailText.length > 0 ? ` (${detailText.join(", ")})` : "";
+}
+
+function formatVisualReferenceImport(referenceImport) {
+  if (!referenceImport) {
+    return null;
+  }
+
+  return `references ${referenceImport.status} (${referenceImport.sourceDirStatus} source, ${referenceImport.missingCount} missing, ${referenceImport.updateCount} updates)`;
 }
 
 function formatVisualArtifactIssueCount(issueCount) {

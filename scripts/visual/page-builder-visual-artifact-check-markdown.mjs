@@ -16,6 +16,7 @@ export function createPageBuilderVisualArtifactCheckMarkdown(report) {
     `Required files: ${report.presentRequiredFileCount}/${report.requiredFileCount}`,
     `Screenshots: ${report.presentScreenshotCount}/${report.expectedScreenshotCount}`,
     ...formatDesignReferences(report),
+    ...formatReferenceImport(report.referenceImport),
     "",
     "## Required Files",
     "",
@@ -50,6 +51,27 @@ function formatDesignReferences(report) {
   return [
     `Design references: ${report.presentDesignReferenceCount}/${report.referencedDesignReferenceCount}`,
   ];
+}
+
+function formatReferenceImport(referenceImport) {
+  if (!referenceImport) {
+    return [];
+  }
+
+  return [
+    `Reference import: ${formatCode(referenceImport.status)}`,
+    `Reference source dir: ${formatNullableCode(
+      referenceImport.sourceDir,
+    )} (${formatText(referenceImport.sourceDirStatus)})`,
+    `Reference missing: ${referenceImport.missingCount}`,
+    `Reference updates: ${referenceImport.updateCount}`,
+  ];
+}
+
+function formatNullableCode(value) {
+  return typeof value === "string" && value.length > 0
+    ? formatCode(value)
+    : formatText(value);
 }
 
 function readIssueCount(report) {

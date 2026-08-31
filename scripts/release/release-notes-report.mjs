@@ -7,6 +7,10 @@ import { formatProjectNextActions } from "./release-notes-project-actions-report
 import { formatProjectCompletionChecklist } from "./release-notes-project-completion-report.mjs";
 import { formatReadinessChecklistMarkdown } from "./release-readiness-checklist-markdown.mjs";
 import { formatVisualChecklist } from "./release-notes-visual-checklist-report.mjs";
+import {
+  formatReferenceImportGateSummary,
+  formatReferenceImportMarkdown,
+} from "./release-reference-import-markdown.mjs";
 
 const maxBlockerLines = 12;
 const maxTextLength = 180;
@@ -122,11 +126,13 @@ function formatVisualArtifactGate(check) {
     return [];
   }
 
-  return [
-    `- Page Builder Visual Artifact: ${formatInline(check.status)} (${formatInline(
-      check.artifactDir,
-    )}, ${check.presentRequiredFileCount}/${check.requiredFileCount} files, ${check.presentScreenshotCount}/${check.expectedScreenshotCount} screenshots)`,
-  ];
+  const references = formatReferenceImportGateSummary(
+    check.referenceImport,
+    formatInline,
+  );
+  const detail = `${formatInline(check.artifactDir)}, ${check.issueCount ?? 0} issues, ${check.presentRequiredFileCount}/${check.requiredFileCount} files, ${check.presentScreenshotCount}/${check.expectedScreenshotCount} screenshots${references}`;
+
+  return [`- Page Builder Visual Artifact: ${formatInline(check.status)} (${detail})`];
 }
 
 function formatProjectStatusGate(projectStatus) {
@@ -168,8 +174,13 @@ function formatVisualArtifactCheck(check) {
   return [
     `- Artifact check: ${formatInline(check.status)}`,
     `- Artifact dir: \`${formatInline(check.artifactDir)}\``,
+    `- Artifact issue count: ${check.issueCount ?? 0}`,
     `- Artifact files: ${check.presentRequiredFileCount}/${check.requiredFileCount}`,
     `- Artifact screenshots: ${check.presentScreenshotCount}/${check.expectedScreenshotCount}`,
+    ...formatReferenceImportMarkdown(check.referenceImport, {
+      formatCode: formatInlineCode,
+      formatText: formatInline,
+    }),
     ...formatVisualArtifactIssues(check.issues),
   ];
 }
@@ -279,12 +290,9 @@ function formatInlineList(values) {
 }
 
 function formatInline(value) {
-  return formatSmokeText(value, {
-    fallback: "unknown",
-    maxLength: maxTextLength,
-  });
+  return formatSmokeText(value, { fallback: "unknown", maxLength: maxTextLength });
 }
 
-function hasText(value) {
-  return typeof value === "string" && value.length > 0;
-}
+function formatInlineCode(value) { return `\`${formatInline(value)}\``; }
+
+function hasText(value) { return typeof value === "string" && value.length > 0; }

@@ -18,6 +18,13 @@ test("visual artifact check Markdown summarizes complete bundles", () => {
   assert.match(markdown, /Required files: 6\/6/);
   assert.match(markdown, /Screenshots: 12\/12/);
   assert.match(markdown, /Design references: 0\/0/);
+  assert.match(markdown, /Reference import: `ready`/);
+  assert.match(
+    markdown,
+    /Reference source dir: `docs\/visual\/page-builder-references` \(ready\)/,
+  );
+  assert.match(markdown, /Reference missing: 0/);
+  assert.match(markdown, /Reference updates: 0/);
   assert.match(
     markdown,
     /Artifact manifest: `reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json`/,
@@ -121,6 +128,8 @@ test("visual artifact check usage documents Markdown output", () => {
 
 function createArtifactCheckReport(overrides = {}) {
   const issues = overrides.issues ?? [];
+  const referenceImport =
+    overrides.referenceImport ?? createReferenceImportSummary();
 
   return {
     artifactDir: "reports/visual/page-builder-fixture",
@@ -130,10 +139,25 @@ function createArtifactCheckReport(overrides = {}) {
     presentRequiredFileCount: 6,
     presentScreenshotCount: 12,
     presentDesignReferenceCount: 0,
+    referenceImport,
     referencedDesignReferenceCount: 0,
     requiredFileCount: 6,
     status: "complete",
     ...overrides,
+  };
+}
+
+function createReferenceImportSummary() {
+  return {
+    complete: true,
+    manifestPath:
+      "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
+    missingCount: 0,
+    sourceDir: "docs/visual/page-builder-references",
+    sourceDirStatus: "ready",
+    status: "ready",
+    updated: false,
+    updateCount: 0,
   };
 }
 

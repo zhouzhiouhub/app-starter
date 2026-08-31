@@ -116,6 +116,7 @@ function formatVisualArtifactDetail(artifact) {
 
   const details = [
     artifact.artifactDir,
+    formatVisualArtifactIssueCount(artifact.issueCount),
     formatVisualArtifactCount(
       artifact.presentRequiredFileCount,
       artifact.requiredFileCount,
@@ -126,11 +127,24 @@ function formatVisualArtifactDetail(artifact) {
       artifact.expectedScreenshotCount,
       "screenshots",
     ),
+    formatReferenceImport(artifact.referenceImport),
   ].filter(Boolean);
 
   return `artifact ${artifact.status}${
     details.length > 0 ? ` (${details.join(", ")})` : ""
   }`;
+}
+
+function formatVisualArtifactIssueCount(issueCount) {
+  return Number.isFinite(issueCount) ? `${issueCount} issues` : null;
+}
+
+function formatReferenceImport(referenceImport) {
+  if (!referenceImport) {
+    return null;
+  }
+
+  return `references ${referenceImport.status} (${referenceImport.missingCount} missing, ${referenceImport.updateCount} updates)`;
 }
 
 function formatVisualArtifactCount(present, expected, label) {

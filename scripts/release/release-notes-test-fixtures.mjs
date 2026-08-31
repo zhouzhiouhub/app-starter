@@ -18,6 +18,7 @@ export function createCompleteArtifactCheck() {
     issues: [],
     presentRequiredFileCount: 6,
     presentScreenshotCount: 12,
+    referenceImport: createReferenceImportSummary(true),
     requiredFileCount: 6,
     status: "complete",
   };
@@ -39,7 +40,22 @@ export function createInvalidArtifactCheck() {
     ],
     presentRequiredFileCount: 5,
     presentScreenshotCount: 0,
+    referenceImport: createReferenceImportSummary(false),
     requiredFileCount: 6,
     status: "invalid",
+  };
+}
+
+function createReferenceImportSummary(complete) {
+  return {
+    complete,
+    manifestPath:
+      "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
+    missingCount: complete ? 0 : 12,
+    sourceDir: "docs/visual/page-builder-references",
+    sourceDirStatus: "ready",
+    status: complete ? "ready" : "invalid",
+    updated: false,
+    updateCount: 0,
   };
 }

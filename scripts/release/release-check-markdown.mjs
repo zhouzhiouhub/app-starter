@@ -4,6 +4,7 @@ import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { assertReleaseEvidenceCheckArtifact } from "./release-notes-artifact-validation.mjs";
 import { formatReadinessChecklistMarkdown } from "./release-readiness-checklist-markdown.mjs";
 import { formatSmokeMarkdownSummary } from "./release-check-smoke-markdown-summary.mjs";
+import { formatReferenceImportMarkdown } from "./release-reference-import-markdown.mjs";
 
 const maxMarkdownItemCount = 20;
 const maxMarkdownTextLength = 420;
@@ -120,9 +121,7 @@ function formatChecklistManifest(checklist) {
     return [];
   }
 
-  return [
-    `- Checklist manifest: ${formatNullableCode(checklist.manifestPath)}`,
-  ];
+  return [`- Checklist manifest: ${formatNullableCode(checklist.manifestPath)}`];
 }
 
 function formatArtifactCheck(check) {
@@ -133,8 +132,13 @@ function formatArtifactCheck(check) {
   return [
     `- Artifact check: ${formatText(check.status)}`,
     `- Artifact dir: ${formatNullableCode(check.artifactDir)}`,
+    `- Artifact issue count: ${check.issueCount ?? 0}`,
     `- Artifact files: ${check.presentRequiredFileCount}/${check.requiredFileCount}`,
     `- Artifact screenshots: ${check.presentScreenshotCount}/${check.expectedScreenshotCount}`,
+    ...formatReferenceImportMarkdown(check.referenceImport, {
+      formatCode: formatNullableCode,
+      formatText,
+    }),
     ...formatArtifactDesignReferences(check),
     ...formatVisualIssues(check.issues, "Artifact issues"),
   ];
@@ -242,12 +246,10 @@ function formatList(label, values) {
   const visible = values.slice(0, maxMarkdownItemCount).map(formatText);
   const hidden = values.length - visible.length;
 
-  return [
-    `- ${label}: ${visible.join(", ")}`,
-    ...(hidden > 0
-      ? [`  - ... and ${hidden} more ${label.toLowerCase()}`]
-      : []),
-  ];
+  const hiddenLine =
+    hidden > 0 ? [`  - ... and ${hidden} more ${label.toLowerCase()}`] : [];
+
+  return [`- ${label}: ${visible.join(", ")}`, ...hiddenLine];
 }
 
 function formatIssue(issue) {

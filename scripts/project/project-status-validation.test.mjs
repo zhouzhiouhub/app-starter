@@ -153,6 +153,36 @@ test("project status artifact validation rejects complete visual artifact issues
   );
 });
 
+test("project status artifact validation rejects inconsistent reference import", () => {
+  const artifact = createArtifact();
+  artifact.releaseGate.visual.artifactStatus = "complete";
+  artifact.releaseGate.visual.artifactCheck = {
+    artifactDir: "reports/visual/page-builder-fixture",
+    expectedScreenshotCount: 12,
+    issueCount: 0,
+    presentRequiredFileCount: 6,
+    presentScreenshotCount: 12,
+    referenceImport: {
+      complete: true,
+      manifestPath:
+        "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
+      missingCount: 1,
+      sourceDir: "docs/visual/page-builder-references",
+      sourceDirStatus: "ready",
+      status: "ready",
+      updated: false,
+      updateCount: 0,
+    },
+    requiredFileCount: 6,
+    status: "complete",
+  };
+
+  assert.throws(
+    () => assertProjectStatusArtifact(artifact),
+    /complete referenceImport must have no missing references/,
+  );
+});
+
 test("project status writer validates artifacts before writing", async () => {
   const outputPath = `tmp/project-status-invalid-${process.pid}-${Date.now()}.json`;
 

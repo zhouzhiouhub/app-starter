@@ -23,7 +23,7 @@ test("release check artifact includes ready checklist tasks", () => {
 
   assert.equal(
     visualItem?.detail,
-    "6/6 components, 12/12 viewports, artifact complete (reports/visual/page-builder-fixture, 6/6 files, 12/12 screenshots)",
+    "6/6 components, 12/12 viewports, artifact complete (reports/visual/page-builder-fixture, 0 issues, 6/6 files, 12/12 screenshots, references ready (0 missing, 0 updates))",
   );
   assert.deepEqual(
     releaseNotesItem.steps.map((step) => step.label),
@@ -61,7 +61,7 @@ test("release check artifact includes blocked checklist actions", () => {
   assert.equal(visualItem?.status, "needs-evidence");
   assert.equal(
     visualItem?.detail,
-    "0/6 components, 0/12 viewports, artifact invalid (reports/visual/page-builder-fixture, 5/6 files, 0/12 screenshots)",
+    "0/6 components, 0/12 viewports, artifact invalid (reports/visual/page-builder-fixture, 1 issues, 5/6 files, 0/12 screenshots, references invalid (12 missing, 0 updates))",
   );
   assert.match(visualItem?.action, /pnpm visual:acceptance -- --checklist/);
   assert.equal(
@@ -164,9 +164,11 @@ function createCompleteVisualArtifact() {
   return {
     artifactDir: "reports/visual/page-builder-fixture",
     expectedScreenshotCount: 12,
+    issueCount: 0,
     issues: [],
     presentRequiredFileCount: 6,
     presentScreenshotCount: 12,
+    referenceImport: createReferenceImportSummary(true),
     requiredFileCount: 6,
     status: "complete",
   };
@@ -176,10 +178,26 @@ function createInvalidVisualArtifact() {
   return {
     artifactDir: "reports/visual/page-builder-fixture",
     expectedScreenshotCount: 12,
+    issueCount: 1,
     issues: [],
     presentRequiredFileCount: 5,
     presentScreenshotCount: 0,
+    referenceImport: createReferenceImportSummary(false),
     requiredFileCount: 6,
     status: "invalid",
+  };
+}
+
+function createReferenceImportSummary(complete) {
+  return {
+    complete,
+    manifestPath:
+      "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
+    missingCount: complete ? 0 : 12,
+    sourceDir: "docs/visual/page-builder-references",
+    sourceDirStatus: "ready",
+    status: complete ? "ready" : "invalid",
+    updated: false,
+    updateCount: 0,
   };
 }

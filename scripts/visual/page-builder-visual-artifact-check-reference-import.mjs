@@ -46,6 +46,23 @@ export function validateReferenceImportReport(report, context) {
   validateReferenceImportReportCounts(report, context);
 }
 
+export function createReferenceImportSummary(report) {
+  if (!isObject(report)) {
+    return null;
+  }
+
+  return {
+    complete: report.complete === true,
+    manifestPath: readText(report.manifestPath),
+    missingCount: readItemCount(report.missingCount, report.missing),
+    sourceDir: readText(report.sourceDir),
+    sourceDirStatus: readText(report.sourceDirStatus) ?? "unknown",
+    status: readText(report.status) ?? "unknown",
+    updated: report.updated === true,
+    updateCount: readItemCount(report.updateCount, report.updates),
+  };
+}
+
 function validateReferenceImportStatus(report, context) {
   if (!referenceImportStatuses.has(report.status)) {
     addArtifactCheckIssue(
@@ -83,4 +100,18 @@ function validateReferenceImportReportCounts(report, context) {
       "reference import report counts must match its missing and update lists.",
     );
   }
+}
+
+function readText(value) {
+  return typeof value === "string" && value.length > 0 ? value : null;
+}
+
+function readItemCount(value, items) {
+  if (Array.isArray(items)) {
+    return items.length;
+  }
+
+  return typeof value === "number" && Number.isFinite(value) && value >= 0
+    ? value
+    : 0;
 }

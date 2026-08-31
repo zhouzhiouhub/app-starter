@@ -1,4 +1,5 @@
 import {
+  assertBoolean,
   assertCountNotGreater,
   assertNonNegativeNumber,
   assertNullableString,
@@ -81,6 +82,7 @@ function assertNullableVisualArtifactCheck(visual) {
     check.issueCount,
     "releaseGate.visual.artifactCheck.issueCount",
   );
+  assertOptionalReferenceImport(check.referenceImport);
 
   for (const field of [
     "expectedScreenshotCount",
@@ -138,6 +140,57 @@ function assertNullableVisualArtifactCheck(visual) {
   if (check.status === "complete" && (check.issueCount ?? 0) > 0) {
     throw new Error(
       "Project status artifact complete releaseGate.visual.artifactCheck must have no issues.",
+    );
+  }
+}
+
+function assertOptionalReferenceImport(referenceImport) {
+  if (referenceImport === undefined) {
+    return;
+  }
+
+  if (!isRecord(referenceImport)) {
+    throw new Error(
+      "Project status artifact releaseGate.visual.artifactCheck.referenceImport must be an object.",
+    );
+  }
+
+  assertBoolean(
+    referenceImport.complete,
+    "releaseGate.visual.artifactCheck.referenceImport.complete",
+  );
+  assertNullableString(
+    referenceImport.manifestPath,
+    "releaseGate.visual.artifactCheck.referenceImport.manifestPath",
+  );
+  assertNonNegativeNumber(
+    referenceImport.missingCount,
+    "releaseGate.visual.artifactCheck.referenceImport.missingCount",
+  );
+  assertNullableString(
+    referenceImport.sourceDir,
+    "releaseGate.visual.artifactCheck.referenceImport.sourceDir",
+  );
+  assertString(
+    referenceImport.sourceDirStatus,
+    "releaseGate.visual.artifactCheck.referenceImport.sourceDirStatus",
+  );
+  assertString(
+    referenceImport.status,
+    "releaseGate.visual.artifactCheck.referenceImport.status",
+  );
+  assertBoolean(
+    referenceImport.updated,
+    "releaseGate.visual.artifactCheck.referenceImport.updated",
+  );
+  assertNonNegativeNumber(
+    referenceImport.updateCount,
+    "releaseGate.visual.artifactCheck.referenceImport.updateCount",
+  );
+
+  if (referenceImport.complete && referenceImport.missingCount > 0) {
+    throw new Error(
+      "Project status artifact complete referenceImport must have no missing references.",
     );
   }
 }

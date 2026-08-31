@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { assertReleaseEvidenceCheckArtifact } from "./release-notes-artifact.mjs";
+import {
+  createCompleteArtifactCheck,
+  createReadySmokeSource,
+} from "./release-notes-test-fixtures.mjs";
 
 test("release notes validates release evidence artifact shape", () => {
   const artifact = createReadyReleaseArtifact();
@@ -133,6 +137,23 @@ test("release notes validates release evidence artifact shape", () => {
         },
       }),
     /visual\.artifactCheck\.presentScreenshotCount must not exceed/,
+  );
+  assert.throws(
+    () =>
+      assertReleaseEvidenceCheckArtifact({
+        ...artifact,
+        visual: {
+          ...artifact.visual,
+          artifactCheck: {
+            ...artifact.visual.artifactCheck,
+            referenceImport: {
+              ...artifact.visual.artifactCheck.referenceImport,
+              missingCount: 1,
+            },
+          },
+        },
+      }),
+    /complete referenceImport must have no missing references/,
   );
 });
 
@@ -333,16 +354,7 @@ function createReadyReleaseArtifact() {
     visual: {
       acceptedComponentCount: 6,
       acceptedViewportCount: 12,
-      artifactCheck: {
-        artifactDir: "reports/visual/page-builder-fixture",
-        expectedScreenshotCount: 12,
-        issueCount: 0,
-        issues: [],
-        presentRequiredFileCount: 6,
-        presentScreenshotCount: 12,
-        requiredFileCount: 6,
-        status: "complete",
-      },
+      artifactCheck: createCompleteArtifactCheck(),
       componentCount: 6,
       errorCount: 0,
       issueCount: 0,
@@ -361,18 +373,6 @@ function createReadyReleaseArtifact() {
         viewportCount: 12,
       },
     },
-  };
-}
-
-function createReadySmokeSource() {
-  return {
-    commitSha: "0123456789abcdef0123456789abcdef01234567",
-    repository: "zhouzhiouhub/app-starter",
-    runId: "123456789",
-    runNumber: "123",
-    workflow: "Production Smoke",
-    workflowRunUrl:
-      "https://github.com/zhouzhiouhub/app-starter/actions/runs/123456789",
   };
 }
 

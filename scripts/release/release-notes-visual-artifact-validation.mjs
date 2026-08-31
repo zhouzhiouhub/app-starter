@@ -1,4 +1,5 @@
 import {
+  assertBoolean,
   assertCountDoesNotExceed,
   assertEnum,
   assertNonNegativeNumber,
@@ -57,6 +58,7 @@ export function assertOptionalVisualArtifactCheck(check) {
     check.issueCount,
     "visual.artifactCheck.issueCount",
   );
+  assertOptionalReferenceImport(check.referenceImport);
   assertCountDoesNotExceed(
     check.presentScreenshotCount,
     check.expectedScreenshotCount,
@@ -77,6 +79,57 @@ export function assertOptionalVisualArtifactCheck(check) {
   );
   assertOptionalVisualIssues(check.issues);
   assertVisualArtifactIssueCountConsistency(check);
+}
+
+function assertOptionalReferenceImport(referenceImport) {
+  if (referenceImport === undefined) {
+    return;
+  }
+
+  if (!isPlainRecord(referenceImport)) {
+    throw new Error(
+      "Release check artifact visual.artifactCheck.referenceImport must be an object.",
+    );
+  }
+
+  assertBoolean(
+    referenceImport.complete,
+    "visual.artifactCheck.referenceImport.complete",
+  );
+  assertNullableString(
+    referenceImport.manifestPath,
+    "visual.artifactCheck.referenceImport.manifestPath",
+  );
+  assertNonNegativeNumber(
+    referenceImport.missingCount,
+    "visual.artifactCheck.referenceImport.missingCount",
+  );
+  assertNullableString(
+    referenceImport.sourceDir,
+    "visual.artifactCheck.referenceImport.sourceDir",
+  );
+  assertString(
+    referenceImport.sourceDirStatus,
+    "visual.artifactCheck.referenceImport.sourceDirStatus",
+  );
+  assertString(
+    referenceImport.status,
+    "visual.artifactCheck.referenceImport.status",
+  );
+  assertBoolean(
+    referenceImport.updated,
+    "visual.artifactCheck.referenceImport.updated",
+  );
+  assertNonNegativeNumber(
+    referenceImport.updateCount,
+    "visual.artifactCheck.referenceImport.updateCount",
+  );
+
+  if (referenceImport.complete && referenceImport.missingCount > 0) {
+    throw new Error(
+      "Release check artifact complete referenceImport must have no missing references.",
+    );
+  }
 }
 
 function assertOptionalCountDoesNotExceed(value, max, label, maxLabel) {

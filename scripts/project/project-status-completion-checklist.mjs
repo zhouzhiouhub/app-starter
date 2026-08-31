@@ -128,8 +128,10 @@ function formatArtifactCounts(artifact) {
   const counts = [issues, files, screenshots, designReferences]
     .filter(Boolean)
     .join(", ");
+  const referenceImport = formatReferenceImport(artifact.referenceImport);
+  const detail = [counts, referenceImport].filter(Boolean).join(", ");
 
-  return counts.length > 0 ? `${counts}.` : null;
+  return detail.length > 0 ? `${detail}.` : null;
 }
 
 function readArtifactIssueCount(artifact) {
@@ -142,6 +144,14 @@ function readArtifactIssueCount(artifact) {
 
 function formatIssueCount(issueCount) {
   return Number.isFinite(issueCount) ? `${issueCount} issues` : null;
+}
+
+function formatReferenceImport(referenceImport) {
+  if (!referenceImport) {
+    return null;
+  }
+
+  return `references ${referenceImport.status} (${referenceImport.missingCount} missing, ${referenceImport.updateCount} updates)`;
 }
 
 function formatCount(present, expected, label) {

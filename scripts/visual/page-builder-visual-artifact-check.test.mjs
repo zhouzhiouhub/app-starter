@@ -8,6 +8,7 @@ import {
 import {
   corruptPngBytes,
   createArtifactDir,
+  createReferenceImportSummary,
   createTestPng,
   hasIssue,
   readText,
@@ -23,12 +24,13 @@ test("visual artifact check accepts a complete fixture artifact", () => {
 
     assert.equal(report.status, "complete");
     assert.equal(report.issueCount, 0);
+    assert.deepEqual(report.referenceImport, createReferenceImportSummary(artifactDir));
     assert.equal(report.presentRequiredFileCount, 6);
     assert.equal(report.presentScreenshotCount, 12);
     assert.deepEqual(report.issues, []);
     assert.match(
       formatPageBuilderVisualArtifactCheckReport(report).join("\n"),
-      /Issues: 0[\s\S]*Artifact is complete/,
+      /Issues: 0[\s\S]*Reference import: invalid \(ready source, 12 missing, 0 updates\)[\s\S]*Artifact is complete/,
     );
   } finally {
     rmSync(artifactDir, { force: true, recursive: true });
@@ -45,6 +47,8 @@ test("visual artifact check rejects missing reference import Markdown", () => {
     const report = checkPageBuilderVisualArtifact({ artifactDir });
     assert.equal(report.status, "invalid");
     assert.equal(report.issueCount, report.issues.length);
+    assert.equal(report.referenceImport.status, "invalid");
+    assert.equal(report.referenceImport.missingCount, 12);
     assert.equal(report.presentRequiredFileCount, 5);
     assert.equal(
       report.issues.some(

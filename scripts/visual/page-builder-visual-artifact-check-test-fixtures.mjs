@@ -92,6 +92,15 @@ export function hasIssue(report, code) {
   return report.issues.some((issue) => issue.code === code);
 }
 
+export function createReferenceImportSummary(artifactDir) {
+  return {
+    complete: false, missingCount: 12,
+    manifestPath: `${artifactDir}/page-builder-visual-acceptance.json`,
+    sourceDir: "docs/visual/page-builder-references", sourceDirStatus: "ready",
+    status: "invalid", updated: false, updateCount: 0,
+  };
+}
+
 function createVisualManifest(artifactDir, input) {
   return {
     records: mvpPageBuilderComponents.map((component) => ({
@@ -198,13 +207,8 @@ function writeText(filePath, value) {
 function createReferenceImportReport(artifactDir) {
   const missing = createReferenceMissingEntries();
   return {
-    complete: false,
-    manifestPath: `${artifactDir}/page-builder-visual-acceptance.json`,
+    ...createReferenceImportSummary(artifactDir),
     missing, missingCount: missing.length,
-    sourceDir: "docs/visual/page-builder-references",
-    sourceDirStatus: "ready",
-    status: "invalid",
-    updated: false, updateCount: 0,
     updates: [],
   };
 }
@@ -227,15 +231,11 @@ function createReferenceMissingEntries() {
   return mvpPageBuilderComponents.flatMap((component) =>
     pageBuilderVisualAcceptanceViewports.map((viewport) => ({
       component, reason: `${component}-${viewport}.png is missing`, viewport,
-    })),
-  );
+    })));
 }
 
 function createScreenshotPng(viewport) {
-  return createTestPng(
-    pageBuilderVisualCaptureViewportWidths[viewport],
-    pageBuilderVisualCaptureDefaultHeight,
-  );
+  return createTestPng(pageBuilderVisualCaptureViewportWidths[viewport], pageBuilderVisualCaptureDefaultHeight);
 }
 
 export function createTestPng(width, height) {

@@ -53,8 +53,7 @@ test("release check accepts a complete visual artifact", () => {
     visualArtifactDir: "reports/visual/page-builder-fixture",
     visualEvidenceRoot: evidenceRoot,
     visualManifest: manifest,
-    visualManifestPath:
-      "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
+    visualManifestPath: "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
   });
 
   assert.equal(check.releaseReady, true);
@@ -62,7 +61,7 @@ test("release check accepts a complete visual artifact", () => {
   assert.equal(
     formatReleaseEvidenceCheck(check).some((line) =>
       line.includes(
-        "Visual artifact: complete (reports/visual/page-builder-fixture, 6/6 files, 12/12 screenshots)",
+        "Visual artifact: complete (reports/visual/page-builder-fixture, 0 issues, 6/6 files, 12/12 screenshots, references ready, 0 missing)",
       ),
     ),
     true,
@@ -129,12 +128,11 @@ test("release check artifact records visual artifact completeness", () => {
   });
 
   assert.equal(artifact.visual.artifactCheck.status, "complete");
-  assert.equal(
-    artifact.visual.artifactCheck.artifactDir,
-    "reports/visual/page-builder-fixture",
-  );
+  assert.equal(artifact.visual.artifactCheck.artifactDir, "reports/visual/page-builder-fixture");
   assert.equal(artifact.visual.artifactCheck.presentRequiredFileCount, 6);
   assert.equal(artifact.visual.artifactCheck.presentScreenshotCount, 12);
+  assert.equal(artifact.visual.artifactCheck.referenceImport.status, "ready");
+  assert.equal(artifact.visual.artifactCheck.referenceImport.missingCount, 0);
   assert.deepEqual(artifact.visual.artifactCheck.issues, []);
 });
 
@@ -168,6 +166,8 @@ test("release check blocks invalid visual artifacts", () => {
   );
   assert.equal(artifact.visual.artifactCheck.status, "invalid");
   assert.equal(artifact.visual.artifactCheck.issueCount, 1);
+  assert.equal(artifact.visual.artifactCheck.referenceImport.status, "invalid");
+  assert.equal(artifact.visual.artifactCheck.referenceImport.missingCount, 12);
   assert.equal(
     artifact.blockers.some(
       (blocker) => blocker.label === "Visual artifact invalid",

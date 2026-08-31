@@ -244,7 +244,8 @@ later phases are explicitly approved.
   `pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture`.
 - Once that default local artifact contains every required report and screenshot,
   plain `pnpm project:status` includes `artifact complete` plus artifact path,
-  issue, file, and screenshot counts in its informational release gate summary and carries
+  issue, file, screenshot, and reference-import missing/update counts in its
+  informational release gate summary and carries
   `--visual-artifact-dir reports/visual/page-builder-fixture` into rerun
   commands. `release:check` still requires the explicit flag when the formal
   gate should read that artifact.
@@ -254,7 +255,8 @@ later phases are explicitly approved.
 - When `visual_artifact_run_id` was provided,
   `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture`
   exits successfully, prints the visual artifact path plus issue, file, and
-  screenshot counts, and records `visual.artifactCheck.status=complete`.
+  screenshot counts plus reference-import status, and records
+  `visual.artifactCheck.status=complete`.
 - `pnpm release:check -- --checklist --smoke-report artifacts/production-smoke/smoke-report.json`
   prints the Production Smoke, Page Builder Visual, and release notes readiness
   tasks for release review, including the first Page Builder visual viewport
@@ -265,14 +267,15 @@ later phases are explicitly approved.
   writes the combined `release-evidence-check.v1` artifact and matching
   Markdown review for the release record; its `readinessChecklist` lists the
   Production Smoke, Page Builder visual, and release notes tasks, including the
-  visual artifact path, issue count, and counts when present, while
+  visual artifact path, issue count, reference-import summary, and counts when
+  present, while
   `visual.pendingComponents`,
   `visual.pendingViewports`, `visual.issues`, and
   `visual.checklist.pendingTasks` identify any remaining Page Builder visual
   evidence gaps and their per-viewport commands when the gate is blocked. When
   `--visual-artifact-dir` is provided, the same artifact includes
   `visual.artifactCheck` with artifact path, required file, validated
-  screenshot, and issue counts.
+  screenshot, reference-import status, and issue counts.
 - `pnpm release:handoff -- --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture`
   writes the preflight JSON/Markdown, combined release evidence JSON/Markdown,
   and project status JSON/Markdown from the same handoff run. The terminal
@@ -306,9 +309,10 @@ later phases are explicitly approved.
   `release-evidence-check.v1` artifact, including the readiness checklist,
   main CI local verification run and artifact, preflight artifact, project
   status artifact and source path, visual manifest path, optional
-  `visual.artifactCheck` path, issue count, and count summary, pending visual
-  evidence lists, visual checklist task summary, and visual issue summary when
-  `--allow-blocked` is used for failure review drafts. Blocked drafts also include a
+  `visual.artifactCheck` path, issue count, reference-import summary, and count
+  summary, pending visual evidence lists, visual checklist task summary, and
+  visual issue summary when `--allow-blocked` is used for failure review drafts.
+  Blocked drafts also include a
   `Project Next Actions` section from the validated `project-status.v1` file so
   the first production smoke and visual evidence repair steps stay with the
   failed review record. The command validates the artifact's smoke

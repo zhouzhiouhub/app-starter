@@ -110,6 +110,7 @@ export function createVisualArtifactCheck(input) {
   return {
     artifactDir: "reports/visual/page-builder-fixture",
     expectedScreenshotCount: 12,
+    issueCount: complete ? 0 : 1,
     issues: complete
       ? []
       : [
@@ -122,9 +123,24 @@ export function createVisualArtifactCheck(input) {
     presentRequiredFileCount: complete ? 6 : 5,
     presentScreenshotCount: complete ? 12 : 0,
     presentDesignReferenceCount: complete ? 12 : 0,
+    referenceImport: createReferenceImportSummary(complete),
     referencedDesignReferenceCount: complete ? 12 : 1,
     requiredFileCount: 6,
     status: input.status,
+  };
+}
+
+function createReferenceImportSummary(complete) {
+  return {
+    complete,
+    manifestPath:
+      "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
+    missingCount: complete ? 0 : 12,
+    sourceDir: "docs/visual/page-builder-references",
+    sourceDirStatus: "ready",
+    status: complete ? "ready" : "invalid",
+    updated: false,
+    updateCount: 0,
   };
 }
 

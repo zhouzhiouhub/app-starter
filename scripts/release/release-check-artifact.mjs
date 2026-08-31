@@ -3,6 +3,7 @@ import { dirname } from "node:path";
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { createReleaseEvidenceReadinessChecklist } from "./release-check-checklist.mjs";
 import { createSmokeMarkdownArtifact } from "./release-check-smoke-markdown-artifact.mjs";
+import { createOptionalReferenceImportArtifact } from "./release-reference-import-artifact.mjs";
 
 export const releaseEvidenceCheckSchemaVersion = "release-evidence-check.v1";
 
@@ -218,6 +219,7 @@ function createVisualArtifactCheckArtifact(check) {
     ),
     presentRequiredFileCount: check.presentRequiredFileCount,
     presentScreenshotCount: check.presentScreenshotCount,
+    ...createOptionalReferenceImportArtifact(check.referenceImport),
     ...createOptionalCount(
       "referencedDesignReferenceCount",
       check.referencedDesignReferenceCount,

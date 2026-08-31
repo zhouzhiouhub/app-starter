@@ -55,7 +55,7 @@ test("release notes render required evidence and gate status", () => {
   );
   assert.match(
     markdown,
-    /Page Builder Visual Artifact: complete \(reports\/visual\/page-builder-fixture, 6\/6 files, 12\/12 screenshots\)/,
+    /Page Builder Visual Artifact: complete \(reports\/visual\/page-builder-fixture, 0 issues, 6\/6 files, 12\/12 screenshots, references ready, 0 missing\)/,
   );
   assert.match(markdown, /## Readiness Checklist/);
   assert.match(markdown, /Production Smoke report: ready/);
@@ -70,7 +70,7 @@ test("release notes render required evidence and gate status", () => {
   assert.match(markdown, /Page Builder Visual evidence: ready/);
   assert.match(
     markdown,
-    / {2}- Detail: 6\/6 components, 12\/12 viewports, artifact complete \(reports\/visual\/page-builder-fixture, 6\/6 files, 12\/12 screenshots\)/,
+    / {2}- Detail: 6\/6 components, 12\/12 viewports, artifact complete \(reports\/visual\/page-builder-fixture, 0 issues, 6\/6 files, 12\/12 screenshots, references ready \(0 missing, 0 updates\)\)/,
   );
   assert.match(markdown, /Release notes record: ready to generate/);
   assert.match(
@@ -82,8 +82,11 @@ test("release notes render required evidence and gate status", () => {
     markdown,
     /Artifact dir: `reports\/visual\/page-builder-fixture`/,
   );
+  assert.match(markdown, /Artifact issue count: 0/);
   assert.match(markdown, /Artifact files: 6\/6/);
   assert.match(markdown, /Artifact screenshots: 12\/12/);
+  assert.match(markdown, /Reference import: ready/);
+  assert.match(markdown, /Reference missing: 0/);
   assert.match(markdown, /Artifact issues: none/);
   assert.match(markdown, /Pending components: none/);
   assert.match(markdown, /Pending viewports: none/);
@@ -223,7 +226,7 @@ test("release notes require ready evidence unless explicitly allowed", () => {
   );
   assert.match(
     markdown,
-    / {2}- Detail: 0\/6 components, 0\/12 viewports, artifact invalid \(reports\/visual\/page-builder-fixture, 5\/6 files, 0\/12 screenshots\)/,
+    / {2}- Detail: 0\/6 components, 0\/12 viewports, artifact invalid \(reports\/visual\/page-builder-fixture, 1 issues, 5\/6 files, 0\/12 screenshots, references invalid \(12 missing, 0 updates\)\)/,
   );
   assert.match(
     markdown,
@@ -246,6 +249,8 @@ test("release notes require ready evidence unless explicitly allowed", () => {
     markdown,
     /Artifact issue: unknown: missing_artifact_file \(error\) - capture report is missing\./,
   );
+  assert.match(markdown, /Reference import: invalid/);
+  assert.match(markdown, /Reference missing: 12/);
 });
 
 function createRequiredArgs() {
@@ -292,7 +297,7 @@ function createReadyReadinessChecklist() {
       {
         action: null,
         detail:
-          "6/6 components, 12/12 viewports, artifact complete (reports/visual/page-builder-fixture, 6/6 files, 12/12 screenshots)",
+          "6/6 components, 12/12 viewports, artifact complete (reports/visual/page-builder-fixture, 0 issues, 6/6 files, 12/12 screenshots, references ready (0 missing, 0 updates))",
         label: "Page Builder Visual evidence",
         status: "ready",
       },
@@ -322,7 +327,7 @@ function createBlockedReadinessChecklist() {
         bundleCommand:
           "pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture",
         detail:
-          "0/6 components, 0/12 viewports, artifact invalid (reports/visual/page-builder-fixture, 5/6 files, 0/12 screenshots)",
+          "0/6 components, 0/12 viewports, artifact invalid (reports/visual/page-builder-fixture, 1 issues, 5/6 files, 0/12 screenshots, references invalid (12 missing, 0 updates))",
         label: "Page Builder Visual evidence",
         status: "needs-evidence",
       },

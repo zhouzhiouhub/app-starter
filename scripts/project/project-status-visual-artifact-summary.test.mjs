@@ -17,6 +17,17 @@ test("project status summarizes visual artifact counts", () => {
     presentDesignReferenceCount: 12,
     presentRequiredFileCount: 6,
     presentScreenshotCount: 12,
+    referenceImport: {
+      complete: true,
+      manifestPath:
+        "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
+      missingCount: 0,
+      sourceDir: "docs/visual/page-builder-references",
+      sourceDirStatus: "ready",
+      status: "ready",
+      updated: false,
+      updateCount: 0,
+    },
     referencedDesignReferenceCount: 12,
     requiredFileCount: 6,
     status: "complete",
@@ -34,17 +45,28 @@ test("project status summarizes visual artifact counts", () => {
     presentDesignReferenceCount: 12,
     presentRequiredFileCount: 6,
     presentScreenshotCount: 12,
+    referenceImport: {
+      complete: true,
+      manifestPath:
+        "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
+      missingCount: 0,
+      sourceDir: "docs/visual/page-builder-references",
+      sourceDirStatus: "ready",
+      status: "ready",
+      updated: false,
+      updateCount: 0,
+    },
     referencedDesignReferenceCount: 12,
     requiredFileCount: 6,
     status: "complete",
   });
   assert.match(
     terminalText,
-    /Page Builder Visual: needs-evidence, components 0\/6, viewports 0\/12, pending tasks 12, artifact complete \(reports\/visual\/page-builder-fixture, 0 issues, 6\/6 files, 12\/12 screenshots, 12\/12 design references\)/,
+    /Page Builder Visual: needs-evidence, components 0\/6, viewports 0\/12, pending tasks 12, artifact complete \(reports\/visual\/page-builder-fixture, 0 issues, 6\/6 files, 12\/12 screenshots, 12\/12 design references, references ready \(ready source, 0 missing, 0 updates\)\)/,
   );
   assert.match(
     markdown,
-    /Page Builder Visual: needs-evidence, 0\/6 components, 0\/12 viewports, 12 pending tasks, artifact complete \(reports\/visual\/page-builder-fixture, 0 issues, 6\/6 files, 12\/12 screenshots, 12\/12 design references\)/,
+    /Page Builder Visual: needs-evidence, 0\/6 components, 0\/12 viewports, 12 pending tasks, artifact complete \(reports\/visual\/page-builder-fixture, 0 issues, 6\/6 files, 12\/12 screenshots, 12\/12 design references, references ready \(ready source, 0 missing, 0 updates\)\)/,
   );
 });
 
@@ -59,11 +81,11 @@ test("project status docs mention visual artifact path and counts", async () => 
   assert.match(readme, /releaseGate\.visual\.artifactCheck/);
   assert.match(
     setupDoc,
-    /prints its artifact path, issue count,\s+file count, and screenshot counts/s,
+    /prints its artifact path, issue count,\s+file count, screenshot counts, and reference-import missing\/update counts/s,
   );
   assert.match(setupDoc, /releaseGate\.visual\.artifactCheck/);
   assert.match(
     releaseChecklist,
-    /artifact path,\s+issue, file, and screenshot counts/s,
+    /artifact path,\s+issue, file, screenshot, and reference-import missing\/update counts/s,
   );
 });

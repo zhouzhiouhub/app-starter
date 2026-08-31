@@ -128,6 +128,51 @@ test("release notes project status consistency rejects visual artifact issue cou
   );
 });
 
+test("release notes project status consistency rejects reference import mismatches", () => {
+  const releaseArtifact = createReleaseArtifact();
+  const projectStatus = createProjectStatus();
+
+  releaseArtifact.visual.artifactCheck = createCompleteArtifactCheck();
+  projectStatus.releaseGate.visual.artifactCheck = {
+    ...createCompleteArtifactCheck(),
+    referenceImport: {
+      ...createReferenceImportSummary(),
+      status: "invalid",
+    },
+  };
+  projectStatus.releaseGate.visual.artifactStatus = "complete";
+
+  assert.throws(
+    () =>
+      assertReleaseNotesProjectStatusConsistency(
+        releaseArtifact,
+        projectStatus,
+      ),
+    /project status releaseGate\.visual\.artifactCheck\.referenceImport\.status must match release-evidence-check\.v1/,
+  );
+});
+
+test("release notes project status consistency requires recorded reference import", () => {
+  const releaseArtifact = createReleaseArtifact();
+  const projectStatus = createProjectStatus();
+
+  releaseArtifact.visual.artifactCheck = {
+    ...createCompleteArtifactCheck(),
+    referenceImport: undefined,
+  };
+  projectStatus.releaseGate.visual.artifactCheck = createCompleteArtifactCheck();
+  projectStatus.releaseGate.visual.artifactStatus = "complete";
+
+  assert.throws(
+    () =>
+      assertReleaseNotesProjectStatusConsistency(
+        releaseArtifact,
+        projectStatus,
+      ),
+    /releaseGate\.visual\.artifactCheck\.referenceImport must match release-evidence-check\.v1/,
+  );
+});
+
 function createReleaseArtifact() {
   return {
     blockerCount: 0,
@@ -163,8 +208,23 @@ function createCompleteArtifactCheck() {
     issueCount: 0,
     presentRequiredFileCount: 6,
     presentScreenshotCount: 12,
+    referenceImport: createReferenceImportSummary(),
     requiredFileCount: 6,
     status: "complete",
+  };
+}
+
+function createReferenceImportSummary() {
+  return {
+    complete: true,
+    manifestPath:
+      "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
+    missingCount: 0,
+    sourceDir: "docs/visual/page-builder-references",
+    sourceDirStatus: "ready",
+    status: "ready",
+    updated: false,
+    updateCount: 0,
   };
 }
 
