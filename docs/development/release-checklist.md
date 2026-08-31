@@ -295,7 +295,10 @@ later phases are explicitly approved.
   to `project-status.md`. When production smoke evidence is missing, both
   `release-check.md` and `project-status.md` include a
   `Missing Production Smoke Evidence` section with required workflow and
-  artifact names; when Page Builder reference PNGs are missing,
+  artifact names; the blocked JSON artifacts mirror the same
+  `requiredEvidence[]` and `workflowInputs[]` handoff under
+  `smoke.missingEvidence` and `releaseGate.smoke.missingEvidence`. When Page
+  Builder reference PNGs are missing,
   both Markdown files include a `Missing Visual References` section with the
   retained paths to fill.
   It is safe for blocked review handoff because it still writes the files; add

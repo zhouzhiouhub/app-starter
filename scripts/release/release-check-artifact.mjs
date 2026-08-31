@@ -5,6 +5,7 @@ import { createReleaseEvidenceReadinessChecklist } from "./release-check-checkli
 import { createVisualChecklistArtifact } from "./release-check-visual-checklist-artifact.mjs";
 import { createSmokeMarkdownArtifact } from "./release-check-smoke-markdown-artifact.mjs";
 import { createOptionalReferenceImportArtifact } from "./release-reference-import-artifact.mjs";
+import { createMissingProductionSmokeEvidenceArtifact } from "../smoke/smoke-missing-evidence-markdown.mjs";
 
 export const releaseEvidenceCheckSchemaVersion = "release-evidence-check.v1";
 
@@ -91,9 +92,14 @@ function createSmokeArtifact(smoke) {
     })),
   };
   const markdown = createSmokeMarkdownArtifact(smoke.markdown);
+  const missingEvidence = createMissingProductionSmokeEvidenceArtifact(smoke);
 
   if (markdown) {
     artifact.markdown = markdown;
+  }
+
+  if (missingEvidence) {
+    artifact.missingEvidence = missingEvidence;
   }
 
   return artifact;

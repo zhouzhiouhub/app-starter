@@ -2,7 +2,7 @@ import { formatSmokeText } from "./smoke-text.mjs";
 
 const maxMarkdownTextLength = 420;
 
-const requiredProductionSmokeEvidence = [
+export const requiredProductionSmokeEvidence = [
   {
     label: "Workflow",
     value: "GitHub Actions Production Smoke against the production environment",
@@ -38,7 +38,7 @@ const requiredProductionSmokeEvidence = [
   },
 ];
 
-const productionSmokeWorkflowInputs = [
+export const productionSmokeWorkflowInputs = [
   {
     description: "safe JSON output path",
     name: "report_path",
@@ -148,8 +148,46 @@ export function formatMissingProductionSmokeEvidence(smoke) {
   ];
 }
 
+export function createMissingProductionSmokeEvidenceArtifact(smoke) {
+  if (smoke?.releaseReady === true || smoke?.status === "ready") {
+    return null;
+  }
+
+  const requiredEvidence = requiredProductionSmokeEvidence.map(
+    createRequiredSmokeEvidenceItem,
+  );
+  const workflowInputs = productionSmokeWorkflowInputs.map(
+    createSmokeWorkflowInputItem,
+  );
+
+  return {
+    requiredEvidence,
+    requiredEvidenceCount: requiredEvidence.length,
+    status: formatText(smoke?.status ?? "blocked"),
+    summaryStatus: formatText(readSmokeSummaryStatus(smoke)),
+    workflowInputCount: workflowInputs.length,
+    workflowInputs,
+  };
+}
+
 function readSmokeSummaryStatus(smoke) {
   return smoke?.summaryStatus ?? smoke?.summary?.status;
+}
+
+function createRequiredSmokeEvidenceItem(item) {
+  return {
+    label: formatText(item.label),
+    value: formatText(item.value),
+  };
+}
+
+function createSmokeWorkflowInputItem(input) {
+  return {
+    description: formatText(input.description),
+    name: formatText(input.name),
+    required: input.required === true,
+    value: formatText(input.value),
+  };
 }
 
 function formatSmokeMarkdown(markdown) {

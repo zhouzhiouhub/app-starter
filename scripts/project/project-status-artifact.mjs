@@ -1,4 +1,5 @@
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
+import { createMissingProductionSmokeEvidenceArtifact } from "../smoke/smoke-missing-evidence-markdown.mjs";
 import { createProjectCompletionChecklist } from "./project-status-completion-checklist.mjs";
 import {
   createProjectNextActions,
@@ -108,15 +109,24 @@ function createLocalVerificationSummary() {
 }
 
 function createReleaseGateSummary(check) {
+  const smokeGate = {
+    blockerCount: countBlockers(check, "Production Smoke"),
+    markdown: createSmokeMarkdownSummary(check.smoke.markdown),
+    path: readText(check.smoke.path),
+    status: check.smoke.releaseReady ? "ready" : "blocked",
+    summaryStatus: readText(check.smoke.summary?.status) ?? "unknown",
+  };
+  const missingSmokeEvidence = createMissingProductionSmokeEvidenceArtifact(
+    smokeGate,
+  );
+
+  if (missingSmokeEvidence) {
+    smokeGate.missingEvidence = missingSmokeEvidence;
+  }
+
   return {
     blockerCount: check.blockers.length,
-    smoke: {
-      blockerCount: countBlockers(check, "Production Smoke"),
-      markdown: createSmokeMarkdownSummary(check.smoke.markdown),
-      path: readText(check.smoke.path),
-      status: check.smoke.releaseReady ? "ready" : "blocked",
-      summaryStatus: readText(check.smoke.summary?.status) ?? "unknown",
-    },
+    smoke: smokeGate,
     visual: {
       acceptedComponentCount: check.visual.acceptedComponentCount,
       acceptedViewportCount: check.visual.acceptedViewportCount,

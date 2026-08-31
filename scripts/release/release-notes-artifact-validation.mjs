@@ -14,6 +14,7 @@ import {
   hasReadySmokeSourceArtifact,
 } from "./release-notes-smoke-source-validation.mjs";
 import { assertVisualArtifact } from "./release-notes-visual-evidence-validation.mjs";
+import { assertMissingProductionSmokeEvidenceArtifact } from "../smoke/smoke-missing-evidence-artifact-validation.mjs";
 
 const releaseArtifactStatuses = new Set(["ready", "blocked"]);
 const smokeMarkdownStatuses = new Set(["complete", "invalid", "missing"]);
@@ -160,6 +161,7 @@ function assertSmokeArtifact(smoke) {
   assertString(smoke.summary.status, "smoke.summary.status");
   assertSmokeReadySummaryConsistency(smoke);
   assertOptionalSmokeMarkdownArtifact(smoke.markdown);
+  assertOptionalMissingSmokeEvidence(smoke);
 
   if (!Array.isArray(smoke.traceability)) {
     throw new Error(
@@ -178,6 +180,23 @@ function assertSmokeArtifact(smoke) {
     assertString(group.label, "smoke.traceability.label");
     assertString(group.status, "smoke.traceability.status");
   }
+}
+
+function assertOptionalMissingSmokeEvidence(smoke) {
+  if (smoke.releaseReady && smoke.missingEvidence !== undefined) {
+    throw new Error(
+      "Release check artifact ready smoke must not include missingEvidence.",
+    );
+  }
+
+  if (smoke.missingEvidence === undefined) {
+    return;
+  }
+
+  assertMissingProductionSmokeEvidenceArtifact(
+    smoke.missingEvidence,
+    "smoke.missingEvidence",
+  );
 }
 
 function assertOptionalSmokeMarkdownArtifact(markdown) {
