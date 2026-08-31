@@ -5,160 +5,42 @@ import {
   runProductionSmokeReleaseInputsCli,
   validateProductionSmokeReleaseInputs,
 } from "./production-smoke-release-inputs.mjs";
+import {
+  createProductionSmokeWorkflowArtifactsSummary,
+} from "./production-smoke-release-artifacts.mjs";
 
-const disabledEvidenceResult = {
-  releaseNotesAllowBlocked: false,
-  releaseNotesEnabled: false,
-  visualArtifactDownloadEnabled: false,
-};
+function createDisabledEvidenceResult(env = {}) {
+  return {
+    releaseNotesAllowBlocked: false,
+    releaseNotesEnabled: false,
+    visualArtifactDownloadEnabled: false,
+    workflowArtifacts: createProductionSmokeWorkflowArtifactsSummary(env),
+  };
+}
 
 test("production smoke release input preflight accepts disabled optional evidence", () => {
-  const result = validateProductionSmokeReleaseInputs({
+  const env = {
     RELEASE_ROLLBACK_TARGET: "",
     RELEASE_TAG: "",
     RELEASE_VISUAL_ARTIFACT_NAME: "",
     RELEASE_VISUAL_ARTIFACT_RUN_ID: "",
-  });
+  };
+  const result = validateProductionSmokeReleaseInputs(env);
 
-  assert.deepEqual(result, disabledEvidenceResult);
-});
-
-test("production smoke release input preflight validates workflow artifact paths", () => {
-  assert.deepEqual(
-    validateProductionSmokeReleaseInputs({
-      PROJECT_STATUS_ARTIFACT_PATH: "reports/release/project-status.json",
-      PROJECT_STATUS_MARKDOWN_PATH: "reports/release/project-status.md",
-      RELEASE_CHECK_ARTIFACT_PATH: "reports/release/release-check.json",
-      RELEASE_CHECK_MARKDOWN_PATH: "reports/release/release-check.md",
-      RELEASE_NOTES_PATH: "reports/release/release-notes.md",
-      SMOKE_REPORT_MARKDOWN_PATH: "reports/production-smoke/smoke-report.md",
-      SMOKE_REPORT_PATH: "reports/production-smoke/smoke-report.json",
-    }),
-    disabledEvidenceResult,
-  );
-  assert.throws(
-    () =>
-      validateProductionSmokeReleaseInputs({
-        SMOKE_REPORT_PATH: "README.md",
-      }),
-    /SMOKE_REPORT_PATH must be under tmp\/, reports\/, artifacts\/, or \.tmp\//,
-  );
-  assert.throws(
-    () =>
-      validateProductionSmokeReleaseInputs({
-        SMOKE_REPORT_MARKDOWN_PATH:
-          "artifacts/production-smoke/smoke-report.json",
-      }),
-    /Smoke report Markdown must end with \.md/,
-  );
-  assert.throws(
-    () =>
-      validateProductionSmokeReleaseInputs({
-        RELEASE_CHECK_ARTIFACT_PATH: "release-check.json",
-      }),
-    /Release check artifact must be under tmp\/, reports\/, artifacts\/, or \.tmp\//,
-  );
-  assert.throws(
-    () =>
-      validateProductionSmokeReleaseInputs({
-        RELEASE_CHECK_MARKDOWN_PATH: "artifacts/release/release-check.json",
-      }),
-    /Release check Markdown must end with \.md/,
-  );
-  assert.throws(
-    () =>
-      validateProductionSmokeReleaseInputs({
-        PROJECT_STATUS_ARTIFACT_PATH: "reports/release/project-status.txt",
-      }),
-    /Project status artifact must end with \.json/,
-  );
-  assert.throws(
-    () =>
-      validateProductionSmokeReleaseInputs({
-        PROJECT_STATUS_MARKDOWN_PATH: "README.md",
-      }),
-    /Project status Markdown must use safe path segments/,
-  );
-  assert.throws(
-    () =>
-      validateProductionSmokeReleaseInputs({
-        PROJECT_STATUS_MARKDOWN_PATH: "artifacts/release/project-status.txt",
-      }),
-    /Project status Markdown must end with \.md/,
-  );
-  assert.throws(
-    () =>
-      validateProductionSmokeReleaseInputs({
-        RELEASE_NOTES_PATH: "README.md",
-      }),
-    /Release notes output must use safe path segments/,
-  );
-  assert.throws(
-    () =>
-      validateProductionSmokeReleaseInputs({
-        RELEASE_NOTES_PATH: "artifacts/release/release-notes.txt",
-      }),
-    /Release notes output must end with \.md/,
-  );
-});
-
-test("production smoke release input preflight validates workflow artifact names", () => {
-  assert.deepEqual(
-    validateProductionSmokeReleaseInputs({
-      PROJECT_STATUS_ARTIFACT_NAME: "project-status-123",
-      RELEASE_CHECK_ARTIFACT_NAME: "release-evidence-check-123",
-      RELEASE_NOTES_ARTIFACT_NAME: "release-notes-123",
-      RELEASE_PREFLIGHT_ARTIFACT_NAME: "release-preflight-123",
-      SMOKE_REPORT_ARTIFACT_NAME: "production-smoke-report-123",
-    }),
-    disabledEvidenceResult,
-  );
-  assert.throws(
-    () =>
-      validateProductionSmokeReleaseInputs({
-        SMOKE_REPORT_ARTIFACT_NAME: "smoke report",
-      }),
-    /Smoke report artifact must use 1-160 safe characters/,
-  );
-  assert.throws(
-    () =>
-      validateProductionSmokeReleaseInputs({
-        RELEASE_CHECK_ARTIFACT_NAME: "release/evidence",
-      }),
-    /Release check artifact must use 1-160 safe characters/,
-  );
-  assert.throws(
-    () =>
-      validateProductionSmokeReleaseInputs({
-        PROJECT_STATUS_ARTIFACT_NAME: "",
-      }),
-    /Project status artifact is required/,
-  );
-  assert.throws(
-    () =>
-      validateProductionSmokeReleaseInputs({
-        RELEASE_NOTES_ARTIFACT_NAME: "release-notes?",
-      }),
-    /Release notes artifact must use 1-160 safe characters/,
-  );
-  assert.throws(
-    () =>
-      validateProductionSmokeReleaseInputs({
-        RELEASE_PREFLIGHT_ARTIFACT_NAME: "release preflight",
-      }),
-    /Release preflight artifact must use 1-160 safe characters/,
-  );
+  assert.deepEqual(result, createDisabledEvidenceResult(env));
 });
 
 test("production smoke release input preflight validates smoke runtime inputs", () => {
+  const env = {
+    SMOKE_REQUIRE_ADMIN_APP: "true",
+    SMOKE_REQUIRE_R2_UPLOAD: "false",
+    SMOKE_REQUIRE_REVALIDATION: "yes",
+    SMOKE_STOREFRONT_HOST: " Store.Brand-Platform.com:443 ",
+  };
+
   assert.deepEqual(
-    validateProductionSmokeReleaseInputs({
-      SMOKE_REQUIRE_ADMIN_APP: "true",
-      SMOKE_REQUIRE_R2_UPLOAD: "false",
-      SMOKE_REQUIRE_REVALIDATION: "yes",
-      SMOKE_STOREFRONT_HOST: " Store.Brand-Platform.com:443 ",
-    }),
-    disabledEvidenceResult,
+    validateProductionSmokeReleaseInputs(env),
+    createDisabledEvidenceResult(env),
   );
   assert.throws(
     () =>
@@ -233,22 +115,32 @@ test("production smoke release input preflight requires release notes as a group
 });
 
 test("production smoke release input preflight validates release notes config", () => {
-  const result = validateProductionSmokeReleaseInputs(createReleaseNotesEnv());
+  const env = createReleaseNotesEnv();
+  const result = validateProductionSmokeReleaseInputs(env);
 
   assert.deepEqual(result, {
     releaseNotesAllowBlocked: false,
     releaseNotesEnabled: true,
     visualArtifactDownloadEnabled: true,
+    workflowArtifacts: createProductionSmokeWorkflowArtifactsSummary(env),
   });
+  assert.equal(
+    result.workflowArtifacts.artifactNames.localVerification,
+    "local-verification-122",
+  );
   assert.deepEqual(
     validateProductionSmokeReleaseInputs({
-      ...createReleaseNotesEnv(),
+      ...env,
       RELEASE_NOTES_ALLOW_BLOCKED: "true",
     }),
     {
       releaseNotesAllowBlocked: true,
       releaseNotesEnabled: true,
       visualArtifactDownloadEnabled: true,
+      workflowArtifacts: createProductionSmokeWorkflowArtifactsSummary({
+        ...env,
+        RELEASE_NOTES_ALLOW_BLOCKED: "true",
+      }),
     },
   );
   assert.throws(

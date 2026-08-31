@@ -7,7 +7,10 @@ import {
   printProductionSmokePreflightHelp,
   readProductionSmokePreflightCliConfig,
 } from "./production-smoke-preflight-cli.mjs";
-import { validateProductionSmokeWorkflowArtifacts } from "./production-smoke-release-artifacts.mjs";
+import {
+  createProductionSmokeWorkflowArtifactsSummary,
+  validateProductionSmokeWorkflowArtifacts,
+} from "./production-smoke-release-artifacts.mjs";
 import {
   readProductionSmokePreflightErrorMessage,
   writeProductionSmokePreflightReport,
@@ -19,6 +22,8 @@ export function validateProductionSmokeReleaseInputs(env = process.env) {
   validateProductionSmokeWorkflowArtifacts(env);
   validateProductionSmokeRuntimeInputs(env);
 
+  const workflowArtifacts =
+    createProductionSmokeWorkflowArtifactsSummary(env);
   const visualArtifact = readVisualArtifactInput(env);
   const releaseNotes = readReleaseNotesInput(env);
   const allowBlockedReleaseNotes = readReleaseNotesAllowBlockedInput(env);
@@ -43,6 +48,7 @@ export function validateProductionSmokeReleaseInputs(env = process.env) {
     releaseNotesAllowBlocked: allowBlockedReleaseNotes,
     releaseNotesEnabled: releaseNotes.enabled,
     visualArtifactDownloadEnabled: visualArtifact.enabled,
+    workflowArtifacts,
   };
 }
 

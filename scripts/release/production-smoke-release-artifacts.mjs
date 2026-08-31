@@ -32,102 +32,121 @@ export function validateProductionSmokeWorkflowArtifacts(env) {
   validateWorkflowArtifactNames(env);
 }
 
+export function createProductionSmokeWorkflowArtifactsSummary(env) {
+  return {
+    artifactNames: readWorkflowArtifactNames(env),
+    paths: readWorkflowArtifactPaths(env),
+  };
+}
+
 function validateWorkflowArtifactPaths(env) {
-  normalizeSmokeReportPath(
-    readWorkflowEnv(env, "SMOKE_REPORT_PATH", defaultSmokeReportPath),
-  );
-  normalizeSmokeReportMarkdownPath(
-    readWorkflowEnv(
-      env,
-      "SMOKE_REPORT_MARKDOWN_PATH",
-      defaultSmokeReportMarkdownPath,
-    ),
-  );
-  normalizeJsonArtifactPath(
-    "Release check artifact",
-    readWorkflowEnv(
-      env,
-      "RELEASE_CHECK_ARTIFACT_PATH",
-      defaultReleaseCheckArtifactPath,
-    ),
-  );
-  normalizeReleaseCheckMarkdownPath(
-    readWorkflowEnv(
-      env,
-      "RELEASE_CHECK_MARKDOWN_PATH",
-      defaultReleaseCheckMarkdownPath,
-    ),
-  );
-  normalizeJsonArtifactPath(
-    "Project status artifact",
-    readWorkflowEnv(
-      env,
-      "PROJECT_STATUS_ARTIFACT_PATH",
-      defaultProjectStatusArtifactPath,
-    ),
-  );
-  normalizeProjectStatusMarkdownPath(
-    readWorkflowEnv(
-      env,
-      "PROJECT_STATUS_MARKDOWN_PATH",
-      defaultProjectStatusMarkdownPath,
-    ),
-  );
-  normalizeReleaseNotesOutputPath(
-    readWorkflowEnv(env, "RELEASE_NOTES_PATH", defaultReleaseNotesPath),
-  );
+  readWorkflowArtifactPaths(env);
 }
 
 function validateWorkflowArtifactNames(env) {
-  normalizeArtifactName(
-    "smoke report artifact",
-    readWorkflowEnv(
-      env,
-      "SMOKE_REPORT_ARTIFACT_NAME",
-      defaultSmokeReportArtifactName,
+  readWorkflowArtifactNames(env);
+}
+
+function readWorkflowArtifactPaths(env) {
+  return {
+    projectStatusJson: normalizeJsonArtifactPath(
+      "Project status artifact",
+      readWorkflowEnv(
+        env,
+        "PROJECT_STATUS_ARTIFACT_PATH",
+        defaultProjectStatusArtifactPath,
+      ),
     ),
-  );
-  normalizeArtifactName(
-    "release check artifact",
-    readWorkflowEnv(
-      env,
-      "RELEASE_CHECK_ARTIFACT_NAME",
-      defaultReleaseCheckArtifactName,
+    projectStatusMarkdown: normalizeProjectStatusMarkdownPath(
+      readWorkflowEnv(
+        env,
+        "PROJECT_STATUS_MARKDOWN_PATH",
+        defaultProjectStatusMarkdownPath,
+      ),
     ),
-  );
-  normalizeArtifactName(
-    "project status artifact",
-    readWorkflowEnv(
-      env,
-      "PROJECT_STATUS_ARTIFACT_NAME",
-      defaultProjectStatusArtifactName,
+    releaseCheckJson: normalizeJsonArtifactPath(
+      "Release check artifact",
+      readWorkflowEnv(
+        env,
+        "RELEASE_CHECK_ARTIFACT_PATH",
+        defaultReleaseCheckArtifactPath,
+      ),
     ),
-  );
-  normalizeArtifactName(
-    "release notes artifact",
-    readWorkflowEnv(
-      env,
-      "RELEASE_NOTES_ARTIFACT_NAME",
-      defaultReleaseNotesArtifactName,
+    releaseCheckMarkdown: normalizeReleaseCheckMarkdownPath(
+      readWorkflowEnv(
+        env,
+        "RELEASE_CHECK_MARKDOWN_PATH",
+        defaultReleaseCheckMarkdownPath,
+      ),
     ),
-  );
-  normalizeArtifactName(
-    "release preflight artifact",
-    readWorkflowEnv(
-      env,
-      "RELEASE_PREFLIGHT_ARTIFACT_NAME",
-      defaultReleasePreflightArtifactName,
+    releaseNotesMarkdown: normalizeReleaseNotesOutputPath(
+      readWorkflowEnv(env, "RELEASE_NOTES_PATH", defaultReleaseNotesPath),
     ),
-  );
+    smokeReportJson: normalizeSmokeReportPath(
+      readWorkflowEnv(env, "SMOKE_REPORT_PATH", defaultSmokeReportPath),
+    ),
+    smokeReportMarkdown: normalizeSmokeReportMarkdownPath(
+      readWorkflowEnv(
+        env,
+        "SMOKE_REPORT_MARKDOWN_PATH",
+        defaultSmokeReportMarkdownPath,
+      ),
+    ),
+  };
+}
+
+function readWorkflowArtifactNames(env) {
   const localVerificationArtifactName = readWorkflowEnv(
     env,
     "RELEASE_LOCAL_VERIFICATION_ARTIFACT_NAME",
     defaultLocalVerificationArtifactName,
   );
 
-  if (localVerificationArtifactName) {
-    normalizeLocalVerificationArtifactName(localVerificationArtifactName);
-  }
+  return {
+    localVerification: localVerificationArtifactName
+      ? normalizeLocalVerificationArtifactName(localVerificationArtifactName)
+      : null,
+    projectStatus: normalizeArtifactName(
+      "project status artifact",
+      readWorkflowEnv(
+        env,
+        "PROJECT_STATUS_ARTIFACT_NAME",
+        defaultProjectStatusArtifactName,
+      ),
+    ),
+    releaseCheck: normalizeArtifactName(
+      "release check artifact",
+      readWorkflowEnv(
+        env,
+        "RELEASE_CHECK_ARTIFACT_NAME",
+        defaultReleaseCheckArtifactName,
+      ),
+    ),
+    releaseNotes: normalizeArtifactName(
+      "release notes artifact",
+      readWorkflowEnv(
+        env,
+        "RELEASE_NOTES_ARTIFACT_NAME",
+        defaultReleaseNotesArtifactName,
+      ),
+    ),
+    releasePreflight: normalizeArtifactName(
+      "release preflight artifact",
+      readWorkflowEnv(
+        env,
+        "RELEASE_PREFLIGHT_ARTIFACT_NAME",
+        defaultReleasePreflightArtifactName,
+      ),
+    ),
+    smokeReport: normalizeArtifactName(
+      "smoke report artifact",
+      readWorkflowEnv(
+        env,
+        "SMOKE_REPORT_ARTIFACT_NAME",
+        defaultSmokeReportArtifactName,
+      ),
+    ),
+  };
 }
 
 function normalizeJsonArtifactPath(label, value) {

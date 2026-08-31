@@ -12,6 +12,8 @@ test("production smoke preflight CLI writes passed JSON and Markdown reports", a
   await withTempReportDir(async (dir) => {
     const jsonPath = join(dir, "preflight.json");
     const markdownPath = join(dir, "preflight.md");
+    const normalizedJsonPath = normalizeTestPath(jsonPath);
+    const normalizedMarkdownPath = normalizeTestPath(markdownPath);
     const stdout = [];
     const exitCode = await runProductionSmokeReleaseInputsCli(
       ["--json-output", jsonPath, "--markdown-output", markdownPath],
@@ -31,12 +33,36 @@ test("production smoke preflight CLI writes passed JSON and Markdown reports", a
     assert.equal(report.releaseNotesEnabled, false);
     assert.equal(report.releaseNotesAllowBlocked, false);
     assert.equal(report.visualArtifactDownloadEnabled, false);
+    assert.equal(
+      report.workflowArtifacts.paths.smokeReportJson,
+      "artifacts/production-smoke/smoke-report.json",
+    );
+    assert.equal(
+      report.workflowArtifacts.paths.preflightJson,
+      normalizedJsonPath,
+    );
+    assert.equal(
+      report.workflowArtifacts.paths.preflightMarkdown,
+      normalizedMarkdownPath,
+    );
+    assert.equal(
+      report.workflowArtifacts.artifactNames.smokeReport,
+      "production-smoke-report-local",
+    );
+    assert.equal(
+      report.workflowArtifacts.artifactNames.releasePreflight,
+      "release-preflight-local",
+    );
     assert.equal(report.error, null);
 
     const markdown = await readFile(markdownPath, "utf8");
     assert.match(markdown, /# Production Smoke Preflight/);
     assert.match(markdown, /Status: `passed`/);
     assert.match(markdown, /Production runtime readiness required: no/);
+    assert.match(markdown, /## Workflow Artifacts/);
+    assert.match(markdown, /Smoke report JSON/);
+    assert.match(markdown, /Preflight JSON/);
+    assert.match(markdown, /Release check artifact/);
     assert.match(markdown, /## Failure[\s\S]*- None/);
   });
 });
@@ -45,6 +71,7 @@ test("production smoke preflight CLI writes failed reports before smoke requests
   await withTempReportDir(async (dir) => {
     const jsonPath = join(dir, "preflight.json");
     const markdownPath = join(dir, "preflight.md");
+    const normalizedJsonPath = normalizeTestPath(jsonPath);
     const stderr = [];
     const exitCode = await runProductionSmokeReleaseInputsCli(
       ["--json-output", jsonPath, "--markdown-output", markdownPath],
@@ -67,6 +94,14 @@ test("production smoke preflight CLI writes failed reports before smoke requests
     assert.equal(report.releaseNotesEnabled, null);
     assert.equal(report.releaseNotesAllowBlocked, null);
     assert.equal(report.visualArtifactDownloadEnabled, null);
+    assert.equal(
+      report.workflowArtifacts.paths.preflightJson,
+      normalizedJsonPath,
+    );
+    assert.equal(
+      report.workflowArtifacts.artifactNames.releasePreflight,
+      "release-preflight-local",
+    );
     assert.match(
       report.error.message,
       /Production smoke runtime readiness failed before smoke requests/,
@@ -126,4 +161,8 @@ async function withTempReportDir(run) {
 
 async function readJsonReport(path) {
   return JSON.parse(await readFile(path, "utf8"));
+}
+
+function normalizeTestPath(path) {
+  return path.replaceAll("\\", "/");
 }

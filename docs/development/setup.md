@@ -465,7 +465,8 @@ an unsafe combined gate, project status, or release notes Markdown output path,
 unsafe artifact names, unsafe storefront hosts, invalid smoke boolean inputs, a
 partial visual artifact pair, or a partial release notes input set fails early;
 it uploads `release-preflight-<run_number>` so passed and failed preflight runs
-retain the structured blocker summary.
+retain the structured blocker summary plus normalized workflow artifact paths
+and artifact names without secrets.
 The same visual artifact shape can be reproduced locally with
 `pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture`.
 After that default bundle is complete, plain `pnpm project:status` includes the

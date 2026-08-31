@@ -1,5 +1,6 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
+import { createProductionSmokeWorkflowArtifactsSummary } from "./production-smoke-release-artifacts.mjs";
 import { isProductionSmokeEnvironment } from "../smoke/publish-smoke-login-config.mjs";
 import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
 import {
@@ -28,12 +29,13 @@ export function createProductionSmokePreflightReport(input = {}) {
     releaseNotesAllowBlocked: input.result?.releaseNotesAllowBlocked ?? null,
     visualArtifactDownloadEnabled:
       input.result?.visualArtifactDownloadEnabled ?? null,
+    workflowArtifacts: createReportWorkflowArtifacts(input),
     error: errorMessage ? { message: errorMessage } : null,
   };
 }
 
 export async function writeProductionSmokePreflightReport(outputs, input = {}) {
-  const report = createProductionSmokePreflightReport(input);
+  const report = createProductionSmokePreflightReport({ ...input, outputs });
   const writes = [];
 
   if (outputs.jsonOutput) {
@@ -106,6 +108,10 @@ function createProductionSmokePreflightMarkdown(report) {
       report.visualArtifactDownloadEnabled,
     )}`,
     "",
+    "## Workflow Artifacts",
+    "",
+    ...formatWorkflowArtifacts(report.workflowArtifacts),
+    "",
     "## Failure",
     "",
     ...(report.error
@@ -115,6 +121,83 @@ function createProductionSmokePreflightMarkdown(report) {
   ];
 
   return `${lines.join("\n")}\n`;
+}
+
+function readSafeWorkflowArtifactsSummary(env) {
+  try {
+    return createProductionSmokeWorkflowArtifactsSummary(env);
+  } catch {
+    return null;
+  }
+}
+
+function createReportWorkflowArtifacts(input) {
+  const workflowArtifacts =
+    input.result?.workflowArtifacts ??
+    readSafeWorkflowArtifactsSummary(input.env ?? process.env);
+
+  if (!workflowArtifacts) {
+    return null;
+  }
+
+  return {
+    ...workflowArtifacts,
+    paths: {
+      ...workflowArtifacts.paths,
+      preflightJson: input.outputs?.jsonOutput ?? null,
+      preflightMarkdown: input.outputs?.markdownOutput ?? null,
+    },
+  };
+}
+
+function formatWorkflowArtifacts(workflowArtifacts) {
+  if (!workflowArtifacts) {
+    return ["- Not recorded"];
+  }
+
+  return [
+    ...formatArtifactPaths(workflowArtifacts.paths),
+    ...formatArtifactNames(workflowArtifacts.artifactNames),
+  ];
+}
+
+function formatArtifactPaths(paths) {
+  if (!paths) {
+    return [];
+  }
+
+  return [
+    `- Smoke report JSON: ${formatCode(paths.smokeReportJson)}`,
+    `- Smoke report Markdown: ${formatCode(paths.smokeReportMarkdown)}`,
+    `- Preflight JSON: ${formatCode(
+      paths.preflightJson ?? "not configured",
+    )}`,
+    `- Preflight Markdown: ${formatCode(
+      paths.preflightMarkdown ?? "not configured",
+    )}`,
+    `- Release check JSON: ${formatCode(paths.releaseCheckJson)}`,
+    `- Release check Markdown: ${formatCode(paths.releaseCheckMarkdown)}`,
+    `- Project status JSON: ${formatCode(paths.projectStatusJson)}`,
+    `- Project status Markdown: ${formatCode(paths.projectStatusMarkdown)}`,
+    `- Release notes Markdown: ${formatCode(paths.releaseNotesMarkdown)}`,
+  ];
+}
+
+function formatArtifactNames(names) {
+  if (!names) {
+    return [];
+  }
+
+  return [
+    `- Smoke report artifact: ${formatCode(names.smokeReport)}`,
+    `- Preflight artifact: ${formatCode(names.releasePreflight)}`,
+    `- Release check artifact: ${formatCode(names.releaseCheck)}`,
+    `- Project status artifact: ${formatCode(names.projectStatus)}`,
+    `- Release notes artifact: ${formatCode(names.releaseNotes)}`,
+    `- Local verification artifact: ${formatCode(
+      names.localVerification ?? "not configured",
+    )}`,
+  ];
 }
 
 async function writeJsonReport(outputPath, report) {

@@ -1,17 +1,23 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import {
+  createProductionSmokeWorkflowArtifactsSummary,
+} from "./production-smoke-release-artifacts.mjs";
 import { validateProductionSmokeReleaseInputs } from "./production-smoke-release-inputs.mjs";
 
 test("production smoke preflight accepts omitted local verification inputs", () => {
+  const env = {
+    RELEASE_LOCAL_VERIFICATION_ARTIFACT_NAME: "",
+    RELEASE_LOCAL_VERIFICATION_RUN_URL: "",
+  };
+
   assert.deepEqual(
-    validateProductionSmokeReleaseInputs({
-      RELEASE_LOCAL_VERIFICATION_ARTIFACT_NAME: "",
-      RELEASE_LOCAL_VERIFICATION_RUN_URL: "",
-    }),
+    validateProductionSmokeReleaseInputs(env),
     {
       releaseNotesAllowBlocked: false,
       releaseNotesEnabled: false,
       visualArtifactDownloadEnabled: false,
+      workflowArtifacts: createProductionSmokeWorkflowArtifactsSummary(env),
     },
   );
 });

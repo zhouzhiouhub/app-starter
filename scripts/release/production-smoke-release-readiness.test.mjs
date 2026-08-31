@@ -6,6 +6,9 @@ import {
   validateProductionSmokeReleaseInputs,
 } from "./production-smoke-release-inputs.mjs";
 import {
+  createProductionSmokeWorkflowArtifactsSummary,
+} from "./production-smoke-release-artifacts.mjs";
+import {
   readProductionSmokeReadinessConfig,
   validateProductionSmokeRuntimeReadiness,
 } from "./production-smoke-release-readiness.mjs";
@@ -43,12 +46,14 @@ test("production smoke runtime readiness preflight defaults release gates on", (
 });
 
 test("production smoke release input preflight accepts production-ready runtime", () => {
-  const result = validateProductionSmokeReleaseInputs(createProductionReadyEnv());
+  const env = createProductionReadyEnv();
+  const result = validateProductionSmokeReleaseInputs(env);
 
   assert.deepEqual(result, {
     releaseNotesAllowBlocked: false,
     releaseNotesEnabled: false,
     visualArtifactDownloadEnabled: false,
+    workflowArtifacts: createProductionSmokeWorkflowArtifactsSummary(env),
   });
 });
 

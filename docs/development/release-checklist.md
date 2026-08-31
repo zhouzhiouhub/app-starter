@@ -115,7 +115,8 @@ later phases are explicitly approved.
   action summary for the workflow log; the workflow writes
   `artifacts/release/preflight.json` and `artifacts/release/preflight.md` and
   uploads them as `release-preflight-<run_number>` so a failed preflight still
-  has retained evidence;
+  has retained evidence; the preflight report records normalized workflow
+  artifact paths and artifact names without secrets;
   `visual_artifact_name` and
   `visual_artifact_run_id` must be provided together, and release notes require
   `release_tag`, `rollback_target`, `local_verification_run_url`,
