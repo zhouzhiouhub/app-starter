@@ -126,7 +126,10 @@ function formatNextStep(report) {
 }
 
 function createExpectedReferencePath(sourceDir, missing) {
-  return `${sourceDir}/${missing.component}-${missing.viewport}.png`;
+  return typeof missing.expectedPath === "string" &&
+    missing.expectedPath.length > 0
+    ? missing.expectedPath
+    : `${sourceDir}/${missing.component}-${missing.viewport}.png`;
 }
 
 function formatCode(value) {

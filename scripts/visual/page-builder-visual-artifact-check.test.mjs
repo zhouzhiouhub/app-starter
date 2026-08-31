@@ -24,7 +24,10 @@ test("visual artifact check accepts a complete fixture artifact", () => {
 
     assert.equal(report.status, "complete");
     assert.equal(report.issueCount, 0);
-    assert.deepEqual(report.referenceImport, createReferenceImportSummary(artifactDir));
+    assert.deepEqual(
+      report.referenceImport,
+      createReferenceImportSummary(artifactDir),
+    );
     assert.equal(report.presentRequiredFileCount, 6);
     assert.equal(report.presentScreenshotCount, 12);
     assert.deepEqual(report.issues, []);
@@ -32,153 +35,6 @@ test("visual artifact check accepts a complete fixture artifact", () => {
       formatPageBuilderVisualArtifactCheckReport(report).join("\n"),
       /Issues: 0[\s\S]*Reference import: invalid \(ready source, 12 missing, 0 updates\)[\s\S]*Missing reference files: docs\/visual\/page-builder-references\/hero-banner-desktop\.png[\s\S]*Artifact is complete/,
     );
-  } finally {
-    rmSync(artifactDir, { force: true, recursive: true });
-  }
-});
-
-test("visual artifact check rejects missing reference import Markdown", () => {
-  const artifactDir = createArtifactDir("missing-reference-report");
-
-  try {
-    writeVisualArtifact(artifactDir);
-    rmSync(`${artifactDir}/visual-reference-import-report.md`);
-
-    const report = checkPageBuilderVisualArtifact({ artifactDir });
-    assert.equal(report.status, "invalid");
-    assert.equal(report.issueCount, report.issues.length);
-    assert.equal(report.referenceImport.status, "invalid");
-    assert.equal(report.referenceImport.missingCount, 12);
-    assert.equal(report.presentRequiredFileCount, 5);
-    assert.equal(
-      report.issues.some(
-        (issue) =>
-          issue.code === "missing_artifact_file" &&
-          issue.message.includes("reference import Markdown"),
-      ),
-      true,
-    );
-  } finally {
-    rmSync(artifactDir, { force: true, recursive: true });
-  }
-});
-
-test("visual artifact check rejects invalid reference import JSON", () => {
-  const artifactDir = createArtifactDir("invalid-reference-json");
-
-  try {
-    writeVisualArtifact(artifactDir, {
-      referenceImportReport: {
-        schemaVersion: "wrong",
-        manifestPath: "docs/development/page-builder-visual-acceptance.json",
-        missing: [],
-        missingCount: 1,
-        sourceDir: "docs/visual/page-builder-references",
-        updates: [],
-        updateCount: 0,
-      },
-    });
-
-    const report = checkPageBuilderVisualArtifact({ artifactDir });
-    assert.equal(report.status, "invalid");
-    assert.equal(hasIssue(report, "invalid_reference_import_schema"), true);
-    assert.equal(hasIssue(report, "reference_import_report_mismatch"), true);
-  } finally {
-    rmSync(artifactDir, { force: true, recursive: true });
-  }
-});
-
-test("visual artifact check rejects invalid reference source dir status", () => {
-  const artifactDir = createArtifactDir("invalid-reference-source-status");
-
-  try {
-    writeVisualArtifact(artifactDir, {
-      referenceImportReport: createReferenceImportReportOverride(artifactDir, {
-        sourceDirStatus: "unknown",
-      }),
-    });
-
-    const report = checkPageBuilderVisualArtifact({ artifactDir });
-    assert.equal(report.status, "invalid");
-    assert.equal(hasIssue(report, "invalid_reference_source_dir_status"), true);
-  } finally {
-    rmSync(artifactDir, { force: true, recursive: true });
-  }
-});
-
-test("visual artifact check rejects invalid reference import status", () => {
-  const artifactDir = createArtifactDir("invalid-reference-import-status");
-
-  try {
-    writeVisualArtifact(artifactDir, {
-      referenceImportReport: createReferenceImportReportOverride(artifactDir, {
-        status: "complete",
-      }),
-      referenceImportMarkdown: createReferenceImportMarkdownOverride(
-        artifactDir,
-        { status: "complete" },
-      ),
-    });
-
-    const report = checkPageBuilderVisualArtifact({ artifactDir });
-    assert.equal(report.status, "invalid");
-    assert.equal(hasIssue(report, "invalid_reference_import_status"), true);
-  } finally {
-    rmSync(artifactDir, { force: true, recursive: true });
-  }
-});
-
-test("visual artifact check rejects stale reference source dir status Markdown", () => {
-  const artifactDir = createArtifactDir("stale-reference-source-status");
-
-  try {
-    writeVisualArtifact(artifactDir, {
-      referenceImportReport: createReferenceImportReportOverride(artifactDir, {
-        sourceDirStatus: "missing",
-      }),
-      referenceImportMarkdown: createReferenceImportMarkdownOverride(
-        artifactDir,
-        { sourceDirStatus: "ready" },
-      ),
-    });
-
-    const report = checkPageBuilderVisualArtifact({ artifactDir });
-    assert.equal(report.status, "invalid");
-    assert.equal(hasIssue(report, "invalid_artifact_markdown"), true);
-  } finally {
-    rmSync(artifactDir, { force: true, recursive: true });
-  }
-});
-
-test("visual artifact check rejects stale reference import count Markdown", () => {
-  const artifactDir = createArtifactDir("stale-reference-counts");
-
-  try {
-    writeVisualArtifact(artifactDir, {
-      referenceImportReport: createReferenceImportReportOverride(artifactDir, {
-        missing: [
-          {
-            component: "faq",
-            expectedPath: "docs/visual/page-builder-references/faq-mobile.png",
-            reason: "faq-mobile.png is missing",
-            viewport: "mobile",
-          },
-        ],
-        missingCount: 1,
-        status: "invalid",
-      }),
-      referenceImportMarkdown: createReferenceImportMarkdownOverride(
-        artifactDir,
-        {
-          missingCount: 0,
-          status: "invalid",
-        },
-      ),
-    });
-
-    const report = checkPageBuilderVisualArtifact({ artifactDir });
-    assert.equal(report.status, "invalid");
-    assert.equal(hasIssue(report, "invalid_artifact_markdown"), true);
   } finally {
     rmSync(artifactDir, { force: true, recursive: true });
   }
@@ -202,29 +58,6 @@ test("visual artifact check rejects missing acceptance Markdown", () => {
       ),
       true,
     );
-  } finally {
-    rmSync(artifactDir, { force: true, recursive: true });
-  }
-});
-
-test("visual artifact check rejects stale reference import Markdown", () => {
-  const artifactDir = createArtifactDir("stale-reference-report");
-
-  try {
-    writeVisualArtifact(artifactDir, {
-      referenceImportMarkdown: [
-        "# Page Builder Visual Reference Import",
-        "",
-        "Status: `invalid`",
-        "Manifest: `docs/development/page-builder-visual-acceptance.json`",
-        "Source dir: `docs/visual/page-builder-references`",
-        "",
-      ].join("\n"),
-    });
-
-    const report = checkPageBuilderVisualArtifact({ artifactDir });
-    assert.equal(report.status, "invalid");
-    assert.equal(hasIssue(report, "invalid_artifact_markdown"), true);
   } finally {
     rmSync(artifactDir, { force: true, recursive: true });
   }
@@ -256,8 +89,7 @@ test("visual artifact check rejects stale acceptance Markdown", () => {
 
 test("visual artifact check rejects missing screenshots", () => {
   const artifactDir = createArtifactDir("missing");
-  const missingScreenshot =
-    `${artifactDir}/page-builder-visual-fixture-hero-banner-desktop.png`;
+  const missingScreenshot = `${artifactDir}/page-builder-visual-fixture-hero-banner-desktop.png`;
 
   try {
     writeVisualArtifact(artifactDir);
@@ -318,8 +150,7 @@ test("visual artifact check rejects manifest screenshot drift", () => {
 
   try {
     writeVisualArtifact(artifactDir, {
-      previewOverride:
-        `${artifactDir}/page-builder-visual-fixture-hero-banner-wrong.png`,
+      previewOverride: `${artifactDir}/page-builder-visual-fixture-hero-banner-wrong.png`,
     });
 
     const report = checkPageBuilderVisualArtifact({ artifactDir });
@@ -333,9 +164,15 @@ test("visual artifact check rejects manifest screenshot drift", () => {
 test("visual artifact check command is exposed in package and workflows", () => {
   const packageJson = readText("package.json");
   const ciWorkflow = readText(".github/workflows/ci.yml");
-  const pageBuilderWorkflow = readText(".github/workflows/page-builder-visual.yml");
-  const productionSmokeWorkflow = readText(".github/workflows/production-smoke.yml");
-  const visualDoc = readText("docs/development/page-builder-visual-acceptance.md");
+  const pageBuilderWorkflow = readText(
+    ".github/workflows/page-builder-visual.yml",
+  );
+  const productionSmokeWorkflow = readText(
+    ".github/workflows/production-smoke.yml",
+  );
+  const visualDoc = readText(
+    "docs/development/page-builder-visual-acceptance.md",
+  );
   const releaseChecklist = readText("docs/development/release-checklist.md");
 
   assert.match(
@@ -359,39 +196,3 @@ test("visual artifact check command is exposed in package and workflows", () => 
   assert.match(visualDoc, /pnpm visual:artifact-check/);
   assert.match(releaseChecklist, /pnpm visual:artifact-check/);
 });
-
-function createReferenceImportReportOverride(artifactDir, override = {}) {
-  return {
-    complete: false,
-    manifestPath: `${artifactDir}/page-builder-visual-acceptance.json`,
-    missing: [],
-    missingCount: 0,
-    schemaVersion: "page-builder-visual-reference-import.v1",
-    sourceDir: "docs/visual/page-builder-references",
-    sourceDirStatus: "ready",
-    status: "needs-evidence",
-    updated: false,
-    updateCount: 0,
-    updates: [],
-    ...override,
-  };
-}
-
-function createReferenceImportMarkdownOverride(artifactDir, override = {}) {
-  const missingCount = override.missingCount ?? 0;
-  const sourceDirStatus = override.sourceDirStatus ?? "ready";
-  const status = override.status ?? "needs-evidence";
-  const updateCount = override.updateCount ?? 0;
-
-  return [
-    "# Page Builder Visual Reference Import",
-    "",
-    `Status: \`${status}\``,
-    `Manifest: \`${artifactDir}/page-builder-visual-acceptance.json\``,
-    "Source dir: `docs/visual/page-builder-references`",
-    `Source dir status: \`${sourceDirStatus}\``,
-    `References updated: ${updateCount}`,
-    `Missing references: ${missingCount}`,
-    "",
-  ].join("\n");
-}

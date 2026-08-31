@@ -56,7 +56,9 @@ test("visual reference import config parses safe source dirs", () => {
     "artifacts/visual/references",
   );
   assert.equal(
-    normalizeVisualReferenceSourceDir(String.raw`docs\\visual\\page-builder-references\\`),
+    normalizeVisualReferenceSourceDir(
+      String.raw`docs\\visual\\page-builder-references\\`,
+    ),
     "docs/visual/page-builder-references",
   );
   assert.throws(
@@ -170,6 +172,7 @@ test("visual reference import reports missing required files", () => {
   assert.equal(report.missing.length, 1);
   assert.deepEqual(report.missing[0], {
     component: "faq",
+    expectedPath: "docs/visual/page-builder-references/faq-mobile.png",
     reason: "faq-mobile.png is missing",
     viewport: "mobile",
   });
@@ -197,6 +200,7 @@ test("visual reference import reports missing source directory", () => {
   assert.equal(report.missing.length, 12);
   assert.deepEqual(report.missing[0], {
     component: "hero-banner",
+    expectedPath: "docs/visual/page-builder-references/hero-banner-desktop.png",
     reason: "source dir is missing",
     viewport: "desktop",
   });
@@ -263,19 +267,33 @@ test("visual reference import command is exposed in docs", () => {
   assert.match(cli, /--markdown-output <path>/);
   assert.match(cli, /--json/);
   assert.match(cli, /--output <path>/);
-  assert.match(cli, /visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output/);
+  assert.match(
+    cli,
+    /visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output/,
+  );
   assert.match(readme, /pnpm visual:references -- --source-dir/);
   assert.match(readme, /visual-reference-import-report\.json/);
   assert.match(readme, /visual-reference-import-report\.md/);
-  assert.match(readme, /--manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/);
+  assert.match(readme, /missing\[\]\.expectedPath/);
+  assert.match(
+    readme,
+    /--manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/,
+  );
   assert.match(acceptanceDoc, /pnpm visual:references -- --source-dir/);
   assert.match(acceptanceDoc, /visual-reference-import-report\.json/);
   assert.match(acceptanceDoc, /visual-reference-import-report\.md/);
-  assert.match(acceptanceDoc, /--manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/);
+  assert.match(acceptanceDoc, /expectedPath/);
+  assert.match(
+    acceptanceDoc,
+    /--manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/,
+  );
   assert.match(releaseChecklist, /pnpm visual:references -- --source-dir/);
   assert.match(releaseChecklist, /visual-reference-import-report\.json/);
   assert.match(releaseChecklist, /visual-reference-import-report\.md/);
-  assert.match(releaseChecklist, /--manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/);
+  assert.match(
+    releaseChecklist,
+    /--manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/,
+  );
 });
 
 test("visual reference intake directory documents every required file", () => {

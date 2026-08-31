@@ -38,6 +38,7 @@ test("visual reference import rejects unreadable PNG references", () => {
   assert.equal(report.missing.length, 1);
   assert.deepEqual(report.missing[0], {
     component: "hero-banner",
+    expectedPath: "docs/visual/page-builder-references/hero-banner-desktop.png",
     reason:
       "hero-banner-desktop.png must be a readable PNG: " +
       path.join(

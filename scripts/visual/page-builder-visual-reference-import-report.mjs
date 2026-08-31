@@ -56,7 +56,9 @@ export function formatPageBuilderVisualReferenceImportReport(report) {
   }
 
   if (report.status === "invalid" || report.status === "needs-evidence") {
-    lines.push("  Next: add the missing real design reference PNGs listed above.");
+    lines.push(
+      "  Next: add the missing real design reference PNGs listed above.",
+    );
     lines.push(
       `  Next: rerun ${createPageBuilderVisualReferenceImportWriteCommand(
         report,
@@ -68,5 +70,8 @@ export function formatPageBuilderVisualReferenceImportReport(report) {
 }
 
 function createExpectedReferencePath(sourceDir, missing) {
-  return `${sourceDir}/${missing.component}-${missing.viewport}.png`;
+  return typeof missing.expectedPath === "string" &&
+    missing.expectedPath.length > 0
+    ? missing.expectedPath
+    : `${sourceDir}/${missing.component}-${missing.viewport}.png`;
 }

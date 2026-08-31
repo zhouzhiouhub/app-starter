@@ -1,5 +1,4 @@
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { deflateSync } from "node:zlib";
 import {
   createPageBuilderVisualAcceptanceArtifact,
   createPageBuilderVisualAcceptanceChecklist,
@@ -15,11 +14,8 @@ import {
   pageBuilderVisualCaptureViewportWidths,
 } from "./page-builder-visual-capture.mjs";
 import { createPageBuilderVisualReferenceImportArtifact } from "./page-builder-visual-reference-import.mjs";
-
-export const corruptPngBytes = Buffer.concat([
-  createPngSignature(),
-  Buffer.from([0x00]),
-]);
+export { corruptPngBytes, createTestPng } from "./png-test-fixtures.mjs";
+import { createTestPng } from "./png-test-fixtures.mjs";
 
 export function createArtifactDir(label) {
   const artifactDir = `reports/visual/artifact-check-${label}-${process.pid}-${Date.now()}`;
@@ -43,14 +39,16 @@ export function writeVisualArtifact(artifactDir, input = {}) {
     writePng(screenshot.evidencePath, screenshot.body);
   }
 
-  const acceptanceReport = validatePageBuilderVisualAcceptanceManifest(manifest);
+  const acceptanceReport =
+    validatePageBuilderVisualAcceptanceManifest(manifest);
   const acceptanceArtifact = createPageBuilderVisualAcceptanceArtifact(
     acceptanceReport,
     { checklist: acceptanceChecklist },
   );
-  const referenceImportArtifact = createPageBuilderVisualReferenceImportArtifact(
-    createReferenceImportReport(artifactDir),
-  );
+  const referenceImportArtifact =
+    createPageBuilderVisualReferenceImportArtifact(
+      createReferenceImportReport(artifactDir),
+    );
   const captureArtifact = createPageBuilderVisualCaptureArtifact({
     baseUrl: "http://localhost:3000",
     browserPath: "google-chrome",
@@ -79,8 +77,7 @@ export function writeVisualArtifact(artifactDir, input = {}) {
   );
   writeText(
     `${artifactDir}/visual-reference-import-report.md`,
-    input.referenceImportMarkdown ??
-      createReferenceImportMarkdown(artifactDir),
+    input.referenceImportMarkdown ?? createReferenceImportMarkdown(artifactDir),
   );
 }
 
@@ -93,7 +90,17 @@ export function hasIssue(report, code) {
 }
 
 export function createReferenceImportSummary(artifactDir) {
-  return { complete: false, manifestPath: `${artifactDir}/page-builder-visual-acceptance.json`, missingCount: 12, missingReferences: createReferenceMissingReferencePaths(), sourceDir: "docs/visual/page-builder-references", sourceDirStatus: "ready", status: "invalid", updated: false, updateCount: 0 };
+  return {
+    complete: false,
+    manifestPath: `${artifactDir}/page-builder-visual-acceptance.json`,
+    missingCount: 12,
+    missingReferences: createReferenceMissingReferencePaths(),
+    sourceDir: "docs/visual/page-builder-references",
+    sourceDirStatus: "ready",
+    status: "invalid",
+    updated: false,
+    updateCount: 0,
+  };
 }
 
 function createVisualManifest(artifactDir, input) {
@@ -122,7 +129,9 @@ function createVisualManifest(artifactDir, input) {
 
 function createViewportEvidence(artifactDir, component, viewport, input) {
   const previewScreenshot =
-    component === "hero-banner" && viewport === "desktop" && input.previewOverride
+    component === "hero-banner" &&
+    viewport === "desktop" &&
+    input.previewOverride
       ? input.previewOverride
       : `${artifactDir}/page-builder-visual-fixture-${component}-${viewport}.png`;
 
@@ -203,7 +212,8 @@ function createReferenceImportReport(artifactDir) {
   const missing = createReferenceMissingEntries();
   return {
     ...createReferenceImportSummary(artifactDir),
-    missing, missingCount: missing.length,
+    missing,
+    missingCount: missing.length,
     updates: [],
   };
 }
@@ -225,74 +235,26 @@ function createReferenceImportMarkdown(artifactDir) {
 function createReferenceMissingEntries() {
   return mvpPageBuilderComponents.flatMap((component) =>
     pageBuilderVisualAcceptanceViewports.map((viewport) => ({
-      component, reason: `${component}-${viewport}.png is missing`, viewport,
-    })));
+      component,
+      expectedPath: `docs/visual/page-builder-references/${component}-${viewport}.png`,
+      reason: `${component}-${viewport}.png is missing`,
+      viewport,
+    })),
+  );
 }
 
 function createReferenceMissingReferencePaths() {
-  return mvpPageBuilderComponents.flatMap((component) => pageBuilderVisualAcceptanceViewports.map((viewport) => `docs/visual/page-builder-references/${component}-${viewport}.png`));
+  return mvpPageBuilderComponents.flatMap((component) =>
+    pageBuilderVisualAcceptanceViewports.map(
+      (viewport) =>
+        `docs/visual/page-builder-references/${component}-${viewport}.png`,
+    ),
+  );
 }
 
 function createScreenshotPng(viewport) {
-  return createTestPng(pageBuilderVisualCaptureViewportWidths[viewport], pageBuilderVisualCaptureDefaultHeight);
+  return createTestPng(
+    pageBuilderVisualCaptureViewportWidths[viewport],
+    pageBuilderVisualCaptureDefaultHeight,
+  );
 }
-
-export function createTestPng(width, height) {
-  return Buffer.concat([
-    createPngSignature(),
-    createPngChunk(
-      "IHDR",
-      Buffer.from([...uint32be(width), ...uint32be(height), 8, 6, 0, 0, 0]),
-    ),
-    createPngChunk("IDAT", deflateSync(createRawRgbaRows(width, height))),
-    createPngChunk("IEND", Buffer.alloc(0)),
-  ]);
-}
-
-function createRawRgbaRows(width, height) {
-  return Buffer.alloc((width * 4 + 1) * height);
-}
-
-function createPngChunk(type, data) {
-  const typeBuffer = Buffer.from(type, "ascii");
-
-  return Buffer.concat([
-    Buffer.from(uint32be(data.length)),
-    typeBuffer,
-    data,
-    Buffer.from(uint32be(calculateCrc32(Buffer.concat([typeBuffer, data])))),
-  ]);
-}
-
-function uint32be(value) {
-  return [
-    (value >>> 24) & 0xff,
-    (value >>> 16) & 0xff,
-    (value >>> 8) & 0xff,
-    value & 0xff,
-  ];
-}
-
-function calculateCrc32(buffer) {
-  let crc = 0xffffffff;
-
-  for (const byte of buffer) {
-    crc = (crc >>> 8) ^ crcTable[(crc ^ byte) & 0xff];
-  }
-
-  return (crc ^ 0xffffffff) >>> 0;
-}
-
-function createPngSignature() {
-  return Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
-}
-
-const crcTable = Array.from({ length: 256 }, (_, index) => {
-  let value = index;
-
-  for (let bit = 0; bit < 8; bit += 1) {
-    value = value & 1 ? 0xedb88320 ^ (value >>> 1) : value >>> 1;
-  }
-
-  return value >>> 0;
-});

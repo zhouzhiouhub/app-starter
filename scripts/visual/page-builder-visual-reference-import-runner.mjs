@@ -22,7 +22,9 @@ export function importPageBuilderVisualReferences(config, input = {}) {
   const sourceManifest =
     input.manifest ??
     readPageBuilderVisualReferenceImportManifest(config.manifestPath);
-  const manifest = config.write ? sourceManifest : structuredClone(sourceManifest);
+  const manifest = config.write
+    ? sourceManifest
+    : structuredClone(sourceManifest);
   const referenceInput = readReferenceFiles(config.sourceDir, cwd);
   const updates = [];
   const missing = [];
@@ -45,7 +47,10 @@ export function importPageBuilderVisualReferences(config, input = {}) {
   }
 
   if (config.write && updates.length > 0) {
-    writePageBuilderVisualReferenceImportManifest(config.manifestPath, manifest);
+    writePageBuilderVisualReferenceImportManifest(
+      config.manifestPath,
+      manifest,
+    );
   }
 
   return {
@@ -67,50 +72,36 @@ function updateViewportReference(input) {
   );
 
   if (!evidence) {
-    input.missing.push({
-      component: input.component,
-      reason: "manifest viewport evidence slot is missing",
-      viewport: input.viewport,
-    });
+    addMissingReference(input, "manifest viewport evidence slot is missing");
     return;
   }
 
   if (input.sourceDirStatus !== "ready") {
-    input.missing.push({
-      component: input.component,
-      reason: createSourceDirMissingReason(input.sourceDirStatus),
-      viewport: input.viewport,
-    });
+    addMissingReference(
+      input,
+      createSourceDirMissingReason(input.sourceDirStatus),
+    );
     return;
   }
 
   if (!file) {
-    input.missing.push({
-      component: input.component,
-      reason: `${createReferenceFileName(
-        input.component,
-        input.viewport,
-      )} is missing`,
-      viewport: input.viewport,
-    });
+    addMissingReference(
+      input,
+      `${createReferenceFileName(input.component, input.viewport)} is missing`,
+    );
     return;
   }
 
   if (file.empty) {
-    input.missing.push({
-      component: input.component,
-      reason: `${file.name} must be a non-empty design PNG`,
-      viewport: input.viewport,
-    });
+    addMissingReference(input, `${file.name} must be a non-empty design PNG`);
     return;
   }
 
   if (file.pngError) {
-    input.missing.push({
-      component: input.component,
-      reason: `${file.name} must be a readable PNG: ${file.pngError}`,
-      viewport: input.viewport,
-    });
+    addMissingReference(
+      input,
+      `${file.name} must be a readable PNG: ${file.pngError}`,
+    );
     return;
   }
 
@@ -129,6 +120,19 @@ function updateViewportReference(input) {
   input.updates.push({
     component: input.component,
     designReference: nextPath,
+    viewport: input.viewport,
+  });
+}
+
+function addMissingReference(input, reason) {
+  input.missing.push({
+    component: input.component,
+    expectedPath: createExpectedReferencePath(
+      input.config.sourceDir,
+      input.component,
+      input.viewport,
+    ),
+    reason,
     viewport: input.viewport,
   });
 }
@@ -198,6 +202,10 @@ function findRecord(manifest, component) {
 
 function createReferenceFileName(component, viewport) {
   return `${component}-${viewport}.png`;
+}
+
+function createExpectedReferencePath(sourceDir, component, viewport) {
+  return `${sourceDir}/${createReferenceFileName(component, viewport)}`;
 }
 
 function readImportStatus(config, updates, missing) {

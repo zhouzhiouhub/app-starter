@@ -45,6 +45,7 @@ export function validateReferenceImportReport(report, context) {
   validateReferenceImportStatus(report, context);
   validateReferenceImportSourceDirStatus(report, context);
   validateReferenceImportReportCounts(report, context);
+  validateReferenceImportMissingEntries(report, context);
 }
 
 export function createReferenceImportSummary(report) {
@@ -104,8 +105,46 @@ function validateReferenceImportReportCounts(report, context) {
   }
 }
 
+function validateReferenceImportMissingEntries(report, context) {
+  if (!Array.isArray(report.missing)) {
+    return;
+  }
+
+  const hasInvalidMissingEntry = report.missing.some(
+    (item) => !isValidMissingReferenceEntry(item, report.sourceDir),
+  );
+
+  if (hasInvalidMissingEntry) {
+    addArtifactCheckIssue(
+      context,
+      "invalid_reference_import_missing_entry",
+      "reference import report missing entries must include component, viewport, reason, and a matching expectedPath.",
+    );
+  }
+}
+
+function isValidMissingReferenceEntry(item, sourceDir) {
+  if (
+    !isObject(item) ||
+    !isNonEmptyString(sourceDir) ||
+    !isNonEmptyString(item.component) ||
+    !isNonEmptyString(item.viewport) ||
+    !isNonEmptyString(item.reason)
+  ) {
+    return false;
+  }
+
+  return (
+    item.expectedPath === `${sourceDir}/${item.component}-${item.viewport}.png`
+  );
+}
+
 function readText(value) {
   return typeof value === "string" && value.length > 0 ? value : null;
+}
+
+function isNonEmptyString(value) {
+  return typeof value === "string" && value.length > 0;
 }
 
 function readItemCount(value, items) {

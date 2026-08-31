@@ -40,10 +40,17 @@ export async function writePageBuilderVisualReferenceImportArtifact(
 function createMissingReferenceArtifact(missing, sourceDir) {
   return {
     component: missing.component,
-    expectedPath: `${sourceDir}/${missing.component}-${missing.viewport}.png`,
+    expectedPath: readExpectedPath(missing, sourceDir),
     reason: missing.reason,
     viewport: missing.viewport,
   };
+}
+
+function readExpectedPath(missing, sourceDir) {
+  return typeof missing.expectedPath === "string" &&
+    missing.expectedPath.length > 0
+    ? missing.expectedPath
+    : `${sourceDir}/${missing.component}-${missing.viewport}.png`;
 }
 
 function createReferenceUpdateArtifact(update) {
