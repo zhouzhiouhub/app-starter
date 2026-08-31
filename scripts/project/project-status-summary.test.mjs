@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { mkdtempSync } from "node:fs";
-import { rm } from "node:fs/promises";
+import { readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -107,4 +107,23 @@ test("project status CLI can print a compact summary", async () => {
   } finally {
     await rm(emptyArchiveRoot, { force: true, recursive: true });
   }
+});
+
+test("README current status reflects blocked release evidence", async () => {
+  const readme = await readFile("README.md", "utf8");
+
+  assert.match(readme, /状态更新时间：2026-08-31/);
+  assert.match(readme, /Release ready: no/);
+  assert.match(readme, /发布结论：`not-ready`/);
+  assert.match(readme, /Production Smoke artifact 缺失/);
+  assert.match(readme, /当前 `0\/12` viewport accepted/);
+  assert.match(
+    readme,
+    /docs\/visual\/page-builder-references\/hero-banner-desktop\.png/,
+  );
+  assert.match(readme, /pnpm project:status -- --all-actions/);
+  assert.doesNotMatch(
+    readme,
+    /下一步是在真实生产 R2 \/ CDN 环境执行验收并归档报告/,
+  );
 });
