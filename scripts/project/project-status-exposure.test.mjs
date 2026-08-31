@@ -134,6 +134,32 @@ test("main CI writes pnpm test diagnostics on failure", async () => {
   assert.match(workflow, /if-no-files-found: error/);
 });
 
+test("placeholder packages without test files skip bare node test", async () => {
+  const packagePaths = [
+    "packages/admin-theme/package.json",
+    "packages/custom-admin/package.json",
+    "packages/custom-components/package.json",
+    "packages/design-tokens/package.json",
+    "packages/extension-sdk/package.json",
+    "packages/integration-adapters/package.json",
+  ];
+
+  const packages = await Promise.all(
+    packagePaths.map(async (packagePath) => ({
+      packagePath,
+      packageJson: JSON.parse(await readFile(packagePath, "utf8")),
+    })),
+  );
+
+  for (const { packagePath, packageJson } of packages) {
+    assert.equal(
+      packageJson.scripts?.test,
+      undefined,
+      `${packagePath} should only add a test script when it has test files.`,
+    );
+  }
+});
+
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
 }

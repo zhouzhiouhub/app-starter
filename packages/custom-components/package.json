@@ -16,8 +16,7 @@
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch --preserveWatchOutput",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "lint": "eslint .",
-    "test": "node --test"
+    "lint": "eslint ."
   },
   "peerDependencies": {
     "react": "^19.0.0"
