@@ -2,6 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { formatMissingProductionSmokeEvidence } from "../smoke/smoke-missing-evidence-markdown.mjs";
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
+import { formatMissingVisualReferenceFiles } from "../visual/page-builder-visual-missing-references-markdown.mjs";
 import { assertReleaseEvidenceCheckArtifact } from "./release-notes-artifact-validation.mjs";
 import { formatReadinessChecklistMarkdown } from "./release-readiness-checklist-markdown.mjs";
 import { formatSmokeMarkdownSummary } from "./release-check-smoke-markdown-summary.mjs";
@@ -30,6 +31,7 @@ export function createReleaseEvidenceCheckMarkdown(artifact) {
     "## Page Builder Visual",
     "",
     ...formatVisualSummary(artifact.visual),
+    ...formatMissingVisualReferenceFiles(artifact.visual),
     "",
     "## Readiness Checklist",
     "",

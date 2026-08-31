@@ -2,12 +2,12 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { formatMissingProductionSmokeEvidence } from "../smoke/smoke-missing-evidence-markdown.mjs";
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
-import { assertProjectStatusArtifact } from "./project-status-validation.mjs";
-import { formatReleaseEvidenceArtifacts } from "./project-status-release-evidence-artifacts.mjs";
 import {
   formatMissingVisualReferenceFiles,
   formatVisualReferenceImport,
-} from "./project-status-markdown-visual-references.mjs";
+} from "../visual/page-builder-visual-missing-references-markdown.mjs";
+import { assertProjectStatusArtifact } from "./project-status-validation.mjs";
+import { formatReleaseEvidenceArtifacts } from "./project-status-release-evidence-artifacts.mjs";
 
 const maxMarkdownTextLength = 420;
 

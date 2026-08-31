@@ -112,15 +112,18 @@ test("project status docs mention visual artifact path and counts", async () => 
   assert.match(readme, /releaseGate\.visual\.artifactCheck/);
   assert.match(readme, /missingReferences/);
   assert.match(readme, /Missing Visual References/);
+  assert.match(readme, /release-check\.md.*project-status\.md/s);
   assert.match(
     setupDoc,
     /prints its artifact path, issue count,\s+file count, screenshot counts, reference-import missing\/update counts, and the\s+first missing reference path/s,
   );
   assert.match(setupDoc, /Missing Visual References/);
+  assert.match(setupDoc, /release-check\.md.*project-status\.md/s);
   assert.match(setupDoc, /releaseGate\.visual\.artifactCheck/);
   assert.match(
     releaseChecklist,
     /artifact path,\s+issue, file, screenshot, reference-import missing\/update counts, and the first\s+missing reference path/s,
   );
   assert.match(releaseChecklist, /Missing Visual References/);
+  assert.match(releaseChecklist, /release-check\.md.*project-status\.md/s);
 });

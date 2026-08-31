@@ -287,7 +287,7 @@ later phases are explicitly approved.
   `release-check.md` and `project-status.md` include a
   `Missing Production Smoke Evidence` section with required workflow and
   artifact names; when Page Builder reference PNGs are missing,
-  `project-status.md` includes a `Missing Visual References` section with the
+  both Markdown files include a `Missing Visual References` section with the
   retained paths to fill.
   It is safe for blocked review handoff because it still writes the files; add
   `--require-ready` when it should fail until release evidence and preflight are
