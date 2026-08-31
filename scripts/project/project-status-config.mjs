@@ -12,6 +12,7 @@ export function readProjectStatusCliConfig(args) {
     outputPath: releaseCheckConfig.outputPath,
     requireReady: input.requireReady,
     releaseCheckConfig,
+    summary: input.summary,
   };
 }
 
@@ -21,6 +22,7 @@ function readProjectStatusArgs(args) {
   let allActions = false;
   let markdownOutputPath = null;
   let requireReady = false;
+  let summary = false;
 
   for (let index = 0; index < normalizedArgs.length; index += 1) {
     const arg = normalizedArgs[index];
@@ -35,6 +37,11 @@ function readProjectStatusArgs(args) {
       continue;
     }
 
+    if (arg === "--summary") {
+      summary = true;
+      continue;
+    }
+
     if (arg === "--markdown-output") {
       markdownOutputPath = normalizeProjectStatusMarkdownPath(
         readOptionValue(arg, normalizedArgs, index),
@@ -46,7 +53,13 @@ function readProjectStatusArgs(args) {
     releaseCheckArgs.push(arg);
   }
 
-  return { allActions, markdownOutputPath, releaseCheckArgs, requireReady };
+  return {
+    allActions,
+    markdownOutputPath,
+    releaseCheckArgs,
+    requireReady,
+    summary,
+  };
 }
 
 function readOptionValue(option, args, index) {

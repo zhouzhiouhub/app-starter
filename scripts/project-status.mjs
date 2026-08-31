@@ -5,6 +5,7 @@ import {
   assertProjectStatusArtifact,
   createProjectStatusArtifact,
   formatProjectStatusArtifact,
+  formatProjectStatusSummary,
   readProjectStatusCliConfig,
   writeProjectStatusArtifact,
   writeProjectStatusMarkdown,
@@ -59,9 +60,13 @@ export async function runProjectStatusCli(args, input = {}) {
     if (config.json) {
       stdout(JSON.stringify(artifact, null, 2));
     } else {
-      for (const line of formatProjectStatusArtifact(artifact, {
-        truncateLines: !config.allActions,
-      })) {
+      const lines = config.summary
+        ? formatProjectStatusSummary(artifact)
+        : formatProjectStatusArtifact(artifact, {
+            truncateLines: !config.allActions,
+          });
+
+      for (const line of lines) {
         stdout(line);
       }
 
@@ -91,6 +96,7 @@ function isMainModule() {
 function printHelp(writeLine) {
   writeLine(`Usage:
   pnpm project:status
+  pnpm project:status -- --summary
   pnpm project:status -- --all-actions
   pnpm project:status -- --json
   pnpm project:status -- --require-ready
@@ -102,6 +108,7 @@ function printHelp(writeLine) {
 Options:
   --all-actions              Print or write every next action instead of the first 8;
                              text output keeps full action lines.
+  --summary                  Print a compact completion and release-gate summary.
   --json                     Print the machine-readable project status report.
   --output <path>            Write a validated project-status.v1 JSON report under tmp/, reports/, artifacts/, or .tmp/.
   --markdown-output <path>   Write a Markdown handoff report under docs/releases, artifacts/release, reports/release, tmp/, or .tmp/.
@@ -115,8 +122,9 @@ Options:
 Project status:
   This wraps release:check. It summarizes completed MVP milestones, the current
   release gate, and the next concrete actions; --require-ready turns the same
-  summary into a completion gate. When the default Page Builder Visual artifact
-  exists locally, it is included automatically unless visual inputs are explicit.`);
+  report into a completion gate. Use --summary for a short "is it done?"
+  answer. When the default Page Builder Visual artifact exists locally, it is
+  included automatically unless visual inputs are explicit.`);
 }
 
 if (isMainModule()) {

@@ -7,6 +7,7 @@ export {
   formatProjectStatusArtifact,
   writeProjectStatusArtifact,
 } from "./project-status-report.mjs";
+export { formatProjectStatusSummary } from "./project-status-summary.mjs";
 export {
   createProjectStatusMarkdown,
   writeProjectStatusMarkdown,

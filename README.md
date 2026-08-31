@@ -761,6 +761,8 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 
 本地数据库初始化后，还需执行一次种子数据，前台和后台才能读到默认 `home` 页。
 
+需要快速判断项目是否可发布时，可运行 `pnpm project:status -- --summary`。它只打印阶段、ready 结论、Production Smoke、Page Builder Visual、blocker 数和前两条下一步；完整交接、全部命令和可归档 Markdown 仍使用 `pnpm project:status`、`--all-actions` 或 `--markdown-output`。
+
 ## 13. 当前后台说明
 
 当前后台仍是早期 Page Builder 原型，不是完整运营后台。

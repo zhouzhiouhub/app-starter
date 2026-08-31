@@ -320,6 +320,10 @@ specific GitHub Actions run.
 prints the MVP phase, completion summary, completion checklist, locally
 completed milestones, release readiness, the configured local verification
 commands, and the next concrete actions without changing the pass/fail criteria.
+Use `pnpm project:status -- --summary` when you only need the compact "is this
+done?" answer with the phase, release-ready flag, evidence gates, blocker count,
+and the first two next actions. The default text, `--all-actions`, JSON, and
+Markdown modes remain the full handoff surfaces.
 The validated `project-status.v1` artifact also includes a `completionChecklist`
 that separates completed local scope from production Smoke and Page Builder
 visual evidence that still needs retained proof; incomplete checklist items also

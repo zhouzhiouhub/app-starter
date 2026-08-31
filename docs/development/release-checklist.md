@@ -310,6 +310,10 @@ later phases are explicitly approved.
   command, evidence args, review args, input evidence, output record,
   `release-notes-<run_number>` artifact, and formal mode without
   `--allow-blocked`.
+- `pnpm project:status -- --summary` prints the compact completion answer for
+  triage: phase, release-ready flag, Production Smoke, Page Builder Visual,
+  blocker count, and the first two next actions. Use the default output,
+  `--all-actions`, JSON, or Markdown modes for release-review handoff.
 - Production Smoke artifact uploads use `if-no-files-found: error`; missing
   preflight JSON/Markdown, smoke JSON, Smoke Markdown, combined gate
   JSON/Markdown, project status, or release notes files fail the workflow
