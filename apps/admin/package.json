@@ -16,6 +16,7 @@
     "@ant-design/icons": "^6.0.0",
     "@app-starter/admin-theme": "workspace:*",
     "@app-starter/custom-admin": "workspace:*",
+    "@app-starter/design-tokens": "workspace:*",
     "@app-starter/renderer": "workspace:*",
     "@app-starter/schema": "workspace:*",
     "@app-starter/ui": "workspace:*",

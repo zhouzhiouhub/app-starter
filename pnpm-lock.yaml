@@ -51,6 +51,9 @@ importers:
       '@app-starter/custom-admin':
         specifier: workspace:*
         version: link:../../packages/custom-admin
+      '@app-starter/design-tokens':
+        specifier: workspace:*
+        version: link:../../packages/design-tokens
       '@app-starter/renderer':
         specifier: workspace:*
         version: link:../../packages/renderer

@@ -19,6 +19,16 @@ const AuditLogsPage = lazy(() =>
     default: module.AuditLogsPage,
   })),
 );
+const AnalyticsPage = lazy(() =>
+  import("./pages/analytics/analytics-page").then((module) => ({
+    default: module.AnalyticsPage,
+  })),
+);
+const DesignSystemPage = lazy(() =>
+  import("./pages/design-system/design-system-page").then((module) => ({
+    default: module.DesignSystemPage,
+  })),
+);
 const LoginPage = lazy(() =>
   import("./pages/login/login-page").then((module) => ({
     default: module.LoginPage,
@@ -49,9 +59,9 @@ const SettingsPage = lazy(() =>
     default: module.SettingsPage,
   })),
 );
-const PlaceholderPage = lazy(() =>
-  import("./features/shell/placeholder-page").then((module) => ({
-    default: module.PlaceholderPage,
+const UsersPage = lazy(() =>
+  import("./pages/users/users-page").then((module) => ({
+    default: module.UsersPage,
   })),
 );
 
@@ -87,38 +97,14 @@ export function AdminApp() {
               <Route element={<DashboardPage />} path="/" />
               <Route element={<PagesListPage />} path="/pages" />
               <Route element={<PageEditorPage />} path="/pages/:pageId" />
-              <Route
-                element={
-                  <PlaceholderPage
-                    description="Token governance is reserved while Page Builder uses the shared design-token package."
-                    title="Design System"
-                  />
-                }
-                path="/design-system"
-              />
+              <Route element={<DesignSystemPage />} path="/design-system" />
               <Route
                 element={<MediaPage />}
                 path="/media"
               />
               <Route element={<LocalizationPage />} path="/localization" />
-              <Route
-                element={
-                  <PlaceholderPage
-                    description="GTM, GA4, Clarity, and consent defaults are managed from Settings in this MVP slice."
-                    title="Analytics"
-                  />
-                }
-                path="/analytics"
-              />
-              <Route
-                element={
-                  <PlaceholderPage
-                    description="Authentication and RBAC are active; team management remains a controlled Phase 1 slice."
-                    title="Users"
-                  />
-                }
-                path="/users"
-              />
+              <Route element={<AnalyticsPage />} path="/analytics" />
+              <Route element={<UsersPage />} path="/users" />
               <Route
                 element={<SettingsPage />}
                 path="/settings"
