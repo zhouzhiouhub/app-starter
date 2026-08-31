@@ -50,6 +50,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm run check:file-size
+      - run: pnpm --filter @app-starter/schema build
       - run: pnpm test:visual
       - run: pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture
         env:

@@ -29,6 +29,7 @@ test("page builder visual workflow captures fixture evidence", async () => {
     /runs-on: ubuntu-latest\s+env:\s+PAGE_BUILDER_VISUAL_BROWSER/s,
   );
   assert.match(workflow, /pnpm run check:file-size/);
+  assert.match(workflow, /pnpm --filter @app-starter\/schema build/);
   assert.match(workflow, /pnpm test:visual/);
   assert.equal(
     scripts["pretest:visual"],
