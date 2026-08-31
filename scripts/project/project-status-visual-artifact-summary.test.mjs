@@ -75,12 +75,29 @@ test("project status summarizes visual artifact counts", () => {
     ...check.visualArtifact.referenceImport,
     complete: false,
     missingCount: 1,
-    missingReferences: ["docs/visual/page-builder-references/hero-banner-desktop.png"],
+    missingReferences: [
+      "docs/visual/page-builder-references/hero-banner-desktop.png",
+    ],
     status: "invalid",
   };
+  const missingReferenceArtifact = createProjectStatusArtifact(check);
+  const missingReferenceMarkdown = createProjectStatusMarkdown(
+    missingReferenceArtifact,
+  );
+
   assert.match(
-    formatProjectStatusArtifact(createProjectStatusArtifact(check)).join("\n"),
+    formatProjectStatusArtifact(missingReferenceArtifact).join("\n"),
     /first missing docs\/visual\/page-builder-references\/hero-banner-desktop\.png/,
+  );
+  assert.match(missingReferenceMarkdown, /### Missing Visual References/);
+  assert.match(
+    missingReferenceMarkdown,
+    /Source dir: `docs\/visual\/page-builder-references`/,
+  );
+  assert.match(missingReferenceMarkdown, /Missing files: 1/);
+  assert.match(
+    missingReferenceMarkdown,
+    /`docs\/visual\/page-builder-references\/hero-banner-desktop\.png`/,
   );
 });
 
@@ -94,13 +111,16 @@ test("project status docs mention visual artifact path and counts", async () => 
   assert.match(readme, /artifact complete` 及 artifact 路径、文件\/截图计数/);
   assert.match(readme, /releaseGate\.visual\.artifactCheck/);
   assert.match(readme, /missingReferences/);
+  assert.match(readme, /Missing Visual References/);
   assert.match(
     setupDoc,
     /prints its artifact path, issue count,\s+file count, screenshot counts, reference-import missing\/update counts, and the\s+first missing reference path/s,
   );
+  assert.match(setupDoc, /Missing Visual References/);
   assert.match(setupDoc, /releaseGate\.visual\.artifactCheck/);
   assert.match(
     releaseChecklist,
     /artifact path,\s+issue, file, screenshot, reference-import missing\/update counts, and the first\s+missing reference path/s,
   );
+  assert.match(releaseChecklist, /Missing Visual References/);
 });

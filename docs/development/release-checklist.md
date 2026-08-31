@@ -283,7 +283,9 @@ later phases are explicitly approved.
   summary prints Production Smoke, Page Builder Visual, and optional visual
   artifact status, path, and counts. It then prints the first two next actions with structured steps when available, previews the first hidden structured action only when
   the visible actions do not have steps, and points any remaining work to
-  `project-status.md`.
+  `project-status.md`. When Page Builder reference PNGs are missing, that
+  Markdown handoff includes a `Missing Visual References` section with the
+  retained paths to fill.
   It is safe for blocked review handoff because it still writes the files; add
   `--require-ready` when it should fail until release evidence and preflight are
   ready.
@@ -296,7 +298,7 @@ later phases are explicitly approved.
   summary, full `--all-actions` next-action list, untruncated command lines, and
   `project-status.md` handoff checklist, including the production smoke,
   visual bundle, reference import JSON / Markdown, artifact check JSON / Markdown, combined
-  gate, project status, and release notes artifact map. Once the gate is ready,
+  gate, project status, missing visual reference paths, and release notes artifact map. Once the gate is ready,
   the next-action list reduces to the structured `release:notes` handoff:
   command, evidence args, review args, input evidence, output record,
   `release-notes-<run_number>` artifact, and formal mode without

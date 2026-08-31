@@ -346,8 +346,10 @@ For local status checks, `project:status` automatically includes the default
 Page Builder Visual artifact when all required files already exist under
 `reports/visual/page-builder-fixture`, prints its artifact path, issue count,
 file count, screenshot counts, reference-import missing/update counts, and the
-first missing reference path in the release gate summary, and records the same path and counts under
-`releaseGate.visual.artifactCheck`. Explicit `--visual-artifact-dir` or
+first missing reference path in the release gate summary, records the missing
+path list under `releaseGate.visual.artifactCheck.referenceImport`, and adds a
+`Missing Visual References` section to the Markdown handoff when missing PNGs
+are present. Explicit `--visual-artifact-dir` or
 `--visual-manifest` inputs still take precedence, and `release:check` continues
 to require an explicit `--visual-artifact-dir` when release review should use a
 downloaded visual artifact.
@@ -359,7 +361,8 @@ the same release gate once, then writes `preflight.json`, `preflight.md`,
 states use matching evidence. Its terminal summary prints Production Smoke,
 Page Builder Visual, and optional visual artifact status, path, and counts. It then prints the first two next actions with structured steps when available, previews the first hidden
 structured action only when the visible actions do not have steps, and
-points remaining actions to `artifacts/release/project-status.md`. Blocked
+points remaining actions to `artifacts/release/project-status.md`, whose
+release gate section lists any missing Page Builder reference PNG paths. Blocked
 evidence still writes the files; add `--require-ready` when the handoff should
 fail until both release evidence and preflight are ready.
 

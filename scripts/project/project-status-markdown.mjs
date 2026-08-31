@@ -3,6 +3,10 @@ import { dirname } from "node:path";
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { assertProjectStatusArtifact } from "./project-status-validation.mjs";
 import { formatReleaseEvidenceArtifacts } from "./project-status-release-evidence-artifacts.mjs";
+import {
+  formatMissingVisualReferenceFiles,
+  formatVisualReferenceImport,
+} from "./project-status-markdown-visual-references.mjs";
 
 const maxMarkdownTextLength = 420;
 
@@ -109,6 +113,7 @@ function formatReleaseGate(gate) {
     `- Production Smoke: ${formatSmokeGate(gate.smoke)}`,
     `- Page Builder Visual: ${formatVisualGate(gate.visual)}`,
     `- Blockers: ${gate.blockerCount}`,
+    ...formatMissingVisualReferenceFiles(gate.visual),
   ];
 }
 
@@ -188,14 +193,6 @@ function formatVisualArtifactCounts(artifactCheck) {
   ].filter(Boolean);
 
   return countText.length > 0 ? ` (${countText.join(", ")})` : "";
-}
-
-function formatVisualReferenceImport(referenceImport) {
-  if (!referenceImport) {
-    return null;
-  }
-
-  return `references ${formatText(referenceImport.status)} (${formatText(referenceImport.sourceDirStatus)} source, ${referenceImport.missingCount} missing, ${referenceImport.updateCount} updates)`;
 }
 
 function formatVisualArtifactIssueCount(issueCount) {
