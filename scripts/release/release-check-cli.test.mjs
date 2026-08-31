@@ -170,6 +170,10 @@ test("release check CLI prints readiness checklist in text mode only", async () 
     true,
   );
   assert.equal(
+    stdout.some((line) => line.includes("Manual dispatch: GitHub Actions > Production Smoke")),
+    true,
+  );
+  assert.equal(
     stdout.some((line) =>
       line.includes("Page Builder Visual evidence: needs-evidence"),
     ),

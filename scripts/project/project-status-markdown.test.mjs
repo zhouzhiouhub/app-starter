@@ -78,6 +78,10 @@ test("project status CLI writes a Markdown handoff", async () => {
     );
     assert.match(
       markdown,
+      / {4}- Manual dispatch: `GitHub Actions > Production Smoke > Run workflow, then use the listed workflow_dispatch inputs\.`/,
+    );
+    assert.match(
+      markdown,
       / {4}- Dispatch template: `gh workflow run production-smoke\.yml --ref main -f visual_artifact_name="page-builder-visual-fixture-<run_number>"/,
     );
     assert.match(

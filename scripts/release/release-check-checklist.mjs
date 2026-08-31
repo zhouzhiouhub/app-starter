@@ -1,6 +1,7 @@
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import {
   createProductionSmokeDispatchCommand,
+  createProductionSmokeManualDispatchInstruction,
 } from "../smoke/production-smoke-dispatch-command.mjs";
 import { defaultPageBuilderVisualArtifactDir } from "../visual/page-builder-visual-artifact-check.mjs";
 import { formatRequiredSourceReferenceAvailability } from "../visual/page-builder-visual-reference-summary-format.mjs";
@@ -18,6 +19,8 @@ const productionSmokeArtifactNames = [
   "project-status-<run_number>",
 ];
 const productionSmokeDispatchCommand = createProductionSmokeDispatchCommand();
+const productionSmokeManualDispatch =
+  createProductionSmokeManualDispatchInstruction();
 const productionSmokeLocalVerificationInputs = [
   "local_verification_run_url=<main CI run URL>",
   "local_verification_artifact_name=local-verification-<run_number>",
@@ -103,6 +106,7 @@ function createSmokeChecklistDetail(smoke) {
 
 function createSmokeChecklistSteps(check) {
   return [
+    createChecklistStep("Manual dispatch", productionSmokeManualDispatch),
     createChecklistStep("Dispatch template", productionSmokeDispatchCommand),
     createChecklistStep(
       "Local verification inputs",

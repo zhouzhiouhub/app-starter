@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   createProductionSmokeDispatchCommand,
+  createProductionSmokeManualDispatchInstruction,
   productionSmokeDispatchInputs,
 } from "./production-smoke-dispatch-command.mjs";
 
@@ -27,6 +28,13 @@ test("production smoke dispatch command names workflow and release inputs", () =
   );
   assert.equal(productionSmokeDispatchInputs.length, 7);
   assert.ok(command.length <= 420);
+});
+
+test("production smoke manual dispatch instruction names the workflow UI", () => {
+  assert.equal(
+    createProductionSmokeManualDispatchInstruction(),
+    "GitHub Actions > Production Smoke > Run workflow, then use the listed workflow_dispatch inputs.",
+  );
 });
 
 test("production smoke dispatch command accepts scoped overrides", () => {

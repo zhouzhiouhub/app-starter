@@ -58,7 +58,7 @@ test("project status summary stays compact and actionable", () => {
   assert.match(text, /Production Smoke: Production smoke artifact missing/);
   assert.match(
     text,
-    /Dispatch template: gh workflow run production-smoke\.yml --ref main/,
+    /Manual dispatch: GitHub Actions > Production Smoke > Run workflow/,
   );
   assert.match(text, /Page Builder Visual: Visual acceptance pending/);
   assert.match(
@@ -96,6 +96,10 @@ test("project status CLI can print a compact summary", async () => {
       /Page Builder Visual: needs-evidence, 0\/12 viewports accepted, 12 tasks pending/,
     );
     assert.match(text, /Next:/);
+    assert.match(
+      text,
+      /Manual dispatch: GitHub Actions > Production Smoke > Run workflow/,
+    );
     assert.match(text, /Page Builder Visual: Visual acceptance pending/);
     assert.match(
       text,

@@ -117,6 +117,10 @@ test("release check Markdown lists blockers and visual tasks", () => {
   );
   assert.match(
     markdown,
+    /Workflow manual dispatch: `GitHub Actions > Production Smoke > Run workflow, then use the listed workflow_dispatch inputs\.`/,
+  );
+  assert.match(
+    markdown,
     new RegExp(
       `Dispatch template: \`${escapeRegExp(dispatchCommand)}\``,
       "u",

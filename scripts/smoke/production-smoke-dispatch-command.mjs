@@ -1,5 +1,7 @@
 const defaultWorkflowFile = "production-smoke.yml";
 const defaultRef = "main";
+const defaultManualDispatchInstruction =
+  "GitHub Actions > Production Smoke > Run workflow, then use the listed workflow_dispatch inputs.";
 
 export const productionSmokeDispatchInputs = [
   {
@@ -46,6 +48,10 @@ export function createProductionSmokeDispatchCommand(options = {}) {
     ref,
     ...inputs.flatMap(formatDispatchInput),
   ].join(" ");
+}
+
+export function createProductionSmokeManualDispatchInstruction() {
+  return defaultManualDispatchInstruction;
 }
 
 function formatDispatchInput(input) {

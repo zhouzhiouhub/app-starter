@@ -1,12 +1,7 @@
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
-import {
-  createProductionSmokeDispatchCommand,
-} from "../smoke/production-smoke-dispatch-command.mjs";
+import { createProductionSmokeDispatchCommand, createProductionSmokeManualDispatchInstruction } from "../smoke/production-smoke-dispatch-command.mjs";
 import { createReleaseNotesHandoffSteps } from "../release/release-notes-handoff-steps.mjs";
-import {
-  createPageBuilderVisualReferenceCheckCommand,
-  createPageBuilderVisualReferenceMissingPathsCommand,
-} from "../visual/page-builder-visual-reference-import-commands.mjs";
+import { createPageBuilderVisualReferenceCheckCommand, createPageBuilderVisualReferenceMissingPathsCommand } from "../visual/page-builder-visual-reference-import-commands.mjs";
 
 const maxProjectTextLength = 420;
 
@@ -32,6 +27,8 @@ const productionSmokeVisualInputs = [
   "visual_artifact_run_id=<Page Builder Visual workflow run id>",
 ];
 const productionSmokeDispatchCommand = createProductionSmokeDispatchCommand();
+const productionSmokeManualDispatch =
+  createProductionSmokeManualDispatchInstruction();
 const defaultVisualArtifactDir = "reports/visual/page-builder-fixture";
 const defaultVisualReferenceSourceDir = "docs/visual/page-builder-references";
 
@@ -121,6 +118,7 @@ function createProductionSmokeActionSteps(action, context) {
       "Run workflow",
       "GitHub Actions Production Smoke against the production environment",
     ),
+    createNextActionStep("Manual dispatch", productionSmokeManualDispatch),
     createNextActionStep("Dispatch template", productionSmokeDispatchCommand),
     createNextActionStep(
       "Local verification inputs",

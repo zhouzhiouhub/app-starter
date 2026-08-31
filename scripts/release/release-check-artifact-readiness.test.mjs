@@ -67,6 +67,7 @@ test("release check artifact includes blocked checklist actions", () => {
   assert.deepEqual(
     smokeItem.steps.map((step) => step.label),
     [
+      "Manual dispatch",
       "Dispatch template",
       "Local verification inputs",
       "Visual evidence inputs",
@@ -76,7 +77,7 @@ test("release check artifact includes blocked checklist actions", () => {
     ],
   );
   assert.equal(
-    smokeItem.steps[0].value,
+    smokeItem.steps[1].value,
     createProductionSmokeDispatchCommand(),
   );
   assert.equal(visualItem?.status, "needs-evidence");

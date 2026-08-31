@@ -104,6 +104,10 @@ test("release handoff writes blocked reports without requiring readiness", async
     );
     assert.match(
       stdout.join("\n"),
+      /Manual dispatch: GitHub Actions > Production Smoke > Run workflow/,
+    );
+    assert.match(
+      stdout.join("\n"),
       new RegExp(`Dispatch template: ${escapeRegExp(dispatchCommand)}`),
     );
     assert.match(
@@ -379,20 +383,14 @@ test("release handoff config normalizes paths and is documented", async () => {
   assert.match(releaseChecklist, /pnpm release:handoff/);
 
   printReleaseHandoffHelp((line) => helpOutput.push(line));
-  assert.match(
-    helpOutput.join("\n"),
-    /first two next actions with\s+structured steps.*Production Smoke dispatch\s+template.*first hidden structured.*generated project-status Markdown/s,
-  );
+  assert.match(helpOutput.join("\n"), /first two next actions with\s+structured steps.*Production Smoke manual\s+dispatch path and gh dispatch template.*first hidden structured.*generated\s+project-status Markdown/s);
   assert.match(
     readme,
-    /first two next\s+actions.*structured steps.*structured next action.*artifacts\/release\/project-status\.md/s,
+    /first two next\s+actions.*structured steps.*手动触发入口.*`gh` dispatch template.*structured next action.*artifacts\/release\/project-status\.md/s,
   );
   assert.match(
     setupDoc,
-    /first\s+two\s+next actions with structured steps.*Production Smoke dispatch\s+template.*first hidden\s+structured action.*artifacts\/release\/project-status\.md/s,
+    /first\s+two\s+next actions with structured steps.*Production Smoke manual dispatch path and `gh`\s+dispatch template.*first hidden\s+structured action.*artifacts\/release\/project-status\.md/s,
   );
-  assert.match(
-    releaseChecklist,
-    /first\s+two\s+next actions with\s+structured steps.*Production Smoke dispatch\s+template.*first hidden structured action.*project-status\.md/s,
-  );
+  assert.match(releaseChecklist, /first\s+two\s+next actions with\s+structured steps.*Production Smoke manual\s+dispatch path and `gh` dispatch template.*first hidden structured action.*project-status\.md/s);
 });
