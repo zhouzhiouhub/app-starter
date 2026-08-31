@@ -251,6 +251,7 @@ test("release notes require ready evidence unless explicitly allowed", () => {
   );
   assert.match(markdown, /Reference import: invalid/);
   assert.match(markdown, /Reference missing: 12/);
+  assert.match(markdown, /Reference missing files: `docs\/visual\/page-builder-references\/hero-banner-desktop\.png`/);
 });
 
 function createRequiredArgs() {

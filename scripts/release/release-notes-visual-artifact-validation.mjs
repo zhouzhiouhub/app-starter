@@ -5,6 +5,7 @@ import {
   assertNonNegativeNumber,
   assertNullableString,
   assertOptionalNonNegativeNumber,
+  assertOptionalStringList,
   assertString,
   hasItems,
   isPlainRecord,
@@ -104,6 +105,7 @@ function assertOptionalReferenceImport(referenceImport) {
     referenceImport.missingCount,
     "visual.artifactCheck.referenceImport.missingCount",
   );
+  assertOptionalMissingReferences(referenceImport);
   assertNullableString(
     referenceImport.sourceDir,
     "visual.artifactCheck.referenceImport.sourceDir",
@@ -130,6 +132,23 @@ function assertOptionalReferenceImport(referenceImport) {
       "Release check artifact complete referenceImport must have no missing references.",
     );
   }
+}
+
+function assertOptionalMissingReferences(referenceImport) {
+  assertOptionalStringList(
+    referenceImport.missingReferences,
+    "visual.artifactCheck.referenceImport.missingReferences",
+  );
+  if (referenceImport.missingReferences === undefined) {
+    return;
+  }
+
+  assertCountDoesNotExceed(
+    referenceImport.missingReferences.length,
+    referenceImport.missingCount,
+    "visual.artifactCheck.referenceImport.missingReferences.length",
+    "missingCount",
+  );
 }
 
 function assertOptionalCountDoesNotExceed(value, max, label, maxLabel) {

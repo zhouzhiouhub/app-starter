@@ -16,6 +16,7 @@ const referenceImportStatuses = new Set([
   "updated",
   "would-update",
 ]);
+const maxReferenceImportReferenceCount = 20;
 
 export function validateReferenceImportReport(report, context) {
   if (!isObject(report)) {
@@ -55,6 +56,7 @@ export function createReferenceImportSummary(report) {
     complete: report.complete === true,
     manifestPath: readText(report.manifestPath),
     missingCount: readItemCount(report.missingCount, report.missing),
+    missingReferences: readReferencePaths(report.missing),
     sourceDir: readText(report.sourceDir),
     sourceDirStatus: readText(report.sourceDirStatus) ?? "unknown",
     status: readText(report.status) ?? "unknown",
@@ -114,4 +116,19 @@ function readItemCount(value, items) {
   return typeof value === "number" && Number.isFinite(value) && value >= 0
     ? value
     : 0;
+}
+
+function readReferencePaths(items) {
+  if (!Array.isArray(items)) {
+    return [];
+  }
+
+  return items
+    .map(readReferencePath)
+    .filter(Boolean)
+    .slice(0, maxReferenceImportReferenceCount);
+}
+
+function readReferencePath(item) {
+  return isObject(item) ? readText(item.expectedPath) : null;
 }

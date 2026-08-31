@@ -148,6 +148,11 @@ function assertOptionalReferenceImportMatches(releaseCheck, projectCheck) {
       `releaseGate.visual.artifactCheck.referenceImport.${field}`,
     );
   }
+  assertOptionalStringListMatches(
+    projectCheck.referenceImport.missingReferences,
+    releaseCheck.referenceImport.missingReferences,
+    "releaseGate.visual.artifactCheck.referenceImport.missingReferences",
+  );
 }
 
 function readPendingViewportCount(visual) {
@@ -160,4 +165,16 @@ function assertMatches(actual, expected, label) {
       `Release notes project status ${label} must match release-evidence-check.v1.`,
     );
   }
+}
+
+function assertOptionalStringListMatches(actual, expected, label) {
+  if (actual === undefined) {
+    return;
+  }
+
+  if (!Array.isArray(actual) || !Array.isArray(expected)) {
+    throw new Error(`Release notes project status ${label} must match release-evidence-check.v1.`);
+  }
+
+  assertMatches(actual.join("\n"), expected.join("\n"), label);
 }

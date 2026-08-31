@@ -4,6 +4,7 @@ import { assertReleaseEvidenceCheckArtifact } from "./release-notes-artifact.mjs
 import {
   createCompleteArtifactCheck,
   createReadySmokeSource,
+  createVisualIssue,
 } from "./release-notes-test-fixtures.mjs";
 
 test("release notes validates release evidence artifact shape", () => {
@@ -149,11 +150,33 @@ test("release notes validates release evidence artifact shape", () => {
             referenceImport: {
               ...artifact.visual.artifactCheck.referenceImport,
               missingCount: 1,
+              missingReferences: [],
             },
           },
         },
       }),
     /complete referenceImport must have no missing references/,
+  );
+
+  assert.throws(
+    () =>
+      assertReleaseEvidenceCheckArtifact({
+        ...artifact,
+        visual: {
+          ...artifact.visual,
+          artifactCheck: {
+            ...artifact.visual.artifactCheck,
+            referenceImport: {
+              ...artifact.visual.artifactCheck.referenceImport,
+              complete: false,
+              missingCount: 0,
+              missingReferences: ["docs/visual/page-builder-references/hero-banner.png"],
+              status: "invalid",
+            },
+          },
+        },
+      }),
+    /missingReferences\.length must not exceed missingCount/,
   );
 });
 
@@ -373,15 +396,5 @@ function createReadyReleaseArtifact() {
         viewportCount: 12,
       },
     },
-  };
-}
-
-function createVisualIssue() {
-  return {
-    code: "record_needs_evidence",
-    component: "hero-banner",
-    message: "hero-banner is needs-evidence.",
-    severity: "error",
-    viewport: null,
   };
 }

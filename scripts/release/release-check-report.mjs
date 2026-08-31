@@ -84,10 +84,14 @@ function formatReferenceImport(referenceImport) {
     return null;
   }
 
+  const firstMissing = Array.isArray(referenceImport.missingReferences)
+    ? referenceImport.missingReferences[0]
+    : null;
+
   return `references ${formatReleaseValue(
     referenceImport.status,
     "unknown",
-  )}, ${referenceImport.missingCount} missing`;
+  )}, ${referenceImport.missingCount} missing${firstMissing ? `, first missing ${formatReleaseValue(firstMissing, "unknown")}` : ""}`;
 }
 
 function formatSmokeMarkdownLines(markdown) {

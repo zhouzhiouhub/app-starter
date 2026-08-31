@@ -95,9 +95,9 @@ also verifies those retained reference files are readable PNGs before the
 evidence can pass artifact integrity review, and reports the readable reference
 count against the number of filled `designReference` paths. The retained JSON,
 terminal output, and Markdown handoff include an issue count before the detailed
-issue list, plus reference-import status, source-dir status, missing count, and
-update count so release reviewers can spot invalid bundles and missing design
-references quickly.
+issue list, plus reference-import status, source-dir status, missing/update
+counts, and missing reference path previews so release reviewers can spot
+invalid bundles and missing design references quickly.
 The check also verifies that `visual-reference-import-report.json` and
 `visual-reference-import-report.md` are retained for the artifact-local manifest
 and default reference intake directory, and that `visual-acceptance-report.md`
@@ -219,8 +219,9 @@ workflow summary prints the run id to use with the Production Smoke
 `visual_artifact_run_id` input.
 When the same default artifact is complete on a local machine, plain
 `pnpm project:status` automatically includes it in the informational status
-summary with the artifact path, issue count, reference-import summary, and count
-totals. Keep using explicit `--visual-artifact-dir reports/visual/page-builder-fixture`
+summary with the artifact path, issue count, reference-import summary, first
+missing reference path, and count totals. Keep using explicit
+`--visual-artifact-dir reports/visual/page-builder-fixture`
 for `release:check` and production handoff commands that must formally evaluate
 the downloaded artifact.
 

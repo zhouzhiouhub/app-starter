@@ -167,6 +167,7 @@ test("project status artifact validation rejects inconsistent reference import",
       manifestPath:
         "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
       missingCount: 1,
+      missingReferences: [],
       sourceDir: "docs/visual/page-builder-references",
       sourceDirStatus: "ready",
       status: "ready",
@@ -180,6 +181,18 @@ test("project status artifact validation rejects inconsistent reference import",
   assert.throws(
     () => assertProjectStatusArtifact(artifact),
     /complete referenceImport must have no missing references/,
+  );
+
+  artifact.releaseGate.visual.artifactCheck.referenceImport = {
+    ...artifact.releaseGate.visual.artifactCheck.referenceImport,
+    complete: false,
+    missingCount: 0,
+    missingReferences: ["docs/visual/page-builder-references/hero-banner.png"],
+    status: "invalid",
+  };
+  assert.throws(
+    () => assertProjectStatusArtifact(artifact),
+    /missingReferences\.length must not exceed missingCount/,
   );
 });
 

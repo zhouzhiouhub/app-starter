@@ -181,6 +181,7 @@ function createOptionalReferenceImportSummary(referenceImport) {
       complete: referenceImport.complete === true,
       manifestPath: readText(referenceImport.manifestPath),
       missingCount: readCount(referenceImport.missingCount) ?? 0,
+      missingReferences: readStringList(referenceImport.missingReferences),
       sourceDir: readText(referenceImport.sourceDir),
       sourceDirStatus: readText(referenceImport.sourceDirStatus) ?? "unknown",
       status: readText(referenceImport.status) ?? "unknown",
@@ -195,6 +196,12 @@ function readVisualArtifactIssueCount(check) {
     readCount(check.issueCount) ??
     (Array.isArray(check.issues) ? check.issues.length : 0)
   );
+}
+
+function readStringList(value) {
+  return Array.isArray(value)
+    ? value.filter((item) => typeof item === "string" && item.length > 0)
+    : [];
 }
 
 function createOptionalCount(field, value) {

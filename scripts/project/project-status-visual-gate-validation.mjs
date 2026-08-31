@@ -5,6 +5,7 @@ import {
   assertNullableString,
   assertOptionalNonNegativeNumber,
   assertString,
+  assertStringList,
   isRecord,
 } from "./project-status-validation-primitives.mjs";
 
@@ -167,6 +168,7 @@ function assertOptionalReferenceImport(referenceImport) {
     referenceImport.missingCount,
     "releaseGate.visual.artifactCheck.referenceImport.missingCount",
   );
+  assertOptionalMissingReferences(referenceImport);
   assertNullableString(
     referenceImport.sourceDir,
     "releaseGate.visual.artifactCheck.referenceImport.sourceDir",
@@ -193,4 +195,21 @@ function assertOptionalReferenceImport(referenceImport) {
       "Project status artifact complete referenceImport must have no missing references.",
     );
   }
+}
+
+function assertOptionalMissingReferences(referenceImport) {
+  if (referenceImport.missingReferences === undefined) {
+    return;
+  }
+
+  assertStringList(
+    referenceImport.missingReferences,
+    "releaseGate.visual.artifactCheck.referenceImport.missingReferences",
+  );
+  assertCountNotGreater(
+    referenceImport.missingReferences.length,
+    referenceImport.missingCount,
+    "releaseGate.visual.artifactCheck.referenceImport.missingReferences.length",
+    "missingCount",
+  );
 }

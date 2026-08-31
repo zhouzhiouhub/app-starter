@@ -136,6 +136,9 @@ function createReferenceImportSummary(complete) {
     manifestPath:
       "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
     missingCount: complete ? 0 : 12,
+    missingReferences: complete
+      ? []
+      : ["docs/visual/page-builder-references/hero-banner-desktop.png"],
     sourceDir: "docs/visual/page-builder-references",
     sourceDirStatus: "ready",
     status: complete ? "ready" : "invalid",

@@ -12,6 +12,7 @@ export function formatReferenceImportMarkdown(
       referenceImport.sourceDirStatus,
     )})`,
     `- Reference missing: ${referenceImport.missingCount}`,
+    ...formatMissingReferences(referenceImport, formatCode),
     `- Reference updates: ${referenceImport.updateCount}`,
   ];
 }
@@ -29,4 +30,20 @@ export function formatReferenceImportGateSummary(
 
 function formatDefault(value) {
   return value ?? "unknown";
+}
+
+function formatMissingReferences(referenceImport, formatCode) {
+  if ((referenceImport.missingCount ?? 0) === 0) {
+    return [];
+  }
+
+  const values = Array.isArray(referenceImport.missingReferences)
+    ? referenceImport.missingReferences
+    : [];
+
+  return [
+    `- Reference missing files: ${
+      values.length > 0 ? values.map(formatCode).join(", ") : "not recorded"
+    }`,
+  ];
 }

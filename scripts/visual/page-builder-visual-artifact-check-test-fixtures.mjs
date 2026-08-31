@@ -93,12 +93,7 @@ export function hasIssue(report, code) {
 }
 
 export function createReferenceImportSummary(artifactDir) {
-  return {
-    complete: false, missingCount: 12,
-    manifestPath: `${artifactDir}/page-builder-visual-acceptance.json`,
-    sourceDir: "docs/visual/page-builder-references", sourceDirStatus: "ready",
-    status: "invalid", updated: false, updateCount: 0,
-  };
+  return { complete: false, manifestPath: `${artifactDir}/page-builder-visual-acceptance.json`, missingCount: 12, missingReferences: createReferenceMissingReferencePaths(), sourceDir: "docs/visual/page-builder-references", sourceDirStatus: "ready", status: "invalid", updated: false, updateCount: 0 };
 }
 
 function createVisualManifest(artifactDir, input) {
@@ -232,6 +227,10 @@ function createReferenceMissingEntries() {
     pageBuilderVisualAcceptanceViewports.map((viewport) => ({
       component, reason: `${component}-${viewport}.png is missing`, viewport,
     })));
+}
+
+function createReferenceMissingReferencePaths() {
+  return mvpPageBuilderComponents.flatMap((component) => pageBuilderVisualAcceptanceViewports.map((viewport) => `docs/visual/page-builder-references/${component}-${viewport}.png`));
 }
 
 function createScreenshotPng(viewport) {

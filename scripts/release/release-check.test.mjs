@@ -156,18 +156,13 @@ test("release check blocks invalid visual artifacts", () => {
 
   assert.equal(check.releaseReady, false);
   assert.equal(check.visual.status, "accepted");
-  assert.equal(
-    check.blockers.some(
-      (blocker) =>
-        blocker.area === "Page Builder Visual" &&
-        blocker.label === "Visual artifact invalid",
-    ),
-    true,
-  );
+  assert.equal(check.blockers.some((blocker) => blocker.area === "Page Builder Visual" && blocker.label === "Visual artifact invalid"), true);
   assert.equal(artifact.visual.artifactCheck.status, "invalid");
   assert.equal(artifact.visual.artifactCheck.issueCount, 1);
   assert.equal(artifact.visual.artifactCheck.referenceImport.status, "invalid");
   assert.equal(artifact.visual.artifactCheck.referenceImport.missingCount, 12);
+  assert.equal(artifact.visual.artifactCheck.referenceImport.missingReferences[0], "docs/visual/page-builder-references/hero-banner-desktop.png");
+  assert.match(formatReleaseEvidenceCheck(check).join("\n"), /first missing docs\/visual\/page-builder-references\/hero-banner-desktop\.png/);
   assert.equal(
     artifact.blockers.some(
       (blocker) => blocker.label === "Visual artifact invalid",

@@ -183,7 +183,12 @@ function formatVisualReferenceImport(referenceImport) {
     return null;
   }
 
-  return `references ${referenceImport.status} (${referenceImport.sourceDirStatus} source, ${referenceImport.missingCount} missing, ${referenceImport.updateCount} updates)`;
+  const firstMissing = Array.isArray(referenceImport.missingReferences)
+    ? referenceImport.missingReferences[0]
+    : null;
+  const missing = firstMissing ? `, first missing ${firstMissing}` : "";
+
+  return `references ${referenceImport.status} (${referenceImport.sourceDirStatus} source, ${referenceImport.missingCount} missing${missing}, ${referenceImport.updateCount} updates)`;
 }
 
 function formatVisualArtifactIssueCount(issueCount) {

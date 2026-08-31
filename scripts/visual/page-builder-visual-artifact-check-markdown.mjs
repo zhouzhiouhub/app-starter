@@ -4,6 +4,7 @@ import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { createArtifactPaths } from "./page-builder-visual-artifact-check-paths.mjs";
 
 const maxMarkdownTextLength = 420;
+const maxReferencePathPreviewCount = 4;
 
 export function createPageBuilderVisualArtifactCheckMarkdown(report) {
   const paths = createArtifactPaths(report.artifactDir);
@@ -64,7 +65,28 @@ function formatReferenceImport(referenceImport) {
       referenceImport.sourceDir,
     )} (${formatText(referenceImport.sourceDirStatus)})`,
     `Reference missing: ${referenceImport.missingCount}`,
+    ...formatMissingReferences(referenceImport),
     `Reference updates: ${referenceImport.updateCount}`,
+  ];
+}
+
+function formatMissingReferences(referenceImport) {
+  if ((referenceImport.missingCount ?? 0) === 0) {
+    return [];
+  }
+
+  const values = Array.isArray(referenceImport.missingReferences)
+    ? referenceImport.missingReferences
+    : [];
+
+  if (values.length === 0) {
+    return ["Reference missing files: not recorded"];
+  }
+
+  const visible = values.slice(0, maxReferencePathPreviewCount).map(formatCode);
+  const hidden = referenceImport.missingCount - visible.length;
+  return [
+    `Reference missing files: ${visible.join(", ")}${hidden > 0 ? `, ... and ${hidden} more` : ""}`,
   ];
 }
 

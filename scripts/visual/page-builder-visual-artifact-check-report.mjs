@@ -51,7 +51,16 @@ function formatReferenceImport(referenceImport) {
     `Reference import: ${referenceImport.status}${
       details.length > 0 ? ` (${details.join(", ")})` : ""
     }`,
+    ...formatMissingReferences(referenceImport),
   ];
+}
+
+function formatMissingReferences(referenceImport) {
+  const values = Array.isArray(referenceImport.missingReferences)
+    ? referenceImport.missingReferences
+    : [];
+
+  return values.length > 0 ? [`Missing reference files: ${values.join(", ")}`] : [];
 }
 
 function formatReferenceImportSource(referenceImport) {

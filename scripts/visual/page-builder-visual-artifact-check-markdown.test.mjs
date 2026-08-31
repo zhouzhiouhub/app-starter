@@ -25,6 +25,7 @@ test("visual artifact check Markdown summarizes complete bundles", () => {
   );
   assert.match(markdown, /Reference missing: 0/);
   assert.match(markdown, /Reference updates: 0/);
+  assert.doesNotMatch(markdown, /Reference missing files:/);
   assert.match(
     markdown,
     /Artifact manifest: `reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json`/,
@@ -57,16 +58,25 @@ test("visual artifact check Markdown lists issues and repair command", () => {
           severity: "error",
         },
       ],
-      presentRequiredFileCount: 4,
-      presentScreenshotCount: 11,
+    presentRequiredFileCount: 4,
+    presentScreenshotCount: 11,
+    referenceImport: createReferenceImportSummary({
+      complete: false,
+      missingCount: 12,
+      missingReferences: [
+        "docs/visual/page-builder-references/hero-banner-desktop.png",
+      ],
       status: "invalid",
     }),
+    status: "invalid",
+  }),
   );
 
   assert.match(markdown, /Status: `invalid`/);
   assert.match(markdown, /Issues: 1/);
   assert.match(markdown, /missing_artifact_file/);
   assert.doesNotMatch(markdown, /abcdefghijklmnopqrstuvwxyz123456/);
+  assert.match(markdown, /Reference missing files: `docs\/visual\/page-builder-references\/hero-banner-desktop\.png`/);
   assert.match(markdown, /pnpm visual:artifact-bundle -- --artifact-dir/);
   assert.match(markdown, /--output reports\/visual\/page-builder-fixture\/visual-artifact-check-report\.json/);
   assert.match(markdown, /--markdown-output reports\/visual\/page-builder-fixture\/visual-artifact-check-report\.md/);
@@ -147,17 +157,19 @@ function createArtifactCheckReport(overrides = {}) {
   };
 }
 
-function createReferenceImportSummary() {
+function createReferenceImportSummary(overrides = {}) {
   return {
     complete: true,
     manifestPath:
       "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
     missingCount: 0,
+    missingReferences: [],
     sourceDir: "docs/visual/page-builder-references",
     sourceDirStatus: "ready",
     status: "ready",
     updated: false,
     updateCount: 0,
+    ...overrides,
   };
 }
 

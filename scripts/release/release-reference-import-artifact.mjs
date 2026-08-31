@@ -12,6 +12,7 @@ export function createOptionalReferenceImportArtifact(referenceImport) {
       complete: referenceImport.complete === true,
       manifestPath: readTextOrNull(referenceImport.manifestPath),
       missingCount: readCount(referenceImport.missingCount),
+      missingReferences: readStringList(referenceImport.missingReferences),
       sourceDir: readTextOrNull(referenceImport.sourceDir),
       sourceDirStatus: readTextOrNull(referenceImport.sourceDirStatus) ?? "unknown",
       status: readTextOrNull(referenceImport.status) ?? "unknown",
@@ -23,6 +24,12 @@ export function createOptionalReferenceImportArtifact(referenceImport) {
 
 function readCount(value) {
   return Number.isFinite(value) ? value : 0;
+}
+
+function readStringList(value) {
+  return Array.isArray(value)
+    ? value.map(readTextOrNull).filter(Boolean)
+    : [];
 }
 
 function readTextOrNull(value) {

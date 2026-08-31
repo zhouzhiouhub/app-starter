@@ -22,6 +22,7 @@ test("project status summarizes visual artifact counts", () => {
       manifestPath:
         "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
       missingCount: 0,
+      missingReferences: [],
       sourceDir: "docs/visual/page-builder-references",
       sourceDirStatus: "ready",
       status: "ready",
@@ -50,6 +51,7 @@ test("project status summarizes visual artifact counts", () => {
       manifestPath:
         "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
       missingCount: 0,
+      missingReferences: [],
       sourceDir: "docs/visual/page-builder-references",
       sourceDirStatus: "ready",
       status: "ready",
@@ -68,6 +70,18 @@ test("project status summarizes visual artifact counts", () => {
     markdown,
     /Page Builder Visual: needs-evidence, 0\/6 components, 0\/12 viewports, 12 pending tasks, artifact complete \(reports\/visual\/page-builder-fixture, 0 issues, 6\/6 files, 12\/12 screenshots, 12\/12 design references, references ready \(ready source, 0 missing, 0 updates\)\)/,
   );
+
+  check.visualArtifact.referenceImport = {
+    ...check.visualArtifact.referenceImport,
+    complete: false,
+    missingCount: 1,
+    missingReferences: ["docs/visual/page-builder-references/hero-banner-desktop.png"],
+    status: "invalid",
+  };
+  assert.match(
+    formatProjectStatusArtifact(createProjectStatusArtifact(check)).join("\n"),
+    /first missing docs\/visual\/page-builder-references\/hero-banner-desktop\.png/,
+  );
 });
 
 test("project status docs mention visual artifact path and counts", async () => {
@@ -79,13 +93,14 @@ test("project status docs mention visual artifact path and counts", async () => 
 
   assert.match(readme, /artifact complete` 及 artifact 路径、文件\/截图计数/);
   assert.match(readme, /releaseGate\.visual\.artifactCheck/);
+  assert.match(readme, /missingReferences/);
   assert.match(
     setupDoc,
-    /prints its artifact path, issue count,\s+file count, screenshot counts, and reference-import missing\/update counts/s,
+    /prints its artifact path, issue count,\s+file count, screenshot counts, reference-import missing\/update counts, and the\s+first missing reference path/s,
   );
   assert.match(setupDoc, /releaseGate\.visual\.artifactCheck/);
   assert.match(
     releaseChecklist,
-    /artifact path,\s+issue, file, screenshot, and reference-import missing\/update counts/s,
+    /artifact path,\s+issue, file, screenshot, reference-import missing\/update counts, and the first\s+missing reference path/s,
   );
 });

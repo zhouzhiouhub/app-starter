@@ -120,6 +120,7 @@ test("release check Markdown lists blockers and visual tasks", () => {
   assert.match(markdown, /Artifact issues:/);
   assert.match(markdown, /Reference import: invalid/);
   assert.match(markdown, /Reference missing: 12/);
+  assert.match(markdown, /Reference missing files: `docs\/visual\/page-builder-references\/hero-banner-desktop\.png`/);
   assert.match(markdown, /missing_artifact_file/);
   assert.match(markdown, /Checklist manifest: `reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json`/);
   assert.match(markdown, /hero-banner\.desktop: missing designReference/);

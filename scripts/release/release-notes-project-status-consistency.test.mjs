@@ -137,7 +137,9 @@ test("release notes project status consistency rejects reference import mismatch
     ...createCompleteArtifactCheck(),
     referenceImport: {
       ...createReferenceImportSummary(),
-      status: "invalid",
+      missingReferences: [
+        "docs/visual/page-builder-references/hero-banner-desktop.png",
+      ],
     },
   };
   projectStatus.releaseGate.visual.artifactStatus = "complete";
@@ -148,7 +150,7 @@ test("release notes project status consistency rejects reference import mismatch
         releaseArtifact,
         projectStatus,
       ),
-    /project status releaseGate\.visual\.artifactCheck\.referenceImport\.status must match release-evidence-check\.v1/,
+    /project status releaseGate\.visual\.artifactCheck\.referenceImport\.missingReferences must match release-evidence-check\.v1/,
   );
 });
 
@@ -220,6 +222,7 @@ function createReferenceImportSummary() {
     manifestPath:
       "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
     missingCount: 0,
+    missingReferences: [],
     sourceDir: "docs/visual/page-builder-references",
     sourceDirStatus: "ready",
     status: "ready",
