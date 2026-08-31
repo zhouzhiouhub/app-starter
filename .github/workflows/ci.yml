@@ -25,6 +25,61 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm lint
       - run: pnpm test
+      - name: Write CI test diagnostics
+        if: failure()
+        continue-on-error: true
+        shell: bash
+        run: |
+          set +e
+          mkdir -p reports/ci-diagnostics
+          {
+            echo "## CI Test Diagnostics"
+            echo "- Node: \`$(node -v 2>&1)\`"
+            echo "- pnpm: \`$(pnpm -v 2>&1)\`"
+            echo "- Working directory: \`$(pwd)\`"
+            if test -f packages/schema/dist/index.js; then
+              echo "- Schema dist: \`present\`"
+            else
+              echo "- Schema dist: \`missing\`"
+            fi
+            echo "- Test entry: \`pnpm test\`"
+            echo "- Diagnostics file: \`reports/ci-diagnostics/ci-test-diagnostics.md\`"
+            echo "- Rerun log: \`reports/ci-diagnostics/pnpm-test-rerun.log\`"
+          } > reports/ci-diagnostics/ci-test-diagnostics.md
+          pnpm test > reports/ci-diagnostics/pnpm-test-rerun.log 2>&1
+          rerun_exit="$?"
+          if test "$rerun_exit" != "0"; then
+            diagnostic_line="$(
+              grep -E "not ok|AssertionError|Cannot find module|ERR_|SyntaxError|TypeError|# fail|ELIFECYCLE" \
+                reports/ci-diagnostics/pnpm-test-rerun.log \
+                | head -n 1
+            )"
+            if test -z "$diagnostic_line"; then
+              diagnostic_line="$(tail -n 1 reports/ci-diagnostics/pnpm-test-rerun.log)"
+            fi
+            diagnostic_line="${diagnostic_line//'%'/'%25'}"
+            diagnostic_line="${diagnostic_line//$'\r'/'%0D'}"
+            diagnostic_line="${diagnostic_line//$'\n'/'%0A'}"
+            echo "::error title=CI test diagnostics::rerun exit $rerun_exit: $diagnostic_line"
+          fi
+          {
+            cat reports/ci-diagnostics/ci-test-diagnostics.md
+            echo "- Rerun exit code: \`$rerun_exit\`"
+            echo ""
+            echo "### Rerun Tail"
+            echo "\`\`\`text"
+            tail -n 120 reports/ci-diagnostics/pnpm-test-rerun.log
+            echo "\`\`\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 0
+      - name: Upload CI test diagnostics artifact
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-test-diagnostics-${{ github.run_number }}
+          path: reports/ci-diagnostics
+          if-no-files-found: error
+          retention-days: 14
       - run: pnpm smoke:report -- --help
       - run: pnpm smoke:release-check -- --help
       - run: pnpm project:status -- --help

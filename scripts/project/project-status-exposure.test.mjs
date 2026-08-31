@@ -118,6 +118,22 @@ test("project status local verification matches package and CI commands", async 
   );
 });
 
+test("main CI writes pnpm test diagnostics on failure", async () => {
+  const workflow = await readFile(".github/workflows/ci.yml", "utf8");
+
+  assert.match(workflow, /name: Write CI test diagnostics/);
+  assert.match(workflow, /continue-on-error: true/);
+  assert.match(workflow, /## CI Test Diagnostics/);
+  assert.match(workflow, /reports\/ci-diagnostics/);
+  assert.match(workflow, /pnpm test > reports\/ci-diagnostics\/pnpm-test-rerun\.log 2>&1/);
+  assert.match(workflow, /::error title=CI test diagnostics::rerun exit/);
+  assert.match(workflow, /tail -n 120/);
+  assert.match(workflow, /exit 0/);
+  assert.match(workflow, /name: Upload CI test diagnostics artifact/);
+  assert.match(workflow, /ci-test-diagnostics-\$\{\{ github\.run_number \}\}/);
+  assert.match(workflow, /if-no-files-found: error/);
+});
+
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
 }
