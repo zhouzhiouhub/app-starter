@@ -74,9 +74,29 @@ test("visual reference import CLI writes JSON output", async () => {
     assert.equal(artifact.status, "invalid");
     assert.equal(artifact.sourceDirStatus, "ready");
     assert.equal(artifact.missingCount, 1);
+    assert.equal(artifact.requiredReferenceCount, 12);
+    assert.equal(artifact.requiredReferences.length, 12);
     assert.equal(
       artifact.missing[0].expectedPath,
       `${sourceDir}/faq-mobile.png`,
+    );
+    assert.deepEqual(
+      artifact.requiredReferences.find(
+        (reference) =>
+          reference.component === "faq" && reference.viewport === "mobile",
+      ),
+      {
+        component: "faq",
+        expectedPath: `${sourceDir}/faq-mobile.png`,
+        previewScreenshot: {
+          height: 1000,
+          path: "artifacts/visual/page-builder-visual-fixture-faq-mobile.png",
+          width: 390,
+        },
+        reason: "faq-mobile.png is missing",
+        status: "missing",
+        viewport: "mobile",
+      },
     );
     assert.equal(stdoutArtifact.missingCount, artifact.missingCount);
   } finally {

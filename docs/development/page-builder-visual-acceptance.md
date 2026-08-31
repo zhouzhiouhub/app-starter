@@ -75,9 +75,13 @@ metrics. Add
 when importing into the uploadable artifact manifest. Run
 `pnpm visual:references:check` first to keep machine-readable and human-readable
 reference intake reports listing missing PNGs, imported paths, and the next
-command. When retained `previewScreenshot` files exist, those reports also show
-the preview screenshot path and decoded PNG dimensions for each missing or
-imported reference, making the expected design export size explicit. The default
+command. The JSON report keeps `requiredReferenceCount` and a complete
+`requiredReferences[]` list for all 12 component viewport PNGs, including each
+target path, intake status, retained preview screenshot path, and decoded
+preview dimensions when available. When retained `previewScreenshot` files
+exist, the Markdown report also shows the preview screenshot path and decoded
+PNG dimensions for each missing or imported reference, making the expected
+design export size explicit. The default
 source directory is
 `docs/visual/page-builder-references`, so `--source-dir` is only needed for an
 alternate retained archive. Use `pnpm visual:measure` after attaching design
@@ -122,8 +126,9 @@ default; pass `--write` to update the manifest, `--markdown-output` to retain
 the intake report, and `--require-complete` to fail when any of the 12 MVP
 reference PNGs is missing. The retained JSON artifact keeps optional
 `previewScreenshot.path`, `previewScreenshot.width`, and
-`previewScreenshot.height` fields when a manifest preview PNG can be decoded. If
-the source directory has not been created yet or points at a file instead of a
+`previewScreenshot.height` fields when a manifest preview PNG can be decoded,
+and mirrors those values into `requiredReferences[]` for intake handoff. If the
+source directory has not been created yet or points at a file instead of a
 directory, the importer records `sourceDirStatus` and still writes the full
 missing-reference checklist to the JSON/Markdown reports.
 

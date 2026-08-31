@@ -39,9 +39,10 @@ or corrupted file is rejected during intake.
 The reference importer only writes manifest paths and resets stale metrics. It
 does not mark a viewport as accepted. If this directory is missing or is not a
 directory, the importer still writes a reference intake report with
-`sourceDirStatus` and the full required PNG checklist. The Markdown report's
-`Required Source Files` section always lists all 12 component and viewport PNGs
-with `missing`, `ready`, `would-update`, or `updated` intake status.
+`sourceDirStatus` and the full required PNG checklist. The JSON report's
+`requiredReferences[]` list and the Markdown report's `Required Source Files`
+section always list all 12 component and viewport PNGs with `missing`, `ready`,
+`would-update`, or `updated` intake status.
 When the manifest has retained `previewScreenshot` paths, the intake report also
 shows the preview screenshot path and decoded PNG dimensions beside each missing
 or imported reference so the design export can match the captured viewport.

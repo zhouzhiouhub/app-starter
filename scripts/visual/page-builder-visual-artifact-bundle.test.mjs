@@ -161,6 +161,8 @@ test("visual artifact bundle writes capture and acceptance reports", async () =>
       "page-builder-visual-reference-import.v1",
     );
     assert.equal(referenceImportReport.missingCount, 12);
+    assert.equal(referenceImportReport.requiredReferenceCount, 12);
+    assert.equal(referenceImportReport.requiredReferences.length, 12);
     assert.equal(artifactCheckReport.status, "complete");
     assert.equal(artifactCheckReport.requiredFileCount, 6);
     assert.match(acceptanceMarkdown, /^# Page Builder Visual Acceptance/m);

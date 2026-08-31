@@ -52,7 +52,9 @@ later phases are explicitly approved.
   After
   placing real design reference PNGs under a retained source directory, run
   `pnpm visual:references:check`
-  to keep JSON and Markdown reference intake reports with missing or imported PNG paths. Then
+  to keep JSON and Markdown reference intake reports with missing or imported
+  PNG paths. The JSON artifact's `requiredReferences[]` list is the
+  machine-readable 12-file intake checklist. Then
   run
   `pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete`.
   Then run
@@ -222,7 +224,8 @@ later phases are explicitly approved.
   `page-builder-visual-acceptance.json` with artifact-local screenshot paths,
   `visual-capture-report.json` with the captured screenshot list,
   `visual-reference-import-report.json` with machine-readable reference intake
-  status, `visual-reference-import-report.md` with the human-readable intake,
+  status and `requiredReferences[]` handoff checklist,
+  `visual-reference-import-report.md` with the human-readable intake,
   `visual-acceptance-report.json` with the structured acceptance status,
   `visual-acceptance-report.md`, `visual-artifact-check-report.json`, and
   `visual-artifact-check-report.md`.
