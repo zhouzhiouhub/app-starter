@@ -7,6 +7,7 @@ import {
   createPageBuilderVisualReferenceImportMarkdown,
   createPageBuilderVisualReferenceImportWriteCommand,
   createPageBuilderVisualReferenceMeasureCommand,
+  createPageBuilderVisualReferenceReportCommand,
   formatPageBuilderVisualReferenceImportReport,
 } from "./page-builder-visual-reference-import.mjs";
 
@@ -24,6 +25,10 @@ test("visual reference commands keep artifact manifest context", () => {
   assert.equal(
     createPageBuilderVisualReferenceImportWriteCommand(artifactReport),
     "pnpm visual:references -- --source-dir docs/visual/page-builder-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete",
+  );
+  assert.equal(
+    createPageBuilderVisualReferenceReportCommand(artifactReport),
+    "pnpm visual:references -- --source-dir docs/visual/page-builder-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output reports/visual/page-builder-fixture/visual-reference-import-report.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete",
   );
   assert.equal(
     createPageBuilderVisualReferenceMeasureCommand(artifactReport),
@@ -54,10 +59,22 @@ test("visual reference Markdown keeps artifact follow-up commands", () => {
     ],
   });
 
-  assert.match(markdown, /pnpm visual:measure -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --require-complete/);
-  assert.match(markdown, /pnpm visual:measure -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --accept-passing --require-complete/);
-  assert.match(markdown, /pnpm visual:capture:fixture -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output-dir reports\/visual\/page-builder-fixture --report reports\/visual\/page-builder-fixture\/visual-capture-report\.json --write-manifest/);
-  assert.match(markdown, /pnpm visual:acceptance -- --require-accepted reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/);
+  assert.match(
+    markdown,
+    /pnpm visual:measure -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --require-complete/,
+  );
+  assert.match(
+    markdown,
+    /pnpm visual:measure -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --accept-passing --require-complete/,
+  );
+  assert.match(
+    markdown,
+    /pnpm visual:capture:fixture -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output-dir reports\/visual\/page-builder-fixture --report reports\/visual\/page-builder-fixture\/visual-capture-report\.json --write-manifest/,
+  );
+  assert.match(
+    markdown,
+    /pnpm visual:acceptance -- --require-accepted reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/,
+  );
 });
 
 test("visual reference reports list expected files and artifact write command", () => {
@@ -76,7 +93,16 @@ test("visual reference reports list expected files and artifact write command", 
   const text = formatPageBuilderVisualReferenceImportReport(report).join("\n");
   const markdown = createPageBuilderVisualReferenceImportMarkdown(report);
 
-  assert.match(text, /expected docs\/visual\/page-builder-references\/faq-mobile\.png/);
-  assert.match(text, /visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --require-complete/);
-  assert.match(markdown, /visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --require-complete/);
+  assert.match(
+    text,
+    /expected docs\/visual\/page-builder-references\/faq-mobile\.png/,
+  );
+  assert.match(
+    text,
+    /visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --require-complete/,
+  );
+  assert.match(
+    markdown,
+    /visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --require-complete/,
+  );
 });

@@ -1,4 +1,12 @@
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
+import {
+  createPageBuilderVisualReferenceAcceptanceCommand,
+  createPageBuilderVisualReferenceAcceptPassingCommand,
+  createPageBuilderVisualReferenceCaptureCommand,
+  createPageBuilderVisualReferenceImportWriteCommand,
+  createPageBuilderVisualReferenceMeasureCommand,
+  createPageBuilderVisualReferenceReportCommand,
+} from "./page-builder-visual-reference-import-commands.mjs";
 
 const maxMarkdownTextLength = 420;
 
@@ -31,7 +39,40 @@ export function formatMissingVisualReferenceFiles(visual) {
     `- Source dir: ${formatCode(referenceImport.sourceDir)}`,
     `- Missing files: ${referenceImport.missingCount}`,
     ...missingReferences.map((reference) => `- ${formatCode(reference)}`),
+    "",
+    "### Visual Reference Intake Commands",
+    "",
+    ...formatVisualReferenceIntakeCommands(referenceImport),
   ];
+}
+
+function formatVisualReferenceIntakeCommands(referenceImport) {
+  return [
+    [
+      "Reference report",
+      createPageBuilderVisualReferenceReportCommand(referenceImport),
+    ],
+    [
+      "Import",
+      createPageBuilderVisualReferenceImportWriteCommand(referenceImport),
+    ],
+    [
+      "Capture fixture",
+      createPageBuilderVisualReferenceCaptureCommand(referenceImport),
+    ],
+    [
+      "Measure",
+      createPageBuilderVisualReferenceMeasureCommand(referenceImport),
+    ],
+    [
+      "Accept passing",
+      createPageBuilderVisualReferenceAcceptPassingCommand(referenceImport),
+    ],
+    [
+      "Verify",
+      createPageBuilderVisualReferenceAcceptanceCommand(referenceImport),
+    ],
+  ].map(([label, command]) => `- ${label}: ${formatCode(command)}`);
 }
 
 function formatCode(value) {

@@ -169,6 +169,11 @@ test("release check Markdown lists blockers and visual tasks", () => {
   assert.match(markdown, /### Missing Visual References/);
   assert.match(markdown, /Source dir: `docs\/visual\/page-builder-references`/);
   assert.match(markdown, /Missing files: 12/);
+  assert.match(markdown, /### Visual Reference Intake Commands/);
+  assert.match(
+    markdown,
+    /Reference report: `pnpm visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md --require-complete`/,
+  );
   assert.match(
     markdown,
     /Reference missing files: `docs\/visual\/page-builder-references\/hero-banner-desktop\.png`/,

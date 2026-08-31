@@ -2,7 +2,7 @@ import { defaultPageBuilderVisualAcceptanceManifestPath } from "./page-builder-v
 import { pageBuilderVisualCaptureDefaultOutputDir } from "./page-builder-visual-capture-constants.mjs";
 
 export function createPageBuilderVisualReferenceCaptureCommand(report) {
-  const captureOutputDir = inferCaptureOutputDir(report.manifestPath);
+  const captureOutputDir = inferVisualArtifactDir(report.manifestPath);
 
   return joinCommand([
     "pnpm",
@@ -16,13 +16,31 @@ export function createPageBuilderVisualReferenceCaptureCommand(report) {
   ]);
 }
 
+export function createPageBuilderVisualReferenceReportCommand(report) {
+  const outputDir = inferVisualArtifactDir(report.manifestPath);
+
+  return joinCommand([
+    "pnpm",
+    "visual:references",
+    "--",
+    "--source-dir",
+    readSourceDir(report),
+    ...createManifestOption(report),
+    "--output",
+    `${outputDir}/visual-reference-import-report.json`,
+    "--markdown-output",
+    `${outputDir}/visual-reference-import-report.md`,
+    "--require-complete",
+  ]);
+}
+
 export function createPageBuilderVisualReferenceImportWriteCommand(report) {
   return joinCommand([
     "pnpm",
     "visual:references",
     "--",
     "--source-dir",
-    report.sourceDir,
+    readSourceDir(report),
     ...createManifestOption(report),
     "--write",
     "--require-complete",
@@ -63,19 +81,23 @@ export function createPageBuilderVisualReferenceAcceptanceCommand(report) {
 }
 
 function createManifestOption(report) {
-  if (report.manifestPath === defaultPageBuilderVisualAcceptanceManifestPath) {
+  const manifestPath = readManifestPath(report);
+
+  if (manifestPath === defaultPageBuilderVisualAcceptanceManifestPath) {
     return [];
   }
 
-  return ["--manifest", report.manifestPath];
+  return ["--manifest", manifestPath];
 }
 
 function createAcceptanceManifestArgument(report) {
-  if (report.manifestPath === defaultPageBuilderVisualAcceptanceManifestPath) {
+  const manifestPath = readManifestPath(report);
+
+  if (manifestPath === defaultPageBuilderVisualAcceptanceManifestPath) {
     return [];
   }
 
-  return [report.manifestPath];
+  return [manifestPath];
 }
 
 function joinCommand(parts) {
@@ -90,8 +112,8 @@ function createCaptureOutputDirOption(captureOutputDir) {
   return ["--output-dir", captureOutputDir];
 }
 
-function inferCaptureOutputDir(manifestPath) {
-  const normalized = manifestPath.replaceAll("\\", "/");
+function inferVisualArtifactDir(manifestPath) {
+  const normalized = readManifestPath({ manifestPath }).replaceAll("\\", "/");
 
   if (normalized === defaultPageBuilderVisualAcceptanceManifestPath) {
     return pageBuilderVisualCaptureDefaultOutputDir;
@@ -105,4 +127,17 @@ function inferCaptureOutputDir(manifestPath) {
   }
 
   return normalized.slice(0, normalized.lastIndexOf("/"));
+}
+
+function readManifestPath(report) {
+  return typeof report.manifestPath === "string" &&
+    report.manifestPath.length > 0
+    ? report.manifestPath
+    : defaultPageBuilderVisualAcceptanceManifestPath;
+}
+
+function readSourceDir(report) {
+  return typeof report.sourceDir === "string" && report.sourceDir.length > 0
+    ? report.sourceDir
+    : "docs/visual/page-builder-references";
 }

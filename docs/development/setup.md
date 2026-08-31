@@ -360,9 +360,12 @@ file count, screenshot counts, reference-import missing/update counts, and the
 first missing reference path in the release gate summary, records the missing
 path list under `releaseGate.visual.artifactCheck.referenceImport`, and adds a
 `Missing Visual References` section to the Markdown handoff when missing PNGs
-are present. `release-check.md` uses the same missing-reference handoff section
-when the combined gate reads a visual artifact. Explicit `--visual-artifact-dir` or
-`--visual-manifest` inputs still take precedence, and `release:check` continues
+are present. That section also includes `Visual Reference Intake Commands` so
+the reference report, import, capture, measure, accept-passing, and final
+acceptance commands stay beside the missing file list. `release-check.md` uses
+the same missing-reference handoff section when the combined gate reads a visual
+artifact. Explicit `--visual-artifact-dir` or `--visual-manifest` inputs still
+take precedence. `release:check` continues
 to require an explicit `--visual-artifact-dir` when release review should use a
 downloaded visual artifact.
 
