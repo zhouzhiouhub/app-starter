@@ -48,6 +48,7 @@ export function createVisualEvidenceAction(artifact) {
   return [
     "Fixture artifact is complete.",
     `Attach real design references under ${commandReport.sourceDir},`,
+    `run ${createPageBuilderVisualReferenceReportCommand(commandReport)} to archive reference import review,`,
     `run ${createPageBuilderVisualReferenceImportWriteCommand(commandReport)},`,
     `run ${createPageBuilderVisualReferenceCaptureCommand(commandReport)},`,
     `run ${createPageBuilderVisualReferenceMeasureCommand(commandReport)},`,

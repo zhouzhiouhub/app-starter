@@ -61,6 +61,10 @@ test("project status completion checklist summarizes blocked evidence", () => {
     /12 Page Builder visual viewport tasks still need accepted evidence/u,
   );
   assert.match(
+    checklist.items[2].nextAction,
+    /pnpm visual:references:check/u,
+  );
+  assert.match(
     checklist.items[3].evidence,
     /0 issues, 6\/6 files, 12\/12 screenshots, 12\/12 design references, references ready \(0 missing, 0 updates\)/u,
   );

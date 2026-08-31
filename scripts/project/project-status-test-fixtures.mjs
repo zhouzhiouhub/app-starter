@@ -8,7 +8,7 @@ export function createBlockedCheck() {
       },
       {
         action:
-          "Run pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture to refresh retained fixture evidence.",
+          "Run pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture to refresh retained fixture evidence, then run pnpm visual:references:check to archive reference import review.",
         area: "Page Builder Visual",
         label: "Visual acceptance pending",
       },

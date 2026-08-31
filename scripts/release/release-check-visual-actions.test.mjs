@@ -39,6 +39,7 @@ test("visual evidence action uses artifact-local manifest after artifact complet
 
   assert.match(action, /Fixture artifact is complete/);
   assert.doesNotMatch(action, /pnpm visual:artifact-bundle/);
+  assert.match(action, /pnpm visual:references:check/);
   assert.match(
     action,
     /--manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/,
