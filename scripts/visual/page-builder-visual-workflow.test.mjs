@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const workflowPath = ".github/workflows/page-builder-visual.yml";
+const packageJsonPath = "package.json";
 const readmePath = "README.md";
 const acceptanceDocPath = "docs/development/page-builder-visual-acceptance.md";
 const releaseChecklistPath = "docs/development/release-checklist.md";
@@ -10,7 +11,11 @@ const referenceReadmePath = "docs/visual/page-builder-references/README.md";
 const setupDocPath = "docs/development/setup.md";
 
 test("page builder visual workflow captures fixture evidence", async () => {
-  const workflow = await readFile(workflowPath, "utf8");
+  const [workflow, packageJson] = await Promise.all([
+    readFile(workflowPath, "utf8"),
+    readFile(packageJsonPath, "utf8"),
+  ]);
+  const scripts = JSON.parse(packageJson).scripts;
 
   assert.match(workflow, /name: Page Builder Visual/);
   assert.match(workflow, /pull_request:/);
@@ -25,6 +30,11 @@ test("page builder visual workflow captures fixture evidence", async () => {
   );
   assert.match(workflow, /pnpm run check:file-size/);
   assert.match(workflow, /pnpm test:visual/);
+  assert.equal(
+    scripts["pretest:visual"],
+    "pnpm --filter @app-starter/schema build",
+  );
+  assert.equal(scripts["test:visual"], "node --test scripts/visual/*.test.mjs");
   assert.match(
     workflow,
     /pnpm visual:artifact-bundle -- --artifact-dir reports\/visual\/page-builder-fixture/,

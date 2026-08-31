@@ -30,6 +30,7 @@
     "test:release": "node --test scripts/release/*.test.mjs",
     "pretest:smoke": "pnpm --filter @app-starter/schema build",
     "test:smoke": "node --test scripts/smoke/*.test.mjs",
+    "pretest:visual": "pnpm --filter @app-starter/schema build",
     "test:visual": "node --test scripts/visual/*.test.mjs",
     "typecheck": "pnpm -r --if-present typecheck",
     "verify:local": "pnpm run check:install && pnpm run check:file-size && pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm project:status -- --all-actions --output tmp/project-status.json --markdown-output tmp/project-status-handoff.md",
