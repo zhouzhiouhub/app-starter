@@ -18,6 +18,7 @@ import {
   createReleaseCheckArgs,
   readReleaseHandoffCliConfig,
 } from "./release-handoff-config.mjs";
+import { formatVisualArtifactStatus } from "./release-handoff-visual-artifact-summary.mjs";
 
 export { readReleaseHandoffCliConfig } from "./release-handoff-config.mjs";
 
@@ -112,55 +113,6 @@ export function formatReleaseHandoffSummary(input) {
   ];
 }
 
-function formatVisualArtifactStatus(artifactCheck) {
-  if (!artifactCheck) {
-    return ["  Visual artifact: not provided"];
-  }
-
-  return [
-    `  Visual artifact: ${artifactCheck.status}${formatVisualArtifactDetails(
-      artifactCheck,
-    )}`,
-  ];
-}
-
-function formatVisualArtifactDetails(artifactCheck) {
-  const detailText = [
-    formatVisualArtifactDir(artifactCheck.artifactDir),
-    formatVisualArtifactCount(
-      artifactCheck.presentRequiredFileCount,
-      artifactCheck.requiredFileCount,
-      "files",
-    ),
-    formatVisualArtifactCount(
-      artifactCheck.presentScreenshotCount,
-      artifactCheck.expectedScreenshotCount,
-      "screenshots",
-    ),
-    formatVisualArtifactCount(
-      artifactCheck.presentDesignReferenceCount,
-      artifactCheck.referencedDesignReferenceCount,
-      "design references",
-    ),
-  ].filter(Boolean);
-
-  return detailText.length > 0 ? ` (${detailText.join(", ")})` : "";
-}
-
-function formatVisualArtifactDir(artifactDir) {
-  return typeof artifactDir === "string" && artifactDir.length > 0
-    ? formatSmokeText(artifactDir, { maxLength: 160 })
-    : null;
-}
-
-function formatVisualArtifactCount(present, expected, label) {
-  if (!Number.isFinite(present) || !Number.isFinite(expected)) {
-    return null;
-  }
-
-  return `${present}/${expected} ${label}`;
-}
-
 export function printReleaseHandoffHelp(writeLine) {
   writeLine(`Usage:
   pnpm release:handoff
@@ -191,7 +143,9 @@ Release handoff:
   project-status.json, and project-status.md from the same handoff run. Blocked
   evidence still writes the handoff; use --require-ready when the command should
   gate release. The terminal summary prints Production Smoke, Page Builder Visual,
-  and optional visual artifact status, path, and counts. It then prints the first two next actions with
+  and optional visual artifact status, path, and counts. When available, the visual artifact line also
+  includes reference-import status, missing/update counts, and the first missing
+  reference path. It then prints the first two next actions with
   structured steps when available, previews the first hidden structured action
   only when the visible actions do not have steps, and points any remaining
   actions to the generated project-status Markdown.`);
@@ -250,7 +204,7 @@ function formatNextActions(actions, projectStatusMarkdownPath) {
       ? [
           `  Remaining next actions: ${hiddenActionCount} (see ${projectStatusMarkdownPath} for the full list)`,
         ]
-    : []),
+      : []),
   ];
 }
 
@@ -260,9 +214,12 @@ function formatNextActionPreview(action, index) {
   }
 
   return [
-    `  Next action ${index}: ${formatSmokeText(`${action.area}: ${action.label}`, {
-      maxLength: 420,
-    })}`,
+    `  Next action ${index}: ${formatSmokeText(
+      `${action.area}: ${action.label}`,
+      {
+        maxLength: 420,
+      },
+    )}`,
     ...formatStructuredSteps(action.steps),
   ];
 }

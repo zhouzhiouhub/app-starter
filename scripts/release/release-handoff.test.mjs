@@ -83,6 +83,10 @@ test("release handoff writes blocked reports without requiring readiness", async
     assert.match(stdout.join("\n"), /Release ready: no/);
     assert.match(stdout.join("\n"), /Preflight status: passed/);
     assert.match(stdout.join("\n"), /Preflight JSON:/);
+    assert.match(
+      stdout.join("\n"),
+      /Visual artifact: complete \(reports\/visual\/page-builder-fixture, 6\/6 files, 12\/12 screenshots, 12\/12 design references, references ready \(0 missing, 0 updates\)\)/,
+    );
     assert.match(stdout.join("\n"), /Next actions: 14/);
     assert.match(stdout.join("\n"), /Next action 1: Production Smoke/);
     assert.match(stdout.join("\n"), /Next action 2: Page Builder Visual/);
@@ -373,11 +377,11 @@ test("release handoff config normalizes paths and is documented", async () => {
   );
   assert.match(
     setupDoc,
-    /first two next\s+actions with structured steps.*first hidden\s+structured action.*visible actions do not have steps.*artifacts\/release\/project-status\.md/s,
+    /first\s+two\s+next actions with structured steps.*first hidden\s+structured action.*visible actions do not have steps.*artifacts\/release\/project-status\.md/s,
   );
   assert.match(
     releaseChecklist,
-    /first two next\s+actions with structured steps.*first hidden structured action.*visible\s+actions do not have steps.*project-status\.md/s,
+    /first\s+two\s+next actions with\s+structured steps.*first hidden structured action.*visible\s+actions do not have steps.*project-status\.md/s,
   );
 });
 
