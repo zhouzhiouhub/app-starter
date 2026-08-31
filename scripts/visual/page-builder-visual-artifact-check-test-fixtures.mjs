@@ -13,7 +13,10 @@ import {
   pageBuilderVisualCaptureDefaultHeight,
   pageBuilderVisualCaptureViewportWidths,
 } from "./page-builder-visual-capture.mjs";
-import { createPageBuilderVisualReferenceImportArtifact } from "./page-builder-visual-reference-import.mjs";
+import {
+  createPageBuilderVisualReferenceImportArtifact,
+  createPageBuilderVisualReferenceImportMarkdown,
+} from "./page-builder-visual-reference-import.mjs";
 export { corruptPngBytes, createTestPng } from "./png-test-fixtures.mjs";
 import { createTestPng } from "./png-test-fixtures.mjs";
 
@@ -45,10 +48,9 @@ export function writeVisualArtifact(artifactDir, input = {}) {
     acceptanceReport,
     { checklist: acceptanceChecklist },
   );
+  const referenceImportReport = createReferenceImportReport(artifactDir);
   const referenceImportArtifact =
-    createPageBuilderVisualReferenceImportArtifact(
-      createReferenceImportReport(artifactDir),
-    );
+    createPageBuilderVisualReferenceImportArtifact(referenceImportReport);
   const captureArtifact = createPageBuilderVisualCaptureArtifact({
     baseUrl: "http://localhost:3000",
     browserPath: "google-chrome",
@@ -77,7 +79,8 @@ export function writeVisualArtifact(artifactDir, input = {}) {
   );
   writeText(
     `${artifactDir}/visual-reference-import-report.md`,
-    input.referenceImportMarkdown ?? createReferenceImportMarkdown(artifactDir),
+    input.referenceImportMarkdown ??
+      createPageBuilderVisualReferenceImportMarkdown(referenceImportReport),
   );
 }
 
@@ -216,20 +219,6 @@ function createReferenceImportReport(artifactDir) {
     missingCount: missing.length,
     updates: [],
   };
-}
-
-function createReferenceImportMarkdown(artifactDir) {
-  return [
-    "# Page Builder Visual Reference Import",
-    "",
-    "Status: `invalid`",
-    `Manifest: \`${artifactDir}/page-builder-visual-acceptance.json\``,
-    "Source dir: `docs/visual/page-builder-references`",
-    "Source dir status: `ready`",
-    "References updated: 0",
-    "Missing references: 12",
-    "",
-  ].join("\n");
 }
 
 function createReferenceMissingEntries() {

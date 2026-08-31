@@ -191,6 +191,35 @@ test("visual artifact check rejects stale reference import count Markdown", () =
   }
 });
 
+test("visual artifact check rejects missing required source file Markdown", () => {
+  const artifactDir = createArtifactDir("missing-source-file-checklist");
+
+  try {
+    writeVisualArtifact(artifactDir, {
+      referenceImportMarkdown: createReferenceImportMarkdownOverride(
+        artifactDir,
+        {
+          missingCount: 12,
+          status: "invalid",
+        },
+      ),
+    });
+
+    const report = checkPageBuilderVisualArtifact({ artifactDir });
+    assert.equal(report.status, "invalid");
+    assert.equal(
+      report.issues.some(
+        (issue) =>
+          issue.code === "invalid_artifact_markdown" &&
+          issue.message.includes("required source files section"),
+      ),
+      true,
+    );
+  } finally {
+    rmSync(artifactDir, { force: true, recursive: true });
+  }
+});
+
 test("visual artifact check rejects stale reference import Markdown", () => {
   const artifactDir = createArtifactDir("stale-reference-report");
 

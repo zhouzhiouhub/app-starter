@@ -3,6 +3,10 @@ import {
   isObject,
   resolveRepositoryPath,
 } from "./page-builder-visual-artifact-check-paths.mjs";
+import {
+  mvpPageBuilderComponents,
+  pageBuilderVisualAcceptanceViewports,
+} from "./page-builder-visual-acceptance-constants.mjs";
 
 export function validateReferenceImportMarkdown(filePath, report, context) {
   const body = readRequiredText(filePath, "reference import Markdown", context);
@@ -61,9 +65,13 @@ function validateReferenceImportMarkdownContent(body, report, context) {
       ),
       "manifest path",
     ],
-    [/^Source dir: `docs\/visual\/page-builder-references`\r?$/mu, "source dir"],
+    [
+      /^Source dir: `docs\/visual\/page-builder-references`\r?$/mu,
+      "source dir",
+    ],
     ...createReferenceImportSourceDirStatusLines(report),
     ...createReferenceImportCountLines(report),
+    ...createReferenceImportRequiredSourceFileLines(report),
   ];
 
   validateExpectedMarkdownLines(
@@ -80,10 +88,7 @@ function createReferenceImportStatusLine(report) {
       ? escapeRegExp(report.status)
       : "(invalid|needs-evidence|ready|updated|would-update)";
 
-  return [
-    new RegExp(`^Status: \`${statusPattern}\`\\r?$`, "mu"),
-    "status",
-  ];
+  return [new RegExp(`^Status: \`${statusPattern}\`\\r?$`, "mu"), "status"];
 }
 
 function createReferenceImportSourceDirStatusLines(report) {
@@ -127,6 +132,79 @@ function createReferenceImportCountLine(value, text, label) {
   }
 
   return [[new RegExp(`^${text}: ${value}\\r?$`, "mu"), label]];
+}
+
+function createReferenceImportRequiredSourceFileLines(report) {
+  const missingByViewport = createReferenceLookup(report?.missing);
+  const updatesByViewport = createReferenceLookup(report?.updates);
+
+  return [
+    [/^## Required Source Files\r?$/mu, "required source files section"],
+    ...mvpPageBuilderComponents.flatMap((component) =>
+      pageBuilderVisualAcceptanceViewports.map((viewport) =>
+        createReferenceImportRequiredSourceFileLine({
+          component,
+          missing: missingByViewport.get(
+            createReferenceKey(component, viewport),
+          ),
+          report,
+          update: updatesByViewport.get(
+            createReferenceKey(component, viewport),
+          ),
+          viewport,
+        }),
+      ),
+    ),
+  ];
+}
+
+function createReferenceImportRequiredSourceFileLine(input) {
+  const status = readRequiredSourceFileStatus(input);
+  const expectedPath = `docs/visual/page-builder-references/${input.component}-${input.viewport}.png`;
+
+  return [
+    new RegExp(
+      `^- ${escapeRegExp(input.component)}\\.${escapeRegExp(
+        input.viewport,
+      )}: ${escapeRegExp(status)}; \`${escapeRegExp(expectedPath)}\`.*\\r?$`,
+      "mu",
+    ),
+    `required source file ${input.component}.${input.viewport}`,
+  ];
+}
+
+function readRequiredSourceFileStatus(input) {
+  if (input.missing) {
+    return "missing";
+  }
+
+  if (!input.update) {
+    return "ready";
+  }
+
+  if (input.report?.status === "updated" || input.report?.updated === true) {
+    return "updated";
+  }
+
+  return "would-update";
+}
+
+function createReferenceLookup(items) {
+  const lookup = new Map();
+
+  if (!Array.isArray(items)) {
+    return lookup;
+  }
+
+  for (const item of items) {
+    lookup.set(createReferenceKey(item.component, item.viewport), item);
+  }
+
+  return lookup;
+}
+
+function createReferenceKey(component, viewport) {
+  return `${component}:${viewport}`;
 }
 
 function validateAcceptanceMarkdownContent(body, manifestReport, context) {
