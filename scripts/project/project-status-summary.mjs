@@ -2,6 +2,19 @@ import { formatSmokeText } from "../smoke/smoke-text.mjs";
 
 const maxSummaryLineLength = 320;
 const visibleNextActionCount = 2;
+const informationalStepLabels = new Set([
+  "Input evidence",
+  "Keep artifact",
+  "Keep artifacts",
+  "Local verification inputs",
+  "Output record",
+  "Preview",
+  "Reference",
+  "Reference source",
+  "Release note inputs",
+  "Review args",
+  "Visual evidence inputs",
+]);
 
 export function formatProjectStatusSummary(artifact) {
   const lines = [
@@ -110,7 +123,7 @@ function formatNextActions(artifact) {
 
 function formatNextAction(action) {
   const lines = [`    - ${action.area}: ${action.label}`];
-  const firstStep = Array.isArray(action.steps) ? action.steps[0] : null;
+  const firstStep = readSummaryStep(action);
 
   if (firstStep) {
     lines.push(`      ${firstStep.label}: ${firstStep.value}`);
@@ -119,6 +132,22 @@ function formatNextAction(action) {
   }
 
   return lines;
+}
+
+function readSummaryStep(action) {
+  if (!Array.isArray(action.steps) || action.steps.length === 0) {
+    return null;
+  }
+
+  return action.steps.find(isActionStep) ?? action.steps[0];
+}
+
+function isActionStep(step) {
+  return (
+    typeof step?.label === "string" &&
+    typeof step.value === "string" &&
+    !informationalStepLabels.has(step.label)
+  );
 }
 
 function formatSummaryLine(line) {
