@@ -54,13 +54,15 @@ jobs:
       - run: pnpm test:visual
       - name: Write visual test diagnostics
         if: failure()
+        continue-on-error: true
         shell: bash
         run: |
+          set +e
           mkdir -p reports/visual/page-builder-diagnostics
           {
             echo "## Page Builder Visual Test Diagnostics"
-            echo "- Node: \`$(node -v)\`"
-            echo "- pnpm: \`$(pnpm -v)\`"
+            echo "- Node: \`$(node -v 2>&1)\`"
+            echo "- pnpm: \`$(pnpm -v 2>&1)\`"
             echo "- Working directory: \`$(pwd)\`"
             if test -f packages/schema/dist/index.js; then
               echo "- Schema dist: \`present\`"
@@ -68,18 +70,25 @@ jobs:
               echo "- Schema dist: \`missing\`"
             fi
             echo "- Test entry: \`node scripts/visual/run-visual-tests.mjs\`"
+            echo "- Diagnostics file: \`reports/visual/page-builder-diagnostics/visual-test-diagnostics.md\`"
             echo "- Rerun log: \`reports/visual/page-builder-diagnostics/test-visual-rerun.log\`"
             echo ""
             echo "### Visual Test Files"
-            find scripts/visual -maxdepth 1 -name "*.test.mjs" | sort | sed "s#^#- \`#; s#$#\`#"
+            find scripts/visual -maxdepth 1 -name "*.test.mjs" | sort
+          } > reports/visual/page-builder-diagnostics/visual-test-diagnostics.md
+          node scripts/visual/run-visual-tests.mjs \
+            > reports/visual/page-builder-diagnostics/test-visual-rerun.log 2>&1
+          rerun_exit="$?"
+          {
+            cat reports/visual/page-builder-diagnostics/visual-test-diagnostics.md
+            echo "- Rerun exit code: \`$rerun_exit\`"
             echo ""
             echo "### Rerun Tail"
             echo "\`\`\`text"
+            tail -n 120 reports/visual/page-builder-diagnostics/test-visual-rerun.log
+            echo "\`\`\`"
           } >> "$GITHUB_STEP_SUMMARY"
-          node scripts/visual/run-visual-tests.mjs \
-            > reports/visual/page-builder-diagnostics/test-visual-rerun.log 2>&1 || true
-          tail -n 120 reports/visual/page-builder-diagnostics/test-visual-rerun.log >> "$GITHUB_STEP_SUMMARY"
-          echo "\`\`\`" >> "$GITHUB_STEP_SUMMARY"
+          exit 0
       - name: Upload visual diagnostics artifact
         if: failure()
         uses: actions/upload-artifact@v4

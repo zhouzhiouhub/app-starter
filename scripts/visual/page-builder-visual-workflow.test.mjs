@@ -32,10 +32,13 @@ test("page builder visual workflow captures fixture evidence", async () => {
   assert.match(workflow, /pnpm --filter @app-starter\/schema build/);
   assert.match(workflow, /pnpm test:visual/);
   assert.match(workflow, /Write visual test diagnostics/);
+  assert.match(workflow, /continue-on-error: true/);
   assert.match(workflow, /Page Builder Visual Test Diagnostics/);
   assert.match(workflow, /node scripts\/visual\/run-visual-tests\.mjs/);
+  assert.match(workflow, /visual-test-diagnostics\.md/);
   assert.match(workflow, /test-visual-rerun\.log/);
   assert.match(workflow, /tail -n 120/);
+  assert.match(workflow, /exit 0/);
   assert.match(workflow, /Upload visual diagnostics artifact/);
   assert.match(workflow, /page-builder-visual-diagnostics-\$\{\{ github\.run_number \}\}/);
   assert.equal(
