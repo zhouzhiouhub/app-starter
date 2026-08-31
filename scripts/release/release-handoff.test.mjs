@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { randomUUID } from "node:crypto";
 import { mkdtempSync } from "node:fs";
 import { readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -19,6 +18,11 @@ import {
   readReleaseHandoffCliConfig,
   runReleaseHandoffCli,
 } from "./release-handoff.mjs";
+import {
+  createOutputRoot,
+  escapeRegExp,
+  readJson,
+} from "./release-handoff-test-helpers.mjs";
 
 test("release handoff writes blocked reports without requiring readiness", async () => {
   const outputRoot = createOutputRoot("blocked");
@@ -392,15 +396,3 @@ test("release handoff config normalizes paths and is documented", async () => {
     /first\s+two\s+next actions with\s+structured steps.*Production Smoke dispatch\s+template.*first hidden structured action.*project-status\.md/s,
   );
 });
-
-function createOutputRoot(label) {
-  return `tmp/release-handoff-${label}-${process.pid}-${randomUUID()}`;
-}
-
-async function readJson(filePath) {
-  return JSON.parse(await readFile(filePath, "utf8"));
-}
-
-function escapeRegExp(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
-}
