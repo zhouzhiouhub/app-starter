@@ -47,6 +47,23 @@ test("project status CLI writes a Markdown handoff", async () => {
       markdown,
       /Smoke report JSON: `artifacts\/production-smoke\/smoke-report\.json`/,
     );
+    assert.match(markdown, /### Production Smoke Workflow Inputs/);
+    assert.match(
+      markdown,
+      /`report_path`: `artifacts\/production-smoke\/smoke-report\.json` \(required; safe JSON output path\)/,
+    );
+    assert.match(
+      markdown,
+      /`require_r2_upload`: `true` \(required; keep R2 upload and CDN gate enabled for release\)/,
+    );
+    assert.match(
+      markdown,
+      /`visual_artifact_name`: `page-builder-visual-fixture-<run_number>` \(optional; Page Builder Visual artifact name\)/,
+    );
+    assert.match(
+      markdown,
+      /`allow_blocked_release_notes`: `false` \(required; only true for failure review drafts\)/,
+    );
     assert.match(
       markdown,
       /Release evidence artifact: `release-evidence-check-<run_number>`/,

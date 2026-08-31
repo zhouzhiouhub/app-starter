@@ -118,6 +118,23 @@ test("release check Markdown lists blockers and visual tasks", () => {
     markdown,
     /Smoke report Markdown: `artifacts\/production-smoke\/smoke-report\.md`/,
   );
+  assert.match(markdown, /### Production Smoke Workflow Inputs/);
+  assert.match(
+    markdown,
+    /`report_path`: `artifacts\/production-smoke\/smoke-report\.json` \(required; safe JSON output path\)/,
+  );
+  assert.match(
+    markdown,
+    /`local_verification_artifact_name`: `local-verification-<run_number>` \(optional; main CI artifact name for local verification evidence\)/,
+  );
+  assert.match(
+    markdown,
+    /`visual_artifact_run_id`: `<Page Builder Visual workflow run id>` \(optional; Page Builder Visual workflow run id\)/,
+  );
+  assert.match(
+    markdown,
+    /`allow_blocked_release_notes`: `false` \(required; only true for failure review drafts\)/,
+  );
   assert.match(
     markdown,
     /Smoke artifact: `production-smoke-report-<run_number>`/,
