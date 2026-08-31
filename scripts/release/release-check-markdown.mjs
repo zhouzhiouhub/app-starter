@@ -1,9 +1,11 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
+import { formatMissingProductionSmokeEvidence } from "../smoke/smoke-missing-evidence-markdown.mjs";
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { assertReleaseEvidenceCheckArtifact } from "./release-notes-artifact-validation.mjs";
 import { formatReadinessChecklistMarkdown } from "./release-readiness-checklist-markdown.mjs";
 import { formatSmokeMarkdownSummary } from "./release-check-smoke-markdown-summary.mjs";
+import { formatVisualTasksMarkdown } from "./release-check-visual-tasks-markdown.mjs";
 import { formatReferenceImportMarkdown } from "./release-reference-import-markdown.mjs";
 
 const maxMarkdownItemCount = 20;
@@ -23,6 +25,7 @@ export function createReleaseEvidenceCheckMarkdown(artifact) {
     "## Production Smoke",
     "",
     ...formatSmokeSummary(artifact.smoke),
+    ...formatMissingProductionSmokeEvidence(artifact.smoke),
     "",
     "## Page Builder Visual",
     "",
@@ -40,7 +43,12 @@ export function createReleaseEvidenceCheckMarkdown(artifact) {
     "",
     "## Pending Visual Evidence",
     "",
-    ...formatVisualTasks(artifact.visual.checklist?.pendingTasks),
+    ...formatVisualTasksMarkdown(artifact.visual.checklist?.pendingTasks, {
+      formatCode,
+      formatHiddenCount,
+      formatText,
+      maxItemCount: maxMarkdownItemCount,
+    }),
     "",
   ];
 
@@ -121,7 +129,9 @@ function formatChecklistManifest(checklist) {
     return [];
   }
 
-  return [`- Checklist manifest: ${formatNullableCode(checklist.manifestPath)}`];
+  return [
+    `- Checklist manifest: ${formatNullableCode(checklist.manifestPath)}`,
+  ];
 }
 
 function formatArtifactCheck(check) {
@@ -195,49 +205,6 @@ function formatBlockers(blockers, blockerCount) {
   ];
 }
 
-function formatVisualTasks(tasks) {
-  if (!Array.isArray(tasks) || tasks.length === 0) {
-    return ["- None"];
-  }
-
-  return [
-    ...tasks.slice(0, maxMarkdownItemCount).flatMap(formatVisualTask),
-    ...formatHiddenCount(tasks.length, maxMarkdownItemCount, "visual tasks"),
-  ];
-}
-
-function formatVisualTask(task) {
-  const lines = [
-    `- ${formatText(task.component)}.${formatText(
-      task.viewport,
-    )}: missing ${formatMissing(task.missing)}`,
-    `  - Reference: ${formatCode(task.expectedDesignReference)}`,
-    `  - Preview: ${formatCode(task.expectedPreviewScreenshot)}`,
-    `  - Capture: ${formatCode(task.commands?.capture)}`,
-  ];
-
-  if (task.commands?.referenceReport) {
-    lines.push(
-      `  - Reference report: ${formatCode(task.commands.referenceReport)}`,
-    );
-  }
-
-  lines.push(
-    `  - Import: ${formatCode(task.commands?.importReference)}`,
-    `  - Measure: ${formatCode(task.commands?.measure)}`,
-  );
-
-  if (task.commands?.acceptPassing) {
-    lines.push(
-      `  - Accept passing: ${formatCode(task.commands.acceptPassing)}`,
-    );
-  }
-
-  lines.push(`  - Verify: ${formatCode(task.commands?.verify)}`);
-
-  return lines;
-}
-
 function formatList(label, values) {
   if (!Array.isArray(values) || values.length === 0) {
     return [`- ${label}: none`];
@@ -267,12 +234,6 @@ function formatIssue(issue) {
 
 function formatAction(action) {
   return action ? `; action: ${formatText(action)}` : "";
-}
-
-function formatMissing(values) {
-  return Array.isArray(values) && values.length > 0
-    ? values.map(formatText).join(", ")
-    : "unknown";
 }
 
 function formatHiddenCount(count, visibleCount, label) {

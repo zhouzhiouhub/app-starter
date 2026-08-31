@@ -342,10 +342,10 @@ full command lines, instead of the default short list. When the gate is ready,
 the next action expands the final `pnpm release:notes` handoff into structured
 steps for the command, evidence args, review args, input evidence, output
 record, `release-notes` artifact, and formal mode without `--allow-blocked`.
-When production smoke evidence is missing, the Markdown handoff adds a
-`Missing Production Smoke Evidence` section with the workflow, Smoke
-JSON/Markdown paths, preflight artifact, release evidence artifact, and project
-status artifact to keep.
+When production smoke evidence is missing, the `release-check.md` and
+`project-status.md` handoffs add a `Missing Production Smoke Evidence` section
+with the workflow, Smoke JSON/Markdown paths, preflight artifact, release
+evidence artifact, and project status artifact to keep.
 For local status checks, `project:status` automatically includes the default
 Page Builder Visual artifact when all required files already exist under
 `reports/visual/page-builder-fixture`, prints its artifact path, issue count,

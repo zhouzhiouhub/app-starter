@@ -105,10 +105,13 @@ test("project status docs mention missing smoke evidence handoff", async () => {
 
   assert.match(readme, /Missing Production Smoke Evidence/);
   assert.match(readme, /Smoke JSON \/ Markdown/);
+  assert.match(readme, /release-check\.md.*project-status\.md/s);
   assert.match(setupDoc, /Missing Production Smoke Evidence/);
-  assert.match(setupDoc, /preflight artifact, release evidence artifact/);
+  assert.match(setupDoc, /release-check\.md.*project-status\.md/s);
+  assert.match(setupDoc, /preflight artifact, release\s+evidence artifact/s);
   assert.match(releaseChecklist, /Missing Production Smoke Evidence/);
-  assert.match(releaseChecklist, /required\s+workflow and artifact names/s);
+  assert.match(releaseChecklist, /release-check\.md.*project-status\.md/s);
+  assert.match(releaseChecklist, /required\s+workflow and\s+artifact names/s);
 });
 
 function createMissingSmokeMarkdownSummary() {

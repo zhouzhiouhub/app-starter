@@ -283,11 +283,12 @@ later phases are explicitly approved.
   summary prints Production Smoke, Page Builder Visual, and optional visual
   artifact status, path, and counts. It then prints the first two next actions with structured steps when available, previews the first hidden structured action only when
   the visible actions do not have steps, and points any remaining work to
-  `project-status.md`. When production smoke evidence is missing, that Markdown
-  handoff includes a `Missing Production Smoke Evidence` section with required
-  workflow and artifact names; when Page Builder reference PNGs are missing, it
-  includes a `Missing Visual References` section with the retained paths to
-  fill.
+  `project-status.md`. When production smoke evidence is missing, both
+  `release-check.md` and `project-status.md` include a
+  `Missing Production Smoke Evidence` section with required workflow and
+  artifact names; when Page Builder reference PNGs are missing,
+  `project-status.md` includes a `Missing Visual References` section with the
+  retained paths to fill.
   It is safe for blocked review handoff because it still writes the files; add
   `--require-ready` when it should fail until release evidence and preflight are
   ready.

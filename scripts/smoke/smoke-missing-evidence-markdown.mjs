@@ -1,4 +1,4 @@
-import { formatSmokeText } from "../smoke/smoke-text.mjs";
+import { formatSmokeText } from "./smoke-text.mjs";
 
 const maxMarkdownTextLength = 420;
 
@@ -48,12 +48,16 @@ export function formatMissingProductionSmokeEvidence(smoke) {
     "### Missing Production Smoke Evidence",
     "",
     `- Status: ${formatCode(smoke?.status)}`,
-    `- Smoke summary: ${formatCode(smoke?.summaryStatus)}`,
+    `- Smoke summary: ${formatCode(readSmokeSummaryStatus(smoke))}`,
     ...formatSmokeMarkdown(smoke?.markdown),
     ...requiredProductionSmokeEvidence.map(
       (item) => `- ${item.label}: ${formatCode(item.value)}`,
     ),
   ];
+}
+
+function readSmokeSummaryStatus(smoke) {
+  return smoke?.summaryStatus ?? smoke?.summary?.status;
 }
 
 function formatSmokeMarkdown(markdown) {

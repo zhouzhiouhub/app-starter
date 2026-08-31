@@ -37,10 +37,23 @@ test("release check Markdown summarizes ready evidence", () => {
   assert.match(markdown, /Generated: `2026-08-29T00:00:00.000Z`/);
   assert.match(markdown, /Status: `ready`/);
   assert.match(markdown, /Release ready: yes/);
-  assert.match(markdown, /Report path: `artifacts\/production-smoke\/smoke-report\.json`/);
-  assert.match(markdown, /Source workflow URL: https:\/\/github\.com\/zhouzhiouhub\/app-starter\/actions\/runs\/123456789/);
-  assert.match(markdown, /Manifest: `reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json`/);
-  assert.match(markdown, /Checklist manifest: `reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json`/);
+  assert.match(
+    markdown,
+    /Report path: `artifacts\/production-smoke\/smoke-report\.json`/,
+  );
+  assert.doesNotMatch(markdown, /### Missing Production Smoke Evidence/);
+  assert.match(
+    markdown,
+    /Source workflow URL: https:\/\/github\.com\/zhouzhiouhub\/app-starter\/actions\/runs\/123456789/,
+  );
+  assert.match(
+    markdown,
+    /Manifest: `reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json`/,
+  );
+  assert.match(
+    markdown,
+    /Checklist manifest: `reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json`/,
+  );
   assert.match(markdown, /Artifact check: complete/);
   assert.match(markdown, /Artifact issue count: 0/);
   assert.match(markdown, /Artifact design references: 12\/12/);
@@ -63,10 +76,7 @@ test("release check Markdown summarizes ready evidence", () => {
   );
   assert.match(markdown, / {4}- Local verification args:/);
   assert.match(markdown, / {4}- Project and visual args:/);
-  assert.match(
-    markdown,
-    / {4}- Keep artifact: `release-notes-<run_number>`/,
-  );
+  assert.match(markdown, / {4}- Keep artifact: `release-notes-<run_number>`/);
   assert.match(markdown, /## Pending Visual Evidence/);
   assert.match(markdown, /- None/);
 });
@@ -94,10 +104,28 @@ test("release check Markdown lists blockers and visual tasks", () => {
 
   assert.match(markdown, /Status: `blocked`/);
   assert.match(markdown, /Production Smoke report: blocked/);
-  assert.doesNotMatch(
+  assert.match(markdown, /### Missing Production Smoke Evidence/);
+  assert.match(
     markdown,
-    /Production Smoke report: blocked; detail:/u,
+    /Workflow: `GitHub Actions Production Smoke against the production environment`/,
   );
+  assert.match(
+    markdown,
+    /Smoke report JSON: `artifacts\/production-smoke\/smoke-report\.json`/,
+  );
+  assert.match(
+    markdown,
+    /Smoke report Markdown: `artifacts\/production-smoke\/smoke-report\.md`/,
+  );
+  assert.match(
+    markdown,
+    /Smoke artifact: `production-smoke-report-<run_number>`/,
+  );
+  assert.match(
+    markdown,
+    /Release evidence artifact: `release-evidence-check-<run_number>`/,
+  );
+  assert.doesNotMatch(markdown, /Production Smoke report: blocked; detail:/u);
   assert.match(
     markdown,
     / {2}- Detail: Report path: artifacts\/production-smoke\/smoke-report\.json/,
@@ -120,9 +148,15 @@ test("release check Markdown lists blockers and visual tasks", () => {
   assert.match(markdown, /Artifact issues:/);
   assert.match(markdown, /Reference import: invalid/);
   assert.match(markdown, /Reference missing: 12/);
-  assert.match(markdown, /Reference missing files: `docs\/visual\/page-builder-references\/hero-banner-desktop\.png`/);
+  assert.match(
+    markdown,
+    /Reference missing files: `docs\/visual\/page-builder-references\/hero-banner-desktop\.png`/,
+  );
   assert.match(markdown, /missing_artifact_file/);
-  assert.match(markdown, /Checklist manifest: `reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json`/);
+  assert.match(
+    markdown,
+    /Checklist manifest: `reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json`/,
+  );
   assert.match(markdown, /hero-banner\.desktop: missing designReference/);
   assert.doesNotMatch(
     markdown,
@@ -189,7 +223,9 @@ test("release check CLI writes Markdown output", async () => {
     assert.match(markdown, /hero-banner\.desktop/);
     assert.match(
       stdout.join("\n"),
-      new RegExp(`Release evidence Markdown written: ${escapeRegExp(outputPath)}`),
+      new RegExp(
+        `Release evidence Markdown written: ${escapeRegExp(outputPath)}`,
+      ),
     );
   } finally {
     await rm(outputRoot, { force: true, recursive: true });

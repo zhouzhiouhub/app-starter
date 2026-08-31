@@ -1,9 +1,9 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
+import { formatMissingProductionSmokeEvidence } from "../smoke/smoke-missing-evidence-markdown.mjs";
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { assertProjectStatusArtifact } from "./project-status-validation.mjs";
 import { formatReleaseEvidenceArtifacts } from "./project-status-release-evidence-artifacts.mjs";
-import { formatMissingProductionSmokeEvidence } from "./project-status-markdown-smoke-evidence.mjs";
 import {
   formatMissingVisualReferenceFiles,
   formatVisualReferenceImport,
