@@ -64,6 +64,7 @@ test("project status summarizes blocked release evidence", () => {
     artifact.nextActions[0].steps.map((step) => step.label),
     [
       "Run workflow",
+      "Dispatch template",
       "Local verification inputs",
       "Visual evidence inputs",
       "Release note inputs",
@@ -71,20 +72,24 @@ test("project status summarizes blocked release evidence", () => {
       "Rerun gate",
     ],
   );
-  assert.equal(
+  assert.match(
     artifact.nextActions[0].steps[1].value,
-    "local_verification_run_url=<main CI run URL>, local_verification_artifact_name=local-verification-<run_number>",
+    /^gh workflow run production-smoke\.yml --ref main /,
   );
   assert.equal(
     artifact.nextActions[0].steps[2].value,
-    "visual_artifact_name=page-builder-visual-fixture-<run_number>, visual_artifact_run_id=<Page Builder Visual workflow run id>",
+    "local_verification_run_url=<main CI run URL>, local_verification_artifact_name=local-verification-<run_number>",
   );
   assert.equal(
     artifact.nextActions[0].steps[3].value,
-    "release_tag=<tag>, rollback_target=<target>, storefront_url=<public HTTPS storefront URL>",
+    "visual_artifact_name=page-builder-visual-fixture-<run_number>, visual_artifact_run_id=<Page Builder Visual workflow run id>",
   );
   assert.equal(
     artifact.nextActions[0].steps[4].value,
+    "release_tag=<tag>, rollback_target=<target>, storefront_url=<public HTTPS storefront URL>",
+  );
+  assert.equal(
+    artifact.nextActions[0].steps[5].value,
     "production-smoke-report-<run_number>, release-preflight-<run_number>, release-evidence-check-<run_number>, project-status-<run_number>",
   );
   assert.equal(

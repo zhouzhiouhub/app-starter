@@ -1,7 +1,7 @@
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { formatRequiredSourceReferenceAvailability } from "../visual/page-builder-visual-reference-summary-format.mjs";
 
-const maxSummaryLineLength = 320;
+const maxSummaryLineLength = 480;
 const visibleNextActionCount = 2;
 const informationalStepLabels = new Set([
   "Input evidence",
@@ -14,6 +14,7 @@ const informationalStepLabels = new Set([
   "Reference source",
   "Release note inputs",
   "Review args",
+  "Run workflow",
   "Visual evidence inputs",
 ]);
 

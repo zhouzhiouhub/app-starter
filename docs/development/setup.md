@@ -358,8 +358,10 @@ When production smoke evidence is missing, the `release-check.md` and
 with the workflow, Smoke JSON/Markdown paths, preflight artifact, release
 evidence artifact, and project status artifact to keep. The same section also
 includes `Production Smoke Workflow Inputs`, listing the `workflow_dispatch`
-input names, default values, and purpose for the manual production run. Blocked
-JSON artifacts mirror that handoff as `smoke.missingEvidence` and
+input names, default values, and purpose for the manual production run, plus a
+`gh workflow run production-smoke.yml --ref main ...` dispatch template for the
+current release evidence inputs. Blocked JSON artifacts mirror that handoff as
+`smoke.missingEvidence` and
 `releaseGate.smoke.missingEvidence`, including `requiredEvidence[]` and
 `workflowInputs[]`.
 For local status checks, `project:status` automatically includes the default

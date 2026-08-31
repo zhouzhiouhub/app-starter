@@ -58,7 +58,7 @@ test("project status summary stays compact and actionable", () => {
   assert.match(text, /Production Smoke: Production smoke artifact missing/);
   assert.match(
     text,
-    /Run workflow: GitHub Actions Production Smoke against the production environment/,
+    /Dispatch template: gh workflow run production-smoke\.yml --ref main/,
   );
   assert.match(text, /Page Builder Visual: Visual acceptance pending/);
   assert.match(

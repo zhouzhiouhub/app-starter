@@ -78,6 +78,10 @@ test("project status CLI writes a Markdown handoff", async () => {
     );
     assert.match(
       markdown,
+      / {4}- Dispatch template: `gh workflow run production-smoke\.yml --ref main -f visual_artifact_name="page-builder-visual-fixture-<run_number>"/,
+    );
+    assert.match(
+      markdown,
       / {4}- Local verification inputs: `local_verification_run_url=<main CI run URL>, local_verification_artifact_name=local-verification-<run_number>`/,
     );
     assert.match(

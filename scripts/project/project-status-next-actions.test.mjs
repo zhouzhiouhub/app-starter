@@ -23,6 +23,7 @@ test("project next actions preserve visual artifact dir on release gate reruns",
     productionSmoke.steps.map((step) => step.label),
     [
       "Run workflow",
+      "Dispatch template",
       "Local verification inputs",
       "Visual evidence inputs",
       "Release note inputs",
@@ -30,16 +31,24 @@ test("project next actions preserve visual artifact dir on release gate reruns",
       "Rerun gate",
     ],
   );
-  assert.equal(
+  assert.match(
     productionSmoke.steps[1].value,
-    "local_verification_run_url=<main CI run URL>, local_verification_artifact_name=local-verification-<run_number>",
+    /^gh workflow run production-smoke\.yml --ref main /,
+  );
+  assert.match(
+    productionSmoke.steps[1].value,
+    /-f visual_artifact_run_id="<Page Builder Visual workflow run id>"/,
   );
   assert.equal(
     productionSmoke.steps[2].value,
-    "visual_artifact_name=page-builder-visual-fixture-<run_number>, visual_artifact_run_id=<Page Builder Visual workflow run id>",
+    "local_verification_run_url=<main CI run URL>, local_verification_artifact_name=local-verification-<run_number>",
   );
   assert.equal(
     productionSmoke.steps[3].value,
+    "visual_artifact_name=page-builder-visual-fixture-<run_number>, visual_artifact_run_id=<Page Builder Visual workflow run id>",
+  );
+  assert.equal(
+    productionSmoke.steps[4].value,
     "release_tag=<tag>, rollback_target=<target>, storefront_url=<public HTTPS storefront URL>",
   );
 });

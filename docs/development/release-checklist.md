@@ -133,23 +133,26 @@ later phases are explicitly approved.
 
 1. Open the `Production Smoke` workflow in GitHub Actions.
 2. Run it against the `production` environment.
-3. Keep the default `SMOKE_REPORT_PATH`:
+3. The project status next actions include a `gh workflow run
+   production-smoke.yml --ref main ...` dispatch template with the release
+   evidence inputs to replace for the run.
+4. Keep the default `SMOKE_REPORT_PATH`:
    `artifacts/production-smoke/smoke-report.json`.
-4. Keep `require_admin_app`, `require_r2_upload`, and `require_revalidation`
+5. Keep `require_admin_app`, `require_r2_upload`, and `require_revalidation`
    enabled for production release evidence.
-5. Set `storefront_host` only when the public storefront host differs from
+6. Set `storefront_host` only when the public storefront host differs from
    `WEB_URL`.
-6. If the accepted visual manifest references screenshots from the Page Builder
+7. If the accepted visual manifest references screenshots from the Page Builder
    Visual workflow artifact, set both `visual_artifact_name` and
    `visual_artifact_run_id` so Production Smoke downloads the evidence before
    running `release:check` with
    `--visual-artifact-dir reports/visual/page-builder-fixture`.
-7. To generate release notes in the same run, set `release_tag`,
+8. To generate release notes in the same run, set `release_tag`,
    `rollback_target`, `local_verification_run_url`,
    `local_verification_artifact_name`, `visual_artifact_name`,
    `visual_artifact_run_id`, and optionally `storefront_url` plus
    `release_notes_path`.
-8. Keep `allow_blocked_release_notes` disabled for release sign-off. Enable it
+9. Keep `allow_blocked_release_notes` disabled for release sign-off. Enable it
    only when the run is expected to fail and you need a `--allow-blocked`
    failure review draft attached to the artifacts.
 

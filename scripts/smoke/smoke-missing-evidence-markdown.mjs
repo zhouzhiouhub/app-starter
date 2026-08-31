@@ -1,11 +1,19 @@
 import { formatSmokeText } from "./smoke-text.mjs";
+import {
+  createProductionSmokeDispatchCommand,
+} from "./production-smoke-dispatch-command.mjs";
 
 const maxMarkdownTextLength = 420;
+const productionSmokeDispatchCommand = createProductionSmokeDispatchCommand();
 
 export const requiredProductionSmokeEvidence = [
   {
     label: "Workflow",
     value: "GitHub Actions Production Smoke against the production environment",
+  },
+  {
+    label: "Workflow dispatch template",
+    value: productionSmokeDispatchCommand,
   },
   {
     label: "Smoke report JSON",

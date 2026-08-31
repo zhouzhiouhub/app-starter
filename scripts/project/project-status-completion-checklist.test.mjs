@@ -45,12 +45,17 @@ test("project status completion checklist summarizes blocked evidence", () => {
     checklist.items[1].nextSteps.map((step) => step.label),
     [
       "Run workflow",
+      "Dispatch template",
       "Local verification inputs",
       "Visual evidence inputs",
       "Release note inputs",
       "Keep artifacts",
       "Rerun gate",
     ],
+  );
+  assert.match(
+    checklist.items[1].nextSteps[1].value,
+    /^gh workflow run production-smoke\.yml --ref main /u,
   );
   assert.equal(
     checklist.items[1].nextSteps.at(-1).value,
