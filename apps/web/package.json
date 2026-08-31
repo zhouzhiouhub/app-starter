@@ -7,7 +7,7 @@
     "build": "next build",
     "dev": "next dev --port 3000",
     "lint": "eslint .",
-    "pretest": "pnpm --filter @app-starter/schema build",
+    "pretest": "pnpm --filter @app-starter/schema --filter @app-starter/design-tokens --filter @app-starter/ui --filter @app-starter/renderer build",
     "start": "next start --port 3000",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "node --import ../../scripts/register-typescript-test-loader.mjs --test test/*.test.mjs"

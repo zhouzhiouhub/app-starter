@@ -7,7 +7,7 @@
     "build": "vite build",
     "dev": "vite --host 0.0.0.0 --port 5173",
     "lint": "eslint .",
-    "pretest": "pnpm --filter @app-starter/schema --filter @app-starter/ui build",
+    "pretest": "pnpm --filter @app-starter/schema --filter @app-starter/design-tokens --filter @app-starter/admin-theme --filter @app-starter/custom-admin --filter @app-starter/ui --filter @app-starter/renderer build",
     "preview": "vite preview --port 5173",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "node --import ../../scripts/register-typescript-test-loader.mjs --test test/*.test.mjs"

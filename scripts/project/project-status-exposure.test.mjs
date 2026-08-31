@@ -207,8 +207,42 @@ test("workspace packages with source imports use the TypeScript test loader", as
   }
 });
 
+test("app source tests build workspace dependencies before running", async () => {
+  const [adminPackageJson, webPackageJson] = await Promise.all([
+    readPackageJson("apps/admin/package.json"),
+    readPackageJson("apps/web/package.json"),
+  ]);
+
+  assertPretestBuilds(
+    adminPackageJson,
+    [
+      "@app-starter/schema",
+      "@app-starter/design-tokens",
+      "@app-starter/admin-theme",
+      "@app-starter/custom-admin",
+      "@app-starter/ui",
+      "@app-starter/renderer",
+    ],
+    "apps/admin/package.json",
+  );
+  assertPretestBuilds(
+    webPackageJson,
+    [
+      "@app-starter/schema",
+      "@app-starter/design-tokens",
+      "@app-starter/ui",
+      "@app-starter/renderer",
+    ],
+    "apps/web/package.json",
+  );
+});
+
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+}
+
+async function readPackageJson(packagePath) {
+  return JSON.parse(await readFile(packagePath, "utf8"));
 }
 
 function readPackageScriptCommands(script) {
@@ -236,5 +270,24 @@ function assertOrderedSubset(commands, expectedCommands) {
       `${expectedCommand} must appear in the CI verification flow.`,
     );
     startIndex = foundIndex + 1;
+  }
+}
+
+function assertPretestBuilds(packageJson, expectedFilters, packagePath) {
+  const pretest = packageJson.scripts?.pretest;
+
+  assert.equal(
+    typeof pretest,
+    "string",
+    `${packagePath} should build workspace dependencies before tests.`,
+  );
+  assert.match(pretest, /\bbuild$/u);
+
+  for (const filterName of expectedFilters) {
+    assert.match(
+      pretest,
+      new RegExp(`--filter ${escapeRegExp(filterName)}\\b`, "u"),
+      `${packagePath} pretest should build ${filterName}.`,
+    );
   }
 }
