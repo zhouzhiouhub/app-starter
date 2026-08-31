@@ -772,7 +772,7 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 
 需要快速判断项目是否可发布时，可运行 `pnpm project:status -- --summary`。它只打印阶段、ready 结论、Production Smoke、Page Builder Visual、blocker 数和前两条下一步；完整交接、全部命令和可归档 Markdown 仍使用 `pnpm project:status`、`--all-actions` 或 `--markdown-output`。
 
-补 Page Builder 视觉参考图时，默认目录是 `docs/visual/page-builder-references`；直接运行 `pnpm visual:references` 会读取该目录，只有检查其他归档目录时才需要显式传 `--source-dir`。使用 `pnpm visual:references:check` 可按 release fixture 默认路径写出 JSON / Markdown 接入清单并要求 12 张参考图齐全。
+补 Page Builder 视觉参考图时，默认目录是 `docs/visual/page-builder-references`；直接运行 `pnpm visual:references` 会读取该目录，只有检查其他归档目录时才需要显式传 `--source-dir`。使用 `pnpm --silent visual:references:missing` 可以一行一个路径打印当前缺失的参考 PNG，方便交给设计侧导出；使用 `pnpm visual:references:check` 可按 release fixture 默认路径写出 JSON / Markdown 接入清单并要求 12 张参考图齐全。
 
 ## 13. 当前后台说明
 
@@ -839,7 +839,7 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 
 优先做上线前验收和生产化收口：
 
-1. 从批准的设计源导出 12 张真实 Page Builder 参考 PNG，放入 `docs/visual/page-builder-references`，运行 `pnpm visual:references:check` 和 `pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete`。
+1. 从批准的设计源导出 12 张真实 Page Builder 参考 PNG，放入 `docs/visual/page-builder-references`；需要路径清单时先运行 `pnpm --silent visual:references:missing`，然后运行 `pnpm visual:references:check` 和 `pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete`。
 2. 做 Page Builder 视觉验收：保留最新 `Page Builder Visual` workflow 的 `page-builder-visual-fixture-<run_number>` artifact，补真实浏览器截图留档，在 `reports/visual/page-builder-fixture/page-builder-visual-acceptance.json` 中写入差异指标，并用 `pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --accept-passing --require-complete` 将六个核心区块的 Desktop / Mobile 证据从 `needs-evidence` 推进到 `accepted`。
 3. 在真实 R2 / CDN 环境配置 `MEDIA_CDN_BASE_URL`、R2 凭据和 CDN 域名，确认不是 `example` / `test` / `invalid` / 本地 / 私网域名，并按 `infra/README.md` 准备前台 Vercel、API 独立 Node 服务、Admin 静态托管、Redis 生产连接、环境变量清单和回滚步骤。
 4. 在真实生产配置下触发 GitHub Actions `Production Smoke`，传入主 CI `local_verification_run_url` / `local_verification_artifact_name`、Page Builder Visual artifact 名称和 run id，把 smoke、preflight、Smoke Markdown 回看清单、release evidence JSON / Markdown、project status、本地验收和 visual artifact、`pnpm smoke:report` 输出、`pnpm smoke:release-check`、带 `--visual-artifact-dir` 的 `pnpm release:handoff -- --require-ready` 结果和回滚目标写入 `pnpm release:notes` 生成的发布记录。

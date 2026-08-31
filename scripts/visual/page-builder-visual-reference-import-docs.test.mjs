@@ -22,6 +22,7 @@ test("visual reference intake directory documents every required file", () => {
     /pnpm visual:references` uses it\s+when `--source-dir` is omitted/,
   );
   assert.match(referenceReadme, /pnpm visual:references:check/);
+  assert.match(referenceReadme, /pnpm --silent visual:references:missing/);
   assert.match(
     referenceReadme,
     /visual:references -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --require-complete/,

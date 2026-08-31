@@ -18,6 +18,7 @@ export function readPageBuilderVisualReferenceImportCliConfig(argv) {
     json: false,
     manifestPath: defaultPageBuilderVisualAcceptanceManifestPath,
     markdownOutputPath: null,
+    missingPaths: false,
     outputPath: null,
     requireComplete: false,
     sourceDir: null,
@@ -42,6 +43,7 @@ export function readPageBuilderVisualReferenceImportCliConfig(argv) {
           input.markdownOutputPath,
         )
       : null,
+    missingPaths: input.missingPaths,
     outputPath: input.outputPath
       ? normalizeVisualReferenceImportOutputPath(input.outputPath)
       : null,
@@ -115,6 +117,9 @@ function readReferenceImportOption(option, args, index, input) {
     case "--markdown-output":
       input.markdownOutputPath = readOptionValue(option, args, index);
       return index + 1;
+    case "--missing-paths":
+      input.missingPaths = true;
+      return index;
     case "--output":
       input.outputPath = readOptionValue(option, args, index);
       return index + 1;

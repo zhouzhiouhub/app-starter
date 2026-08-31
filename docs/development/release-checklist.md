@@ -51,6 +51,8 @@ later phases are explicitly approved.
   Mobile viewport.
   After
   placing real design reference PNGs under a retained source directory, run
+  `pnpm --silent visual:references:missing`
+  when the design owner needs only the copy-ready missing PNG paths, then run
   `pnpm visual:references:check`
   to keep JSON and Markdown reference intake reports with missing or imported
   PNG paths. The JSON artifact's `requiredReferences[]` list is the
@@ -386,6 +388,8 @@ later phases are explicitly approved.
 - `pnpm visual:references` defaults to
   `docs/visual/page-builder-references`; keep `--source-dir` only when the
   release review needs to inspect a different retained reference archive.
+- `pnpm --silent visual:references:missing` prints only the missing expected PNG
+  paths, one per line, for design export handoff.
 - Run `pnpm release:check -- --checklist` when the gate is blocked and keep
   the readiness task output with the failed evidence review.
 - Use the failed check details and suggested fixes from the report review; the

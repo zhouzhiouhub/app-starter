@@ -70,6 +70,7 @@ test("visual artifact bundle config derives fixed artifact paths", () => {
       "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
     markdownOutputPath:
       "reports/visual/page-builder-fixture/visual-reference-import-report.md",
+    missingPaths: false,
     outputPath:
       "reports/visual/page-builder-fixture/visual-reference-import-report.json",
     requireComplete: true,

@@ -105,6 +105,30 @@ test("visual reference import CLI writes JSON output", async () => {
   }
 });
 
+test("visual reference import CLI can print only missing paths", async () => {
+  const sourceDir = `reports/visual/reference-import-missing-${process.pid}-${Date.now()}`;
+  const stdout = [];
+  const originalConsoleLog = console.log;
+
+  console.log = (line) => stdout.push(line);
+
+  try {
+    writeReferenceFilesToDir(sourceDir, { skip: "hero-banner-desktop.png" });
+
+    const exitCode = await runPageBuilderVisualReferenceImportCli([
+      "--source-dir",
+      sourceDir,
+      "--missing-paths",
+    ]);
+
+    assert.equal(exitCode, 0);
+    assert.deepEqual(stdout, [`${sourceDir}/hero-banner-desktop.png`]);
+  } finally {
+    console.log = originalConsoleLog;
+    rmSync(sourceDir, { force: true, recursive: true });
+  }
+});
+
 test("visual reference import CLI uses default source dir", async () => {
   const stdout = [];
   const originalConsoleLog = console.log;
