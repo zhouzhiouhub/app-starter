@@ -2,6 +2,8 @@ export const pageBuilderVisualAcceptanceSchemaVersion =
   "page-builder-visual-acceptance.v1";
 export const defaultPageBuilderVisualAcceptanceManifestPath =
   "docs/development/page-builder-visual-acceptance.json";
+export const defaultPageBuilderVisualReferenceSourceDir =
+  "docs/visual/page-builder-references";
 export const mvpPageBuilderComponents = [
   "hero-banner",
   "rich-text",

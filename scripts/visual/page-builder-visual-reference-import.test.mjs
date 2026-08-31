@@ -51,6 +51,15 @@ test("visual reference import config parses safe source dirs", () => {
     },
   );
   assert.equal(
+    readPageBuilderVisualReferenceImportCliConfig([]).sourceDir,
+    "docs/visual/page-builder-references",
+  );
+  assert.equal(
+    readPageBuilderVisualReferenceImportCliConfig(["--require-complete"])
+      .sourceDir,
+    "docs/visual/page-builder-references",
+  );
+  assert.equal(
     normalizeVisualReferenceSourceDir("./artifacts/visual/references"),
     "artifacts/visual/references",
   );
@@ -233,11 +242,13 @@ test("visual reference import command is exposed in docs", () => {
   assert.match(cli, /--markdown-output <path>/);
   assert.match(cli, /--json/);
   assert.match(cli, /--output <path>/);
+  assert.match(cli, /defaults to docs\/visual\/page-builder-references/);
   assert.match(
     cli,
     /visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output/,
   );
   assert.match(readme, /pnpm visual:references -- --source-dir/);
+  assert.match(readme, /pnpm visual:references` 会读取该目录/);
   assert.match(readme, /visual-reference-import-report\.json/);
   assert.match(readme, /visual-reference-import-report\.md/);
   assert.match(readme, /missing\[\]\.expectedPath/);
@@ -249,6 +260,7 @@ test("visual reference import command is exposed in docs", () => {
   assert.match(acceptanceDoc, /visual-reference-import-report\.json/);
   assert.match(acceptanceDoc, /visual-reference-import-report\.md/);
   assert.match(acceptanceDoc, /expectedPath/);
+  assert.match(acceptanceDoc, /default source directory is/);
   assert.match(
     acceptanceDoc,
     /--manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/,
@@ -272,6 +284,10 @@ test("visual reference intake directory documents every required file", () => {
   assert.match(referenceReadme, /real Page Builder design\s+reference PNGs/);
   assert.match(referenceReadme, /corrupted file is rejected during intake/);
   assert.match(referenceReadme, /Required Source Files/);
+  assert.match(
+    referenceReadme,
+    /pnpm visual:references` uses it\s+when `--source-dir` is omitted/,
+  );
   assert.match(
     referenceReadme,
     /visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md/,

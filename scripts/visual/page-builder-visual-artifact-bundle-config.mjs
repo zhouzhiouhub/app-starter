@@ -1,4 +1,7 @@
-import { defaultPageBuilderVisualAcceptanceManifestPath } from "./page-builder-visual-acceptance.mjs";
+import {
+  defaultPageBuilderVisualAcceptanceManifestPath,
+  defaultPageBuilderVisualReferenceSourceDir,
+} from "./page-builder-visual-acceptance.mjs";
 import { readPageBuilderVisualArtifactDir } from "./page-builder-visual-artifact-check.mjs";
 import {
   artifactFileNames,
@@ -27,8 +30,7 @@ const reservedBundleOptions = new Set([
 
 export const defaultPageBuilderVisualArtifactBundleSourceManifestPath =
   defaultPageBuilderVisualAcceptanceManifestPath;
-export const defaultPageBuilderVisualReferenceSourceDir =
-  "docs/visual/page-builder-references";
+export { defaultPageBuilderVisualReferenceSourceDir };
 
 export function readPageBuilderVisualArtifactBundleCliConfig(
   argv,

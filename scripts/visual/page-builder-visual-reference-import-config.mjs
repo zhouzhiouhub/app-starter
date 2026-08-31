@@ -1,4 +1,7 @@
-import { defaultPageBuilderVisualAcceptanceManifestPath } from "./page-builder-visual-acceptance-constants.mjs";
+import {
+  defaultPageBuilderVisualAcceptanceManifestPath,
+  defaultPageBuilderVisualReferenceSourceDir,
+} from "./page-builder-visual-acceptance-constants.mjs";
 import {
   normalizeVisualAcceptanceMarkdownOutputPath,
   normalizeVisualAcceptanceOutputPath,
@@ -31,10 +34,6 @@ export function readPageBuilderVisualReferenceImportCliConfig(argv) {
     index = readReferenceImportOption(option, args, index, input);
   }
 
-  if (!input.sourceDir) {
-    throw new Error("--source-dir is required.");
-  }
-
   return {
     json: input.json,
     manifestPath: input.manifestPath,
@@ -47,7 +46,9 @@ export function readPageBuilderVisualReferenceImportCliConfig(argv) {
       ? normalizeVisualReferenceImportOutputPath(input.outputPath)
       : null,
     requireComplete: input.requireComplete,
-    sourceDir: normalizeVisualReferenceSourceDir(input.sourceDir),
+    sourceDir: normalizeVisualReferenceSourceDir(
+      input.sourceDir ?? defaultPageBuilderVisualReferenceSourceDir,
+    ),
     write: input.write,
   };
 }

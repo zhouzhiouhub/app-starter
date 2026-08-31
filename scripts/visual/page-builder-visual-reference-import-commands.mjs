@@ -1,4 +1,7 @@
-import { defaultPageBuilderVisualAcceptanceManifestPath } from "./page-builder-visual-acceptance-constants.mjs";
+import {
+  defaultPageBuilderVisualAcceptanceManifestPath,
+  defaultPageBuilderVisualReferenceSourceDir,
+} from "./page-builder-visual-acceptance-constants.mjs";
 import { pageBuilderVisualCaptureDefaultOutputDir } from "./page-builder-visual-capture-constants.mjs";
 
 export function createPageBuilderVisualReferenceCaptureCommand(report) {
@@ -139,5 +142,5 @@ function readManifestPath(report) {
 function readSourceDir(report) {
   return typeof report.sourceDir === "string" && report.sourceDir.length > 0
     ? report.sourceDir
-    : "docs/visual/page-builder-references";
+    : defaultPageBuilderVisualReferenceSourceDir;
 }

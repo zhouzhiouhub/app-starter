@@ -1,5 +1,5 @@
 import { createArtifactPaths } from "../visual/page-builder-visual-artifact-check-paths.mjs";
-import { defaultPageBuilderVisualReferenceSourceDir } from "../visual/page-builder-visual-acceptance-actions.mjs";
+import { defaultPageBuilderVisualReferenceSourceDir } from "../visual/page-builder-visual-acceptance-constants.mjs";
 import { defaultPageBuilderVisualArtifactDir } from "../visual/page-builder-visual-artifact-check-config.mjs";
 import {
   createPageBuilderVisualReferenceAcceptPassingCommand,

@@ -85,6 +85,25 @@ test("visual reference import CLI writes JSON output", async () => {
   }
 });
 
+test("visual reference import CLI uses default source dir", async () => {
+  const stdout = [];
+  const originalConsoleLog = console.log;
+
+  console.log = (line) => stdout.push(line);
+
+  try {
+    const exitCode = await runPageBuilderVisualReferenceImportCli(["--json"]);
+    const artifact = JSON.parse(stdout[0]);
+
+    assert.equal(exitCode, 0);
+    assert.equal(artifact.sourceDir, "docs/visual/page-builder-references");
+    assert.equal(artifact.sourceDirStatus, "ready");
+    assert.equal(artifact.schemaVersion, "page-builder-visual-reference-import.v1");
+  } finally {
+    console.log = originalConsoleLog;
+  }
+});
+
 function writeReferenceFilesToDir(sourceDir, options = {}) {
   mkdirSync(sourceDir, { recursive: true });
 

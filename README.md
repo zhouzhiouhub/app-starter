@@ -763,6 +763,8 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 
 需要快速判断项目是否可发布时，可运行 `pnpm project:status -- --summary`。它只打印阶段、ready 结论、Production Smoke、Page Builder Visual、blocker 数和前两条下一步；完整交接、全部命令和可归档 Markdown 仍使用 `pnpm project:status`、`--all-actions` 或 `--markdown-output`。
 
+补 Page Builder 视觉参考图时，默认目录是 `docs/visual/page-builder-references`；直接运行 `pnpm visual:references` 会读取该目录，只有检查其他归档目录时才需要显式传 `--source-dir`。
+
 ## 13. 当前后台说明
 
 当前后台仍是早期 Page Builder 原型，不是完整运营后台。

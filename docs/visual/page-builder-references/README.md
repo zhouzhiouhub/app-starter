@@ -42,6 +42,9 @@ directory, the importer still writes a reference intake report with
 `sourceDirStatus` and the full required PNG checklist. The Markdown report's
 `Required Source Files` section always lists all 12 component and viewport PNGs
 with `missing`, `ready`, `would-update`, or `updated` intake status.
+Because this directory is the repo default, `pnpm visual:references` uses it
+when `--source-dir` is omitted; keep the explicit option when reviewing an
+alternate archive or downloaded evidence bundle.
 
 Changes in this directory trigger the `Page Builder Visual` GitHub Actions
 workflow so fixture evidence can be refreshed before Production Smoke consumes

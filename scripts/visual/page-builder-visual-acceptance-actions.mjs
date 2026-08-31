@@ -1,8 +1,8 @@
-import { defaultPageBuilderVisualAcceptanceManifestPath } from "./page-builder-visual-acceptance-constants.mjs";
+import {
+  defaultPageBuilderVisualAcceptanceManifestPath,
+  defaultPageBuilderVisualReferenceSourceDir,
+} from "./page-builder-visual-acceptance-constants.mjs";
 import { pageBuilderVisualCaptureDefaultOutputDir } from "./page-builder-visual-capture-constants.mjs";
-
-export const defaultPageBuilderVisualReferenceSourceDir =
-  "docs/visual/page-builder-references";
 
 export function createPageBuilderVisualViewportActions(
   component,

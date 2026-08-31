@@ -372,6 +372,9 @@ artifact. Explicit `--visual-artifact-dir` or `--visual-manifest` inputs still
 take precedence. `release:check` continues
 to require an explicit `--visual-artifact-dir` when release review should use a
 downloaded visual artifact.
+`pnpm visual:references` defaults to
+`docs/visual/page-builder-references`, so `--source-dir` is only needed for an
+alternate archive or downloaded evidence directory.
 
 `release:handoff` is a convenience wrapper for release review handoff. It reads
 the same release gate once, then writes `preflight.json`, `preflight.md`,

@@ -72,6 +72,7 @@ function isMainModule() {
 
 function printHelp() {
   console.log(`Usage:
+  pnpm visual:references
   pnpm visual:references -- --source-dir docs/visual/page-builder-references
   pnpm visual:references -- --source-dir docs/visual/page-builder-references --write
   pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete
@@ -80,7 +81,8 @@ function printHelp() {
   pnpm visual:references -- --source-dir docs/visual/page-builder-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output reports/visual/page-builder-fixture/visual-reference-import-report.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete
 
 Options:
-  --source-dir <dir>     Directory containing <component>-<viewport>.png files.
+  --source-dir <dir>     Directory containing <component>-<viewport>.png files;
+                         defaults to docs/visual/page-builder-references.
   --manifest <path>      Visual acceptance manifest path.
   --json                 Print the machine-readable reference intake report.
   --output <path>        Write a JSON report under tmp/, reports/, artifacts/, or .tmp/.
@@ -92,8 +94,10 @@ Options:
 
 Evidence:
   Source directories must be safe relative paths under docs/, artifacts/visual/,
-  or reports/visual/. Importing references resets measured metrics and accepted
-  viewport statuses so the evidence must be measured again before sign-off.`);
+  or reports/visual/. When --source-dir is omitted, the retained repo directory
+  docs/visual/page-builder-references is used. Importing references resets
+  measured metrics and accepted viewport statuses so the evidence must be
+  measured again before sign-off.`);
 }
 
 if (isMainModule()) {

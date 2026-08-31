@@ -74,7 +74,9 @@ metrics. Add
 `--manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output reports/visual/page-builder-fixture/visual-reference-import-report.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete`
 when importing into the uploadable artifact manifest. This keeps machine-readable
 and human-readable reference intake reports listing missing PNGs, imported paths,
-and the next command. Use `pnpm visual:measure` after attaching design
+and the next command. The default source directory is
+`docs/visual/page-builder-references`, so `--source-dir` is only needed for an
+alternate retained archive. Use `pnpm visual:measure` after attaching design
 references to calculate `visualMatchPercent`, `maxLayoutDeltaPx`, and
 `maxColorDeltaE`; pass `--write` to persist the measured values to the
 manifest, and pass `--manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json`

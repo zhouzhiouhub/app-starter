@@ -364,6 +364,9 @@ later phases are explicitly approved.
   `pnpm release:handoff -- --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture`
   when a blocked or ready review needs both release evidence and project status
   JSON/Markdown files refreshed together.
+- `pnpm visual:references` defaults to
+  `docs/visual/page-builder-references`; keep `--source-dir` only when the
+  release review needs to inspect a different retained reference archive.
 - Run `pnpm release:check -- --checklist` when the gate is blocked and keep
   the readiness task output with the failed evidence review.
 - Use the failed check details and suggested fixes from the report review; the
