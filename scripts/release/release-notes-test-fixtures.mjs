@@ -10,6 +10,83 @@ export function createReadySmokeSource() {
   };
 }
 
+export function createReadyReleaseArtifact() {
+  return {
+    blockerCount: 0,
+    blockers: [],
+    generatedAt: "2026-08-28T00:00:00.000Z",
+    readinessChecklist: {
+      itemCount: 3,
+      items: [
+        {
+          action: null,
+          detail: "Report path: artifacts/production-smoke/smoke-report.json",
+          label: "Production Smoke report",
+          status: "ready",
+        },
+        {
+          action: null,
+          detail: "6/6 components, 12/12 viewports",
+          label: "Page Builder Visual evidence",
+          status: "ready",
+        },
+        {
+          action:
+            "Run pnpm release:notes with release tag, workflow run URL, artifact names, storefront URL, and rollback target.",
+          detail: null,
+          label: "Release notes record",
+          status: "ready to generate",
+        },
+      ],
+      releaseReady: true,
+    },
+    releaseReady: true,
+    schemaVersion: "release-evidence-check.v1",
+    smoke: {
+      path: "artifacts/production-smoke/smoke-report.json",
+      releaseReady: true,
+      source: createReadySmokeSource(),
+      status: "ready",
+      summary: {
+        checkCount: 42,
+        failedCheckCount: 0,
+        productionReady: true,
+        status: "passed",
+      },
+      traceability: [
+        {
+          action: "R2/CDN traceability passed.",
+          label: "R2/CDN",
+          status: "passed",
+        },
+      ],
+    },
+    status: "ready",
+    visual: {
+      acceptedComponentCount: 6,
+      acceptedViewportCount: 12,
+      artifactCheck: createCompleteArtifactCheck(),
+      checklist: {
+        pendingTaskCount: 0,
+        pendingTasks: [],
+        pendingViewportCount: 0,
+        readyViewportCount: 12,
+        viewportCount: 12,
+      },
+      componentCount: 6,
+      errorCount: 0,
+      issueCount: 0,
+      issues: [],
+      manifestPath: "docs/development/page-builder-visual-acceptance.json",
+      pendingComponents: [],
+      pendingViewports: [],
+      status: "accepted",
+      viewportCount: 12,
+      warningCount: 0,
+    },
+  };
+}
+
 export function createCompleteArtifactCheck() {
   return {
     artifactDir: "reports/visual/page-builder-fixture",
