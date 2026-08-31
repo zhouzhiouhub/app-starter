@@ -3,6 +3,7 @@ import {
   defaultPageBuilderVisualReferenceSourceDir,
 } from "./page-builder-visual-acceptance-constants.mjs";
 import { pageBuilderVisualCaptureDefaultOutputDir } from "./page-builder-visual-capture-constants.mjs";
+import { createPageBuilderVisualReferenceCheckCommand } from "./page-builder-visual-reference-import-commands.mjs";
 
 export function createPageBuilderVisualViewportActions(
   component,
@@ -95,6 +96,13 @@ function createPageBuilderVisualReferenceImportCommand(context) {
 }
 
 function createPageBuilderVisualReferenceReportCommand(context) {
+  if (context.captureOutputDir === inferCaptureOutputDir(context.manifestPath)) {
+    return createPageBuilderVisualReferenceCheckCommand({
+      manifestPath: context.manifestPath,
+      sourceDir: context.referenceSourceDir,
+    });
+  }
+
   return joinCommand([
     "pnpm",
     "visual:references",

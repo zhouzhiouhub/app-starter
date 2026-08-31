@@ -31,7 +31,7 @@ pnpm visual:measure
 pnpm visual:measure -- --write
 pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete
 pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --accept-passing --require-complete
-pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output reports/visual/page-builder-fixture/visual-reference-import-report.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete
+pnpm visual:references:check
 pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete
 ```
 
@@ -71,10 +71,11 @@ Use
 `pnpm visual:references` after placing real design reference PNGs in a retained
 source directory to inspect or update `designReference` values and reset stale
 metrics. Add
-`--manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output reports/visual/page-builder-fixture/visual-reference-import-report.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete`
-when importing into the uploadable artifact manifest. This keeps machine-readable
-and human-readable reference intake reports listing missing PNGs, imported paths,
-and the next command. The default source directory is
+`--manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json`
+when importing into the uploadable artifact manifest. Run
+`pnpm visual:references:check` first to keep machine-readable and human-readable
+reference intake reports listing missing PNGs, imported paths, and the next
+command. The default source directory is
 `docs/visual/page-builder-references`, so `--source-dir` is only needed for an
 alternate retained archive. Use `pnpm visual:measure` after attaching design
 references to calculate `visualMatchPercent`, `maxLayoutDeltaPx`, and

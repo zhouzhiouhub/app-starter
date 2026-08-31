@@ -63,7 +63,7 @@ test("project status summary stays compact and actionable", () => {
   assert.match(text, /Page Builder Visual: Visual acceptance pending/);
   assert.match(
     text,
-    /Reference report: pnpm visual:references -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.json/,
+    /Reference report: pnpm visual:references:check/,
   );
   assert.doesNotMatch(text, /Reference source: docs\/visual\/page-builder-references/);
   assert.match(text, /Details: pnpm project:status -- --all-actions/);
@@ -98,7 +98,7 @@ test("project status CLI can print a compact summary", async () => {
     assert.match(text, /Page Builder Visual: Visual acceptance pending/);
     assert.match(
       text,
-      /Reference report: pnpm visual:references -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/,
+      /Reference report: pnpm visual:references:check/,
     );
     assert.match(text, /\.\.\. and 12 more next actions/);
     assert.doesNotMatch(text, /Completion checklist:/);

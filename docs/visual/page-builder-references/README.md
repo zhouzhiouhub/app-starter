@@ -28,7 +28,7 @@ or corrupted file is rejected during intake.
 
 1. Export each approved design reference as a PNG using the component and
    viewport names above.
-2. Run `pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output reports/visual/page-builder-fixture/visual-reference-import-report.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete`.
+2. Run `pnpm visual:references:check`.
 3. Review the generated Markdown report and fix any missing or empty PNGs.
 4. Run `pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete`.
 5. Capture retained browser screenshots with `pnpm visual:capture:fixture -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json --write-manifest`.
@@ -45,6 +45,8 @@ with `missing`, `ready`, `would-update`, or `updated` intake status.
 Because this directory is the repo default, `pnpm visual:references` uses it
 when `--source-dir` is omitted; keep the explicit option when reviewing an
 alternate archive or downloaded evidence bundle.
+`pnpm visual:references:check` writes the default release fixture JSON and
+Markdown intake reports without updating the manifest.
 
 Changes in this directory trigger the `Page Builder Visual` GitHub Actions
 workflow so fixture evidence can be refreshed before Production Smoke consumes

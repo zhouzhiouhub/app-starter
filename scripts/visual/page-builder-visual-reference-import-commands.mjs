@@ -2,7 +2,11 @@ import {
   defaultPageBuilderVisualAcceptanceManifestPath,
   defaultPageBuilderVisualReferenceSourceDir,
 } from "./page-builder-visual-acceptance-constants.mjs";
+import { defaultPageBuilderVisualArtifactDir } from "./page-builder-visual-artifact-check-config.mjs";
+import { createArtifactPaths } from "./page-builder-visual-artifact-check-paths.mjs";
 import { pageBuilderVisualCaptureDefaultOutputDir } from "./page-builder-visual-capture-constants.mjs";
+
+const defaultReferenceCheckCommand = "pnpm visual:references:check";
 
 export function createPageBuilderVisualReferenceCaptureCommand(report) {
   const captureOutputDir = inferVisualArtifactDir(report.manifestPath);
@@ -20,6 +24,10 @@ export function createPageBuilderVisualReferenceCaptureCommand(report) {
 }
 
 export function createPageBuilderVisualReferenceReportCommand(report) {
+  if (isDefaultReferenceCheckContext(report)) {
+    return defaultReferenceCheckCommand;
+  }
+
   const outputDir = inferVisualArtifactDir(report.manifestPath);
 
   return joinCommand([
@@ -34,6 +42,10 @@ export function createPageBuilderVisualReferenceReportCommand(report) {
     `${outputDir}/visual-reference-import-report.md`,
     "--require-complete",
   ]);
+}
+
+export function createPageBuilderVisualReferenceCheckCommand(report) {
+  return createPageBuilderVisualReferenceReportCommand(report);
 }
 
 export function createPageBuilderVisualReferenceImportWriteCommand(report) {
@@ -128,6 +140,15 @@ function inferVisualArtifactDir(manifestPath) {
   }
 
   return normalized.slice(0, normalized.lastIndexOf("/"));
+}
+
+function isDefaultReferenceCheckContext(report) {
+  const artifactPaths = createArtifactPaths(defaultPageBuilderVisualArtifactDir);
+
+  return (
+    readManifestPath(report).replaceAll("\\", "/") === artifactPaths.manifest &&
+    readSourceDir(report) === defaultPageBuilderVisualReferenceSourceDir
+  );
 }
 
 function readManifestPath(report) {

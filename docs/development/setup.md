@@ -272,7 +272,7 @@ pnpm smoke:report -- --list --limit=10
 pnpm smoke:report -- --markdown-output artifacts/production-smoke/smoke-report.md artifacts/production-smoke/smoke-report.json
 pnpm smoke:report -- reports/production/smoke-report.json
 pnpm smoke:release-check -- artifacts/production-smoke/smoke-report.json
-pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output reports/visual/page-builder-fixture/visual-reference-import-report.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete
+pnpm visual:references:check
 pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete
 pnpm visual:capture:fixture -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json --write-manifest
 pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete
@@ -300,7 +300,9 @@ pnpm release:notes -- --release-tag v0.1.0 --workflow-run-url https://github.com
 The visual reference import Markdown report includes a `Required Source Files`
 section with all 12 Page Builder component and viewport source PNGs, marking
 each as `missing`, `ready`, `would-update`, or `updated` before visual evidence
-is measured or accepted.
+is measured or accepted. `pnpm visual:references:check` writes that default
+release fixture JSON/Markdown report and requires the full reference set without
+updating the manifest.
 
 The review command scans the same safe archive roots, recomputes the report
 summary from the stored checks, and highlights R2 / CDN, Admin static app, and
@@ -375,6 +377,8 @@ downloaded visual artifact.
 `pnpm visual:references` defaults to
 `docs/visual/page-builder-references`, so `--source-dir` is only needed for an
 alternate archive or downloaded evidence directory.
+Use `pnpm visual:references:check` for the default release fixture intake
+report.
 
 `release:handoff` is a convenience wrapper for release review handoff. It reads
 the same release gate once, then writes `preflight.json`, `preflight.md`,

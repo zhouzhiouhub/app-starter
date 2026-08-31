@@ -137,10 +137,8 @@ test("project status summarizes blocked release evidence", () => {
     ],
   );
   assert.equal(
-    artifact.nextActions.some((action) =>
-      action.action.includes("visual-reference-import-report.json"),
-    ),
-    true,
+    artifact.nextActions[1].steps[1].value,
+    "pnpm visual:references:check",
   );
 });
 
@@ -237,7 +235,7 @@ test("project status CLI prints readable blocked state", async () => {
     assert.match(text, /Page Builder Visual: Visual acceptance pending/);
     assert.match(
       text,
-      /Reference report: pnpm visual:references -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/,
+      /Reference report: pnpm visual:references:check/,
     );
     assert.match(text, /Capture fixture: pnpm visual:capture:fixture/);
     assert.match(text, /Accept passing: pnpm visual:measure/);

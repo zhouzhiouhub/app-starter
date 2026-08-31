@@ -239,6 +239,11 @@ test("visual reference import command is exposed in docs", () => {
     packageJson,
     /"visual:references": "node scripts\/page-builder-visual-import-references\.mjs"/,
   );
+  assert.match(
+    packageJson,
+    /"visual:references:check": "node scripts\/page-builder-visual-import-references\.mjs --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md --require-complete"/,
+  );
+  assert.match(cli, /pnpm visual:references:check/);
   assert.match(cli, /--markdown-output <path>/);
   assert.match(cli, /--json/);
   assert.match(cli, /--output <path>/);
@@ -290,7 +295,7 @@ test("visual reference intake directory documents every required file", () => {
   );
   assert.match(
     referenceReadme,
-    /visual:references -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md/,
+    /pnpm visual:references:check/,
   );
   assert.match(
     referenceReadme,

@@ -30,7 +30,7 @@ test("missing visual references Markdown includes intake commands", () => {
   assert.match(markdown, /### Visual Reference Intake Commands/);
   assert.match(
     markdown,
-    /Reference report: `pnpm visual:references -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md --require-complete`/,
+    /Reference report: `pnpm visual:references:check`/,
   );
   assert.match(
     markdown,

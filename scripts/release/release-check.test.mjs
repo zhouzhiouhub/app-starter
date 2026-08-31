@@ -223,7 +223,7 @@ test("release check artifact records visual evidence gaps", () => {
   );
   assert.match(
     pendingTask.commands.referenceReport,
-    /--output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md/,
+    /pnpm visual:references:check/,
   );
   assert.match(
     pendingTask.commands.acceptPassing,

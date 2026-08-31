@@ -709,7 +709,7 @@ pnpm visual:capture
 pnpm visual:capture:fixture -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json --write-manifest
 pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete
 pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --accept-passing --require-complete
-pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output reports/visual/page-builder-fixture/visual-reference-import-report.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete
+pnpm visual:references:check
 pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete
 pnpm visual:acceptance -- --require-accepted reports/visual/page-builder-fixture/page-builder-visual-acceptance.json
 ```
@@ -718,7 +718,7 @@ pnpm visual:acceptance -- --require-accepted reports/visual/page-builder-fixture
 
 本地截图可临时设置 `ENABLE_VISUAL_ACCEPTANCE_FIXTURE=true` 并启动 Web，然后访问 `/visual-acceptance?viewport=desktop` 与 `/visual-acceptance?viewport=mobile`；需要组件级证据时追加 `&component=<hero-banner|rich-text|image-gallery|cta-bar|faq|spec-table>`，或运行 `pnpm visual:capture` 一次性刷新 manifest 引用的 12 张组件截图。也可以直接运行 `pnpm visual:capture:fixture` 完成本地 build、启动 gated fixture、截图和停服务流程。
 
-需要生成和 CI 上传形态一致的完整 fixture artifact 包时，运行 `pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture`，它会复制 manifest、捕获 12 张截图、写出 capture report、参考图接入 JSON / Markdown、acceptance report、视觉验收 Markdown 和 artifact check JSON / Markdown，并执行 artifact check。将真实设计参考 PNG 放到 `docs/visual/page-builder-references` 后，可运行 `pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output reports/visual/page-builder-fixture/visual-reference-import-report.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete` 先留存参考图接入报告，再运行 `pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete` 自动写入 `designReference` 并重置旧指标。
+需要生成和 CI 上传形态一致的完整 fixture artifact 包时，运行 `pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture`，它会复制 manifest、捕获 12 张截图、写出 capture report、参考图接入 JSON / Markdown、acceptance report、视觉验收 Markdown 和 artifact check JSON / Markdown，并执行 artifact check。将真实设计参考 PNG 放到 `docs/visual/page-builder-references` 后，可运行 `pnpm visual:references:check` 先留存参考图接入报告，再运行 `pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete` 自动写入 `designReference` 并重置旧指标。
 
 然后运行 `pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete` 写回 `visualMatchPercent`、`maxLayoutDeltaPx` 和 `maxColorDeltaE`。设计评审通过后，运行 `pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --accept-passing --require-complete` 标记通过的 viewport 为 `accepted`。可用 `pnpm visual:acceptance -- --checklist` 查看 6 个核心区块 Desktop / Mobile 还缺哪些签收证据，也可加 `--markdown-output reports/visual/page-builder-fixture/visual-acceptance-report.md` 留存人工交接清单；checklist 会列出每个 viewport 的目标参考图路径、保留截图路径和导入/截图/测量/签收/验收命令。截图完成后关闭该环境变量，最终验收仍需真实设计参考、差异指标和最终 `pnpm visual:acceptance -- --require-accepted`。
 
@@ -763,7 +763,7 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 
 需要快速判断项目是否可发布时，可运行 `pnpm project:status -- --summary`。它只打印阶段、ready 结论、Production Smoke、Page Builder Visual、blocker 数和前两条下一步；完整交接、全部命令和可归档 Markdown 仍使用 `pnpm project:status`、`--all-actions` 或 `--markdown-output`。
 
-补 Page Builder 视觉参考图时，默认目录是 `docs/visual/page-builder-references`；直接运行 `pnpm visual:references` 会读取该目录，只有检查其他归档目录时才需要显式传 `--source-dir`。
+补 Page Builder 视觉参考图时，默认目录是 `docs/visual/page-builder-references`；直接运行 `pnpm visual:references` 会读取该目录，只有检查其他归档目录时才需要显式传 `--source-dir`。使用 `pnpm visual:references:check` 可按 release fixture 默认路径写出 JSON / Markdown 接入清单并要求 12 张参考图齐全。
 
 ## 13. 当前后台说明
 

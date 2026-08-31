@@ -1,5 +1,6 @@
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { createReleaseNotesHandoffSteps } from "../release/release-notes-handoff-steps.mjs";
+import { createPageBuilderVisualReferenceCheckCommand } from "../visual/page-builder-visual-reference-import-commands.mjs";
 
 const maxProjectTextLength = 420;
 
@@ -158,7 +159,10 @@ function createPageBuilderVisualActionSteps(action, context) {
     createNextActionStep("Reference source", defaultVisualReferenceSourceDir),
     createNextActionStep(
       "Reference report",
-      `pnpm visual:references -- --manifest ${visualContext.manifestPath} --output ${visualContext.referenceJsonReportPath} --markdown-output ${visualContext.referenceReportPath} --require-complete`,
+      createPageBuilderVisualReferenceCheckCommand({
+        manifestPath: visualContext.manifestPath,
+        sourceDir: defaultVisualReferenceSourceDir,
+      }),
     ),
     createNextActionStep(
       "Import",
@@ -202,8 +206,6 @@ function createPageBuilderVisualActionContext(context) {
     artifactCheckReportPath: `${artifactDir}/visual-artifact-check-report.md`,
     captureReportPath: `${artifactDir}/visual-capture-report.json`,
     manifestPath: `${artifactDir}/page-builder-visual-acceptance.json`,
-    referenceJsonReportPath: `${artifactDir}/visual-reference-import-report.json`,
-    referenceReportPath: `${artifactDir}/visual-reference-import-report.md`,
   };
 }
 

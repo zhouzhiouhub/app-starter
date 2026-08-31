@@ -73,6 +73,7 @@ function isMainModule() {
 function printHelp() {
   console.log(`Usage:
   pnpm visual:references
+  pnpm visual:references:check
   pnpm visual:references -- --write
   pnpm visual:references -- --write --require-complete
   pnpm visual:references -- --json

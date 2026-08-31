@@ -40,6 +40,7 @@
     "visual:capture:fixture": "node scripts/page-builder-visual-capture-fixture.mjs",
     "visual:measure": "node scripts/page-builder-visual-measure.mjs",
     "visual:references": "node scripts/page-builder-visual-import-references.mjs",
+    "visual:references:check": "node scripts/page-builder-visual-import-references.mjs --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output reports/visual/page-builder-fixture/visual-reference-import-report.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete",
     "format:check": "prettier --check ."
   },
   "devDependencies": {

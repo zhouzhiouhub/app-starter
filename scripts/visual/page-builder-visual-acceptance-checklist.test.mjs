@@ -53,7 +53,7 @@ test("visual acceptance checklist lists missing release evidence", async () => {
   assert.match(lines.join("\n"), /capture preview:/);
 });
 
-test("visual acceptance checklist commands respect custom manifest path", async () => {
+test("visual acceptance checklist commands use fixture reference shortcut", async () => {
   const manifest = await readPageBuilderVisualAcceptanceManifest();
   const manifestPath =
     "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json";
@@ -71,15 +71,7 @@ test("visual acceptance checklist commands respect custom manifest path", async 
   assert.match(viewport.commands.acceptPassing, /--accept-passing/);
   assert.match(viewport.commands.acceptPassing, /--require-complete/);
   assert.match(viewport.commands.measure, /--manifest reports\/visual/);
-  assert.match(viewport.commands.referenceReport, /--manifest reports\/visual/);
-  assert.match(
-    viewport.commands.referenceReport,
-    /--output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.json/,
-  );
-  assert.match(
-    viewport.commands.referenceReport,
-    /--markdown-output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md/,
-  );
+  assert.equal(viewport.commands.referenceReport, "pnpm visual:references:check");
   assert.equal(
     viewport.expectedPreviewScreenshot,
     "reports/visual/page-builder-fixture/page-builder-visual-fixture-hero-banner-desktop.png",
@@ -91,6 +83,33 @@ test("visual acceptance checklist commands respect custom manifest path", async 
   assert.match(
     lines,
     /run `pnpm visual:measure -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --accept-passing --require-complete`/,
+  );
+});
+
+test("visual acceptance checklist commands respect non-default manifest path", async () => {
+  const manifest = await readPageBuilderVisualAcceptanceManifest();
+  const manifestPath = "reports/visual/review/page-builder-visual-acceptance.json";
+  const checklist = createPageBuilderVisualAcceptanceChecklist(manifest, {
+    manifestPath,
+  });
+  const viewport = checklist.components[0].viewports[0];
+
+  assert.equal(checklist.manifestPath, manifestPath);
+  assert.match(
+    viewport.commands.referenceReport,
+    /--manifest reports\/visual\/review/,
+  );
+  assert.match(
+    viewport.commands.referenceReport,
+    /--output reports\/visual\/review\/visual-reference-import-report\.json/,
+  );
+  assert.match(
+    viewport.commands.referenceReport,
+    /--markdown-output reports\/visual\/review\/visual-reference-import-report\.md/,
+  );
+  assert.equal(
+    viewport.expectedPreviewScreenshot,
+    "reports/visual/review/page-builder-visual-fixture-hero-banner-desktop.png",
   );
 });
 
