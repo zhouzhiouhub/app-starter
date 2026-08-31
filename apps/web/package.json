@@ -10,7 +10,7 @@
     "pretest": "pnpm --filter @app-starter/schema build",
     "start": "next start --port 3000",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "node --test"
+    "test": "node --test test/*.test.mjs"
   },
   "dependencies": {
     "@app-starter/design-tokens": "workspace:*",

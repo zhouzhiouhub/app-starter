@@ -160,6 +160,33 @@ test("placeholder packages without test files skip bare node test", async () => 
   }
 });
 
+test("workspace packages with tests use explicit test file globs", async () => {
+  const packagePaths = [
+    "apps/admin/package.json",
+    "apps/web/package.json",
+    "packages/analytics/package.json",
+    "packages/renderer/package.json",
+    "packages/schema/package.json",
+    "packages/ui/package.json",
+    "services/api/package.json",
+  ];
+
+  const packages = await Promise.all(
+    packagePaths.map(async (packagePath) => ({
+      packagePath,
+      packageJson: JSON.parse(await readFile(packagePath, "utf8")),
+    })),
+  );
+
+  for (const { packagePath, packageJson } of packages) {
+    assert.equal(
+      packageJson.scripts?.test,
+      "node --test test/*.test.mjs",
+      `${packagePath} should avoid platform-specific node --test discovery.`,
+    );
+  }
+});
+
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
 }

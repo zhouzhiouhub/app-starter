@@ -10,7 +10,7 @@
     "pretest": "pnpm --filter @app-starter/schema --filter @app-starter/ui build",
     "preview": "vite preview --port 5173",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "node --test"
+    "test": "node --test test/*.test.mjs"
   },
   "dependencies": {
     "@ant-design/icons": "^6.0.0",

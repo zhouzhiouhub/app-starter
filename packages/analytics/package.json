@@ -20,7 +20,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
     "pretest": "pnpm --filter @app-starter/schema build",
-    "test": "node --test"
+    "test": "node --test test/*.test.mjs"
   },
   "dependencies": {
     "@app-starter/schema": "workspace:*"

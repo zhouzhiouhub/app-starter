@@ -81,7 +81,7 @@ jobs:
           rerun_exit="$?"
           if test "$rerun_exit" != "0"; then
             diagnostic_line="$(
-              grep -E "not ok|AssertionError|Cannot find module|ERR_|SyntaxError|TypeError|# fail" \
+              grep -E "not ok|AssertionError|Cannot find module|ERR_|SyntaxError|TypeError|# fail [1-9][0-9]*|# tests 0" \
                 reports/visual/page-builder-diagnostics/test-visual-rerun.log \
                 | head -n 1
             )"
