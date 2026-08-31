@@ -35,7 +35,7 @@ test("page builder visual workflow captures fixture evidence", async () => {
     scripts["pretest:visual"],
     "pnpm --filter @app-starter/schema build",
   );
-  assert.equal(scripts["test:visual"], "node --test scripts/visual/*.test.mjs");
+  assert.equal(scripts["test:visual"], "node scripts/visual/run-visual-tests.mjs");
   assert.match(
     workflow,
     /pnpm visual:artifact-bundle -- --artifact-dir reports\/visual\/page-builder-fixture/,
