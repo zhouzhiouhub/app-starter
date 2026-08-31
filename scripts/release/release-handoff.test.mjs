@@ -6,6 +6,9 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 import {
+  createProductionSmokeDispatchCommand,
+} from "../smoke/production-smoke-dispatch-command.mjs";
+import {
   createAcceptedVisualManifest,
   createCompleteReleaseReport,
   createPendingVisualManifest,
@@ -20,6 +23,7 @@ import {
 test("release handoff writes blocked reports without requiring readiness", async () => {
   const outputRoot = createOutputRoot("blocked");
   const smokeRoot = mkdtempSync(path.join(tmpdir(), "release-handoff-smoke-"));
+  const dispatchCommand = createProductionSmokeDispatchCommand();
   const stdout = [];
 
   try {
@@ -93,6 +97,10 @@ test("release handoff writes blocked reports without requiring readiness", async
     assert.match(
       stdout.join("\n"),
       /Run workflow: GitHub Actions Production Smoke against the production environment/,
+    );
+    assert.match(
+      stdout.join("\n"),
+      new RegExp(`Dispatch template: ${escapeRegExp(dispatchCommand)}`),
     );
     assert.match(
       stdout.join("\n"),
@@ -369,7 +377,7 @@ test("release handoff config normalizes paths and is documented", async () => {
   printReleaseHandoffHelp((line) => helpOutput.push(line));
   assert.match(
     helpOutput.join("\n"),
-    /first two next actions with\s+structured steps.*first hidden structured action.*visible actions do not have steps.*generated project-status Markdown/s,
+    /first two next actions with\s+structured steps.*Production Smoke dispatch\s+template.*first hidden structured.*generated project-status Markdown/s,
   );
   assert.match(
     readme,
@@ -377,11 +385,11 @@ test("release handoff config normalizes paths and is documented", async () => {
   );
   assert.match(
     setupDoc,
-    /first\s+two\s+next actions with structured steps.*first hidden\s+structured action.*visible actions do not have steps.*artifacts\/release\/project-status\.md/s,
+    /first\s+two\s+next actions with structured steps.*Production Smoke dispatch\s+template.*first hidden\s+structured action.*artifacts\/release\/project-status\.md/s,
   );
   assert.match(
     releaseChecklist,
-    /first\s+two\s+next actions with\s+structured steps.*first hidden structured action.*visible\s+actions do not have steps.*project-status\.md/s,
+    /first\s+two\s+next actions with\s+structured steps.*Production Smoke dispatch\s+template.*first hidden structured action.*project-status\.md/s,
   );
 });
 

@@ -395,9 +395,10 @@ Page Builder Visual, and optional visual artifact status, path, and counts.
 When available, the visual artifact line also includes reference-import status,
 missing/update counts, required source reference availability, and the first missing
 reference path. It then prints the first two next actions with structured steps
-when available, previews the first hidden
-structured action only when the visible actions do not have steps, and
-points remaining actions to `artifacts/release/project-status.md`, whose
+when available, including the Production Smoke dispatch template when smoke
+evidence is missing, previews the first hidden structured action only when the
+visible actions do not have steps, and points remaining actions to
+`artifacts/release/project-status.md`, whose
 release gate section lists any missing production Smoke evidence and Page
 Builder reference PNG paths. Blocked
 evidence still writes the files; add `--require-ready` when the handoff should

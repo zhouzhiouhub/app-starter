@@ -146,9 +146,10 @@ Release handoff:
   and optional visual artifact status, path, and counts. When available, the visual artifact line also
   includes reference-import status, missing/update counts, required source reference availability,
   and the first missing reference path. It then prints the first two next actions with
-  structured steps when available, previews the first hidden structured action
-  only when the visible actions do not have steps, and points any remaining
-  actions to the generated project-status Markdown.`);
+  structured steps when available, including the Production Smoke dispatch
+  template when that evidence is missing, previews the first hidden structured
+  action only when the visible actions do not have steps, and points any
+  remaining actions to the generated project-status Markdown.`);
 }
 
 async function writeReleaseHandoffPreflight(config, input, generatedAt) {
