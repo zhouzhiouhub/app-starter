@@ -130,15 +130,15 @@ export function formatCaptureErrorSentence(error) {
 
 function getBrowserCandidates(env) {
   return [
-    path.join(
+    path.win32.join(
       env.PROGRAMFILES ?? "C:\\Program Files",
       "Google\\Chrome\\Application\\chrome.exe",
     ),
-    path.join(
+    path.win32.join(
       env["PROGRAMFILES(X86)"] ?? "C:\\Program Files (x86)",
       "Google\\Chrome\\Application\\chrome.exe",
     ),
-    path.join(
+    path.win32.join(
       env["PROGRAMFILES(X86)"] ?? "C:\\Program Files (x86)",
       "Microsoft\\Edge\\Application\\msedge.exe",
     ),
