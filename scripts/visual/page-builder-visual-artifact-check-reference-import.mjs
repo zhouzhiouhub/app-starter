@@ -9,6 +9,10 @@ import {
   isValidMissingReferenceEntry,
   isValidUpdateReferenceEntry,
 } from "./page-builder-visual-reference-import-entries.mjs";
+import {
+  hasRequiredReferenceList,
+  isValidRequiredReferenceList,
+} from "./page-builder-visual-reference-import-required-entries.mjs";
 
 const referenceSourceDirStatuses = new Set([
   "missing",
@@ -53,6 +57,7 @@ export function validateReferenceImportReport(report, context) {
   validateReferenceImportReportCounts(report, context);
   validateReferenceImportMissingEntries(report, context);
   validateReferenceImportUpdateEntries(report, context);
+  validateReferenceImportRequiredEntries(report, context);
   validateReferenceImportUniqueEntries(report, context);
   validateReferenceImportDisjointEntries(report, context);
 }
@@ -146,6 +151,20 @@ function validateReferenceImportUpdateEntries(report, context) {
       context,
       "invalid_reference_import_update_entry",
       "reference import report update entries must include a known MVP component, viewport, and matching designReference.",
+    );
+  }
+}
+
+function validateReferenceImportRequiredEntries(report, context) {
+  if (!hasRequiredReferenceList(report)) {
+    return;
+  }
+
+  if (!isValidRequiredReferenceList(report)) {
+    addArtifactCheckIssue(
+      context,
+      "invalid_reference_import_required_entry",
+      "reference import report requiredReferences must include one valid entry for every MVP component viewport and match missing/update intake status.",
     );
   }
 }

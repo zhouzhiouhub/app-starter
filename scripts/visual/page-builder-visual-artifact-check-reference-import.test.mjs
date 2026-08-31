@@ -7,6 +7,9 @@ import {
   hasIssue,
   writeVisualArtifact,
 } from "./page-builder-visual-artifact-check-test-fixtures.mjs";
+import {
+  createPageBuilderVisualReferenceImportMarkdown,
+} from "./page-builder-visual-reference-import.mjs";
 
 test("visual artifact check rejects missing reference import Markdown", () => {
   const artifactDir = createArtifactDir("missing-reference-report");
@@ -54,6 +57,53 @@ test("visual artifact check rejects invalid reference import JSON", () => {
     assert.equal(report.status, "invalid");
     assert.equal(hasIssue(report, "invalid_reference_import_schema"), true);
     assert.equal(hasIssue(report, "reference_import_report_mismatch"), true);
+  } finally {
+    rmSync(artifactDir, { force: true, recursive: true });
+  }
+});
+
+test("visual artifact check accepts generated reference intake checklist", () => {
+  const artifactDir = createArtifactDir("generated-reference-checklist");
+
+  try {
+    writeVisualArtifact(artifactDir);
+
+    const report = checkPageBuilderVisualArtifact({ artifactDir });
+    assert.equal(report.status, "complete");
+    assert.equal(report.referenceImport.status, "invalid");
+    assert.equal(report.referenceImport.missingCount, 12);
+    assert.equal(
+      hasIssue(report, "invalid_reference_import_required_entry"),
+      false,
+    );
+  } finally {
+    rmSync(artifactDir, { force: true, recursive: true });
+  }
+});
+
+test("visual artifact check rejects incomplete reference intake checklist", () => {
+  const artifactDir = createArtifactDir("incomplete-reference-checklist");
+  const referenceImportReport = createReferenceImportReportOverride(
+    artifactDir,
+    {
+      requiredReferenceCount: 12,
+      requiredReferences: [],
+    },
+  );
+
+  try {
+    writeVisualArtifact(artifactDir, {
+      referenceImportMarkdown:
+        createPageBuilderVisualReferenceImportMarkdown(referenceImportReport),
+      referenceImportReport,
+    });
+
+    const report = checkPageBuilderVisualArtifact({ artifactDir });
+    assert.equal(report.status, "invalid");
+    assert.equal(
+      hasIssue(report, "invalid_reference_import_required_entry"),
+      true,
+    );
   } finally {
     rmSync(artifactDir, { force: true, recursive: true });
   }

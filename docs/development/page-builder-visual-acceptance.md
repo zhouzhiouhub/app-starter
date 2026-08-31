@@ -114,7 +114,10 @@ and default reference intake directory, and that `visual-acceptance-report.md`
 is retained with status and counts matching the artifact-local manifest.
 Each missing reference entry in the import JSON must retain an `expectedPath`
 matching its source directory, component, and viewport so release handoffs can
-list the exact PNG paths to fill.
+list the exact PNG paths to fill. When `requiredReferences[]` is present, the
+artifact check requires exactly one valid entry for each of the 12 MVP
+component/viewport PNGs and confirms each entry matches the missing or update
+status recorded by the intake report.
 Add
 `--output reports/visual/page-builder-fixture/visual-artifact-check-report.json --markdown-output reports/visual/page-builder-fixture/visual-artifact-check-report.md`
 when the artifact integrity result should be retained as machine-readable and

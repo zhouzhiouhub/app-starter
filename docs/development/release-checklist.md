@@ -237,7 +237,8 @@ later phases are explicitly approved.
   `pnpm visual:artifact-check -- --artifact-dir reports/visual/page-builder-fixture --output reports/visual/page-builder-fixture/visual-artifact-check-report.json --markdown-output reports/visual/page-builder-fixture/visual-artifact-check-report.md`
   passing after the download and before smoke requests continue. The check
   confirms the reference import JSON / Markdown and visual acceptance Markdown
-  belong to the artifact-local manifest.
+  belong to the artifact-local manifest, and validates the
+  `requiredReferences[]` intake checklist when it is present.
 - When `visual_artifact_run_id` was provided, the Production Smoke workflow
   summary lists
   `reports/visual/page-builder-fixture/visual-reference-import-report.json` and
