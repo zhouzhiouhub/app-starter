@@ -1,3 +1,5 @@
+import { formatRequiredSourceReferenceAvailability } from "../visual/page-builder-visual-reference-summary-format.mjs";
+
 export function formatReferenceImportMarkdown(
   referenceImport,
   { formatCode = formatDefault, formatText = formatDefault } = {},
@@ -50,56 +52,17 @@ function formatMissingReferences(referenceImport, formatCode) {
 }
 
 function formatRequiredReferences(referenceImport) {
-  if (
-    !Number.isFinite(referenceImport.requiredReferenceCount) ||
-    !Number.isFinite(referenceImport.requiredReferenceEntryCount)
-  ) {
-    return [];
-  }
+  const coverage = formatRequiredSourceReferenceAvailability(referenceImport, {
+    includeNoun: false,
+  });
 
-  return [
-    `- Reference required: ${formatRequiredReferenceCoverage(referenceImport)}`,
-  ];
+  return coverage ? [`- Required source references: ${coverage}`] : [];
 }
 
 function formatRequiredReferenceGateSummary(referenceImport) {
-  if (
-    !Number.isFinite(referenceImport.requiredReferenceCount) ||
-    !Number.isFinite(referenceImport.requiredReferenceEntryCount)
-  ) {
-    return "";
-  }
+  const coverage = formatRequiredSourceReferenceAvailability(referenceImport, {
+    includeStatusCounts: false,
+  });
 
-  return `, ${referenceImport.requiredReferenceEntryCount}/${referenceImport.requiredReferenceCount} required`;
-}
-
-function formatRequiredReferenceCoverage(referenceImport) {
-  if (
-    !Number.isFinite(referenceImport.requiredReferenceCount) ||
-    !Number.isFinite(referenceImport.requiredReferenceEntryCount)
-  ) {
-    return "";
-  }
-
-  return `${referenceImport.requiredReferenceEntryCount}/${referenceImport.requiredReferenceCount}${formatRequiredStatusCounts(referenceImport.requiredReferenceStatusCounts)}`;
-}
-
-function formatRequiredStatusCounts(counts) {
-  if (!counts || typeof counts !== "object" || Array.isArray(counts)) {
-    return "";
-  }
-
-  const values = [
-    formatStatusCount(counts.missing, "missing"),
-    formatStatusCount(counts.ready, "ready"),
-    formatStatusCount(counts.wouldUpdate, "would-update"),
-    formatStatusCount(counts.updated, "updated"),
-    formatStatusCount(counts.invalid, "invalid"),
-  ].filter(Boolean);
-
-  return values.length > 0 ? ` (${values.join(", ")})` : "";
-}
-
-function formatStatusCount(count, label) {
-  return Number.isFinite(count) && count > 0 ? `${count} ${label}` : null;
+  return coverage ? `, ${coverage}` : "";
 }

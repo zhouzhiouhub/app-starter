@@ -51,7 +51,7 @@ test("release notes require ready evidence unless explicitly allowed", () => {
   );
   assert.match(
     markdown,
-    / {2}- Detail: 0\/6 components, 0\/12 viewports, artifact invalid \(reports\/visual\/page-builder-fixture, 1 issues, 5\/6 files, 0\/12 screenshots, references invalid \(12 missing, 0 updates, 12\/12 required\)\)/,
+    / {2}- Detail: 0\/6 components, 0\/12 viewports, artifact invalid \(reports\/visual\/page-builder-fixture, 1 issues, 5\/6 files, 0\/12 screenshots, references invalid \(12 missing, 0 updates, 0\/12 required source references available\)\)/,
   );
   assert.match(markdown, / {2}- Action: Attach real visual evidence\./);
   assert.match(
@@ -73,7 +73,7 @@ test("release notes require ready evidence unless explicitly allowed", () => {
   );
   assert.match(markdown, /Reference import: invalid/);
   assert.match(markdown, /Reference missing: 12/);
-  assert.match(markdown, /Reference required: 12\/12 \(12 missing\)/);
+  assert.match(markdown, /Required source references: 0\/12 available \(12 missing\)/);
   assert.match(markdown, /### Missing Visual References/);
   assert.match(markdown, /Source dir: `docs\/visual\/page-builder-references`/);
   assert.match(markdown, /Missing files: 12/);
@@ -272,7 +272,7 @@ function createReadyReadinessChecklist() {
       {
         action: null,
         detail:
-          "6/6 components, 12/12 viewports, artifact complete (reports/visual/page-builder-fixture, 0 issues, 6/6 files, 12/12 screenshots, references ready (0 missing, 0 updates, 12/12 required))",
+          "6/6 components, 12/12 viewports, artifact complete (reports/visual/page-builder-fixture, 0 issues, 6/6 files, 12/12 screenshots, references ready (0 missing, 0 updates, 12/12 required source references available))",
         label: "Page Builder Visual evidence",
         status: "ready",
       },
@@ -302,7 +302,7 @@ function createBlockedVisualReadinessChecklist() {
         bundleCommand:
           "pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture",
         detail:
-          "0/6 components, 0/12 viewports, artifact invalid (reports/visual/page-builder-fixture, 1 issues, 5/6 files, 0/12 screenshots, references invalid (12 missing, 0 updates, 12/12 required))",
+          "0/6 components, 0/12 viewports, artifact invalid (reports/visual/page-builder-fixture, 1 issues, 5/6 files, 0/12 screenshots, references invalid (12 missing, 0 updates, 0/12 required source references available))",
         label: "Page Builder Visual evidence",
         status: "needs-evidence",
       },
@@ -325,7 +325,7 @@ function createMissingSmokeReadinessChecklist() {
       {
         action: null,
         detail:
-          "6/6 components, 12/12 viewports, artifact complete (reports/visual/page-builder-fixture, 0 issues, 6/6 files, 12/12 screenshots, references ready (0 missing, 0 updates, 12/12 required))",
+          "6/6 components, 12/12 viewports, artifact complete (reports/visual/page-builder-fixture, 0 issues, 6/6 files, 12/12 screenshots, references ready (0 missing, 0 updates, 12/12 required source references available))",
         label: "Page Builder Visual evidence",
         status: "ready",
       },

@@ -1,4 +1,8 @@
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
+import {
+  formatManifestDesignReferenceSummary,
+  formatRequiredSourceReferenceAvailability,
+} from "../visual/page-builder-visual-reference-summary-format.mjs";
 
 export function formatVisualArtifactStatus(artifactCheck) {
   if (!artifactCheck) {
@@ -25,11 +29,7 @@ function formatVisualArtifactDetails(artifactCheck) {
       artifactCheck.expectedScreenshotCount,
       "screenshots",
     ),
-    formatVisualArtifactCount(
-      artifactCheck.presentDesignReferenceCount,
-      artifactCheck.referencedDesignReferenceCount,
-      "design references",
-    ),
+    formatManifestDesignReferenceSummary(artifactCheck),
     formatReferenceImport(artifactCheck.referenceImport),
   ].filter(Boolean);
 
@@ -73,14 +73,9 @@ function formatReferenceImportCount(count, label) {
 }
 
 function formatRequiredReferenceCoverage(referenceImport) {
-  if (
-    !Number.isFinite(referenceImport.requiredReferenceCount) ||
-    !Number.isFinite(referenceImport.requiredReferenceEntryCount)
-  ) {
-    return null;
-  }
-
-  return `${referenceImport.requiredReferenceEntryCount}/${referenceImport.requiredReferenceCount} required`;
+  return formatRequiredSourceReferenceAvailability(referenceImport, {
+    includeStatusCounts: false,
+  });
 }
 
 function readFirstMissingReference(referenceImport) {

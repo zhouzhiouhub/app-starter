@@ -17,7 +17,7 @@ test("visual artifact check Markdown summarizes complete bundles", () => {
   assert.match(markdown, /Issues: 0/);
   assert.match(markdown, /Required files: 6\/6/);
   assert.match(markdown, /Screenshots: 12\/12/);
-  assert.match(markdown, /Design references: 0\/0/);
+  assert.match(markdown, /Manifest design references: 0 linked/);
   assert.match(markdown, /Reference import: `ready`/);
   assert.match(
     markdown,
@@ -25,7 +25,7 @@ test("visual artifact check Markdown summarizes complete bundles", () => {
   );
   assert.match(markdown, /Reference missing: 0/);
   assert.match(markdown, /Reference updates: 0/);
-  assert.match(markdown, /Reference required: 12\/12 \(12 ready\)/);
+  assert.match(markdown, /Required source references: 12\/12 available \(12 ready\)/);
   assert.doesNotMatch(markdown, /Reference missing files:/);
   assert.match(
     markdown,
@@ -85,7 +85,7 @@ test("visual artifact check Markdown lists issues and repair command", () => {
   assert.match(markdown, /missing_artifact_file/);
   assert.doesNotMatch(markdown, /abcdefghijklmnopqrstuvwxyz123456/);
   assert.match(markdown, /Reference missing files: `docs\/visual\/page-builder-references\/hero-banner-desktop\.png`/);
-  assert.match(markdown, /Reference required: 12\/12 \(12 missing\)/);
+  assert.match(markdown, /Required source references: 0\/12 available \(12 missing\)/);
   assert.match(markdown, /pnpm visual:artifact-bundle -- --artifact-dir/);
   assert.match(markdown, /--output reports\/visual\/page-builder-fixture\/visual-artifact-check-report\.json/);
   assert.match(markdown, /--markdown-output reports\/visual\/page-builder-fixture\/visual-artifact-check-report\.md/);

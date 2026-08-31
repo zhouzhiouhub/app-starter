@@ -1,5 +1,6 @@
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { defaultPageBuilderVisualArtifactDir } from "../visual/page-builder-visual-artifact-check.mjs";
+import { formatRequiredSourceReferenceAvailability } from "../visual/page-builder-visual-reference-summary-format.mjs";
 import {
   formatVisualTasks,
   readVisibleVisualTasks,
@@ -161,14 +162,11 @@ function formatReferenceImportCount(count, label) {
 }
 
 function formatRequiredReferenceCoverage(referenceImport) {
-  if (
-    !Number.isFinite(referenceImport.requiredReferenceCount) ||
-    !Number.isFinite(referenceImport.requiredReferenceEntryCount)
-  ) {
-    return null;
-  }
+  const coverage = formatRequiredSourceReferenceAvailability(referenceImport, {
+    includeStatusCounts: false,
+  });
 
-  return `${referenceImport.requiredReferenceEntryCount}/${referenceImport.requiredReferenceCount} required`;
+  return coverage;
 }
 
 function formatVisualArtifactCount(present, expected, label) {

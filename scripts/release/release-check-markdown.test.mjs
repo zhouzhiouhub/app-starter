@@ -56,10 +56,10 @@ test("release check Markdown summarizes ready evidence", () => {
   );
   assert.match(markdown, /Artifact check: complete/);
   assert.match(markdown, /Artifact issue count: 0/);
-  assert.match(markdown, /Artifact design references: 12\/12/);
+  assert.match(markdown, /Manifest design references: 12\/12 linked/);
   assert.match(markdown, /Reference import: ready/);
   assert.match(markdown, /Reference missing: 0/);
-  assert.match(markdown, /Reference required: 12\/12 \(12 ready\)/);
+  assert.match(markdown, /Required source references: 12\/12 available \(12 ready\)/);
   assert.doesNotMatch(markdown, /### Missing Visual References/);
   assert.match(markdown, /## Readiness Checklist/);
   assert.match(markdown, /Release notes record: ready to generate/);
@@ -167,7 +167,7 @@ test("release check Markdown lists blockers and visual tasks", () => {
   assert.match(markdown, /Artifact issues:/);
   assert.match(markdown, /Reference import: invalid/);
   assert.match(markdown, /Reference missing: 12/);
-  assert.match(markdown, /Reference required: 12\/12 \(12 missing\)/);
+  assert.match(markdown, /Required source references: 0\/12 available \(12 missing\)/);
   assert.match(markdown, /### Missing Visual References/);
   assert.match(markdown, /Source dir: `docs\/visual\/page-builder-references`/);
   assert.match(markdown, /Missing files: 12/);

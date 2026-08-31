@@ -1,4 +1,5 @@
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
+import { formatRequiredSourceReferenceAvailability } from "../visual/page-builder-visual-reference-summary-format.mjs";
 
 const maxSummaryLineLength = 320;
 const visibleNextActionCount = 2;
@@ -97,14 +98,11 @@ function formatReferenceImport(referenceImport) {
 }
 
 function formatRequiredReferenceCoverage(referenceImport) {
-  if (
-    !Number.isFinite(referenceImport.requiredReferenceCount) ||
-    !Number.isFinite(referenceImport.requiredReferenceEntryCount)
-  ) {
-    return "";
-  }
+  const coverage = formatRequiredSourceReferenceAvailability(referenceImport, {
+    includeStatusCounts: false,
+  });
 
-  return `, ${referenceImport.requiredReferenceEntryCount}/${referenceImport.requiredReferenceCount} required`;
+  return coverage ? `, ${coverage}` : "";
 }
 
 function formatCount(present, expected, label) {

@@ -1,3 +1,8 @@
+import {
+  formatManifestDesignReferenceLinks,
+  formatRequiredSourceReferenceAvailability,
+} from "./page-builder-visual-reference-summary-format.mjs";
+
 export function formatPageBuilderVisualArtifactCheckReport(report) {
   const lines = [
     "Page Builder visual artifact check",
@@ -24,16 +29,13 @@ export function formatPageBuilderVisualArtifactCheckReport(report) {
 }
 
 function formatDesignReferences(report) {
-  if (
-    !Number.isFinite(report.presentDesignReferenceCount) ||
-    !Number.isFinite(report.referencedDesignReferenceCount)
-  ) {
+  const links = formatManifestDesignReferenceLinks(report);
+
+  if (!links) {
     return [];
   }
 
-  return [
-    `Design references: ${report.presentDesignReferenceCount}/${report.referencedDesignReferenceCount}`,
-  ];
+  return [`Manifest design references: ${links}`];
 }
 
 function formatReferenceImport(referenceImport) {
@@ -57,14 +59,9 @@ function formatReferenceImport(referenceImport) {
 }
 
 function formatRequiredReferences(referenceImport) {
-  if (
-    !Number.isFinite(referenceImport.requiredReferenceCount) ||
-    !Number.isFinite(referenceImport.requiredReferenceEntryCount)
-  ) {
-    return null;
-  }
-
-  return `${referenceImport.requiredReferenceEntryCount}/${referenceImport.requiredReferenceCount} required`;
+  return formatRequiredSourceReferenceAvailability(referenceImport, {
+    includeStatusCounts: false,
+  });
 }
 
 function formatMissingReferences(referenceImport) {

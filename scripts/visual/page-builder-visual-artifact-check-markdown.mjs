@@ -2,6 +2,10 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { createArtifactPaths } from "./page-builder-visual-artifact-check-paths.mjs";
+import {
+  formatManifestDesignReferenceLinks,
+  formatRequiredSourceReferenceAvailability,
+} from "./page-builder-visual-reference-summary-format.mjs";
 
 const maxMarkdownTextLength = 420;
 const maxReferencePathPreviewCount = 4;
@@ -42,16 +46,13 @@ export function createPageBuilderVisualArtifactCheckMarkdown(report) {
 }
 
 function formatDesignReferences(report) {
-  if (
-    !Number.isFinite(report.presentDesignReferenceCount) ||
-    !Number.isFinite(report.referencedDesignReferenceCount)
-  ) {
+  const links = formatManifestDesignReferenceLinks(report);
+
+  if (!links) {
     return [];
   }
 
-  return [
-    `Design references: ${report.presentDesignReferenceCount}/${report.referencedDesignReferenceCount}`,
-  ];
+  return [`Manifest design references: ${links}`];
 }
 
 function formatReferenceImport(referenceImport) {
@@ -92,36 +93,11 @@ function formatMissingReferences(referenceImport) {
 }
 
 function formatRequiredReferences(referenceImport) {
-  if (
-    !Number.isFinite(referenceImport.requiredReferenceCount) ||
-    !Number.isFinite(referenceImport.requiredReferenceEntryCount)
-  ) {
-    return [];
-  }
+  const coverage = formatRequiredSourceReferenceAvailability(referenceImport, {
+    includeNoun: false,
+  });
 
-  return [
-    `Reference required: ${referenceImport.requiredReferenceEntryCount}/${referenceImport.requiredReferenceCount}${formatRequiredStatusCounts(referenceImport.requiredReferenceStatusCounts)}`,
-  ];
-}
-
-function formatRequiredStatusCounts(counts) {
-  if (!counts || typeof counts !== "object" || Array.isArray(counts)) {
-    return "";
-  }
-
-  const values = [
-    formatStatusCount(counts.missing, "missing"),
-    formatStatusCount(counts.ready, "ready"),
-    formatStatusCount(counts.wouldUpdate, "would-update"),
-    formatStatusCount(counts.updated, "updated"),
-    formatStatusCount(counts.invalid, "invalid"),
-  ].filter(Boolean);
-
-  return values.length > 0 ? ` (${values.join(", ")})` : "";
-}
-
-function formatStatusCount(count, label) {
-  return Number.isFinite(count) && count > 0 ? `${count} ${label}` : null;
+  return coverage ? [`Required source references: ${coverage}`] : [];
 }
 
 function formatNullableCode(value) {

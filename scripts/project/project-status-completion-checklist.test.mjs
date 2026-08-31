@@ -66,7 +66,7 @@ test("project status completion checklist summarizes blocked evidence", () => {
   );
   assert.match(
     checklist.items[3].evidence,
-    /0 issues, 6\/6 files, 12\/12 screenshots, 12\/12 design references, references ready \(0 missing, 0 updates, 12\/12 required\)/u,
+    /0 issues, 6\/6 files, 12\/12 screenshots, 12\/12 manifest-linked design references, references ready \(0 missing, 0 updates, 12\/12 required source references available\)/u,
   );
   assert.equal(
     checklist.items[2].nextSteps.find(

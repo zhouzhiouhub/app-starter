@@ -1,4 +1,8 @@
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
+import {
+  formatManifestDesignReferenceSummary,
+  formatRequiredSourceReferenceAvailability,
+} from "../visual/page-builder-visual-reference-summary-format.mjs";
 import { readPendingVisualTasks } from "./project-status-next-actions.mjs";
 
 const maxChecklistTextLength = 420;
@@ -119,11 +123,7 @@ function formatArtifactCounts(artifact) {
     artifact.expectedScreenshotCount,
     "screenshots",
   );
-  const designReferences = formatCount(
-    artifact.presentDesignReferenceCount,
-    artifact.referencedDesignReferenceCount,
-    "design references",
-  );
+  const designReferences = formatManifestDesignReferenceSummary(artifact);
 
   const counts = [issues, files, screenshots, designReferences]
     .filter(Boolean)
@@ -165,14 +165,9 @@ function formatReferenceImportCount(count, label) {
 }
 
 function formatRequiredReferenceCoverage(referenceImport) {
-  if (
-    !Number.isFinite(referenceImport.requiredReferenceCount) ||
-    !Number.isFinite(referenceImport.requiredReferenceEntryCount)
-  ) {
-    return null;
-  }
-
-  return `${referenceImport.requiredReferenceEntryCount}/${referenceImport.requiredReferenceCount} required`;
+  return formatRequiredSourceReferenceAvailability(referenceImport, {
+    includeStatusCounts: false,
+  });
 }
 
 function formatCount(present, expected, label) {

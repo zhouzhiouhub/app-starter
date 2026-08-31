@@ -54,7 +54,7 @@ test("release notes render required evidence and gate status", () => {
   );
   assert.match(
     markdown,
-    /Page Builder Visual Artifact: complete \(reports\/visual\/page-builder-fixture, 0 issues, 6\/6 files, 12\/12 screenshots, references ready, 0 missing, 12\/12 required\)/,
+    /Page Builder Visual Artifact: complete \(reports\/visual\/page-builder-fixture, 0 issues, 6\/6 files, 12\/12 screenshots, references ready, 0 missing, 12\/12 required source references available\)/,
   );
   assert.match(markdown, /## Readiness Checklist/);
   assert.match(markdown, /Production Smoke report: ready/);
@@ -66,7 +66,7 @@ test("release notes render required evidence and gate status", () => {
   assert.match(markdown, /Page Builder Visual evidence: ready/);
   assert.match(
     markdown,
-    / {2}- Detail: 6\/6 components, 12\/12 viewports, artifact complete \(reports\/visual\/page-builder-fixture, 0 issues, 6\/6 files, 12\/12 screenshots, references ready \(0 missing, 0 updates, 12\/12 required\)\)/,
+    / {2}- Detail: 6\/6 components, 12\/12 viewports, artifact complete \(reports\/visual\/page-builder-fixture, 0 issues, 6\/6 files, 12\/12 screenshots, references ready \(0 missing, 0 updates, 12\/12 required source references available\)\)/,
   );
   assert.match(markdown, /Release notes record: ready to generate/);
   assert.match(
@@ -83,7 +83,7 @@ test("release notes render required evidence and gate status", () => {
   assert.match(markdown, /Artifact screenshots: 12\/12/);
   assert.match(markdown, /Reference import: ready/);
   assert.match(markdown, /Reference missing: 0/);
-  assert.match(markdown, /Reference required: 12\/12 \(12 ready\)/);
+  assert.match(markdown, /Required source references: 12\/12 available \(12 ready\)/);
   assert.doesNotMatch(markdown, /### Missing Production Smoke Evidence/);
   assert.doesNotMatch(markdown, /### Missing Visual References/);
   assert.match(markdown, /Artifact issues: none/);
@@ -184,7 +184,7 @@ function createReadyReadinessChecklist() {
       {
         action: null,
         detail:
-          "6/6 components, 12/12 viewports, artifact complete (reports/visual/page-builder-fixture, 0 issues, 6/6 files, 12/12 screenshots, references ready (0 missing, 0 updates, 12/12 required))",
+          "6/6 components, 12/12 viewports, artifact complete (reports/visual/page-builder-fixture, 0 issues, 6/6 files, 12/12 screenshots, references ready (0 missing, 0 updates, 12/12 required source references available))",
         label: "Page Builder Visual evidence",
         status: "ready",
       },

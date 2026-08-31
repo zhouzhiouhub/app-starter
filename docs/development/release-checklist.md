@@ -250,7 +250,7 @@ later phases are explicitly approved.
 - Once that default local artifact contains every required report and screenshot,
   plain `pnpm project:status` includes `artifact complete` plus artifact path,
   issue, file, screenshot, reference-import missing/update counts,
-  required-reference coverage, and the first missing reference path in its
+  required source reference availability, and the first missing reference path in its
   informational release gate summary.
   `--all-actions` also includes the expected preview screenshot size beside each
   pending visual task and carries
@@ -263,7 +263,7 @@ later phases are explicitly approved.
 - When `visual_artifact_run_id` was provided,
   `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture`
   exits successfully, prints the visual artifact path plus issue, file, and
-  screenshot counts plus reference-import status, required-reference coverage,
+  screenshot counts plus reference-import status, required source reference availability,
   and first missing reference path, and records
   `visual.artifactCheck.status=complete`.
 - `pnpm release:check -- --checklist --smoke-report artifacts/production-smoke/smoke-report.json`
@@ -277,7 +277,7 @@ later phases are explicitly approved.
   Markdown review for the release record; its `readinessChecklist` lists the
   Production Smoke, Page Builder visual, and release notes tasks, including the
   visual artifact path, issue count, reference-import summary,
-  required-reference coverage, missing reference path list, and counts when
+  required source reference availability, missing reference path list, and counts when
   present, while
   `visual.pendingComponents`,
   `visual.pendingViewports`, `visual.issues`, and
@@ -285,7 +285,7 @@ later phases are explicitly approved.
   evidence gaps and their per-viewport commands when the gate is blocked. When
   `--visual-artifact-dir` is provided, the same artifact includes
   `visual.artifactCheck` with artifact path, required file, validated
-  screenshot, reference-import status, required-reference coverage, and issue
+  screenshot, reference-import status, required source reference availability, and issue
   counts.
 - `pnpm release:handoff -- --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture`
   writes the preflight JSON/Markdown, combined release evidence JSON/Markdown,
@@ -293,7 +293,7 @@ later phases are explicitly approved.
   summary prints Production Smoke, Page Builder Visual, and optional visual
   artifact status, path, and counts. When available, the visual artifact line
   also includes reference-import status, missing/update counts,
-  required-reference coverage, and the first missing reference path. It then
+  required source reference availability, and the first missing reference path. It then
   prints the first two next actions with
   structured steps when available, previews the first hidden structured action
   only when the visible actions do not have steps, and points any remaining work
@@ -338,7 +338,7 @@ later phases are explicitly approved.
   main CI local verification run and artifact, preflight artifact, project
   status artifact and source path, visual manifest path, optional
   `visual.artifactCheck` path, issue count, reference-import summary,
-  required-reference coverage, missing reference path list, and count summary,
+  required source reference availability, missing reference path list, and count summary,
   pending visual evidence lists, visual checklist task summary, visual issue summary,
   `Missing Production Smoke Evidence`, and `Missing Visual References` when
   `--allow-blocked` is used for failure review drafts.

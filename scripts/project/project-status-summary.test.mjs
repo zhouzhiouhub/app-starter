@@ -52,7 +52,7 @@ test("project status summary stays compact and actionable", () => {
   assert.match(text, /artifact incomplete/);
   assert.match(
     text,
-    /references invalid \(12 missing, 0 updates, 12\/12 required, first missing docs\/visual\/page-builder-references\/hero-banner-desktop\.png\)/,
+    /references invalid \(12 missing, 0 updates, 0\/12 required source references available, first missing docs\/visual\/page-builder-references\/hero-banner-desktop\.png\)/,
   );
   assert.match(text, /Blockers: 2/);
   assert.match(text, /Production Smoke: Production smoke artifact missing/);

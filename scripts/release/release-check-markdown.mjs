@@ -8,6 +8,7 @@ import { formatReadinessChecklistMarkdown } from "./release-readiness-checklist-
 import { formatSmokeMarkdownSummary } from "./release-check-smoke-markdown-summary.mjs";
 import { formatVisualTasksMarkdown } from "./release-check-visual-tasks-markdown.mjs";
 import { formatReferenceImportMarkdown } from "./release-reference-import-markdown.mjs";
+import { formatManifestDesignReferenceLinks } from "../visual/page-builder-visual-reference-summary-format.mjs";
 
 const maxMarkdownItemCount = 20;
 const maxMarkdownTextLength = 420;
@@ -157,16 +158,13 @@ function formatArtifactCheck(check) {
 }
 
 function formatArtifactDesignReferences(check) {
-  if (
-    !Number.isFinite(check.presentDesignReferenceCount) ||
-    !Number.isFinite(check.referencedDesignReferenceCount)
-  ) {
+  const links = formatManifestDesignReferenceLinks(check);
+
+  if (!links) {
     return [];
   }
 
-  return [
-    `- Artifact design references: ${check.presentDesignReferenceCount}/${check.referencedDesignReferenceCount}`,
-  ];
+  return [`- Manifest design references: ${links}`];
 }
 
 function formatVisualIssues(issues, label = "Visual issues") {

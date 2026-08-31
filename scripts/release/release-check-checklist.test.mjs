@@ -29,7 +29,7 @@ test("release readiness checklist summarizes ready evidence", () => {
   assert.match(lines, /Page Builder Visual evidence: ready/);
   assert.match(
     lines,
-    /Detail: 6\/6 components, 12\/12 viewports, artifact complete \(reports\/visual\/page-builder-fixture, 0 issues, 6\/6 files, 12\/12 screenshots, references ready \(0 missing, 0 updates, 12\/12 required\)\)/,
+    /Detail: 6\/6 components, 12\/12 viewports, artifact complete \(reports\/visual\/page-builder-fixture, 0 issues, 6\/6 files, 12\/12 screenshots, references ready \(0 missing, 0 updates, 12\/12 required source references available\)\)/,
   );
   assert.match(lines, /Release notes record: ready to generate/);
   assert.match(lines, /Steps:/);
@@ -87,7 +87,7 @@ test("release readiness checklist carries blocker actions", () => {
   assert.match(lines, /Run pnpm visual:acceptance -- --checklist/);
   assert.match(
     lines,
-    /Detail: 0\/6 components, 0\/12 viewports, artifact invalid \(reports\/visual\/page-builder-fixture, 1 issues, 5\/6 files, 0\/12 screenshots, references invalid \(12 missing, 0 updates, 12\/12 required\)\)/,
+    /Detail: 0\/6 components, 0\/12 viewports, artifact invalid \(reports\/visual\/page-builder-fixture, 1 issues, 5\/6 files, 0\/12 screenshots, references invalid \(12 missing, 0 updates, 0\/12 required source references available\)\)/,
   );
   assert.match(lines, /Visual tasks:/);
   assert.match(lines, /hero-banner\.desktop: missing designReference/);

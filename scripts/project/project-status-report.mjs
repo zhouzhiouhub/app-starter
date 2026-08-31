@@ -1,6 +1,10 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
+import {
+  formatManifestDesignReferenceSummary,
+  formatRequiredSourceReferenceAvailability,
+} from "../visual/page-builder-visual-reference-summary-format.mjs";
 import { assertProjectStatusArtifact } from "./project-status-validation.mjs";
 
 const maxProjectLineLength = 420;
@@ -167,11 +171,7 @@ function formatVisualArtifactDetails(artifactCheck) {
       artifactCheck.expectedScreenshotCount,
       "screenshots",
     ),
-    formatVisualArtifactCount(
-      artifactCheck.presentDesignReferenceCount,
-      artifactCheck.referencedDesignReferenceCount,
-      "design references",
-    ),
+    formatManifestDesignReferenceSummary(artifactCheck),
     formatVisualReferenceImport(artifactCheck.referenceImport),
   ].filter(Boolean);
 
@@ -193,14 +193,11 @@ function formatVisualReferenceImport(referenceImport) {
 }
 
 function formatRequiredReferenceCoverage(referenceImport) {
-  if (
-    !Number.isFinite(referenceImport.requiredReferenceCount) ||
-    !Number.isFinite(referenceImport.requiredReferenceEntryCount)
-  ) {
-    return "";
-  }
+  const coverage = formatRequiredSourceReferenceAvailability(referenceImport, {
+    includeStatusCounts: false,
+  });
 
-  return `, ${referenceImport.requiredReferenceEntryCount}/${referenceImport.requiredReferenceCount} required`;
+  return coverage ? `, ${coverage}` : "";
 }
 
 function formatVisualArtifactIssueCount(issueCount) {

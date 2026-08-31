@@ -6,6 +6,7 @@ import {
   formatMissingVisualReferenceFiles,
   formatVisualReferenceImport,
 } from "../visual/page-builder-visual-missing-references-markdown.mjs";
+import { formatManifestDesignReferenceSummary } from "../visual/page-builder-visual-reference-summary-format.mjs";
 import { assertProjectStatusArtifact } from "./project-status-validation.mjs";
 import { formatReleaseEvidenceArtifacts } from "./project-status-release-evidence-artifacts.mjs";
 
@@ -186,11 +187,7 @@ function formatVisualArtifactCounts(artifactCheck) {
       artifactCheck.expectedScreenshotCount,
       "screenshots",
     ),
-    formatVisualArtifactCount(
-      artifactCheck.presentDesignReferenceCount,
-      artifactCheck.referencedDesignReferenceCount,
-      "design references",
-    ),
+    formatManifestDesignReferenceSummary(artifactCheck),
     formatVisualReferenceImport(artifactCheck.referenceImport, {
       includeRequiredLabel: true, includeStatusCounts: false,
     }),

@@ -5,6 +5,7 @@ import {
   createPageBuilderVisualReferenceImportWriteCommand,
   createPageBuilderVisualReferenceMeasureCommand,
 } from "./page-builder-visual-reference-import-commands.mjs";
+import { formatManifestDesignReferenceSummary } from "./page-builder-visual-reference-summary-format.mjs";
 
 export function formatPageBuilderVisualArtifactBundleReport(result) {
   const lines = [
@@ -50,14 +51,7 @@ function formatArtifactCheckCounts(check) {
 }
 
 function formatDesignReferenceCounts(check) {
-  if (
-    !Number.isFinite(check.presentDesignReferenceCount) ||
-    !Number.isFinite(check.referencedDesignReferenceCount)
-  ) {
-    return null;
-  }
-
-  return `${check.presentDesignReferenceCount}/${check.referencedDesignReferenceCount} design references`;
+  return formatManifestDesignReferenceSummary(check);
 }
 
 export function formatPageBuilderVisualArtifactBundleUsage() {
