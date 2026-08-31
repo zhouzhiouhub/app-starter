@@ -19,12 +19,19 @@ test("page builder visual workflow captures fixture evidence", async () => {
   assert.match(workflow, /permissions:/);
   assert.match(workflow, /contents: read/);
   assert.match(workflow, /docs\/visual\/page-builder-references\/\*\*/);
-  assert.match(workflow, /PAGE_BUILDER_VISUAL_BROWSER: google-chrome/);
+  assert.doesNotMatch(
+    workflow,
+    /runs-on: ubuntu-latest\s+env:\s+PAGE_BUILDER_VISUAL_BROWSER/s,
+  );
   assert.match(workflow, /pnpm run check:file-size/);
   assert.match(workflow, /pnpm test:visual/);
   assert.match(
     workflow,
     /pnpm visual:artifact-bundle -- --artifact-dir reports\/visual\/page-builder-fixture/,
+  );
+  assert.match(
+    workflow,
+    /pnpm visual:artifact-bundle -- --artifact-dir reports\/visual\/page-builder-fixture\s+env:\s+PAGE_BUILDER_VISUAL_BROWSER: google-chrome/,
   );
   assert.doesNotMatch(
     workflow,

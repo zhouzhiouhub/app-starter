@@ -39,8 +39,6 @@ permissions:
 jobs:
   page-builder-visual:
     runs-on: ubuntu-latest
-    env:
-      PAGE_BUILDER_VISUAL_BROWSER: google-chrome
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -54,6 +52,8 @@ jobs:
       - run: pnpm run check:file-size
       - run: pnpm test:visual
       - run: pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture
+        env:
+          PAGE_BUILDER_VISUAL_BROWSER: google-chrome
       - name: Write visual evidence summary
         if: always()
         run: |
