@@ -81,6 +81,33 @@ test("release check CLI writes JSON artifact output", async () => {
   }
 });
 
+test("release check CLI default output links to full blocked handoff", async () => {
+  const emptyArchiveRoot = mkdtempSync(
+    path.join(tmpdir(), "release-default-handoff-"),
+  );
+  const stdout = [];
+
+  try {
+    const exitCode = await runReleaseCheckCli([], {
+      smokeRoots: [emptyArchiveRoot],
+      stdout: (line) => stdout.push(line),
+      visualManifest: createPendingVisualManifest(),
+    });
+    const output = stdout.join("\n");
+
+    assert.equal(exitCode, 1);
+    assert.match(output, /Release evidence gate/);
+    assert.match(output, /Next:/);
+    assert.match(output, /Full checklist: pnpm release:check -- --checklist/);
+    assert.match(
+      output,
+      /Markdown handoff: pnpm release:check -- --markdown-output artifacts\/release\/release-check\.md/,
+    );
+  } finally {
+    await rm(emptyArchiveRoot, { force: true, recursive: true });
+  }
+});
+
 test("release check CLI writes Markdown output", async () => {
   const emptyArchiveRoot = mkdtempSync(
     path.join(tmpdir(), "release-markdown-"),

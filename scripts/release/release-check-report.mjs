@@ -5,6 +5,21 @@ import { createReleaseNotesHandoffSteps } from "./release-notes-handoff-steps.mj
 const maxReleaseBlockerCount = 12;
 const maxReleaseLineLength = 420;
 const maxReleaseValueLength = 160;
+const blockedNextActions = [
+  {
+    label: "Full checklist",
+    value: "pnpm release:check -- --checklist",
+  },
+  {
+    label: "All visual tasks",
+    value: "pnpm release:check -- --checklist --all-visual-tasks",
+  },
+  {
+    label: "Markdown handoff",
+    value:
+      "pnpm release:check -- --markdown-output artifacts/release/release-check.md",
+  },
+];
 
 export function formatReleaseEvidenceCheck(check) {
   const lines = [
@@ -27,6 +42,8 @@ export function formatReleaseEvidenceCheck(check) {
   if (check.blockers.length > 0) {
     lines.push("  Blockers:");
     lines.push(...formatReleaseBlockers(check.blockers));
+    lines.push("  Next:");
+    lines.push(...formatBlockedNextActions());
   } else {
     lines.push("  Evidence is ready for release notes.");
     lines.push("  Release notes handoff:");
@@ -34,6 +51,12 @@ export function formatReleaseEvidenceCheck(check) {
   }
 
   return lines.map(formatReleaseLine);
+}
+
+function formatBlockedNextActions() {
+  return blockedNextActions.map(
+    (action) => `    - ${action.label}: ${action.value}`,
+  );
 }
 
 function formatReleaseNotesHandoffSteps() {

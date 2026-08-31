@@ -7,6 +7,7 @@ import {
 import {
   createAcceptedVisualManifest,
   createCompleteReleaseReport,
+  createPendingVisualManifest,
 } from "./release-check-test-fixtures.mjs";
 
 test("release check report prints release notes handoff steps when ready", () => {
@@ -40,4 +41,26 @@ test("release check report prints release notes handoff steps when ready", () =>
   assert.match(lines, /Review args: --storefront-url <url>/);
   assert.match(lines, /Keep artifact: release-notes-<run_number>/);
   assert.match(lines, /Formal mode: Run without --allow-blocked/);
+});
+
+test("release check report points blocked users to full handoff commands", () => {
+  const lines = formatReleaseEvidenceCheck(
+    createReleaseEvidenceCheck({
+      smokeError: new Error("No smoke reports found."),
+      visualManifest: createPendingVisualManifest(),
+    }),
+  ).join("\n");
+
+  assert.match(lines, /Status: blocked/);
+  assert.match(lines, /Blockers:/);
+  assert.match(lines, /Next:/);
+  assert.match(lines, /Full checklist: pnpm release:check -- --checklist/);
+  assert.match(
+    lines,
+    /All visual tasks: pnpm release:check -- --checklist --all-visual-tasks/,
+  );
+  assert.match(
+    lines,
+    /Markdown handoff: pnpm release:check -- --markdown-output artifacts\/release\/release-check\.md/,
+  );
 });
