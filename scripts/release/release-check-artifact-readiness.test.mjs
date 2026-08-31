@@ -23,7 +23,7 @@ test("release check artifact includes ready checklist tasks", () => {
 
   assert.equal(
     visualItem?.detail,
-    "6/6 components, 12/12 viewports, artifact complete (reports/visual/page-builder-fixture, 0 issues, 6/6 files, 12/12 screenshots, references ready (0 missing, 0 updates))",
+    "6/6 components, 12/12 viewports, artifact complete (reports/visual/page-builder-fixture, 0 issues, 6/6 files, 12/12 screenshots, references ready (0 missing, 0 updates, 12/12 required))",
   );
   assert.deepEqual(
     releaseNotesItem.steps.map((step) => step.label),
@@ -61,7 +61,7 @@ test("release check artifact includes blocked checklist actions", () => {
   assert.equal(visualItem?.status, "needs-evidence");
   assert.equal(
     visualItem?.detail,
-    "0/6 components, 0/12 viewports, artifact invalid (reports/visual/page-builder-fixture, 1 issues, 5/6 files, 0/12 screenshots, references invalid (12 missing, 0 updates))",
+    "0/6 components, 0/12 viewports, artifact invalid (reports/visual/page-builder-fixture, 1 issues, 5/6 files, 0/12 screenshots, references invalid (12 missing, 0 updates, 12/12 required))",
   );
   assert.match(visualItem?.action, /pnpm visual:acceptance -- --checklist/);
   assert.equal(
@@ -195,10 +195,23 @@ function createReferenceImportSummary(complete) {
       "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
     missingCount: complete ? 0 : 12,
     missingReferences: complete ? [] : ["docs/visual/page-builder-references/hero-banner-desktop.png"],
+    requiredReferenceCount: 12,
+    requiredReferenceEntryCount: 12,
+    requiredReferenceStatusCounts: createRequiredReferenceStatusCounts(complete),
     sourceDir: "docs/visual/page-builder-references",
     sourceDirStatus: "ready",
     status: complete ? "ready" : "invalid",
     updated: false,
     updateCount: 0,
+  };
+}
+
+function createRequiredReferenceStatusCounts(complete) {
+  return {
+    invalid: 0,
+    missing: complete ? 0 : 12,
+    ready: complete ? 12 : 0,
+    updated: 0,
+    wouldUpdate: 0,
   };
 }

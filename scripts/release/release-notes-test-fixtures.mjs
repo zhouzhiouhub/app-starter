@@ -65,10 +65,23 @@ function createReferenceImportSummary(complete) {
     missingReferences: complete
       ? []
       : ["docs/visual/page-builder-references/hero-banner-desktop.png"],
+    requiredReferenceCount: 12,
+    requiredReferenceEntryCount: 12,
+    requiredReferenceStatusCounts: createRequiredReferenceStatusCounts(complete),
     sourceDir: "docs/visual/page-builder-references",
     sourceDirStatus: "ready",
     status: complete ? "ready" : "invalid",
     updated: false,
     updateCount: 0,
+  };
+}
+
+function createRequiredReferenceStatusCounts(complete) {
+  return {
+    invalid: 0,
+    missing: complete ? 0 : 12,
+    ready: complete ? 12 : 0,
+    updated: 0,
+    wouldUpdate: 0,
   };
 }

@@ -61,7 +61,7 @@ test("release check accepts a complete visual artifact", () => {
   assert.equal(
     formatReleaseEvidenceCheck(check).some((line) =>
       line.includes(
-        "Visual artifact: complete (reports/visual/page-builder-fixture, 0 issues, 6/6 files, 12/12 screenshots, references ready, 0 missing)",
+        "Visual artifact: complete (reports/visual/page-builder-fixture, 0 issues, 6/6 files, 12/12 screenshots, references ready, 0 missing, 12/12 required)",
       ),
     ),
     true,
@@ -133,6 +133,14 @@ test("release check artifact records visual artifact completeness", () => {
   assert.equal(artifact.visual.artifactCheck.presentScreenshotCount, 12);
   assert.equal(artifact.visual.artifactCheck.referenceImport.status, "ready");
   assert.equal(artifact.visual.artifactCheck.referenceImport.missingCount, 0);
+  assert.equal(
+    artifact.visual.artifactCheck.referenceImport.requiredReferenceCount,
+    12,
+  );
+  assert.equal(
+    artifact.visual.artifactCheck.referenceImport.requiredReferenceEntryCount,
+    12,
+  );
   assert.deepEqual(artifact.visual.artifactCheck.issues, []);
 });
 

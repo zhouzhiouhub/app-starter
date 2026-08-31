@@ -144,8 +144,8 @@ Release handoff:
   evidence still writes the handoff; use --require-ready when the command should
   gate release. The terminal summary prints Production Smoke, Page Builder Visual,
   and optional visual artifact status, path, and counts. When available, the visual artifact line also
-  includes reference-import status, missing/update counts, and the first missing
-  reference path. It then prints the first two next actions with
+  includes reference-import status, missing/update counts, required-reference coverage,
+  and the first missing reference path. It then prints the first two next actions with
   structured steps when available, previews the first hidden structured action
   only when the visible actions do not have steps, and points any remaining
   actions to the generated project-status Markdown.`);

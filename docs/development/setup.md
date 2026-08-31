@@ -365,9 +365,10 @@ JSON artifacts mirror that handoff as `smoke.missingEvidence` and
 For local status checks, `project:status` automatically includes the default
 Page Builder Visual artifact when all required files already exist under
 `reports/visual/page-builder-fixture`, prints its artifact path, issue count,
-file count, screenshot counts, reference-import missing/update counts, and the
-first missing reference path in the release gate summary, records the missing
-path list under `releaseGate.visual.artifactCheck.referenceImport`, and adds a
+file count, screenshot counts, reference-import missing/update counts,
+required-reference coverage, and the first missing reference path in the
+release gate summary, records the missing path list under
+`releaseGate.visual.artifactCheck.referenceImport`, and adds a
 `Missing Visual References` section to the Markdown handoff when missing PNGs
 are present. That section also includes `Visual Reference Intake Commands` so
 the reference report, import, capture, measure, accept-passing, and final
@@ -390,8 +391,9 @@ the same release gate once, then writes `preflight.json`, `preflight.md`,
 states use matching evidence. Its terminal summary prints Production Smoke,
 Page Builder Visual, and optional visual artifact status, path, and counts.
 When available, the visual artifact line also includes reference-import status,
-missing/update counts, and the first missing reference path. It then prints the
-first two next actions with structured steps when available, previews the first hidden
+missing/update counts, required-reference coverage, and the first missing
+reference path. It then prints the first two next actions with structured steps
+when available, previews the first hidden
 structured action only when the visible actions do not have steps, and
 points remaining actions to `artifacts/release/project-status.md`, whose
 release gate section lists any missing production Smoke evidence and Page
@@ -411,14 +413,15 @@ path. Add `--markdown-output artifacts/release/release-check.md` to retain the
 same combined gate status, readiness checklist, blockers, and pending visual
 tasks as a human-readable report. New JSON artifacts also include a structured
 `readinessChecklist` with the same release tasks, visual artifact path, issue,
-reference-import, missing reference path, and count details, and `smoke.source` metadata for CI
-artifacts and release records.
+reference-import, missing reference path, required-reference coverage, and
+count details, and `smoke.source` metadata for CI artifacts and release records.
 When the release uses a downloaded Page Builder Visual artifact, add
 `--visual-artifact-dir reports/visual/page-builder-fixture`; the combined gate
 then verifies the artifact-local manifest, capture report, acceptance report,
 and all 12 PNG screenshots, prints the artifact path plus issue, file, and
-screenshot counts plus reference-import status and first missing reference path in the text summary, and writes
-the result under `visual.artifactCheck`.
+screenshot counts plus reference-import status, required-reference coverage,
+and first missing reference path in the text summary, and writes the result
+under `visual.artifactCheck`.
 After that artifact is ready, `release:notes` writes the final Markdown release
 record, including the readiness checklist, main CI local verification run and
 artifact, preflight artifact, project status artifact and source path, the

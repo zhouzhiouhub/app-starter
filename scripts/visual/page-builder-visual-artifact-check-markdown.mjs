@@ -67,6 +67,7 @@ function formatReferenceImport(referenceImport) {
     `Reference missing: ${referenceImport.missingCount}`,
     ...formatMissingReferences(referenceImport),
     `Reference updates: ${referenceImport.updateCount}`,
+    ...formatRequiredReferences(referenceImport),
   ];
 }
 
@@ -88,6 +89,39 @@ function formatMissingReferences(referenceImport) {
   return [
     `Reference missing files: ${visible.join(", ")}${hidden > 0 ? `, ... and ${hidden} more` : ""}`,
   ];
+}
+
+function formatRequiredReferences(referenceImport) {
+  if (
+    !Number.isFinite(referenceImport.requiredReferenceCount) ||
+    !Number.isFinite(referenceImport.requiredReferenceEntryCount)
+  ) {
+    return [];
+  }
+
+  return [
+    `Reference required: ${referenceImport.requiredReferenceEntryCount}/${referenceImport.requiredReferenceCount}${formatRequiredStatusCounts(referenceImport.requiredReferenceStatusCounts)}`,
+  ];
+}
+
+function formatRequiredStatusCounts(counts) {
+  if (!counts || typeof counts !== "object" || Array.isArray(counts)) {
+    return "";
+  }
+
+  const values = [
+    formatStatusCount(counts.missing, "missing"),
+    formatStatusCount(counts.ready, "ready"),
+    formatStatusCount(counts.wouldUpdate, "would-update"),
+    formatStatusCount(counts.updated, "updated"),
+    formatStatusCount(counts.invalid, "invalid"),
+  ].filter(Boolean);
+
+  return values.length > 0 ? ` (${values.join(", ")})` : "";
+}
+
+function formatStatusCount(count, label) {
+  return Number.isFinite(count) && count > 0 ? `${count} ${label}` : null;
 }
 
 function formatNullableCode(value) {

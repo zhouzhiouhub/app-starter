@@ -9,6 +9,12 @@ const requiredReferenceStatuses = new Set([
   "updated",
   "would-update",
 ]);
+const requiredReferenceStatusFields = {
+  missing: "missing",
+  ready: "ready",
+  updated: "updated",
+  "would-update": "wouldUpdate",
+};
 const requiredReferenceKeys = new Set(
   mvpPageBuilderComponents.flatMap((component) =>
     pageBuilderVisualAcceptanceViewports.map((viewport) =>
@@ -41,6 +47,25 @@ export function isValidRequiredReferenceList(report) {
   );
 }
 
+export function createRequiredReferenceSummaryFields(report) {
+  if (!hasRequiredReferenceList(report)) {
+    return {};
+  }
+
+  const requiredReferences = Array.isArray(report.requiredReferences)
+    ? report.requiredReferences
+    : [];
+
+  return {
+    requiredReferenceCount:
+      readNonNegativeCount(report.requiredReferenceCount) ??
+      requiredReferences.length,
+    requiredReferenceEntryCount: requiredReferences.length,
+    requiredReferenceStatusCounts:
+      countRequiredReferenceStatuses(requiredReferences),
+  };
+}
+
 function isValidRequiredReferenceEntry(item, report) {
   if (
     !isObject(item) ||
@@ -67,6 +92,34 @@ function isValidRequiredReferenceEntry(item, report) {
   }
 
   return item.status === "ready";
+}
+
+function countRequiredReferenceStatuses(items) {
+  const counts = createEmptyRequiredReferenceStatusCounts();
+
+  for (const item of items) {
+    const field = isObject(item)
+      ? requiredReferenceStatusFields[item.status]
+      : null;
+
+    if (field) {
+      counts[field] += 1;
+    } else {
+      counts.invalid += 1;
+    }
+  }
+
+  return counts;
+}
+
+function createEmptyRequiredReferenceStatusCounts() {
+  return {
+    invalid: 0,
+    missing: 0,
+    ready: 0,
+    updated: 0,
+    wouldUpdate: 0,
+  };
 }
 
 function hasEveryRequiredReference(items) {
@@ -144,4 +197,10 @@ function isObject(value) {
 
 function isNonEmptyString(value) {
   return typeof value === "string" && value.length > 0;
+}
+
+function readNonNegativeCount(value) {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0
+    ? value
+    : null;
 }

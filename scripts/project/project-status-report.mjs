@@ -187,8 +187,20 @@ function formatVisualReferenceImport(referenceImport) {
     ? referenceImport.missingReferences[0]
     : null;
   const missing = firstMissing ? `, first missing ${firstMissing}` : "";
+  const required = formatRequiredReferenceCoverage(referenceImport);
 
-  return `references ${referenceImport.status} (${referenceImport.sourceDirStatus} source, ${referenceImport.missingCount} missing${missing}, ${referenceImport.updateCount} updates)`;
+  return `references ${referenceImport.status} (${referenceImport.sourceDirStatus} source, ${referenceImport.missingCount} missing${missing}, ${referenceImport.updateCount} updates${required})`;
+}
+
+function formatRequiredReferenceCoverage(referenceImport) {
+  if (
+    !Number.isFinite(referenceImport.requiredReferenceCount) ||
+    !Number.isFinite(referenceImport.requiredReferenceEntryCount)
+  ) {
+    return "";
+  }
+
+  return `, ${referenceImport.requiredReferenceEntryCount}/${referenceImport.requiredReferenceCount} required`;
 }
 
 function formatVisualArtifactIssueCount(issueCount) {

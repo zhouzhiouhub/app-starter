@@ -23,6 +23,15 @@ test("project status summarizes visual artifact counts", () => {
         "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
       missingCount: 0,
       missingReferences: [],
+      requiredReferenceCount: 12,
+      requiredReferenceEntryCount: 12,
+      requiredReferenceStatusCounts: {
+        invalid: 0,
+        missing: 0,
+        ready: 12,
+        updated: 0,
+        wouldUpdate: 0,
+      },
       sourceDir: "docs/visual/page-builder-references",
       sourceDirStatus: "ready",
       status: "ready",
@@ -52,6 +61,15 @@ test("project status summarizes visual artifact counts", () => {
         "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
       missingCount: 0,
       missingReferences: [],
+      requiredReferenceCount: 12,
+      requiredReferenceEntryCount: 12,
+      requiredReferenceStatusCounts: {
+        invalid: 0,
+        missing: 0,
+        ready: 12,
+        updated: 0,
+        wouldUpdate: 0,
+      },
       sourceDir: "docs/visual/page-builder-references",
       sourceDirStatus: "ready",
       status: "ready",
@@ -64,11 +82,11 @@ test("project status summarizes visual artifact counts", () => {
   });
   assert.match(
     terminalText,
-    /Page Builder Visual: needs-evidence, components 0\/6, viewports 0\/12, pending tasks 12, artifact complete \(reports\/visual\/page-builder-fixture, 0 issues, 6\/6 files, 12\/12 screenshots, 12\/12 design references, references ready \(ready source, 0 missing, 0 updates\)\)/,
+    /Page Builder Visual: needs-evidence, components 0\/6, viewports 0\/12, pending tasks 12, artifact complete \(reports\/visual\/page-builder-fixture, 0 issues, 6\/6 files, 12\/12 screenshots, 12\/12 design references, references ready \(ready source, 0 missing, 0 updates, 12\/12 required\)\)/,
   );
   assert.match(
     markdown,
-    /Page Builder Visual: needs-evidence, 0\/6 components, 0\/12 viewports, 12 pending tasks, artifact complete \(reports\/visual\/page-builder-fixture, 0 issues, 6\/6 files, 12\/12 screenshots, 12\/12 design references, references ready \(ready source, 0 missing, 0 updates\)\)/,
+    /Page Builder Visual: needs-evidence, 0\/6 components, 0\/12 viewports, 12 pending tasks, artifact complete \(reports\/visual\/page-builder-fixture, 0 issues, 6\/6 files, 12\/12 screenshots, 12\/12 design references, references ready \(ready source, 0 missing, 0 updates, 12\/12 required\)\)/,
   );
 
   check.visualArtifact.referenceImport = {
@@ -78,6 +96,13 @@ test("project status summarizes visual artifact counts", () => {
     missingReferences: [
       "docs/visual/page-builder-references/hero-banner-desktop.png",
     ],
+    requiredReferenceStatusCounts: {
+      invalid: 0,
+      missing: 1,
+      ready: 11,
+      updated: 0,
+      wouldUpdate: 0,
+    },
     status: "invalid",
   };
   const missingReferenceArtifact = createProjectStatusArtifact(check);
@@ -95,6 +120,10 @@ test("project status summarizes visual artifact counts", () => {
     /Source dir: `docs\/visual\/page-builder-references`/,
   );
   assert.match(missingReferenceMarkdown, /Missing files: 1/);
+  assert.match(
+    missingReferenceMarkdown,
+    /Required files: 12\/12 \(1 missing, 11 ready\)/,
+  );
   assert.match(
     missingReferenceMarkdown,
     /`docs\/visual\/page-builder-references\/hero-banner-desktop\.png`/,
@@ -115,14 +144,14 @@ test("project status docs mention visual artifact path and counts", async () => 
   assert.match(readme, /release-check\.md.*project-status\.md/s);
   assert.match(
     setupDoc,
-    /prints its artifact path, issue count,\s+file count, screenshot counts, reference-import missing\/update counts, and the\s+first missing reference path/s,
+    /prints its artifact path, issue count,\s+file count, screenshot counts, reference-import missing\/update counts,\s+required-reference coverage, and the first missing reference path/s,
   );
   assert.match(setupDoc, /Missing Visual References/);
   assert.match(setupDoc, /release-check\.md.*project-status\.md/s);
   assert.match(setupDoc, /releaseGate\.visual\.artifactCheck/);
   assert.match(
     releaseChecklist,
-    /artifact path,\s+issue, file, screenshot, reference-import missing\/update counts, and the first\s+missing reference path/s,
+    /artifact path,\s+issue, file, screenshot, reference-import missing\/update counts,\s+required-reference coverage, and the first missing reference path/s,
   );
   assert.match(releaseChecklist, /Missing Visual References/);
   assert.match(releaseChecklist, /release-check\.md.*project-status\.md/s);

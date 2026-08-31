@@ -136,6 +136,8 @@ function assertOptionalReferenceImportMatches(releaseCheck, projectCheck) {
     "complete",
     "manifestPath",
     "missingCount",
+    "requiredReferenceCount",
+    "requiredReferenceEntryCount",
     "sourceDir",
     "sourceDirStatus",
     "status",
@@ -152,6 +154,10 @@ function assertOptionalReferenceImportMatches(releaseCheck, projectCheck) {
     projectCheck.referenceImport.missingReferences,
     releaseCheck.referenceImport.missingReferences,
     "releaseGate.visual.artifactCheck.referenceImport.missingReferences",
+  );
+  assertOptionalStatusCountsMatch(
+    projectCheck.referenceImport.requiredReferenceStatusCounts,
+    releaseCheck.referenceImport.requiredReferenceStatusCounts,
   );
 }
 
@@ -177,4 +183,30 @@ function assertOptionalStringListMatches(actual, expected, label) {
   }
 
   assertMatches(actual.join("\n"), expected.join("\n"), label);
+}
+
+function assertOptionalStatusCountsMatch(actual, expected) {
+  if (actual === undefined) {
+    return;
+  }
+
+  if (!actual || !expected) {
+    throw new Error(
+      "Release notes project status releaseGate.visual.artifactCheck.referenceImport.requiredReferenceStatusCounts must match release-evidence-check.v1.",
+    );
+  }
+
+  for (const field of [
+    "invalid",
+    "missing",
+    "ready",
+    "updated",
+    "wouldUpdate",
+  ]) {
+    assertMatches(
+      actual[field],
+      expected[field],
+      `releaseGate.visual.artifactCheck.referenceImport.requiredReferenceStatusCounts.${field}`,
+    );
+  }
 }

@@ -17,6 +17,7 @@ import {
 } from "./release-reference-import-markdown.mjs";
 
 const maxTextLength = 180;
+const maxReadinessDetailLength = 260;
 const maxVisualArtifactIssueLines = 12;
 const maxVisualIssueLines = 12;
 
@@ -77,7 +78,7 @@ export function createReleaseNotesMarkdown(config, artifact, projectStatus) {
     ...formatReadinessChecklistMarkdown(artifact.readinessChecklist, {
       maxActionLength: maxTextLength,
       maxStepTextLength: 420,
-      maxTextLength,
+      maxTextLength: maxReadinessDetailLength,
     }),
     ...formatProjectNextActions(projectStatus, artifact),
     "## Visual Evidence",

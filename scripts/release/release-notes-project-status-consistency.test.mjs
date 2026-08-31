@@ -154,6 +154,36 @@ test("release notes project status consistency rejects reference import mismatch
   );
 });
 
+test("release notes project status consistency rejects reference intake count mismatches", () => {
+  const releaseArtifact = createReleaseArtifact();
+  const projectStatus = createProjectStatus();
+
+  releaseArtifact.visual.artifactCheck = createCompleteArtifactCheck();
+  projectStatus.releaseGate.visual.artifactCheck = {
+    ...createCompleteArtifactCheck(),
+    referenceImport: {
+      ...createReferenceImportSummary(),
+      requiredReferenceStatusCounts: {
+        invalid: 0,
+        missing: 1,
+        ready: 11,
+        updated: 0,
+        wouldUpdate: 0,
+      },
+    },
+  };
+  projectStatus.releaseGate.visual.artifactStatus = "complete";
+
+  assert.throws(
+    () =>
+      assertReleaseNotesProjectStatusConsistency(
+        releaseArtifact,
+        projectStatus,
+      ),
+    /requiredReferenceStatusCounts\.missing must match release-evidence-check\.v1/,
+  );
+});
+
 test("release notes project status consistency requires recorded reference import", () => {
   const releaseArtifact = createReleaseArtifact();
   const projectStatus = createProjectStatus();
@@ -223,6 +253,15 @@ function createReferenceImportSummary() {
       "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
     missingCount: 0,
     missingReferences: [],
+    requiredReferenceCount: 12,
+    requiredReferenceEntryCount: 12,
+    requiredReferenceStatusCounts: {
+      invalid: 0,
+      missing: 0,
+      ready: 12,
+      updated: 0,
+      wouldUpdate: 0,
+    },
     sourceDir: "docs/visual/page-builder-references",
     sourceDirStatus: "ready",
     status: "ready",

@@ -25,6 +25,7 @@ test("visual artifact check Markdown summarizes complete bundles", () => {
   );
   assert.match(markdown, /Reference missing: 0/);
   assert.match(markdown, /Reference updates: 0/);
+  assert.match(markdown, /Reference required: 12\/12 \(12 ready\)/);
   assert.doesNotMatch(markdown, /Reference missing files:/);
   assert.match(
     markdown,
@@ -66,6 +67,13 @@ test("visual artifact check Markdown lists issues and repair command", () => {
       missingReferences: [
         "docs/visual/page-builder-references/hero-banner-desktop.png",
       ],
+      requiredReferenceStatusCounts: {
+        invalid: 0,
+        missing: 12,
+        ready: 0,
+        updated: 0,
+        wouldUpdate: 0,
+      },
       status: "invalid",
     }),
     status: "invalid",
@@ -77,6 +85,7 @@ test("visual artifact check Markdown lists issues and repair command", () => {
   assert.match(markdown, /missing_artifact_file/);
   assert.doesNotMatch(markdown, /abcdefghijklmnopqrstuvwxyz123456/);
   assert.match(markdown, /Reference missing files: `docs\/visual\/page-builder-references\/hero-banner-desktop\.png`/);
+  assert.match(markdown, /Reference required: 12\/12 \(12 missing\)/);
   assert.match(markdown, /pnpm visual:artifact-bundle -- --artifact-dir/);
   assert.match(markdown, /--output reports\/visual\/page-builder-fixture\/visual-artifact-check-report\.json/);
   assert.match(markdown, /--markdown-output reports\/visual\/page-builder-fixture\/visual-artifact-check-report\.md/);
@@ -164,6 +173,15 @@ function createReferenceImportSummary(overrides = {}) {
       "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
     missingCount: 0,
     missingReferences: [],
+    requiredReferenceCount: 12,
+    requiredReferenceEntryCount: 12,
+    requiredReferenceStatusCounts: {
+      invalid: 0,
+      missing: 0,
+      ready: 12,
+      updated: 0,
+      wouldUpdate: 0,
+    },
     sourceDir: "docs/visual/page-builder-references",
     sourceDirStatus: "ready",
     status: "ready",

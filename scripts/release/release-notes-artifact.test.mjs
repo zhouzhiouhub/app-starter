@@ -178,6 +178,30 @@ test("release notes validates release evidence artifact shape", () => {
       }),
     /missingReferences\.length must not exceed missingCount/,
   );
+
+  assert.throws(
+    () =>
+      assertReleaseEvidenceCheckArtifact({
+        ...artifact,
+        visual: {
+          ...artifact.visual,
+          artifactCheck: {
+            ...artifact.visual.artifactCheck,
+            referenceImport: {
+              ...artifact.visual.artifactCheck.referenceImport,
+              requiredReferenceStatusCounts: {
+                invalid: 0,
+                missing: 0,
+                ready: 11,
+                updated: 0,
+                wouldUpdate: 0,
+              },
+            },
+          },
+        },
+      }),
+    /requiredReferenceStatusCounts must match requiredReferenceEntryCount/,
+  );
 });
 
 test("release notes validates ready release evidence consistency", () => {

@@ -45,6 +45,7 @@ function formatReferenceImport(referenceImport) {
     formatReferenceImportSource(referenceImport),
     `${referenceImport.missingCount} missing`,
     `${referenceImport.updateCount} updates`,
+    formatRequiredReferences(referenceImport),
   ].filter(Boolean);
 
   return [
@@ -53,6 +54,17 @@ function formatReferenceImport(referenceImport) {
     }`,
     ...formatMissingReferences(referenceImport),
   ];
+}
+
+function formatRequiredReferences(referenceImport) {
+  if (
+    !Number.isFinite(referenceImport.requiredReferenceCount) ||
+    !Number.isFinite(referenceImport.requiredReferenceEntryCount)
+  ) {
+    return null;
+  }
+
+  return `${referenceImport.requiredReferenceEntryCount}/${referenceImport.requiredReferenceCount} required`;
 }
 
 function formatMissingReferences(referenceImport) {

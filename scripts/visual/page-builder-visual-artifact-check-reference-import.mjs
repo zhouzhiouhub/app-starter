@@ -10,6 +10,7 @@ import {
   isValidUpdateReferenceEntry,
 } from "./page-builder-visual-reference-import-entries.mjs";
 import {
+  createRequiredReferenceSummaryFields,
   hasRequiredReferenceList,
   isValidRequiredReferenceList,
 } from "./page-builder-visual-reference-import-required-entries.mjs";
@@ -72,6 +73,7 @@ export function createReferenceImportSummary(report) {
     manifestPath: readText(report.manifestPath),
     missingCount: readItemCount(report.missingCount, report.missing),
     missingReferences: readReferencePaths(report.missing),
+    ...createRequiredReferenceSummaryFields(report),
     sourceDir: readText(report.sourceDir),
     sourceDirStatus: readText(report.sourceDirStatus) ?? "unknown",
     status: readText(report.status) ?? "unknown",

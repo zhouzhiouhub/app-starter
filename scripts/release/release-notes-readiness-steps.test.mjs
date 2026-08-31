@@ -89,7 +89,7 @@ function createReadyReleaseArtifact() {
         {
           action: null,
           detail:
-            "6/6 components, 12/12 viewports, artifact complete (reports/visual/page-builder-fixture, 0 issues, 6/6 files, 12/12 screenshots, references ready (0 missing, 0 updates))",
+            "6/6 components, 12/12 viewports, artifact complete (reports/visual/page-builder-fixture, 0 issues, 6/6 files, 12/12 screenshots, references ready (0 missing, 0 updates, 12/12 required))",
           label: "Page Builder Visual evidence",
           status: "ready",
         },

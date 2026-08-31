@@ -106,8 +106,9 @@ evidence can pass artifact integrity review, and reports the readable reference
 count against the number of filled `designReference` paths. The retained JSON,
 terminal output, and Markdown handoff include an issue count before the detailed
 issue list, plus reference-import status, source-dir status, missing/update
-counts, and missing reference path previews so release reviewers can spot
-invalid bundles and missing design references quickly.
+counts, required-reference coverage, and missing reference path previews so
+release reviewers can spot invalid bundles and missing design references
+quickly.
 The check also verifies that `visual-reference-import-report.json` and
 `visual-reference-import-report.md` are retained for the artifact-local manifest
 and default reference intake directory, and that `visual-acceptance-report.md`
@@ -232,14 +233,16 @@ release gate. The combined gate then runs with
 `--visual-artifact-dir reports/visual/page-builder-fixture`, reads the
 artifact-local manifest by default, and records the artifact check result in
 `release-evidence-check.v1` as `visual.artifactCheck`. The artifact check also
-validates the reference-import status, missing/update counts, any recorded
-`sourceDirStatus` value, and the matching Markdown lines. The Page Builder Visual
+validates the reference-import status, missing/update counts,
+required-reference coverage, any recorded `sourceDirStatus` value, and the
+matching Markdown lines. The Page Builder Visual
 workflow summary prints the run id to use with the Production Smoke
 `visual_artifact_run_id` input.
 When the same default artifact is complete on a local machine, plain
 `pnpm project:status` automatically includes it in the informational status
-summary with the artifact path, issue count, reference-import summary, first
-missing reference path, and count totals. Keep using explicit
+summary with the artifact path, issue count, reference-import summary,
+required-reference coverage, first missing reference path, and count totals.
+Keep using explicit
 `--visual-artifact-dir reports/visual/page-builder-fixture`
 for `release:check` and production handoff commands that must formally evaluate
 the downloaded artifact.

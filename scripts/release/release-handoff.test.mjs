@@ -85,7 +85,7 @@ test("release handoff writes blocked reports without requiring readiness", async
     assert.match(stdout.join("\n"), /Preflight JSON:/);
     assert.match(
       stdout.join("\n"),
-      /Visual artifact: complete \(reports\/visual\/page-builder-fixture, 6\/6 files, 12\/12 screenshots, 12\/12 design references, references ready \(0 missing, 0 updates\)\)/,
+      /Visual artifact: complete \(reports\/visual\/page-builder-fixture, 6\/6 files, 12\/12 screenshots, 12\/12 design references, references ready \(0 missing, 0 updates, 12\/12 required\)\)/,
     );
     assert.match(stdout.join("\n"), /Next actions: 14/);
     assert.match(stdout.join("\n"), /Next action 1: Production Smoke/);

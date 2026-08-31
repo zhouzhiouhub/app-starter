@@ -10,16 +10,19 @@ import {
 
 const maxMarkdownTextLength = 420;
 
-export function formatVisualReferenceImport(referenceImport) {
+export function formatVisualReferenceImport(referenceImport, options = {}) {
   if (!referenceImport) {
     return null;
   }
 
-  return `references ${formatText(referenceImport.status)} (${formatText(
-    referenceImport.sourceDirStatus,
-  )} source, ${referenceImport.missingCount} missing, ${
-    referenceImport.updateCount
-  } updates)`;
+  return `references ${formatText(referenceImport.status)} (${[
+    `${formatText(referenceImport.sourceDirStatus)} source`,
+    `${referenceImport.missingCount} missing`,
+    `${referenceImport.updateCount} updates`,
+    formatRequiredReferenceCoverage(referenceImport, options),
+  ]
+    .filter(Boolean)
+    .join(", ")})`;
 }
 
 export function formatMissingVisualReferenceFiles(visual) {
@@ -38,6 +41,7 @@ export function formatMissingVisualReferenceFiles(visual) {
     "",
     `- Source dir: ${formatCode(referenceImport.sourceDir)}`,
     `- Missing files: ${referenceImport.missingCount}`,
+    ...formatRequiredReferenceLines(referenceImport),
     ...missingReferences.map((reference) => `- ${formatCode(reference)}`),
     "",
     "### Visual Reference Intake Commands",
@@ -73,6 +77,49 @@ function formatVisualReferenceIntakeCommands(referenceImport) {
       createPageBuilderVisualReferenceAcceptanceCommand(referenceImport),
     ],
   ].map(([label, command]) => `- ${label}: ${formatCode(command)}`);
+}
+
+function formatRequiredReferenceLines(referenceImport) {
+  const coverage = formatRequiredReferenceCoverage(referenceImport);
+
+  return coverage ? [`- Required files: ${coverage}`] : [];
+}
+
+function formatRequiredReferenceCoverage(referenceImport, options = {}) {
+  if (
+    !Number.isFinite(referenceImport.requiredReferenceCount) ||
+    !Number.isFinite(referenceImport.requiredReferenceEntryCount)
+  ) {
+    return "";
+  }
+
+  const statusCounts =
+    options.includeStatusCounts === false
+      ? ""
+      : formatRequiredStatusCounts(referenceImport.requiredReferenceStatusCounts);
+  const requiredLabel = options.includeRequiredLabel === true ? " required" : "";
+
+  return `${referenceImport.requiredReferenceEntryCount}/${referenceImport.requiredReferenceCount}${requiredLabel}${statusCounts}`;
+}
+
+function formatRequiredStatusCounts(counts) {
+  if (!counts || typeof counts !== "object" || Array.isArray(counts)) {
+    return "";
+  }
+
+  const values = [
+    formatStatusCount(counts.missing, "missing"),
+    formatStatusCount(counts.ready, "ready"),
+    formatStatusCount(counts.wouldUpdate, "would-update"),
+    formatStatusCount(counts.updated, "updated"),
+    formatStatusCount(counts.invalid, "invalid"),
+  ].filter(Boolean);
+
+  return values.length > 0 ? ` (${values.join(", ")})` : "";
+}
+
+function formatStatusCount(count, label) {
+  return Number.isFinite(count) && count > 0 ? `${count} ${label}` : null;
 }
 
 function formatCode(value) {

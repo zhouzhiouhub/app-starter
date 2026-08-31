@@ -194,6 +194,25 @@ test("project status artifact validation rejects inconsistent reference import",
     () => assertProjectStatusArtifact(artifact),
     /missingReferences\.length must not exceed missingCount/,
   );
+
+  artifact.releaseGate.visual.artifactCheck.referenceImport = {
+    ...artifact.releaseGate.visual.artifactCheck.referenceImport,
+    missingCount: 12,
+    missingReferences: [],
+    requiredReferenceCount: 12,
+    requiredReferenceEntryCount: 12,
+    requiredReferenceStatusCounts: {
+      invalid: 0,
+      missing: 11,
+      ready: 0,
+      updated: 0,
+      wouldUpdate: 0,
+    },
+  };
+  assert.throws(
+    () => assertProjectStatusArtifact(artifact),
+    /requiredReferenceStatusCounts must match requiredReferenceEntryCount/,
+  );
 });
 
 test("project status writer validates artifacts before writing", async () => {

@@ -106,6 +106,7 @@ function assertOptionalReferenceImport(referenceImport) {
     "visual.artifactCheck.referenceImport.missingCount",
   );
   assertOptionalMissingReferences(referenceImport);
+  assertOptionalRequiredReferenceSummary(referenceImport);
   assertNullableString(
     referenceImport.sourceDir,
     "visual.artifactCheck.referenceImport.sourceDir",
@@ -132,6 +133,68 @@ function assertOptionalReferenceImport(referenceImport) {
       "Release check artifact complete referenceImport must have no missing references.",
     );
   }
+}
+
+function assertOptionalRequiredReferenceSummary(referenceImport) {
+  if (
+    referenceImport.requiredReferenceCount === undefined &&
+    referenceImport.requiredReferenceEntryCount === undefined &&
+    referenceImport.requiredReferenceStatusCounts === undefined
+  ) {
+    return;
+  }
+
+  assertNonNegativeNumber(
+    referenceImport.requiredReferenceCount,
+    "visual.artifactCheck.referenceImport.requiredReferenceCount",
+  );
+  assertNonNegativeNumber(
+    referenceImport.requiredReferenceEntryCount,
+    "visual.artifactCheck.referenceImport.requiredReferenceEntryCount",
+  );
+  assertRequiredReferenceStatusCounts(referenceImport);
+}
+
+function assertRequiredReferenceStatusCounts(referenceImport) {
+  const counts = referenceImport.requiredReferenceStatusCounts;
+
+  if (!isPlainRecord(counts)) {
+    throw new Error(
+      "Release check artifact visual.artifactCheck.referenceImport.requiredReferenceStatusCounts must be an object.",
+    );
+  }
+
+  for (const field of [
+    "invalid",
+    "missing",
+    "ready",
+    "updated",
+    "wouldUpdate",
+  ]) {
+    assertNonNegativeNumber(
+      counts[field],
+      `visual.artifactCheck.referenceImport.requiredReferenceStatusCounts.${field}`,
+    );
+  }
+
+  if (
+    sumRequiredReferenceStatusCounts(counts) !==
+    referenceImport.requiredReferenceEntryCount
+  ) {
+    throw new Error(
+      "Release check artifact visual.artifactCheck.referenceImport.requiredReferenceStatusCounts must match requiredReferenceEntryCount.",
+    );
+  }
+}
+
+function sumRequiredReferenceStatusCounts(counts) {
+  return (
+    counts.invalid +
+    counts.missing +
+    counts.ready +
+    counts.updated +
+    counts.wouldUpdate
+  );
 }
 
 function assertOptionalMissingReferences(referenceImport) {

@@ -72,6 +72,15 @@ test("visual artifact check accepts generated reference intake checklist", () =>
     assert.equal(report.status, "complete");
     assert.equal(report.referenceImport.status, "invalid");
     assert.equal(report.referenceImport.missingCount, 12);
+    assert.equal(report.referenceImport.requiredReferenceCount, 12);
+    assert.equal(report.referenceImport.requiredReferenceEntryCount, 12);
+    assert.deepEqual(report.referenceImport.requiredReferenceStatusCounts, {
+      invalid: 0,
+      missing: 12,
+      ready: 0,
+      updated: 0,
+      wouldUpdate: 0,
+    });
     assert.equal(
       hasIssue(report, "invalid_reference_import_required_entry"),
       false,
@@ -100,6 +109,8 @@ test("visual artifact check rejects incomplete reference intake checklist", () =
 
     const report = checkPageBuilderVisualArtifact({ artifactDir });
     assert.equal(report.status, "invalid");
+    assert.equal(report.referenceImport.requiredReferenceCount, 12);
+    assert.equal(report.referenceImport.requiredReferenceEntryCount, 0);
     assert.equal(
       hasIssue(report, "invalid_reference_import_required_entry"),
       true,

@@ -37,6 +37,15 @@ test("release handoff summary exposes release evidence statuses", () => {
             missingReferences: [
               "docs/visual/page-builder-references/hero-banner-desktop.png",
             ],
+            requiredReferenceCount: 12,
+            requiredReferenceEntryCount: 12,
+            requiredReferenceStatusCounts: {
+              invalid: 0,
+              missing: 12,
+              ready: 0,
+              updated: 0,
+              wouldUpdate: 0,
+            },
             status: "invalid",
             updateCount: 0,
           },
@@ -52,7 +61,7 @@ test("release handoff summary exposes release evidence statuses", () => {
   assert.match(text, /Page Builder Visual: needs-evidence/);
   assert.match(
     text,
-    /Visual artifact: complete \(reports\/visual\/page-builder-fixture, 6\/6 files, 12\/12 screenshots, references invalid \(12 missing, 0 updates, first missing docs\/visual\/page-builder-references\/hero-banner-desktop\.png\)\)/,
+    /Visual artifact: complete \(reports\/visual\/page-builder-fixture, 6\/6 files, 12\/12 screenshots, references invalid \(12 missing, 0 updates, 12\/12 required, first missing docs\/visual\/page-builder-references\/hero-banner-desktop\.png\)\)/,
   );
 });
 
@@ -78,7 +87,7 @@ test("release handoff docs describe terminal evidence statuses", async () => {
     );
     assert.match(
       normalized,
-      /reference-import status, missing\/update counts, and the first missing reference path/,
+      /reference-import status, missing\/update counts, required-reference coverage, and the first missing reference path/,
     );
   }
 

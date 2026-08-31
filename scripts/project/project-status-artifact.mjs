@@ -192,12 +192,44 @@ function createOptionalReferenceImportSummary(referenceImport) {
       manifestPath: readText(referenceImport.manifestPath),
       missingCount: readCount(referenceImport.missingCount) ?? 0,
       missingReferences: readStringList(referenceImport.missingReferences),
+      ...createOptionalRequiredReferenceSummary(referenceImport),
       sourceDir: readText(referenceImport.sourceDir),
       sourceDirStatus: readText(referenceImport.sourceDirStatus) ?? "unknown",
       status: readText(referenceImport.status) ?? "unknown",
       updated: referenceImport.updated === true,
       updateCount: readCount(referenceImport.updateCount) ?? 0,
     },
+  };
+}
+
+function createOptionalRequiredReferenceSummary(referenceImport) {
+  if (
+    referenceImport.requiredReferenceCount === undefined &&
+    referenceImport.requiredReferenceEntryCount === undefined &&
+    referenceImport.requiredReferenceStatusCounts === undefined
+  ) {
+    return {};
+  }
+
+  return {
+    requiredReferenceCount: readCount(referenceImport.requiredReferenceCount) ?? 0,
+    requiredReferenceEntryCount:
+      readCount(referenceImport.requiredReferenceEntryCount) ?? 0,
+    requiredReferenceStatusCounts: readRequiredReferenceStatusCounts(
+      referenceImport.requiredReferenceStatusCounts,
+    ),
+  };
+}
+
+function readRequiredReferenceStatusCounts(value) {
+  const counts = isObject(value) ? value : {};
+
+  return {
+    invalid: readCount(counts.invalid) ?? 0,
+    missing: readCount(counts.missing) ?? 0,
+    ready: readCount(counts.ready) ?? 0,
+    updated: readCount(counts.updated) ?? 0,
+    wouldUpdate: readCount(counts.wouldUpdate) ?? 0,
   };
 }
 
@@ -248,4 +280,8 @@ function readText(value) {
 
 function readCount(value) {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function isObject(value) {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }

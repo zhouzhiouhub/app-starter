@@ -91,8 +91,20 @@ function formatReferenceImport(referenceImport) {
     ? referenceImport.missingReferences[0]
     : null;
   const missingSuffix = firstMissing ? `, first missing ${firstMissing}` : "";
+  const required = formatRequiredReferenceCoverage(referenceImport);
 
-  return `references ${referenceImport.status} (${referenceImport.missingCount} missing, ${referenceImport.updateCount} updates${missingSuffix})`;
+  return `references ${referenceImport.status} (${referenceImport.missingCount} missing, ${referenceImport.updateCount} updates${required}${missingSuffix})`;
+}
+
+function formatRequiredReferenceCoverage(referenceImport) {
+  if (
+    !Number.isFinite(referenceImport.requiredReferenceCount) ||
+    !Number.isFinite(referenceImport.requiredReferenceEntryCount)
+  ) {
+    return "";
+  }
+
+  return `, ${referenceImport.requiredReferenceEntryCount}/${referenceImport.requiredReferenceCount} required`;
 }
 
 function formatCount(present, expected, label) {

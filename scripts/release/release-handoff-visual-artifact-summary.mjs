@@ -59,6 +59,7 @@ function formatReferenceImport(referenceImport) {
   const detailText = [
     formatReferenceImportCount(referenceImport.missingCount, "missing"),
     formatReferenceImportCount(referenceImport.updateCount, "updates"),
+    formatRequiredReferenceCoverage(referenceImport),
     firstMissing ? `first missing ${formatSmokeText(firstMissing)}` : null,
   ].filter(Boolean);
 
@@ -69,6 +70,17 @@ function formatReferenceImport(referenceImport) {
 
 function formatReferenceImportCount(count, label) {
   return Number.isFinite(count) ? `${count} ${label}` : null;
+}
+
+function formatRequiredReferenceCoverage(referenceImport) {
+  if (
+    !Number.isFinite(referenceImport.requiredReferenceCount) ||
+    !Number.isFinite(referenceImport.requiredReferenceEntryCount)
+  ) {
+    return null;
+  }
+
+  return `${referenceImport.requiredReferenceEntryCount}/${referenceImport.requiredReferenceCount} required`;
 }
 
 function readFirstMissingReference(referenceImport) {

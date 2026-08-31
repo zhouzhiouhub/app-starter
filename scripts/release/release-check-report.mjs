@@ -91,7 +91,20 @@ function formatReferenceImport(referenceImport) {
   return `references ${formatReleaseValue(
     referenceImport.status,
     "unknown",
-  )}, ${referenceImport.missingCount} missing${firstMissing ? `, first missing ${formatReleaseValue(firstMissing, "unknown")}` : ""}`;
+  )}, ${referenceImport.missingCount} missing${formatRequiredReferenceCoverage(
+    referenceImport,
+  )}${firstMissing ? `, first missing ${formatReleaseValue(firstMissing, "unknown")}` : ""}`;
+}
+
+function formatRequiredReferenceCoverage(referenceImport) {
+  if (
+    !Number.isFinite(referenceImport.requiredReferenceCount) ||
+    !Number.isFinite(referenceImport.requiredReferenceEntryCount)
+  ) {
+    return "";
+  }
+
+  return `, ${referenceImport.requiredReferenceEntryCount}/${referenceImport.requiredReferenceCount} required`;
 }
 
 function formatSmokeMarkdownLines(markdown) {

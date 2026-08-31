@@ -151,7 +151,28 @@ function formatReferenceImport(referenceImport) {
     return null;
   }
 
-  return `references ${referenceImport.status} (${referenceImport.missingCount} missing, ${referenceImport.updateCount} updates)`;
+  return `references ${referenceImport.status} (${[
+    formatReferenceImportCount(referenceImport.missingCount, "missing"),
+    formatReferenceImportCount(referenceImport.updateCount, "updates"),
+    formatRequiredReferenceCoverage(referenceImport),
+  ]
+    .filter(Boolean)
+    .join(", ")})`;
+}
+
+function formatReferenceImportCount(count, label) {
+  return Number.isFinite(count) ? `${count} ${label}` : null;
+}
+
+function formatRequiredReferenceCoverage(referenceImport) {
+  if (
+    !Number.isFinite(referenceImport.requiredReferenceCount) ||
+    !Number.isFinite(referenceImport.requiredReferenceEntryCount)
+  ) {
+    return null;
+  }
+
+  return `${referenceImport.requiredReferenceEntryCount}/${referenceImport.requiredReferenceCount} required`;
 }
 
 function formatCount(present, expected, label) {

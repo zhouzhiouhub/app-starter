@@ -13,12 +13,45 @@ export function createOptionalReferenceImportArtifact(referenceImport) {
       manifestPath: readTextOrNull(referenceImport.manifestPath),
       missingCount: readCount(referenceImport.missingCount),
       missingReferences: readStringList(referenceImport.missingReferences),
+      ...createOptionalRequiredReferenceSummary(referenceImport),
       sourceDir: readTextOrNull(referenceImport.sourceDir),
       sourceDirStatus: readTextOrNull(referenceImport.sourceDirStatus) ?? "unknown",
       status: readTextOrNull(referenceImport.status) ?? "unknown",
       updated: referenceImport.updated === true,
       updateCount: readCount(referenceImport.updateCount),
     },
+  };
+}
+
+function createOptionalRequiredReferenceSummary(referenceImport) {
+  if (
+    referenceImport.requiredReferenceCount === undefined &&
+    referenceImport.requiredReferenceEntryCount === undefined &&
+    referenceImport.requiredReferenceStatusCounts === undefined
+  ) {
+    return {};
+  }
+
+  return {
+    requiredReferenceCount: readCount(referenceImport.requiredReferenceCount),
+    requiredReferenceEntryCount: readCount(
+      referenceImport.requiredReferenceEntryCount,
+    ),
+    requiredReferenceStatusCounts: readRequiredReferenceStatusCounts(
+      referenceImport.requiredReferenceStatusCounts,
+    ),
+  };
+}
+
+function readRequiredReferenceStatusCounts(value) {
+  const counts = isObject(value) ? value : {};
+
+  return {
+    invalid: readCount(counts.invalid),
+    missing: readCount(counts.missing),
+    ready: readCount(counts.ready),
+    updated: readCount(counts.updated),
+    wouldUpdate: readCount(counts.wouldUpdate),
   };
 }
 
@@ -40,4 +73,8 @@ function readTextOrNull(value) {
   return formatSmokeText(value, {
     maxLength: maxReferenceImportArtifactTextLength,
   });
+}
+
+function isObject(value) {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }

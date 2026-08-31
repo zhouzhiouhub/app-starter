@@ -169,6 +169,7 @@ function assertOptionalReferenceImport(referenceImport) {
     "releaseGate.visual.artifactCheck.referenceImport.missingCount",
   );
   assertOptionalMissingReferences(referenceImport);
+  assertOptionalRequiredReferenceSummary(referenceImport);
   assertNullableString(
     referenceImport.sourceDir,
     "releaseGate.visual.artifactCheck.referenceImport.sourceDir",
@@ -195,6 +196,68 @@ function assertOptionalReferenceImport(referenceImport) {
       "Project status artifact complete referenceImport must have no missing references.",
     );
   }
+}
+
+function assertOptionalRequiredReferenceSummary(referenceImport) {
+  if (
+    referenceImport.requiredReferenceCount === undefined &&
+    referenceImport.requiredReferenceEntryCount === undefined &&
+    referenceImport.requiredReferenceStatusCounts === undefined
+  ) {
+    return;
+  }
+
+  assertNonNegativeNumber(
+    referenceImport.requiredReferenceCount,
+    "releaseGate.visual.artifactCheck.referenceImport.requiredReferenceCount",
+  );
+  assertNonNegativeNumber(
+    referenceImport.requiredReferenceEntryCount,
+    "releaseGate.visual.artifactCheck.referenceImport.requiredReferenceEntryCount",
+  );
+  assertRequiredReferenceStatusCounts(referenceImport);
+}
+
+function assertRequiredReferenceStatusCounts(referenceImport) {
+  const counts = referenceImport.requiredReferenceStatusCounts;
+
+  if (!isRecord(counts)) {
+    throw new Error(
+      "Project status artifact releaseGate.visual.artifactCheck.referenceImport.requiredReferenceStatusCounts must be an object.",
+    );
+  }
+
+  for (const field of [
+    "invalid",
+    "missing",
+    "ready",
+    "updated",
+    "wouldUpdate",
+  ]) {
+    assertNonNegativeNumber(
+      counts[field],
+      `releaseGate.visual.artifactCheck.referenceImport.requiredReferenceStatusCounts.${field}`,
+    );
+  }
+
+  if (
+    sumRequiredReferenceStatusCounts(counts) !==
+    referenceImport.requiredReferenceEntryCount
+  ) {
+    throw new Error(
+      "Project status artifact releaseGate.visual.artifactCheck.referenceImport.requiredReferenceStatusCounts must match requiredReferenceEntryCount.",
+    );
+  }
+}
+
+function sumRequiredReferenceStatusCounts(counts) {
+  return (
+    counts.invalid +
+    counts.missing +
+    counts.ready +
+    counts.updated +
+    counts.wouldUpdate
+  );
 }
 
 function assertOptionalMissingReferences(referenceImport) {
