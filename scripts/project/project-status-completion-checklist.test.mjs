@@ -68,7 +68,7 @@ test("project status completion checklist summarizes blocked evidence", () => {
     checklist.items[2].nextSteps.find(
       (step) => step.label === "Reference report",
     ).value,
-    "pnpm visual:references -- --source-dir docs/visual/page-builder-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output reports/visual/page-builder-fixture/visual-reference-import-report.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete",
+    "pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output reports/visual/page-builder-fixture/visual-reference-import-report.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete",
   );
   assert.match(terminalText, /Completion checklist:/);
   assert.match(
@@ -81,7 +81,7 @@ test("project status completion checklist summarizes blocked evidence", () => {
   assert.match(markdown, /Needs evidence: 2\/4/);
   assert.match(
     markdown,
-    /Reference report: `pnpm visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md --require-complete`/u,
+    /Reference report: `pnpm visual:references -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md --require-complete`/u,
   );
 });
 

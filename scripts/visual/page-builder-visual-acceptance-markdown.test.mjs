@@ -30,7 +30,7 @@ test("visual acceptance Markdown summarizes pending viewport tasks", () => {
   assert.match(markdown, /Expected design reference: `docs\/visual\/page-builder-references\/hero-banner-desktop\.png`/);
   assert.match(
     markdown,
-    /Reference report: `pnpm visual:references -- --source-dir docs\/visual\/page-builder-references --output artifacts\/visual\/visual-reference-import-report\.json --markdown-output artifacts\/visual\/visual-reference-import-report\.md --require-complete`/,
+    /Reference report: `pnpm visual:references -- --output artifacts\/visual\/visual-reference-import-report\.json --markdown-output artifacts\/visual\/visual-reference-import-report\.md --require-complete`/,
   );
   assert.match(markdown, /Capture: `pnpm visual:capture:fixture/);
   assert.match(markdown, /## Issues/);

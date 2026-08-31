@@ -26,8 +26,7 @@ export function createPageBuilderVisualReferenceReportCommand(report) {
     "pnpm",
     "visual:references",
     "--",
-    "--source-dir",
-    readSourceDir(report),
+    ...createSourceDirOption(report),
     ...createManifestOption(report),
     "--output",
     `${outputDir}/visual-reference-import-report.json`,
@@ -42,8 +41,7 @@ export function createPageBuilderVisualReferenceImportWriteCommand(report) {
     "pnpm",
     "visual:references",
     "--",
-    "--source-dir",
-    readSourceDir(report),
+    ...createSourceDirOption(report),
     ...createManifestOption(report),
     "--write",
     "--require-complete",
@@ -143,4 +141,14 @@ function readSourceDir(report) {
   return typeof report.sourceDir === "string" && report.sourceDir.length > 0
     ? report.sourceDir
     : defaultPageBuilderVisualReferenceSourceDir;
+}
+
+function createSourceDirOption(report) {
+  const sourceDir = readSourceDir(report);
+
+  if (sourceDir === defaultPageBuilderVisualReferenceSourceDir) {
+    return [];
+  }
+
+  return ["--source-dir", sourceDir];
 }

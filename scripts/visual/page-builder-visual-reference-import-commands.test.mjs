@@ -24,11 +24,11 @@ test("visual reference commands keep artifact manifest context", () => {
   );
   assert.equal(
     createPageBuilderVisualReferenceImportWriteCommand(artifactReport),
-    "pnpm visual:references -- --source-dir docs/visual/page-builder-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete",
+    "pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete",
   );
   assert.equal(
     createPageBuilderVisualReferenceReportCommand(artifactReport),
-    "pnpm visual:references -- --source-dir docs/visual/page-builder-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output reports/visual/page-builder-fixture/visual-reference-import-report.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete",
+    "pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output reports/visual/page-builder-fixture/visual-reference-import-report.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete",
   );
   assert.equal(
     createPageBuilderVisualReferenceMeasureCommand(artifactReport),
@@ -77,6 +77,23 @@ test("visual reference Markdown keeps artifact follow-up commands", () => {
   );
 });
 
+test("visual reference commands keep non-default source dirs explicit", () => {
+  const customReport = {
+    manifestPath:
+      "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
+    sourceDir: "artifacts/visual/design-references",
+  };
+
+  assert.equal(
+    createPageBuilderVisualReferenceImportWriteCommand(customReport),
+    "pnpm visual:references -- --source-dir artifacts/visual/design-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete",
+  );
+  assert.equal(
+    createPageBuilderVisualReferenceReportCommand(customReport),
+    "pnpm visual:references -- --source-dir artifacts/visual/design-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output reports/visual/page-builder-fixture/visual-reference-import-report.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete",
+  );
+});
+
 test("visual reference reports list expected files and artifact write command", () => {
   const report = {
     ...artifactReport,
@@ -99,10 +116,10 @@ test("visual reference reports list expected files and artifact write command", 
   );
   assert.match(
     text,
-    /visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --require-complete/,
+    /visual:references -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --require-complete/,
   );
   assert.match(
     markdown,
-    /visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --require-complete/,
+    /visual:references -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --require-complete/,
   );
 });

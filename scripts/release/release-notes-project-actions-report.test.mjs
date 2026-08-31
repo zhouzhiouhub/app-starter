@@ -5,7 +5,7 @@ import { formatProjectNextActions } from "./release-notes-project-actions-report
 test("release notes project next actions keep runnable step commands", () => {
   const marker = "release-notes-step-command-end";
   const command = [
-    "pnpm visual:references -- --source-dir docs/visual/page-builder-references",
+    "pnpm visual:references --",
     "--manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
     "--output reports/visual/page-builder-fixture/visual-reference-import-report.json",
     "--markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md",

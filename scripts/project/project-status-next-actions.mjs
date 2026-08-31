@@ -158,11 +158,11 @@ function createPageBuilderVisualActionSteps(action, context) {
     createNextActionStep("Reference source", defaultVisualReferenceSourceDir),
     createNextActionStep(
       "Reference report",
-      `pnpm visual:references -- --source-dir ${defaultVisualReferenceSourceDir} --manifest ${visualContext.manifestPath} --output ${visualContext.referenceJsonReportPath} --markdown-output ${visualContext.referenceReportPath} --require-complete`,
+      `pnpm visual:references -- --manifest ${visualContext.manifestPath} --output ${visualContext.referenceJsonReportPath} --markdown-output ${visualContext.referenceReportPath} --require-complete`,
     ),
     createNextActionStep(
       "Import",
-      `pnpm visual:references -- --source-dir ${defaultVisualReferenceSourceDir} --manifest ${visualContext.manifestPath} --write --require-complete`,
+      `pnpm visual:references -- --manifest ${visualContext.manifestPath} --write --require-complete`,
     ),
     createNextActionStep(
       "Capture fixture",

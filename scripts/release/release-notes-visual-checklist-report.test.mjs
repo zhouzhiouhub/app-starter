@@ -32,11 +32,11 @@ test("release notes failure drafts include visual checklist tasks", () => {
   );
   assert.match(
     markdown,
-    /Reference report: `pnpm visual:references -- --source-dir docs\/visual\/page-builder-references --output artifacts\/visual\/visual-reference-import-report\.json/,
+    /Reference report: `pnpm visual:references -- --output artifacts\/visual\/visual-reference-import-report\.json/,
   );
   assert.match(
     markdown,
-    /Import: `pnpm visual:references -- --source-dir docs\/visual\/page-builder-references --write --require-complete`/,
+    /Import: `pnpm visual:references -- --write --require-complete`/,
   );
   assert.match(
     markdown,
@@ -167,10 +167,10 @@ function createVisualTask(component, viewport) {
         "pnpm visual:measure -- --write --accept-passing --require-complete",
       capture: `pnpm visual:capture:fixture -- --component ${component} --viewport ${viewport} --write-manifest`,
       importReference:
-        "pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete",
+        "pnpm visual:references -- --write --require-complete",
       measure: "pnpm visual:measure -- --write --require-complete",
       referenceReport:
-        "pnpm visual:references -- --source-dir docs/visual/page-builder-references --output artifacts/visual/visual-reference-import-report.json --markdown-output artifacts/visual/visual-reference-import-report.md --require-complete",
+        "pnpm visual:references -- --output artifacts/visual/visual-reference-import-report.json --markdown-output artifacts/visual/visual-reference-import-report.md --require-complete",
       verify: "pnpm visual:acceptance -- --require-accepted",
     },
     component,

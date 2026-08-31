@@ -237,7 +237,7 @@ test("project status CLI prints readable blocked state", async () => {
     assert.match(text, /Page Builder Visual: Visual acceptance pending/);
     assert.match(
       text,
-      /Reference report: pnpm visual:references -- --source-dir docs\/visual\/page-builder-references/,
+      /Reference report: pnpm visual:references -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/,
     );
     assert.match(text, /Capture fixture: pnpm visual:capture:fixture/);
     assert.match(text, /Accept passing: pnpm visual:measure/);

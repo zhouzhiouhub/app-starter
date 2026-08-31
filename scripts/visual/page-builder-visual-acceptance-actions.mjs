@@ -87,8 +87,7 @@ function createPageBuilderVisualReferenceImportCommand(context) {
     "pnpm",
     "visual:references",
     "--",
-    "--source-dir",
-    context.referenceSourceDir,
+    ...createReferenceSourceDirOption(context),
     ...createManifestOption(context),
     "--write",
     "--require-complete",
@@ -100,8 +99,7 @@ function createPageBuilderVisualReferenceReportCommand(context) {
     "pnpm",
     "visual:references",
     "--",
-    "--source-dir",
-    context.referenceSourceDir,
+    ...createReferenceSourceDirOption(context),
     ...createManifestOption(context),
     "--output",
     createPageBuilderVisualReferenceJsonReportPath(context),
@@ -158,6 +156,14 @@ function createCaptureOutputDirOption(context) {
   }
 
   return ["--output-dir", context.captureOutputDir];
+}
+
+function createReferenceSourceDirOption(context) {
+  if (context.referenceSourceDir === defaultPageBuilderVisualReferenceSourceDir) {
+    return [];
+  }
+
+  return ["--source-dir", context.referenceSourceDir];
 }
 
 function createAcceptanceManifestArgument(context) {

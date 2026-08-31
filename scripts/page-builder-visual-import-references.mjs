@@ -73,12 +73,12 @@ function isMainModule() {
 function printHelp() {
   console.log(`Usage:
   pnpm visual:references
-  pnpm visual:references -- --source-dir docs/visual/page-builder-references
-  pnpm visual:references -- --source-dir docs/visual/page-builder-references --write
-  pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete
-  pnpm visual:references -- --source-dir docs/visual/page-builder-references --json
-  pnpm visual:references -- --source-dir docs/visual/page-builder-references --output reports/visual/page-builder-fixture/visual-reference-import-report.json
-  pnpm visual:references -- --source-dir docs/visual/page-builder-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output reports/visual/page-builder-fixture/visual-reference-import-report.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete
+  pnpm visual:references -- --write
+  pnpm visual:references -- --write --require-complete
+  pnpm visual:references -- --json
+  pnpm visual:references -- --output reports/visual/page-builder-fixture/visual-reference-import-report.json
+  pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output reports/visual/page-builder-fixture/visual-reference-import-report.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete
+  pnpm visual:references -- --source-dir artifacts/visual/references
 
 Options:
   --source-dir <dir>     Directory containing <component>-<viewport>.png files;

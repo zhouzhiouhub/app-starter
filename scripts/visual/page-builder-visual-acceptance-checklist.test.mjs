@@ -24,10 +24,10 @@ test("visual acceptance checklist lists missing release evidence", async () => {
     capture:
       "pnpm visual:capture:fixture -- --component hero-banner --viewport desktop --write-manifest",
     importReference:
-      "pnpm visual:references -- --source-dir docs/visual/page-builder-references --write --require-complete",
+      "pnpm visual:references -- --write --require-complete",
     measure: "pnpm visual:measure -- --write --require-complete",
     referenceReport:
-      "pnpm visual:references -- --source-dir docs/visual/page-builder-references --output artifacts/visual/visual-reference-import-report.json --markdown-output artifacts/visual/visual-reference-import-report.md --require-complete",
+      "pnpm visual:references -- --output artifacts/visual/visual-reference-import-report.json --markdown-output artifacts/visual/visual-reference-import-report.md --require-complete",
     verify: "pnpm visual:acceptance -- --require-accepted",
   });
   assert.equal(

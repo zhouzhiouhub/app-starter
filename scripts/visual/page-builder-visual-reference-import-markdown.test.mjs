@@ -44,7 +44,7 @@ test("visual reference import Markdown lists required source files", () => {
   );
   assert.match(
     markdown,
-    /pnpm visual:references -- --source-dir docs\/visual\/page-builder-references --write --require-complete/,
+    /pnpm visual:references -- --write --require-complete/,
   );
 });
 

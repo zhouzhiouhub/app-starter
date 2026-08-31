@@ -15,7 +15,7 @@ test("visual evidence action starts with fixture bundle before artifact completi
   );
   assert.match(
     action,
-    /visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.json/,
+    /visual:references -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.json/,
   );
   assert.match(
     action,

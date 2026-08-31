@@ -245,9 +245,9 @@ test("visual reference import command is exposed in docs", () => {
   assert.match(cli, /defaults to docs\/visual\/page-builder-references/);
   assert.match(
     cli,
-    /visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output/,
+    /visual:references -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output/,
   );
-  assert.match(readme, /pnpm visual:references -- --source-dir/);
+  assert.match(readme, /pnpm visual:references -- --manifest/);
   assert.match(readme, /pnpm visual:references` 会读取该目录/);
   assert.match(readme, /visual-reference-import-report\.json/);
   assert.match(readme, /visual-reference-import-report\.md/);
@@ -256,7 +256,7 @@ test("visual reference import command is exposed in docs", () => {
     readme,
     /--manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/,
   );
-  assert.match(acceptanceDoc, /pnpm visual:references -- --source-dir/);
+  assert.match(acceptanceDoc, /pnpm visual:references -- --manifest/);
   assert.match(acceptanceDoc, /visual-reference-import-report\.json/);
   assert.match(acceptanceDoc, /visual-reference-import-report\.md/);
   assert.match(acceptanceDoc, /expectedPath/);
@@ -265,7 +265,7 @@ test("visual reference import command is exposed in docs", () => {
     acceptanceDoc,
     /--manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/,
   );
-  assert.match(releaseChecklist, /pnpm visual:references -- --source-dir/);
+  assert.match(releaseChecklist, /pnpm visual:references -- --manifest/);
   assert.match(releaseChecklist, /visual-reference-import-report\.json/);
   assert.match(releaseChecklist, /visual-reference-import-report\.md/);
   assert.match(
@@ -290,11 +290,11 @@ test("visual reference intake directory documents every required file", () => {
   );
   assert.match(
     referenceReadme,
-    /visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md/,
+    /visual:references -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.json --markdown-output reports\/visual\/page-builder-fixture\/visual-reference-import-report\.md/,
   );
   assert.match(
     referenceReadme,
-    /visual:references -- --source-dir docs\/visual\/page-builder-references --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --require-complete/,
+    /visual:references -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --require-complete/,
   );
   assert.match(
     referenceReadme,
