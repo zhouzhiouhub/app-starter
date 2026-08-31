@@ -317,8 +317,9 @@ later phases are explicitly approved.
   main CI local verification run and artifact, preflight artifact, project
   status artifact and source path, visual manifest path, optional
   `visual.artifactCheck` path, issue count, reference-import summary, missing
-  reference path list, and count summary, pending visual evidence lists, visual checklist task summary, and
-  visual issue summary when `--allow-blocked` is used for failure review drafts.
+  reference path list, and count summary, pending visual evidence lists, visual checklist task summary, visual issue summary,
+  `Missing Production Smoke Evidence`, and `Missing Visual References` when
+  `--allow-blocked` is used for failure review drafts.
   Blocked drafts also include a
   `Project Next Actions` section from the validated `project-status.v1` file so
   the first production smoke and visual evidence repair steps stay with the

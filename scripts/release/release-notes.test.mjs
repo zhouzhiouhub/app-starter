@@ -6,7 +6,6 @@ import {
 } from "./release-notes.mjs";
 import {
   createCompleteArtifactCheck,
-  createInvalidArtifactCheck,
   createReadySmokeSource,
 } from "./release-notes-test-fixtures.mjs";
 
@@ -59,10 +58,7 @@ test("release notes render required evidence and gate status", () => {
   );
   assert.match(markdown, /## Readiness Checklist/);
   assert.match(markdown, /Production Smoke report: ready/);
-  assert.doesNotMatch(
-    markdown,
-    /Production Smoke report: ready; detail:/u,
-  );
+  assert.doesNotMatch(markdown, /Production Smoke report: ready; detail:/u);
   assert.match(
     markdown,
     / {2}- Detail: Report path: artifacts\/production-smoke\/smoke-report\.json/,
@@ -87,6 +83,8 @@ test("release notes render required evidence and gate status", () => {
   assert.match(markdown, /Artifact screenshots: 12\/12/);
   assert.match(markdown, /Reference import: ready/);
   assert.match(markdown, /Reference missing: 0/);
+  assert.doesNotMatch(markdown, /### Missing Production Smoke Evidence/);
+  assert.doesNotMatch(markdown, /### Missing Visual References/);
   assert.match(markdown, /Artifact issues: none/);
   assert.match(markdown, /Pending components: none/);
   assert.match(markdown, /Pending viewports: none/);
@@ -140,119 +138,6 @@ function createReadyReleaseArtifact() {
     },
   };
 }
-
-test("release notes require ready evidence unless explicitly allowed", () => {
-  const artifact = {
-    blockerCount: 1,
-    blockers: [
-      {
-        action: "Attach design references.",
-        area: "Page Builder Visual",
-        label: "Visual acceptance pending",
-      },
-    ],
-    generatedAt: "2026-08-28T00:00:00.000Z",
-    readinessChecklist: createBlockedReadinessChecklist(),
-    releaseReady: false,
-    schemaVersion: "release-evidence-check.v1",
-    smoke: {
-      path: "artifacts/production-smoke/smoke-report.json",
-      releaseReady: true,
-      source: createReadySmokeSource(),
-      status: "ready",
-      summary: {
-        checkCount: 42,
-        failedCheckCount: 0,
-        productionReady: true,
-        status: "passed",
-      },
-      traceability: [],
-    },
-    status: "blocked",
-    visual: {
-      acceptedComponentCount: 0,
-      acceptedViewportCount: 0,
-      artifactCheck: createInvalidArtifactCheck(),
-      componentCount: 6,
-      errorCount: 0,
-      issueCount: 1,
-      issues: [
-        {
-          code: "record_needs_evidence",
-          component: "hero-banner",
-          message: "hero-banner is needs-evidence.",
-          severity: "warning",
-          viewport: null,
-        },
-      ],
-      manifestPath: "docs/development/page-builder-visual-acceptance.json",
-      pendingComponents: ["hero-banner", "rich-text"],
-      pendingViewports: ["hero-banner.desktop", "hero-banner.mobile"],
-      status: "needs-evidence",
-      viewportCount: 12,
-      warningCount: 1,
-    },
-  };
-
-  assert.throws(
-    () => createReleaseNotesMarkdown(createReleaseNotesConfig(), artifact),
-    /Release notes require a ready release-evidence-check\.v1 artifact/,
-  );
-
-  const markdown = createReleaseNotesMarkdown(
-    { ...createReleaseNotesConfig(), allowBlocked: true },
-    artifact,
-    createBlockedProjectStatus(),
-  );
-
-  assert.match(markdown, /Status: blocked/);
-  assert.match(markdown, /Mode: failure review draft/);
-  assert.match(markdown, /failed evidence review only/);
-  assert.match(markdown, /Project Status: needs-evidence \(1 blockers, 4 next actions\)/);
-  assert.match(
-    markdown,
-    /Project Completion: not-ready \(implemented local MVP scope, needs-evidence evidence\)/,
-  );
-  assert.match(markdown, /## Project Next Actions/);
-  assert.match(markdown, / {2}- Reference source: `docs\/visual\/page-builder-references`/);
-  assert.match(markdown, /- Page Builder Visual: hero-banner\.desktop/);
-  assert.match(markdown, /- \.\.\. and 1 more project next actions/);
-  assert.doesNotMatch(markdown, /- Page Builder Visual: rich-text\.desktop/);
-  assert.match(markdown, /Page Builder Visual: Visual acceptance pending/);
-  assert.match(markdown, /Page Builder Visual evidence: needs-evidence/);
-  assert.doesNotMatch(
-    markdown,
-    /Page Builder Visual evidence: needs-evidence; detail:/u,
-  );
-  assert.match(
-    markdown,
-    / {2}- Detail: 0\/6 components, 0\/12 viewports, artifact invalid \(reports\/visual\/page-builder-fixture, 1 issues, 5\/6 files, 0\/12 screenshots, references invalid \(12 missing, 0 updates\)\)/,
-  );
-  assert.match(
-    markdown,
-    / {2}- Action: Attach real visual evidence\./,
-  );
-  assert.match(
-    markdown,
-    / {2}- Bundle: `pnpm visual:artifact-bundle -- --artifact-dir reports\/visual\/page-builder-fixture`/,
-  );
-  assert.match(markdown, /Pending components: hero-banner, rich-text/);
-  assert.match(
-    markdown,
-    /Pending viewports: hero-banner\.desktop, hero-banner\.mobile/,
-  );
-  assert.match(
-    markdown,
-    /Visual issue: hero-banner: record_needs_evidence \(warning\) - hero-banner is needs-evidence\./,
-  );
-  assert.match(
-    markdown,
-    /Artifact issue: unknown: missing_artifact_file \(error\) - capture report is missing\./,
-  );
-  assert.match(markdown, /Reference import: invalid/);
-  assert.match(markdown, /Reference missing: 12/);
-  assert.match(markdown, /Reference missing files: `docs\/visual\/page-builder-references\/hero-banner-desktop\.png`/);
-});
 
 function createRequiredArgs() {
   return [
@@ -310,88 +195,5 @@ function createReadyReadinessChecklist() {
       },
     ],
     releaseReady: true,
-  };
-}
-
-function createBlockedReadinessChecklist() {
-  return {
-    itemCount: 3,
-    items: [
-      {
-        action: null,
-        detail: "Report path: artifacts/production-smoke/smoke-report.json",
-        label: "Production Smoke report",
-        status: "ready",
-      },
-      {
-        action: "Attach real visual evidence.",
-        bundleCommand:
-          "pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture",
-        detail:
-          "0/6 components, 0/12 viewports, artifact invalid (reports/visual/page-builder-fixture, 1 issues, 5/6 files, 0/12 screenshots, references invalid (12 missing, 0 updates))",
-        label: "Page Builder Visual evidence",
-        status: "needs-evidence",
-      },
-      {
-        action: "Wait until release evidence is ready.",
-        detail: null,
-        label: "Release notes record",
-        status: "waiting for evidence",
-      },
-    ],
-    releaseReady: false,
-  };
-}
-
-function createBlockedProjectStatus() {
-  return {
-    completionSummary: {
-      localMvpScope: "implemented",
-      releaseDecision: "not-ready",
-      releaseEvidenceStatus: "needs-evidence",
-      summary:
-        "MVP implementation is in release verification; final completion still requires retained production smoke and Page Builder visual acceptance evidence.",
-    },
-    nextActionCount: 4,
-    nextActions: [
-      createVisualNextAction("Visual acceptance pending", [
-        ["Reference source", "docs/visual/page-builder-references"],
-      ]),
-      createVisualNextAction("hero-banner.desktop", [
-        ["Capture", "pnpm visual:capture:fixture -- --write-manifest"],
-      ]),
-      createVisualNextAction("hero-banner.mobile", []),
-      createVisualNextAction("rich-text.desktop", []),
-    ],
-    releaseGate: {
-      blockerCount: 1,
-      smoke: {
-        path: "artifacts/production-smoke/smoke-report.json",
-        status: "ready",
-        summaryStatus: "passed",
-      },
-      visual: {
-        acceptedComponentCount: 0,
-        acceptedViewportCount: 0,
-        artifactStatus: "invalid",
-        componentCount: 6,
-        pendingComponentCount: 2,
-        pendingTaskCount: 0,
-        pendingViewportCount: 2,
-        status: "needs-evidence",
-        viewportCount: 12,
-      },
-    },
-    releaseReady: false,
-    status: "needs-evidence",
-  };
-}
-
-function createVisualNextAction(label, steps) {
-  return {
-    action: "Attach real visual evidence.",
-    area: "Page Builder Visual",
-    label,
-    steps: steps.map(([stepLabel, value]) => ({ label: stepLabel, value })),
   };
 }

@@ -1,18 +1,21 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
+import { formatMissingProductionSmokeEvidence } from "../smoke/smoke-missing-evidence-markdown.mjs";
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
+import { formatMissingVisualReferenceFiles } from "../visual/page-builder-visual-missing-references-markdown.mjs";
+import { formatReleaseNotesBlockers } from "./release-notes-blockers-report.mjs";
 import { assertReleaseNotesProjectStatusConsistency } from "./release-notes-project-status-consistency.mjs";
 import { assertReleaseNotesSourceConsistency } from "./release-notes-source-consistency.mjs";
 import { formatProjectNextActions } from "./release-notes-project-actions-report.mjs";
 import { formatProjectCompletionChecklist } from "./release-notes-project-completion-report.mjs";
 import { formatReadinessChecklistMarkdown } from "./release-readiness-checklist-markdown.mjs";
+import { formatReleaseNotesTraceability } from "./release-notes-traceability-report.mjs";
 import { formatVisualChecklist } from "./release-notes-visual-checklist-report.mjs";
 import {
   formatReferenceImportGateSummary,
   formatReferenceImportMarkdown,
 } from "./release-reference-import-markdown.mjs";
 
-const maxBlockerLines = 12;
 const maxTextLength = 180;
 const maxVisualArtifactIssueLines = 12;
 const maxVisualIssueLines = 12;
@@ -64,6 +67,8 @@ export function createReleaseNotesMarkdown(config, artifact, projectStatus) {
     `- Page Builder Visual: ${artifact.visual.status} (${artifact.visual.acceptedComponentCount}/${artifact.visual.componentCount} components, ${artifact.visual.acceptedViewportCount}/${artifact.visual.viewportCount} viewports)`,
     ...formatProjectStatusGate(projectStatus),
     ...formatVisualArtifactGate(artifact.visual.artifactCheck),
+    ...formatMissingProductionSmokeEvidence(artifact.smoke),
+    ...formatMissingVisualReferenceFiles(artifact.visual),
     "",
     ...formatProjectCompletionChecklist(projectStatus),
     "",
@@ -81,11 +86,13 @@ export function createReleaseNotesMarkdown(config, artifact, projectStatus) {
     "",
     "## Traceability",
     "",
-    ...formatTraceability(artifact.smoke.traceability),
+    ...formatReleaseNotesTraceability(artifact.smoke.traceability, {
+      formatInline,
+    }),
     "",
     "## Blockers",
     "",
-    ...formatBlockers(artifact.blockers),
+    ...formatReleaseNotesBlockers(artifact.blockers, { formatInline }),
     "",
   ];
 
@@ -95,19 +102,6 @@ export function createReleaseNotesMarkdown(config, artifact, projectStatus) {
 export async function writeReleaseNotesMarkdown(outputPath, markdown) {
   await mkdir(dirname(outputPath), { recursive: true });
   await writeFile(outputPath, markdown, "utf8");
-}
-
-function formatTraceability(groups) {
-  if (!Array.isArray(groups) || groups.length === 0) {
-    return ["- No production smoke traceability was recorded."];
-  }
-
-  return groups.map(
-    (group) =>
-      `- ${formatInline(group.label)}: ${formatInline(group.status)} (${formatInline(
-        group.action ?? "no action",
-      )})`,
-  );
 }
 
 function formatVisualEvidence(visual) {
@@ -132,7 +126,9 @@ function formatVisualArtifactGate(check) {
   );
   const detail = `${formatInline(check.artifactDir)}, ${check.issueCount ?? 0} issues, ${check.presentRequiredFileCount}/${check.requiredFileCount} files, ${check.presentScreenshotCount}/${check.expectedScreenshotCount} screenshots${references}`;
 
-  return [`- Page Builder Visual Artifact: ${formatInline(check.status)} (${detail})`];
+  return [
+    `- Page Builder Visual Artifact: ${formatInline(check.status)} (${detail})`,
+  ];
 }
 
 function formatProjectStatusGate(projectStatus) {
@@ -239,28 +235,6 @@ function formatIssueTarget(issue) {
   return viewport === "unknown" ? component : `${component}.${viewport}`;
 }
 
-function formatBlockers(blockers) {
-  if (!Array.isArray(blockers) || blockers.length === 0) {
-    return ["- None"];
-  }
-
-  const visible = blockers
-    .slice(0, maxBlockerLines)
-    .map(
-      (blocker) =>
-        `- ${formatInline(blocker.area)}: ${formatInline(blocker.label)} - ${formatInline(
-          blocker.action,
-        )}`,
-    );
-  const hidden = blockers.length - visible.length;
-
-  if (hidden > 0) {
-    visible.push(`- ... and ${hidden} more blockers`);
-  }
-
-  return visible;
-}
-
 function readReleaseNotesMode(config, artifact) {
   if (artifact.releaseReady) {
     return "release sign-off";
@@ -290,9 +264,16 @@ function formatInlineList(values) {
 }
 
 function formatInline(value) {
-  return formatSmokeText(value, { fallback: "unknown", maxLength: maxTextLength });
+  return formatSmokeText(value, {
+    fallback: "unknown",
+    maxLength: maxTextLength,
+  });
 }
 
-function formatInlineCode(value) { return `\`${formatInline(value)}\``; }
+function formatInlineCode(value) {
+  return `\`${formatInline(value)}\``;
+}
 
-function hasText(value) { return typeof value === "string" && value.length > 0; }
+function hasText(value) {
+  return typeof value === "string" && value.length > 0;
+}
