@@ -40,9 +40,9 @@ the per-component Desktop and Mobile evidence tasks that still block release
 sign-off, including unsafe paths, missing retained files, and empty image files
 for any evidence path that has already been filled. The checklist also includes
 the expected `docs/visual/page-builder-references/<component>-<viewport>.png`
-reference path, the expected retained fixture screenshot path, and the exact
-import, capture, measure, accept-passing, and final verification commands for
-each viewport.
+reference path, the expected retained fixture screenshot path and viewport
+size, and the exact import, capture, measure, accept-passing, and final
+verification commands for each viewport.
 When the checked manifest lives under `reports/visual/` or `artifacts/visual/`,
 the suggested capture command and screenshot path follow that artifact
 directory.

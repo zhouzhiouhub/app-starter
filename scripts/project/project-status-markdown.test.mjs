@@ -202,6 +202,10 @@ test("project status CLI writes a Markdown handoff", async () => {
     );
     assert.match(
       markdown,
+      / {4}- Preview: `reports\/visual\/page-builder-fixture\/page-builder-visual-fixture-spec-table-mobile\.png \(390x1000\)`/,
+    );
+    assert.match(
+      markdown,
       / {4}- Accept passing: `pnpm visual:measure -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --accept-passing --require-complete`/,
     );
     assert.match(

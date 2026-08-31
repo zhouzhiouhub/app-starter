@@ -50,7 +50,9 @@ function formatVisualChecklistTask(task) {
   return [
     `- Visual task ${label}: missing ${formatValue(missing.join(", "))}`,
     `  - Reference: \`${formatValue(task.expectedDesignReference)}\``,
-    `  - Preview: \`${formatValue(task.expectedPreviewScreenshot)}\``,
+    `  - Preview: \`${formatValue(task.expectedPreviewScreenshot)}\`${formatSize(
+      task.expectedPreviewScreenshotSize,
+    )}`,
     `  - Capture: \`${formatValue(task.commands?.capture)}\``,
     ...formatOptionalCommand(
       "Reference report",
@@ -61,6 +63,12 @@ function formatVisualChecklistTask(task) {
     ...formatOptionalCommand("Accept passing", task.commands?.acceptPassing),
     `  - Verify: \`${formatValue(task.commands?.verify)}\``,
   ];
+}
+
+function formatSize(size) {
+  return size && Number.isFinite(size.width) && Number.isFinite(size.height)
+    ? ` (${size.width}x${size.height})`
+    : "";
 }
 
 function formatOptionalCommand(label, command) {

@@ -100,7 +100,7 @@ test("visual workflow documentation is linked from release guidance", async () =
   assert.match(acceptanceDoc, /--accept-passing --require-complete/);
   assert.match(
     acceptanceDoc,
-    /import, capture, measure, accept-passing, and final verification commands/,
+    /import, capture, measure, accept-passing, and final\s+verification commands/,
   );
   assert.doesNotMatch(
     acceptanceDoc,

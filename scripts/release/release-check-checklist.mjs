@@ -217,6 +217,7 @@ function createVisualTaskSummary(task) {
     component: task.component,
     expectedDesignReference: task.expectedDesignReference,
     expectedPreviewScreenshot: task.expectedPreviewScreenshot,
+    expectedPreviewScreenshotSize: task.expectedPreviewScreenshotSize,
     importReference: task.commands?.importReference ?? null,
     measure: task.commands?.measure ?? null,
     missing: Array.isArray(task.missing) ? task.missing : [],
@@ -251,7 +252,7 @@ function formatVisualTasks(item) {
       )}`,
     );
     lines.push(`        Reference: ${task.expectedDesignReference}`);
-    lines.push(`        Preview: ${task.expectedPreviewScreenshot}`);
+    lines.push(`        Preview: ${formatExpectedPreviewScreenshot(task)}`);
     lines.push(`        Capture: ${task.capture}`);
     if (task.referenceReport) {
       lines.push(`        Reference report: ${task.referenceReport}`);
@@ -271,6 +272,18 @@ function formatVisualTasks(item) {
   }
 
   return lines;
+}
+
+function formatExpectedPreviewScreenshot(task) {
+  return `${task.expectedPreviewScreenshot}${formatSize(
+    task.expectedPreviewScreenshotSize,
+  )}`;
+}
+
+function formatSize(size) {
+  return size && Number.isFinite(size.width) && Number.isFinite(size.height)
+    ? ` (${size.width}x${size.height})`
+    : "";
 }
 
 function formatChecklistLine(line, options) {

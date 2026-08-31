@@ -194,7 +194,7 @@ test("release check Markdown lists blockers and visual tasks", () => {
   );
   assert.match(
     markdown,
-    / {2}- Preview: `reports\/visual\/page-builder-fixture\/page-builder-visual-fixture-hero-banner-desktop\.png`/,
+    / {2}- Preview: `reports\/visual\/page-builder-fixture\/page-builder-visual-fixture-hero-banner-desktop\.png` \(1440x1000\)/,
   );
   assert.match(
     markdown,

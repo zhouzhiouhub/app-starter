@@ -246,7 +246,9 @@ later phases are explicitly approved.
 - Once that default local artifact contains every required report and screenshot,
   plain `pnpm project:status` includes `artifact complete` plus artifact path,
   issue, file, screenshot, reference-import missing/update counts, and the first
-  missing reference path in its informational release gate summary and carries
+  missing reference path in its informational release gate summary.
+  `--all-actions` also includes the expected preview screenshot size beside each
+  pending visual task and carries
   `--visual-artifact-dir reports/visual/page-builder-fixture` into rerun
   commands. `release:check` still requires the explicit flag when the formal
   gate should read that artifact.

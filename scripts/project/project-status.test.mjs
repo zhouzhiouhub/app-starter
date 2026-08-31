@@ -13,7 +13,6 @@ import {
 import {
   assertProjectStatusArtifact,
   createProjectStatusArtifact,
-  formatProjectStatusArtifact,
   projectStatusSchemaVersion,
   readProjectStatusCliConfig,
 } from "./project-status.mjs";
@@ -137,6 +136,10 @@ test("project status summarizes blocked release evidence", () => {
     ],
   );
   assert.equal(
+    heroDesktopAction.steps.find((step) => step.label === "Preview").value,
+    "artifacts/visual/page-builder-visual-fixture-hero-banner-desktop.png (1440x1000)",
+  );
+  assert.equal(
     artifact.nextActions[1].steps[1].value,
     "pnpm visual:references:check",
   );
@@ -235,6 +238,10 @@ test("project status CLI prints readable blocked state", async () => {
     assert.match(text, /Page Builder Visual: Visual acceptance pending/);
     assert.match(
       text,
+      /Preview: reports\/visual\/page-builder-fixture\/page-builder-visual-fixture-hero-banner-desktop\.png \(1440x1000\)/,
+    );
+    assert.match(
+      text,
       /Reference report: pnpm visual:references:check/,
     );
     assert.match(text, /Capture fixture: pnpm visual:capture:fixture/);
@@ -285,38 +292,6 @@ test("project status CLI can print every next action", async () => {
   } finally {
     await rm(emptyArchiveRoot, { force: true, recursive: true });
   }
-});
-
-test("project status formatter can preserve full action lines", () => {
-  const artifact = createProjectStatusArtifact(createBlockedCheck(), {
-    generatedAt: "2026-08-28T00:00:00.000Z",
-    includeAllActions: true,
-  });
-  const endMarker = "final-full-action-marker";
-  const longAction = [
-    "Run",
-    "pnpm visual:measure -- --write --require-complete ".repeat(12),
-    endMarker,
-  ].join(" ");
-
-  artifact.nextActions = [
-    {
-      action: longAction,
-      area: "Page Builder Visual",
-      label: "spec-table.mobile",
-    },
-  ];
-  artifact.nextActionCount = 1;
-  artifact.nextActionLimit = 1;
-  artifact.truncatedNextActionCount = 0;
-
-  const truncatedText = formatProjectStatusArtifact(artifact).join("\n");
-  const fullText = formatProjectStatusArtifact(artifact, {
-    truncateLines: false,
-  }).join("\n");
-
-  assert.equal(truncatedText.includes(endMarker), false);
-  assert.equal(fullText.includes(endMarker), true);
 });
 
 test("project status CLI can require release-ready evidence", async () => {

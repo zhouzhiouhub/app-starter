@@ -3,8 +3,8 @@ import {
   assertEnum,
   assertNonNegativeNumber,
   assertNullableString,
-  assertString,
   isPlainRecord,
+  assertString,
 } from "./release-notes-artifact-assertions.mjs";
 
 const visualChecklistTaskStatuses = new Set([
@@ -100,12 +100,29 @@ function assertVisualChecklistTask(task) {
     task.expectedPreviewScreenshot,
     "visual.checklist.pendingTasks.expectedPreviewScreenshot",
   );
+  assertOptionalVisualSize(
+    task.expectedPreviewScreenshotSize,
+    "visual.checklist.pendingTasks.expectedPreviewScreenshotSize",
+  );
   assertNonNegativeNumber(
     task.missingCount,
     "visual.checklist.pendingTasks.missingCount",
   );
   assertVisualChecklistMissingTasks(task);
   assertVisualChecklistCommands(task.commands);
+}
+
+function assertOptionalVisualSize(size, label) {
+  if (size === undefined) {
+    return;
+  }
+
+  if (!isPlainRecord(size)) {
+    throw new Error(`Release check artifact ${label} must be an object.`);
+  }
+
+  assertNonNegativeNumber(size.width, `${label}.width`);
+  assertNonNegativeNumber(size.height, `${label}.height`);
 }
 
 function assertVisualChecklistMissingTasks(task) {

@@ -2,7 +2,11 @@ import {
   defaultPageBuilderVisualAcceptanceManifestPath,
   defaultPageBuilderVisualReferenceSourceDir,
 } from "./page-builder-visual-acceptance-constants.mjs";
-import { pageBuilderVisualCaptureDefaultOutputDir } from "./page-builder-visual-capture-constants.mjs";
+import {
+  pageBuilderVisualCaptureDefaultHeight,
+  pageBuilderVisualCaptureDefaultOutputDir,
+  pageBuilderVisualCaptureViewportWidths,
+} from "./page-builder-visual-capture-constants.mjs";
 import { createPageBuilderVisualReferenceCheckCommand } from "./page-builder-visual-reference-import-commands.mjs";
 
 export function createPageBuilderVisualViewportActions(
@@ -32,7 +36,20 @@ export function createPageBuilderVisualViewportActions(
       viewport,
       context.captureOutputDir,
     ),
+    expectedPreviewScreenshotSize:
+      createPageBuilderVisualPreviewScreenshotSize(viewport),
   };
+}
+
+function createPageBuilderVisualPreviewScreenshotSize(viewport) {
+  const width = pageBuilderVisualCaptureViewportWidths[viewport];
+
+  return Number.isFinite(width)
+    ? {
+        height: pageBuilderVisualCaptureDefaultHeight,
+        width,
+      }
+    : null;
 }
 
 function readActionContext(options) {

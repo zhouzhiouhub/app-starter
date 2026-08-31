@@ -74,8 +74,18 @@ function createVisualTask(component, viewport) {
     component,
     expectedDesignReference: `docs/visual/page-builder-references/${component}-${viewport}.png`,
     expectedPreviewScreenshot: `artifacts/visual/page-builder-visual-fixture-${component}-${viewport}.png`,
+    expectedPreviewScreenshotSize: createExpectedPreviewScreenshotSize(
+      viewport,
+    ),
     ready: false,
     viewport,
+  };
+}
+
+function createExpectedPreviewScreenshotSize(viewport) {
+  return {
+    height: 1000,
+    width: viewport === "desktop" ? 1440 : 390,
   };
 }
 

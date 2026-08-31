@@ -28,6 +28,10 @@ test("release notes failure drafts include visual checklist tasks", () => {
   );
   assert.match(
     markdown,
+    /Preview: `artifacts\/visual\/page-builder-visual-fixture-hero-banner-desktop\.png` \(1440x1000\)/,
+  );
+  assert.match(
+    markdown,
     /Capture: `pnpm visual:capture:fixture -- --component hero-banner --viewport desktop --write-manifest`/,
   );
   assert.match(
@@ -176,8 +180,18 @@ function createVisualTask(component, viewport) {
     component,
     expectedDesignReference: `docs/visual/page-builder-references/${component}-${viewport}.png`,
     expectedPreviewScreenshot: `artifacts/visual/page-builder-visual-fixture-${component}-${viewport}.png`,
+    expectedPreviewScreenshotSize: createExpectedPreviewScreenshotSize(
+      viewport,
+    ),
     missing: ["designReference", "previewScreenshot"],
     status: "needs-evidence",
     viewport,
+  };
+}
+
+function createExpectedPreviewScreenshotSize(viewport) {
+  return {
+    height: 1000,
+    width: viewport === "desktop" ? 1440 : 390,
   };
 }

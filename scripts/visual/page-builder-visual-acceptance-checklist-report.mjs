@@ -55,7 +55,9 @@ function formatViewportChecklist(viewport) {
   return [
     `${label}: missing ${viewport.missing.join(", ")}`,
     `      expected designReference: ${viewport.expectedDesignReference}`,
-    `      expected previewScreenshot: ${viewport.expectedPreviewScreenshot}`,
+    `      expected previewScreenshot: ${formatExpectedPreviewScreenshot(
+      viewport,
+    )}`,
     `      reference report: ${viewport.commands.referenceReport}`,
     `      import reference: ${viewport.commands.importReference}`,
     `      capture preview: ${viewport.commands.capture}`,
@@ -63,4 +65,16 @@ function formatViewportChecklist(viewport) {
     `      accept passing: ${viewport.commands.acceptPassing}`,
     `      verify accepted: ${viewport.commands.verify}`,
   ];
+}
+
+function formatExpectedPreviewScreenshot(viewport) {
+  return `${viewport.expectedPreviewScreenshot}${formatSize(
+    viewport.expectedPreviewScreenshotSize,
+  )}`;
+}
+
+function formatSize(size) {
+  return size && Number.isFinite(size.width) && Number.isFinite(size.height)
+    ? ` (${size.width}x${size.height})`
+    : "";
 }

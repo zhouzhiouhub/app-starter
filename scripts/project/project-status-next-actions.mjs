@@ -213,7 +213,7 @@ function readVisualTaskActions(checklist) {
   return readPendingVisualTasks(checklist).map((task) => ({
     action: [
       `Place ${task.expectedDesignReference}.`,
-      `Capture ${task.expectedPreviewScreenshot}.`,
+      `Capture ${formatExpectedPreviewScreenshot(task)}.`,
       task.commands?.capture ? `Run ${task.commands.capture}.` : null,
       task.commands?.referenceReport
         ? `Run ${task.commands.referenceReport}.`
@@ -238,7 +238,7 @@ function readVisualTaskActions(checklist) {
 function createVisualTaskActionSteps(task) {
   return [
     createNextActionStep("Reference", task.expectedDesignReference),
-    createNextActionStep("Preview", task.expectedPreviewScreenshot),
+    createNextActionStep("Preview", formatExpectedPreviewScreenshot(task)),
     createNextActionStep("Capture", task.commands?.capture),
     createNextActionStep("Reference report", task.commands?.referenceReport),
     createNextActionStep("Import", task.commands?.importReference),
@@ -246,6 +246,25 @@ function createVisualTaskActionSteps(task) {
     createNextActionStep("Accept passing", task.commands?.acceptPassing),
     createNextActionStep("Verify", task.commands?.verify),
   ].filter(Boolean);
+}
+
+function formatExpectedPreviewScreenshot(task) {
+  if (
+    typeof task.expectedPreviewScreenshot !== "string" ||
+    task.expectedPreviewScreenshot.length === 0
+  ) {
+    return null;
+  }
+
+  return `${task.expectedPreviewScreenshot}${formatSize(
+    task.expectedPreviewScreenshotSize,
+  )}`;
+}
+
+function formatSize(size) {
+  return size && Number.isFinite(size.width) && Number.isFinite(size.height)
+    ? ` (${size.width}x${size.height})`
+    : "";
 }
 
 function createNextActionStep(label, value) {

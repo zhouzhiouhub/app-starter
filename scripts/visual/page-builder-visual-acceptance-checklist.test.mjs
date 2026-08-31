@@ -38,6 +38,13 @@ test("visual acceptance checklist lists missing release evidence", async () => {
     checklist.components[0].viewports[0].expectedPreviewScreenshot,
     "artifacts/visual/page-builder-visual-fixture-hero-banner-desktop.png",
   );
+  assert.deepEqual(
+    checklist.components[0].viewports[0].expectedPreviewScreenshotSize,
+    {
+      height: 1000,
+      width: 1440,
+    },
+  );
   assert.match(lines.join("\n"), /Evidence checklist:/);
   assert.match(
     lines.join("\n"),
@@ -49,6 +56,10 @@ test("visual acceptance checklist lists missing release evidence", async () => {
     /Next: attach missing design references, run `pnpm visual:measure -- --write --require-complete`, review measured diff values, run `pnpm visual:measure -- --write --accept-passing --require-complete`/,
   );
   assert.match(lines.join("\n"), /expected designReference:/);
+  assert.match(
+    lines.join("\n"),
+    /expected previewScreenshot: artifacts\/visual\/page-builder-visual-fixture-hero-banner-desktop\.png \(1440x1000\)/,
+  );
   assert.match(lines.join("\n"), /reference report:/);
   assert.match(lines.join("\n"), /capture preview:/);
 });
@@ -76,6 +87,10 @@ test("visual acceptance checklist commands use fixture reference shortcut", asyn
     viewport.expectedPreviewScreenshot,
     "reports/visual/page-builder-fixture/page-builder-visual-fixture-hero-banner-desktop.png",
   );
+  assert.deepEqual(viewport.expectedPreviewScreenshotSize, {
+    height: 1000,
+    width: 1440,
+  });
   assert.match(
     viewport.commands.verify,
     /--require-accepted reports\/visual\/page-builder-fixture/,
@@ -111,6 +126,10 @@ test("visual acceptance checklist commands respect non-default manifest path", a
     viewport.expectedPreviewScreenshot,
     "reports/visual/review/page-builder-visual-fixture-hero-banner-desktop.png",
   );
+  assert.deepEqual(viewport.expectedPreviewScreenshotSize, {
+    height: 1000,
+    width: 1440,
+  });
 });
 
 test("visual acceptance checklist marks passing evidence ready", () => {

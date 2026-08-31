@@ -96,6 +96,7 @@ function createMissingViewportChecklist(component, viewport, targets, context) {
     designReference: null,
     expectedDesignReference: actions.expectedDesignReference,
     expectedPreviewScreenshot: actions.expectedPreviewScreenshot,
+    expectedPreviewScreenshotSize: actions.expectedPreviewScreenshotSize,
     missing: [
       "viewport evidence",
       "designReference",
@@ -138,6 +139,7 @@ function createViewportChecklist(
     designReference: readEvidencePath(evidence.designReference),
     expectedDesignReference: actions.expectedDesignReference,
     expectedPreviewScreenshot: actions.expectedPreviewScreenshot,
+    expectedPreviewScreenshotSize: actions.expectedPreviewScreenshotSize,
     missing,
     previewScreenshot: readEvidencePath(evidence.previewScreenshot),
     ready: missing.length === 0,

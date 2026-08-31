@@ -2,6 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { createReleaseEvidenceReadinessChecklist } from "./release-check-checklist.mjs";
+import { createVisualChecklistArtifact } from "./release-check-visual-checklist-artifact.mjs";
 import { createSmokeMarkdownArtifact } from "./release-check-smoke-markdown-artifact.mjs";
 import { createOptionalReferenceImportArtifact } from "./release-reference-import-artifact.mjs";
 
@@ -10,8 +11,6 @@ export const releaseEvidenceCheckSchemaVersion = "release-evidence-check.v1";
 const maxArtifactBlockerCount = 50;
 const maxArtifactTextLength = 420;
 const maxVisualArtifactIssueCount = 50;
-const maxVisualChecklistMissingCount = 20;
-const maxVisualChecklistTaskCount = 50;
 const maxVisualIssueCount = 50;
 
 export function createReleaseEvidenceCheckArtifact(check, input = {}) {
@@ -137,69 +136,6 @@ function createVisualArtifact(check) {
 
   if (check.visualChecklist) {
     artifact.checklist = createVisualChecklistArtifact(check.visualChecklist);
-  }
-
-  return artifact;
-}
-
-function createVisualChecklistArtifact(checklist) {
-  const pendingTasks = readPendingVisualChecklistTasks(checklist);
-
-  return {
-    manifestPath: readTextOrNull(checklist.manifestPath),
-    pendingTaskCount: pendingTasks.length,
-    pendingTasks: pendingTasks
-      .slice(0, maxVisualChecklistTaskCount)
-      .map(createVisualChecklistTaskArtifact),
-    pendingViewportCount: checklist.pendingViewportCount,
-    readyViewportCount: checklist.readyViewportCount,
-    viewportCount: checklist.viewportCount,
-  };
-}
-
-function readPendingVisualChecklistTasks(checklist) {
-  if (!Array.isArray(checklist.components)) {
-    return [];
-  }
-
-  return checklist.components.flatMap((component) =>
-    Array.isArray(component.viewports)
-      ? component.viewports.filter((viewport) => viewport.ready !== true)
-      : [],
-  );
-}
-
-function createVisualChecklistTaskArtifact(task) {
-  const missing = Array.isArray(task.missing) ? task.missing : [];
-
-  return {
-    commands: createVisualChecklistCommandsArtifact(task.commands),
-    component: readTextOrNull(task.component) ?? "unknown",
-    designReference: readTextOrNull(task.designReference),
-    expectedDesignReference: readTextOrNull(task.expectedDesignReference),
-    expectedPreviewScreenshot: readTextOrNull(task.expectedPreviewScreenshot),
-    missing: missing
-      .slice(0, maxVisualChecklistMissingCount)
-      .map((item) => readTextOrNull(item) ?? "unknown"),
-    missingCount: missing.length,
-    previewScreenshot: readTextOrNull(task.previewScreenshot),
-    status: readTextOrNull(task.status) ?? "unknown",
-    viewport: readTextOrNull(task.viewport) ?? "unknown",
-  };
-}
-
-function createVisualChecklistCommandsArtifact(commands) {
-  const artifact = {
-    acceptPassing: readTextOrNull(commands?.acceptPassing),
-    capture: readTextOrNull(commands?.capture),
-    importReference: readTextOrNull(commands?.importReference),
-    measure: readTextOrNull(commands?.measure),
-    verify: readTextOrNull(commands?.verify),
-  };
-  const referenceReport = readTextOrNull(commands?.referenceReport);
-
-  if (referenceReport) {
-    artifact.referenceReport = referenceReport;
   }
 
   return artifact;

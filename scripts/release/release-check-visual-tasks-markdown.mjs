@@ -19,7 +19,9 @@ function formatVisualTask(task, { formatCode, formatText }) {
       task.viewport,
     )}: missing ${formatMissing(task.missing, formatText)}`,
     `  - Reference: ${formatCode(task.expectedDesignReference)}`,
-    `  - Preview: ${formatCode(task.expectedPreviewScreenshot)}`,
+    `  - Preview: ${formatCode(task.expectedPreviewScreenshot)}${formatSize(
+      task.expectedPreviewScreenshotSize,
+    )}`,
     `  - Capture: ${formatCode(task.commands?.capture)}`,
   ];
 
@@ -43,6 +45,12 @@ function formatVisualTask(task, { formatCode, formatText }) {
   lines.push(`  - Verify: ${formatCode(task.commands?.verify)}`);
 
   return lines;
+}
+
+function formatSize(size) {
+  return size && Number.isFinite(size.width) && Number.isFinite(size.height)
+    ? ` (${size.width}x${size.height})`
+    : "";
 }
 
 function formatMissing(values, formatText) {

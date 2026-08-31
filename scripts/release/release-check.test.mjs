@@ -209,6 +209,10 @@ test("release check artifact records visual evidence gaps", () => {
     pendingTask.expectedPreviewScreenshot,
     "reports/visual/page-builder-fixture/page-builder-visual-fixture-hero-banner-desktop.png",
   );
+  assert.deepEqual(pendingTask.expectedPreviewScreenshotSize, {
+    height: 1000,
+    width: 1440,
+  });
   assert.deepEqual(pendingTask.missing, [
     "designReference",
     "previewScreenshot",

@@ -99,6 +99,10 @@ test("release readiness checklist carries blocker actions", () => {
     lines,
     /Reference: docs\/visual\/page-builder-references\/hero-banner-desktop\.png/,
   );
+  assert.match(
+    lines,
+    /Preview: artifacts\/visual\/page-builder-visual-fixture-hero-banner-desktop\.png \(1440x1000\)/,
+  );
   assert.match(lines, /Reference report: pnpm visual:references/);
   assert.match(lines, /visual-reference-import-report\.md/);
   assert.match(lines, /Capture: pnpm visual:capture:fixture/);
@@ -165,6 +169,10 @@ test("release readiness checklist formatter can preserve full task command lines
                 "docs/visual/page-builder-references/spec-table-mobile.png",
               expectedPreviewScreenshot:
                 "artifacts/visual/page-builder-visual-fixture-spec-table-mobile.png",
+              expectedPreviewScreenshotSize: {
+                height: 1000,
+                width: 390,
+              },
               acceptPassing: longCommand,
               importReference: longCommand,
               measure: longCommand,
@@ -265,8 +273,18 @@ function createVisualTask(component, viewport) {
     component,
     expectedDesignReference: `docs/visual/page-builder-references/${component}-${viewport}.png`,
     expectedPreviewScreenshot: `artifacts/visual/page-builder-visual-fixture-${component}-${viewport}.png`,
+    expectedPreviewScreenshotSize: createExpectedPreviewScreenshotSize(
+      viewport,
+    ),
     missing: ["designReference"],
     ready: false,
     viewport,
+  };
+}
+
+function createExpectedPreviewScreenshotSize(viewport) {
+  return {
+    height: 1000,
+    width: viewport === "desktop" ? 1440 : 390,
   };
 }
