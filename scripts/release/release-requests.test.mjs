@@ -403,6 +403,22 @@ test("release requests CLI writes every local request Markdown", async () => {
       releaseRequestsManifest.productionSmoke.dispatchCommand,
       /^gh workflow run production-smoke\.yml --ref main /,
     );
+    assert.deepEqual(
+      releaseRequestsManifest.productionSmoke.inputs,
+      smokeInputsManifest.inputs,
+    );
+    assert.deepEqual(
+      releaseRequestsManifest.productionSmoke.inputSources,
+      smokeInputsManifest.inputSources,
+    );
+    assert.deepEqual(
+      releaseRequestsManifest.productionSmoke.workflowInputs,
+      smokeInputsManifest.workflowInputs,
+    );
+    assert.deepEqual(
+      releaseRequestsManifest.productionSmoke.requiredEvidence,
+      smokeInputsManifest.requiredEvidence,
+    );
     assert.deepEqual(releaseRequestsManifest.productionSmoke.missingInputs, [
       "visual_artifact_name",
       "visual_artifact_run_id",

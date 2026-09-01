@@ -1,8 +1,8 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import {
-  createProductionSmokeDispatchManifestValidationCommand,
-} from "../smoke/production-smoke-dispatch-command.mjs";
+  createProductionSmokeDispatchInputsManifest,
+} from "../smoke/production-smoke-dispatch-inputs-manifest-output.mjs";
 import {
   createPageBuilderVisualReferenceAcceptanceCommand,
   createPageBuilderVisualReferenceAcceptPassingCommand,
@@ -33,9 +33,11 @@ export function createReleaseRequestsManifest(input = {}) {
   const project = request.projectArtifact ?? {};
   const visual = request.visualReferenceArtifact ?? {};
   const smoke = request.smokeDispatchArtifact ?? {};
-  const missingInputs = Array.isArray(smoke.missingInputs)
-    ? smoke.missingInputs
-    : [];
+  const smokeInputsManifest = createProductionSmokeDispatchInputsManifest({
+    ...smoke,
+    inputsJsonOutputPath: outputPaths.productionSmokeInputsManifest,
+  });
+  const missingInputs = smokeInputsManifest.missingInputs;
   const missingReferences = Array.isArray(visual.missing) ? visual.missing : [];
   const missingReferencePaths = missingReferences
     .map((reference) => reference?.expectedPath)
@@ -65,8 +67,10 @@ export function createReleaseRequestsManifest(input = {}) {
       status: visual.status ?? "unknown",
     },
     productionSmoke: {
-      dispatchCommand: smoke.command ?? "",
-      inputCount: Array.isArray(smoke.inputs) ? smoke.inputs.length : 0,
+      dispatchCommand: smokeInputsManifest.command,
+      inputCount: smokeInputsManifest.inputCount,
+      inputSources: smokeInputsManifest.inputSources,
+      inputs: smokeInputsManifest.inputs,
       inputsManifestPath: outputPaths.productionSmokeInputsManifest ?? null,
       inputsOutputPath: outputPaths.productionSmokeInputs ?? null,
       inputsTablePath: outputPaths.productionSmokeInputsTable ?? null,
@@ -74,9 +78,9 @@ export function createReleaseRequestsManifest(input = {}) {
       missingInputs,
       readyToDispatch: smoke.readyToDispatch === true,
       requestPath: outputPaths.productionSmoke ?? null,
-      validationCommand: createProductionSmokeDispatchManifestValidationCommand({
-        inputsJsonPath: outputPaths.productionSmokeInputsManifest,
-      }),
+      requiredEvidence: smokeInputsManifest.requiredEvidence,
+      validationCommand: smokeInputsManifest.validationCommand,
+      workflowInputs: smokeInputsManifest.workflowInputs,
     },
     releaseEvidence: {
       blockerCount: readNumber(project.releaseGate?.blockerCount),

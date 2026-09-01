@@ -452,7 +452,9 @@ later phases are explicitly approved.
   workflow_dispatch input TSV table, and workflow_dispatch input JSON manifest.
   The bundle JSON also records the full missing visual reference path list,
   visual reference intake commands, the Production Smoke dispatch template, and
-  `--inputs-json` validation command for operator handoff.
+  `--inputs-json` validation command for operator handoff. It mirrors the
+  Production Smoke workflow inputs, evidence input sources, and required
+  evidence checklist from the dispatch input manifest.
 - Run `pnpm release:evidence-request` before cross-functional release review
   when design reference export and Production Smoke execution need one shared
   request file. Its Request Status includes `First missing visual reference`
