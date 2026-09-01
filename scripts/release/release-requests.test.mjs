@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import test from "node:test";
+import { assertReleaseRequestsManifestHandoff } from "./release-requests-manifest-test-assertions.mjs";
 import { runReleaseRequestsCli } from "./release-requests.mjs";
 import { createPendingVisualManifest } from "./release-check-test-fixtures.mjs";
 
@@ -354,80 +355,13 @@ test("release requests CLI writes every local request Markdown", async () => {
     );
     assert.equal(visualExportManifest.referenceCount, 12);
     assert.equal(visualExportManifest.missingCount, 12);
-    assert.equal(
-      releaseRequestsManifest.schemaVersion,
-      "release-requests-manifest.v1",
-    );
-    assert.equal(releaseRequestsManifest.status, "needs-evidence");
-    assert.equal(releaseRequestsManifest.releaseEvidence.ready, false);
-    assert.equal(
-      releaseRequestsManifest.outputPaths.releaseRequestsManifest,
-      releaseRequestsManifestOutput,
-    );
-    assert.equal(releaseRequestsManifest.pageBuilderVisual.missingCount, 12);
-    assert.equal(
-      releaseRequestsManifest.pageBuilderVisual.firstMissingReference,
-      "docs/visual/page-builder-references/hero-banner-desktop.png",
-    );
-    assert.deepEqual(
-      releaseRequestsManifest.pageBuilderVisual.missingReferences,
-      visualExportManifest.references
-        .filter((reference) => reference.status === "missing")
-        .map((reference) => reference.expectedPath),
-    );
-    assert.equal(
-      releaseRequestsManifest.pageBuilderVisual.commands.missingPaths,
-      `pnpm --silent visual:references -- --manifest ${manifestPath} --missing-paths`,
-    );
-    assert.equal(
-      releaseRequestsManifest.pageBuilderVisual.commands.request,
-      `pnpm visual:references:request -- --manifest ${manifestPath} --output ${visualOutput} --missing-output ${visualMissingOutput} --table-output ${visualTableOutput} --json-output ${visualJsonOutput}`,
-    );
-    assert.equal(
-      releaseRequestsManifest.pageBuilderVisual.commands.handoff,
-      `pnpm visual:references:handoff -- --manifest ${manifestPath} --output-dir ${visualHandoffOutput}`,
-    );
-    assert.equal(
-      releaseRequestsManifest.pageBuilderVisual.commands.importReferences,
-      `pnpm visual:references -- --manifest ${manifestPath} --write --require-complete`,
-    );
-    assert.equal(
-      releaseRequestsManifest.pageBuilderVisual.commands.verifyAccepted,
-      `pnpm visual:acceptance -- --require-accepted ${manifestPath}`,
-    );
-    assert.equal(
-      releaseRequestsManifest.productionSmoke.validationCommand,
-      `pnpm smoke:dispatch -- --inputs-json ${smokeInputsJsonOutput} --require-complete`,
-    );
-    assert.match(
-      releaseRequestsManifest.productionSmoke.dispatchCommand,
-      /^gh workflow run production-smoke\.yml --ref main /,
-    );
-    assert.deepEqual(
-      releaseRequestsManifest.productionSmoke.inputs,
-      smokeInputsManifest.inputs,
-    );
-    assert.deepEqual(
-      releaseRequestsManifest.productionSmoke.inputSources,
-      smokeInputsManifest.inputSources,
-    );
-    assert.deepEqual(
-      releaseRequestsManifest.productionSmoke.workflowInputs,
-      smokeInputsManifest.workflowInputs,
-    );
-    assert.deepEqual(
-      releaseRequestsManifest.productionSmoke.requiredEvidence,
-      smokeInputsManifest.requiredEvidence,
-    );
-    assert.deepEqual(releaseRequestsManifest.productionSmoke.missingInputs, [
-      "visual_artifact_name",
-      "visual_artifact_run_id",
-      "local_verification_run_url",
-      "local_verification_artifact_name",
-      "release_tag",
-      "rollback_target",
-      "storefront_url",
-    ]);
+    assertReleaseRequestsManifestHandoff({
+      releaseRequestsManifest, releaseRequestsManifestOutput,
+      smokeInputsJsonOutput, smokeInputsManifest, visualExportManifest,
+      visualHandoffOutput, visualJsonOutput,
+      visualManifestPath: manifestPath,
+      visualMissingOutput, visualOutput, visualTableOutput,
+    });
     assert.equal(visualHandoffManifest.schemaVersion, "page-builder-visual-reference-handoff.v1");
     assert.equal(visualHandoffManifest.outputDir, visualHandoffOutput);
     assert.equal(visualHandoffManifest.previewCount, 12);
