@@ -67,6 +67,8 @@ test("project status summary stays compact and actionable", () => {
     text,
     /Design request: pnpm visual:references:request/,
   );
+  assert.match(text, /Release Evidence: Generate evidence request/);
+  assert.match(text, /Evidence request: pnpm release:evidence-request/);
   assert.doesNotMatch(text, /Reference report: pnpm visual:references:check/);
   assert.doesNotMatch(text, /Missing paths: pnpm --silent visual:references:missing/);
   assert.doesNotMatch(text, /Reference source: docs\/visual\/page-builder-references/);
@@ -108,7 +110,9 @@ test("project status CLI can print a compact summary", async () => {
       text,
       /Design request: pnpm visual:references:request/,
     );
-    assert.match(text, /\.\.\. and 13 more next actions/);
+    assert.match(text, /Release Evidence: Generate evidence request/);
+    assert.match(text, /Evidence request: pnpm release:evidence-request/);
+    assert.match(text, /\.\.\. and 12 more next actions/);
     assert.doesNotMatch(text, /Completion checklist:/);
     assert.doesNotMatch(text, /Completed milestones:/);
     assert.doesNotMatch(text, /Local verification:/);

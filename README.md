@@ -778,7 +778,7 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 
 本地数据库初始化后，还需执行一次种子数据，前台和后台才能读到默认 `home` 页。
 
-需要快速判断项目是否可发布时，可运行 `pnpm project:status -- --summary`。它只打印阶段、ready 结论、Production Smoke、Page Builder Visual、blocker 数和前两条下一步；完整交接、全部命令和可归档 Markdown 仍使用 `pnpm project:status`、`--all-actions` 或 `--markdown-output`。
+需要快速判断项目是否可发布时，可运行 `pnpm project:status -- --summary`。它只打印阶段、ready 结论、Production Smoke、Page Builder Visual、blocker 数和前三条下一步，其中第三条给出统一的 `pnpm release:evidence-request` 证据请求入口；完整交接、全部命令和可归档 Markdown 仍使用 `pnpm project:status`、`--all-actions` 或 `--markdown-output`。
 
 补 Page Builder 视觉参考图时，默认目录是 `docs/visual/page-builder-references`；直接运行 `pnpm visual:references` 会读取该目录，只有检查其他归档目录时才需要显式传 `--source-dir`。使用 `pnpm --silent visual:references:missing` 可以一行一个路径打印当前缺失的参考 PNG；使用 `pnpm visual:references:request` 可以生成带预览截图路径和后续命令的 Markdown 导出请求；使用 `pnpm visual:references:check` 可按 release fixture 默认路径写出 JSON / Markdown 接入清单并要求 12 张参考图齐全。
 

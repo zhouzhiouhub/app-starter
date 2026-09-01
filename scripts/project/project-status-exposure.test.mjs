@@ -44,6 +44,8 @@ test("project status command is exposed in package and CI", async () => {
   assert.match(ciWorkflow, /tmp\/project-status-handoff\.md/);
   assert.match(readme, /pnpm project:status -- --all-actions/);
   assert.match(readme, /pnpm project:status -- --summary/);
+  assert.match(readme, /前三条下一步/);
+  assert.match(readme, /pnpm release:evidence-request/);
   assert.match(readme, /pnpm run verify:local/);
   assert.match(readme, /local-verification-<run_number>/);
   assert.match(readme, /completionChecklist/);
@@ -59,6 +61,8 @@ test("project status command is exposed in package and CI", async () => {
   assert.match(readme, /Project Next Actions/);
   assert.match(setupDoc, /pnpm project:status -- --all-actions/);
   assert.match(setupDoc, /pnpm project:status -- --summary/);
+  assert.match(setupDoc, /first three next actions/);
+  assert.match(setupDoc, /pnpm\s+release:evidence-request/);
   assert.match(setupDoc, /pnpm run verify:local/);
   assert.match(setupDoc, /completion summary/);
   assert.match(setupDoc, /completion checklist/);
