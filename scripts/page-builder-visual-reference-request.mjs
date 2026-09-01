@@ -79,8 +79,10 @@ Options:
 
 Evidence:
   This command creates a design-facing request from the same reference intake
-  manifest used by visual:references. It does not import references, measure
-  screenshots, mark evidence accepted, or replace approved design exports.`);
+  manifest used by visual:references. The terminal summary reports the
+  missing/required count and the first missing reference path to hand off first.
+  It does not import references, measure screenshots, mark evidence accepted,
+  or replace approved design exports.`);
 }
 
 if (isMainModule()) {

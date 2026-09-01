@@ -138,6 +138,20 @@ test("release evidence request CLI prints missing smoke inputs", async () => {
   }
 });
 
+test("release evidence request help documents terminal summary fields", async () => {
+  const stdout = [];
+
+  const exitCode = await runReleaseEvidenceRequestCli(["--help"], {
+    stdout: (line) => stdout.push(line),
+  });
+  const help = stdout.join("\n");
+
+  assert.equal(exitCode, 0);
+  assert.match(help, /terminal summary\s+reports release readiness/i);
+  assert.match(help, /first missing visual\s+reference/i);
+  assert.match(help, /missing Smoke input\s+names/i);
+});
+
 test("release evidence request config validates paths and inputs", () => {
   const config = readReleaseEvidenceRequestCliConfig([
     "--",

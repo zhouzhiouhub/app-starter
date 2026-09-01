@@ -100,6 +100,19 @@ test("visual reference request CLI writes a Markdown handoff", async () => {
   }
 });
 
+test("visual reference request help documents terminal summary fields", async () => {
+  const stdout = [];
+
+  const exitCode = await runPageBuilderVisualReferenceRequestCli(["--help"], {
+    stdout: (line) => stdout.push(line),
+  });
+  const help = stdout.join("\n");
+
+  assert.equal(exitCode, 0);
+  assert.match(help, /terminal summary reports the\s+missing\/required count/i);
+  assert.match(help, /first missing reference path/i);
+});
+
 test("visual reference request config validates paths", () => {
   assert.deepEqual(
     readPageBuilderVisualReferenceRequestCliConfig([
