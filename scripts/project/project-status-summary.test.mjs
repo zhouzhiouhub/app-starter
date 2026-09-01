@@ -64,6 +64,10 @@ test("project status summary stays compact and actionable", () => {
     text,
     /Smoke request output: artifacts\/production-smoke\/production-smoke-request\.md/,
   );
+  assert.match(
+    text,
+    /Dispatch inputs output: artifacts\/production-smoke\/production-smoke-dispatch-inputs\.txt/,
+  );
   assert.doesNotMatch(text, /Validate dispatch: pnpm smoke:dispatch -- --require-complete/);
   assert.doesNotMatch(text, /Manual dispatch: GitHub Actions > Production Smoke/);
   assert.match(text, /Page Builder Visual: Visual acceptance pending/);
@@ -121,6 +125,10 @@ test("project status CLI can print a compact summary", async () => {
     assert.match(
       text,
       /Smoke request output: artifacts\/production-smoke\/production-smoke-request\.md/,
+    );
+    assert.match(
+      text,
+      /Dispatch inputs output: artifacts\/production-smoke\/production-smoke-dispatch-inputs\.txt/,
     );
     assert.match(text, /Page Builder Visual: Visual acceptance pending/);
     assert.match(

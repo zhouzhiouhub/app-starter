@@ -4,6 +4,7 @@ import { formatRequiredSourceReferenceAvailability } from "../visual/page-builde
 const maxSummaryLineLength = 480;
 const visibleNextActionCount = 3;
 const informationalStepLabels = new Set([
+  "Dispatch inputs output",
   "Input evidence",
   "Keep artifact",
   "Keep artifacts",
@@ -18,6 +19,9 @@ const informationalStepLabels = new Set([
   "Review args",
   "Run workflow",
   "Visual evidence inputs",
+]);
+const summaryCompanionStepLabels = new Map([
+  ["Smoke request", ["Smoke request output", "Dispatch inputs output"]],
 ]);
 
 export function formatProjectStatusSummary(artifact) {
@@ -140,8 +144,7 @@ function formatNextAction(action) {
 
   if (firstStep) {
     lines.push(`      ${firstStep.label}: ${firstStep.value}`);
-    const outputStep = readSummaryOutputStep(action, firstStep);
-    if (outputStep) {
+    for (const outputStep of readSummaryOutputSteps(action, firstStep)) {
       lines.push(`      ${outputStep.label}: ${outputStep.value}`);
     }
   } else {
@@ -151,14 +154,18 @@ function formatNextAction(action) {
   return lines;
 }
 
-function readSummaryOutputStep(action, firstStep) {
+function readSummaryOutputSteps(action, firstStep) {
   if (!Array.isArray(action.steps) || action.steps.length === 0) {
-    return null;
+    return [];
   }
 
-  const outputLabel = `${firstStep.label} output`;
+  const outputLabels = summaryCompanionStepLabels.get(firstStep.label) ?? [
+    `${firstStep.label} output`,
+  ];
 
-  return action.steps.find((step) => step?.label === outputLabel) ?? null;
+  return outputLabels
+    .map((label) => action.steps.find((step) => step?.label === label))
+    .filter(Boolean);
 }
 
 function readSummaryStep(action) {
