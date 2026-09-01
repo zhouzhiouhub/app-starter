@@ -54,6 +54,23 @@ export function normalizeSmokeReportMarkdownPath(value) {
   return normalizePathSeparators(value);
 }
 
+export function normalizeSmokeReportTextPath(value, options = {}) {
+  const context = {
+    extension: ".txt",
+    extensionIssue: "non-text-extension",
+    label: options.label ?? "Smoke report text",
+    relativeDescription:
+      options.relativeDescription ?? "relative text output path",
+  };
+  const issue = readSmokeReportPathIssue(value, context);
+
+  if (issue) {
+    throw new Error(readSmokeReportPathErrorMessage(issue, context));
+  }
+
+  return normalizePathSeparators(value);
+}
+
 export function readSmokeReportPathIssue(value, options = {}) {
   const context = createPathIssueContext(options);
 

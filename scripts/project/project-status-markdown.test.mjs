@@ -86,6 +86,10 @@ test("project status CLI writes a Markdown handoff", async () => {
     );
     assert.match(
       markdown,
+      / {4}- Dispatch inputs output: `artifacts\/production-smoke\/production-smoke-dispatch-inputs\.txt`/,
+    );
+    assert.match(
+      markdown,
       / {4}- Validate dispatch: `pnpm smoke:dispatch -- --require-complete --visual-artifact "page-builder-visual-fixture-<run_number>"/,
     );
     assert.match(
@@ -144,7 +148,7 @@ test("project status CLI writes a Markdown handoff", async () => {
     );
     assert.match(
       markdown,
-      / {4}- Refresh requests output: `artifacts\/release\/release-evidence-request\.md, artifacts\/visual\/page-builder-reference-request\.md, artifacts\/visual\/page-builder-missing-references\.txt, artifacts\/production-smoke\/production-smoke-request\.md`/,
+      / {4}- Refresh requests output: `artifacts\/release\/release-evidence-request\.md, artifacts\/visual\/page-builder-reference-request\.md, artifacts\/visual\/page-builder-missing-references\.txt, artifacts\/production-smoke\/production-smoke-request\.md, artifacts\/production-smoke\/production-smoke-dispatch-inputs\.txt`/,
     );
     assert.match(
       markdown,

@@ -11,7 +11,8 @@ later phases are explicitly approved.
   runbook.
 - Run `pnpm release:requests` when the release needs the combined release
   evidence request, Page Builder design request, missing visual reference path
-  list, and Production Smoke request refreshed together. This writes only local
+  list, Production Smoke request, and Production Smoke dispatch input template
+  refreshed together. This writes only local
   coordination files; it does not
   import references, run smoke, upload artifacts, generate release notes, or
   mark blocked evidence ready.
@@ -151,10 +152,11 @@ later phases are explicitly approved.
 1. Open the `Production Smoke` workflow in GitHub Actions.
 2. Run it against the `production` environment.
 3. Run `pnpm smoke:request` to write
-   `artifacts/production-smoke/production-smoke-request.md` with the manual
-   dispatch path, required input placeholders, dispatch validation command, `gh`
-   template, and artifact retention checklist. This request does not run smoke
-   or satisfy release evidence by itself.
+   `artifacts/production-smoke/production-smoke-request.md` and
+   `artifacts/production-smoke/production-smoke-dispatch-inputs.txt` with the
+   manual dispatch path, required input placeholders, dispatch validation
+   command, `gh` template, and artifact retention checklist. This request does
+   not run smoke or satisfy release evidence by itself.
 4. Run `pnpm smoke:dispatch -- --require-complete ...` with the main CI local
    verification input, the accepted Page Builder Visual artifact input,
    release tag, rollback target, and production storefront URL; copy the printed
@@ -325,16 +327,15 @@ later phases are explicitly approved.
   required source reference availability, and the first missing reference path. It then
   prints the first two next actions with
   structured steps when available, including the Production Smoke manual
-  dispatch path, `pnpm smoke:dispatch` validation, and `gh` dispatch template
-  when smoke evidence is missing; the same steps also include the
-  `pnpm smoke:request` request,
-  previews the first hidden structured action
+  dispatch path, `pnpm smoke:request` request, dispatch inputs output,
+  `pnpm smoke:dispatch` validation, and `gh` dispatch template when smoke
+  evidence is missing; it previews the first hidden structured action
   only when the visible actions do not have steps, and points any remaining work
   to `project-status.md`. When production smoke evidence is missing, both
   `release-check.md` and `project-status.md` include a
   `Missing Production Smoke Evidence` section with required workflow, manual
   dispatch path, `pnpm smoke:request` request, `pnpm smoke:dispatch`
-  validation, `gh` dispatch template, and artifact names;
+  validation, `gh` dispatch template, dispatch inputs output, and artifact names;
   the blocked JSON artifacts mirror the same
   `requiredEvidence[]` and `workflowInputs[]` handoff under
   `smoke.missingEvidence` and `releaseGate.smoke.missingEvidence`. When Page
@@ -418,7 +419,7 @@ later phases are explicitly approved.
 - Run `pnpm release:requests` before cross-functional release review when the
   release needs the combined release request, design export request, and
   Production Smoke operator request refreshed as separate local files, plus the
-  plain missing visual reference path list.
+  plain missing visual reference path list and workflow_dispatch input template.
 - Run `pnpm release:evidence-request` before cross-functional release review
   when design reference export and Production Smoke execution need one shared
   request file. Its Request Status includes `First missing visual reference`

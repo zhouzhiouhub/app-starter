@@ -7,6 +7,9 @@ import {
 import {
   defaultProductionSmokeRequestOutputPath,
 } from "./production-smoke-request.mjs";
+import {
+  defaultProductionSmokeDispatchInputsOutputPath,
+} from "./production-smoke-dispatch-inputs-output.mjs";
 
 const productionSmokeArtifactNames = [
   "production-smoke-report-<run_number>",
@@ -51,6 +54,10 @@ export function createProductionSmokeHandoffSteps(options = {}) {
     createHandoffStep("Manual dispatch", productionSmokeManualDispatch),
     createHandoffStep("Smoke request", productionSmokeRequestCommand),
     createHandoffStep("Smoke request output", defaultProductionSmokeRequestOutputPath),
+    createHandoffStep(
+      "Dispatch inputs output",
+      defaultProductionSmokeDispatchInputsOutputPath,
+    ),
     createHandoffStep(
       "Validate dispatch",
       productionSmokeDispatchValidationCommand,

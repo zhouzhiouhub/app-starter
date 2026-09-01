@@ -5,6 +5,10 @@ import {
   readProductionSmokeDispatchCliConfig,
 } from "./production-smoke-dispatch-cli.mjs";
 import {
+  normalizeProductionSmokeDispatchInputsOutputPath,
+  writeProductionSmokeDispatchInputsText,
+} from "./production-smoke-dispatch-inputs-output.mjs";
+import {
   createProductionSmokeDispatchValidationCommand,
 } from "./production-smoke-dispatch-command.mjs";
 import {
@@ -34,12 +38,29 @@ export async function runProductionSmokeRequestCli(args = [], input = {}) {
     const dispatchArtifact = createProductionSmokeDispatchArtifact(
       config.dispatchConfig,
     );
+    const requestArtifact = {
+      ...dispatchArtifact,
+      inputsOutputPath: config.inputsOutputPath,
+    };
 
     await writeProductionSmokeRequestMarkdown(
       config.outputPath,
-      dispatchArtifact,
+      requestArtifact,
     );
+
+    if (config.inputsOutputPath) {
+      await writeProductionSmokeDispatchInputsText(
+        config.inputsOutputPath,
+        dispatchArtifact,
+      );
+    }
+
     stdout(`Production smoke request written: ${config.outputPath}`);
+    if (config.inputsOutputPath) {
+      stdout(
+        `Production smoke dispatch inputs written: ${config.inputsOutputPath}`,
+      );
+    }
     stdout(`Ready to dispatch: ${dispatchArtifact.readyToDispatch ? "yes" : "no"}`);
 
     if (dispatchArtifact.missingInputs.length > 0) {
@@ -56,6 +77,7 @@ export async function runProductionSmokeRequestCli(args = [], input = {}) {
 export function readProductionSmokeRequestCliConfig(args = []) {
   const input = {
     dispatchArgs: [],
+    inputsOutputPath: null,
     outputPath: defaultProductionSmokeRequestOutputPath,
   };
   const normalizedArgs = stripPnpmSeparator(args);
@@ -70,11 +92,21 @@ export function readProductionSmokeRequestCliConfig(args = []) {
       continue;
     }
 
+    if (option === "--inputs-output") {
+      input.inputsOutputPath =
+        value ?? readOptionValue(option, normalizedArgs, index);
+      index += value === null ? 1 : 0;
+      continue;
+    }
+
     input.dispatchArgs.push(normalizedArgs[index]);
   }
 
   return {
     dispatchConfig: readProductionSmokeDispatchCliConfig(input.dispatchArgs),
+    inputsOutputPath: input.inputsOutputPath
+      ? normalizeProductionSmokeDispatchInputsOutputPath(input.inputsOutputPath)
+      : null,
     outputPath: normalizeProductionSmokeRequestOutputPath(input.outputPath),
   };
 }
@@ -97,6 +129,7 @@ export function createProductionSmokeRequestMarkdown(dispatchArtifact) {
       dispatchArtifact.readyToDispatch ? "yes" : "no",
     )}`,
     `Missing inputs: ${formatCode(missingInputs)}`,
+    ...formatInputsOutputPath(dispatchArtifact.inputsOutputPath),
     "",
     "## Dispatch",
     "",
@@ -150,6 +183,10 @@ export function normalizeProductionSmokeRequestOutputPath(value) {
       ),
     );
   }
+}
+
+function formatInputsOutputPath(outputPath) {
+  return outputPath ? [`Dispatch inputs output: ${formatCode(outputPath)}`] : [];
 }
 
 function formatDispatchInput(input) {
@@ -217,10 +254,13 @@ function printHelp(writeLine) {
   writeLine(`Usage:
   pnpm smoke:request
   pnpm smoke:request -- --output artifacts/production-smoke/production-smoke-request.md
+  pnpm smoke:request -- --inputs-output artifacts/production-smoke/production-smoke-dispatch-inputs.txt
   pnpm smoke:request -- --visual-artifact page-builder-visual-fixture-123 --visual-artifact-run-id 456
 
 Options:
   --output <path>  Write the production smoke evidence request Markdown.
+  --inputs-output <path>
+                   Write a plain text workflow_dispatch input template.
 
 Evidence inputs:
   Accepts the same evidence input overrides as pnpm smoke:dispatch, including
@@ -231,6 +271,7 @@ Evidence inputs:
 Evidence:
   This command writes a production handoff request only. The terminal summary
   and Markdown status report dispatch readiness and any missing input names. It
-  does not run smoke checks, create release evidence, upload artifacts, or mark
-  the project ready.`);
+  can also write a plain text workflow_dispatch input template. It does not run
+  smoke checks, create release evidence, upload artifacts, or mark the project
+  ready.`);
 }

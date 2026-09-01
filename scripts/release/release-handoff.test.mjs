@@ -387,14 +387,14 @@ test("release handoff config normalizes paths and is documented", async () => {
   assert.match(releaseChecklist, /pnpm release:handoff/);
 
   printReleaseHandoffHelp((line) => helpOutput.push(line));
-  assert.match(helpOutput.join("\n"), /first two next actions with\s+structured steps.*Production Smoke manual\s+dispatch path, smoke:dispatch validation, and gh dispatch template.*first hidden structured.*generated\s+project-status Markdown/s);
+  assert.match(helpOutput.join("\n"), /first two next actions with\s+structured steps.*Production Smoke manual\s+dispatch path, smoke:request handoff, dispatch inputs output, smoke:dispatch\s+validation, and gh dispatch template.*first hidden structured.*generated\s+project-status Markdown/s);
   assert.match(
     readme,
-    /first two next\s+actions.*structured steps.*手动触发入口.*`pnpm smoke:dispatch`.*`gh` dispatch template.*structured next action.*artifacts\/release\/project-status\.md/s,
+    /first two next\s+actions.*structured steps.*手动触发入口.*dispatch 输入模板输出.*`pnpm smoke:dispatch`.*`gh` dispatch template.*structured next action.*artifacts\/release\/project-status\.md/s,
   );
   assert.match(
     setupDoc,
-    /first\s+two\s+next actions with structured steps.*Production Smoke manual dispatch path.*`pnpm smoke:dispatch` validation.*`gh`\s+dispatch template.*first hidden\s+structured action.*artifacts\/release\/project-status\.md/s,
+    /first\s+two\s+next actions with structured steps.*Production Smoke manual dispatch path.*dispatch inputs output.*`pnpm smoke:dispatch`\s+validation.*`gh`\s+dispatch template.*first hidden\s+structured action.*artifacts\/release\/project-status\.md/s,
   );
-  assert.match(releaseChecklist, /first\s+two\s+next actions with\s+structured steps.*Production Smoke manual\s+dispatch path, `pnpm smoke:dispatch` validation, and `gh` dispatch template.*first hidden structured action.*project-status\.md/s);
+  assert.match(releaseChecklist, /first\s+two\s+next actions with\s+structured steps.*Production Smoke manual\s+dispatch path.*dispatch inputs output.*`pnpm smoke:dispatch` validation.*`gh` dispatch template.*first hidden structured action.*project-status\.md/s);
 });

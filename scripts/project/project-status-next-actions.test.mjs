@@ -26,6 +26,7 @@ test("project next actions preserve visual artifact dir on release gate reruns",
       "Manual dispatch",
       "Smoke request",
       "Smoke request output",
+      "Dispatch inputs output",
       "Validate dispatch",
       "Dispatch template",
       "Local verification inputs",
@@ -36,15 +37,15 @@ test("project next actions preserve visual artifact dir on release gate reruns",
     ],
   );
   assert.match(
-    productionSmoke.steps[4].value,
+    productionSmoke.steps[5].value,
     /^pnpm smoke:dispatch -- --require-complete /,
   );
   assert.match(
-    productionSmoke.steps[4].value,
+    productionSmoke.steps[5].value,
     /--local-verification-artifact "local-verification-<run_number>"/,
   );
   assert.match(
-    productionSmoke.steps[5].value,
+    productionSmoke.steps[6].value,
     /^gh workflow run production-smoke\.yml --ref main /,
   );
   assert.equal(
@@ -56,20 +57,24 @@ test("project next actions preserve visual artifact dir on release gate reruns",
     productionSmoke.steps[3].value,
     "artifacts/production-smoke/production-smoke-request.md",
   );
+  assert.equal(
+    productionSmoke.steps[4].value,
+    "artifacts/production-smoke/production-smoke-dispatch-inputs.txt",
+  );
   assert.match(
-    productionSmoke.steps[5].value,
+    productionSmoke.steps[6].value,
     /-f visual_artifact_run_id="<Page Builder Visual workflow run id>"/,
   );
   assert.equal(
-    productionSmoke.steps[6].value,
+    productionSmoke.steps[7].value,
     "local_verification_run_url=<main CI run URL>, local_verification_artifact_name=local-verification-<run_number>",
   );
   assert.equal(
-    productionSmoke.steps[7].value,
+    productionSmoke.steps[8].value,
     "visual_artifact_name=page-builder-visual-fixture-<run_number>, visual_artifact_run_id=<Page Builder Visual workflow run id>",
   );
   assert.equal(
-    productionSmoke.steps[8].value,
+    productionSmoke.steps[9].value,
     "release_tag=<tag>, rollback_target=<target>, storefront_url=<public HTTPS storefront URL>",
   );
 });
@@ -139,7 +144,7 @@ test("project next actions include unified release evidence request", () => {
   );
   assert.equal(
     releaseEvidence.steps[1].value,
-    "artifacts/release/release-evidence-request.md, artifacts/visual/page-builder-reference-request.md, artifacts/visual/page-builder-missing-references.txt, artifacts/production-smoke/production-smoke-request.md",
+    "artifacts/release/release-evidence-request.md, artifacts/visual/page-builder-reference-request.md, artifacts/visual/page-builder-missing-references.txt, artifacts/production-smoke/production-smoke-request.md, artifacts/production-smoke/production-smoke-dispatch-inputs.txt",
   );
   assert.equal(
     releaseEvidence.steps[2].value,

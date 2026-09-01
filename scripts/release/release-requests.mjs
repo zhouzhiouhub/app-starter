@@ -11,6 +11,7 @@ import {
 import {
   defaultReleaseRequestsOutputPaths,
 } from "./release-requests-config.mjs";
+import { printReleaseRequestsHelp } from "./release-requests-help.mjs";
 
 export {
   createReleaseRequestsCommand,
@@ -41,7 +42,7 @@ export async function runReleaseRequestsCli(args = [], input = {}) {
   const stderr = input.stderr ?? console.error;
 
   if (args.includes("--help") || args.includes("-h")) {
-    printHelp(stdout);
+    printReleaseRequestsHelp(stdout);
     return 0;
   }
 
@@ -80,6 +81,9 @@ export async function runReleaseRequestsCli(args = [], input = {}) {
       `  - Page Builder missing paths: ${config.outputPaths.visualMissingReferences}`,
     );
     stdout(`  - Production Smoke: ${config.outputPaths.productionSmoke}`);
+    stdout(
+      `  - Production Smoke inputs: ${config.outputPaths.productionSmokeInputs}`,
+    );
     return 0;
   } catch (error) {
     stderr(`Release requests failed: ${readErrorMessage(error)}`);
@@ -90,7 +94,10 @@ export async function runReleaseRequestsCli(args = [], input = {}) {
 export function readReleaseRequestsCliConfig(args = []) {
   const config = {
     outputPaths: { ...defaultReleaseRequestsOutputPaths },
-    productionSmokeArgs: [],
+    productionSmokeArgs: [
+      "--inputs-output",
+      defaultReleaseRequestsOutputPaths.productionSmokeInputs,
+    ],
     releaseEvidenceArgs: [],
     visualArtifactManifestPath: null,
     visualReferenceArgs: [
@@ -135,6 +142,14 @@ export function readReleaseRequestsCliConfig(args = []) {
       const outputPath = readOptionValue(option, normalizedArgs, index, value);
       setValueOption(config.productionSmokeArgs, "--output", outputPath);
       config.outputPaths.productionSmoke = outputPath;
+      index += value === null ? 1 : 0;
+      continue;
+    }
+
+    if (option === "--smoke-inputs-output" || option === "--inputs-output") {
+      const outputPath = readOptionValue(option, normalizedArgs, index, value);
+      setValueOption(config.productionSmokeArgs, "--inputs-output", outputPath);
+      config.outputPaths.productionSmokeInputs = outputPath;
       index += value === null ? 1 : 0;
       continue;
     }
@@ -254,34 +269,4 @@ function readOptionValue(option, args, index, inlineValue) {
 
 function stripPnpmSeparator(args) {
   return args[0] === "--" ? args.slice(1) : args;
-}
-
-function printHelp(writeLine) {
-  writeLine(`Usage:
-  pnpm release:requests
-  pnpm release:requests -- --visual-artifact page-builder-visual-fixture-123 --visual-artifact-run-id 456
-  pnpm release:requests -- --release-output tmp/release.md --visual-output tmp/visual.md --visual-missing-output tmp/missing.txt --smoke-output tmp/smoke.md
-
-Outputs:
-  --release-output <path>  Combined release evidence request Markdown.
-  --visual-output <path>   Page Builder design reference request Markdown.
-  --visual-missing-output <path>
-                           Plain text missing Page Builder reference paths.
-  --smoke-output <path>    Production Smoke request Markdown.
-
-Shared evidence inputs:
-  --source-dir <dir> or --visual-source-dir <dir>
-  --manifest <path> or --visual-manifest <path>
-  --smoke-report <path>
-  --visual-artifact-dir <dir>
-  Production Smoke inputs accepted by pnpm smoke:request, including
-  --visual-artifact, --visual-artifact-run-id,
-  --local-verification-run-url, --local-verification-artifact,
-  --release-tag, --rollback-target, and --storefront-url.
-
-Evidence:
-  This command refreshes all local evidence request files and the missing Page
-  Builder reference path list for blocked release handoff. It does not import
-  visual references, run Production Smoke, create release notes, upload
-  artifacts, or mark the project ready.`);
 }

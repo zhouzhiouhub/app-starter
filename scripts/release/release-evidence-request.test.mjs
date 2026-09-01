@@ -35,7 +35,7 @@ test("release evidence request Markdown combines blocked evidence handoffs", asy
     assert.match(markdown, /Refresh all requests: `pnpm release:requests`/);
     assert.match(
       markdown,
-      /Request outputs: `artifacts\/release\/release-evidence-request\.md, artifacts\/visual\/page-builder-reference-request\.md, artifacts\/visual\/page-builder-missing-references\.txt, artifacts\/production-smoke\/production-smoke-request\.md`/,
+      /Request outputs: `artifacts\/release\/release-evidence-request\.md, artifacts\/visual\/page-builder-reference-request\.md, artifacts\/visual\/page-builder-missing-references\.txt, artifacts\/production-smoke\/production-smoke-request\.md, artifacts\/production-smoke\/production-smoke-dispatch-inputs\.txt`/,
     );
     assert.match(markdown, /Release evidence request: `pnpm release:evidence-request`/);
     assert.match(markdown, /Page Builder design request: `pnpm visual:references:request`/);

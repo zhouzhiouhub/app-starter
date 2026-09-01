@@ -197,7 +197,7 @@ test("production smoke dispatch CLI exposes package and docs entry points", asyn
   );
   assert.equal(
     packageJson.scripts["smoke:request"],
-    "node scripts/production-smoke-request.mjs --output artifacts/production-smoke/production-smoke-request.md",
+    "node scripts/production-smoke-request.mjs --output artifacts/production-smoke/production-smoke-request.md --inputs-output artifacts/production-smoke/production-smoke-dispatch-inputs.txt",
   );
   assert.match(workflow, /pnpm smoke:request -- --help/);
   assert.match(releaseChecklist, /pnpm smoke:dispatch/);

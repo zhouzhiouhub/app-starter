@@ -122,7 +122,7 @@ test("project status docs mention missing smoke evidence handoff", async () => {
   assert.match(releaseChecklist, /release-check\.md.*project-status\.md/s);
   assert.match(
     releaseChecklist,
-    /required\s+workflow, manual\s+dispatch path, `pnpm smoke:request` request, `pnpm smoke:dispatch`\s+validation, `gh` dispatch template, and artifact names/s,
+    /required\s+workflow, manual\s+dispatch path, `pnpm smoke:request` request, `pnpm smoke:dispatch`\s+validation, `gh` dispatch template, dispatch inputs output, and artifact names/s,
   );
 });
 

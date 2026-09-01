@@ -2,6 +2,9 @@ import {
   defaultProductionSmokeRequestOutputPath,
 } from "../smoke/production-smoke-request.mjs";
 import {
+  defaultProductionSmokeDispatchInputsOutputPath,
+} from "../smoke/production-smoke-dispatch-inputs-output.mjs";
+import {
   defaultPageBuilderVisualMissingReferencesOutputPath,
   defaultPageBuilderVisualReferenceRequestOutputPath,
 } from "../visual/page-builder-visual-reference-request.mjs";
@@ -10,6 +13,7 @@ import {
 } from "./release-evidence-request-config.mjs";
 
 export const defaultReleaseRequestsOutputPaths = {
+  productionSmokeInputs: defaultProductionSmokeDispatchInputsOutputPath,
   productionSmoke: defaultProductionSmokeRequestOutputPath,
   releaseEvidence: defaultReleaseEvidenceRequestOutputPath,
   visualMissingReferences: defaultPageBuilderVisualMissingReferencesOutputPath,
@@ -28,5 +32,6 @@ export function createReleaseRequestsOutputSummary() {
     defaultReleaseRequestsOutputPaths.visualReference,
     defaultReleaseRequestsOutputPaths.visualMissingReferences,
     defaultReleaseRequestsOutputPaths.productionSmoke,
+    defaultReleaseRequestsOutputPaths.productionSmokeInputs,
   ].join(", ");
 }

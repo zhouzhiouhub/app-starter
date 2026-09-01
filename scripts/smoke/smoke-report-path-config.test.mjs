@@ -4,6 +4,7 @@ import { readConfig } from "./publish-smoke-config.mjs";
 import {
   normalizeSmokeReportMarkdownPath,
   normalizeSmokeReportPath,
+  normalizeSmokeReportTextPath,
   readSmokeReportPathIssue,
 } from "./smoke-report-path-config.mjs";
 import { withEnv } from "./smoke-test-env.mjs";
@@ -87,6 +88,32 @@ test("smoke report path config validates Markdown review paths", () => {
   assert.throws(
     () => normalizeSmokeReportMarkdownPath("tmp/smoke-report.json"),
     /Smoke report Markdown must end with \.md/,
+  );
+});
+
+test("smoke report path config validates text output paths", () => {
+  assert.equal(
+    normalizeSmokeReportTextPath(String.raw`artifacts\\production-smoke\\inputs.txt`),
+    "artifacts/production-smoke/inputs.txt",
+  );
+  assert.equal(
+    normalizeSmokeReportTextPath("tmp/smoke-inputs.TXT", {
+      label: "Production Smoke dispatch inputs output",
+      relativeDescription: "repository-relative text path",
+    }),
+    "tmp/smoke-inputs.TXT",
+  );
+  assert.throws(
+    () => normalizeSmokeReportTextPath("README.txt"),
+    /Smoke report text must be under tmp\/, reports\/, artifacts\/, or \.tmp\//,
+  );
+  assert.throws(
+    () => normalizeSmokeReportTextPath("reports/smoke.txt/final.txt"),
+    /Smoke report text must use safe path segments without traversal/,
+  );
+  assert.throws(
+    () => normalizeSmokeReportTextPath("tmp/smoke-report.md"),
+    /Smoke report text must end with \.txt/,
   );
 });
 

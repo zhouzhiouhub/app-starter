@@ -64,35 +64,31 @@ test("project status summarizes blocked release evidence", () => {
   assert.equal(smokeAction.area, "Production Smoke");
   assert.deepEqual(
     smokeAction.steps.map((step) => step.label),
-    [
-      "Run workflow", "Manual dispatch", "Smoke request", "Smoke request output",
-      "Validate dispatch", "Dispatch template", "Local verification inputs",
-      "Visual evidence inputs", "Release note inputs",
-      "Keep artifacts", "Rerun gate",
-    ],
+    ["Run workflow", "Manual dispatch", "Smoke request", "Smoke request output",
+      "Dispatch inputs output", "Validate dispatch", "Dispatch template", "Local verification inputs",
+      "Visual evidence inputs", "Release note inputs", "Keep artifacts", "Rerun gate"],
   );
   assert.equal(smokeAction.steps[2].value, "pnpm smoke:request");
+  assert.equal(smokeAction.steps[3].value, "artifacts/production-smoke/production-smoke-request.md");
+  assert.equal(readStepValue(smokeAction, "Dispatch inputs output"), "artifacts/production-smoke/production-smoke-dispatch-inputs.txt");
+  const validationCommand = readStepValue(smokeAction, "Validate dispatch");
+  assert.match(validationCommand, /^pnpm smoke:dispatch -- --require-complete /);
+  assert.match(validationCommand, /--visual-artifact "page-builder-visual-fixture-<run_number>"/);
+  assert.match(readStepValue(smokeAction, "Dispatch template"), /^gh workflow run production-smoke\.yml --ref main /);
   assert.equal(
-    smokeAction.steps[3].value,
-    "artifacts/production-smoke/production-smoke-request.md",
-  );
-  assert.match(smokeAction.steps[4].value, /^pnpm smoke:dispatch -- --require-complete /);
-  assert.match(smokeAction.steps[4].value, /--visual-artifact "page-builder-visual-fixture-<run_number>"/);
-  assert.match(smokeAction.steps[5].value, /^gh workflow run production-smoke\.yml --ref main /);
-  assert.equal(
-    smokeAction.steps[6].value,
+    readStepValue(smokeAction, "Local verification inputs"),
     "local_verification_run_url=<main CI run URL>, local_verification_artifact_name=local-verification-<run_number>",
   );
   assert.equal(
-    smokeAction.steps[7].value,
+    readStepValue(smokeAction, "Visual evidence inputs"),
     "visual_artifact_name=page-builder-visual-fixture-<run_number>, visual_artifact_run_id=<Page Builder Visual workflow run id>",
   );
   assert.equal(
-    smokeAction.steps[8].value,
+    readStepValue(smokeAction, "Release note inputs"),
     "release_tag=<tag>, rollback_target=<target>, storefront_url=<public HTTPS storefront URL>",
   );
   assert.equal(
-    smokeAction.steps[9].value,
+    readStepValue(smokeAction, "Keep artifacts"),
     "production-smoke-report-<run_number>, release-preflight-<run_number>, release-evidence-check-<run_number>, project-status-<run_number>",
   );
   assert.equal(
