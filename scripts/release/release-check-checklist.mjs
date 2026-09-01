@@ -1,8 +1,5 @@
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
-import {
-  createProductionSmokeDispatchCommand,
-  createProductionSmokeManualDispatchInstruction,
-} from "../smoke/production-smoke-dispatch-command.mjs";
+import { createProductionSmokeHandoffSteps } from "../smoke/production-smoke-handoff-steps.mjs";
 import { defaultPageBuilderVisualArtifactDir } from "../visual/page-builder-visual-artifact-check.mjs";
 import { formatRequiredSourceReferenceAvailability } from "../visual/page-builder-visual-reference-summary-format.mjs";
 import {
@@ -12,29 +9,6 @@ import {
 import { createReleaseNotesHandoffSteps } from "./release-notes-handoff-steps.mjs";
 
 const maxChecklistLineLength = 520;
-const productionSmokeArtifactNames = [
-  "production-smoke-report-<run_number>",
-  "release-preflight-<run_number>",
-  "release-evidence-check-<run_number>",
-  "project-status-<run_number>",
-];
-const productionSmokeDispatchCommand = createProductionSmokeDispatchCommand();
-const productionSmokeManualDispatch =
-  createProductionSmokeManualDispatchInstruction();
-const productionSmokeLocalVerificationInputs = [
-  "local_verification_run_url=<main CI run URL>",
-  "local_verification_artifact_name=local-verification-<run_number>",
-];
-const productionSmokeReleaseNoteInputs = [
-  "release_tag=<tag>",
-  "rollback_target=<target>",
-  "storefront_url=<public HTTPS storefront URL>",
-];
-const productionSmokeVisualInputs = [
-  "visual_artifact_name=page-builder-visual-fixture-<run_number>",
-  "visual_artifact_run_id=<Page Builder Visual workflow run id>",
-];
-
 export function createReleaseEvidenceReadinessChecklist(check, options = {}) {
   return {
     items: [
@@ -105,27 +79,9 @@ function createSmokeChecklistDetail(smoke) {
 }
 
 function createSmokeChecklistSteps(check) {
-  return [
-    createChecklistStep("Manual dispatch", productionSmokeManualDispatch),
-    createChecklistStep("Dispatch template", productionSmokeDispatchCommand),
-    createChecklistStep(
-      "Local verification inputs",
-      productionSmokeLocalVerificationInputs.join(", "),
-    ),
-    createChecklistStep(
-      "Visual evidence inputs",
-      productionSmokeVisualInputs.join(", "),
-    ),
-    createChecklistStep(
-      "Release note inputs",
-      productionSmokeReleaseNoteInputs.join(", "),
-    ),
-    createChecklistStep(
-      "Keep artifacts",
-      productionSmokeArtifactNames.join(", "),
-    ),
-    createChecklistStep("Rerun gate", createReleaseCheckCommand(check)),
-  ];
+  return createProductionSmokeHandoffSteps({
+    rerunGateCommand: createReleaseCheckCommand(check),
+  });
 }
 
 function createReleaseCheckCommand(check) {
@@ -141,13 +97,6 @@ function createReleaseCheckCommand(check) {
   }
 
   return command.join(" ");
-}
-
-function createChecklistStep(label, value) {
-  return {
-    label,
-    value,
-  };
 }
 
 function createVisualChecklistItem(check, options) {

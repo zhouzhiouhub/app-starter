@@ -46,6 +46,7 @@ test("project status completion checklist summarizes blocked evidence", () => {
     [
       "Run workflow",
       "Manual dispatch",
+      "Validate dispatch",
       "Dispatch template",
       "Local verification inputs",
       "Visual evidence inputs",
@@ -56,6 +57,10 @@ test("project status completion checklist summarizes blocked evidence", () => {
   );
   assert.match(
     checklist.items[1].nextSteps[2].value,
+    /^pnpm smoke:dispatch -- --require-complete /u,
+  );
+  assert.match(
+    checklist.items[1].nextSteps[3].value,
     /^gh workflow run production-smoke\.yml --ref main /u,
   );
   assert.equal(

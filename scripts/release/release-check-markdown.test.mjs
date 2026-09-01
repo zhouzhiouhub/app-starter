@@ -4,6 +4,7 @@ import test from "node:test";
 import { runReleaseCheckCli } from "../release-check.mjs";
 import {
   createProductionSmokeDispatchCommand,
+  createProductionSmokeDispatchValidationCommand,
 } from "../smoke/production-smoke-dispatch-command.mjs";
 import {
   createReleaseEvidenceCheck,
@@ -88,6 +89,7 @@ test("release check Markdown summarizes ready evidence", () => {
 
 test("release check Markdown lists blockers and visual tasks", () => {
   const dispatchCommand = createProductionSmokeDispatchCommand();
+  const validationCommand = createProductionSmokeDispatchValidationCommand();
   const artifact = createReleaseEvidenceCheckArtifact(
     createReleaseEvidenceCheck({
       smokeArtifact: {
@@ -118,6 +120,13 @@ test("release check Markdown lists blockers and visual tasks", () => {
   assert.match(
     markdown,
     /Workflow manual dispatch: `GitHub Actions > Production Smoke > Run workflow, then use the listed workflow_dispatch inputs\.`/,
+  );
+  assert.match(
+    markdown,
+    new RegExp(
+      `Workflow dispatch validation: \`${escapeRegExp(validationCommand)}`,
+      "u",
+    ),
   );
   assert.match(
     markdown,

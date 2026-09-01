@@ -1,34 +1,11 @@
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
-import { createProductionSmokeDispatchCommand, createProductionSmokeManualDispatchInstruction } from "../smoke/production-smoke-dispatch-command.mjs";
+import { createProductionSmokeHandoffSteps } from "../smoke/production-smoke-handoff-steps.mjs";
 import { createReleaseNotesHandoffSteps } from "../release/release-notes-handoff-steps.mjs";
 import { createPageBuilderVisualReferenceCheckCommand, createPageBuilderVisualReferenceMissingPathsCommand } from "../visual/page-builder-visual-reference-import-commands.mjs";
 
 const maxProjectTextLength = 420;
 
-const productionSmokeArtifactNames = [
-  "production-smoke-report-<run_number>",
-  "release-preflight-<run_number>",
-  "release-evidence-check-<run_number>",
-  "project-status-<run_number>",
-];
-
 const pageBuilderVisualArtifactName = "page-builder-visual-fixture-<run_number>";
-const productionSmokeLocalVerificationInputs = [
-  "local_verification_run_url=<main CI run URL>",
-  "local_verification_artifact_name=local-verification-<run_number>",
-];
-const productionSmokeReleaseNoteInputs = [
-  "release_tag=<tag>",
-  "rollback_target=<target>",
-  "storefront_url=<public HTTPS storefront URL>",
-];
-const productionSmokeVisualInputs = [
-  "visual_artifact_name=page-builder-visual-fixture-<run_number>",
-  "visual_artifact_run_id=<Page Builder Visual workflow run id>",
-];
-const productionSmokeDispatchCommand = createProductionSmokeDispatchCommand();
-const productionSmokeManualDispatch =
-  createProductionSmokeManualDispatchInstruction();
 const defaultVisualArtifactDir = "reports/visual/page-builder-fixture";
 const defaultVisualReferenceSourceDir = "docs/visual/page-builder-references";
 
@@ -113,31 +90,10 @@ function createProductionSmokeActionSteps(action, context) {
     return [];
   }
 
-  return [
-    createNextActionStep(
-      "Run workflow",
-      "GitHub Actions Production Smoke against the production environment",
-    ),
-    createNextActionStep("Manual dispatch", productionSmokeManualDispatch),
-    createNextActionStep("Dispatch template", productionSmokeDispatchCommand),
-    createNextActionStep(
-      "Local verification inputs",
-      productionSmokeLocalVerificationInputs.join(", "),
-    ),
-    createNextActionStep(
-      "Visual evidence inputs",
-      productionSmokeVisualInputs.join(", "),
-    ),
-    createNextActionStep(
-      "Release note inputs",
-      productionSmokeReleaseNoteInputs.join(", "),
-    ),
-    createNextActionStep("Keep artifacts", productionSmokeArtifactNames.join(", ")),
-    createNextActionStep(
-      "Rerun gate",
-      createReleaseCheckCommand(context),
-    ),
-  ];
+  return createProductionSmokeHandoffSteps({
+    includeRunWorkflow: true,
+    rerunGateCommand: createReleaseCheckCommand(context),
+  });
 }
 
 function createReleaseCheckCommand(context) {

@@ -8,6 +8,7 @@ import {
 } from "./production-smoke-dispatch-cli.mjs";
 import {
   createProductionSmokeDispatchCommand,
+  createProductionSmokeDispatchValidationCommand,
   createProductionSmokeManualDispatchInstruction,
   productionSmokeDispatchInputs,
 } from "./production-smoke-dispatch-command.mjs";
@@ -33,6 +34,22 @@ test("production smoke dispatch command names workflow and release inputs", () =
     /-f storefront_url="<public HTTPS storefront URL>"/,
   );
   assert.equal(productionSmokeDispatchInputs.length, 7);
+  assert.ok(command.length <= 420);
+});
+
+test("production smoke dispatch validation command names safe CLI inputs", () => {
+  const command = createProductionSmokeDispatchValidationCommand();
+
+  assert.match(command, /^pnpm smoke:dispatch -- --require-complete /);
+  assert.match(
+    command,
+    /--visual-artifact "page-builder-visual-fixture-<run_number>"/,
+  );
+  assert.match(
+    command,
+    /--local-verification-run-url "<main CI run URL>"/,
+  );
+  assert.match(command, /--release-tag "<tag>"/);
   assert.ok(command.length <= 420);
 });
 

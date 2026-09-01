@@ -1,5 +1,6 @@
 const defaultWorkflowFile = "production-smoke.yml";
 const defaultRef = "main";
+const defaultDispatchCliCommand = "pnpm smoke:dispatch";
 const defaultManualDispatchInstruction =
   "GitHub Actions > Production Smoke > Run workflow, then use the listed workflow_dispatch inputs.";
 
@@ -34,6 +35,16 @@ export const productionSmokeDispatchInputs = [
   },
 ];
 
+const dispatchCliInputOptions = new Map([
+  ["visual_artifact_name", "--visual-artifact"],
+  ["visual_artifact_run_id", "--visual-artifact-run-id"],
+  ["local_verification_run_url", "--local-verification-run-url"],
+  ["local_verification_artifact_name", "--local-verification-artifact"],
+  ["release_tag", "--release-tag"],
+  ["rollback_target", "--rollback-target"],
+  ["storefront_url", "--storefront-url"],
+]);
+
 export function createProductionSmokeDispatchCommand(options = {}) {
   const workflowFile = readText(options.workflowFile) ?? defaultWorkflowFile;
   const ref = readText(options.ref) ?? defaultRef;
@@ -50,6 +61,21 @@ export function createProductionSmokeDispatchCommand(options = {}) {
   ].join(" ");
 }
 
+export function createProductionSmokeDispatchValidationCommand(options = {}) {
+  const cliCommand =
+    readText(options.cliCommand) ?? defaultDispatchCliCommand;
+  const inputs = Array.isArray(options.inputs)
+    ? options.inputs
+    : productionSmokeDispatchInputs;
+
+  return [
+    cliCommand,
+    "--",
+    "--require-complete",
+    ...inputs.flatMap(formatDispatchCliInput),
+  ].join(" ");
+}
+
 export function createProductionSmokeManualDispatchInstruction() {
   return defaultManualDispatchInstruction;
 }
@@ -59,6 +85,14 @@ function formatDispatchInput(input) {
   const value = readText(input?.value);
 
   return name && value ? ["-f", `${name}=${quoteShellValue(value)}`] : [];
+}
+
+function formatDispatchCliInput(input) {
+  const name = readText(input?.name);
+  const value = readText(input?.value);
+  const option = dispatchCliInputOptions.get(name);
+
+  return option && value ? [option, quoteShellValue(value)] : [];
 }
 
 function quoteShellValue(value) {

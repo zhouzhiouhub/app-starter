@@ -7,6 +7,7 @@ import test from "node:test";
 import { runReleaseCheckCli } from "../release-check.mjs";
 import {
   createProductionSmokeDispatchCommand,
+  createProductionSmokeDispatchValidationCommand,
 } from "../smoke/production-smoke-dispatch-command.mjs";
 import {
   mvpPageBuilderComponents,
@@ -149,6 +150,7 @@ test("release check CLI writes Markdown output", async () => {
 test("release check CLI prints readiness checklist in text mode only", async () => {
   const emptyArchiveRoot = mkdtempSync(path.join(tmpdir(), "release-list-"));
   const dispatchCommand = createProductionSmokeDispatchCommand();
+  const validationCommand = createProductionSmokeDispatchValidationCommand();
   const stdout = [];
   const exitCode = await runReleaseCheckCli(["--checklist"], {
     smokeRoots: [emptyArchiveRoot],
@@ -167,6 +169,10 @@ test("release check CLI prints readiness checklist in text mode only", async () 
   );
   assert.equal(
     stdout.some((line) => line.includes(`Dispatch template: ${dispatchCommand}`)),
+    true,
+  );
+  assert.equal(
+    stdout.some((line) => line.includes(`Validate dispatch: ${validationCommand}`)),
     true,
   );
   assert.equal(

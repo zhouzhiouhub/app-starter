@@ -8,6 +8,7 @@ const informationalStepLabels = new Set([
   "Keep artifact",
   "Keep artifacts",
   "Local verification inputs",
+  "Manual dispatch",
   "Output record",
   "Preview",
   "Reference",

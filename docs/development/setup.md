@@ -358,9 +358,10 @@ steps for the command, evidence args, review args, input evidence, output
 record, `release-notes` artifact, and formal mode without `--allow-blocked`.
 When production smoke evidence is missing, the `release-check.md` and
 `project-status.md` handoffs add a `Missing Production Smoke Evidence` section
-with the workflow, manual GitHub Actions dispatch path, `gh` dispatch template,
-Smoke JSON/Markdown paths, preflight artifact, release evidence artifact, and
-project status artifact to keep. The same section also includes `Production
+with the workflow, manual GitHub Actions dispatch path, `pnpm smoke:dispatch`
+validation, `gh` dispatch template, Smoke JSON/Markdown paths, preflight artifact, release
+evidence artifact, and project status artifact to keep. The same section also
+includes `Production
 Smoke Workflow Inputs`, listing the `workflow_dispatch` input names, default
 values, and purpose for the manual production run, plus a `gh workflow run
 production-smoke.yml --ref main ...` dispatch template for the current release
@@ -404,8 +405,9 @@ Page Builder Visual, and optional visual artifact status, path, and counts.
 When available, the visual artifact line also includes reference-import status,
 missing/update counts, required source reference availability, and the first missing
 reference path. It then prints the first two next actions with structured steps
-when available, including the Production Smoke manual dispatch path and `gh`
-dispatch template when smoke evidence is missing, previews the first hidden
+when available, including the Production Smoke manual dispatch path,
+`pnpm smoke:dispatch` validation, and `gh` dispatch template when smoke evidence
+is missing, previews the first hidden
 structured action only when the visible actions do not have steps, and points remaining actions to
 `artifacts/release/project-status.md`, whose
 release gate section lists any missing production Smoke evidence and Page

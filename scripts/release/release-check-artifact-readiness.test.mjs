@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   createProductionSmokeDispatchCommand,
+  createProductionSmokeDispatchValidationCommand,
 } from "../smoke/production-smoke-dispatch-command.mjs";
 import { createReleaseEvidenceCheckArtifact } from "./release-check.mjs";
 
@@ -68,6 +69,7 @@ test("release check artifact includes blocked checklist actions", () => {
     smokeItem.steps.map((step) => step.label),
     [
       "Manual dispatch",
+      "Validate dispatch",
       "Dispatch template",
       "Local verification inputs",
       "Visual evidence inputs",
@@ -78,6 +80,10 @@ test("release check artifact includes blocked checklist actions", () => {
   );
   assert.equal(
     smokeItem.steps[1].value,
+    createProductionSmokeDispatchValidationCommand(),
+  );
+  assert.equal(
+    smokeItem.steps[2].value,
     createProductionSmokeDispatchCommand(),
   );
   assert.equal(visualItem?.status, "needs-evidence");
