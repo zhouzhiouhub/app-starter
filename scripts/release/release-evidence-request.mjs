@@ -44,6 +44,11 @@ export async function runReleaseEvidenceRequestCli(args = [], input = {}) {
     stdout(
       `Production Smoke dispatch ready: ${request.smokeDispatchArtifact.readyToDispatch ? "yes" : "no"}`,
     );
+    if (request.smokeDispatchArtifact.missingInputs.length > 0) {
+      stdout(
+        `Missing Production Smoke inputs: ${request.smokeDispatchArtifact.missingInputs.join(", ")}`,
+      );
+    }
 
     return 0;
   } catch (error) {

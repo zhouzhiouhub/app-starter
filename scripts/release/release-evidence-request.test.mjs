@@ -91,8 +91,40 @@ test("release evidence request CLI writes a combined handoff", async () => {
     assert.match(stdout.join("\n"), /Release ready: no/);
     assert.match(stdout.join("\n"), /Visual references: needs-evidence \(12\/12 missing\)/);
     assert.match(stdout.join("\n"), /Production Smoke dispatch ready: yes/);
+    assert.doesNotMatch(stdout.join("\n"), /Missing Production Smoke inputs:/);
     assert.match(markdown, /Status: `ready-to-dispatch`/);
     assert.match(markdown, /- \[x\] `storefront_url`: `https:\/\/store\.brand\.com\/` - ready/);
+  } finally {
+    await rm(root, { force: true, recursive: true });
+  }
+});
+
+test("release evidence request CLI prints missing smoke inputs", async () => {
+  const root = `tmp/release-evidence-request-missing-${process.pid}-${Date.now()}`;
+  const outputPath = `${root}/request.md`;
+  const visualManifest = createPendingVisualManifest();
+  const stdout = [];
+
+  try {
+    await mkdir(root, { recursive: true });
+    const exitCode = await runReleaseEvidenceRequestCli(
+      ["--output", outputPath],
+      {
+        generatedAt: "2026-09-01T00:00:00.000Z",
+        smokeArtifact: { error: new Error("No smoke reports found.") },
+        stdout: (line) => stdout.push(line),
+        visualManifest,
+        visualReferenceManifest: visualManifest,
+        visualReferenceRoot: root,
+      },
+    );
+
+    assert.equal(exitCode, 0);
+    assert.match(stdout.join("\n"), /Production Smoke dispatch ready: no/);
+    assert.match(
+      stdout.join("\n"),
+      /Missing Production Smoke inputs: visual_artifact_name, visual_artifact_run_id, local_verification_run_url/,
+    );
   } finally {
     await rm(root, { force: true, recursive: true });
   }
