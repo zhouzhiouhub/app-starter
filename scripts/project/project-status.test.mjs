@@ -63,39 +63,43 @@ test("project status summarizes blocked release evidence", () => {
   assert.deepEqual(
     artifact.nextActions[0].steps.map((step) => step.label),
     [
-      "Run workflow", "Manual dispatch", "Smoke request",
+      "Run workflow", "Manual dispatch", "Smoke request", "Smoke request output",
       "Validate dispatch", "Dispatch template", "Local verification inputs",
       "Visual evidence inputs", "Release note inputs",
       "Keep artifacts", "Rerun gate",
     ],
   );
   assert.equal(artifact.nextActions[0].steps[2].value, "pnpm smoke:request");
-  assert.match(
+  assert.equal(
     artifact.nextActions[0].steps[3].value,
-    /^pnpm smoke:dispatch -- --require-complete /,
-  );
-  assert.match(
-    artifact.nextActions[0].steps[3].value,
-    /--visual-artifact "page-builder-visual-fixture-<run_number>"/,
+    "artifacts/production-smoke/production-smoke-request.md",
   );
   assert.match(
     artifact.nextActions[0].steps[4].value,
+    /^pnpm smoke:dispatch -- --require-complete /,
+  );
+  assert.match(
+    artifact.nextActions[0].steps[4].value,
+    /--visual-artifact "page-builder-visual-fixture-<run_number>"/,
+  );
+  assert.match(
+    artifact.nextActions[0].steps[5].value,
     /^gh workflow run production-smoke\.yml --ref main /,
   );
   assert.equal(
-    artifact.nextActions[0].steps[5].value,
+    artifact.nextActions[0].steps[6].value,
     "local_verification_run_url=<main CI run URL>, local_verification_artifact_name=local-verification-<run_number>",
   );
   assert.equal(
-    artifact.nextActions[0].steps[6].value,
+    artifact.nextActions[0].steps[7].value,
     "visual_artifact_name=page-builder-visual-fixture-<run_number>, visual_artifact_run_id=<Page Builder Visual workflow run id>",
   );
   assert.equal(
-    artifact.nextActions[0].steps[7].value,
+    artifact.nextActions[0].steps[8].value,
     "release_tag=<tag>, rollback_target=<target>, storefront_url=<public HTTPS storefront URL>",
   );
   assert.equal(
-    artifact.nextActions[0].steps[8].value,
+    artifact.nextActions[0].steps[9].value,
     "production-smoke-report-<run_number>, release-preflight-<run_number>, release-evidence-check-<run_number>, project-status-<run_number>",
   );
   assert.equal(
@@ -111,6 +115,7 @@ test("project status summarizes blocked release evidence", () => {
       "Reference source",
       "Missing paths",
       "Design request",
+      "Design request output",
       "Reference report",
       "Import",
       "Capture fixture",
@@ -120,7 +125,7 @@ test("project status summarizes blocked release evidence", () => {
     ],
   );
   assert.equal(
-    artifact.nextActions[1].steps[5].value,
+    artifact.nextActions[1].steps[6].value,
     "pnpm visual:capture:fixture -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json --write-manifest",
   );
   assert.equal(
@@ -151,7 +156,7 @@ test("project status summarizes blocked release evidence", () => {
   );
   assert.equal(artifact.nextActions[1].steps[1].value, "pnpm --silent visual:references:missing");
   assert.equal(artifact.nextActions[1].steps[2].value, "pnpm visual:references:request");
-  assert.equal(artifact.nextActions[1].steps[3].value, "pnpm visual:references:check");
+  assert.equal(artifact.nextActions[1].steps[4].value, "pnpm visual:references:check");
   assert.equal(artifact.nextActions[2].label, "Generate evidence request");
   assert.equal(
     artifact.nextActions[2].steps[0].value,

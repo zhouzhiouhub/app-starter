@@ -70,6 +70,7 @@ test("release check artifact includes blocked checklist actions", () => {
     [
       "Manual dispatch",
       "Smoke request",
+      "Smoke request output",
       "Validate dispatch",
       "Dispatch template",
       "Local verification inputs",
@@ -85,10 +86,14 @@ test("release check artifact includes blocked checklist actions", () => {
   );
   assert.equal(
     smokeItem.steps[2].value,
-    createProductionSmokeDispatchValidationCommand(),
+    "artifacts/production-smoke/production-smoke-request.md",
   );
   assert.equal(
     smokeItem.steps[3].value,
+    createProductionSmokeDispatchValidationCommand(),
+  );
+  assert.equal(
+    smokeItem.steps[4].value,
     createProductionSmokeDispatchCommand(),
   );
   assert.equal(visualItem?.status, "needs-evidence");

@@ -1,16 +1,20 @@
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { createProductionSmokeHandoffSteps } from "../smoke/production-smoke-handoff-steps.mjs";
 import { createReleaseNotesHandoffSteps } from "../release/release-notes-handoff-steps.mjs";
-import { createReleaseEvidenceRequestCommand } from "../release/release-evidence-request-config.mjs";
+import { createReleaseEvidenceRequestAction } from "./project-status-release-evidence-action.mjs";
 import {
   createPageBuilderVisualReferenceCheckCommand,
   createPageBuilderVisualReferenceMissingPathsCommand,
   createPageBuilderVisualReferenceRequestCommand,
 } from "../visual/page-builder-visual-reference-import-commands.mjs";
+import {
+  defaultPageBuilderVisualReferenceRequestOutputPath,
+} from "../visual/page-builder-visual-reference-request.mjs";
 
 const maxProjectTextLength = 420;
 
-const pageBuilderVisualArtifactName = "page-builder-visual-fixture-<run_number>";
+const pageBuilderVisualArtifactName =
+  "page-builder-visual-fixture-<run_number>";
 const defaultVisualArtifactDir = "reports/visual/page-builder-fixture";
 const defaultVisualReferenceSourceDir = "docs/visual/page-builder-references";
 
@@ -38,33 +42,6 @@ function createReleaseNotesAction() {
     area: "Release Notes",
     label: "Generate release record",
     steps: createReleaseNotesHandoffSteps(),
-  };
-}
-
-function createReleaseEvidenceRequestAction() {
-  return {
-    action:
-      "Run pnpm release:evidence-request to create one handoff for blocked release evidence, design references, Production Smoke inputs, retained artifacts, and the final ready gate.",
-    area: "Release Evidence",
-    label: "Generate evidence request",
-    steps: [
-      createNextActionStep(
-        "Evidence request",
-        createReleaseEvidenceRequestCommand(),
-      ),
-      createNextActionStep(
-        "Design request",
-        createPageBuilderVisualReferenceRequestCommand({
-          manifestPath: `${defaultVisualArtifactDir}/page-builder-visual-acceptance.json`,
-          sourceDir: defaultVisualReferenceSourceDir,
-        }),
-      ),
-      createNextActionStep("Smoke request", "pnpm smoke:request"),
-      createNextActionStep(
-        "Final gate",
-        "pnpm release:handoff -- --require-ready --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture",
-      ),
-    ],
   };
 }
 
@@ -167,6 +144,10 @@ function createPageBuilderVisualActionSteps(action, context) {
       }),
     ),
     createNextActionStep(
+      "Design request output",
+      createVisualReferenceRequestOutputPath(visualContext),
+    ),
+    createNextActionStep(
       "Reference report",
       createPageBuilderVisualReferenceCheckCommand({
         manifestPath: visualContext.manifestPath,
@@ -203,6 +184,12 @@ function createPageBuilderVisualActionSteps(action, context) {
     ),
     createNextActionStep("Keep artifact", pageBuilderVisualArtifactName),
   ];
+}
+
+function createVisualReferenceRequestOutputPath(visualContext) {
+  return visualContext.artifactDir === defaultVisualArtifactDir
+    ? defaultPageBuilderVisualReferenceRequestOutputPath
+    : `${visualContext.artifactDir}/page-builder-reference-request.md`;
 }
 
 function createPageBuilderVisualActionContext(context) {

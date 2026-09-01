@@ -25,6 +25,7 @@ test("project next actions preserve visual artifact dir on release gate reruns",
       "Run workflow",
       "Manual dispatch",
       "Smoke request",
+      "Smoke request output",
       "Validate dispatch",
       "Dispatch template",
       "Local verification inputs",
@@ -35,15 +36,15 @@ test("project next actions preserve visual artifact dir on release gate reruns",
     ],
   );
   assert.match(
-    productionSmoke.steps[3].value,
+    productionSmoke.steps[4].value,
     /^pnpm smoke:dispatch -- --require-complete /,
   );
   assert.match(
-    productionSmoke.steps[3].value,
+    productionSmoke.steps[4].value,
     /--local-verification-artifact "local-verification-<run_number>"/,
   );
   assert.match(
-    productionSmoke.steps[4].value,
+    productionSmoke.steps[5].value,
     /^gh workflow run production-smoke\.yml --ref main /,
   );
   assert.equal(
@@ -51,20 +52,24 @@ test("project next actions preserve visual artifact dir on release gate reruns",
     "GitHub Actions > Production Smoke > Run workflow, then use the listed workflow_dispatch inputs.",
   );
   assert.equal(productionSmoke.steps[2].value, "pnpm smoke:request");
+  assert.equal(
+    productionSmoke.steps[3].value,
+    "artifacts/production-smoke/production-smoke-request.md",
+  );
   assert.match(
-    productionSmoke.steps[4].value,
+    productionSmoke.steps[5].value,
     /-f visual_artifact_run_id="<Page Builder Visual workflow run id>"/,
   );
   assert.equal(
-    productionSmoke.steps[5].value,
+    productionSmoke.steps[6].value,
     "local_verification_run_url=<main CI run URL>, local_verification_artifact_name=local-verification-<run_number>",
   );
   assert.equal(
-    productionSmoke.steps[6].value,
+    productionSmoke.steps[7].value,
     "visual_artifact_name=page-builder-visual-fixture-<run_number>, visual_artifact_run_id=<Page Builder Visual workflow run id>",
   );
   assert.equal(
-    productionSmoke.steps[7].value,
+    productionSmoke.steps[8].value,
     "release_tag=<tag>, rollback_target=<target>, storefront_url=<public HTTPS storefront URL>",
   );
 });
@@ -83,12 +88,22 @@ test("project next actions include copy-ready missing visual reference paths", (
 
   assert.equal(missingPaths.value, "pnpm --silent visual:references:missing");
   assert.deepEqual(
-    visual.steps.slice(0, 4).map((step) => step.label),
-    ["Reference source", "Missing paths", "Design request", "Reference report"],
+    visual.steps.slice(0, 5).map((step) => step.label),
+    [
+      "Reference source",
+      "Missing paths",
+      "Design request",
+      "Design request output",
+      "Reference report",
+    ],
   );
   assert.equal(
     visual.steps.find((step) => step.label === "Design request").value,
     "pnpm visual:references:request",
+  );
+  assert.equal(
+    visual.steps.find((step) => step.label === "Design request output").value,
+    "artifacts/visual/page-builder-reference-request.md",
   );
 });
 
@@ -101,7 +116,15 @@ test("project next actions include unified release evidence request", () => {
   assert.equal(releaseEvidence.area, "Release Evidence");
   assert.deepEqual(
     releaseEvidence.steps.map((step) => step.label),
-    ["Evidence request", "Design request", "Smoke request", "Final gate"],
+    [
+      "Evidence request",
+      "Evidence request output",
+      "Design request",
+      "Design request output",
+      "Smoke request",
+      "Smoke request output",
+      "Final gate",
+    ],
   );
   assert.equal(
     releaseEvidence.steps[0].value,
@@ -109,11 +132,23 @@ test("project next actions include unified release evidence request", () => {
   );
   assert.equal(
     releaseEvidence.steps[1].value,
+    "artifacts/release/release-evidence-request.md",
+  );
+  assert.equal(
+    releaseEvidence.steps[2].value,
     "pnpm visual:references:request",
   );
-  assert.equal(releaseEvidence.steps[2].value, "pnpm smoke:request");
-  assert.match(
+  assert.equal(
     releaseEvidence.steps[3].value,
+    "artifacts/visual/page-builder-reference-request.md",
+  );
+  assert.equal(releaseEvidence.steps[4].value, "pnpm smoke:request");
+  assert.equal(
+    releaseEvidence.steps[5].value,
+    "artifacts/production-smoke/production-smoke-request.md",
+  );
+  assert.match(
+    releaseEvidence.steps[6].value,
     /^pnpm release:handoff -- --require-ready /,
   );
 });
