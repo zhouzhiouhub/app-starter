@@ -104,7 +104,7 @@ test("project status summarizes blocked release evidence", () => {
     [
       "Reference source", "Missing paths", "Design request",
       "Design request output", "Missing paths output", "Export table output",
-      "Reference report",
+      "Export manifest output", "Reference report",
       "Import", "Capture fixture", "Measure", "Accept passing", "Verify",
       "Bundle artifact", "Check artifact", "Keep artifact",
     ],
@@ -112,6 +112,10 @@ test("project status summarizes blocked release evidence", () => {
   assert.equal(
     readStepValue(visualAction, "Export table output"),
     "artifacts/visual/page-builder-reference-export-table.tsv",
+  );
+  assert.equal(
+    readStepValue(visualAction, "Export manifest output"),
+    "artifacts/visual/page-builder-reference-export-manifest.json",
   );
   assert.equal(
     readStepValue(visualAction, "Capture fixture"),

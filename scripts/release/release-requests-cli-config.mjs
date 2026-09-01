@@ -42,6 +42,8 @@ export function readReleaseRequestsCliConfig(args = []) {
       defaultReleaseRequestsOutputPaths.visualMissingReferences,
       "--table-output",
       defaultReleaseRequestsOutputPaths.visualReferenceTable,
+      "--json-output",
+      defaultReleaseRequestsOutputPaths.visualReferenceManifest,
     ],
   };
   const normalizedArgs = stripPnpmSeparator(args);
@@ -95,6 +97,20 @@ export function readReleaseRequestsCliConfig(args = []) {
       index += value === null ? 1 : 0;
       continue;
     }
+
+    if (option === "--visual-json-output" || option === "--json-output") {
+      const outputPath = readOptionValue(option, normalizedArgs, index, value);
+      setValueOption(
+        config.releaseEvidenceArgs,
+        "--visual-json-output",
+        outputPath,
+      );
+      setValueOption(config.visualReferenceArgs, "--json-output", outputPath);
+      config.outputPaths.visualReferenceManifest = outputPath;
+      index += value === null ? 1 : 0;
+      continue;
+    }
+
     if (option === "--smoke-output") {
       const outputPath = readOptionValue(option, normalizedArgs, index, value);
       setValueOption(config.releaseEvidenceArgs, "--smoke-output", outputPath);

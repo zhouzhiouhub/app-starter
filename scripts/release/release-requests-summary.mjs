@@ -6,6 +6,9 @@ export function printReleaseRequestFiles(outputPaths, writeLine) {
     `  - Page Builder missing paths: ${outputPaths.visualMissingReferences}`,
   );
   writeLine(`  - Page Builder export table: ${outputPaths.visualReferenceTable}`);
+  writeLine(
+    `  - Page Builder export manifest: ${outputPaths.visualReferenceManifest}`,
+  );
   writeLine(`  - Production Smoke: ${outputPaths.productionSmoke}`);
   writeLine(`  - Production Smoke inputs: ${outputPaths.productionSmokeInputs}`);
   writeLine(

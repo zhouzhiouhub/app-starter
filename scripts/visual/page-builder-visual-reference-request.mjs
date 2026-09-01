@@ -19,15 +19,19 @@ import {
 } from "./page-builder-visual-reference-import-config.mjs";
 import {
   normalizeVisualReferenceExportTableOutputPath,
+  normalizeVisualReferenceExportManifestOutputPath,
   normalizeVisualReferenceMissingOutputPath,
 } from "./page-builder-visual-reference-missing-output.mjs";
 
 export {
   defaultPageBuilderVisualMissingReferencesOutputPath,
   defaultPageBuilderVisualReferenceExportTableOutputPath,
+  defaultPageBuilderVisualReferenceExportManifestOutputPath,
+  normalizeVisualReferenceExportManifestOutputPath,
   normalizeVisualReferenceExportTableOutputPath,
   normalizeVisualReferenceMissingOutputPath,
   writePageBuilderVisualMissingReferencePaths,
+  writePageBuilderVisualReferenceExportManifest,
   writePageBuilderVisualReferenceExportTable,
 } from "./page-builder-visual-reference-missing-output.mjs";
 
@@ -39,6 +43,7 @@ const maxMarkdownTextLength = 420;
 export function readPageBuilderVisualReferenceRequestCliConfig(args = []) {
   const input = {
     manifestPath: defaultPageBuilderVisualAcceptanceManifestPath,
+    jsonOutputPath: null,
     missingOutputPath: null,
     outputPath: defaultPageBuilderVisualReferenceRequestOutputPath,
     sourceDir: defaultPageBuilderVisualReferenceSourceDir,
@@ -52,6 +57,10 @@ export function readPageBuilderVisualReferenceRequestCliConfig(args = []) {
     switch (option) {
       case "--manifest":
         input.manifestPath = readOptionValue(option, normalizedArgs, index);
+        index += 1;
+        break;
+      case "--json-output":
+        input.jsonOutputPath = readOptionValue(option, normalizedArgs, index);
         index += 1;
         break;
       case "--missing-output":
@@ -77,6 +86,9 @@ export function readPageBuilderVisualReferenceRequestCliConfig(args = []) {
 
   return {
     manifestPath: input.manifestPath,
+    jsonOutputPath: input.jsonOutputPath
+      ? normalizeVisualReferenceExportManifestOutputPath(input.jsonOutputPath)
+      : null,
     missingOutputPath: input.missingOutputPath
       ? normalizeVisualReferenceMissingOutputPath(input.missingOutputPath)
       : null,
@@ -113,6 +125,7 @@ export function createPageBuilderVisualReferenceRequestMarkdown(input) {
     )}`,
     ...formatMissingOutputPath(input.missingOutputPath),
     ...formatTableOutputPath(input.tableOutputPath),
+    ...formatManifestOutputPath(input.jsonOutputPath),
     "",
     "## Export Requirements",
     "",
@@ -230,6 +243,12 @@ function formatMissingOutputPath(outputPath) {
 
 function formatTableOutputPath(outputPath) {
   return outputPath ? [`Export table output: ${formatCode(outputPath)}`] : [];
+}
+
+function formatManifestOutputPath(outputPath) {
+  return outputPath
+    ? [`Export manifest output: ${formatCode(outputPath)}`]
+    : [];
 }
 
 function readStatus(input) {

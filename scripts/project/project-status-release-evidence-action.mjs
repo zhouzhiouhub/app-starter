@@ -15,6 +15,7 @@ import {
   createPageBuilderVisualReferenceRequestCommand,
 } from "../visual/page-builder-visual-reference-import-commands.mjs";
 import {
+  defaultPageBuilderVisualReferenceExportManifestOutputPath,
   defaultPageBuilderVisualReferenceExportTableOutputPath,
   defaultPageBuilderVisualReferenceRequestOutputPath,
 } from "../visual/page-builder-visual-reference-request.mjs";
@@ -63,6 +64,10 @@ export function createReleaseEvidenceRequestAction() {
       createReleaseEvidenceStep(
         "Export table output",
         defaultPageBuilderVisualReferenceExportTableOutputPath,
+      ),
+      createReleaseEvidenceStep(
+        "Export manifest output",
+        defaultPageBuilderVisualReferenceExportManifestOutputPath,
       ),
       createReleaseEvidenceStep("Smoke request", "pnpm smoke:request"),
       createReleaseEvidenceStep(

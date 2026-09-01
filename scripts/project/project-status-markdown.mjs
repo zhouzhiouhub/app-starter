@@ -10,7 +10,7 @@ import { formatManifestDesignReferenceSummary } from "../visual/page-builder-vis
 import { assertProjectStatusArtifact } from "./project-status-validation.mjs";
 import { formatReleaseEvidenceArtifacts } from "./project-status-release-evidence-artifacts.mjs";
 
-const maxMarkdownTextLength = 420;
+const maxMarkdownTextLength = 640;
 
 export function createProjectStatusMarkdown(artifact) {
   assertProjectStatusArtifact(artifact);

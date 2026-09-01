@@ -152,7 +152,7 @@ test("project status CLI writes a Markdown handoff", async () => {
     );
     assert.match(
       markdown,
-      / {4}- Refresh requests output: `artifacts\/release\/release-evidence-request\.md, artifacts\/visual\/page-builder-reference-request\.md, artifacts\/visual\/page-builder-missing-references\.txt, artifacts\/visual\/page-builder-reference-export-table\.tsv, artifacts\/production-smoke\/production-smoke-request\.md, artifacts\/production-smoke\/production-smoke-dispatch-inputs\.txt, artifacts\/production-smoke\/production-smoke-dispatch-inputs\.tsv`/,
+      / {4}- Refresh requests output: `artifacts\/release\/release-evidence-request\.md, artifacts\/visual\/page-builder-reference-request\.md, artifacts\/visual\/page-builder-missing-references\.txt, artifacts\/visual\/page-builder-reference-export-table\.tsv, artifacts\/visual\/page-builder-reference-export-manifest\.json, artifacts\/production-smoke\/production-smoke-request\.md, artifacts\/production-smoke\/production-smoke-dispatch-inputs\.txt, artifacts\/production-smoke\/production-smoke-dispatch-inputs\.tsv`/,
     );
     assert.match(
       markdown,

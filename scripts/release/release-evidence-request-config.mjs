@@ -17,6 +17,7 @@ import {
   normalizeVisualReferenceSourceDir,
 } from "../visual/page-builder-visual-reference-import-config.mjs";
 import {
+  normalizeVisualReferenceExportManifestOutputPath,
   normalizeVisualReferenceExportTableOutputPath,
   normalizeVisualReferenceMissingOutputPath,
 } from "../visual/page-builder-visual-reference-request.mjs";
@@ -104,6 +105,17 @@ export function readReleaseEvidenceRequestCliConfig(args = []) {
 
     if (option === "--visual-table-output" || option === "--table-output") {
       input.requestOutputPaths.visualReferenceTable = readOptionValue(
+        option,
+        normalizedArgs,
+        index,
+        value,
+      );
+      index += value === null ? 1 : 0;
+      continue;
+    }
+
+    if (option === "--visual-json-output" || option === "--json-output") {
+      input.requestOutputPaths.visualReferenceManifest = readOptionValue(
         option,
         normalizedArgs,
         index,
@@ -223,6 +235,9 @@ export function readReleaseEvidenceRequestCliConfig(args = []) {
       ),
       visualReference: normalizeVisualReferenceImportMarkdownOutputPath(
         input.requestOutputPaths.visualReference,
+      ),
+      visualReferenceManifest: normalizeVisualReferenceExportManifestOutputPath(
+        input.requestOutputPaths.visualReferenceManifest,
       ),
       visualReferenceTable: normalizeVisualReferenceExportTableOutputPath(
         input.requestOutputPaths.visualReferenceTable,

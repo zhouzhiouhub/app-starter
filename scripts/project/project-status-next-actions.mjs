@@ -9,6 +9,7 @@ import {
 } from "../visual/page-builder-visual-reference-import-commands.mjs";
 import {
   defaultPageBuilderVisualMissingReferencesOutputPath,
+  defaultPageBuilderVisualReferenceExportManifestOutputPath,
   defaultPageBuilderVisualReferenceExportTableOutputPath,
   defaultPageBuilderVisualReferenceRequestOutputPath,
 } from "../visual/page-builder-visual-reference-request.mjs";
@@ -154,6 +155,10 @@ function createPageBuilderVisualActionSteps(action, context) {
       createVisualReferenceExportTableOutputPath(visualContext),
     ),
     createNextActionStep(
+      "Export manifest output",
+      createVisualReferenceExportManifestOutputPath(visualContext),
+    ),
+    createNextActionStep(
       "Reference report",
       createPageBuilderVisualReferenceCheckCommand({
         manifestPath: visualContext.manifestPath,
@@ -208,6 +213,12 @@ function createVisualReferenceExportTableOutputPath(visualContext) {
   return visualContext.artifactDir === defaultVisualArtifactDir
     ? defaultPageBuilderVisualReferenceExportTableOutputPath
     : `${visualContext.artifactDir}/page-builder-reference-export-table.tsv`;
+}
+
+function createVisualReferenceExportManifestOutputPath(visualContext) {
+  return visualContext.artifactDir === defaultVisualArtifactDir
+    ? defaultPageBuilderVisualReferenceExportManifestOutputPath
+    : `${visualContext.artifactDir}/page-builder-reference-export-manifest.json`;
 }
 
 function createPageBuilderVisualActionContext(context) {

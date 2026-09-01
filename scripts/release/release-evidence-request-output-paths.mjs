@@ -8,6 +8,7 @@ import {
   defaultProductionSmokeRequestOutputPath,
 } from "../smoke/production-smoke-request.mjs";
 import {
+  defaultPageBuilderVisualReferenceExportManifestOutputPath,
   defaultPageBuilderVisualReferenceExportTableOutputPath,
   defaultPageBuilderVisualMissingReferencesOutputPath,
   defaultPageBuilderVisualReferenceRequestOutputPath,
@@ -22,6 +23,7 @@ export const defaultReleaseEvidenceRequestOutputPaths = {
   releaseEvidence: defaultReleaseEvidenceRequestOutputPath,
   visualMissingReferences: defaultPageBuilderVisualMissingReferencesOutputPath,
   visualReference: defaultPageBuilderVisualReferenceRequestOutputPath,
+  visualReferenceManifest: defaultPageBuilderVisualReferenceExportManifestOutputPath,
   visualReferenceTable: defaultPageBuilderVisualReferenceExportTableOutputPath,
 };
 
@@ -45,6 +47,8 @@ export function createReleaseEvidenceRequestCommand(outputPaths = {}) {
     paths.visualMissingReferences,
     "--visual-table-output",
     paths.visualReferenceTable,
+    "--visual-json-output",
+    paths.visualReferenceManifest,
     "--smoke-output",
     paths.productionSmoke,
     "--smoke-inputs-output",

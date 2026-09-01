@@ -26,6 +26,7 @@ import {
 test("visual reference request Markdown is design-facing", () => {
   const markdown = createPageBuilderVisualReferenceRequestMarkdown({
     complete: false,
+    jsonOutputPath: "artifacts/visual/page-builder-reference-export-manifest.json",
     manifestPath:
       "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
     missingOutputPath: "artifacts/visual/page-builder-missing-references.txt",
@@ -67,6 +68,10 @@ test("visual reference request Markdown is design-facing", () => {
     markdown,
     /Export table output: `artifacts\/visual\/page-builder-reference-export-table\.tsv`/,
   );
+  assert.match(
+    markdown,
+    /Export manifest output: `artifacts\/visual\/page-builder-reference-export-manifest\.json`/,
+  );
   assert.match(markdown, /Export real PNGs from the approved design source/);
   assert.match(markdown, /matching preview viewport size shown as reference size/);
   assert.match(markdown, /## Reference PNG Dimensions/);
@@ -103,6 +108,7 @@ test("visual reference request CLI writes a Markdown handoff", async () => {
   const outputPath = `${root}/page-builder-reference-request.md`;
   const missingOutputPath = `${root}/page-builder-missing-references.txt`;
   const tableOutputPath = `${root}/page-builder-reference-export-table.tsv`;
+  const jsonOutputPath = `${root}/page-builder-reference-export-manifest.json`;
   const stdout = [];
 
   try {
@@ -125,6 +131,8 @@ test("visual reference request CLI writes a Markdown handoff", async () => {
         missingOutputPath,
         "--table-output",
         tableOutputPath,
+        "--json-output",
+        jsonOutputPath,
       ],
       {
         stdout: (line) => stdout.push(line),
@@ -133,6 +141,7 @@ test("visual reference request CLI writes a Markdown handoff", async () => {
     const markdown = readFileSync(outputPath, "utf8");
     const missingPaths = readFileSync(missingOutputPath, "utf8");
     const exportTable = readFileSync(tableOutputPath, "utf8");
+    const exportManifest = JSON.parse(readFileSync(jsonOutputPath, "utf8"));
 
     assert.equal(exitCode, 0);
     assert.match(stdout.join("\n"), /Visual reference request written:/);
@@ -143,6 +152,10 @@ test("visual reference request CLI writes a Markdown handoff", async () => {
     assert.match(
       stdout.join("\n"),
       /Visual reference export table written:/,
+    );
+    assert.match(
+      stdout.join("\n"),
+      /Visual reference export manifest written:/,
     );
     assert.match(stdout.join("\n"), /Missing references: 1\/12/);
     assert.match(
@@ -166,9 +179,45 @@ test("visual reference request CLI writes a Markdown handoff", async () => {
         )}`,
       ),
     );
+    assert.equal(
+      exportManifest.schemaVersion,
+      "page-builder-visual-reference-export.v1",
+    );
+    assert.equal(exportManifest.referenceCount, 12);
+    assert.equal(exportManifest.missingCount, 1);
+    assert.deepEqual(
+      exportManifest.references.find(
+        (reference) =>
+          reference.component === "spec-table" &&
+          reference.viewport === "mobile",
+      ),
+      {
+        component: "spec-table",
+        expectedPath: `${sourceDir}/spec-table-mobile.png`,
+        fileName: "spec-table-mobile.png",
+        previewScreenshot: {
+          height: 1000,
+          path: `${root}/artifacts/visual/spec-table-mobile.png`,
+          width: 390,
+        },
+        reason: "spec-table-mobile.png is missing",
+        referenceSize: {
+          height: 1000,
+          width: 390,
+        },
+        status: "missing",
+        viewport: "mobile",
+      },
+    );
     assert.match(
       markdown,
       new RegExp(`Export table output: \`${escapeRegExp(tableOutputPath)}\``),
+    );
+    assert.match(
+      markdown,
+      new RegExp(
+        `Export manifest output: \`${escapeRegExp(jsonOutputPath)}\``,
+      ),
     );
     assert.match(
       markdown,
@@ -210,8 +259,12 @@ test("visual reference request config validates paths", () => {
       "artifacts\\visual\\page-builder-missing-references.txt",
       "--table-output",
       "artifacts\\visual\\page-builder-reference-export-table.tsv",
+      "--json-output",
+      "artifacts\\visual\\page-builder-reference-export-manifest.json",
     ]),
     {
+      jsonOutputPath:
+        "artifacts/visual/page-builder-reference-export-manifest.json",
       manifestPath:
         "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
       missingOutputPath: "artifacts/visual/page-builder-missing-references.txt",
@@ -243,6 +296,14 @@ test("visual reference request config validates paths", () => {
         "artifacts/visual/page-builder-reference-export-table.txt",
       ]),
     /Visual reference export table output must end with \.tsv/,
+  );
+  assert.throws(
+    () =>
+      readPageBuilderVisualReferenceRequestCliConfig([
+        "--json-output",
+        "artifacts/visual/page-builder-reference-export-manifest.tsv",
+      ]),
+    /Visual reference export manifest output must end with \.json/,
   );
 });
 

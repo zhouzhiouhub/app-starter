@@ -24,13 +24,14 @@ test("release requests help and summary expose the bundle command", async () => 
       releaseEvidence: "tmp/release.md",
       visualMissingReferences: "tmp/missing.txt",
       visualReference: "tmp/visual.md",
+      visualReferenceManifest: "tmp/reference-manifest.json",
       visualReferenceTable: "tmp/reference-table.tsv",
     }),
-    "pnpm release:requests -- --release-output tmp/release.md --visual-output tmp/visual.md --visual-missing-output tmp/missing.txt --visual-table-output tmp/reference-table.tsv --smoke-output tmp/smoke.md --smoke-inputs-output tmp/smoke-inputs.txt --smoke-inputs-table-output tmp/smoke-inputs.tsv",
+    "pnpm release:requests -- --release-output tmp/release.md --visual-output tmp/visual.md --visual-missing-output tmp/missing.txt --visual-table-output tmp/reference-table.tsv --visual-json-output tmp/reference-manifest.json --smoke-output tmp/smoke.md --smoke-inputs-output tmp/smoke-inputs.txt --smoke-inputs-table-output tmp/smoke-inputs.tsv",
   );
   assert.equal(
     createReleaseRequestsOutputSummary(),
-    "artifacts/release/release-evidence-request.md, artifacts/visual/page-builder-reference-request.md, artifacts/visual/page-builder-missing-references.txt, artifacts/visual/page-builder-reference-export-table.tsv, artifacts/production-smoke/production-smoke-request.md, artifacts/production-smoke/production-smoke-dispatch-inputs.txt, artifacts/production-smoke/production-smoke-dispatch-inputs.tsv",
+    "artifacts/release/release-evidence-request.md, artifacts/visual/page-builder-reference-request.md, artifacts/visual/page-builder-missing-references.txt, artifacts/visual/page-builder-reference-export-table.tsv, artifacts/visual/page-builder-reference-export-manifest.json, artifacts/production-smoke/production-smoke-request.md, artifacts/production-smoke/production-smoke-dispatch-inputs.txt, artifacts/production-smoke/production-smoke-dispatch-inputs.tsv",
   );
   assert.equal(
     createReleaseRequestsOutputSummary({
@@ -40,14 +41,16 @@ test("release requests help and summary expose the bundle command", async () => 
       releaseEvidence: "tmp/release.md",
       visualMissingReferences: "tmp/missing.txt",
       visualReference: "tmp/visual.md",
+      visualReferenceManifest: "tmp/reference-manifest.json",
       visualReferenceTable: "tmp/reference-table.tsv",
     }),
-    "tmp/release.md, tmp/visual.md, tmp/missing.txt, tmp/reference-table.tsv, tmp/smoke.md, tmp/smoke-inputs.txt, tmp/smoke-inputs.tsv",
+    "tmp/release.md, tmp/visual.md, tmp/missing.txt, tmp/reference-table.tsv, tmp/reference-manifest.json, tmp/smoke.md, tmp/smoke-inputs.txt, tmp/smoke-inputs.tsv",
   );
   assert.match(help, /refreshes all local evidence request files/);
   assert.match(help, /Custom output paths are also reflected/);
   assert.match(help, /--visual-missing-output <path>/);
   assert.match(help, /--visual-table-output <path>/);
+  assert.match(help, /--visual-json-output <path>/);
   assert.match(help, /--smoke-inputs-output <path>/);
   assert.match(help, /--smoke-inputs-table-output <path>/);
   assert.match(help, /does not import\s+visual references, run\s+Production Smoke/);

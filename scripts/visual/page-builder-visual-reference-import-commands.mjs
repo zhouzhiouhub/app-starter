@@ -7,6 +7,7 @@ import { createArtifactPaths } from "./page-builder-visual-artifact-check-paths.
 import { pageBuilderVisualCaptureDefaultOutputDir } from "./page-builder-visual-capture-constants.mjs";
 import {
   defaultPageBuilderVisualMissingReferencesOutputPath,
+  defaultPageBuilderVisualReferenceExportManifestOutputPath,
   defaultPageBuilderVisualReferenceExportTableOutputPath,
 } from "./page-builder-visual-reference-missing-output.mjs";
 
@@ -88,6 +89,7 @@ export function createPageBuilderVisualReferenceRequestCommand(report) {
     ...createReferenceRequestOutputOption(report, outputDir),
     ...createReferenceRequestMissingOutputOption(report, outputDir),
     ...createReferenceRequestTableOutputOption(report, outputDir),
+    ...createReferenceRequestJsonOutputOption(report, outputDir),
   ]);
 }
 
@@ -204,11 +206,15 @@ function isDefaultReferenceRequestContext(report) {
     readReferenceRequestMissingOutputPath(
       report,
       pageBuilderVisualCaptureDefaultOutputDir,
-    ) === defaultPageBuilderVisualMissingReferencesOutputPath
-    && readReferenceRequestTableOutputPath(
+    ) === defaultPageBuilderVisualMissingReferencesOutputPath &&
+    readReferenceRequestTableOutputPath(
       report,
       pageBuilderVisualCaptureDefaultOutputDir,
-    ) === defaultPageBuilderVisualReferenceExportTableOutputPath
+    ) === defaultPageBuilderVisualReferenceExportTableOutputPath &&
+    readReferenceRequestJsonOutputPath(
+      report,
+      pageBuilderVisualCaptureDefaultOutputDir,
+    ) === defaultPageBuilderVisualReferenceExportManifestOutputPath
   );
 }
 
@@ -246,6 +252,13 @@ function readReferenceRequestTableOutputPath(report, outputDir) {
     : readDefaultReferenceRequestTableOutputPath(report, outputDir);
 }
 
+function readReferenceRequestJsonOutputPath(report, outputDir) {
+  return typeof report.jsonOutputPath === "string" &&
+    report.jsonOutputPath.length > 0
+    ? report.jsonOutputPath
+    : readDefaultReferenceRequestJsonOutputPath(report, outputDir);
+}
+
 function createSourceDirOption(report) {
   const sourceDir = readSourceDir(report);
 
@@ -275,6 +288,13 @@ function createReferenceRequestTableOutputOption(report, outputDir) {
   return ["--table-output", readReferenceRequestTableOutputPath(report, outputDir)];
 }
 
+function createReferenceRequestJsonOutputOption(report, outputDir) {
+  return [
+    "--json-output",
+    readReferenceRequestJsonOutputPath(report, outputDir),
+  ];
+}
+
 function readDefaultReferenceRequestOutputPath(report, outputDir) {
   return isDefaultReferenceCheckContext(report)
     ? defaultPageBuilderVisualReferenceRequestOutputPath
@@ -291,4 +311,10 @@ function readDefaultReferenceRequestTableOutputPath(report, outputDir) {
   return isDefaultReferenceCheckContext(report)
     ? defaultPageBuilderVisualReferenceExportTableOutputPath
     : `${outputDir}/page-builder-reference-export-table.tsv`;
+}
+
+function readDefaultReferenceRequestJsonOutputPath(report, outputDir) {
+  return isDefaultReferenceCheckContext(report)
+    ? defaultPageBuilderVisualReferenceExportManifestOutputPath
+    : `${outputDir}/page-builder-reference-export-manifest.json`;
 }

@@ -11,17 +11,20 @@ later phases are explicitly approved.
   runbook.
 - Run `pnpm release:requests` when the release needs the combined release
   evidence request, Page Builder design request, missing visual reference path
-  list, reference export task table, Production Smoke request, and Production
+  list, reference export task table, reference export JSON manifest,
+  Production Smoke request, and Production
   Smoke dispatch input template refreshed together. This writes only local
   coordination files; it does not
   import references, run smoke, upload artifacts, generate release notes, or
   mark blocked evidence ready.
 - Run `pnpm release:evidence-request` when the release needs one combined
   handoff for design references, Production Smoke inputs, dispatch input
-  template path, dispatch input table path, retained artifacts, and the final
+  template path, dispatch input table path, visual reference export manifest
+  path, retained artifacts, and the final
   `release:handoff -- --require-ready` gate. This request is coordination
   material only; pass `--visual-output`, `--visual-missing-output`,
-  `--visual-table-output`, `--smoke-output`, `--smoke-inputs-output`, and
+  `--visual-table-output`, `--visual-json-output`, `--smoke-output`,
+  `--smoke-inputs-output`, and
   `--smoke-inputs-table-output` if the request bundle uses custom paths. It
   does not import references, run smoke, generate release
   notes, or mark blocked evidence ready.
@@ -73,7 +76,8 @@ later phases are explicitly approved.
   with previews, follow-up commands, and a terminal and Markdown
   first-missing-reference hint plus
   `artifacts/visual/page-builder-missing-references.txt` and
-  `artifacts/visual/page-builder-reference-export-table.tsv`, then run
+  `artifacts/visual/page-builder-reference-export-table.tsv` plus
+  `artifacts/visual/page-builder-reference-export-manifest.json`, then run
   `pnpm visual:references:check`
   to keep JSON and Markdown reference intake reports with missing or imported
   PNG paths. The JSON artifact's `requiredReferences[]` list is the
@@ -447,8 +451,10 @@ later phases are explicitly approved.
   export request, writes
   `artifacts/visual/page-builder-missing-references.txt` as the plain missing
   path list, writes `artifacts/visual/page-builder-reference-export-table.tsv`
-  as a TSV task table, and prints the first missing reference path in the
-  terminal summary and Markdown status.
+  as a TSV task table, writes
+  `artifacts/visual/page-builder-reference-export-manifest.json` as a JSON
+  export manifest, and prints the first missing reference path in the terminal
+  summary and Markdown status.
 - Run `pnpm release:check -- --checklist` when the gate is blocked and keep
   the readiness task output with the failed evidence review.
 - Use the failed check details and suggested fixes from the report review; the

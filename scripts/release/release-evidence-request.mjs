@@ -98,6 +98,7 @@ export async function createReleaseEvidenceRequest(config, input = {}, generated
       ...visualReferenceArtifact,
       missingOutputPath: config.requestOutputPaths.visualMissingReferences,
       requestOutputPath: config.requestOutputPaths.visualReference,
+      jsonOutputPath: config.requestOutputPaths.visualReferenceManifest,
       tableOutputPath: config.requestOutputPaths.visualReferenceTable,
     },
   };
@@ -107,7 +108,7 @@ function printHelp(writeLine) {
   writeLine(`Usage:
   pnpm release:evidence-request
   pnpm release:evidence-request -- --output artifacts/release/release-evidence-request.md
-  pnpm release:evidence-request -- --visual-output artifacts/visual/page-builder-reference-request.md --visual-missing-output artifacts/visual/page-builder-missing-references.txt --visual-table-output artifacts/visual/page-builder-reference-export-table.tsv
+  pnpm release:evidence-request -- --visual-output artifacts/visual/page-builder-reference-request.md --visual-missing-output artifacts/visual/page-builder-missing-references.txt --visual-table-output artifacts/visual/page-builder-reference-export-table.tsv --visual-json-output artifacts/visual/page-builder-reference-export-manifest.json
   pnpm release:evidence-request -- --smoke-output artifacts/production-smoke/production-smoke-request.md
   pnpm release:evidence-request -- --smoke-inputs-output artifacts/production-smoke/production-smoke-dispatch-inputs.txt
   pnpm release:evidence-request -- --smoke-inputs-table-output artifacts/production-smoke/production-smoke-dispatch-inputs.tsv
@@ -122,6 +123,8 @@ Options:
   --missing-output <path>      Alias for --visual-missing-output.
   --visual-table-output <path> Show the Page Builder reference export TSV output.
   --table-output <path>        Alias for --visual-table-output.
+  --visual-json-output <path>  Show the Page Builder reference export JSON output.
+  --json-output <path>         Alias for --visual-json-output.
   --smoke-output <path>        Show the Production Smoke request output path.
   --smoke-inputs-output <path> Show the Production Smoke workflow_dispatch input template path.
   --smoke-inputs-table-output <path>
@@ -141,7 +144,7 @@ Smoke evidence inputs:
 
 Evidence:
   This command writes one release-facing request that embeds the Page Builder
-  design reference request, reference export table path, Production Smoke
+  design reference request, reference export table and JSON manifest paths, Production Smoke
   request, dispatch input template path, and dispatch input table path.
   The terminal summary and Markdown request status report release readiness,
   visual reference status, the first missing visual reference,

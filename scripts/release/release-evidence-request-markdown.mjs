@@ -2,6 +2,9 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { createProductionSmokeRequestCommand } from "../smoke/production-smoke-dispatch-command.mjs";
 import {
+  defaultPageBuilderVisualReferenceExportManifestOutputPath,
+} from "../visual/page-builder-visual-reference-missing-output.mjs";
+import {
   defaultProductionSmokeDispatchInputsOutputPath,
 } from "../smoke/production-smoke-dispatch-inputs-output.mjs";
 import {
@@ -42,6 +45,10 @@ export function createReleaseEvidenceRequestMarkdown(input) {
     input.smokeInputsTableOutputPath ??
     requestOutputPaths.productionSmokeInputsTable ??
     defaultProductionSmokeDispatchInputsTableOutputPath;
+  const visualReferenceManifestOutputPath =
+    requestOutputPaths.visualReferenceManifest ??
+    visual.jsonOutputPath ??
+    defaultPageBuilderVisualReferenceExportManifestOutputPath;
   const firstMissingVisualReference = Array.isArray(visual.missing)
     ? visual.missing[0]?.expectedPath
     : null;
@@ -72,6 +79,9 @@ export function createReleaseEvidenceRequestMarkdown(input) {
     `- Page Builder design request: ${formatCode(
       createPageBuilderVisualReferenceRequestCommand(visual),
       maxMarkdownCommandLength,
+    )}`,
+    `- Page Builder reference export manifest: ${formatCode(
+      visualReferenceManifestOutputPath,
     )}`,
     `- Production Smoke request: ${formatCode(
       createProductionSmokeRequestCommand({

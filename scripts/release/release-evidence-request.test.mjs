@@ -19,6 +19,7 @@ test("release evidence request Markdown combines blocked evidence handoffs", asy
   const visualOutputPath = `${root}/visual.md`;
   const visualMissingOutputPath = `${root}/missing.txt`;
   const visualTableOutputPath = `${root}/reference-table.tsv`;
+  const visualJsonOutputPath = `${root}/reference-manifest.json`;
   const smokeOutputPath = `${root}/smoke.md`;
   const smokeInputsOutputPath = `${root}/smoke-inputs.txt`;
   const smokeInputsTableOutputPath = `${root}/smoke-inputs.tsv`;
@@ -36,6 +37,8 @@ test("release evidence request Markdown combines blocked evidence handoffs", asy
         visualMissingOutputPath,
         "--visual-table-output",
         visualTableOutputPath,
+        "--visual-json-output",
+        visualJsonOutputPath,
         "--smoke-output",
         smokeOutputPath,
         "--smoke-inputs-output",
@@ -68,6 +71,8 @@ test("release evidence request Markdown combines blocked evidence handoffs", asy
           visualMissingOutputPath,
         )} --visual-table-output ${escapeRegExp(
           visualTableOutputPath,
+        )} --visual-json-output ${escapeRegExp(
+          visualJsonOutputPath,
         )} --smoke-output ${escapeRegExp(
           smokeOutputPath,
         )} --smoke-inputs-output ${escapeRegExp(
@@ -86,6 +91,7 @@ test("release evidence request Markdown combines blocked evidence handoffs", asy
             visualOutputPath,
             visualMissingOutputPath,
             visualTableOutputPath,
+            visualJsonOutputPath,
             smokeOutputPath,
             smokeInputsOutputPath,
             smokeInputsTableOutputPath,
@@ -104,6 +110,8 @@ test("release evidence request Markdown combines blocked evidence handoffs", asy
           visualMissingOutputPath,
         )} --visual-table-output ${escapeRegExp(
           visualTableOutputPath,
+        )} --visual-json-output ${escapeRegExp(
+          visualJsonOutputPath,
         )} --smoke-output ${escapeRegExp(
           smokeOutputPath,
         )} --smoke-inputs-output ${escapeRegExp(
@@ -120,7 +128,17 @@ test("release evidence request Markdown combines blocked evidence handoffs", asy
           visualOutputPath,
         )} --missing-output ${escapeRegExp(
           visualMissingOutputPath,
-        )} --table-output ${escapeRegExp(visualTableOutputPath)}\``,
+        )} --table-output ${escapeRegExp(
+          visualTableOutputPath,
+        )} --json-output ${escapeRegExp(visualJsonOutputPath)}\``,
+      ),
+    );
+    assert.match(
+      markdown,
+      new RegExp(
+        `Page Builder reference export manifest: \`${escapeRegExp(
+          visualJsonOutputPath,
+        )}\``,
       ),
     );
     assert.match(
@@ -168,6 +186,12 @@ test("release evidence request Markdown combines blocked evidence handoffs", asy
       markdown,
       new RegExp(
         `Export table output: \`${escapeRegExp(visualTableOutputPath)}\``,
+      ),
+    );
+    assert.match(
+      markdown,
+      new RegExp(
+        `Export manifest output: \`${escapeRegExp(visualJsonOutputPath)}\``,
       ),
     );
     assert.match(markdown, /## Production Smoke Evidence Request/);
@@ -300,6 +324,8 @@ test("release evidence request help documents terminal summary fields", async ()
   assert.match(help, /--missing-output <path>/);
   assert.match(help, /--visual-table-output <path>/);
   assert.match(help, /--table-output <path>/);
+  assert.match(help, /--visual-json-output <path>/);
+  assert.match(help, /--json-output <path>/);
   assert.match(help, /--smoke-output <path>/);
   assert.match(help, /--smoke-inputs-output <path>/);
   assert.match(help, /--smoke-inputs-table-output <path>/);
@@ -321,6 +347,8 @@ test("release evidence request config validates paths and inputs", () => {
     String.raw`tmp\\missing.txt`,
     "--visual-table-output",
     String.raw`tmp\\reference-table.tsv`,
+    "--visual-json-output",
+    String.raw`tmp\\reference-manifest.json`,
     "--smoke-output",
     String.raw`tmp\\smoke.md`,
     "--smoke-inputs-output",
@@ -354,6 +382,7 @@ test("release evidence request config validates paths and inputs", () => {
     releaseEvidence: "artifacts/release/release-evidence-request.md",
     visualMissingReferences: "tmp/missing.txt",
     visualReference: "tmp/visual.md",
+    visualReferenceManifest: "tmp/reference-manifest.json",
     visualReferenceTable: "tmp/reference-table.tsv",
   });
   assert.equal(config.smokeInputsOutputPath, "tmp/smoke-inputs.txt");
@@ -364,7 +393,7 @@ test("release evidence request config validates paths and inputs", () => {
   );
   assert.equal(
     createReleaseEvidenceRequestCommand(config.requestOutputPaths),
-    "pnpm release:evidence-request -- --output artifacts/release/release-evidence-request.md --visual-output tmp/visual.md --visual-missing-output tmp/missing.txt --visual-table-output tmp/reference-table.tsv --smoke-output tmp/smoke.md --smoke-inputs-output tmp/smoke-inputs.txt --smoke-inputs-table-output tmp/smoke-inputs.tsv",
+    "pnpm release:evidence-request -- --output artifacts/release/release-evidence-request.md --visual-output tmp/visual.md --visual-missing-output tmp/missing.txt --visual-table-output tmp/reference-table.tsv --visual-json-output tmp/reference-manifest.json --smoke-output tmp/smoke.md --smoke-inputs-output tmp/smoke-inputs.txt --smoke-inputs-table-output tmp/smoke-inputs.tsv",
   );
   assert.equal(
     normalizeReleaseEvidenceRequestOutputPath("tmp/release-request.MD"),

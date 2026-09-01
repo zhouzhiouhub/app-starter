@@ -98,7 +98,7 @@ test("project next actions include copy-ready missing visual reference paths", (
 
   assert.equal(missingPaths.value, "pnpm --silent visual:references:missing");
   assert.deepEqual(
-    visual.steps.slice(0, 7).map((step) => step.label),
+    visual.steps.slice(0, 8).map((step) => step.label),
     [
       "Reference source",
       "Missing paths",
@@ -106,6 +106,7 @@ test("project next actions include copy-ready missing visual reference paths", (
       "Design request output",
       "Missing paths output",
       "Export table output",
+      "Export manifest output",
       "Reference report",
     ],
   );
@@ -124,6 +125,10 @@ test("project next actions include copy-ready missing visual reference paths", (
   assert.equal(
     visual.steps.find((step) => step.label === "Export table output").value,
     "artifacts/visual/page-builder-reference-export-table.tsv",
+  );
+  assert.equal(
+    visual.steps.find((step) => step.label === "Export manifest output").value,
+    "artifacts/visual/page-builder-reference-export-manifest.json",
   );
 });
 
@@ -144,6 +149,7 @@ test("project next actions include unified release evidence request", () => {
       "Design request",
       "Design request output",
       "Export table output",
+      "Export manifest output",
       "Smoke request",
       "Smoke request output",
       "Dispatch inputs output",
@@ -157,7 +163,7 @@ test("project next actions include unified release evidence request", () => {
   );
   assert.equal(
     releaseEvidence.steps[1].value,
-    "artifacts/release/release-evidence-request.md, artifacts/visual/page-builder-reference-request.md, artifacts/visual/page-builder-missing-references.txt, artifacts/visual/page-builder-reference-export-table.tsv, artifacts/production-smoke/production-smoke-request.md, artifacts/production-smoke/production-smoke-dispatch-inputs.txt, artifacts/production-smoke/production-smoke-dispatch-inputs.tsv",
+    "artifacts/release/release-evidence-request.md, artifacts/visual/page-builder-reference-request.md, artifacts/visual/page-builder-missing-references.txt, artifacts/visual/page-builder-reference-export-table.tsv, artifacts/visual/page-builder-reference-export-manifest.json, artifacts/production-smoke/production-smoke-request.md, artifacts/production-smoke/production-smoke-dispatch-inputs.txt, artifacts/production-smoke/production-smoke-dispatch-inputs.tsv",
   );
   assert.equal(
     releaseEvidence.steps[2].value,
@@ -179,21 +185,25 @@ test("project next actions include unified release evidence request", () => {
     releaseEvidence.steps[6].value,
     "artifacts/visual/page-builder-reference-export-table.tsv",
   );
-  assert.equal(releaseEvidence.steps[7].value, "pnpm smoke:request");
   assert.equal(
-    releaseEvidence.steps[8].value,
+    releaseEvidence.steps[7].value,
+    "artifacts/visual/page-builder-reference-export-manifest.json",
+  );
+  assert.equal(releaseEvidence.steps[8].value, "pnpm smoke:request");
+  assert.equal(
+    releaseEvidence.steps[9].value,
     "artifacts/production-smoke/production-smoke-request.md",
   );
   assert.equal(
-    releaseEvidence.steps[9].value,
+    releaseEvidence.steps[10].value,
     "artifacts/production-smoke/production-smoke-dispatch-inputs.txt",
   );
   assert.equal(
-    releaseEvidence.steps[10].value,
+    releaseEvidence.steps[11].value,
     "artifacts/production-smoke/production-smoke-dispatch-inputs.tsv",
   );
   assert.match(
-    releaseEvidence.steps[11].value,
+    releaseEvidence.steps[12].value,
     /^pnpm release:handoff -- --require-ready /,
   );
 });

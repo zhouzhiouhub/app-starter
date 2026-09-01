@@ -8,6 +8,7 @@ import {
 import {
   readPageBuilderVisualReferenceRequestCliConfig,
   writePageBuilderVisualMissingReferencePaths,
+  writePageBuilderVisualReferenceExportManifest,
   writePageBuilderVisualReferenceExportTable,
   writePageBuilderVisualReferenceRequestMarkdown,
 } from "./visual/page-builder-visual-reference-request.mjs";
@@ -37,6 +38,7 @@ export async function runPageBuilderVisualReferenceRequestCli(
 
     const requestArtifact = {
       ...artifact,
+      jsonOutputPath: config.jsonOutputPath,
       missingOutputPath: config.missingOutputPath,
       tableOutputPath: config.tableOutputPath,
     };
@@ -60,6 +62,13 @@ export async function runPageBuilderVisualReferenceRequestCli(
       );
     }
 
+    if (config.jsonOutputPath) {
+      await writePageBuilderVisualReferenceExportManifest(
+        config.jsonOutputPath,
+        artifact,
+      );
+    }
+
     stdout(`Visual reference request written: ${config.outputPath}`);
     if (config.missingOutputPath) {
       stdout(
@@ -68,6 +77,11 @@ export async function runPageBuilderVisualReferenceRequestCli(
     }
     if (config.tableOutputPath) {
       stdout(`Visual reference export table written: ${config.tableOutputPath}`);
+    }
+    if (config.jsonOutputPath) {
+      stdout(
+        `Visual reference export manifest written: ${config.jsonOutputPath}`,
+      );
     }
     stdout(
       `Missing references: ${artifact.missingCount}/${artifact.requiredReferenceCount}`,
@@ -100,6 +114,7 @@ function printHelp(writeLine) {
   pnpm visual:references:request -- --output artifacts/visual/page-builder-reference-request.md
   pnpm visual:references:request -- --missing-output artifacts/visual/page-builder-missing-references.txt
   pnpm visual:references:request -- --table-output artifacts/visual/page-builder-reference-export-table.tsv
+  pnpm visual:references:request -- --json-output artifacts/visual/page-builder-reference-export-manifest.json
   pnpm visual:references:request -- --source-dir docs/visual/page-builder-references
 
 Options:
@@ -112,6 +127,8 @@ Options:
   --table-output <path>
                       Write a TSV export table with component, viewport,
                       target path, preview path, and target dimensions.
+  --json-output <path>
+                      Write a JSON export manifest with the same reference tasks.
   -h, --help          Show this help.
 
 Evidence:
@@ -120,9 +137,10 @@ Evidence:
   report the missing/required count and the first missing reference path to hand
   off first. When --missing-output is provided, it also writes a plain text list
   of missing expected PNG paths. When --table-output is provided, it writes a
-  TSV export table for design task assignment. It does not import references,
-  measure screenshots, mark evidence accepted, or replace approved design
-  exports.`);
+  TSV export table for design task assignment. When --json-output is provided,
+  it writes a machine-readable export manifest for automation handoff. It does
+  not import references, measure screenshots, mark evidence accepted, or replace
+  approved design exports.`);
 }
 
 if (isMainModule()) {

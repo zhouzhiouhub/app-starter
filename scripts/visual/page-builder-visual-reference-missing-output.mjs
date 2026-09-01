@@ -6,6 +6,10 @@ export const defaultPageBuilderVisualMissingReferencesOutputPath =
   "artifacts/visual/page-builder-missing-references.txt";
 export const defaultPageBuilderVisualReferenceExportTableOutputPath =
   "artifacts/visual/page-builder-reference-export-table.tsv";
+export const defaultPageBuilderVisualReferenceExportManifestOutputPath =
+  "artifacts/visual/page-builder-reference-export-manifest.json";
+export const pageBuilderVisualReferenceExportManifestSchemaVersion =
+  "page-builder-visual-reference-export.v1";
 
 const safeOutputPathRoots = new Set([".tmp", "artifacts", "reports", "tmp"]);
 const safeOutputPathSegmentPattern = /^[A-Za-z0-9._-]+$/u;
@@ -78,6 +82,43 @@ export async function writePageBuilderVisualReferenceExportTable(
   await writeFile(outputPath, content, "utf8");
 }
 
+export async function writePageBuilderVisualReferenceExportManifest(
+  outputPath,
+  artifact,
+) {
+  await mkdir(dirname(outputPath), { recursive: true });
+  await writeFile(
+    outputPath,
+    `${JSON.stringify(
+      createPageBuilderVisualReferenceExportManifest(artifact),
+      null,
+      2,
+    )}\n`,
+    "utf8",
+  );
+}
+
+export function createPageBuilderVisualReferenceExportManifest(artifact) {
+  const references = Array.isArray(artifact.requiredReferences)
+    ? artifact.requiredReferences
+    : [];
+  const missingReferences = references.filter(
+    (reference) => reference.status === "missing",
+  );
+
+  return {
+    complete: artifact.complete === true,
+    generatedAt: artifact.generatedAt,
+    manifestPath: artifact.manifestPath,
+    missingCount: missingReferences.length,
+    referenceCount: references.length,
+    references: references.map(createReferenceExportManifestEntry),
+    schemaVersion: pageBuilderVisualReferenceExportManifestSchemaVersion,
+    sourceDir: artifact.sourceDir,
+    status: readArtifactStatus(artifact),
+  };
+}
+
 export function normalizeVisualReferenceMissingOutputPath(value) {
   return normalizeVisualReferenceOutputPath(value, {
     extension: ".txt",
@@ -89,6 +130,13 @@ export function normalizeVisualReferenceExportTableOutputPath(value) {
   return normalizeVisualReferenceOutputPath(value, {
     extension: ".tsv",
     label: "Visual reference export table output",
+  });
+}
+
+export function normalizeVisualReferenceExportManifestOutputPath(value) {
+  return normalizeVisualReferenceOutputPath(value, {
+    extension: ".json",
+    label: "Visual reference export manifest output",
   });
 }
 
@@ -157,11 +205,53 @@ function createReferenceExportTableRow(reference) {
   ];
 }
 
+function createReferenceExportManifestEntry(reference) {
+  const preview = reference.previewScreenshot ?? {};
+  const size = readPreviewManifestSize(preview);
+
+  return {
+    component: reference.component,
+    expectedPath: reference.expectedPath,
+    fileName: `${reference.component}-${reference.viewport}.png`,
+    referenceSize: {
+      height: size.height,
+      width: size.width,
+    },
+    ...(preview.path
+      ? {
+          previewScreenshot: {
+            path: preview.path,
+            ...(size.height ? { height: size.height } : {}),
+            ...(size.width ? { width: size.width } : {}),
+          },
+        }
+      : {}),
+    ...(reference.reason ? { reason: reference.reason } : {}),
+    status: reference.status,
+    viewport: reference.viewport,
+  };
+}
+
 function readPreviewSize(preview) {
   return {
     height: Number.isFinite(preview.height) ? preview.height : "",
     width: Number.isFinite(preview.width) ? preview.width : "",
   };
+}
+
+function readPreviewManifestSize(preview) {
+  return {
+    height: Number.isFinite(preview.height) ? preview.height : null,
+    width: Number.isFinite(preview.width) ? preview.width : null,
+  };
+}
+
+function readArtifactStatus(artifact) {
+  return typeof artifact.status === "string" && artifact.status.length > 0
+    ? artifact.status
+    : artifact.complete === true
+      ? "ready"
+      : "needs-evidence";
 }
 
 function formatTsvCell(value) {

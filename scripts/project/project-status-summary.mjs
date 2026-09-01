@@ -1,11 +1,12 @@
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { formatRequiredSourceReferenceAvailability } from "../visual/page-builder-visual-reference-summary-format.mjs";
 
-const maxSummaryLineLength = 480;
+const maxSummaryLineLength = 640;
 const visibleNextActionCount = 3;
 const informationalStepLabels = new Set([
   "Dispatch inputs output",
   "Dispatch inputs table output",
+  "Export manifest output",
   "Input evidence",
   "Keep artifact",
   "Keep artifacts",
