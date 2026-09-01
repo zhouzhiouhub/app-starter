@@ -83,6 +83,10 @@ export function createProductionSmokeRequestMarkdown(dispatchArtifact) {
   const validationCommand = createProductionSmokeDispatchValidationCommand({
     inputs: dispatchArtifact.inputs,
   });
+  const missingInputs =
+    dispatchArtifact.missingInputs.length > 0
+      ? dispatchArtifact.missingInputs.join(", ")
+      : "none";
   const lines = [
     "# Production Smoke Evidence Request",
     "",
@@ -92,6 +96,7 @@ export function createProductionSmokeRequestMarkdown(dispatchArtifact) {
     `Ready to dispatch: ${formatCode(
       dispatchArtifact.readyToDispatch ? "yes" : "no",
     )}`,
+    `Missing inputs: ${formatCode(missingInputs)}`,
     "",
     "## Dispatch",
     "",
@@ -224,6 +229,8 @@ Evidence inputs:
   --storefront-url.
 
 Evidence:
-  This command writes a production handoff request only. It does not run smoke
-  checks, create release evidence, upload artifacts, or mark the project ready.`);
+  This command writes a production handoff request only. The terminal summary
+  and Markdown status report dispatch readiness and any missing input names. It
+  does not run smoke checks, create release evidence, upload artifacts, or mark
+  the project ready.`);
 }

@@ -24,6 +24,10 @@ test("production smoke request Markdown is operator-facing", () => {
 
   assert.match(markdown, /^# Production Smoke Evidence Request/m);
   assert.match(markdown, /Status: `needs-inputs`/);
+  assert.match(
+    markdown,
+    /Missing inputs: `visual_artifact_name, visual_artifact_run_id, local_verification_run_url/,
+  );
   assert.match(markdown, /Manual dispatch: `GitHub Actions > Production Smoke/);
   assert.match(markdown, /Validate dispatch: `pnpm smoke:dispatch -- --require-complete/);
   assert.match(markdown, /Dispatch template: `gh workflow run production-smoke\.yml --ref main/);
@@ -67,6 +71,7 @@ test("production smoke request CLI writes a Markdown handoff", async () => {
     assert.match(stdout.join("\n"), /Ready to dispatch: yes/);
     assert.doesNotMatch(stdout.join("\n"), /Missing inputs:/);
     assert.match(markdown, /Status: `ready-to-dispatch`/);
+    assert.match(markdown, /Missing inputs: `none`/);
     assert.match(markdown, /- \[x\] `visual_artifact_name`: `page-builder-visual-fixture-281` - ready/);
     assert.match(markdown, /- \[x\] `storefront_url`: `https:\/\/store\.brand\.com\/` - ready/);
   } finally {
@@ -75,6 +80,19 @@ test("production smoke request CLI writes a Markdown handoff", async () => {
       recursive: true,
     });
   }
+});
+
+test("production smoke request help documents summary fields", async () => {
+  const stdout = [];
+
+  const exitCode = await runProductionSmokeRequestCli(["--help"], {
+    stdout: (line) => stdout.push(line),
+  });
+  const help = stdout.join("\n");
+
+  assert.equal(exitCode, 0);
+  assert.match(help, /terminal summary\s+and Markdown status report dispatch readiness/i);
+  assert.match(help, /missing input names/i);
 });
 
 test("production smoke request config validates output and evidence inputs", () => {
