@@ -38,13 +38,16 @@ or corrupted file is rejected during intake.
    `artifacts/visual/page-builder-reference-export-table.tsv`, and
    `artifacts/visual/page-builder-reference-export-manifest.json`, and the
    terminal summary prints the first missing reference path.
-4. Run `pnpm visual:references:check`.
-5. Review the generated Markdown report and fix any missing or empty PNGs.
-6. Run `pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete`.
-7. Capture retained browser screenshots with `pnpm visual:capture:fixture -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json --write-manifest`.
-8. Run `pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete`.
-9. Review the measured evidence, then run `pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --accept-passing --require-complete`.
-10. Finish with `pnpm visual:acceptance -- --require-accepted reports/visual/page-builder-fixture/page-builder-visual-acceptance.json`.
+4. Run `pnpm visual:references:handoff` when the design owner needs the request
+   files plus copied preview screenshots in
+   `artifacts/visual/page-builder-reference-handoff`.
+5. Run `pnpm visual:references:check`.
+6. Review the generated Markdown report and fix any missing or empty PNGs.
+7. Run `pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete`.
+8. Capture retained browser screenshots with `pnpm visual:capture:fixture -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json --write-manifest`.
+9. Run `pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete`.
+10. Review the measured evidence, then run `pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --accept-passing --require-complete`.
+11. Finish with `pnpm visual:acceptance -- --require-accepted reports/visual/page-builder-fixture/page-builder-visual-acceptance.json`.
 
 The reference importer only writes manifest paths and resets stale metrics. It
 does not mark a viewport as accepted. If this directory is missing or is not a
@@ -75,6 +78,11 @@ prints the first missing reference path. The request includes a
 `Reference PNG Dimensions` section so design exports can match the captured
 Desktop / Mobile viewport size. It does not import references or mark visual
 evidence accepted.
+`pnpm visual:references:handoff` writes the same request files plus copied
+preview screenshots and a handoff manifest under
+`artifacts/visual/page-builder-reference-handoff`. Use it when the design owner
+needs a single local directory for export coordination; it does not create
+reference PNGs or mark evidence accepted.
 Use `--output <path>` and `--missing-output <path>` when a release handoff needs
 those request files in a custom evidence directory. Use `--table-output <path>`
 for a custom TSV export task table location, and `--json-output <path>` for a

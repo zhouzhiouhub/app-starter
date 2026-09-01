@@ -18,6 +18,10 @@ import {
   createPageBuilderVisualReferenceRequestCommand,
 } from "../visual/page-builder-visual-reference-import-commands.mjs";
 import {
+  createPageBuilderVisualReferenceHandoffCommand,
+  defaultPageBuilderVisualReferenceHandoffOutputDir,
+} from "../visual/page-builder-visual-reference-handoff.mjs";
+import {
   defaultPageBuilderVisualReferenceExportManifestOutputPath,
   defaultPageBuilderVisualReferenceExportTableOutputPath,
   defaultPageBuilderVisualReferenceRequestOutputPath,
@@ -59,6 +63,18 @@ export function createReleaseEvidenceRequestAction() {
           manifestPath: `${defaultVisualArtifactDir}/page-builder-visual-acceptance.json`,
           sourceDir: defaultVisualReferenceSourceDir,
         }),
+      ),
+      createReleaseEvidenceStep(
+        "Design handoff package",
+        createPageBuilderVisualReferenceHandoffCommand({
+          manifestPath: `${defaultVisualArtifactDir}/page-builder-visual-acceptance.json`,
+          outputDir: defaultPageBuilderVisualReferenceHandoffOutputDir,
+          sourceDir: defaultVisualReferenceSourceDir,
+        }),
+      ),
+      createReleaseEvidenceStep(
+        "Design handoff output",
+        defaultPageBuilderVisualReferenceHandoffOutputDir,
       ),
       createReleaseEvidenceStep(
         "Design request output",

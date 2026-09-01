@@ -278,6 +278,7 @@ pnpm release:evidence-request
 pnpm release:requests
 pnpm --silent visual:references:missing
 pnpm visual:references:request
+pnpm visual:references:handoff
 pnpm visual:references:check
 pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete
 pnpm visual:capture:fixture -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json --write-manifest
@@ -320,6 +321,10 @@ plus `artifacts/visual/page-builder-reference-export-manifest.json` as a JSON
 export manifest for automation handoff. Its terminal summary and Markdown
 status also print `First missing reference` when a reference PNG is still
 missing.
+`pnpm visual:references:handoff` writes the same request files plus copied
+preview screenshots and a package manifest under
+`artifacts/visual/page-builder-reference-handoff` for design export
+coordination; it does not create reference PNGs or mark evidence accepted.
 `pnpm visual:references:check` writes the default release fixture JSON/Markdown
 report and requires the full reference set without updating the manifest.
 
@@ -467,6 +472,10 @@ paths as a plain text handoff while
 component/viewport export task table and
 `artifacts/visual/page-builder-reference-export-manifest.json` keeps the
 machine-readable export manifest.
+Use `pnpm visual:references:handoff` when the design owner needs those request
+files together with copied preview screenshots in
+`artifacts/visual/page-builder-reference-handoff`; it remains a handoff package
+and does not satisfy visual acceptance.
 Use `pnpm visual:references:check` for the default release fixture intake
 report.
 

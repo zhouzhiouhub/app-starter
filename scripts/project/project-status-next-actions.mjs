@@ -8,6 +8,10 @@ import {
   createPageBuilderVisualReferenceRequestCommand,
 } from "../visual/page-builder-visual-reference-import-commands.mjs";
 import {
+  createPageBuilderVisualReferenceHandoffCommand,
+  defaultPageBuilderVisualReferenceHandoffOutputDir,
+} from "../visual/page-builder-visual-reference-handoff.mjs";
+import {
   defaultPageBuilderVisualMissingReferencesOutputPath,
   defaultPageBuilderVisualReferenceExportManifestOutputPath,
   defaultPageBuilderVisualReferenceExportTableOutputPath,
@@ -141,6 +145,18 @@ function createPageBuilderVisualActionSteps(action, context) {
         manifestPath: visualContext.manifestPath,
         sourceDir: defaultVisualReferenceSourceDir,
       }),
+    ),
+    createNextActionStep(
+      "Design handoff package",
+      createPageBuilderVisualReferenceHandoffCommand({
+        manifestPath: visualContext.manifestPath,
+        outputDir: defaultPageBuilderVisualReferenceHandoffOutputDir,
+        sourceDir: defaultVisualReferenceSourceDir,
+      }),
+    ),
+    createNextActionStep(
+      "Design handoff output",
+      defaultPageBuilderVisualReferenceHandoffOutputDir,
     ),
     createNextActionStep(
       "Design request output",

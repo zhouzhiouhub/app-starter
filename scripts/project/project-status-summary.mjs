@@ -5,6 +5,7 @@ const maxSummaryLineLength = 640;
 const visibleNextActionCount = 3;
 const informationalStepLabels = new Set([
   "Dispatch inputs output",
+  "Design handoff output",
   "Dispatch inputs JSON output",
   "Dispatch inputs table output",
   "Export manifest output",
@@ -31,6 +32,14 @@ const summaryCompanionStepLabels = new Map([
       "Dispatch inputs output",
       "Dispatch inputs table output",
       "Dispatch inputs JSON output",
+    ],
+  ],
+  [
+    "Design request",
+    [
+      "Design request output",
+      "Design handoff package",
+      "Design handoff output",
     ],
   ],
 ]);

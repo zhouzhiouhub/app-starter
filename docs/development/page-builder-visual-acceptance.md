@@ -33,6 +33,7 @@ pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-build
 pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --accept-passing --require-complete
 pnpm --silent visual:references:missing
 pnpm visual:references:request
+pnpm visual:references:handoff
 pnpm visual:references:check
 pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete
 ```
@@ -85,6 +86,10 @@ and Markdown `First missing reference` hint, and a retained
 viewport, target size, target path, and preview path columns, plus
 `artifacts/visual/page-builder-reference-export-manifest.json` with the same
 12 export tasks in machine-readable form. Run
+`pnpm visual:references:handoff` when the design owner needs the same request
+files plus copied preview screenshots in
+`artifacts/visual/page-builder-reference-handoff`; this package is for export
+coordination only and does not create or accept reference evidence. Run
 `pnpm visual:references:check` to keep machine-readable and human-readable
 reference intake reports listing missing PNGs, imported paths, and the next
 command. The JSON report keeps

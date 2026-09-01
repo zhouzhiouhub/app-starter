@@ -104,8 +104,9 @@ test("project status summarizes blocked release evidence", () => {
     visualAction.steps.map((step) => step.label),
     [
       "Reference source", "Missing paths", "Design request",
-      "Design request output", "Missing paths output", "Export table output",
-      "Export manifest output", "Reference report",
+      "Design handoff package", "Design handoff output",
+      "Design request output", "Missing paths output",
+      "Export table output", "Export manifest output", "Reference report",
       "Import", "Capture fixture", "Measure", "Accept passing", "Verify",
       "Bundle artifact", "Check artifact", "Keep artifact",
     ],
@@ -150,6 +151,14 @@ test("project status summarizes blocked release evidence", () => {
   );
   assert.equal(visualAction.steps[1].value, "pnpm --silent visual:references:missing");
   assert.equal(visualAction.steps[2].value, "pnpm visual:references:request");
+  assert.equal(
+    readStepValue(visualAction, "Design handoff package"),
+    "pnpm visual:references:handoff",
+  );
+  assert.equal(
+    readStepValue(visualAction, "Design handoff output"),
+    "artifacts/visual/page-builder-reference-handoff",
+  );
   assert.equal(
     readStepValue(visualAction, "Missing paths output"),
     "artifacts/visual/page-builder-missing-references.txt",

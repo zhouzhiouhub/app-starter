@@ -103,11 +103,13 @@ test("project next actions include copy-ready missing visual reference paths", (
 
   assert.equal(missingPaths.value, "pnpm --silent visual:references:missing");
   assert.deepEqual(
-    visual.steps.slice(0, 8).map((step) => step.label),
+    visual.steps.slice(0, 10).map((step) => step.label),
     [
       "Reference source",
       "Missing paths",
       "Design request",
+      "Design handoff package",
+      "Design handoff output",
       "Design request output",
       "Missing paths output",
       "Export table output",
@@ -118,6 +120,14 @@ test("project next actions include copy-ready missing visual reference paths", (
   assert.equal(
     visual.steps.find((step) => step.label === "Design request").value,
     "pnpm visual:references:request",
+  );
+  assert.equal(
+    visual.steps.find((step) => step.label === "Design handoff package").value,
+    "pnpm visual:references:handoff",
+  );
+  assert.equal(
+    visual.steps.find((step) => step.label === "Design handoff output").value,
+    "artifacts/visual/page-builder-reference-handoff",
   );
   assert.equal(
     visual.steps.find((step) => step.label === "Design request output").value,
@@ -152,6 +162,8 @@ test("project next actions include unified release evidence request", () => {
       "Evidence request",
       "Evidence request output",
       "Design request",
+      "Design handoff package",
+      "Design handoff output",
       "Design request output",
       "Export table output",
       "Export manifest output",
@@ -185,35 +197,43 @@ test("project next actions include unified release evidence request", () => {
   );
   assert.equal(
     releaseEvidence.steps[5].value,
-    "artifacts/visual/page-builder-reference-request.md",
+    "pnpm visual:references:handoff",
   );
   assert.equal(
     releaseEvidence.steps[6].value,
-    "artifacts/visual/page-builder-reference-export-table.tsv",
+    "artifacts/visual/page-builder-reference-handoff",
   );
   assert.equal(
     releaseEvidence.steps[7].value,
-    "artifacts/visual/page-builder-reference-export-manifest.json",
+    "artifacts/visual/page-builder-reference-request.md",
   );
-  assert.equal(releaseEvidence.steps[8].value, "pnpm smoke:request");
+  assert.equal(
+    releaseEvidence.steps[8].value,
+    "artifacts/visual/page-builder-reference-export-table.tsv",
+  );
   assert.equal(
     releaseEvidence.steps[9].value,
+    "artifacts/visual/page-builder-reference-export-manifest.json",
+  );
+  assert.equal(releaseEvidence.steps[10].value, "pnpm smoke:request");
+  assert.equal(
+    releaseEvidence.steps[11].value,
     "artifacts/production-smoke/production-smoke-request.md",
   );
   assert.equal(
-    releaseEvidence.steps[10].value,
+    releaseEvidence.steps[12].value,
     "artifacts/production-smoke/production-smoke-dispatch-inputs.txt",
   );
   assert.equal(
-    releaseEvidence.steps[11].value,
+    releaseEvidence.steps[13].value,
     "artifacts/production-smoke/production-smoke-dispatch-inputs.tsv",
   );
   assert.equal(
-    releaseEvidence.steps[12].value,
+    releaseEvidence.steps[14].value,
     "artifacts/production-smoke/production-smoke-dispatch-inputs.json",
   );
   assert.match(
-    releaseEvidence.steps[13].value,
+    releaseEvidence.steps[15].value,
     /^pnpm release:handoff -- --require-ready /,
   );
 });

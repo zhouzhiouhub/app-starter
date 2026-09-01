@@ -12,6 +12,7 @@ later phases are explicitly approved.
 - Run `pnpm release:requests` when the release needs the combined release
   evidence request, Page Builder design request, missing visual reference path
   list, reference export task table, reference export JSON manifest,
+  visual reference handoff package,
   Production Smoke request, and Production
   Smoke dispatch input template, TSV table, and JSON input manifest refreshed
   together. This writes only local
@@ -79,7 +80,10 @@ later phases are explicitly approved.
   first-missing-reference hint plus
   `artifacts/visual/page-builder-missing-references.txt` and
   `artifacts/visual/page-builder-reference-export-table.tsv` plus
-  `artifacts/visual/page-builder-reference-export-manifest.json`, then run
+  `artifacts/visual/page-builder-reference-export-manifest.json`; run
+  `pnpm visual:references:handoff` when they need those request files plus
+  copied preview screenshots under
+  `artifacts/visual/page-builder-reference-handoff`, then run
   `pnpm visual:references:check`
   to keep JSON and Markdown reference intake reports with missing or imported
   PNG paths. The JSON artifact's `requiredReferences[]` list is the
@@ -461,6 +465,11 @@ later phases are explicitly approved.
   `artifacts/visual/page-builder-reference-export-manifest.json` as a JSON
   export manifest, and prints the first missing reference path in the terminal
   summary and Markdown status.
+- `pnpm visual:references:handoff` writes the same request files plus copied
+  preview screenshots and a handoff manifest under
+  `artifacts/visual/page-builder-reference-handoff` for design export
+  coordination. It does not create reference PNGs, import references, run
+  measurement, or mark visual evidence accepted.
 - Run `pnpm release:check -- --checklist` when the gate is blocked and keep
   the readiness task output with the failed evidence review.
 - Use the failed check details and suggested fixes from the report review; the
