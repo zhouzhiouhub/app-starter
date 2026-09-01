@@ -4,6 +4,9 @@ import {
   normalizeProductionSmokeDispatchInputsOutputPath,
 } from "../smoke/production-smoke-dispatch-inputs-output.mjs";
 import {
+  normalizeProductionSmokeDispatchInputsTableOutputPath,
+} from "../smoke/production-smoke-dispatch-inputs-table-path.mjs";
+import {
   normalizeProductionSmokeRequestOutputPath,
 } from "../smoke/production-smoke-request.mjs";
 import { defaultPageBuilderVisualReferenceSourceDir } from "../visual/page-builder-visual-acceptance-constants.mjs";
@@ -59,6 +62,8 @@ export function readReleaseEvidenceRequestCliConfig(args = []) {
     releaseCheckArgs: [],
     requestOutputPaths: { ...defaultReleaseEvidenceRequestOutputPaths },
     smokeDispatchArgs: [],
+    smokeInputsTableOutputPath:
+      defaultReleaseEvidenceRequestOutputPaths.productionSmokeInputsTable,
     smokeInputsOutputPath: defaultProductionSmokeDispatchInputsOutputPath,
     visualManifestPath: defaultReleaseEvidenceRequestVisualManifestPath,
     visualSourceDir: defaultPageBuilderVisualReferenceSourceDir,
@@ -132,6 +137,19 @@ export function readReleaseEvidenceRequestCliConfig(args = []) {
       continue;
     }
 
+    if (option === "--smoke-inputs-table-output") {
+      input.smokeInputsTableOutputPath = readOptionValue(
+        option,
+        normalizedArgs,
+        index,
+        value,
+      );
+      input.requestOutputPaths.productionSmokeInputsTable =
+        input.smokeInputsTableOutputPath;
+      index += value === null ? 1 : 0;
+      continue;
+    }
+
     if (option === "--source-dir" || option === "--visual-source-dir") {
       input.visualSourceDir = readOptionValue(
         option,
@@ -185,6 +203,10 @@ export function readReleaseEvidenceRequestCliConfig(args = []) {
   const releaseCheckConfig = readReleaseCheckCliConfig(input.releaseCheckArgs);
   const outputPath = normalizeReleaseEvidenceRequestOutputPath(input.outputPath);
   const smokeInputsOutputPath = normalizeProductionSmokeDispatchInputsOutputPath(input.smokeInputsOutputPath);
+  const smokeInputsTableOutputPath =
+    normalizeProductionSmokeDispatchInputsTableOutputPath(
+      input.smokeInputsTableOutputPath,
+    );
 
   return {
     outputPath,
@@ -194,6 +216,7 @@ export function readReleaseEvidenceRequestCliConfig(args = []) {
         input.requestOutputPaths.productionSmoke,
       ),
       productionSmokeInputs: smokeInputsOutputPath,
+      productionSmokeInputsTable: smokeInputsTableOutputPath,
       releaseEvidence: outputPath,
       visualMissingReferences: normalizeVisualReferenceMissingOutputPath(
         input.requestOutputPaths.visualMissingReferences,
@@ -209,6 +232,7 @@ export function readReleaseEvidenceRequestCliConfig(args = []) {
       input.smokeDispatchArgs,
     ),
     smokeInputsOutputPath,
+    smokeInputsTableOutputPath,
     visualManifestPath:
       releaseCheckConfig.visualArtifactDir
         ? releaseCheckConfig.visualManifestPath

@@ -1,38 +1,35 @@
-import { mkdir, writeFile } from "node:fs/promises";
-import { dirname } from "node:path";
 import {
   createProductionSmokeDispatchArtifact,
   readProductionSmokeDispatchCliConfig,
 } from "./production-smoke-dispatch-cli.mjs";
 import {
   normalizeProductionSmokeDispatchInputsOutputPath,
-  writeProductionSmokeDispatchInputsText,
 } from "./production-smoke-dispatch-inputs-output.mjs";
 import {
-  createProductionSmokeDispatchValidationCommand,
-} from "./production-smoke-dispatch-command.mjs";
+  normalizeProductionSmokeDispatchInputsTableOutputPath,
+} from "./production-smoke-dispatch-inputs-table-output.mjs";
 import {
-  productionSmokeEvidenceInputSources,
-} from "./production-smoke-evidence-input-sources.mjs";
-import {
-  productionSmokeWorkflowInputs,
-  requiredProductionSmokeEvidence,
-} from "./smoke-missing-evidence-markdown.mjs";
+  printProductionSmokeRequestSummary,
+  writeProductionSmokeRequestOutputs,
+} from "./production-smoke-request-cli-output.mjs";
 import { readErrorMessage } from "./smoke-error-message.mjs";
 import { normalizeSmokeReportMarkdownPath } from "./smoke-report-path-config.mjs";
-import { formatSmokeText } from "./smoke-text.mjs";
+import { printProductionSmokeRequestHelp } from "./production-smoke-request-help.mjs";
 
 export const defaultProductionSmokeRequestOutputPath =
   "artifacts/production-smoke/production-smoke-request.md";
 
-const maxMarkdownTextLength = 420;
+export {
+  createProductionSmokeRequestMarkdown,
+  writeProductionSmokeRequestMarkdown,
+} from "./production-smoke-request-markdown.mjs";
 
 export async function runProductionSmokeRequestCli(args = [], input = {}) {
   const stdout = input.stdout ?? console.log;
   const stderr = input.stderr ?? console.error;
 
   if (args.includes("--help") || args.includes("-h")) {
-    printHelp(stdout);
+    printProductionSmokeRequestHelp(stdout);
     return 0;
   }
 
@@ -43,32 +40,15 @@ export async function runProductionSmokeRequestCli(args = [], input = {}) {
     );
     const requestArtifact = {
       ...dispatchArtifact,
+      inputsTableOutputPath: config.inputsTableOutputPath,
       inputsOutputPath: config.inputsOutputPath,
     };
 
-    await writeProductionSmokeRequestMarkdown(
-      config.outputPath,
-      requestArtifact,
-    );
-
-    if (config.inputsOutputPath) {
-      await writeProductionSmokeDispatchInputsText(
-        config.inputsOutputPath,
-        dispatchArtifact,
-      );
-    }
-
-    stdout(`Production smoke request written: ${config.outputPath}`);
-    if (config.inputsOutputPath) {
-      stdout(
-        `Production smoke dispatch inputs written: ${config.inputsOutputPath}`,
-      );
-    }
-    stdout(`Ready to dispatch: ${dispatchArtifact.readyToDispatch ? "yes" : "no"}`);
-
-    if (dispatchArtifact.missingInputs.length > 0) {
-      stdout(`Missing inputs: ${dispatchArtifact.missingInputs.join(", ")}`);
-    }
+    await writeProductionSmokeRequestOutputs(config, {
+      dispatch: dispatchArtifact,
+      request: requestArtifact,
+    });
+    printProductionSmokeRequestSummary(config, dispatchArtifact, stdout);
 
     return 0;
   } catch (error) {
@@ -80,6 +60,7 @@ export async function runProductionSmokeRequestCli(args = [], input = {}) {
 export function readProductionSmokeRequestCliConfig(args = []) {
   const input = {
     dispatchArgs: [],
+    inputsTableOutputPath: null,
     inputsOutputPath: null,
     outputPath: defaultProductionSmokeRequestOutputPath,
   };
@@ -102,6 +83,13 @@ export function readProductionSmokeRequestCliConfig(args = []) {
       continue;
     }
 
+    if (option === "--inputs-table-output") {
+      input.inputsTableOutputPath =
+        value ?? readOptionValue(option, normalizedArgs, index);
+      index += value === null ? 1 : 0;
+      continue;
+    }
+
     input.dispatchArgs.push(normalizedArgs[index]);
   }
 
@@ -110,75 +98,13 @@ export function readProductionSmokeRequestCliConfig(args = []) {
     inputsOutputPath: input.inputsOutputPath
       ? normalizeProductionSmokeDispatchInputsOutputPath(input.inputsOutputPath)
       : null,
+    inputsTableOutputPath: input.inputsTableOutputPath
+      ? normalizeProductionSmokeDispatchInputsTableOutputPath(
+          input.inputsTableOutputPath,
+        )
+      : null,
     outputPath: normalizeProductionSmokeRequestOutputPath(input.outputPath),
   };
-}
-
-export function createProductionSmokeRequestMarkdown(dispatchArtifact) {
-  const validationCommand = createProductionSmokeDispatchValidationCommand({
-    inputs: dispatchArtifact.inputs,
-  });
-  const missingInputs =
-    dispatchArtifact.missingInputs.length > 0
-      ? dispatchArtifact.missingInputs.join(", ")
-      : "none";
-  const lines = [
-    "# Production Smoke Evidence Request",
-    "",
-    `Status: ${formatCode(readStatus(dispatchArtifact))}`,
-    `Workflow file: ${formatCode(dispatchArtifact.workflowFile)}`,
-    `Ref: ${formatCode(dispatchArtifact.ref)}`,
-    `Ready to dispatch: ${formatCode(
-      dispatchArtifact.readyToDispatch ? "yes" : "no",
-    )}`,
-    `Missing inputs: ${formatCode(missingInputs)}`,
-    ...formatInputsOutputPath(dispatchArtifact.inputsOutputPath),
-    "",
-    "## Dispatch",
-    "",
-    `- Manual dispatch: ${formatCode(dispatchArtifact.manualDispatch)}`,
-    `- Validate dispatch: ${formatCode(validationCommand)}`,
-    `- Dispatch template: ${formatCode(dispatchArtifact.command)}`,
-    "",
-    "## Evidence Inputs",
-    "",
-    ...dispatchArtifact.inputs.map(formatDispatchInput),
-    "",
-    "## Evidence Input Sources",
-    "",
-    ...productionSmokeEvidenceInputSources.map((input) =>
-      formatEvidenceInputSource(input, dispatchArtifact.inputs),
-    ),
-    "",
-    "## Workflow Inputs",
-    "",
-    ...productionSmokeWorkflowInputs.map(formatWorkflowInput),
-    "",
-    "## Required Evidence",
-    "",
-    ...requiredProductionSmokeEvidence.map(formatRequiredEvidence),
-    "",
-    "## After Run",
-    "",
-    "- Keep every required GitHub Actions artifact listed above.",
-    "- Rerun `pnpm project:status -- --summary` and confirm `Release ready: yes` before calling the project complete.",
-    "- Generate final release notes only after Production Smoke and Page Builder Visual evidence are both ready.",
-    "",
-  ];
-
-  return `${lines.join("\n")}\n`;
-}
-
-export async function writeProductionSmokeRequestMarkdown(
-  outputPath,
-  dispatchArtifact,
-) {
-  await mkdir(dirname(outputPath), { recursive: true });
-  await writeFile(
-    outputPath,
-    createProductionSmokeRequestMarkdown(dispatchArtifact),
-    "utf8",
-  );
 }
 
 export function normalizeProductionSmokeRequestOutputPath(value) {
@@ -192,43 +118,6 @@ export function normalizeProductionSmokeRequestOutputPath(value) {
       ),
     );
   }
-}
-
-function formatInputsOutputPath(outputPath) {
-  return outputPath ? [`Dispatch inputs output: ${formatCode(outputPath)}`] : [];
-}
-
-function formatDispatchInput(input) {
-  const checked = input.placeholder ? " " : "x";
-  const suffix = input.placeholder
-    ? " - replace before dispatch"
-    : " - ready";
-
-  return `- [${checked}] ${formatCode(input.name)}: ${formatCode(
-    input.value,
-  )}${suffix}`;
-}
-
-function formatEvidenceInputSource(source, inputs) {
-  const input = inputs.find((item) => item.name === source.name);
-
-  return `- ${formatCode(source.name)}: ${formatCode(
-    input?.value ?? source.value,
-  )} - ${formatText(source.source)}`;
-}
-
-function formatWorkflowInput(input) {
-  return `- ${formatCode(input.name)}: ${formatCode(input.value)} (${formatText(
-    input.required ? "required" : "optional",
-  )}; ${formatText(input.description)})`;
-}
-
-function formatRequiredEvidence(item) {
-  return `- [ ] ${formatCode(item.label)}: ${formatCode(item.value)}`;
-}
-
-function readStatus(dispatchArtifact) {
-  return dispatchArtifact.readyToDispatch ? "ready-to-dispatch" : "needs-inputs";
 }
 
 function splitInlineOption(arg) {
@@ -254,41 +143,4 @@ function readOptionValue(option, args, index) {
 
 function stripPnpmSeparator(args) {
   return args[0] === "--" ? args.slice(1) : args;
-}
-
-function formatCode(value) {
-  return `\`${formatText(value).replaceAll("`", "'")}\``;
-}
-
-function formatText(value) {
-  return formatSmokeText(value, {
-    fallback: "unknown",
-    maxLength: maxMarkdownTextLength,
-  });
-}
-
-function printHelp(writeLine) {
-  writeLine(`Usage:
-  pnpm smoke:request
-  pnpm smoke:request -- --output artifacts/production-smoke/production-smoke-request.md
-  pnpm smoke:request -- --inputs-output artifacts/production-smoke/production-smoke-dispatch-inputs.txt
-  pnpm smoke:request -- --visual-artifact page-builder-visual-fixture-123 --visual-artifact-run-id 456
-
-Options:
-  --output <path>  Write the production smoke evidence request Markdown.
-  --inputs-output <path>
-                   Write a plain text workflow_dispatch input template.
-
-Evidence inputs:
-  Accepts the same evidence input overrides as pnpm smoke:dispatch, including
-  --visual-artifact, --visual-artifact-run-id, --local-verification-run-url,
-  --local-verification-artifact, --release-tag, --rollback-target, and
-  --storefront-url.
-
-Evidence:
-  This command writes a production handoff request only. The terminal summary
-  and Markdown status report dispatch readiness and any missing input names. It
-  can also write a plain text workflow_dispatch input template. It does not run
-  smoke checks, create release evidence, upload artifacts, or mark the project
-  ready.`);
 }

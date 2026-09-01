@@ -131,6 +131,10 @@ test("release check Markdown lists blockers and visual tasks", () => {
   );
   assert.match(
     markdown,
+    /Dispatch inputs table output: `artifacts\/production-smoke\/production-smoke-dispatch-inputs\.tsv`/,
+  );
+  assert.match(
+    markdown,
     new RegExp(
       `Workflow dispatch validation: \`${escapeRegExp(validationCommand)}`,
       "u",
@@ -314,6 +318,9 @@ function assertMissingSmokeEvidenceOrder(markdown) {
   const section = readMissingSmokeEvidenceSection(markdown);
   const requestIndex = section.indexOf("Production smoke request:");
   const inputsOutputIndex = section.indexOf("Dispatch inputs output:");
+  const inputsTableOutputIndex = section.indexOf(
+    "Dispatch inputs table output:",
+  );
   const validationIndex = section.indexOf("Workflow dispatch validation:");
   const templateIndex = section.indexOf("Workflow dispatch template:");
   const manualIndex = section.indexOf("Workflow manual dispatch:");
@@ -323,6 +330,7 @@ function assertMissingSmokeEvidenceOrder(markdown) {
   const indices = [
     requestIndex,
     inputsOutputIndex,
+    inputsTableOutputIndex,
     validationIndex,
     templateIndex,
     manualIndex,
@@ -332,7 +340,8 @@ function assertMissingSmokeEvidenceOrder(markdown) {
   assert(
     indices.every((index) => index >= 0) &&
       requestIndex < inputsOutputIndex &&
-      inputsOutputIndex < validationIndex &&
+      inputsOutputIndex < inputsTableOutputIndex &&
+      inputsTableOutputIndex < validationIndex &&
       validationIndex < templateIndex &&
       templateIndex < manualIndex &&
       manualIndex < workflowIndex,

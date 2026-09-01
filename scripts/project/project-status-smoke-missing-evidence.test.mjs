@@ -13,6 +13,9 @@ import {
 import {
   defaultProductionSmokeDispatchInputsOutputPath,
 } from "../smoke/production-smoke-dispatch-inputs-output.mjs";
+import {
+  defaultProductionSmokeDispatchInputsTableOutputPath,
+} from "../smoke/production-smoke-dispatch-inputs-table-path.mjs";
 import { createBlockedCheck } from "./project-status-test-fixtures.mjs";
 
 test("project status artifact carries structured missing smoke evidence", () => {
@@ -29,7 +32,7 @@ test("project status artifact carries structured missing smoke evidence", () => 
   );
   assert.equal(
     artifact.releaseGate.smoke.missingEvidence.requiredEvidenceCount,
-    13,
+    14,
   );
   assert.equal(
     artifact.releaseGate.smoke.missingEvidence.inputSourceCount,
@@ -40,7 +43,7 @@ test("project status artifact carries structured missing smoke evidence", () => 
     14,
   );
   assert.deepEqual(
-    artifact.releaseGate.smoke.missingEvidence.requiredEvidence.slice(0, 6),
+    artifact.releaseGate.smoke.missingEvidence.requiredEvidence.slice(0, 7),
     [
       {
         label: "Production smoke request",
@@ -49,6 +52,10 @@ test("project status artifact carries structured missing smoke evidence", () => 
       {
         label: "Dispatch inputs output",
         value: defaultProductionSmokeDispatchInputsOutputPath,
+      },
+      {
+        label: "Dispatch inputs table output",
+        value: defaultProductionSmokeDispatchInputsTableOutputPath,
       },
       {
         label: "Workflow dispatch validation",

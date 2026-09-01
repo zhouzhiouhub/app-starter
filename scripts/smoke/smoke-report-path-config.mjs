@@ -56,8 +56,8 @@ export function normalizeSmokeReportMarkdownPath(value) {
 
 export function normalizeSmokeReportTextPath(value, options = {}) {
   const context = {
-    extension: ".txt",
-    extensionIssue: "non-text-extension",
+    extension: options.extension ?? ".txt",
+    extensionIssue: options.extensionIssue ?? "non-text-extension",
     label: options.label ?? "Smoke report text",
     relativeDescription:
       options.relativeDescription ?? "relative text output path",

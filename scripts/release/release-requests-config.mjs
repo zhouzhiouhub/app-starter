@@ -5,6 +5,9 @@ import {
   defaultProductionSmokeDispatchInputsOutputPath,
 } from "../smoke/production-smoke-dispatch-inputs-output.mjs";
 import {
+  defaultProductionSmokeDispatchInputsTableOutputPath,
+} from "../smoke/production-smoke-dispatch-inputs-table-path.mjs";
+import {
   defaultPageBuilderVisualMissingReferencesOutputPath,
   defaultPageBuilderVisualReferenceExportTableOutputPath,
   defaultPageBuilderVisualReferenceRequestOutputPath,
@@ -15,6 +18,7 @@ import {
 
 export const defaultReleaseRequestsOutputPaths = {
   productionSmokeInputs: defaultProductionSmokeDispatchInputsOutputPath,
+  productionSmokeInputsTable: defaultProductionSmokeDispatchInputsTableOutputPath,
   productionSmoke: defaultProductionSmokeRequestOutputPath,
   releaseEvidence: defaultReleaseEvidenceRequestOutputPath,
   visualMissingReferences: defaultPageBuilderVisualMissingReferencesOutputPath,
@@ -46,6 +50,8 @@ export function createReleaseRequestsCommand(outputPaths = {}) {
     paths.productionSmoke,
     "--smoke-inputs-output",
     paths.productionSmokeInputs,
+    "--smoke-inputs-table-output",
+    paths.productionSmokeInputsTable,
   ].join(" ");
 }
 
@@ -59,6 +65,7 @@ export function createReleaseRequestsOutputSummary(outputPaths = {}) {
     paths.visualReferenceTable,
     paths.productionSmoke,
     paths.productionSmokeInputs,
+    paths.productionSmokeInputsTable,
   ].join(", ");
 }
 

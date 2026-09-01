@@ -6,6 +6,8 @@ const defaultSmokeRequestOutputPath =
   "artifacts/production-smoke/production-smoke-request.md";
 const defaultSmokeRequestInputsOutputPath =
   "artifacts/production-smoke/production-smoke-dispatch-inputs.txt";
+const defaultSmokeRequestInputsTableOutputPath =
+  "artifacts/production-smoke/production-smoke-dispatch-inputs.tsv";
 const defaultManualDispatchInstruction =
   "GitHub Actions > Production Smoke > Run workflow, then use the listed workflow_dispatch inputs.";
 
@@ -86,10 +88,14 @@ export function createProductionSmokeRequestCommand(options = {}) {
     readText(options.outputPath) ?? defaultSmokeRequestOutputPath;
   const inputsOutputPath =
     readText(options.inputsOutputPath) ?? defaultSmokeRequestInputsOutputPath;
+  const inputsTableOutputPath =
+    readText(options.inputsTableOutputPath) ??
+    defaultSmokeRequestInputsTableOutputPath;
 
   if (
     outputPath === defaultSmokeRequestOutputPath &&
-    inputsOutputPath === defaultSmokeRequestInputsOutputPath
+    inputsOutputPath === defaultSmokeRequestInputsOutputPath &&
+    inputsTableOutputPath === defaultSmokeRequestInputsTableOutputPath
   ) {
     return defaultSmokeRequestCommand;
   }
@@ -101,6 +107,8 @@ export function createProductionSmokeRequestCommand(options = {}) {
     outputPath,
     "--inputs-output",
     inputsOutputPath,
+    "--inputs-table-output",
+    inputsTableOutputPath,
   ].join(" ");
 }
 

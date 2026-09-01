@@ -47,6 +47,7 @@ test("project status completion checklist summarizes blocked evidence", () => {
       "Smoke request",
       "Smoke request output",
       "Dispatch inputs output",
+      "Dispatch inputs table output",
       "Local verification inputs",
       "Visual evidence inputs",
       "Release note inputs",
@@ -59,11 +60,11 @@ test("project status completion checklist summarizes blocked evidence", () => {
     ],
   );
   assert.match(
-    checklist.items[1].nextSteps[6].value,
+    readStepValue(checklist.items[1], "Validate dispatch"),
     /^pnpm smoke:dispatch -- --require-complete /u,
   );
   assert.match(
-    checklist.items[1].nextSteps[7].value,
+    readStepValue(checklist.items[1], "Dispatch template"),
     /^gh workflow run production-smoke\.yml --ref main /u,
   );
   assert.equal(
@@ -102,6 +103,10 @@ test("project status completion checklist summarizes blocked evidence", () => {
     /Reference report: `pnpm visual:references:check`/u,
   );
 });
+
+function readStepValue(item, label) {
+  return item.nextSteps.find((step) => step.label === label)?.value;
+}
 
 test("project status completion checklist is complete when release evidence is ready", async () => {
   const { evidenceRoot, manifest } = createAcceptedVisualManifest();

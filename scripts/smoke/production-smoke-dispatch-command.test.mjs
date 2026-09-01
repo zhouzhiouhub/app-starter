@@ -65,10 +65,11 @@ test("production smoke request command names the handoff CLI", () => {
   assert.equal(createProductionSmokeRequestCommand(), "pnpm smoke:request");
   assert.equal(
     createProductionSmokeRequestCommand({
+      inputsTableOutputPath: "tmp/smoke-inputs.tsv",
       inputsOutputPath: "tmp/smoke-inputs.txt",
       outputPath: "tmp/smoke.md",
     }),
-    "pnpm smoke:request -- --output tmp/smoke.md --inputs-output tmp/smoke-inputs.txt",
+    "pnpm smoke:request -- --output tmp/smoke.md --inputs-output tmp/smoke-inputs.txt --inputs-table-output tmp/smoke-inputs.tsv",
   );
 });
 
@@ -204,7 +205,7 @@ test("production smoke dispatch CLI exposes package and docs entry points", asyn
   );
   assert.equal(
     packageJson.scripts["smoke:request"],
-    "node scripts/production-smoke-request.mjs --output artifacts/production-smoke/production-smoke-request.md --inputs-output artifacts/production-smoke/production-smoke-dispatch-inputs.txt",
+    "node scripts/production-smoke-request.mjs --output artifacts/production-smoke/production-smoke-request.md --inputs-output artifacts/production-smoke/production-smoke-dispatch-inputs.txt --inputs-table-output artifacts/production-smoke/production-smoke-dispatch-inputs.tsv",
   );
   assert.match(workflow, /pnpm smoke:request -- --help/);
   assert.match(releaseChecklist, /pnpm smoke:dispatch/);

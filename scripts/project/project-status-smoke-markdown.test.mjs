@@ -47,6 +47,10 @@ test("project status exposes smoke Markdown companion status", () => {
   );
   assert.match(
     markdown,
+    /Dispatch inputs table output: `artifacts\/production-smoke\/production-smoke-dispatch-inputs\.tsv`/,
+  );
+  assert.match(
+    markdown,
     /Workflow dispatch validation: `pnpm smoke:dispatch -- --require-complete/,
   );
   assert.match(
@@ -134,15 +138,15 @@ test("project status docs mention missing smoke evidence handoff", async () => {
   assert.match(readme, /release-check\.md.*project-status\.md/s);
   assert.match(setupDoc, /Missing Production Smoke Evidence/);
   assert.match(setupDoc, /release-check\.md.*project-status\.md/s);
-  assert.match(setupDoc, /manual GitHub\s+Actions dispatch path/s);
-  assert.match(setupDoc, /preflight artifact,\s+release\s+evidence artifact/s);
+  assert.match(setupDoc, /manual\s+GitHub\s+Actions dispatch path/s);
+  assert.match(setupDoc, /preflight\s+artifact,\s+release\s+evidence artifact/s);
   assert.match(setupDoc, /Production Smoke\s+Evidence Input Sources/);
   assert.match(releaseChecklist, /Missing Production Smoke Evidence/);
   assert.match(releaseChecklist, /release-check\.md.*project-status\.md/s);
   assert.match(releaseChecklist, /inputSources\[\]/);
   assert.match(
     releaseChecklist,
-    /`pnpm smoke:request`\s+request, dispatch inputs output, `pnpm smoke:dispatch`\s+validation,\s+`gh` dispatch template, manual dispatch path, required workflow, and artifact names/s,
+    /`pnpm smoke:request`\s+request, dispatch inputs output, dispatch input table output,\s+`pnpm smoke:dispatch`\s+validation,\s+`gh` dispatch template, manual dispatch path, required workflow, and artifact names/s,
   );
 });
 
@@ -158,6 +162,9 @@ function assertMissingSmokeEvidenceOrder(markdown) {
   const section = readMissingSmokeEvidenceSection(markdown);
   const requestIndex = section.indexOf("Production smoke request:");
   const inputsOutputIndex = section.indexOf("Dispatch inputs output:");
+  const inputsTableOutputIndex = section.indexOf(
+    "Dispatch inputs table output:",
+  );
   const validationIndex = section.indexOf("Workflow dispatch validation:");
   const templateIndex = section.indexOf("Workflow dispatch template:");
   const manualIndex = section.indexOf("Workflow manual dispatch:");
@@ -167,6 +174,7 @@ function assertMissingSmokeEvidenceOrder(markdown) {
   const indices = [
     requestIndex,
     inputsOutputIndex,
+    inputsTableOutputIndex,
     validationIndex,
     templateIndex,
     manualIndex,
@@ -176,7 +184,8 @@ function assertMissingSmokeEvidenceOrder(markdown) {
   assert(
     indices.every((index) => index >= 0) &&
       requestIndex < inputsOutputIndex &&
-      inputsOutputIndex < validationIndex &&
+      inputsOutputIndex < inputsTableOutputIndex &&
+      inputsTableOutputIndex < validationIndex &&
       validationIndex < templateIndex &&
       templateIndex < manualIndex &&
       manualIndex < workflowIndex,

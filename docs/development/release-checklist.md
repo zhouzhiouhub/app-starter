@@ -18,11 +18,12 @@ later phases are explicitly approved.
   mark blocked evidence ready.
 - Run `pnpm release:evidence-request` when the release needs one combined
   handoff for design references, Production Smoke inputs, dispatch input
-  template path, retained artifacts, and the final
+  template path, dispatch input table path, retained artifacts, and the final
   `release:handoff -- --require-ready` gate. This request is coordination
   material only; pass `--visual-output`, `--visual-missing-output`,
-  `--visual-table-output`, `--smoke-output`, and `--smoke-inputs-output` if the
-  request bundle uses custom paths. It does not import references, run smoke, generate release
+  `--visual-table-output`, `--smoke-output`, `--smoke-inputs-output`, and
+  `--smoke-inputs-table-output` if the request bundle uses custom paths. It
+  does not import references, run smoke, generate release
   notes, or mark blocked evidence ready.
 - Configure the GitHub `production` environment with the required smoke secrets:
   `PRODUCTION_API_URL`, `PRODUCTION_WEB_URL`, `PRODUCTION_ADMIN_URL`,
@@ -155,9 +156,10 @@ later phases are explicitly approved.
 
 1. Run `pnpm smoke:request` to write
    `artifacts/production-smoke/production-smoke-request.md` and
-   `artifacts/production-smoke/production-smoke-dispatch-inputs.txt` with the
+   `artifacts/production-smoke/production-smoke-dispatch-inputs.txt` plus
+   `artifacts/production-smoke/production-smoke-dispatch-inputs.tsv` with the
    manual dispatch path, required input placeholders, evidence input sources,
-   dispatch validation command, `gh` template, and artifact retention
+   dispatch validation command, `gh` template, input table, and artifact retention
    checklist. This request does not run smoke or satisfy release evidence by
    itself.
 2. Run `pnpm smoke:dispatch -- --require-complete ...` with the main CI local
@@ -333,15 +335,15 @@ later phases are explicitly approved.
   required source reference availability, and the first missing reference path. It then
   prints the first two next actions with
   structured steps when available, including the `pnpm smoke:request` request,
-  dispatch inputs output, `pnpm smoke:dispatch` validation, `gh` dispatch
-  template, and Production Smoke manual dispatch path when smoke
+  dispatch inputs output, dispatch input table output,
+  `pnpm smoke:dispatch` validation, `gh` dispatch template, and Production Smoke manual dispatch path when smoke
   evidence is missing; it previews the first hidden structured action
   only when the visible actions do not have steps, and points any remaining work
   to `project-status.md`. When production smoke evidence is missing, both
   `release-check.md` and `project-status.md` include a
   `Missing Production Smoke Evidence` section with the `pnpm smoke:request`
-  request, dispatch inputs output, `pnpm smoke:dispatch` validation,
-  `gh` dispatch template, manual dispatch path, required workflow, and artifact names;
+  request, dispatch inputs output, dispatch input table output,
+  `pnpm smoke:dispatch` validation, `gh` dispatch template, manual dispatch path, required workflow, and artifact names;
   the adjacent `Production Smoke Evidence Input Sources` section maps release
   evidence inputs to their source run, artifact, or operator value; the blocked
   JSON artifacts mirror the same
@@ -427,8 +429,8 @@ later phases are explicitly approved.
 - Run `pnpm release:requests` before cross-functional release review when the
   release needs the combined release request, design export request, and
   Production Smoke operator request refreshed as separate local files, plus the
-  plain missing visual reference path list, reference export task table, and
-  workflow_dispatch input template.
+  plain missing visual reference path list, reference export task table,
+  workflow_dispatch input template, and workflow_dispatch input TSV table.
 - Run `pnpm release:evidence-request` before cross-functional release review
   when design reference export and Production Smoke execution need one shared
   request file. Its Request Status includes `First missing visual reference`

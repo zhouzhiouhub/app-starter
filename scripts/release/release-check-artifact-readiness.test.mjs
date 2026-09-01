@@ -77,6 +77,7 @@ test("release check artifact includes blocked checklist actions", () => {
       "Smoke request",
       "Smoke request output",
       "Dispatch inputs output",
+      "Dispatch inputs table output",
       "Local verification inputs",
       "Visual evidence inputs",
       "Release note inputs",
@@ -100,11 +101,15 @@ test("release check artifact includes blocked checklist actions", () => {
     "artifacts/production-smoke/production-smoke-dispatch-inputs.txt",
   );
   assert.equal(
-    smokeItem.steps[6].value,
+    readStepValue(smokeItem, "Dispatch inputs table output"),
+    "artifacts/production-smoke/production-smoke-dispatch-inputs.tsv",
+  );
+  assert.equal(
+    readStepValue(smokeItem, "Validate dispatch"),
     createProductionSmokeDispatchValidationCommand(),
   );
   assert.equal(
-    smokeItem.steps[7].value,
+    readStepValue(smokeItem, "Dispatch template"),
     createProductionSmokeDispatchCommand(),
   );
   assert.equal(visualItem?.status, "needs-evidence");
@@ -118,6 +123,10 @@ test("release check artifact includes blocked checklist actions", () => {
     "pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture",
   );
 });
+
+function readStepValue(item, label) {
+  return item.steps.find((step) => step.label === label)?.value;
+}
 
 function readChecklistStatuses(artifact) {
   return artifact.readinessChecklist.items.map(

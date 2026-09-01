@@ -14,6 +14,10 @@ import {
   defaultProductionSmokeDispatchInputsOutputPath,
 } from "./production-smoke-dispatch-inputs-output.mjs";
 import {
+  createProductionSmokeDispatchInputsTable,
+  normalizeProductionSmokeDispatchInputsTableOutputPath,
+} from "./production-smoke-dispatch-inputs-table-output.mjs";
+import {
   createProductionSmokeRequestMarkdown,
   normalizeProductionSmokeRequestOutputPath,
   readProductionSmokeRequestCliConfig,
@@ -26,6 +30,8 @@ test("production smoke request Markdown is operator-facing", () => {
   );
   const markdown = createProductionSmokeRequestMarkdown({
     ...artifact,
+    inputsTableOutputPath:
+      "artifacts/production-smoke/production-smoke-dispatch-inputs.tsv",
     inputsOutputPath: defaultProductionSmokeDispatchInputsOutputPath,
   });
 
@@ -38,6 +44,10 @@ test("production smoke request Markdown is operator-facing", () => {
   assert.match(
     markdown,
     /Dispatch inputs output: `artifacts\/production-smoke\/production-smoke-dispatch-inputs\.txt`/,
+  );
+  assert.match(
+    markdown,
+    /Dispatch inputs table output: `artifacts\/production-smoke\/production-smoke-dispatch-inputs\.tsv`/,
   );
   assert.match(markdown, /Manual dispatch: `GitHub Actions > Production Smoke/);
   assert.match(markdown, /Validate dispatch: `pnpm smoke:dispatch -- --require-complete/);
@@ -62,6 +72,7 @@ test("production smoke request CLI writes a Markdown handoff", async () => {
   const root = `tmp/production-smoke-request-${process.pid}-${Date.now()}`;
   const outputPath = `${root}/request.md`;
   const inputsOutputPath = `${root}/dispatch-inputs.txt`;
+  const inputsTableOutputPath = `${root}/dispatch-inputs.tsv`;
   const stdout = [];
 
   try {
@@ -71,6 +82,8 @@ test("production smoke request CLI writes a Markdown handoff", async () => {
         outputPath,
         "--inputs-output",
         inputsOutputPath,
+        "--inputs-table-output",
+        inputsTableOutputPath,
         "--local-verification-run-url",
         "https://github.com/zhouzhiouhub/app-starter/actions/runs/33400968402",
         "--local-verification-artifact",
@@ -90,15 +103,21 @@ test("production smoke request CLI writes a Markdown handoff", async () => {
     );
     const markdown = await readFile(outputPath, "utf8");
     const inputsText = await readFile(inputsOutputPath, "utf8");
+    const inputsTable = await readFile(inputsTableOutputPath, "utf8");
 
     assert.equal(exitCode, 0);
     assert.match(stdout.join("\n"), /Production smoke request written:/);
     assert.match(stdout.join("\n"), /Production smoke dispatch inputs written:/);
+    assert.match(
+      stdout.join("\n"),
+      /Production smoke dispatch inputs table written:/,
+    );
     assert.match(stdout.join("\n"), /Ready to dispatch: yes/);
     assert.doesNotMatch(stdout.join("\n"), /Missing inputs:/);
     assert.match(markdown, /Status: `ready-to-dispatch`/);
     assert.match(markdown, /Missing inputs: `none`/);
     assert.match(markdown, /Dispatch inputs output: `tmp\/production-smoke-request-.+\/dispatch-inputs\.txt`/);
+    assert.match(markdown, /Dispatch inputs table output: `tmp\/production-smoke-request-.+\/dispatch-inputs\.tsv`/);
     assert.match(markdown, /- \[x\] `visual_artifact_name`: `page-builder-visual-fixture-281` - ready/);
     assert.match(markdown, /- \[x\] `storefront_url`: `https:\/\/store\.brand\.com\/` - ready/);
     assert.match(
@@ -111,6 +130,14 @@ test("production smoke request CLI writes a Markdown handoff", async () => {
     );
     assert.match(inputsText, /^visual_artifact_name=page-builder-visual-fixture-281/m);
     assert.match(inputsText, /^storefront_url=https:\/\/store\.brand\.com\//m);
+    assert.match(
+      inputsTable,
+      /^name\tstatus\tvalue\tsource\tworkflow_required\tworkflow_description/m,
+    );
+    assert.match(
+      inputsTable,
+      /visual_artifact_name\tready\tpage-builder-visual-fixture-281\tPage Builder Visual workflow artifact after visual evidence passes\toptional\tPage Builder Visual artifact name/,
+    );
   } finally {
     await rm(root, { force: true, recursive: true });
   }
@@ -128,6 +155,7 @@ test("production smoke request help documents summary fields", async () => {
   assert.match(help, /terminal summary\s+and Markdown status report dispatch readiness/i);
   assert.match(help, /missing input names/i);
   assert.match(help, /--inputs-output <path>/);
+  assert.match(help, /--inputs-table-output <path>/);
 });
 
 test("production smoke request config validates output and evidence inputs", () => {
@@ -137,6 +165,8 @@ test("production smoke request config validates output and evidence inputs", () 
     String.raw`artifacts\\production-smoke\\production-smoke-request.md`,
     "--inputs-output",
     String.raw`artifacts\\production-smoke\\production-smoke-dispatch-inputs.txt`,
+    "--inputs-table-output",
+    String.raw`artifacts\\production-smoke\\production-smoke-dispatch-inputs.tsv`,
     "--visual-artifact-run-id=33400968157",
   ]);
 
@@ -147,6 +177,10 @@ test("production smoke request config validates output and evidence inputs", () 
   assert.equal(
     config.inputsOutputPath,
     "artifacts/production-smoke/production-smoke-dispatch-inputs.txt",
+  );
+  assert.equal(
+    config.inputsTableOutputPath,
+    "artifacts/production-smoke/production-smoke-dispatch-inputs.tsv",
   );
   assert.equal(
     config.dispatchConfig.inputOverrides.get("visual_artifact_run_id"),
@@ -160,6 +194,16 @@ test("production smoke request config validates output and evidence inputs", () 
     () => normalizeProductionSmokeRequestOutputPath("README.md"),
     /Production Smoke request must be under tmp\/, reports\/, artifacts\/, or \.tmp\//,
   );
+  assert.equal(
+    normalizeProductionSmokeDispatchInputsTableOutputPath(
+      "tmp/production-smoke-dispatch-inputs.TSV",
+    ),
+    "tmp/production-smoke-dispatch-inputs.TSV",
+  );
+  assert.throws(
+    () => normalizeProductionSmokeDispatchInputsTableOutputPath("tmp/table.txt"),
+    /Production Smoke dispatch inputs table output must end with \.tsv/,
+  );
 });
 
 test("production smoke request formats dispatch input templates", () => {
@@ -170,9 +214,19 @@ test("production smoke request formats dispatch input templates", () => {
     ]),
   );
   const text = createProductionSmokeDispatchInputsText(artifact);
+  const table = createProductionSmokeDispatchInputsTable(artifact);
 
   assert.match(text, /^visual_artifact_name=page-builder-visual-fixture-281/m);
   assert.match(text, /^visual_artifact_run_id=<Page Builder Visual workflow run id>/m);
+  assert.match(table, /^name\tstatus\tvalue\tsource\tworkflow_required\tworkflow_description/m);
+  assert.match(
+    table,
+    /^visual_artifact_name\tready\tpage-builder-visual-fixture-281\tPage Builder Visual workflow artifact after visual evidence passes\toptional\tPage Builder Visual artifact name/m,
+  );
+  assert.match(
+    table,
+    /^visual_artifact_run_id\tmissing\t<Page Builder Visual workflow run id>/m,
+  );
 });
 
 test("production smoke request command is exposed in package CI and docs", async () => {
@@ -190,17 +244,20 @@ test("production smoke request command is exposed in package CI and docs", async
   assert.equal(createProductionSmokeRequestCommand(), "pnpm smoke:request");
   assert.equal(
     packageJson.scripts["smoke:request"],
-    "node scripts/production-smoke-request.mjs --output artifacts/production-smoke/production-smoke-request.md --inputs-output artifacts/production-smoke/production-smoke-dispatch-inputs.txt",
+    "node scripts/production-smoke-request.mjs --output artifacts/production-smoke/production-smoke-request.md --inputs-output artifacts/production-smoke/production-smoke-dispatch-inputs.txt --inputs-table-output artifacts/production-smoke/production-smoke-dispatch-inputs.tsv",
   );
   assert.match(workflow, /pnpm smoke:request -- --help/);
   assert.match(dispatchCli, /runProductionSmokeRequestCli/);
   assert.match(releaseChecklist, /pnpm smoke:request/);
   assert.match(releaseChecklist, /production-smoke-dispatch-inputs\.txt/);
+  assert.match(releaseChecklist, /production-smoke-dispatch-inputs\.tsv/);
   assert.match(releaseChecklist, /evidence input sources/);
   assert.match(setupDoc, /pnpm smoke:request/);
   assert.match(setupDoc, /production-smoke-dispatch-inputs\.txt/);
+  assert.match(setupDoc, /production-smoke-dispatch-inputs\.tsv/);
   assert.match(setupDoc, /Production Smoke\s+Evidence Input Sources/);
   assert.match(readme, /pnpm smoke:request/);
   assert.match(readme, /production-smoke-dispatch-inputs\.txt/);
+  assert.match(readme, /production-smoke-dispatch-inputs\.tsv/);
   assert.match(readme, /inputSources\[\]/);
 });

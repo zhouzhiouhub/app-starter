@@ -147,8 +147,8 @@ Release handoff:
   includes reference-import status, missing/update counts, required source reference availability,
   and the first missing reference path. It then prints the first two next actions with
   structured steps when available, including the smoke:request handoff,
-  dispatch inputs output, smoke:dispatch validation, gh dispatch template, and
-  Production Smoke manual dispatch path when that evidence is missing. It
+  dispatch inputs output, dispatch input table output, smoke:dispatch validation,
+  gh dispatch template, and Production Smoke manual dispatch path when that evidence is missing. It
   previews the first hidden structured action only when the visible actions do
   not have steps, and points any remaining actions to the generated
   project-status Markdown.`);

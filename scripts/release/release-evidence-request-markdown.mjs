@@ -4,6 +4,9 @@ import { createProductionSmokeRequestCommand } from "../smoke/production-smoke-d
 import {
   defaultProductionSmokeDispatchInputsOutputPath,
 } from "../smoke/production-smoke-dispatch-inputs-output.mjs";
+import {
+  defaultProductionSmokeDispatchInputsTableOutputPath,
+} from "../smoke/production-smoke-dispatch-inputs-table-path.mjs";
 import { createProductionSmokeRequestMarkdown } from "../smoke/production-smoke-request.mjs";
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { createPageBuilderVisualReferenceRequestCommand } from "../visual/page-builder-visual-reference-import-commands.mjs";
@@ -35,6 +38,10 @@ export function createReleaseEvidenceRequestMarkdown(input) {
     input.smokeInputsOutputPath ??
     requestOutputPaths.productionSmokeInputs ??
     defaultProductionSmokeDispatchInputsOutputPath;
+  const smokeInputsTableOutputPath =
+    input.smokeInputsTableOutputPath ??
+    requestOutputPaths.productionSmokeInputsTable ??
+    defaultProductionSmokeDispatchInputsTableOutputPath;
   const firstMissingVisualReference = Array.isArray(visual.missing)
     ? visual.missing[0]?.expectedPath
     : null;
@@ -68,6 +75,7 @@ export function createReleaseEvidenceRequestMarkdown(input) {
     )}`,
     `- Production Smoke request: ${formatCode(
       createProductionSmokeRequestCommand({
+        inputsTableOutputPath: smokeInputsTableOutputPath,
         inputsOutputPath: smokeInputsOutputPath,
         outputPath: requestOutputPaths.productionSmoke,
       }),
@@ -75,6 +83,9 @@ export function createReleaseEvidenceRequestMarkdown(input) {
     )}`,
     `- Production Smoke dispatch inputs output: ${formatCode(
       smokeInputsOutputPath,
+    )}`,
+    `- Production Smoke dispatch inputs table output: ${formatCode(
+      smokeInputsTableOutputPath,
     )}`,
     `- Completion gate: ${formatCode(
       "pnpm release:handoff -- --require-ready --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture",
@@ -108,6 +119,7 @@ export function createReleaseEvidenceRequestMarkdown(input) {
     ...shiftMarkdownHeadings(
       createProductionSmokeRequestMarkdown({
         ...smoke,
+        inputsTableOutputPath: smokeInputsTableOutputPath,
         inputsOutputPath: smokeInputsOutputPath,
       }),
     ),

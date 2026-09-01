@@ -20,8 +20,11 @@ test("release requests command is exposed in package CI and docs", async () => {
   assert.match(workflow, /pnpm release:requests -- --help/);
   assert.match(releaseChecklist, /pnpm release:requests/);
   assert.match(releaseChecklist, /page-builder-reference-export-table\.tsv/);
+  assert.match(releaseChecklist, /production-smoke-dispatch-inputs\.tsv/);
   assert.match(setupDoc, /pnpm release:requests/);
   assert.match(setupDoc, /page-builder-reference-export-table\.tsv/);
+  assert.match(setupDoc, /production-smoke-dispatch-inputs\.tsv/);
   assert.match(readme, /pnpm release:requests/);
   assert.match(readme, /page-builder-reference-export-table\.tsv/);
+  assert.match(readme, /production-smoke-dispatch-inputs\.tsv/);
 });

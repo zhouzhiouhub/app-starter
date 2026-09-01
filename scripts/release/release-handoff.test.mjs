@@ -387,14 +387,14 @@ test("release handoff config normalizes paths and is documented", async () => {
   assert.match(releaseChecklist, /pnpm release:handoff/);
 
   printReleaseHandoffHelp((line) => helpOutput.push(line));
-  assert.match(helpOutput.join("\n"), /first two next actions with\s+structured steps.*smoke:request handoff,\s+dispatch inputs output, smoke:dispatch validation, gh dispatch template, and\s+Production Smoke manual dispatch path.*first hidden structured.*generated\s+project-status Markdown/s);
+  assert.match(helpOutput.join("\n"), /first two next actions with\s+structured steps.*smoke:request handoff,\s+dispatch inputs output, dispatch input table output, smoke:dispatch validation,\s+gh dispatch template, and Production Smoke manual dispatch path.*first hidden structured.*generated\s+project-status Markdown/s);
   assert.match(
     readme,
-    /first two next\s+actions.*structured steps.*`pnpm smoke:request`.*dispatch 输入模板输出.*`pnpm smoke:dispatch`.*`gh` dispatch template.*手动触发入口.*structured next action.*artifacts\/release\/project-status\.md/s,
+    /first two next\s+actions.*structured steps.*`pnpm smoke:request`.*dispatch 输入模板输出.*dispatch 输入 TSV 表输出.*`pnpm smoke:dispatch`.*`gh`\s+dispatch template.*手动触发入口.*structured next action.*artifacts\/release\/project-status\.md/s,
   );
   assert.match(
     setupDoc,
-    /first\s+two\s+next actions with structured steps.*`pnpm smoke:request` request.*dispatch inputs\s+output.*`pnpm smoke:dispatch` validation.*`gh` dispatch template.*Production Smoke manual dispatch path.*first hidden\s+structured action.*artifacts\/release\/project-status\.md/s,
+    /first\s+two\s+next actions with structured steps.*`pnpm smoke:request` request.*dispatch inputs\s+output.*dispatch input table output.*`pnpm smoke:dispatch` validation.*`gh`\s+dispatch template.*Production Smoke manual dispatch path.*first hidden\s+structured action.*artifacts\/release\/project-status\.md/s,
   );
-  assert.match(releaseChecklist, /first\s+two\s+next actions with\s+structured steps.*`pnpm smoke:request` request.*dispatch inputs output.*`pnpm smoke:dispatch` validation.*`gh` dispatch\s+template.*Production Smoke manual dispatch path.*first hidden structured action.*project-status\.md/s);
+  assert.match(releaseChecklist, /first\s+two\s+next actions with\s+structured steps.*`pnpm smoke:request` request.*dispatch inputs output.*dispatch input table output.*`pnpm smoke:dispatch` validation.*`gh` dispatch\s+template.*Production Smoke manual dispatch path.*first hidden structured action.*project-status\.md/s);
 });

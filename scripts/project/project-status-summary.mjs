@@ -5,6 +5,7 @@ const maxSummaryLineLength = 480;
 const visibleNextActionCount = 3;
 const informationalStepLabels = new Set([
   "Dispatch inputs output",
+  "Dispatch inputs table output",
   "Input evidence",
   "Keep artifact",
   "Keep artifacts",
@@ -21,7 +22,14 @@ const informationalStepLabels = new Set([
   "Visual evidence inputs",
 ]);
 const summaryCompanionStepLabels = new Map([
-  ["Smoke request", ["Smoke request output", "Dispatch inputs output"]],
+  [
+    "Smoke request",
+    [
+      "Smoke request output",
+      "Dispatch inputs output",
+      "Dispatch inputs table output",
+    ],
+  ],
 ]);
 
 export function formatProjectStatusSummary(artifact) {

@@ -25,6 +25,7 @@ test("project next actions preserve visual artifact dir on release gate reruns",
       "Smoke request",
       "Smoke request output",
       "Dispatch inputs output",
+      "Dispatch inputs table output",
       "Local verification inputs",
       "Visual evidence inputs",
       "Release note inputs",
@@ -37,19 +38,19 @@ test("project next actions preserve visual artifact dir on release gate reruns",
     ],
   );
   assert.match(
-    productionSmoke.steps[6].value,
+    productionSmoke.steps[7].value,
     /^pnpm smoke:dispatch -- --require-complete /,
   );
   assert.match(
-    productionSmoke.steps[6].value,
+    productionSmoke.steps[7].value,
     /--local-verification-artifact "local-verification-<run_number>"/,
   );
   assert.match(
-    productionSmoke.steps[7].value,
+    productionSmoke.steps[8].value,
     /^gh workflow run production-smoke\.yml --ref main /,
   );
   assert.equal(
-    productionSmoke.steps[8].value,
+    productionSmoke.steps[9].value,
     "GitHub Actions > Production Smoke > Run workflow, then use the listed workflow_dispatch inputs.",
   );
   assert.equal(productionSmoke.steps[0].value, "pnpm smoke:request");
@@ -61,20 +62,24 @@ test("project next actions preserve visual artifact dir on release gate reruns",
     productionSmoke.steps[2].value,
     "artifacts/production-smoke/production-smoke-dispatch-inputs.txt",
   );
+  assert.equal(
+    productionSmoke.steps[3].value,
+    "artifacts/production-smoke/production-smoke-dispatch-inputs.tsv",
+  );
   assert.match(
-    productionSmoke.steps[7].value,
+    productionSmoke.steps[8].value,
     /-f visual_artifact_run_id="<Page Builder Visual workflow run id>"/,
   );
   assert.equal(
-    productionSmoke.steps[3].value,
+    productionSmoke.steps[4].value,
     "local_verification_run_url=<main CI run URL>, local_verification_artifact_name=local-verification-<run_number>",
   );
   assert.equal(
-    productionSmoke.steps[4].value,
+    productionSmoke.steps[5].value,
     "visual_artifact_name=page-builder-visual-fixture-<run_number>, visual_artifact_run_id=<Page Builder Visual workflow run id>",
   );
   assert.equal(
-    productionSmoke.steps[5].value,
+    productionSmoke.steps[6].value,
     "release_tag=<tag>, rollback_target=<target>, storefront_url=<public HTTPS storefront URL>",
   );
 });
@@ -142,6 +147,7 @@ test("project next actions include unified release evidence request", () => {
       "Smoke request",
       "Smoke request output",
       "Dispatch inputs output",
+      "Dispatch inputs table output",
       "Final gate",
     ],
   );
@@ -151,7 +157,7 @@ test("project next actions include unified release evidence request", () => {
   );
   assert.equal(
     releaseEvidence.steps[1].value,
-    "artifacts/release/release-evidence-request.md, artifacts/visual/page-builder-reference-request.md, artifacts/visual/page-builder-missing-references.txt, artifacts/visual/page-builder-reference-export-table.tsv, artifacts/production-smoke/production-smoke-request.md, artifacts/production-smoke/production-smoke-dispatch-inputs.txt",
+    "artifacts/release/release-evidence-request.md, artifacts/visual/page-builder-reference-request.md, artifacts/visual/page-builder-missing-references.txt, artifacts/visual/page-builder-reference-export-table.tsv, artifacts/production-smoke/production-smoke-request.md, artifacts/production-smoke/production-smoke-dispatch-inputs.txt, artifacts/production-smoke/production-smoke-dispatch-inputs.tsv",
   );
   assert.equal(
     releaseEvidence.steps[2].value,
@@ -182,8 +188,12 @@ test("project next actions include unified release evidence request", () => {
     releaseEvidence.steps[9].value,
     "artifacts/production-smoke/production-smoke-dispatch-inputs.txt",
   );
-  assert.match(
+  assert.equal(
     releaseEvidence.steps[10].value,
+    "artifacts/production-smoke/production-smoke-dispatch-inputs.tsv",
+  );
+  assert.match(
+    releaseEvidence.steps[11].value,
     /^pnpm release:handoff -- --require-ready /,
   );
 });

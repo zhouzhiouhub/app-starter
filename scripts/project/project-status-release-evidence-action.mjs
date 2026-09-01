@@ -5,6 +5,9 @@ import {
   defaultProductionSmokeDispatchInputsOutputPath,
 } from "../smoke/production-smoke-dispatch-inputs-output.mjs";
 import {
+  defaultProductionSmokeDispatchInputsTableOutputPath,
+} from "../smoke/production-smoke-dispatch-inputs-table-path.mjs";
+import {
   createReleaseEvidenceRequestCommand,
   defaultReleaseEvidenceRequestOutputPath,
 } from "../release/release-evidence-request-config.mjs";
@@ -69,6 +72,10 @@ export function createReleaseEvidenceRequestAction() {
       createReleaseEvidenceStep(
         "Dispatch inputs output",
         defaultProductionSmokeDispatchInputsOutputPath,
+      ),
+      createReleaseEvidenceStep(
+        "Dispatch inputs table output",
+        defaultProductionSmokeDispatchInputsTableOutputPath,
       ),
       createReleaseEvidenceStep(
         "Final gate",
