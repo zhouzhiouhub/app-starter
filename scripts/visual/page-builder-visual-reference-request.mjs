@@ -105,7 +105,12 @@ export function createPageBuilderVisualReferenceRequestMarkdown(input) {
     "",
     "- Export real PNGs from the approved design source.",
     "- Use the exact file names below.",
+    "- Export each PNG at the matching preview viewport size shown as reference size.",
     "- Do not use fixture screenshots, generated placeholders, or temporary exports.",
+    "",
+    "## Reference PNG Dimensions",
+    "",
+    ...formatReferenceDimensions(references),
     "",
     "## Missing Files",
     "",
@@ -164,8 +169,32 @@ function formatReferences(references) {
         reference.component,
       )}.${formatText(reference.viewport)}; ${formatText(
         reference.status,
+      )}; ${formatReferenceSize(
+        reference.previewScreenshot,
       )}${formatPreview(reference.previewScreenshot)}`,
   );
+}
+
+function formatReferenceDimensions(references) {
+  if (references.length === 0) {
+    return ["- None"];
+  }
+
+  return references.map(
+    (reference) =>
+      `- ${formatText(reference.component)}.${formatText(
+        reference.viewport,
+      )}: ${formatReferenceSize(reference.previewScreenshot)}; ${formatCode(
+        reference.expectedPath,
+      )}`,
+  );
+}
+
+function formatReferenceSize(previewScreenshot) {
+  return Number.isFinite(previewScreenshot?.width) &&
+    Number.isFinite(previewScreenshot?.height)
+    ? `reference size ${previewScreenshot.width}x${previewScreenshot.height}`
+    : "reference size unknown";
 }
 
 function formatPreview(previewScreenshot) {

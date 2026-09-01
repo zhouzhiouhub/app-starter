@@ -14,6 +14,10 @@ import {
   readPageBuilderVisualReferenceRequestCliConfig,
 } from "./page-builder-visual-reference-request.mjs";
 import {
+  pageBuilderVisualCaptureDefaultHeight,
+  pageBuilderVisualCaptureViewportWidths,
+} from "./page-builder-visual-capture-constants.mjs";
+import {
   mvpPageBuilderComponents,
   pageBuilderVisualAcceptanceSchemaVersion,
   pageBuilderVisualAcceptanceViewports,
@@ -59,11 +63,21 @@ test("visual reference request Markdown is design-facing", () => {
     /Missing path output: `artifacts\/visual\/page-builder-missing-references\.txt`/,
   );
   assert.match(markdown, /Export real PNGs from the approved design source/);
+  assert.match(markdown, /matching preview viewport size shown as reference size/);
+  assert.match(markdown, /## Reference PNG Dimensions/);
   assert.match(
     markdown,
-    /hero-banner\.desktop; missing; preview `reports\/visual\/page-builder-fixture\/page-builder-visual-fixture-hero-banner-desktop\.png` \(1440x1000\)/,
+    /hero-banner\.desktop: reference size 1440x1000; `docs\/visual\/page-builder-references\/hero-banner-desktop\.png`/,
   );
-  assert.match(markdown, /faq\.mobile; ready/);
+  assert.match(
+    markdown,
+    /faq\.mobile: reference size unknown; `docs\/visual\/page-builder-references\/faq-mobile\.png`/,
+  );
+  assert.match(
+    markdown,
+    /hero-banner\.desktop; missing; reference size 1440x1000; preview `reports\/visual\/page-builder-fixture\/page-builder-visual-fixture-hero-banner-desktop\.png` \(1440x1000\)/,
+  );
+  assert.match(markdown, /faq\.mobile; ready; reference size unknown/);
   assert.match(markdown, /pnpm visual:references:check/);
   assert.match(markdown, /pnpm visual:references -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --require-complete/);
   assert.match(markdown, /pnpm visual:measure -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --accept-passing --require-complete/);
@@ -87,7 +101,11 @@ test("visual reference request CLI writes a Markdown handoff", async () => {
 
   try {
     writeReferenceFiles(sourceDir, { skip: "spec-table-mobile.png" });
-    writeFileSync(manifestPath, `${JSON.stringify(createManifest(), null, 2)}\n`);
+    writePreviewScreenshotFiles(root);
+    writeFileSync(
+      manifestPath,
+      `${JSON.stringify(createManifest({ previewRoot: root }), null, 2)}\n`,
+    );
 
     const exitCode = await runPageBuilderVisualReferenceRequestCli(
       [
@@ -119,6 +137,7 @@ test("visual reference request CLI writes a Markdown handoff", async () => {
       /First missing reference: reports\/visual\/reference-request-.+\/references\/spec-table-mobile\.png/,
     );
     assert.match(markdown, /spec-table\.mobile; missing/);
+    assert.match(markdown, /spec-table\.mobile: reference size 390x1000/);
     assert.equal(missingPaths, `${sourceDir}/spec-table-mobile.png\n`);
     assert.match(
       markdown,
@@ -261,6 +280,8 @@ test("visual reference request command is exposed in package and docs", () => {
   assert.match(referenceReadme, /--output <path>/);
   assert.match(referenceReadme, /--missing-output <path>/);
   assert.match(referenceReadme, /first missing reference path/);
+  assert.match(referenceReadme, /Reference PNG Dimensions/);
+  assert.match(referenceReadme, /reference size target/);
 });
 
 function writeReferenceFiles(sourceDir, options = {}) {
@@ -277,7 +298,24 @@ function writeReferenceFiles(sourceDir, options = {}) {
   }
 }
 
-function createManifest() {
+function writePreviewScreenshotFiles(root) {
+  const outputDir = path.join(root, "artifacts/visual");
+  mkdirSync(outputDir, { recursive: true });
+
+  for (const component of mvpPageBuilderComponents) {
+    for (const viewport of pageBuilderVisualAcceptanceViewports) {
+      writeFileSync(
+        path.join(outputDir, `${component}-${viewport}.png`),
+        createTestPng(
+          pageBuilderVisualCaptureViewportWidths[viewport],
+          pageBuilderVisualCaptureDefaultHeight,
+        ),
+      );
+    }
+  }
+}
+
+function createManifest(input = {}) {
   return {
     records: mvpPageBuilderComponents.map((component) => ({
       component,
@@ -286,7 +324,7 @@ function createManifest() {
       viewports: Object.fromEntries(
         pageBuilderVisualAcceptanceViewports.map((viewport) => [
           viewport,
-          createViewport(component, viewport),
+          createViewport(component, viewport, input),
         ]),
       ),
     })),
@@ -301,12 +339,16 @@ function createManifest() {
   };
 }
 
-function createViewport(component, viewport) {
+function createViewport(component, viewport, input) {
+  const previewPrefix = input.previewRoot
+    ? `${input.previewRoot}/artifacts/visual`
+    : "artifacts/visual";
+
   return {
     designReference: null,
     maxColorDeltaE: null,
     maxLayoutDeltaPx: null,
-    previewScreenshot: `artifacts/visual/${component}-${viewport}.png`,
+    previewScreenshot: `${previewPrefix}/${component}-${viewport}.png`,
     status: "needs-evidence",
     visualMatchPercent: null,
   };
