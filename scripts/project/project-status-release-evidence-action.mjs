@@ -30,6 +30,9 @@ import {
   createReleaseRequestsCommand,
   createReleaseRequestsOutputSummary,
 } from "../release/release-requests-config.mjs";
+import {
+  defaultReleaseRequestsManifestOutputPath,
+} from "../release/release-requests-manifest-path.mjs";
 
 const defaultVisualArtifactDir = "reports/visual/page-builder-fixture";
 const defaultVisualReferenceSourceDir = "docs/visual/page-builder-references";
@@ -37,7 +40,7 @@ const defaultVisualReferenceSourceDir = "docs/visual/page-builder-references";
 export function createReleaseEvidenceRequestAction() {
   return {
     action:
-      "Run pnpm release:requests to refresh the blocked release evidence, design reference, and Production Smoke request handoffs.",
+      "Run pnpm release:requests to refresh the blocked release evidence, request manifest, design reference, and Production Smoke request handoffs.",
     area: "Release Evidence",
     label: "Refresh evidence requests",
     steps: [
@@ -48,6 +51,10 @@ export function createReleaseEvidenceRequestAction() {
       createReleaseEvidenceStep(
         "Refresh requests output",
         createReleaseRequestsOutputSummary(),
+      ),
+      createReleaseEvidenceStep(
+        "Release requests manifest output",
+        defaultReleaseRequestsManifestOutputPath,
       ),
       createReleaseEvidenceStep(
         "Evidence request",

@@ -65,6 +65,22 @@ export function readReleaseRequestsCliConfig(args = []) {
       continue;
     }
 
+    if (
+      option === "--requests-manifest-output" ||
+      option === "--release-requests-manifest-output" ||
+      option === "--bundle-manifest-output"
+    ) {
+      const outputPath = readOptionValue(option, normalizedArgs, index, value);
+      setValueOption(
+        config.releaseEvidenceArgs,
+        "--requests-manifest-output",
+        outputPath,
+      );
+      config.outputPaths.releaseRequestsManifest = outputPath;
+      index += value === null ? 1 : 0;
+      continue;
+    }
+
     if (option === "--visual-output") {
       const outputPath = readOptionValue(option, normalizedArgs, index, value);
       setValueOption(config.releaseEvidenceArgs, "--visual-output", outputPath);

@@ -34,6 +34,10 @@ export async function runReleaseEvidenceRequestCli(args = [], input = {}) {
     const generatedAt = input.generatedAt ?? new Date().toISOString();
     const request = await createReleaseEvidenceRequest(config, input, generatedAt);
 
+    if (typeof input.onRequest === "function") {
+      await input.onRequest(request);
+    }
+
     await writeReleaseEvidenceRequestMarkdown(config.outputPath, request);
 
     stdout(`Release evidence request written: ${config.outputPath}`);
@@ -109,6 +113,7 @@ function printHelp(writeLine) {
   writeLine(`Usage:
   pnpm release:evidence-request
   pnpm release:evidence-request -- --output artifacts/release/release-evidence-request.md
+  pnpm release:evidence-request -- --requests-manifest-output artifacts/release/release-requests-manifest.json
   pnpm release:evidence-request -- --visual-output artifacts/visual/page-builder-reference-request.md --visual-missing-output artifacts/visual/page-builder-missing-references.txt --visual-table-output artifacts/visual/page-builder-reference-export-table.tsv --visual-json-output artifacts/visual/page-builder-reference-export-manifest.json --visual-handoff-output artifacts/visual/page-builder-reference-handoff
   pnpm release:evidence-request -- --smoke-output artifacts/production-smoke/production-smoke-request.md
   pnpm release:evidence-request -- --smoke-inputs-output artifacts/production-smoke/production-smoke-dispatch-inputs.txt
@@ -119,6 +124,12 @@ function printHelp(writeLine) {
 
 Options:
   --output <path>              Write the combined release evidence request Markdown.
+  --requests-manifest-output <path>
+                               Show the release:requests bundle manifest JSON path.
+  --release-requests-manifest-output <path>
+                               Alias for --requests-manifest-output.
+  --bundle-manifest-output <path>
+                               Alias for --requests-manifest-output.
   --visual-output <path>       Show the Page Builder design request output path.
   --visual-missing-output <path>
                                Show the missing Page Builder reference path list output.
@@ -157,8 +168,9 @@ Smoke evidence inputs:
 Evidence:
   This command writes one release-facing request that embeds the Page Builder
   design reference request, reference export table and JSON manifest paths, the
-  visual handoff package path, Production Smoke request, dispatch input template
-  path, dispatch input table path, and dispatch input JSON manifest path.
+  visual handoff package path, release:requests bundle manifest path,
+  Production Smoke request, dispatch input template path, dispatch input table
+  path, and dispatch input JSON manifest path.
   The terminal summary and Markdown request status report release readiness,
   visual reference status, the first missing visual reference,
   Production Smoke dispatch readiness, and any missing Smoke input names to

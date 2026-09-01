@@ -8,6 +8,7 @@ test("release requests CLI writes every local request Markdown", async () => {
   const root = `tmp/rr-cli-${process.pid}`;
   const manifestPath = `${root}/page-builder-visual-acceptance.json`;
   const releaseOutput = `${root}/release-evidence-request.md`;
+  const releaseRequestsManifestOutput = `${root}/release-requests-manifest.json`;
   const visualOutput = `${root}/page-builder-reference-request.md`;
   const visualMissingOutput = `${root}/page-builder-missing-references.txt`;
   const visualTableOutput = `${root}/page-builder-reference-export-table.tsv`;
@@ -30,6 +31,8 @@ test("release requests CLI writes every local request Markdown", async () => {
         manifestPath,
         "--release-output",
         releaseOutput,
+        "--requests-manifest-output",
+        releaseRequestsManifestOutput,
         "--visual-output",
         visualOutput,
         "--visual-missing-output",
@@ -60,6 +63,7 @@ test("release requests CLI writes every local request Markdown", async () => {
 
     const [
       releaseMarkdown,
+      releaseRequestsManifestText,
       visualMarkdown,
       visualMissingPaths,
       visualExportTable,
@@ -71,6 +75,7 @@ test("release requests CLI writes every local request Markdown", async () => {
       smokeInputsJsonText,
     ] = await Promise.all([
       readFile(releaseOutput, "utf8"),
+      readFile(releaseRequestsManifestOutput, "utf8"),
       readFile(visualOutput, "utf8"),
       readFile(visualMissingOutput, "utf8"),
       readFile(visualTableOutput, "utf8"),
@@ -81,6 +86,7 @@ test("release requests CLI writes every local request Markdown", async () => {
       readFile(smokeInputsTableOutput, "utf8"),
       readFile(smokeInputsJsonOutput, "utf8"),
     ]);
+    const releaseRequestsManifest = JSON.parse(releaseRequestsManifestText);
     const visualExportManifest = JSON.parse(visualExportManifestText);
     const visualHandoffManifest = JSON.parse(visualHandoffManifestText);
     const smokeInputsManifest = JSON.parse(smokeInputsJsonText);
@@ -88,8 +94,24 @@ test("release requests CLI writes every local request Markdown", async () => {
 
     assert.equal(exitCode, 0);
     assert.match(output, /Release evidence request bundle/);
+    assert.match(
+      output,
+      new RegExp(
+        `Release requests manifest written: ${escapeRegExp(
+          releaseRequestsManifestOutput,
+        )}`,
+      ),
+    );
     assert.match(output, /Release request files refreshed:/);
     assert.match(output, new RegExp(`Release evidence: ${escapeRegExp(releaseOutput)}`));
+    assert.match(
+      output,
+      new RegExp(
+        `Release requests manifest: ${escapeRegExp(
+          releaseRequestsManifestOutput,
+        )}`,
+      ),
+    );
     assert.match(output, new RegExp(`Page Builder design: ${escapeRegExp(visualOutput)}`));
     assert.match(
       output,
@@ -132,6 +154,8 @@ test("release requests CLI writes every local request Markdown", async () => {
       new RegExp(
         `Refresh all requests: \`pnpm release:requests -- --release-output ${escapeRegExp(
           releaseOutput,
+        )} --requests-manifest-output ${escapeRegExp(
+          releaseRequestsManifestOutput,
         )} --visual-output ${escapeRegExp(
           visualOutput,
         )} --visual-missing-output ${escapeRegExp(
@@ -159,6 +183,7 @@ test("release requests CLI writes every local request Markdown", async () => {
         `Request outputs: \`${escapeRegExp(
           [
             releaseOutput,
+            releaseRequestsManifestOutput,
             visualOutput,
             visualMissingOutput,
             visualTableOutput,
@@ -177,6 +202,8 @@ test("release requests CLI writes every local request Markdown", async () => {
       new RegExp(
         `Release evidence request: \`pnpm release:evidence-request -- --output ${escapeRegExp(
           releaseOutput,
+        )} --requests-manifest-output ${escapeRegExp(
+          releaseRequestsManifestOutput,
         )} --visual-output ${escapeRegExp(
           visualOutput,
         )} --visual-missing-output ${escapeRegExp(
@@ -195,6 +222,14 @@ test("release requests CLI writes every local request Markdown", async () => {
           smokeInputsTableOutput,
         )} --smoke-inputs-json-output ${escapeRegExp(
           smokeInputsJsonOutput,
+        )}\``,
+      ),
+    );
+    assert.match(
+      releaseMarkdown,
+      new RegExp(
+        `Release requests manifest: \`${escapeRegExp(
+          releaseRequestsManifestOutput,
         )}\``,
       ),
     );
@@ -319,6 +354,30 @@ test("release requests CLI writes every local request Markdown", async () => {
     );
     assert.equal(visualExportManifest.referenceCount, 12);
     assert.equal(visualExportManifest.missingCount, 12);
+    assert.equal(
+      releaseRequestsManifest.schemaVersion,
+      "release-requests-manifest.v1",
+    );
+    assert.equal(releaseRequestsManifest.status, "needs-evidence");
+    assert.equal(releaseRequestsManifest.releaseEvidence.ready, false);
+    assert.equal(
+      releaseRequestsManifest.outputPaths.releaseRequestsManifest,
+      releaseRequestsManifestOutput,
+    );
+    assert.equal(releaseRequestsManifest.pageBuilderVisual.missingCount, 12);
+    assert.equal(
+      releaseRequestsManifest.pageBuilderVisual.firstMissingReference,
+      "docs/visual/page-builder-references/hero-banner-desktop.png",
+    );
+    assert.deepEqual(releaseRequestsManifest.productionSmoke.missingInputs, [
+      "visual_artifact_name",
+      "visual_artifact_run_id",
+      "local_verification_run_url",
+      "local_verification_artifact_name",
+      "release_tag",
+      "rollback_target",
+      "storefront_url",
+    ]);
     assert.equal(visualHandoffManifest.schemaVersion, "page-builder-visual-reference-handoff.v1");
     assert.equal(visualHandoffManifest.outputDir, visualHandoffOutput);
     assert.equal(visualHandoffManifest.previewCount, 12);

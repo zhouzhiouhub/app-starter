@@ -5,8 +5,12 @@ import {
 import { runProductionSmokeRequestCli } from "../smoke/production-smoke-request.mjs";
 import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
 import { runReleaseEvidenceRequestCli } from "./release-evidence-request.mjs";
-import { readReleaseRequestsCliConfig } from "./release-requests-cli-config.mjs";
+import {
+  readReleaseRequestsCliConfig,
+} from "./release-requests-cli-config.mjs";
+import { createReleaseRequestsCommand } from "./release-requests-config.mjs";
 import { printReleaseRequestsHelp } from "./release-requests-help.mjs";
+import { writeReleaseRequestsManifest } from "./release-requests-manifest.mjs";
 import { printReleaseRequestFiles } from "./release-requests-summary.mjs";
 
 export { readReleaseRequestsCliConfig } from "./release-requests-cli-config.mjs";
@@ -27,11 +31,20 @@ export async function runReleaseRequestsCli(args = [], input = {}) {
 
   try {
     const config = readReleaseRequestsCliConfig(args);
+    let releaseEvidenceRequest = null;
 
     stdout("Release evidence request bundle");
     const releaseExit = await runReleaseEvidenceRequestCli(
       config.releaseEvidenceArgs,
-      input,
+      {
+        ...input,
+        onRequest: async (request) => {
+          releaseEvidenceRequest = request;
+          if (typeof input.onRequest === "function") {
+            await input.onRequest(request);
+          }
+        },
+      },
     );
     if (releaseExit !== 0) {
       return releaseExit;
@@ -60,6 +73,18 @@ export async function runReleaseRequestsCli(args = [], input = {}) {
     if (smokeExit !== 0) {
       return smokeExit;
     }
+
+    await writeReleaseRequestsManifest(
+      config.outputPaths.releaseRequestsManifest,
+      {
+        command: createReleaseRequestsCommand(config.outputPaths),
+        outputPaths: config.outputPaths,
+        releaseEvidenceRequest,
+      },
+    );
+    stdout(
+      `Release requests manifest written: ${config.outputPaths.releaseRequestsManifest}`,
+    );
 
     printReleaseRequestFiles(config.outputPaths, stdout);
     return 0;

@@ -42,6 +42,13 @@ const summaryCompanionStepLabels = new Map([
       "Design handoff output",
     ],
   ],
+  [
+    "Refresh requests",
+    [
+      "Release requests manifest output",
+      "Refresh requests output",
+    ],
+  ],
 ]);
 
 export function formatProjectStatusSummary(artifact) {

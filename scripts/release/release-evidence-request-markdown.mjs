@@ -26,6 +26,9 @@ import {
   createReleaseRequestsCommand,
   createReleaseRequestsOutputSummary,
 } from "./release-requests-config.mjs";
+import {
+  defaultReleaseRequestsManifestOutputPath,
+} from "./release-requests-manifest-path.mjs";
 
 const maxMarkdownTextLength = 420;
 const maxMarkdownCommandLength = 1200;
@@ -63,6 +66,9 @@ export function createReleaseEvidenceRequestMarkdown(input) {
   const visualReferenceHandoffOutputDir =
     requestOutputPaths.visualReferenceHandoff ??
     defaultPageBuilderVisualReferenceHandoffOutputDir;
+  const releaseRequestsManifestOutputPath =
+    requestOutputPaths.releaseRequestsManifest ??
+    defaultReleaseRequestsManifestOutputPath;
   const firstMissingVisualReference = Array.isArray(visual.missing)
     ? visual.missing[0]?.expectedPath
     : null;
@@ -85,6 +91,9 @@ export function createReleaseEvidenceRequestMarkdown(input) {
     `- Request outputs: ${formatCode(
       createReleaseRequestsOutputSummary(input.requestOutputPaths),
       maxMarkdownCommandLength,
+    )}`,
+    `- Release requests manifest: ${formatCode(
+      releaseRequestsManifestOutputPath,
     )}`,
     `- Release evidence request: ${formatCode(
       createReleaseEvidenceRequestCommand(requestOutputPaths),

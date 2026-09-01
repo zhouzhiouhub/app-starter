@@ -1,6 +1,9 @@
 export function printReleaseRequestFiles(outputPaths, writeLine) {
   writeLine("Release request files refreshed:");
   writeLine(`  - Release evidence: ${outputPaths.releaseEvidence}`);
+  writeLine(
+    `  - Release requests manifest: ${outputPaths.releaseRequestsManifest}`,
+  );
   writeLine(`  - Page Builder design: ${outputPaths.visualReference}`);
   writeLine(
     `  - Page Builder missing paths: ${outputPaths.visualMissingReferences}`,

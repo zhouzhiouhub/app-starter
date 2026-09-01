@@ -10,8 +10,9 @@ later phases are explicitly approved.
   deployment sequence, environment variable matrix, evidence flow, and rollback
   runbook.
 - Run `pnpm release:requests` when the release needs the combined release
-  evidence request, Page Builder design request, missing visual reference path
-  list, reference export task table, reference export JSON manifest,
+  evidence request, `artifacts/release/release-requests-manifest.json`,
+  Page Builder design request, missing visual reference path list,
+  reference export task table, reference export JSON manifest,
   visual reference handoff package,
   Production Smoke request, and Production
   Smoke dispatch input template, TSV table, and JSON input manifest refreshed
@@ -20,12 +21,14 @@ later phases are explicitly approved.
   import references, run smoke, upload artifacts, generate release notes, or
   mark blocked evidence ready.
 - Run `pnpm release:evidence-request` when the release needs one combined
-  handoff for design references, the visual handoff package path, Production
-  Smoke inputs, dispatch input template path, dispatch input table path, visual
-  reference export manifest path, dispatch input JSON manifest path, retained artifacts, and the final
+  handoff for design references, the
+  `artifacts/release/release-requests-manifest.json` path, the visual handoff
+  package path, Production Smoke inputs, dispatch input template path,
+  dispatch input table path, visual reference export manifest path, dispatch
+  input JSON manifest path, retained artifacts, and the final
   `release:handoff -- --require-ready` gate. This request is coordination
-  material only; pass `--visual-output`, `--visual-missing-output`,
-  `--visual-table-output`, `--visual-json-output`,
+  material only; pass `--requests-manifest-output`, `--visual-output`,
+  `--visual-missing-output`, `--visual-table-output`, `--visual-json-output`,
   `--visual-handoff-output`, `--smoke-output`,
   `--smoke-inputs-output`, and
   `--smoke-inputs-table-output`, and `--smoke-inputs-json-output` if the request
@@ -443,8 +446,8 @@ later phases are explicitly approved.
 - Run `pnpm release:requests` before cross-functional release review when the
   release needs the combined release request, design export request, and
   Production Smoke operator request refreshed as separate local files, plus the
-  plain missing visual reference path list, reference export task table,
-  visual reference handoff package, workflow_dispatch input template,
+  `artifacts/release/release-requests-manifest.json` bundle, plain missing visual reference path list,
+  reference export task table, visual reference handoff package, workflow_dispatch input template,
   workflow_dispatch input TSV table, and workflow_dispatch input JSON manifest.
 - Run `pnpm release:evidence-request` before cross-functional release review
   when design reference export and Production Smoke execution need one shared

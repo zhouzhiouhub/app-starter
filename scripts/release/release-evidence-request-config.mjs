@@ -33,6 +33,9 @@ import {
   defaultReleaseEvidenceRequestOutputPath,
   defaultReleaseEvidenceRequestOutputPaths,
 } from "./release-evidence-request-output-paths.mjs";
+import {
+  normalizeReleaseRequestsManifestOutputPath,
+} from "./release-requests-manifest-path.mjs";
 import { normalizeReleaseCheckMarkdownPath } from "./release-notes-validation.mjs";
 
 export {
@@ -85,6 +88,21 @@ export function readReleaseEvidenceRequestCliConfig(args = []) {
     if (option === "--output") {
       input.outputPath = readOptionValue(option, normalizedArgs, index, value);
       input.requestOutputPaths.releaseEvidence = input.outputPath;
+      index += value === null ? 1 : 0;
+      continue;
+    }
+
+    if (
+      option === "--requests-manifest-output" ||
+      option === "--release-requests-manifest-output" ||
+      option === "--bundle-manifest-output"
+    ) {
+      input.requestOutputPaths.releaseRequestsManifest = readOptionValue(
+        option,
+        normalizedArgs,
+        index,
+        value,
+      );
       index += value === null ? 1 : 0;
       continue;
     }
@@ -275,6 +293,9 @@ export function readReleaseEvidenceRequestCliConfig(args = []) {
       productionSmokeInputsManifest: smokeInputsJsonOutputPath,
       productionSmokeInputsTable: smokeInputsTableOutputPath,
       releaseEvidence: outputPath,
+      releaseRequestsManifest: normalizeReleaseRequestsManifestOutputPath(
+        input.requestOutputPaths.releaseRequestsManifest,
+      ),
       visualMissingReferences: normalizeVisualReferenceMissingOutputPath(
         input.requestOutputPaths.visualMissingReferences,
       ),
