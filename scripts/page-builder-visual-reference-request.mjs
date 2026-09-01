@@ -42,6 +42,10 @@ export async function runPageBuilderVisualReferenceRequestCli(
     stdout(
       `Missing references: ${artifact.missingCount}/${artifact.requiredReferenceCount}`,
     );
+    const firstMissingReference = artifact.missing[0]?.expectedPath;
+    if (firstMissingReference) {
+      stdout(`First missing reference: ${firstMissingReference}`);
+    }
     return 0;
   } catch (error) {
     stderr(

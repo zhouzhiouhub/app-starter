@@ -89,6 +89,10 @@ test("visual reference request CLI writes a Markdown handoff", async () => {
     assert.equal(exitCode, 0);
     assert.match(stdout.join("\n"), /Visual reference request written:/);
     assert.match(stdout.join("\n"), /Missing references: 1\/12/);
+    assert.match(
+      stdout.join("\n"),
+      /First missing reference: reports\/visual\/reference-request-.+\/references\/spec-table-mobile\.png/,
+    );
     assert.match(markdown, /spec-table\.mobile; missing/);
     assert.match(markdown, /## After Delivery/);
   } finally {
