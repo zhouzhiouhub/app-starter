@@ -136,7 +136,7 @@ test("project status CLI writes a Markdown handoff", async () => {
     );
     assert.match(
       markdown,
-      /- Release Evidence: Generate evidence request/,
+      /- Release Evidence: Refresh evidence requests/,
     );
     assert.match(
       markdown,

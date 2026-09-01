@@ -110,7 +110,7 @@ test("project next actions include copy-ready missing visual reference paths", (
 test("project next actions include unified release evidence request", () => {
   const actions = createProjectNextActions(createBlockedCheck());
   const releaseEvidence = actions.find(
-    (action) => action.label === "Generate evidence request",
+    (action) => action.label === "Refresh evidence requests",
   );
 
   assert.equal(releaseEvidence.area, "Release Evidence");

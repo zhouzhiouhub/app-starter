@@ -75,7 +75,7 @@ test("project status summary stays compact and actionable", () => {
     text,
     /Design request output: artifacts\/visual\/page-builder-reference-request\.md/,
   );
-  assert.match(text, /Release Evidence: Generate evidence request/);
+  assert.match(text, /Release Evidence: Refresh evidence requests/);
   assert.match(text, /Refresh requests: pnpm release:requests/);
   assert.match(
     text,
@@ -131,7 +131,7 @@ test("project status CLI can print a compact summary", async () => {
       text,
       /Design request output: artifacts\/visual\/page-builder-reference-request\.md/,
     );
-    assert.match(text, /Release Evidence: Generate evidence request/);
+    assert.match(text, /Release Evidence: Refresh evidence requests/);
     assert.match(text, /Refresh requests: pnpm release:requests/);
     assert.match(
       text,

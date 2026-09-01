@@ -157,7 +157,7 @@ test("project status summarizes blocked release evidence", () => {
   assert.equal(artifact.nextActions[1].steps[1].value, "pnpm --silent visual:references:missing");
   assert.equal(artifact.nextActions[1].steps[2].value, "pnpm visual:references:request");
   assert.equal(artifact.nextActions[1].steps[4].value, "pnpm visual:references:check");
-  assert.equal(artifact.nextActions[2].label, "Generate evidence request");
+  assert.equal(artifact.nextActions[2].label, "Refresh evidence requests");
   assert.equal(
     artifact.nextActions[2].steps[0].value,
     "pnpm release:requests",

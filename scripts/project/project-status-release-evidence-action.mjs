@@ -24,7 +24,7 @@ export function createReleaseEvidenceRequestAction() {
     action:
       "Run pnpm release:requests to refresh the blocked release evidence, design reference, and Production Smoke request handoffs.",
     area: "Release Evidence",
-    label: "Generate evidence request",
+    label: "Refresh evidence requests",
     steps: [
       createReleaseEvidenceStep(
         "Refresh requests",
