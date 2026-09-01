@@ -10,6 +10,7 @@ import {
   createProductionSmokeDispatchCommand,
   createProductionSmokeDispatchValidationCommand,
   createProductionSmokeManualDispatchInstruction,
+  createProductionSmokeRequestCommand,
   productionSmokeDispatchInputs,
 } from "./production-smoke-dispatch-command.mjs";
 
@@ -58,6 +59,10 @@ test("production smoke manual dispatch instruction names the workflow UI", () =>
     createProductionSmokeManualDispatchInstruction(),
     "GitHub Actions > Production Smoke > Run workflow, then use the listed workflow_dispatch inputs.",
   );
+});
+
+test("production smoke request command names the handoff CLI", () => {
+  assert.equal(createProductionSmokeRequestCommand(), "pnpm smoke:request");
 });
 
 test("production smoke dispatch command accepts scoped overrides", () => {
@@ -176,9 +181,10 @@ test("production smoke dispatch CLI rejects unsafe evidence inputs", async () =>
 });
 
 test("production smoke dispatch CLI exposes package and docs entry points", async () => {
-  const [packageJsonText, releaseChecklist, setupDoc, readme] =
+  const [packageJsonText, workflow, releaseChecklist, setupDoc, readme] =
     await Promise.all([
       readFile("package.json", "utf8"),
+      readFile(".github/workflows/ci.yml", "utf8"),
       readFile("docs/development/release-checklist.md", "utf8"),
       readFile("docs/development/setup.md", "utf8"),
       readFile("README.md", "utf8"),
@@ -189,9 +195,17 @@ test("production smoke dispatch CLI exposes package and docs entry points", asyn
     packageJson.scripts["smoke:dispatch"],
     "node scripts/production-smoke-dispatch.mjs",
   );
+  assert.equal(
+    packageJson.scripts["smoke:request"],
+    "node scripts/production-smoke-request.mjs --output artifacts/production-smoke/production-smoke-request.md",
+  );
+  assert.match(workflow, /pnpm smoke:request -- --help/);
   assert.match(releaseChecklist, /pnpm smoke:dispatch/);
+  assert.match(releaseChecklist, /pnpm smoke:request/);
   assert.match(setupDoc, /pnpm smoke:dispatch/);
+  assert.match(setupDoc, /pnpm smoke:request/);
   assert.match(readme, /pnpm smoke:dispatch/);
+  assert.match(readme, /pnpm smoke:request/);
 });
 
 test("production smoke dispatch config normalizes command options", () => {

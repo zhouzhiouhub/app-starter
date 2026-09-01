@@ -4,6 +4,7 @@ import {
   createProductionSmokeDispatchCommand,
   createProductionSmokeDispatchValidationCommand,
   createProductionSmokeManualDispatchInstruction,
+  createProductionSmokeRequestCommand,
 } from "../smoke/production-smoke-dispatch-command.mjs";
 import {
   createReleaseEvidenceReadinessChecklist,
@@ -96,6 +97,7 @@ test("release readiness checklist carries blocker actions", () => {
       `Manual dispatch: ${createProductionSmokeManualDispatchInstruction()}`,
     ),
   );
+  assert.ok(lines.includes(`Smoke request: ${createProductionSmokeRequestCommand()}`));
   assert.ok(lines.includes(`Validate dispatch: ${validationCommand}`));
   assert.ok(lines.includes(`Dispatch template: ${dispatchCommand}`));
   assert.match(lines, /Run pnpm visual:acceptance -- --checklist/);

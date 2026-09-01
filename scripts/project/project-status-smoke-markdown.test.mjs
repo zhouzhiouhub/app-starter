@@ -39,6 +39,10 @@ test("project status exposes smoke Markdown companion status", () => {
   );
   assert.match(
     markdown,
+    /Production smoke request: `pnpm smoke:request`/,
+  );
+  assert.match(
+    markdown,
     /Workflow dispatch validation: `pnpm smoke:dispatch -- --require-complete/,
   );
   assert.match(
@@ -118,7 +122,7 @@ test("project status docs mention missing smoke evidence handoff", async () => {
   assert.match(releaseChecklist, /release-check\.md.*project-status\.md/s);
   assert.match(
     releaseChecklist,
-    /required\s+workflow, manual\s+dispatch path, `pnpm smoke:dispatch` validation, `gh` dispatch template, and artifact names/s,
+    /required\s+workflow, manual\s+dispatch path, `pnpm smoke:request` request, `pnpm smoke:dispatch`\s+validation, `gh` dispatch template, and artifact names/s,
   );
 });
 

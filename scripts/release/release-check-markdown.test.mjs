@@ -123,6 +123,10 @@ test("release check Markdown lists blockers and visual tasks", () => {
   );
   assert.match(
     markdown,
+    /Production smoke request: `pnpm smoke:request`/,
+  );
+  assert.match(
+    markdown,
     new RegExp(
       `Workflow dispatch validation: \`${escapeRegExp(validationCommand)}`,
       "u",

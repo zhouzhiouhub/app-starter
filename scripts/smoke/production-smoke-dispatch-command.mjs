@@ -1,6 +1,7 @@
 const defaultWorkflowFile = "production-smoke.yml";
 const defaultRef = "main";
 const defaultDispatchCliCommand = "pnpm smoke:dispatch";
+const defaultSmokeRequestCommand = "pnpm smoke:request";
 const defaultManualDispatchInstruction =
   "GitHub Actions > Production Smoke > Run workflow, then use the listed workflow_dispatch inputs.";
 
@@ -74,6 +75,10 @@ export function createProductionSmokeDispatchValidationCommand(options = {}) {
     "--require-complete",
     ...inputs.flatMap(formatDispatchCliInput),
   ].join(" ");
+}
+
+export function createProductionSmokeRequestCommand() {
+  return defaultSmokeRequestCommand;
 }
 
 export function createProductionSmokeManualDispatchInstruction() {

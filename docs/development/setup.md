@@ -273,6 +273,7 @@ pnpm smoke:report -- --markdown-output artifacts/production-smoke/smoke-report.m
 pnpm smoke:report -- reports/production/smoke-report.json
 pnpm smoke:release-check -- artifacts/production-smoke/smoke-report.json
 pnpm smoke:dispatch
+pnpm smoke:request
 pnpm --silent visual:references:missing
 pnpm visual:references:request
 pnpm visual:references:check
@@ -363,9 +364,13 @@ steps for the command, evidence args, review args, input evidence, output
 record, `release-notes` artifact, and formal mode without `--allow-blocked`.
 When production smoke evidence is missing, the `release-check.md` and
 `project-status.md` handoffs add a `Missing Production Smoke Evidence` section
-with the workflow, manual GitHub Actions dispatch path, `pnpm smoke:dispatch`
-validation, `gh` dispatch template, Smoke JSON/Markdown paths, preflight artifact, release
-evidence artifact, and project status artifact to keep. The same section also
+with the workflow, manual GitHub Actions dispatch path, `pnpm smoke:request`
+request, `pnpm smoke:dispatch` validation, `gh` dispatch template,
+Smoke JSON/Markdown paths, preflight artifact, release evidence artifact, and
+project status artifact to keep. Run `pnpm smoke:request` to write
+`artifacts/production-smoke/production-smoke-request.md` as an operator-facing
+Markdown request before the real production run; it does not execute smoke or
+create release evidence. The same section also
 includes `Production
 Smoke Workflow Inputs`, listing the `workflow_dispatch` input names, default
 values, and purpose for the manual production run, plus a `gh workflow run
@@ -413,8 +418,8 @@ When available, the visual artifact line also includes reference-import status,
 missing/update counts, required source reference availability, and the first missing
 reference path. It then prints the first two next actions with structured steps
 when available, including the Production Smoke manual dispatch path,
-`pnpm smoke:dispatch` validation, and `gh` dispatch template when smoke evidence
-is missing, previews the first hidden
+`pnpm smoke:request` request, `pnpm smoke:dispatch` validation, and `gh`
+dispatch template when smoke evidence is missing, previews the first hidden
 structured action only when the visible actions do not have steps, and points remaining actions to
 `artifacts/release/project-status.md`, whose
 release gate section lists any missing production Smoke evidence and Page

@@ -8,6 +8,7 @@ import {
   createProductionSmokeDispatchCommand,
   createProductionSmokeDispatchValidationCommand,
   createProductionSmokeManualDispatchInstruction,
+  createProductionSmokeRequestCommand,
 } from "../smoke/production-smoke-dispatch-command.mjs";
 import { createBlockedCheck } from "./project-status-test-fixtures.mjs";
 
@@ -25,14 +26,14 @@ test("project status artifact carries structured missing smoke evidence", () => 
   );
   assert.equal(
     artifact.releaseGate.smoke.missingEvidence.requiredEvidenceCount,
-    11,
+    12,
   );
   assert.equal(
     artifact.releaseGate.smoke.missingEvidence.workflowInputCount,
     14,
   );
   assert.deepEqual(
-    artifact.releaseGate.smoke.missingEvidence.requiredEvidence.slice(0, 4),
+    artifact.releaseGate.smoke.missingEvidence.requiredEvidence.slice(0, 5),
     [
       {
         label: "Workflow",
@@ -41,6 +42,10 @@ test("project status artifact carries structured missing smoke evidence", () => 
       {
         label: "Workflow manual dispatch",
         value: createProductionSmokeManualDispatchInstruction(),
+      },
+      {
+        label: "Production smoke request",
+        value: createProductionSmokeRequestCommand(),
       },
       {
         label: "Workflow dispatch validation",

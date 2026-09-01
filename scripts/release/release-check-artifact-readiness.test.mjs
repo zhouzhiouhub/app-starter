@@ -69,6 +69,7 @@ test("release check artifact includes blocked checklist actions", () => {
     smokeItem.steps.map((step) => step.label),
     [
       "Manual dispatch",
+      "Smoke request",
       "Validate dispatch",
       "Dispatch template",
       "Local verification inputs",
@@ -80,10 +81,14 @@ test("release check artifact includes blocked checklist actions", () => {
   );
   assert.equal(
     smokeItem.steps[1].value,
-    createProductionSmokeDispatchValidationCommand(),
+    "pnpm smoke:request",
   );
   assert.equal(
     smokeItem.steps[2].value,
+    createProductionSmokeDispatchValidationCommand(),
+  );
+  assert.equal(
+    smokeItem.steps[3].value,
     createProductionSmokeDispatchCommand(),
   );
   assert.equal(visualItem?.status, "needs-evidence");

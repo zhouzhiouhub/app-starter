@@ -24,6 +24,7 @@ test("project next actions preserve visual artifact dir on release gate reruns",
     [
       "Run workflow",
       "Manual dispatch",
+      "Smoke request",
       "Validate dispatch",
       "Dispatch template",
       "Local verification inputs",
@@ -34,35 +35,36 @@ test("project next actions preserve visual artifact dir on release gate reruns",
     ],
   );
   assert.match(
-    productionSmoke.steps[2].value,
+    productionSmoke.steps[3].value,
     /^pnpm smoke:dispatch -- --require-complete /,
   );
   assert.match(
-    productionSmoke.steps[2].value,
+    productionSmoke.steps[3].value,
     /--local-verification-artifact "local-verification-<run_number>"/,
   );
   assert.match(
-    productionSmoke.steps[3].value,
+    productionSmoke.steps[4].value,
     /^gh workflow run production-smoke\.yml --ref main /,
   );
   assert.equal(
     productionSmoke.steps[1].value,
     "GitHub Actions > Production Smoke > Run workflow, then use the listed workflow_dispatch inputs.",
   );
+  assert.equal(productionSmoke.steps[2].value, "pnpm smoke:request");
   assert.match(
-    productionSmoke.steps[3].value,
+    productionSmoke.steps[4].value,
     /-f visual_artifact_run_id="<Page Builder Visual workflow run id>"/,
   );
   assert.equal(
-    productionSmoke.steps[4].value,
+    productionSmoke.steps[5].value,
     "local_verification_run_url=<main CI run URL>, local_verification_artifact_name=local-verification-<run_number>",
   );
   assert.equal(
-    productionSmoke.steps[5].value,
+    productionSmoke.steps[6].value,
     "visual_artifact_name=page-builder-visual-fixture-<run_number>, visual_artifact_run_id=<Page Builder Visual workflow run id>",
   );
   assert.equal(
-    productionSmoke.steps[6].value,
+    productionSmoke.steps[7].value,
     "release_tag=<tag>, rollback_target=<target>, storefront_url=<public HTTPS storefront URL>",
   );
 });

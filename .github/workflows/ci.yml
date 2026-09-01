@@ -82,6 +82,7 @@ jobs:
           retention-days: 14
       - run: pnpm smoke:report -- --help
       - run: pnpm smoke:release-check -- --help
+      - run: pnpm smoke:request -- --help
       - run: pnpm project:status -- --help
       - run: pnpm project:status -- --all-actions --json
       - run: pnpm release:check -- --help

@@ -3,6 +3,7 @@ import {
   createProductionSmokeDispatchCommand,
   createProductionSmokeDispatchValidationCommand,
   createProductionSmokeManualDispatchInstruction,
+  createProductionSmokeRequestCommand,
 } from "./production-smoke-dispatch-command.mjs";
 
 const maxMarkdownTextLength = 420;
@@ -11,6 +12,7 @@ const productionSmokeDispatchValidationCommand =
   createProductionSmokeDispatchValidationCommand();
 const productionSmokeManualDispatch =
   createProductionSmokeManualDispatchInstruction();
+const productionSmokeRequestCommand = createProductionSmokeRequestCommand();
 
 export const requiredProductionSmokeEvidence = [
   {
@@ -20,6 +22,10 @@ export const requiredProductionSmokeEvidence = [
   {
     label: "Workflow manual dispatch",
     value: productionSmokeManualDispatch,
+  },
+  {
+    label: "Production smoke request",
+    value: productionSmokeRequestCommand,
   },
   {
     label: "Workflow dispatch validation",

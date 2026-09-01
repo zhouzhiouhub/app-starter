@@ -137,30 +137,35 @@ later phases are explicitly approved.
 
 1. Open the `Production Smoke` workflow in GitHub Actions.
 2. Run it against the `production` environment.
-3. Run `pnpm smoke:dispatch -- --require-complete ...` with the main CI local
+3. Run `pnpm smoke:request` to write
+   `artifacts/production-smoke/production-smoke-request.md` with the manual
+   dispatch path, required input placeholders, dispatch validation command, `gh`
+   template, and artifact retention checklist. This request does not run smoke
+   or satisfy release evidence by itself.
+4. Run `pnpm smoke:dispatch -- --require-complete ...` with the main CI local
    verification input, the accepted Page Builder Visual artifact input,
    release tag, rollback target, and production storefront URL; copy the printed
    command only after it reports `Ready to dispatch: yes`.
-4. The project status next actions include a `gh workflow run
+5. The project status next actions include a `gh workflow run
    production-smoke.yml --ref main ...` dispatch template with the release
    evidence inputs to replace for the run.
-5. Keep the default `SMOKE_REPORT_PATH`:
+6. Keep the default `SMOKE_REPORT_PATH`:
    `artifacts/production-smoke/smoke-report.json`.
-6. Keep `require_admin_app`, `require_r2_upload`, and `require_revalidation`
+7. Keep `require_admin_app`, `require_r2_upload`, and `require_revalidation`
    enabled for production release evidence.
-7. Set `storefront_host` only when the public storefront host differs from
+8. Set `storefront_host` only when the public storefront host differs from
    `WEB_URL`.
-8. If the accepted visual manifest references screenshots from the Page Builder
+9. If the accepted visual manifest references screenshots from the Page Builder
    Visual workflow artifact, set both `visual_artifact_name` and
    `visual_artifact_run_id` so Production Smoke downloads the evidence before
    running `release:check` with
    `--visual-artifact-dir reports/visual/page-builder-fixture`.
-9. To generate release notes in the same run, set `release_tag`,
+10. To generate release notes in the same run, set `release_tag`,
    `rollback_target`, `local_verification_run_url`,
    `local_verification_artifact_name`, `visual_artifact_name`,
    `visual_artifact_run_id`, and optionally `storefront_url` plus
    `release_notes_path`.
-10. Keep `allow_blocked_release_notes` disabled for release sign-off. Enable it
+11. Keep `allow_blocked_release_notes` disabled for release sign-off. Enable it
    only when the run is expected to fail and you need a `--allow-blocked`
    failure review draft attached to the artifacts.
 
@@ -308,13 +313,15 @@ later phases are explicitly approved.
   prints the first two next actions with
   structured steps when available, including the Production Smoke manual
   dispatch path, `pnpm smoke:dispatch` validation, and `gh` dispatch template
-  when smoke evidence is missing,
+  when smoke evidence is missing; the same steps also include the
+  `pnpm smoke:request` request,
   previews the first hidden structured action
   only when the visible actions do not have steps, and points any remaining work
   to `project-status.md`. When production smoke evidence is missing, both
   `release-check.md` and `project-status.md` include a
   `Missing Production Smoke Evidence` section with required workflow, manual
-  dispatch path, `pnpm smoke:dispatch` validation, `gh` dispatch template, and artifact names;
+  dispatch path, `pnpm smoke:request` request, `pnpm smoke:dispatch`
+  validation, `gh` dispatch template, and artifact names;
   the blocked JSON artifacts mirror the same
   `requiredEvidence[]` and `workflowInputs[]` handoff under
   `smoke.missingEvidence` and `releaseGate.smoke.missingEvidence`. When Page
