@@ -5,10 +5,15 @@ import {
 import { defaultPageBuilderVisualArtifactDir } from "./page-builder-visual-artifact-check-config.mjs";
 import { createArtifactPaths } from "./page-builder-visual-artifact-check-paths.mjs";
 import { pageBuilderVisualCaptureDefaultOutputDir } from "./page-builder-visual-capture-constants.mjs";
+import {
+  defaultPageBuilderVisualMissingReferencesOutputPath,
+} from "./page-builder-visual-reference-missing-output.mjs";
 
 const defaultReferenceCheckCommand = "pnpm visual:references:check";
 const defaultMissingPathsCommand = "pnpm --silent visual:references:missing";
 const defaultReferenceRequestCommand = "pnpm visual:references:request";
+const defaultPageBuilderVisualReferenceRequestOutputPath =
+  "artifacts/visual/page-builder-reference-request.md";
 
 export function createPageBuilderVisualReferenceCaptureCommand(report) {
   const captureOutputDir = inferVisualArtifactDir(report.manifestPath);
@@ -67,7 +72,7 @@ export function createPageBuilderVisualReferenceMissingPathsCommand(report) {
 }
 
 export function createPageBuilderVisualReferenceRequestCommand(report) {
-  if (isDefaultReferenceCheckContext(report)) {
+  if (isDefaultReferenceRequestContext(report)) {
     return defaultReferenceRequestCommand;
   }
 
@@ -78,11 +83,9 @@ export function createPageBuilderVisualReferenceRequestCommand(report) {
     "visual:references:request",
     "--",
     ...createSourceDirOption(report),
-    ...createManifestOption(report),
-    "--output",
-    `${outputDir}/page-builder-reference-request.md`,
-    "--missing-output",
-    `${outputDir}/page-builder-missing-references.txt`,
+    ...createReferenceRequestManifestOption(report),
+    ...createReferenceRequestOutputOption(report, outputDir),
+    ...createReferenceRequestMissingOutputOption(report, outputDir),
   ]);
 }
 
@@ -189,6 +192,20 @@ function isDefaultReferenceCheckContext(report) {
   );
 }
 
+function isDefaultReferenceRequestContext(report) {
+  return (
+    isDefaultReferenceCheckContext(report) &&
+    readReferenceRequestOutputPath(
+      report,
+      pageBuilderVisualCaptureDefaultOutputDir,
+    ) === defaultPageBuilderVisualReferenceRequestOutputPath &&
+    readReferenceRequestMissingOutputPath(
+      report,
+      pageBuilderVisualCaptureDefaultOutputDir,
+    ) === defaultPageBuilderVisualMissingReferencesOutputPath
+  );
+}
+
 function readManifestPath(report) {
   return typeof report.manifestPath === "string" &&
     report.manifestPath.length > 0
@@ -202,6 +219,20 @@ function readSourceDir(report) {
     : defaultPageBuilderVisualReferenceSourceDir;
 }
 
+function readReferenceRequestOutputPath(report, outputDir) {
+  return typeof report.requestOutputPath === "string" &&
+    report.requestOutputPath.length > 0
+    ? report.requestOutputPath
+    : readDefaultReferenceRequestOutputPath(report, outputDir);
+}
+
+function readReferenceRequestMissingOutputPath(report, outputDir) {
+  return typeof report.missingOutputPath === "string" &&
+    report.missingOutputPath.length > 0
+    ? report.missingOutputPath
+    : readDefaultReferenceRequestMissingOutputPath(report, outputDir);
+}
+
 function createSourceDirOption(report) {
   const sourceDir = readSourceDir(report);
 
@@ -210,4 +241,31 @@ function createSourceDirOption(report) {
   }
 
   return ["--source-dir", sourceDir];
+}
+
+function createReferenceRequestManifestOption(report) {
+  return isDefaultReferenceCheckContext(report) ? [] : createManifestOption(report);
+}
+
+function createReferenceRequestOutputOption(report, outputDir) {
+  return ["--output", readReferenceRequestOutputPath(report, outputDir)];
+}
+
+function createReferenceRequestMissingOutputOption(report, outputDir) {
+  return [
+    "--missing-output",
+    readReferenceRequestMissingOutputPath(report, outputDir),
+  ];
+}
+
+function readDefaultReferenceRequestOutputPath(report, outputDir) {
+  return isDefaultReferenceCheckContext(report)
+    ? defaultPageBuilderVisualReferenceRequestOutputPath
+    : `${outputDir}/page-builder-reference-request.md`;
+}
+
+function readDefaultReferenceRequestMissingOutputPath(report, outputDir) {
+  return isDefaultReferenceCheckContext(report)
+    ? defaultPageBuilderVisualMissingReferencesOutputPath
+    : `${outputDir}/page-builder-missing-references.txt`;
 }

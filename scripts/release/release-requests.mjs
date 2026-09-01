@@ -120,6 +120,7 @@ export function readReleaseRequestsCliConfig(args = []) {
 
     if (option === "--visual-output") {
       const outputPath = readOptionValue(option, normalizedArgs, index, value);
+      setValueOption(config.releaseEvidenceArgs, "--visual-output", outputPath);
       setValueOption(config.visualReferenceArgs, "--output", outputPath);
       config.outputPaths.visualReference = outputPath;
       index += value === null ? 1 : 0;
@@ -128,6 +129,11 @@ export function readReleaseRequestsCliConfig(args = []) {
 
     if (option === "--visual-missing-output" || option === "--missing-output") {
       const outputPath = readOptionValue(option, normalizedArgs, index, value);
+      setValueOption(
+        config.releaseEvidenceArgs,
+        "--visual-missing-output",
+        outputPath,
+      );
       setValueOption(
         config.visualReferenceArgs,
         "--missing-output",
@@ -140,6 +146,7 @@ export function readReleaseRequestsCliConfig(args = []) {
 
     if (option === "--smoke-output") {
       const outputPath = readOptionValue(option, normalizedArgs, index, value);
+      setValueOption(config.releaseEvidenceArgs, "--smoke-output", outputPath);
       setValueOption(config.productionSmokeArgs, "--output", outputPath);
       config.outputPaths.productionSmoke = outputPath;
       index += value === null ? 1 : 0;

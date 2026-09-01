@@ -2,6 +2,10 @@ const defaultWorkflowFile = "production-smoke.yml";
 const defaultRef = "main";
 const defaultDispatchCliCommand = "pnpm smoke:dispatch";
 const defaultSmokeRequestCommand = "pnpm smoke:request";
+const defaultSmokeRequestOutputPath =
+  "artifacts/production-smoke/production-smoke-request.md";
+const defaultSmokeRequestInputsOutputPath =
+  "artifacts/production-smoke/production-smoke-dispatch-inputs.txt";
 const defaultManualDispatchInstruction =
   "GitHub Actions > Production Smoke > Run workflow, then use the listed workflow_dispatch inputs.";
 
@@ -77,8 +81,27 @@ export function createProductionSmokeDispatchValidationCommand(options = {}) {
   ].join(" ");
 }
 
-export function createProductionSmokeRequestCommand() {
-  return defaultSmokeRequestCommand;
+export function createProductionSmokeRequestCommand(options = {}) {
+  const outputPath =
+    readText(options.outputPath) ?? defaultSmokeRequestOutputPath;
+  const inputsOutputPath =
+    readText(options.inputsOutputPath) ?? defaultSmokeRequestInputsOutputPath;
+
+  if (
+    outputPath === defaultSmokeRequestOutputPath &&
+    inputsOutputPath === defaultSmokeRequestInputsOutputPath
+  ) {
+    return defaultSmokeRequestCommand;
+  }
+
+  return [
+    defaultSmokeRequestCommand,
+    "--",
+    "--output",
+    outputPath,
+    "--inputs-output",
+    inputsOutputPath,
+  ].join(" ");
 }
 
 export function createProductionSmokeManualDispatchInstruction() {

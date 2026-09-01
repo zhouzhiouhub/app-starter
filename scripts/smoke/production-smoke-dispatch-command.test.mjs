@@ -63,6 +63,13 @@ test("production smoke manual dispatch instruction names the workflow UI", () =>
 
 test("production smoke request command names the handoff CLI", () => {
   assert.equal(createProductionSmokeRequestCommand(), "pnpm smoke:request");
+  assert.equal(
+    createProductionSmokeRequestCommand({
+      inputsOutputPath: "tmp/smoke-inputs.txt",
+      outputPath: "tmp/smoke.md",
+    }),
+    "pnpm smoke:request -- --output tmp/smoke.md --inputs-output tmp/smoke-inputs.txt",
+  );
 });
 
 test("production smoke dispatch command accepts scoped overrides", () => {

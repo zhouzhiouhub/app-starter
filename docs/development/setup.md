@@ -324,11 +324,12 @@ request. It embeds the current release gate snapshot, the Page Builder design
 reference request, the Production Smoke request, the dispatch input template
 path, `First missing visual reference`, `Missing Production Smoke inputs`, and the final
 `release:handoff -- --require-ready` gate to rerun after real evidence is
-retained. Pass `--smoke-inputs-output <path>` when the workflow_dispatch input
-template is written somewhere other than the default path, so the combined
-handoff and the generated Smoke request point at the same file. It does not
-import references, run smoke, create release notes, or mark blocked evidence
-ready.
+retained. Pass `--visual-output <path>`, `--visual-missing-output <path>`,
+`--smoke-output <path>`, and `--smoke-inputs-output <path>` when the request
+bundle is written somewhere other than the default paths, so the refresh
+command, output summary, and embedded request paths all point at the same files.
+It does not import references, run smoke, create release notes, or mark blocked
+evidence ready.
 
 `pnpm release:requests` refreshes the local request files and missing-path list in one
 run: `artifacts/release/release-evidence-request.md`,

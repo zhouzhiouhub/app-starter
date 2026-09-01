@@ -54,6 +54,17 @@ test("visual reference commands keep artifact manifest context", () => {
   );
 });
 
+test("visual reference request command keeps custom request output paths", () => {
+  assert.equal(
+    createPageBuilderVisualReferenceRequestCommand({
+      ...artifactReport,
+      missingOutputPath: "tmp/missing.txt",
+      requestOutputPath: "tmp/visual.md",
+    }),
+    "pnpm visual:references:request -- --output tmp/visual.md --missing-output tmp/missing.txt",
+  );
+});
+
 test("visual reference Markdown keeps artifact follow-up commands", () => {
   const markdown = createPageBuilderVisualReferenceImportMarkdown({
     ...artifactReport,

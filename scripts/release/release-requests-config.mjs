@@ -22,16 +22,50 @@ export const defaultReleaseRequestsOutputPaths = {
 
 const releaseRequestsCommand = "pnpm release:requests";
 
-export function createReleaseRequestsCommand() {
-  return releaseRequestsCommand;
+export function createReleaseRequestsCommand(outputPaths = {}) {
+  const paths = createReleaseRequestsOutputPaths(outputPaths);
+
+  if (isDefaultReleaseRequestsOutputPaths(paths)) {
+    return releaseRequestsCommand;
+  }
+
+  return [
+    releaseRequestsCommand,
+    "--",
+    "--release-output",
+    paths.releaseEvidence,
+    "--visual-output",
+    paths.visualReference,
+    "--visual-missing-output",
+    paths.visualMissingReferences,
+    "--smoke-output",
+    paths.productionSmoke,
+    "--smoke-inputs-output",
+    paths.productionSmokeInputs,
+  ].join(" ");
 }
 
-export function createReleaseRequestsOutputSummary() {
+export function createReleaseRequestsOutputSummary(outputPaths = {}) {
+  const paths = createReleaseRequestsOutputPaths(outputPaths);
+
   return [
-    defaultReleaseRequestsOutputPaths.releaseEvidence,
-    defaultReleaseRequestsOutputPaths.visualReference,
-    defaultReleaseRequestsOutputPaths.visualMissingReferences,
-    defaultReleaseRequestsOutputPaths.productionSmoke,
-    defaultReleaseRequestsOutputPaths.productionSmokeInputs,
+    paths.releaseEvidence,
+    paths.visualReference,
+    paths.visualMissingReferences,
+    paths.productionSmoke,
+    paths.productionSmokeInputs,
   ].join(", ");
+}
+
+function createReleaseRequestsOutputPaths(outputPaths) {
+  return {
+    ...defaultReleaseRequestsOutputPaths,
+    ...outputPaths,
+  };
+}
+
+function isDefaultReleaseRequestsOutputPaths(paths) {
+  return Object.entries(defaultReleaseRequestsOutputPaths).every(
+    ([key, value]) => paths[key] === value,
+  );
 }

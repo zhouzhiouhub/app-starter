@@ -80,18 +80,24 @@ export async function createReleaseEvidenceRequest(config, input = {}, generated
       manifest: input.visualReferenceManifest ?? input.visualManifest,
     },
   );
+  const visualReferenceArtifact = createPageBuilderVisualReferenceImportArtifact(
+    visualReferenceReport,
+    { generatedAt },
+  );
 
   return {
     generatedAt,
     projectArtifact,
+    requestOutputPaths: config.requestOutputPaths,
     smokeInputsOutputPath: config.smokeInputsOutputPath,
     smokeDispatchArtifact: createProductionSmokeDispatchArtifact(
       config.smokeDispatchConfig,
     ),
-    visualReferenceArtifact: createPageBuilderVisualReferenceImportArtifact(
-      visualReferenceReport,
-      { generatedAt },
-    ),
+    visualReferenceArtifact: {
+      ...visualReferenceArtifact,
+      missingOutputPath: config.requestOutputPaths.visualMissingReferences,
+      requestOutputPath: config.requestOutputPaths.visualReference,
+    },
   };
 }
 
@@ -99,12 +105,19 @@ function printHelp(writeLine) {
   writeLine(`Usage:
   pnpm release:evidence-request
   pnpm release:evidence-request -- --output artifacts/release/release-evidence-request.md
+  pnpm release:evidence-request -- --visual-output artifacts/visual/page-builder-reference-request.md --visual-missing-output artifacts/visual/page-builder-missing-references.txt
+  pnpm release:evidence-request -- --smoke-output artifacts/production-smoke/production-smoke-request.md
   pnpm release:evidence-request -- --smoke-inputs-output artifacts/production-smoke/production-smoke-dispatch-inputs.txt
   pnpm release:evidence-request -- --visual-artifact page-builder-visual-fixture-123 --visual-artifact-run-id 456
   pnpm release:evidence-request -- --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture
 
 Options:
   --output <path>              Write the combined release evidence request Markdown.
+  --visual-output <path>       Show the Page Builder design request output path.
+  --visual-missing-output <path>
+                               Show the missing Page Builder reference path list output.
+  --missing-output <path>      Alias for --visual-missing-output.
+  --smoke-output <path>        Show the Production Smoke request output path.
   --smoke-inputs-output <path> Show the Production Smoke workflow_dispatch input template path.
   --inputs-output <path>       Alias for --smoke-inputs-output.
   --smoke-report <path>        Read a specific production smoke report for the status snapshot.

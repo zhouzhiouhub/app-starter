@@ -10,7 +10,7 @@ import {
 import { createPendingVisualManifest } from "./release-check-test-fixtures.mjs";
 
 test("release requests CLI writes every local request Markdown", async () => {
-  const root = `tmp/release-requests-cli-${process.pid}-${Date.now()}`;
+  const root = `tmp/rr-cli-${process.pid}`;
   const manifestPath = `${root}/page-builder-visual-acceptance.json`;
   const releaseOutput = `${root}/release-evidence-request.md`;
   const visualOutput = `${root}/page-builder-reference-request.md`;
@@ -78,6 +78,72 @@ test("release requests CLI writes every local request Markdown", async () => {
       new RegExp(`Production Smoke inputs: ${escapeRegExp(smokeInputsOutput)}`),
     );
     assert.match(releaseMarkdown, /^# MVP Release Evidence Request/m);
+    assert.match(
+      releaseMarkdown,
+      new RegExp(
+        `Refresh all requests: \`pnpm release:requests -- --release-output ${escapeRegExp(
+          releaseOutput,
+        )} --visual-output ${escapeRegExp(
+          visualOutput,
+        )} --visual-missing-output ${escapeRegExp(
+          visualMissingOutput,
+        )} --smoke-output ${escapeRegExp(
+          smokeOutput,
+        )} --smoke-inputs-output ${escapeRegExp(smokeInputsOutput)}\``,
+      ),
+    );
+    assert.match(
+      releaseMarkdown,
+      new RegExp(
+        `Request outputs: \`${escapeRegExp(
+          [
+            releaseOutput,
+            visualOutput,
+            visualMissingOutput,
+            smokeOutput,
+            smokeInputsOutput,
+          ].join(", "),
+        )}\``,
+      ),
+    );
+    assert.match(
+      releaseMarkdown,
+      new RegExp(
+        `Release evidence request: \`pnpm release:evidence-request -- --output ${escapeRegExp(
+          releaseOutput,
+        )} --visual-output ${escapeRegExp(
+          visualOutput,
+        )} --visual-missing-output ${escapeRegExp(
+          visualMissingOutput,
+        )} --smoke-output ${escapeRegExp(
+          smokeOutput,
+        )} --smoke-inputs-output ${escapeRegExp(smokeInputsOutput)}\``,
+      ),
+    );
+    assert.match(
+      releaseMarkdown,
+      new RegExp(
+        `Page Builder design request: \`pnpm visual:references:request -- --manifest ${escapeRegExp(
+          manifestPath,
+        )} --output ${escapeRegExp(
+          visualOutput,
+        )} --missing-output ${escapeRegExp(visualMissingOutput)}\``,
+      ),
+    );
+    assert.match(
+      releaseMarkdown,
+      new RegExp(
+        `Production Smoke request: \`pnpm smoke:request -- --output ${escapeRegExp(
+          smokeOutput,
+        )} --inputs-output ${escapeRegExp(smokeInputsOutput)}\``,
+      ),
+    );
+    assert.match(
+      releaseMarkdown,
+      new RegExp(
+        `Missing path output: \`${escapeRegExp(visualMissingOutput)}\``,
+      ),
+    );
     assert.match(
       releaseMarkdown,
       new RegExp(
@@ -172,6 +238,18 @@ test("release requests config routes shared evidence inputs", () => {
     "tmp/smoke-inputs.txt",
   );
   assert.equal(
+    readOptionValue(config.releaseEvidenceArgs, "--visual-output"),
+    "tmp/visual.md",
+  );
+  assert.equal(
+    readOptionValue(config.releaseEvidenceArgs, "--visual-missing-output"),
+    "tmp/missing.txt",
+  );
+  assert.equal(
+    readOptionValue(config.releaseEvidenceArgs, "--smoke-output"),
+    "tmp/smoke.md",
+  );
+  assert.equal(
     readOptionValue(config.releaseEvidenceArgs, "--smoke-inputs-output"),
     "tmp/smoke-inputs.txt",
   );
@@ -211,10 +289,31 @@ test("release requests help and summary expose the bundle command", async () => 
   assert.equal(exitCode, 0);
   assert.equal(createReleaseRequestsCommand(), "pnpm release:requests");
   assert.equal(
+    createReleaseRequestsCommand({
+      productionSmoke: "tmp/smoke.md",
+      productionSmokeInputs: "tmp/smoke-inputs.txt",
+      releaseEvidence: "tmp/release.md",
+      visualMissingReferences: "tmp/missing.txt",
+      visualReference: "tmp/visual.md",
+    }),
+    "pnpm release:requests -- --release-output tmp/release.md --visual-output tmp/visual.md --visual-missing-output tmp/missing.txt --smoke-output tmp/smoke.md --smoke-inputs-output tmp/smoke-inputs.txt",
+  );
+  assert.equal(
     createReleaseRequestsOutputSummary(),
     "artifacts/release/release-evidence-request.md, artifacts/visual/page-builder-reference-request.md, artifacts/visual/page-builder-missing-references.txt, artifacts/production-smoke/production-smoke-request.md, artifacts/production-smoke/production-smoke-dispatch-inputs.txt",
   );
+  assert.equal(
+    createReleaseRequestsOutputSummary({
+      productionSmoke: "tmp/smoke.md",
+      productionSmokeInputs: "tmp/smoke-inputs.txt",
+      releaseEvidence: "tmp/release.md",
+      visualMissingReferences: "tmp/missing.txt",
+      visualReference: "tmp/visual.md",
+    }),
+    "tmp/release.md, tmp/visual.md, tmp/missing.txt, tmp/smoke.md, tmp/smoke-inputs.txt",
+  );
   assert.match(help, /refreshes all local evidence request files/);
+  assert.match(help, /Custom output paths are also reflected/);
   assert.match(help, /--visual-missing-output <path>/);
   assert.match(help, /--smoke-inputs-output <path>/);
   assert.match(help, /does not import\s+visual references, run\s+Production Smoke/);

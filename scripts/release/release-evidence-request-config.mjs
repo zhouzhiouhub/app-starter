@@ -3,22 +3,52 @@ import {
   defaultProductionSmokeDispatchInputsOutputPath,
   normalizeProductionSmokeDispatchInputsOutputPath,
 } from "../smoke/production-smoke-dispatch-inputs-output.mjs";
+import {
+  defaultProductionSmokeRequestOutputPath,
+  normalizeProductionSmokeRequestOutputPath,
+} from "../smoke/production-smoke-request.mjs";
 import { defaultPageBuilderVisualReferenceSourceDir } from "../visual/page-builder-visual-acceptance-constants.mjs";
 import { defaultPageBuilderVisualArtifactDir } from "../visual/page-builder-visual-artifact-check-config.mjs";
 import { createArtifactPaths } from "../visual/page-builder-visual-artifact-check-paths.mjs";
-import { normalizeVisualReferenceSourceDir } from "../visual/page-builder-visual-reference-import-config.mjs";
+import {
+  normalizeVisualReferenceImportMarkdownOutputPath,
+  normalizeVisualReferenceSourceDir,
+} from "../visual/page-builder-visual-reference-import-config.mjs";
+import {
+  defaultPageBuilderVisualMissingReferencesOutputPath,
+  defaultPageBuilderVisualReferenceRequestOutputPath,
+  normalizeVisualReferenceMissingOutputPath,
+} from "../visual/page-builder-visual-reference-request.mjs";
 import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
 import { readReleaseCheckCliConfig } from "./release-check-config.mjs";
 import { normalizeReleaseCheckMarkdownPath } from "./release-notes-validation.mjs";
 
-export const defaultReleaseEvidenceRequestOutputPath =
-  "artifacts/release/release-evidence-request.md";
+export const defaultReleaseEvidenceRequestOutputPath = "artifacts/release/release-evidence-request.md";
 export const defaultReleaseEvidenceRequestVisualManifestPath =
   createArtifactPaths(defaultPageBuilderVisualArtifactDir).manifest;
 const defaultReleaseEvidenceRequestCommand = "pnpm release:evidence-request";
 
-export function createReleaseEvidenceRequestCommand() {
-  return defaultReleaseEvidenceRequestCommand;
+export function createReleaseEvidenceRequestCommand(outputPaths = {}) {
+  const paths = createReleaseEvidenceRequestOutputPaths(outputPaths);
+
+  if (isDefaultReleaseEvidenceRequestOutputPaths(paths)) {
+    return defaultReleaseEvidenceRequestCommand;
+  }
+
+  return [
+    defaultReleaseEvidenceRequestCommand,
+    "--",
+    "--output",
+    paths.releaseEvidence,
+    "--visual-output",
+    paths.visualReference,
+    "--visual-missing-output",
+    paths.visualMissingReferences,
+    "--smoke-output",
+    paths.productionSmoke,
+    "--smoke-inputs-output",
+    paths.productionSmokeInputs,
+  ].join(" ");
 }
 
 const releaseCheckFlags = new Set(["--latest"]);
@@ -45,6 +75,13 @@ export function readReleaseEvidenceRequestCliConfig(args = []) {
   const input = {
     outputPath: defaultReleaseEvidenceRequestOutputPath,
     releaseCheckArgs: [],
+    requestOutputPaths: {
+      productionSmoke: defaultProductionSmokeRequestOutputPath,
+      productionSmokeInputs: defaultProductionSmokeDispatchInputsOutputPath,
+      releaseEvidence: defaultReleaseEvidenceRequestOutputPath,
+      visualMissingReferences: defaultPageBuilderVisualMissingReferencesOutputPath,
+      visualReference: defaultPageBuilderVisualReferenceRequestOutputPath,
+    },
     smokeDispatchArgs: [],
     smokeInputsOutputPath: defaultProductionSmokeDispatchInputsOutputPath,
     visualManifestPath: defaultReleaseEvidenceRequestVisualManifestPath,
@@ -57,6 +94,40 @@ export function readReleaseEvidenceRequestCliConfig(args = []) {
 
     if (option === "--output") {
       input.outputPath = readOptionValue(option, normalizedArgs, index, value);
+      input.requestOutputPaths.releaseEvidence = input.outputPath;
+      index += value === null ? 1 : 0;
+      continue;
+    }
+
+    if (option === "--visual-output") {
+      input.requestOutputPaths.visualReference = readOptionValue(
+        option,
+        normalizedArgs,
+        index,
+        value,
+      );
+      index += value === null ? 1 : 0;
+      continue;
+    }
+
+    if (option === "--visual-missing-output" || option === "--missing-output") {
+      input.requestOutputPaths.visualMissingReferences = readOptionValue(
+        option,
+        normalizedArgs,
+        index,
+        value,
+      );
+      index += value === null ? 1 : 0;
+      continue;
+    }
+
+    if (option === "--smoke-output") {
+      input.requestOutputPaths.productionSmoke = readOptionValue(
+        option,
+        normalizedArgs,
+        index,
+        value,
+      );
       index += value === null ? 1 : 0;
       continue;
     }
@@ -68,6 +139,8 @@ export function readReleaseEvidenceRequestCliConfig(args = []) {
         index,
         value,
       );
+      input.requestOutputPaths.productionSmokeInputs =
+        input.smokeInputsOutputPath;
       index += value === null ? 1 : 0;
       continue;
     }
@@ -123,16 +196,29 @@ export function readReleaseEvidenceRequestCliConfig(args = []) {
   }
 
   const releaseCheckConfig = readReleaseCheckCliConfig(input.releaseCheckArgs);
+  const outputPath = normalizeReleaseEvidenceRequestOutputPath(input.outputPath);
+  const smokeInputsOutputPath = normalizeProductionSmokeDispatchInputsOutputPath(input.smokeInputsOutputPath);
 
   return {
-    outputPath: normalizeReleaseEvidenceRequestOutputPath(input.outputPath),
+    outputPath,
     releaseCheckConfig,
+    requestOutputPaths: {
+      productionSmoke: normalizeProductionSmokeRequestOutputPath(
+        input.requestOutputPaths.productionSmoke,
+      ),
+      productionSmokeInputs: smokeInputsOutputPath,
+      releaseEvidence: outputPath,
+      visualMissingReferences: normalizeVisualReferenceMissingOutputPath(
+        input.requestOutputPaths.visualMissingReferences,
+      ),
+      visualReference: normalizeVisualReferenceImportMarkdownOutputPath(
+        input.requestOutputPaths.visualReference,
+      ),
+    },
     smokeDispatchConfig: readProductionSmokeDispatchCliConfig(
       input.smokeDispatchArgs,
     ),
-    smokeInputsOutputPath: normalizeProductionSmokeDispatchInputsOutputPath(
-      input.smokeInputsOutputPath,
-    ),
+    smokeInputsOutputPath,
     visualManifestPath:
       releaseCheckConfig.visualArtifactDir
         ? releaseCheckConfig.visualManifestPath
@@ -152,6 +238,29 @@ export function normalizeReleaseEvidenceRequestOutputPath(value) {
       ),
     );
   }
+}
+
+function createReleaseEvidenceRequestOutputPaths(outputPaths) {
+  return {
+    productionSmoke: defaultProductionSmokeRequestOutputPath,
+    productionSmokeInputs: defaultProductionSmokeDispatchInputsOutputPath,
+    releaseEvidence: defaultReleaseEvidenceRequestOutputPath,
+    visualMissingReferences: defaultPageBuilderVisualMissingReferencesOutputPath,
+    visualReference: defaultPageBuilderVisualReferenceRequestOutputPath,
+    ...outputPaths,
+  };
+}
+
+function isDefaultReleaseEvidenceRequestOutputPaths(paths) {
+  return (
+    paths.productionSmoke === defaultProductionSmokeRequestOutputPath &&
+    paths.productionSmokeInputs ===
+      defaultProductionSmokeDispatchInputsOutputPath &&
+    paths.releaseEvidence === defaultReleaseEvidenceRequestOutputPath &&
+    paths.visualMissingReferences ===
+      defaultPageBuilderVisualMissingReferencesOutputPath &&
+    paths.visualReference === defaultPageBuilderVisualReferenceRequestOutputPath
+  );
 }
 
 function appendValueOption(target, option, optionValue, index, hasInlineValue) {

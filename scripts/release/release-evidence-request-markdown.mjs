@@ -29,8 +29,11 @@ export function createReleaseEvidenceRequestMarkdown(input) {
   const project = input.projectArtifact;
   const visual = input.visualReferenceArtifact;
   const smoke = input.smokeDispatchArtifact;
+  const requestOutputPaths = input.requestOutputPaths ?? {};
   const smokeInputsOutputPath =
-    input.smokeInputsOutputPath ?? defaultProductionSmokeDispatchInputsOutputPath;
+    input.smokeInputsOutputPath ??
+    requestOutputPaths.productionSmokeInputs ??
+    defaultProductionSmokeDispatchInputsOutputPath;
   const firstMissingVisualReference = Array.isArray(visual.missing)
     ? visual.missing[0]?.expectedPath
     : null;
@@ -46,13 +49,24 @@ export function createReleaseEvidenceRequestMarkdown(input) {
     "",
     "## Evidence Requests",
     "",
-    `- Refresh all requests: ${formatCode(createReleaseRequestsCommand())}`,
-    `- Request outputs: ${formatCode(createReleaseRequestsOutputSummary())}`,
-    `- Release evidence request: ${formatCode(createReleaseEvidenceRequestCommand())}`,
+    `- Refresh all requests: ${formatCode(
+      createReleaseRequestsCommand(requestOutputPaths),
+    )}`,
+    `- Request outputs: ${formatCode(
+      createReleaseRequestsOutputSummary(input.requestOutputPaths),
+    )}`,
+    `- Release evidence request: ${formatCode(
+      createReleaseEvidenceRequestCommand(requestOutputPaths),
+    )}`,
     `- Page Builder design request: ${formatCode(
       createPageBuilderVisualReferenceRequestCommand(visual),
     )}`,
-    `- Production Smoke request: ${formatCode(createProductionSmokeRequestCommand())}`,
+    `- Production Smoke request: ${formatCode(
+      createProductionSmokeRequestCommand({
+        inputsOutputPath: smokeInputsOutputPath,
+        outputPath: requestOutputPaths.productionSmoke,
+      }),
+    )}`,
     `- Production Smoke dispatch inputs output: ${formatCode(
       smokeInputsOutputPath,
     )}`,

@@ -7,11 +7,18 @@ import {
   readReleaseEvidenceRequestCliConfig,
   runReleaseEvidenceRequestCli,
 } from "./release-evidence-request.mjs";
-import { normalizeReleaseEvidenceRequestOutputPath } from "./release-evidence-request-config.mjs";
+import {
+  createReleaseEvidenceRequestCommand,
+  normalizeReleaseEvidenceRequestOutputPath,
+} from "./release-evidence-request-config.mjs";
 import { createPendingVisualManifest } from "./release-check-test-fixtures.mjs";
 
 test("release evidence request Markdown combines blocked evidence handoffs", async () => {
-  const root = `tmp/release-evidence-request-md-${process.pid}-${Date.now()}`;
+  const root = `tmp/re-md-${process.pid}`;
+  const releaseOutputPath = `${root}/release.md`;
+  const visualOutputPath = `${root}/visual.md`;
+  const visualMissingOutputPath = `${root}/missing.txt`;
+  const smokeOutputPath = `${root}/smoke.md`;
   const smokeInputsOutputPath = `${root}/smoke-inputs.txt`;
   const visualManifest = createPendingVisualManifest();
 
@@ -19,6 +26,14 @@ test("release evidence request Markdown combines blocked evidence handoffs", asy
     await mkdir(root, { recursive: true });
     const request = await createReleaseEvidenceRequest(
       readReleaseEvidenceRequestCliConfig([
+        "--output",
+        releaseOutputPath,
+        "--visual-output",
+        visualOutputPath,
+        "--visual-missing-output",
+        visualMissingOutputPath,
+        "--smoke-output",
+        smokeOutputPath,
         "--smoke-inputs-output",
         smokeInputsOutputPath,
       ]),
@@ -36,14 +51,64 @@ test("release evidence request Markdown combines blocked evidence handoffs", asy
     assert.equal(request.visualReferenceArtifact.missingCount, 12);
     assert.match(markdown, /^# MVP Release Evidence Request/m);
     assert.match(markdown, /Release ready: `no`/);
-    assert.match(markdown, /Refresh all requests: `pnpm release:requests`/);
     assert.match(
       markdown,
-      /Request outputs: `artifacts\/release\/release-evidence-request\.md, artifacts\/visual\/page-builder-reference-request\.md, artifacts\/visual\/page-builder-missing-references\.txt, artifacts\/production-smoke\/production-smoke-request\.md, artifacts\/production-smoke\/production-smoke-dispatch-inputs\.txt`/,
+      new RegExp(
+        `Refresh all requests: \`pnpm release:requests -- --release-output ${escapeRegExp(
+          releaseOutputPath,
+        )} --visual-output ${escapeRegExp(
+          visualOutputPath,
+        )} --visual-missing-output ${escapeRegExp(
+          visualMissingOutputPath,
+        )} --smoke-output ${escapeRegExp(
+          smokeOutputPath,
+        )} --smoke-inputs-output ${escapeRegExp(smokeInputsOutputPath)}\``,
+      ),
     );
-    assert.match(markdown, /Release evidence request: `pnpm release:evidence-request`/);
-    assert.match(markdown, /Page Builder design request: `pnpm visual:references:request`/);
-    assert.match(markdown, /Production Smoke request: `pnpm smoke:request`/);
+    assert.match(
+      markdown,
+      new RegExp(
+        `Request outputs: \`${escapeRegExp(
+          [
+            releaseOutputPath,
+            visualOutputPath,
+            visualMissingOutputPath,
+            smokeOutputPath,
+            smokeInputsOutputPath,
+          ].join(", "),
+        )}\``,
+      ),
+    );
+    assert.match(
+      markdown,
+      new RegExp(
+        `Release evidence request: \`pnpm release:evidence-request -- --output ${escapeRegExp(
+          releaseOutputPath,
+        )} --visual-output ${escapeRegExp(
+          visualOutputPath,
+        )} --visual-missing-output ${escapeRegExp(
+          visualMissingOutputPath,
+        )} --smoke-output ${escapeRegExp(
+          smokeOutputPath,
+        )} --smoke-inputs-output ${escapeRegExp(smokeInputsOutputPath)}\``,
+      ),
+    );
+    assert.match(
+      markdown,
+      new RegExp(
+        `Page Builder design request: \`pnpm visual:references:request -- --output ${escapeRegExp(
+          visualOutputPath,
+        )} --missing-output ${escapeRegExp(visualMissingOutputPath)}\``,
+      ),
+    );
+    assert.match(
+      markdown,
+      new RegExp(
+        `Production Smoke request: \`pnpm smoke:request -- --output ${escapeRegExp(
+          smokeOutputPath,
+        )} --inputs-output ${escapeRegExp(smokeInputsOutputPath)}\``,
+      ),
+    );
     assert.match(
       markdown,
       new RegExp(
@@ -60,6 +125,12 @@ test("release evidence request Markdown combines blocked evidence handoffs", asy
     assert.match(
       markdown,
       /docs\/visual\/page-builder-references\/hero-banner-desktop\.png/,
+    );
+    assert.match(
+      markdown,
+      new RegExp(
+        `Missing path output: \`${escapeRegExp(visualMissingOutputPath)}\``,
+      ),
     );
     assert.match(markdown, /## Production Smoke Evidence Request/);
     assert.match(
@@ -178,6 +249,10 @@ test("release evidence request help documents terminal summary fields", async ()
   assert.match(help, /first missing visual\s+reference/i);
   assert.match(help, /missing Smoke input\s+names/i);
   assert.match(help, /dispatch input template\s+path/i);
+  assert.match(help, /--visual-output <path>/);
+  assert.match(help, /--visual-missing-output <path>/);
+  assert.match(help, /--missing-output <path>/);
+  assert.match(help, /--smoke-output <path>/);
   assert.match(help, /--smoke-inputs-output <path>/);
   assert.match(help, /--inputs-output <path>/);
 });
@@ -191,6 +266,12 @@ test("release evidence request config validates paths and inputs", () => {
     "docs/visual/page-builder-references",
     "--visual-artifact-dir",
     "reports/visual/page-builder-fixture",
+    "--visual-output",
+    String.raw`tmp\\visual.md`,
+    "--visual-missing-output",
+    String.raw`tmp\\missing.txt`,
+    "--smoke-output",
+    String.raw`tmp\\smoke.md`,
     "--smoke-inputs-output",
     String.raw`tmp\\smoke-inputs.txt`,
     "--visual-artifact-run-id=33400968157",
@@ -213,7 +294,22 @@ test("release evidence request config validates paths and inputs", () => {
     config.smokeDispatchConfig.inputOverrides.get("visual_artifact_run_id"),
     "33400968157",
   );
+  assert.deepEqual(config.requestOutputPaths, {
+    productionSmoke: "tmp/smoke.md",
+    productionSmokeInputs: "tmp/smoke-inputs.txt",
+    releaseEvidence: "artifacts/release/release-evidence-request.md",
+    visualMissingReferences: "tmp/missing.txt",
+    visualReference: "tmp/visual.md",
+  });
   assert.equal(config.smokeInputsOutputPath, "tmp/smoke-inputs.txt");
+  assert.equal(
+    createReleaseEvidenceRequestCommand(),
+    "pnpm release:evidence-request",
+  );
+  assert.equal(
+    createReleaseEvidenceRequestCommand(config.requestOutputPaths),
+    "pnpm release:evidence-request -- --output artifacts/release/release-evidence-request.md --visual-output tmp/visual.md --visual-missing-output tmp/missing.txt --smoke-output tmp/smoke.md --smoke-inputs-output tmp/smoke-inputs.txt",
+  );
   assert.equal(
     normalizeReleaseEvidenceRequestOutputPath("tmp/release-request.MD"),
     "tmp/release-request.MD",
@@ -243,14 +339,23 @@ test("release evidence request command is exposed in package CI and docs", async
   assert.match(workflow, /pnpm release:evidence-request -- --help/);
   assert.match(requestCli, /runReleaseEvidenceRequestCli/);
   assert.match(releaseChecklist, /pnpm release:evidence-request/);
-  assert.match(releaseChecklist, /--smoke-inputs-output <path>/);
+  assert.match(releaseChecklist, /--visual-output/);
+  assert.match(releaseChecklist, /--visual-missing-output/);
+  assert.match(releaseChecklist, /--smoke-output/);
+  assert.match(releaseChecklist, /--smoke-inputs-output/);
   assert.match(releaseChecklist, /dispatch input\s+template path/);
   assert.match(releaseChecklist, /First missing visual reference/);
   assert.match(setupDoc, /pnpm release:evidence-request/);
+  assert.match(setupDoc, /--visual-output <path>/);
+  assert.match(setupDoc, /--visual-missing-output <path>/);
+  assert.match(setupDoc, /--smoke-output <path>/);
   assert.match(setupDoc, /--smoke-inputs-output <path>/);
   assert.match(setupDoc, /dispatch input template\s+path/);
   assert.match(setupDoc, /Missing Production Smoke inputs/);
   assert.match(readme, /pnpm release:evidence-request/);
+  assert.match(readme, /--visual-output <path>/);
+  assert.match(readme, /--visual-missing-output <path>/);
+  assert.match(readme, /--smoke-output <path>/);
   assert.match(readme, /--smoke-inputs-output <path>/);
   assert.match(readme, /dispatch 输入模板路径/);
   assert.match(readme, /First missing visual reference/);
