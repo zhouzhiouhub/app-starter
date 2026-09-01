@@ -156,6 +156,10 @@ test("project status CLI writes a Markdown handoff", async () => {
     );
     assert.match(
       markdown,
+      / {4}- Dispatch inputs output: `artifacts\/production-smoke\/production-smoke-dispatch-inputs\.txt`/,
+    );
+    assert.match(
+      markdown,
       / {4}- Final gate: `pnpm release:handoff -- --require-ready --smoke-report artifacts\/production-smoke\/smoke-report\.json --visual-artifact-dir reports\/visual\/page-builder-fixture`/,
     );
     assert.match(markdown, /## Release Evidence Artifacts/);

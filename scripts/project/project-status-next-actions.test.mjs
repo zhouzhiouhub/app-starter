@@ -135,6 +135,7 @@ test("project next actions include unified release evidence request", () => {
       "Design request output",
       "Smoke request",
       "Smoke request output",
+      "Dispatch inputs output",
       "Final gate",
     ],
   );
@@ -167,8 +168,12 @@ test("project next actions include unified release evidence request", () => {
     releaseEvidence.steps[7].value,
     "artifacts/production-smoke/production-smoke-request.md",
   );
-  assert.match(
+  assert.equal(
     releaseEvidence.steps[8].value,
+    "artifacts/production-smoke/production-smoke-dispatch-inputs.txt",
+  );
+  assert.match(
+    releaseEvidence.steps[9].value,
     /^pnpm release:handoff -- --require-ready /,
   );
 });
