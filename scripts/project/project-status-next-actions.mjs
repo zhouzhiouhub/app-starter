@@ -9,6 +9,7 @@ import {
 } from "../visual/page-builder-visual-reference-import-commands.mjs";
 import {
   defaultPageBuilderVisualMissingReferencesOutputPath,
+  defaultPageBuilderVisualReferenceExportTableOutputPath,
   defaultPageBuilderVisualReferenceRequestOutputPath,
 } from "../visual/page-builder-visual-reference-request.mjs";
 
@@ -57,13 +58,11 @@ export function readPendingVisualTasks(checklist) {
       : [],
   );
 }
-
 function readProjectBlockerActions(blockers, context = {}) {
   return blockers
     .filter((blocker) => !isVisualRecordWarning(blocker))
     .map((blocker) => createBlockerAction(blocker, context));
 }
-
 function isVisualRecordWarning(blocker) {
   return (
     blocker.area === "Page Builder Visual" &&
@@ -71,7 +70,6 @@ function isVisualRecordWarning(blocker) {
     blocker.label.startsWith("record_")
   );
 }
-
 function createBlockerAction(blocker, context = {}) {
   const action = {
     action: readText(blocker.action) ?? "Review the release evidence blocker.",
@@ -82,7 +80,6 @@ function createBlockerAction(blocker, context = {}) {
 
   return steps.length > 0 ? { ...action, steps } : action;
 }
-
 function createBlockerActionSteps(action, context) {
   const productionSmokeSteps = createProductionSmokeActionSteps(action, context);
 
@@ -153,6 +150,10 @@ function createPageBuilderVisualActionSteps(action, context) {
       createVisualMissingReferencesOutputPath(visualContext),
     ),
     createNextActionStep(
+      "Export table output",
+      createVisualReferenceExportTableOutputPath(visualContext),
+    ),
+    createNextActionStep(
       "Reference report",
       createPageBuilderVisualReferenceCheckCommand({
         manifestPath: visualContext.manifestPath,
@@ -201,6 +202,12 @@ function createVisualMissingReferencesOutputPath(visualContext) {
   return visualContext.artifactDir === defaultVisualArtifactDir
     ? defaultPageBuilderVisualMissingReferencesOutputPath
     : `${visualContext.artifactDir}/page-builder-missing-references.txt`;
+}
+
+function createVisualReferenceExportTableOutputPath(visualContext) {
+  return visualContext.artifactDir === defaultVisualArtifactDir
+    ? defaultPageBuilderVisualReferenceExportTableOutputPath
+    : `${visualContext.artifactDir}/page-builder-reference-export-table.tsv`;
 }
 
 function createPageBuilderVisualActionContext(context) {

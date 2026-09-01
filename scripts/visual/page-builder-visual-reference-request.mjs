@@ -18,13 +18,17 @@ import {
   normalizeVisualReferenceSourceDir,
 } from "./page-builder-visual-reference-import-config.mjs";
 import {
+  normalizeVisualReferenceExportTableOutputPath,
   normalizeVisualReferenceMissingOutputPath,
 } from "./page-builder-visual-reference-missing-output.mjs";
 
 export {
   defaultPageBuilderVisualMissingReferencesOutputPath,
+  defaultPageBuilderVisualReferenceExportTableOutputPath,
+  normalizeVisualReferenceExportTableOutputPath,
   normalizeVisualReferenceMissingOutputPath,
   writePageBuilderVisualMissingReferencePaths,
+  writePageBuilderVisualReferenceExportTable,
 } from "./page-builder-visual-reference-missing-output.mjs";
 
 export const defaultPageBuilderVisualReferenceRequestOutputPath =
@@ -38,6 +42,7 @@ export function readPageBuilderVisualReferenceRequestCliConfig(args = []) {
     missingOutputPath: null,
     outputPath: defaultPageBuilderVisualReferenceRequestOutputPath,
     sourceDir: defaultPageBuilderVisualReferenceSourceDir,
+    tableOutputPath: null,
   };
   const normalizedArgs = stripPnpmSeparator(args);
 
@@ -55,6 +60,10 @@ export function readPageBuilderVisualReferenceRequestCliConfig(args = []) {
         break;
       case "--output":
         input.outputPath = readOptionValue(option, normalizedArgs, index);
+        index += 1;
+        break;
+      case "--table-output":
+        input.tableOutputPath = readOptionValue(option, normalizedArgs, index);
         index += 1;
         break;
       case "--source-dir":
@@ -75,6 +84,9 @@ export function readPageBuilderVisualReferenceRequestCliConfig(args = []) {
       input.outputPath,
     ),
     sourceDir: normalizeVisualReferenceSourceDir(input.sourceDir),
+    tableOutputPath: input.tableOutputPath
+      ? normalizeVisualReferenceExportTableOutputPath(input.tableOutputPath)
+      : null,
   };
 }
 
@@ -100,6 +112,7 @@ export function createPageBuilderVisualReferenceRequestMarkdown(input) {
       missingReferences[0]?.expectedPath ?? "none",
     )}`,
     ...formatMissingOutputPath(input.missingOutputPath),
+    ...formatTableOutputPath(input.tableOutputPath),
     "",
     "## Export Requirements",
     "",
@@ -213,6 +226,10 @@ function formatPreview(previewScreenshot) {
 
 function formatMissingOutputPath(outputPath) {
   return outputPath ? [`Missing path output: ${formatCode(outputPath)}`] : [];
+}
+
+function formatTableOutputPath(outputPath) {
+  return outputPath ? [`Export table output: ${formatCode(outputPath)}`] : [];
 }
 
 function readStatus(input) {

@@ -29,6 +29,7 @@ test("visual reference request Markdown is design-facing", () => {
     manifestPath:
       "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
     missingOutputPath: "artifacts/visual/page-builder-missing-references.txt",
+    tableOutputPath: "artifacts/visual/page-builder-reference-export-table.tsv",
     requiredReferences: [
       {
         component: "hero-banner",
@@ -61,6 +62,10 @@ test("visual reference request Markdown is design-facing", () => {
   assert.match(
     markdown,
     /Missing path output: `artifacts\/visual\/page-builder-missing-references\.txt`/,
+  );
+  assert.match(
+    markdown,
+    /Export table output: `artifacts\/visual\/page-builder-reference-export-table\.tsv`/,
   );
   assert.match(markdown, /Export real PNGs from the approved design source/);
   assert.match(markdown, /matching preview viewport size shown as reference size/);
@@ -97,6 +102,7 @@ test("visual reference request CLI writes a Markdown handoff", async () => {
   const sourceDir = `${root}/references`;
   const outputPath = `${root}/page-builder-reference-request.md`;
   const missingOutputPath = `${root}/page-builder-missing-references.txt`;
+  const tableOutputPath = `${root}/page-builder-reference-export-table.tsv`;
   const stdout = [];
 
   try {
@@ -117,6 +123,8 @@ test("visual reference request CLI writes a Markdown handoff", async () => {
         outputPath,
         "--missing-output",
         missingOutputPath,
+        "--table-output",
+        tableOutputPath,
       ],
       {
         stdout: (line) => stdout.push(line),
@@ -124,12 +132,17 @@ test("visual reference request CLI writes a Markdown handoff", async () => {
     );
     const markdown = readFileSync(outputPath, "utf8");
     const missingPaths = readFileSync(missingOutputPath, "utf8");
+    const exportTable = readFileSync(tableOutputPath, "utf8");
 
     assert.equal(exitCode, 0);
     assert.match(stdout.join("\n"), /Visual reference request written:/);
     assert.match(
       stdout.join("\n"),
       /Visual missing reference paths written:/,
+    );
+    assert.match(
+      stdout.join("\n"),
+      /Visual reference export table written:/,
     );
     assert.match(stdout.join("\n"), /Missing references: 1\/12/);
     assert.match(
@@ -139,6 +152,24 @@ test("visual reference request CLI writes a Markdown handoff", async () => {
     assert.match(markdown, /spec-table\.mobile; missing/);
     assert.match(markdown, /spec-table\.mobile: reference size 390x1000/);
     assert.equal(missingPaths, `${sourceDir}/spec-table-mobile.png\n`);
+    assert.match(
+      exportTable,
+      /^component\tviewport\tstatus\treference_width\treference_height\texpected_path\tpreview_width\tpreview_height\tpreview_path/m,
+    );
+    assert.match(
+      exportTable,
+      new RegExp(
+        `spec-table\tmobile\tmissing\t390\t1000\t${escapeRegExp(
+          `${sourceDir}/spec-table-mobile.png`,
+        )}\t390\t1000\t${escapeRegExp(
+          `${root}/artifacts/visual/spec-table-mobile.png`,
+        )}`,
+      ),
+    );
+    assert.match(
+      markdown,
+      new RegExp(`Export table output: \`${escapeRegExp(tableOutputPath)}\``),
+    );
     assert.match(
       markdown,
       /First missing reference: `reports\/visual\/reference-request-.+\/references\/spec-table-mobile\.png`/,
@@ -177,6 +208,8 @@ test("visual reference request config validates paths", () => {
       "artifacts/visual/page-builder-reference-request.md",
       "--missing-output",
       "artifacts\\visual\\page-builder-missing-references.txt",
+      "--table-output",
+      "artifacts\\visual\\page-builder-reference-export-table.tsv",
     ]),
     {
       manifestPath:
@@ -184,6 +217,7 @@ test("visual reference request config validates paths", () => {
       missingOutputPath: "artifacts/visual/page-builder-missing-references.txt",
       outputPath: "artifacts/visual/page-builder-reference-request.md",
       sourceDir: "docs/visual/page-builder-references",
+      tableOutputPath: "artifacts/visual/page-builder-reference-export-table.tsv",
     },
   );
   assert.throws(
@@ -201,6 +235,14 @@ test("visual reference request config validates paths", () => {
         "artifacts/visual/page-builder-missing-references.md",
       ]),
     /Visual reference missing paths output must end with \.txt/,
+  );
+  assert.throws(
+    () =>
+      readPageBuilderVisualReferenceRequestCliConfig([
+        "--table-output",
+        "artifacts/visual/page-builder-reference-export-table.txt",
+      ]),
+    /Visual reference export table output must end with \.tsv/,
   );
 });
 
@@ -238,51 +280,9 @@ test("visual reference request writes an empty missing path list when complete",
   }
 });
 
-test("visual reference request command is exposed in package and docs", () => {
-  const packageJson = readFileSync("package.json", "utf8");
-  const requestCli = readFileSync(
-    "scripts/page-builder-visual-reference-request.mjs",
-    "utf8",
-  );
-  const readme = readFileSync("README.md", "utf8");
-  const acceptanceDoc = readFileSync(
-    "docs/development/page-builder-visual-acceptance.md",
-    "utf8",
-  );
-  const releaseChecklist = readFileSync(
-    "docs/development/release-checklist.md",
-    "utf8",
-  );
-  const setupDoc = readFileSync("docs/development/setup.md", "utf8");
-  const referenceReadme = readFileSync(
-    "docs/visual/page-builder-references/README.md",
-    "utf8",
-  );
-
-  assert.match(packageJson, /"visual:references:request"/);
-  assert.match(
-    packageJson,
-    /--missing-output artifacts\/visual\/page-builder-missing-references\.txt/,
-  );
-  assert.match(requestCli, /pnpm visual:references:request/);
-  assert.match(requestCli, /--missing-output <path>/);
-  assert.match(readme, /pnpm visual:references:request/);
-  assert.match(readme, /page-builder-missing-references\.txt/);
-  assert.match(readme, /终端摘要和 Markdown 状态行.*First missing reference/);
-  assert.match(acceptanceDoc, /terminal\s+and Markdown `First missing reference`/);
-  assert.match(acceptanceDoc, /page-builder-missing-references\.txt/);
-  assert.match(releaseChecklist, /first missing reference path/);
-  assert.match(releaseChecklist, /page-builder-missing-references\.txt/);
-  assert.match(setupDoc, /terminal summary and Markdown status.*First missing reference/s);
-  assert.match(setupDoc, /page-builder-missing-references\.txt/);
-  assert.match(referenceReadme, /pnpm visual:references:request/);
-  assert.match(referenceReadme, /page-builder-missing-references\.txt/);
-  assert.match(referenceReadme, /--output <path>/);
-  assert.match(referenceReadme, /--missing-output <path>/);
-  assert.match(referenceReadme, /first missing reference path/);
-  assert.match(referenceReadme, /Reference PNG Dimensions/);
-  assert.match(referenceReadme, /reference size target/);
-});
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+}
 
 function writeReferenceFiles(sourceDir, options = {}) {
   mkdirSync(sourceDir, { recursive: true });

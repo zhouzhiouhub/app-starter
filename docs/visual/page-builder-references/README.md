@@ -34,7 +34,8 @@ or corrupted file is rejected during intake.
    export request with the file list, preview screenshots, and follow-up
    commands. The request lists each required PNG's reference size target beside
    the exact file path; it also writes
-   `artifacts/visual/page-builder-missing-references.txt`, and the terminal
+   `artifacts/visual/page-builder-missing-references.txt` and
+   `artifacts/visual/page-builder-reference-export-table.tsv`, and the terminal
    summary prints the first missing reference path.
 4. Run `pnpm visual:references:check`.
 5. Review the generated Markdown report and fix any missing or empty PNGs.
@@ -64,12 +65,16 @@ source directory, but prints only missing expected PNG paths, one per line.
 `pnpm visual:references:request` writes
 `artifacts/visual/page-builder-reference-request.md` as a design-facing request;
 it also writes `artifacts/visual/page-builder-missing-references.txt` as a
-plain missing path list, and its terminal summary prints the first missing
-reference path. The request includes a `Reference PNG Dimensions` section so
-design exports can match the captured Desktop / Mobile viewport size. It does
-not import references or mark visual evidence accepted.
+plain missing path list and
+`artifacts/visual/page-builder-reference-export-table.tsv` as a TSV task table
+with component, viewport, target size, target path, and preview path columns.
+Its terminal summary prints the first missing reference path. The request
+includes a `Reference PNG Dimensions` section so design exports can match the
+captured Desktop / Mobile viewport size. It does not import references or mark
+visual evidence accepted.
 Use `--output <path>` and `--missing-output <path>` when a release handoff needs
-those request files in a custom evidence directory.
+those request files in a custom evidence directory. Use `--table-output <path>`
+for a custom TSV export task table location.
 
 Changes in this directory trigger the `Page Builder Visual` GitHub Actions
 workflow so fixture evidence can be refreshed before Production Smoke consumes

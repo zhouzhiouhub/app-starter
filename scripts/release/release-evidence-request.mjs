@@ -97,6 +97,7 @@ export async function createReleaseEvidenceRequest(config, input = {}, generated
       ...visualReferenceArtifact,
       missingOutputPath: config.requestOutputPaths.visualMissingReferences,
       requestOutputPath: config.requestOutputPaths.visualReference,
+      tableOutputPath: config.requestOutputPaths.visualReferenceTable,
     },
   };
 }
@@ -105,7 +106,7 @@ function printHelp(writeLine) {
   writeLine(`Usage:
   pnpm release:evidence-request
   pnpm release:evidence-request -- --output artifacts/release/release-evidence-request.md
-  pnpm release:evidence-request -- --visual-output artifacts/visual/page-builder-reference-request.md --visual-missing-output artifacts/visual/page-builder-missing-references.txt
+  pnpm release:evidence-request -- --visual-output artifacts/visual/page-builder-reference-request.md --visual-missing-output artifacts/visual/page-builder-missing-references.txt --visual-table-output artifacts/visual/page-builder-reference-export-table.tsv
   pnpm release:evidence-request -- --smoke-output artifacts/production-smoke/production-smoke-request.md
   pnpm release:evidence-request -- --smoke-inputs-output artifacts/production-smoke/production-smoke-dispatch-inputs.txt
   pnpm release:evidence-request -- --visual-artifact page-builder-visual-fixture-123 --visual-artifact-run-id 456
@@ -117,6 +118,8 @@ Options:
   --visual-missing-output <path>
                                Show the missing Page Builder reference path list output.
   --missing-output <path>      Alias for --visual-missing-output.
+  --visual-table-output <path> Show the Page Builder reference export TSV output.
+  --table-output <path>        Alias for --visual-table-output.
   --smoke-output <path>        Show the Production Smoke request output path.
   --smoke-inputs-output <path> Show the Production Smoke workflow_dispatch input template path.
   --inputs-output <path>       Alias for --smoke-inputs-output.
@@ -134,9 +137,10 @@ Smoke evidence inputs:
 
 Evidence:
   This command writes one release-facing request that embeds the Page Builder
-  design reference request, Production Smoke request, and dispatch input template
-  path. The terminal summary and Markdown request status report release
-  readiness, visual reference status, the first missing visual reference,
+  design reference request, reference export table path, Production Smoke
+  request, and dispatch input template path.
+  The terminal summary and Markdown request status report release readiness,
+  visual reference status, the first missing visual reference,
   Production Smoke dispatch readiness, and any missing Smoke input names to
   unblock first. It does not run smoke, import visual references, accept
   evidence, create release notes, or mark the project ready.

@@ -8,6 +8,7 @@ import {
 import {
   readPageBuilderVisualReferenceRequestCliConfig,
   writePageBuilderVisualMissingReferencePaths,
+  writePageBuilderVisualReferenceExportTable,
   writePageBuilderVisualReferenceRequestMarkdown,
 } from "./visual/page-builder-visual-reference-request.mjs";
 import { readErrorMessage } from "./smoke/smoke-error-message.mjs";
@@ -37,6 +38,7 @@ export async function runPageBuilderVisualReferenceRequestCli(
     const requestArtifact = {
       ...artifact,
       missingOutputPath: config.missingOutputPath,
+      tableOutputPath: config.tableOutputPath,
     };
 
     await writePageBuilderVisualReferenceRequestMarkdown(
@@ -51,11 +53,21 @@ export async function runPageBuilderVisualReferenceRequestCli(
       );
     }
 
+    if (config.tableOutputPath) {
+      await writePageBuilderVisualReferenceExportTable(
+        config.tableOutputPath,
+        artifact,
+      );
+    }
+
     stdout(`Visual reference request written: ${config.outputPath}`);
     if (config.missingOutputPath) {
       stdout(
         `Visual missing reference paths written: ${config.missingOutputPath}`,
       );
+    }
+    if (config.tableOutputPath) {
+      stdout(`Visual reference export table written: ${config.tableOutputPath}`);
     }
     stdout(
       `Missing references: ${artifact.missingCount}/${artifact.requiredReferenceCount}`,
@@ -87,6 +99,7 @@ function printHelp(writeLine) {
   pnpm visual:references:request
   pnpm visual:references:request -- --output artifacts/visual/page-builder-reference-request.md
   pnpm visual:references:request -- --missing-output artifacts/visual/page-builder-missing-references.txt
+  pnpm visual:references:request -- --table-output artifacts/visual/page-builder-reference-export-table.tsv
   pnpm visual:references:request -- --source-dir docs/visual/page-builder-references
 
 Options:
@@ -96,6 +109,9 @@ Options:
   --output <path>     Write the design handoff Markdown request.
   --missing-output <path>
                       Write a plain text list of missing expected PNG paths.
+  --table-output <path>
+                      Write a TSV export table with component, viewport,
+                      target path, preview path, and target dimensions.
   -h, --help          Show this help.
 
 Evidence:
@@ -103,8 +119,10 @@ Evidence:
   manifest used by visual:references. The terminal summary and Markdown status
   report the missing/required count and the first missing reference path to hand
   off first. When --missing-output is provided, it also writes a plain text list
-  of missing expected PNG paths. It does not import references, measure
-  screenshots, mark evidence accepted, or replace approved design exports.`);
+  of missing expected PNG paths. When --table-output is provided, it writes a
+  TSV export table for design task assignment. It does not import references,
+  measure screenshots, mark evidence accepted, or replace approved design
+  exports.`);
 }
 
 if (isMainModule()) {

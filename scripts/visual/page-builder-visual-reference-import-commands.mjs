@@ -7,6 +7,7 @@ import { createArtifactPaths } from "./page-builder-visual-artifact-check-paths.
 import { pageBuilderVisualCaptureDefaultOutputDir } from "./page-builder-visual-capture-constants.mjs";
 import {
   defaultPageBuilderVisualMissingReferencesOutputPath,
+  defaultPageBuilderVisualReferenceExportTableOutputPath,
 } from "./page-builder-visual-reference-missing-output.mjs";
 
 const defaultReferenceCheckCommand = "pnpm visual:references:check";
@@ -86,6 +87,7 @@ export function createPageBuilderVisualReferenceRequestCommand(report) {
     ...createReferenceRequestManifestOption(report),
     ...createReferenceRequestOutputOption(report, outputDir),
     ...createReferenceRequestMissingOutputOption(report, outputDir),
+    ...createReferenceRequestTableOutputOption(report, outputDir),
   ]);
 }
 
@@ -203,6 +205,10 @@ function isDefaultReferenceRequestContext(report) {
       report,
       pageBuilderVisualCaptureDefaultOutputDir,
     ) === defaultPageBuilderVisualMissingReferencesOutputPath
+    && readReferenceRequestTableOutputPath(
+      report,
+      pageBuilderVisualCaptureDefaultOutputDir,
+    ) === defaultPageBuilderVisualReferenceExportTableOutputPath
   );
 }
 
@@ -233,6 +239,13 @@ function readReferenceRequestMissingOutputPath(report, outputDir) {
     : readDefaultReferenceRequestMissingOutputPath(report, outputDir);
 }
 
+function readReferenceRequestTableOutputPath(report, outputDir) {
+  return typeof report.tableOutputPath === "string" &&
+    report.tableOutputPath.length > 0
+    ? report.tableOutputPath
+    : readDefaultReferenceRequestTableOutputPath(report, outputDir);
+}
+
 function createSourceDirOption(report) {
   const sourceDir = readSourceDir(report);
 
@@ -258,6 +271,10 @@ function createReferenceRequestMissingOutputOption(report, outputDir) {
   ];
 }
 
+function createReferenceRequestTableOutputOption(report, outputDir) {
+  return ["--table-output", readReferenceRequestTableOutputPath(report, outputDir)];
+}
+
 function readDefaultReferenceRequestOutputPath(report, outputDir) {
   return isDefaultReferenceCheckContext(report)
     ? defaultPageBuilderVisualReferenceRequestOutputPath
@@ -268,4 +285,10 @@ function readDefaultReferenceRequestMissingOutputPath(report, outputDir) {
   return isDefaultReferenceCheckContext(report)
     ? defaultPageBuilderVisualMissingReferencesOutputPath
     : `${outputDir}/page-builder-missing-references.txt`;
+}
+
+function readDefaultReferenceRequestTableOutputPath(report, outputDir) {
+  return isDefaultReferenceCheckContext(report)
+    ? defaultPageBuilderVisualReferenceExportTableOutputPath
+    : `${outputDir}/page-builder-reference-export-table.tsv`;
 }

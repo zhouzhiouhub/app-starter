@@ -60,8 +60,9 @@ test("visual reference request command keeps custom request output paths", () =>
       ...artifactReport,
       missingOutputPath: "tmp/missing.txt",
       requestOutputPath: "tmp/visual.md",
+      tableOutputPath: "tmp/reference-table.tsv",
     }),
-    "pnpm visual:references:request -- --output tmp/visual.md --missing-output tmp/missing.txt",
+    "pnpm visual:references:request -- --output tmp/visual.md --missing-output tmp/missing.txt --table-output tmp/reference-table.tsv",
   );
 });
 
@@ -119,7 +120,7 @@ test("visual reference commands keep non-default source dirs explicit", () => {
   );
   assert.equal(
     createPageBuilderVisualReferenceRequestCommand(customReport),
-    "pnpm visual:references:request -- --source-dir artifacts/visual/design-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output reports/visual/page-builder-fixture/page-builder-reference-request.md --missing-output reports/visual/page-builder-fixture/page-builder-missing-references.txt",
+    "pnpm visual:references:request -- --source-dir artifacts/visual/design-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output reports/visual/page-builder-fixture/page-builder-reference-request.md --missing-output reports/visual/page-builder-fixture/page-builder-missing-references.txt --table-output reports/visual/page-builder-fixture/page-builder-reference-export-table.tsv",
   );
 });
 

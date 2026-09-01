@@ -80,6 +80,9 @@ export async function runReleaseRequestsCli(args = [], input = {}) {
     stdout(
       `  - Page Builder missing paths: ${config.outputPaths.visualMissingReferences}`,
     );
+    stdout(
+      `  - Page Builder export table: ${config.outputPaths.visualReferenceTable}`,
+    );
     stdout(`  - Production Smoke: ${config.outputPaths.productionSmoke}`);
     stdout(
       `  - Production Smoke inputs: ${config.outputPaths.productionSmokeInputs}`,
@@ -103,6 +106,8 @@ export function readReleaseRequestsCliConfig(args = []) {
     visualReferenceArgs: [
       "--missing-output",
       defaultReleaseRequestsOutputPaths.visualMissingReferences,
+      "--table-output",
+      defaultReleaseRequestsOutputPaths.visualReferenceTable,
     ],
   };
   const normalizedArgs = stripPnpmSeparator(args);
@@ -144,6 +149,18 @@ export function readReleaseRequestsCliConfig(args = []) {
       continue;
     }
 
+    if (option === "--visual-table-output" || option === "--table-output") {
+      const outputPath = readOptionValue(option, normalizedArgs, index, value);
+      setValueOption(
+        config.releaseEvidenceArgs,
+        "--visual-table-output",
+        outputPath,
+      );
+      setValueOption(config.visualReferenceArgs, "--table-output", outputPath);
+      config.outputPaths.visualReferenceTable = outputPath;
+      index += value === null ? 1 : 0;
+      continue;
+    }
     if (option === "--smoke-output") {
       const outputPath = readOptionValue(option, normalizedArgs, index, value);
       setValueOption(config.releaseEvidenceArgs, "--smoke-output", outputPath);
@@ -152,7 +169,6 @@ export function readReleaseRequestsCliConfig(args = []) {
       index += value === null ? 1 : 0;
       continue;
     }
-
     if (option === "--smoke-inputs-output" || option === "--inputs-output") {
       const outputPath = readOptionValue(option, normalizedArgs, index, value);
       setValueOption(
@@ -165,7 +181,6 @@ export function readReleaseRequestsCliConfig(args = []) {
       index += value === null ? 1 : 0;
       continue;
     }
-
     if (visualSourceOptions.has(option)) {
       const sourceDir = readOptionValue(option, normalizedArgs, index, value);
       setValueOption(

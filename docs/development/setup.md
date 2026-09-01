@@ -313,8 +313,11 @@ missing expected PNG paths, one per line, for design export handoff.
 request with the missing files, retained preview screenshots, and follow-up
 commands. It also writes
 `artifacts/visual/page-builder-missing-references.txt` as a plain one-path-per-line
-missing PNG list. Its terminal summary and Markdown status also print
-`First missing reference` when a reference PNG is still missing.
+missing PNG list and
+`artifacts/visual/page-builder-reference-export-table.tsv` as a TSV task table
+with component, viewport, target size, target path, and preview path columns.
+Its terminal summary and Markdown status also print `First missing reference`
+when a reference PNG is still missing.
 `pnpm visual:references:check` writes the default release fixture JSON/Markdown
 report and requires the full reference set without updating the manifest.
 
@@ -325,7 +328,8 @@ reference request, the Production Smoke request, the dispatch input template
 path, `First missing visual reference`, `Missing Production Smoke inputs`, and the final
 `release:handoff -- --require-ready` gate to rerun after real evidence is
 retained. Pass `--visual-output <path>`, `--visual-missing-output <path>`,
-`--smoke-output <path>`, and `--smoke-inputs-output <path>` when the request
+`--visual-table-output <path>`, `--smoke-output <path>`, and
+`--smoke-inputs-output <path>` when the request
 bundle is written somewhere other than the default paths, so the refresh
 command, output summary, and embedded request paths all point at the same files.
 It does not import references, run smoke, create release notes, or mark blocked
@@ -335,6 +339,7 @@ evidence ready.
 run: `artifacts/release/release-evidence-request.md`,
 `artifacts/visual/page-builder-reference-request.md`,
 `artifacts/visual/page-builder-missing-references.txt`,
+`artifacts/visual/page-builder-reference-export-table.tsv`,
 `artifacts/production-smoke/production-smoke-request.md`, and
 `artifacts/production-smoke/production-smoke-dispatch-inputs.txt`. It accepts the same
 visual manifest/source options and Production Smoke evidence inputs as the
@@ -442,7 +447,9 @@ Use `pnpm visual:references:request` when the designer needs a Markdown export
 request rather than the full engineering intake report; the terminal summary
 and Markdown status also print the first missing reference path, and
 `artifacts/visual/page-builder-missing-references.txt` keeps the same missing
-paths as a plain text handoff.
+paths as a plain text handoff while
+`artifacts/visual/page-builder-reference-export-table.tsv` keeps the
+component/viewport export task table.
 Use `pnpm visual:references:check` for the default release fixture intake
 report.
 

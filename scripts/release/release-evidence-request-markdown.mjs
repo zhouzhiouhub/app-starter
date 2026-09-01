@@ -15,6 +15,7 @@ import {
 } from "./release-requests-config.mjs";
 
 const maxMarkdownTextLength = 420;
+const maxMarkdownCommandLength = 1200;
 
 export async function writeReleaseEvidenceRequestMarkdown(outputPath, input) {
   await mkdir(dirname(outputPath), { recursive: true });
@@ -51,21 +52,26 @@ export function createReleaseEvidenceRequestMarkdown(input) {
     "",
     `- Refresh all requests: ${formatCode(
       createReleaseRequestsCommand(requestOutputPaths),
+      maxMarkdownCommandLength,
     )}`,
     `- Request outputs: ${formatCode(
       createReleaseRequestsOutputSummary(input.requestOutputPaths),
+      maxMarkdownCommandLength,
     )}`,
     `- Release evidence request: ${formatCode(
       createReleaseEvidenceRequestCommand(requestOutputPaths),
+      maxMarkdownCommandLength,
     )}`,
     `- Page Builder design request: ${formatCode(
       createPageBuilderVisualReferenceRequestCommand(visual),
+      maxMarkdownCommandLength,
     )}`,
     `- Production Smoke request: ${formatCode(
       createProductionSmokeRequestCommand({
         inputsOutputPath: smokeInputsOutputPath,
         outputPath: requestOutputPaths.productionSmoke,
       }),
+      maxMarkdownCommandLength,
     )}`,
     `- Production Smoke dispatch inputs output: ${formatCode(
       smokeInputsOutputPath,
@@ -142,13 +148,13 @@ function shiftMarkdownHeadings(markdown) {
     });
 }
 
-function formatCode(value) {
-  return `\`${formatText(value).replaceAll("`", "'")}\``;
+function formatCode(value, maxLength = maxMarkdownTextLength) {
+  return `\`${formatText(value, maxLength).replaceAll("`", "'")}\``;
 }
 
-function formatText(value) {
+function formatText(value, maxLength = maxMarkdownTextLength) {
   return formatSmokeText(value, {
     fallback: "unknown",
-    maxLength: maxMarkdownTextLength,
+    maxLength,
   });
 }

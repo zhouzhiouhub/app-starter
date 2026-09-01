@@ -11,8 +11,8 @@ later phases are explicitly approved.
   runbook.
 - Run `pnpm release:requests` when the release needs the combined release
   evidence request, Page Builder design request, missing visual reference path
-  list, Production Smoke request, and Production Smoke dispatch input template
-  refreshed together. This writes only local
+  list, reference export task table, Production Smoke request, and Production
+  Smoke dispatch input template refreshed together. This writes only local
   coordination files; it does not
   import references, run smoke, upload artifacts, generate release notes, or
   mark blocked evidence ready.
@@ -21,8 +21,8 @@ later phases are explicitly approved.
   template path, retained artifacts, and the final
   `release:handoff -- --require-ready` gate. This request is coordination
   material only; pass `--visual-output`, `--visual-missing-output`,
-  `--smoke-output`, and `--smoke-inputs-output` if the request bundle uses
-  custom paths. It does not import references, run smoke, generate release
+  `--visual-table-output`, `--smoke-output`, and `--smoke-inputs-output` if the
+  request bundle uses custom paths. It does not import references, run smoke, generate release
   notes, or mark blocked evidence ready.
 - Configure the GitHub `production` environment with the required smoke secrets:
   `PRODUCTION_API_URL`, `PRODUCTION_WEB_URL`, `PRODUCTION_ADMIN_URL`,
@@ -71,7 +71,8 @@ later phases are explicitly approved.
   `pnpm visual:references:request` when they need a Markdown export request
   with previews, follow-up commands, and a terminal and Markdown
   first-missing-reference hint plus
-  `artifacts/visual/page-builder-missing-references.txt`, then run
+  `artifacts/visual/page-builder-missing-references.txt` and
+  `artifacts/visual/page-builder-reference-export-table.tsv`, then run
   `pnpm visual:references:check`
   to keep JSON and Markdown reference intake reports with missing or imported
   PNG paths. The JSON artifact's `requiredReferences[]` list is the
@@ -426,7 +427,8 @@ later phases are explicitly approved.
 - Run `pnpm release:requests` before cross-functional release review when the
   release needs the combined release request, design export request, and
   Production Smoke operator request refreshed as separate local files, plus the
-  plain missing visual reference path list and workflow_dispatch input template.
+  plain missing visual reference path list, reference export task table, and
+  workflow_dispatch input template.
 - Run `pnpm release:evidence-request` before cross-functional release review
   when design reference export and Production Smoke execution need one shared
   request file. Its Request Status includes `First missing visual reference`
@@ -442,8 +444,9 @@ later phases are explicitly approved.
   `artifacts/visual/page-builder-reference-request.md` as the design-facing
   export request, writes
   `artifacts/visual/page-builder-missing-references.txt` as the plain missing
-  path list, and prints the first missing reference path in the terminal summary
-  and Markdown status.
+  path list, writes `artifacts/visual/page-builder-reference-export-table.tsv`
+  as a TSV task table, and prints the first missing reference path in the
+  terminal summary and Markdown status.
 - Run `pnpm release:check -- --checklist` when the gate is blocked and keep
   the readiness task output with the failed evidence review.
 - Use the failed check details and suggested fixes from the report review; the

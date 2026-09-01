@@ -1,0 +1,56 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import test from "node:test";
+
+test("visual reference request command is exposed in package and docs", () => {
+  const packageJson = readFileSync("package.json", "utf8");
+  const requestCli = readFileSync(
+    "scripts/page-builder-visual-reference-request.mjs",
+    "utf8",
+  );
+  const readme = readFileSync("README.md", "utf8");
+  const acceptanceDoc = readFileSync(
+    "docs/development/page-builder-visual-acceptance.md",
+    "utf8",
+  );
+  const releaseChecklist = readFileSync(
+    "docs/development/release-checklist.md",
+    "utf8",
+  );
+  const setupDoc = readFileSync("docs/development/setup.md", "utf8");
+  const referenceReadme = readFileSync(
+    "docs/visual/page-builder-references/README.md",
+    "utf8",
+  );
+
+  assert.match(packageJson, /"visual:references:request"/);
+  assert.match(
+    packageJson,
+    /--missing-output artifacts\/visual\/page-builder-missing-references\.txt --table-output artifacts\/visual\/page-builder-reference-export-table\.tsv/,
+  );
+  assert.match(requestCli, /pnpm visual:references:request/);
+  assert.match(requestCli, /--missing-output <path>/);
+  assert.match(requestCli, /--table-output <path>/);
+  assert.match(readme, /pnpm visual:references:request/);
+  assert.match(readme, /page-builder-missing-references\.txt/);
+  assert.match(readme, /page-builder-reference-export-table\.tsv/);
+  assert.match(readme, /缁堢鎽樿鍜?Markdown 鐘舵€佽.*First missing reference/);
+  assert.match(acceptanceDoc, /terminal\s+and Markdown `First missing reference`/);
+  assert.match(acceptanceDoc, /page-builder-missing-references\.txt/);
+  assert.match(acceptanceDoc, /page-builder-reference-export-table\.tsv/);
+  assert.match(releaseChecklist, /first missing reference path/);
+  assert.match(releaseChecklist, /page-builder-missing-references\.txt/);
+  assert.match(releaseChecklist, /page-builder-reference-export-table\.tsv/);
+  assert.match(setupDoc, /terminal summary and Markdown status.*First missing reference/s);
+  assert.match(setupDoc, /page-builder-missing-references\.txt/);
+  assert.match(setupDoc, /page-builder-reference-export-table\.tsv/);
+  assert.match(referenceReadme, /pnpm visual:references:request/);
+  assert.match(referenceReadme, /page-builder-missing-references\.txt/);
+  assert.match(referenceReadme, /page-builder-reference-export-table\.tsv/);
+  assert.match(referenceReadme, /--output <path>/);
+  assert.match(referenceReadme, /--missing-output <path>/);
+  assert.match(referenceReadme, /--table-output <path>/);
+  assert.match(referenceReadme, /first missing reference path/);
+  assert.match(referenceReadme, /Reference PNG Dimensions/);
+  assert.match(referenceReadme, /reference size target/);
+});

@@ -15,6 +15,7 @@ test("release requests CLI writes every local request Markdown", async () => {
   const releaseOutput = `${root}/release-evidence-request.md`;
   const visualOutput = `${root}/page-builder-reference-request.md`;
   const visualMissingOutput = `${root}/page-builder-missing-references.txt`;
+  const visualTableOutput = `${root}/page-builder-reference-export-table.tsv`;
   const smokeOutput = `${root}/production-smoke-request.md`;
   const smokeInputsOutput = `${root}/production-smoke-dispatch-inputs.txt`;
   const stdout = [];
@@ -34,6 +35,8 @@ test("release requests CLI writes every local request Markdown", async () => {
         visualOutput,
         "--visual-missing-output",
         visualMissingOutput,
+        "--visual-table-output",
+        visualTableOutput,
         "--smoke-output",
         smokeOutput,
         "--smoke-inputs-output",
@@ -52,12 +55,14 @@ test("release requests CLI writes every local request Markdown", async () => {
       releaseMarkdown,
       visualMarkdown,
       visualMissingPaths,
+      visualExportTable,
       smokeMarkdown,
       smokeInputsText,
     ] = await Promise.all([
       readFile(releaseOutput, "utf8"),
       readFile(visualOutput, "utf8"),
       readFile(visualMissingOutput, "utf8"),
+      readFile(visualTableOutput, "utf8"),
       readFile(smokeOutput, "utf8"),
       readFile(smokeInputsOutput, "utf8"),
     ]);
@@ -71,6 +76,10 @@ test("release requests CLI writes every local request Markdown", async () => {
     assert.match(
       output,
       new RegExp(`Page Builder missing paths: ${escapeRegExp(visualMissingOutput)}`),
+    );
+    assert.match(
+      output,
+      new RegExp(`Page Builder export table: ${escapeRegExp(visualTableOutput)}`),
     );
     assert.match(output, new RegExp(`Production Smoke: ${escapeRegExp(smokeOutput)}`));
     assert.match(
@@ -87,6 +96,8 @@ test("release requests CLI writes every local request Markdown", async () => {
           visualOutput,
         )} --visual-missing-output ${escapeRegExp(
           visualMissingOutput,
+        )} --visual-table-output ${escapeRegExp(
+          visualTableOutput,
         )} --smoke-output ${escapeRegExp(
           smokeOutput,
         )} --smoke-inputs-output ${escapeRegExp(smokeInputsOutput)}\``,
@@ -100,6 +111,7 @@ test("release requests CLI writes every local request Markdown", async () => {
             releaseOutput,
             visualOutput,
             visualMissingOutput,
+            visualTableOutput,
             smokeOutput,
             smokeInputsOutput,
           ].join(", "),
@@ -115,6 +127,8 @@ test("release requests CLI writes every local request Markdown", async () => {
           visualOutput,
         )} --visual-missing-output ${escapeRegExp(
           visualMissingOutput,
+        )} --visual-table-output ${escapeRegExp(
+          visualTableOutput,
         )} --smoke-output ${escapeRegExp(
           smokeOutput,
         )} --smoke-inputs-output ${escapeRegExp(smokeInputsOutput)}\``,
@@ -127,7 +141,9 @@ test("release requests CLI writes every local request Markdown", async () => {
           manifestPath,
         )} --output ${escapeRegExp(
           visualOutput,
-        )} --missing-output ${escapeRegExp(visualMissingOutput)}\``,
+        )} --missing-output ${escapeRegExp(
+          visualMissingOutput,
+        )} --table-output ${escapeRegExp(visualTableOutput)}\``,
       ),
     );
     assert.match(
@@ -142,6 +158,12 @@ test("release requests CLI writes every local request Markdown", async () => {
       releaseMarkdown,
       new RegExp(
         `Missing path output: \`${escapeRegExp(visualMissingOutput)}\``,
+      ),
+    );
+    assert.match(
+      releaseMarkdown,
+      new RegExp(
+        `Export table output: \`${escapeRegExp(visualTableOutput)}\``,
       ),
     );
     assert.match(
@@ -162,6 +184,14 @@ test("release requests CLI writes every local request Markdown", async () => {
     assert.match(
       visualMissingPaths,
       /docs\/visual\/page-builder-references\/hero-banner-desktop\.png/,
+    );
+    assert.match(
+      visualExportTable,
+      /^component\tviewport\tstatus\treference_width\treference_height\texpected_path\tpreview_width\tpreview_height\tpreview_path/m,
+    );
+    assert.match(
+      visualExportTable,
+      /hero-banner\tdesktop\tmissing\t[^\n]*docs\/visual\/page-builder-references\/hero-banner-desktop\.png/,
     );
     assert.match(smokeMarkdown, /^# Production Smoke Evidence Request/m);
     assert.match(
@@ -187,6 +217,8 @@ test("release requests config routes shared evidence inputs", () => {
     "--visual-output=tmp/visual.md",
     "--visual-missing-output",
     "tmp/missing.txt",
+    "--visual-table-output",
+    "tmp/reference-table.tsv",
     "--smoke-output",
     "tmp/smoke.md",
     "--smoke-inputs-output",
@@ -221,12 +253,15 @@ test("release requests config routes shared evidence inputs", () => {
     releaseEvidence: "tmp/release.md",
     visualMissingReferences: "tmp/missing.txt",
     visualReference: "tmp/visual.md",
+    visualReferenceTable: "tmp/reference-table.tsv",
   });
   assert.deepEqual(config.visualReferenceArgs, [
     "--output",
     "tmp/visual.md",
     "--missing-output",
     "tmp/missing.txt",
+    "--table-output",
+    "tmp/reference-table.tsv",
     "--source-dir",
     "docs/visual/page-builder-references",
     "--manifest",
@@ -244,6 +279,14 @@ test("release requests config routes shared evidence inputs", () => {
   assert.equal(
     readOptionValue(config.releaseEvidenceArgs, "--visual-missing-output"),
     "tmp/missing.txt",
+  );
+  assert.equal(
+    readOptionValue(config.releaseEvidenceArgs, "--visual-table-output"),
+    "tmp/reference-table.tsv",
+  );
+  assert.equal(
+    readOptionValue(config.visualReferenceArgs, "--table-output"),
+    "tmp/reference-table.tsv",
   );
   assert.equal(
     readOptionValue(config.releaseEvidenceArgs, "--smoke-output"),
@@ -273,6 +316,8 @@ test("release requests config routes shared evidence inputs", () => {
   assert.deepEqual(artifactDirConfig.visualReferenceArgs, [
     "--missing-output",
     "artifacts/visual/page-builder-missing-references.txt",
+    "--table-output",
+    "artifacts/visual/page-builder-reference-export-table.tsv",
     "--manifest",
     "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
   ]);
@@ -295,12 +340,13 @@ test("release requests help and summary expose the bundle command", async () => 
       releaseEvidence: "tmp/release.md",
       visualMissingReferences: "tmp/missing.txt",
       visualReference: "tmp/visual.md",
+      visualReferenceTable: "tmp/reference-table.tsv",
     }),
-    "pnpm release:requests -- --release-output tmp/release.md --visual-output tmp/visual.md --visual-missing-output tmp/missing.txt --smoke-output tmp/smoke.md --smoke-inputs-output tmp/smoke-inputs.txt",
+    "pnpm release:requests -- --release-output tmp/release.md --visual-output tmp/visual.md --visual-missing-output tmp/missing.txt --visual-table-output tmp/reference-table.tsv --smoke-output tmp/smoke.md --smoke-inputs-output tmp/smoke-inputs.txt",
   );
   assert.equal(
     createReleaseRequestsOutputSummary(),
-    "artifacts/release/release-evidence-request.md, artifacts/visual/page-builder-reference-request.md, artifacts/visual/page-builder-missing-references.txt, artifacts/production-smoke/production-smoke-request.md, artifacts/production-smoke/production-smoke-dispatch-inputs.txt",
+    "artifacts/release/release-evidence-request.md, artifacts/visual/page-builder-reference-request.md, artifacts/visual/page-builder-missing-references.txt, artifacts/visual/page-builder-reference-export-table.tsv, artifacts/production-smoke/production-smoke-request.md, artifacts/production-smoke/production-smoke-dispatch-inputs.txt",
   );
   assert.equal(
     createReleaseRequestsOutputSummary({
@@ -309,35 +355,16 @@ test("release requests help and summary expose the bundle command", async () => 
       releaseEvidence: "tmp/release.md",
       visualMissingReferences: "tmp/missing.txt",
       visualReference: "tmp/visual.md",
+      visualReferenceTable: "tmp/reference-table.tsv",
     }),
-    "tmp/release.md, tmp/visual.md, tmp/missing.txt, tmp/smoke.md, tmp/smoke-inputs.txt",
+    "tmp/release.md, tmp/visual.md, tmp/missing.txt, tmp/reference-table.tsv, tmp/smoke.md, tmp/smoke-inputs.txt",
   );
   assert.match(help, /refreshes all local evidence request files/);
   assert.match(help, /Custom output paths are also reflected/);
   assert.match(help, /--visual-missing-output <path>/);
+  assert.match(help, /--visual-table-output <path>/);
   assert.match(help, /--smoke-inputs-output <path>/);
   assert.match(help, /does not import\s+visual references, run\s+Production Smoke/);
-});
-
-test("release requests command is exposed in package CI and docs", async () => {
-  const [packageJsonText, workflow, releaseChecklist, setupDoc, readme] =
-    await Promise.all([
-      readFile("package.json", "utf8"),
-      readFile(".github/workflows/ci.yml", "utf8"),
-      readFile("docs/development/release-checklist.md", "utf8"),
-      readFile("docs/development/setup.md", "utf8"),
-      readFile("README.md", "utf8"),
-    ]);
-  const packageJson = JSON.parse(packageJsonText);
-
-  assert.equal(
-    packageJson.scripts["release:requests"],
-    "node scripts/release-requests.mjs",
-  );
-  assert.match(workflow, /pnpm release:requests -- --help/);
-  assert.match(releaseChecklist, /pnpm release:requests/);
-  assert.match(setupDoc, /pnpm release:requests/);
-  assert.match(readme, /pnpm release:requests/);
 });
 
 function escapeRegExp(value) {

@@ -102,10 +102,15 @@ test("project status summarizes blocked release evidence", () => {
     visualAction.steps.map((step) => step.label),
     [
       "Reference source", "Missing paths", "Design request",
-      "Design request output", "Missing paths output", "Reference report",
+      "Design request output", "Missing paths output", "Export table output",
+      "Reference report",
       "Import", "Capture fixture", "Measure", "Accept passing", "Verify",
       "Bundle artifact", "Check artifact", "Keep artifact",
     ],
+  );
+  assert.equal(
+    readStepValue(visualAction, "Export table output"),
+    "artifacts/visual/page-builder-reference-export-table.tsv",
   );
   assert.equal(
     readStepValue(visualAction, "Capture fixture"),

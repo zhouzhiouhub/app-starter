@@ -47,7 +47,7 @@
     "visual:references": "node scripts/page-builder-visual-import-references.mjs",
     "visual:references:check": "node scripts/page-builder-visual-import-references.mjs --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output reports/visual/page-builder-fixture/visual-reference-import-report.json --markdown-output reports/visual/page-builder-fixture/visual-reference-import-report.md --require-complete",
     "visual:references:missing": "node scripts/page-builder-visual-import-references.mjs --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --missing-paths",
-    "visual:references:request": "node scripts/page-builder-visual-reference-request.mjs --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output artifacts/visual/page-builder-reference-request.md --missing-output artifacts/visual/page-builder-missing-references.txt",
+    "visual:references:request": "node scripts/page-builder-visual-reference-request.mjs --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output artifacts/visual/page-builder-reference-request.md --missing-output artifacts/visual/page-builder-missing-references.txt --table-output artifacts/visual/page-builder-reference-export-table.tsv",
     "format:check": "prettier --check ."
   },
   "devDependencies": {

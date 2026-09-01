@@ -6,6 +6,7 @@ import {
 } from "../smoke/production-smoke-dispatch-inputs-output.mjs";
 import {
   defaultPageBuilderVisualMissingReferencesOutputPath,
+  defaultPageBuilderVisualReferenceExportTableOutputPath,
   defaultPageBuilderVisualReferenceRequestOutputPath,
 } from "../visual/page-builder-visual-reference-request.mjs";
 import {
@@ -18,6 +19,7 @@ export const defaultReleaseRequestsOutputPaths = {
   releaseEvidence: defaultReleaseEvidenceRequestOutputPath,
   visualMissingReferences: defaultPageBuilderVisualMissingReferencesOutputPath,
   visualReference: defaultPageBuilderVisualReferenceRequestOutputPath,
+  visualReferenceTable: defaultPageBuilderVisualReferenceExportTableOutputPath,
 };
 
 const releaseRequestsCommand = "pnpm release:requests";
@@ -38,6 +40,8 @@ export function createReleaseRequestsCommand(outputPaths = {}) {
     paths.visualReference,
     "--visual-missing-output",
     paths.visualMissingReferences,
+    "--visual-table-output",
+    paths.visualReferenceTable,
     "--smoke-output",
     paths.productionSmoke,
     "--smoke-inputs-output",
@@ -52,6 +56,7 @@ export function createReleaseRequestsOutputSummary(outputPaths = {}) {
     paths.releaseEvidence,
     paths.visualReference,
     paths.visualMissingReferences,
+    paths.visualReferenceTable,
     paths.productionSmoke,
     paths.productionSmokeInputs,
   ].join(", ");
