@@ -117,7 +117,10 @@ test("visual reference request help documents terminal summary fields", async ()
   const help = stdout.join("\n");
 
   assert.equal(exitCode, 0);
-  assert.match(help, /terminal summary reports the\s+missing\/required count/i);
+  assert.match(
+    help,
+    /terminal summary and Markdown status\s+report the missing\/required count/i,
+  );
   assert.match(help, /first missing reference path/i);
 });
 
@@ -173,10 +176,10 @@ test("visual reference request command is exposed in package and docs", () => {
   assert.match(packageJson, /"visual:references:request"/);
   assert.match(requestCli, /pnpm visual:references:request/);
   assert.match(readme, /pnpm visual:references:request/);
-  assert.match(readme, /First missing reference/);
-  assert.match(acceptanceDoc, /First missing reference/);
+  assert.match(readme, /终端摘要和 Markdown 状态行.*First missing reference/);
+  assert.match(acceptanceDoc, /terminal and Markdown `First missing reference`/);
   assert.match(releaseChecklist, /first missing reference path/);
-  assert.match(setupDoc, /First missing reference/);
+  assert.match(setupDoc, /terminal summary and Markdown status.*First missing reference/s);
   assert.match(referenceReadme, /pnpm visual:references:request/);
   assert.match(referenceReadme, /first missing reference path/);
 });

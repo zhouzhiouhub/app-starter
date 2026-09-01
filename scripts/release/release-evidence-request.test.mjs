@@ -151,7 +151,7 @@ test("release evidence request help documents terminal summary fields", async ()
   const help = stdout.join("\n");
 
   assert.equal(exitCode, 0);
-  assert.match(help, /terminal summary\s+reports release readiness/i);
+  assert.match(help, /terminal summary\s+and Markdown request status report release readiness/i);
   assert.match(help, /first missing visual\s+reference/i);
   assert.match(help, /missing Smoke input\s+names/i);
 });
@@ -214,6 +214,9 @@ test("release evidence request command is exposed in package CI and docs", async
   assert.match(workflow, /pnpm release:evidence-request -- --help/);
   assert.match(requestCli, /runReleaseEvidenceRequestCli/);
   assert.match(releaseChecklist, /pnpm release:evidence-request/);
+  assert.match(releaseChecklist, /First missing visual reference/);
   assert.match(setupDoc, /pnpm release:evidence-request/);
+  assert.match(setupDoc, /Missing Production Smoke inputs/);
   assert.match(readme, /pnpm release:evidence-request/);
+  assert.match(readme, /First missing visual reference/);
 });

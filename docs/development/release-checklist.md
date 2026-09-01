@@ -59,8 +59,8 @@ later phases are explicitly approved.
   `pnpm --silent visual:references:missing`
   when the design owner needs only the copy-ready missing PNG paths, run
   `pnpm visual:references:request` when they need a Markdown export request
-  with previews, follow-up commands, and a terminal first-missing-reference
-  hint, then run
+  with previews, follow-up commands, and a terminal and Markdown
+  first-missing-reference hint, then run
   `pnpm visual:references:check`
   to keep JSON and Markdown reference intake reports with missing or imported
   PNG paths. The JSON artifact's `requiredReferences[]` list is the
@@ -410,7 +410,8 @@ later phases are explicitly approved.
   JSON/Markdown files refreshed together.
 - Run `pnpm release:evidence-request` before cross-functional release review
   when design reference export and Production Smoke execution need one shared
-  request file.
+  request file. Its Request Status includes `First missing visual reference`
+  and `Missing Production Smoke inputs` for the first unblock step.
 - `pnpm visual:references` defaults to
   `docs/visual/page-builder-references`; keep `--source-dir` only when the
   release review needs to inspect a different retained reference archive.
@@ -419,7 +420,7 @@ later phases are explicitly approved.
 - `pnpm visual:references:request` writes
   `artifacts/visual/page-builder-reference-request.md` as the design-facing
   export request and prints the first missing reference path in the terminal
-  summary.
+  summary and Markdown status.
 - Run `pnpm release:check -- --checklist` when the gate is blocked and keep
   the readiness task output with the failed evidence review.
 - Use the failed check details and suggested fixes from the report review; the
