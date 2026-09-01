@@ -1,6 +1,9 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import {
+  createProductionSmokeDispatchManifestValidationCommand,
+} from "../smoke/production-smoke-dispatch-command.mjs";
+import {
   normalizeReleaseRequestsManifestOutputPath,
 } from "./release-requests-manifest-path.mjs";
 
@@ -37,6 +40,7 @@ export function createReleaseRequestsManifest(input = {}) {
       status: visual.status ?? "unknown",
     },
     productionSmoke: {
+      dispatchCommand: smoke.command ?? "",
       inputCount: Array.isArray(smoke.inputs) ? smoke.inputs.length : 0,
       inputsManifestPath: outputPaths.productionSmokeInputsManifest ?? null,
       inputsOutputPath: outputPaths.productionSmokeInputs ?? null,
@@ -45,6 +49,9 @@ export function createReleaseRequestsManifest(input = {}) {
       missingInputs,
       readyToDispatch: smoke.readyToDispatch === true,
       requestPath: outputPaths.productionSmoke ?? null,
+      validationCommand: createProductionSmokeDispatchManifestValidationCommand({
+        inputsJsonPath: outputPaths.productionSmokeInputsManifest,
+      }),
     },
     releaseEvidence: {
       blockerCount: readNumber(project.releaseGate?.blockerCount),

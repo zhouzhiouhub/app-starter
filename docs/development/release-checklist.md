@@ -450,6 +450,8 @@ later phases are explicitly approved.
   `artifacts/release/release-requests-manifest.json` bundle, plain missing visual reference path list,
   reference export task table, visual reference handoff package, workflow_dispatch input template,
   workflow_dispatch input TSV table, and workflow_dispatch input JSON manifest.
+  The bundle JSON also records the Production Smoke dispatch template and
+  `--inputs-json` validation command for operator handoff.
 - Run `pnpm release:evidence-request` before cross-functional release review
   when design reference export and Production Smoke execution need one shared
   request file. Its Request Status includes `First missing visual reference`

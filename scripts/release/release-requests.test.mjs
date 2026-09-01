@@ -369,6 +369,14 @@ test("release requests CLI writes every local request Markdown", async () => {
       releaseRequestsManifest.pageBuilderVisual.firstMissingReference,
       "docs/visual/page-builder-references/hero-banner-desktop.png",
     );
+    assert.equal(
+      releaseRequestsManifest.productionSmoke.validationCommand,
+      `pnpm smoke:dispatch -- --inputs-json ${smokeInputsJsonOutput} --require-complete`,
+    );
+    assert.match(
+      releaseRequestsManifest.productionSmoke.dispatchCommand,
+      /^gh workflow run production-smoke\.yml --ref main /,
+    );
     assert.deepEqual(releaseRequestsManifest.productionSmoke.missingInputs, [
       "visual_artifact_name",
       "visual_artifact_run_id",
