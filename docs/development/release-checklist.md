@@ -20,7 +20,8 @@ later phases are explicitly approved.
   handoff for design references, Production Smoke inputs, dispatch input
   template path, retained artifacts, and the final
   `release:handoff -- --require-ready` gate. This request is coordination
-  material only; it does not import references, run smoke, generate release
+  material only; pass `--smoke-inputs-output <path>` if the input template uses
+  a custom path. It does not import references, run smoke, generate release
   notes, or mark blocked evidence ready.
 - Configure the GitHub `production` environment with the required smoke secrets:
   `PRODUCTION_API_URL`, `PRODUCTION_WEB_URL`, `PRODUCTION_ADMIN_URL`,
@@ -424,7 +425,9 @@ later phases are explicitly approved.
 - Run `pnpm release:evidence-request` before cross-functional release review
   when design reference export and Production Smoke execution need one shared
   request file. Its Request Status includes `First missing visual reference`
-  and `Missing Production Smoke inputs` for the first unblock step.
+  and `Missing Production Smoke inputs` for the first unblock step; use
+  `--smoke-inputs-output <path>` to keep a custom dispatch input template path
+  visible in the combined request.
 - `pnpm visual:references` defaults to
   `docs/visual/page-builder-references`; keep `--source-dir` only when the
   release review needs to inspect a different retained reference archive.

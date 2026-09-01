@@ -29,6 +29,8 @@ export function createReleaseEvidenceRequestMarkdown(input) {
   const project = input.projectArtifact;
   const visual = input.visualReferenceArtifact;
   const smoke = input.smokeDispatchArtifact;
+  const smokeInputsOutputPath =
+    input.smokeInputsOutputPath ?? defaultProductionSmokeDispatchInputsOutputPath;
   const firstMissingVisualReference = Array.isArray(visual.missing)
     ? visual.missing[0]?.expectedPath
     : null;
@@ -52,7 +54,7 @@ export function createReleaseEvidenceRequestMarkdown(input) {
     )}`,
     `- Production Smoke request: ${formatCode(createProductionSmokeRequestCommand())}`,
     `- Production Smoke dispatch inputs output: ${formatCode(
-      defaultProductionSmokeDispatchInputsOutputPath,
+      smokeInputsOutputPath,
     )}`,
     `- Completion gate: ${formatCode(
       "pnpm release:handoff -- --require-ready --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture",
@@ -86,7 +88,7 @@ export function createReleaseEvidenceRequestMarkdown(input) {
     ...shiftMarkdownHeadings(
       createProductionSmokeRequestMarkdown({
         ...smoke,
-        inputsOutputPath: defaultProductionSmokeDispatchInputsOutputPath,
+        inputsOutputPath: smokeInputsOutputPath,
       }),
     ),
     "",

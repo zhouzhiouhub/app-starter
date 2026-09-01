@@ -1,4 +1,8 @@
 import { readProductionSmokeDispatchCliConfig } from "../smoke/production-smoke-dispatch-cli.mjs";
+import {
+  defaultProductionSmokeDispatchInputsOutputPath,
+  normalizeProductionSmokeDispatchInputsOutputPath,
+} from "../smoke/production-smoke-dispatch-inputs-output.mjs";
 import { defaultPageBuilderVisualReferenceSourceDir } from "../visual/page-builder-visual-acceptance-constants.mjs";
 import { defaultPageBuilderVisualArtifactDir } from "../visual/page-builder-visual-artifact-check-config.mjs";
 import { createArtifactPaths } from "../visual/page-builder-visual-artifact-check-paths.mjs";
@@ -42,6 +46,7 @@ export function readReleaseEvidenceRequestCliConfig(args = []) {
     outputPath: defaultReleaseEvidenceRequestOutputPath,
     releaseCheckArgs: [],
     smokeDispatchArgs: [],
+    smokeInputsOutputPath: defaultProductionSmokeDispatchInputsOutputPath,
     visualManifestPath: defaultReleaseEvidenceRequestVisualManifestPath,
     visualSourceDir: defaultPageBuilderVisualReferenceSourceDir,
   };
@@ -52,6 +57,17 @@ export function readReleaseEvidenceRequestCliConfig(args = []) {
 
     if (option === "--output") {
       input.outputPath = readOptionValue(option, normalizedArgs, index, value);
+      index += value === null ? 1 : 0;
+      continue;
+    }
+
+    if (option === "--smoke-inputs-output" || option === "--inputs-output") {
+      input.smokeInputsOutputPath = readOptionValue(
+        option,
+        normalizedArgs,
+        index,
+        value,
+      );
       index += value === null ? 1 : 0;
       continue;
     }
@@ -113,6 +129,9 @@ export function readReleaseEvidenceRequestCliConfig(args = []) {
     releaseCheckConfig,
     smokeDispatchConfig: readProductionSmokeDispatchCliConfig(
       input.smokeDispatchArgs,
+    ),
+    smokeInputsOutputPath: normalizeProductionSmokeDispatchInputsOutputPath(
+      input.smokeInputsOutputPath,
     ),
     visualManifestPath:
       releaseCheckConfig.visualArtifactDir

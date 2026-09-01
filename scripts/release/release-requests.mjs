@@ -148,6 +148,11 @@ export function readReleaseRequestsCliConfig(args = []) {
 
     if (option === "--smoke-inputs-output" || option === "--inputs-output") {
       const outputPath = readOptionValue(option, normalizedArgs, index, value);
+      setValueOption(
+        config.releaseEvidenceArgs,
+        "--smoke-inputs-output",
+        outputPath,
+      );
       setValueOption(config.productionSmokeArgs, "--inputs-output", outputPath);
       config.outputPaths.productionSmokeInputs = outputPath;
       index += value === null ? 1 : 0;

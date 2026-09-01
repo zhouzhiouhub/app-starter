@@ -12,12 +12,16 @@ import { createPendingVisualManifest } from "./release-check-test-fixtures.mjs";
 
 test("release evidence request Markdown combines blocked evidence handoffs", async () => {
   const root = `tmp/release-evidence-request-md-${process.pid}-${Date.now()}`;
+  const smokeInputsOutputPath = `${root}/smoke-inputs.txt`;
   const visualManifest = createPendingVisualManifest();
 
   try {
     await mkdir(root, { recursive: true });
     const request = await createReleaseEvidenceRequest(
-      readReleaseEvidenceRequestCliConfig([]),
+      readReleaseEvidenceRequestCliConfig([
+        "--smoke-inputs-output",
+        smokeInputsOutputPath,
+      ]),
       {
         smokeArtifact: { error: new Error("No smoke reports found.") },
         visualManifest,
@@ -42,7 +46,11 @@ test("release evidence request Markdown combines blocked evidence handoffs", asy
     assert.match(markdown, /Production Smoke request: `pnpm smoke:request`/);
     assert.match(
       markdown,
-      /Production Smoke dispatch inputs output: `artifacts\/production-smoke\/production-smoke-dispatch-inputs\.txt`/,
+      new RegExp(
+        `Production Smoke dispatch inputs output: \`${escapeRegExp(
+          smokeInputsOutputPath,
+        )}\``,
+      ),
     );
     assert.match(
       markdown,
@@ -56,7 +64,9 @@ test("release evidence request Markdown combines blocked evidence handoffs", asy
     assert.match(markdown, /## Production Smoke Evidence Request/);
     assert.match(
       markdown,
-      /Dispatch inputs output: `artifacts\/production-smoke\/production-smoke-dispatch-inputs\.txt`/,
+      new RegExp(
+        `Dispatch inputs output: \`${escapeRegExp(smokeInputsOutputPath)}\``,
+      ),
     );
     assert.match(markdown, /`visual_artifact_name`: `page-builder-visual-fixture-<run_number>`/);
     assert.match(markdown, /Do not mark the project complete from this request alone/);
@@ -168,6 +178,8 @@ test("release evidence request help documents terminal summary fields", async ()
   assert.match(help, /first missing visual\s+reference/i);
   assert.match(help, /missing Smoke input\s+names/i);
   assert.match(help, /dispatch input template\s+path/i);
+  assert.match(help, /--smoke-inputs-output <path>/);
+  assert.match(help, /--inputs-output <path>/);
 });
 
 test("release evidence request config validates paths and inputs", () => {
@@ -179,6 +191,8 @@ test("release evidence request config validates paths and inputs", () => {
     "docs/visual/page-builder-references",
     "--visual-artifact-dir",
     "reports/visual/page-builder-fixture",
+    "--smoke-inputs-output",
+    String.raw`tmp\\smoke-inputs.txt`,
     "--visual-artifact-run-id=33400968157",
   ]);
 
@@ -199,6 +213,7 @@ test("release evidence request config validates paths and inputs", () => {
     config.smokeDispatchConfig.inputOverrides.get("visual_artifact_run_id"),
     "33400968157",
   );
+  assert.equal(config.smokeInputsOutputPath, "tmp/smoke-inputs.txt");
   assert.equal(
     normalizeReleaseEvidenceRequestOutputPath("tmp/release-request.MD"),
     "tmp/release-request.MD",
@@ -228,12 +243,19 @@ test("release evidence request command is exposed in package CI and docs", async
   assert.match(workflow, /pnpm release:evidence-request -- --help/);
   assert.match(requestCli, /runReleaseEvidenceRequestCli/);
   assert.match(releaseChecklist, /pnpm release:evidence-request/);
+  assert.match(releaseChecklist, /--smoke-inputs-output <path>/);
   assert.match(releaseChecklist, /dispatch input\s+template path/);
   assert.match(releaseChecklist, /First missing visual reference/);
   assert.match(setupDoc, /pnpm release:evidence-request/);
+  assert.match(setupDoc, /--smoke-inputs-output <path>/);
   assert.match(setupDoc, /dispatch input template\s+path/);
   assert.match(setupDoc, /Missing Production Smoke inputs/);
   assert.match(readme, /pnpm release:evidence-request/);
+  assert.match(readme, /--smoke-inputs-output <path>/);
   assert.match(readme, /dispatch 输入模板路径/);
   assert.match(readme, /First missing visual reference/);
 });
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+}

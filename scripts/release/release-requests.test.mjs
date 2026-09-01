@@ -78,12 +78,32 @@ test("release requests CLI writes every local request Markdown", async () => {
       new RegExp(`Production Smoke inputs: ${escapeRegExp(smokeInputsOutput)}`),
     );
     assert.match(releaseMarkdown, /^# MVP Release Evidence Request/m);
+    assert.match(
+      releaseMarkdown,
+      new RegExp(
+        `Production Smoke dispatch inputs output: \`${escapeRegExp(
+          smokeInputsOutput,
+        )}\``,
+      ),
+    );
+    assert.match(
+      releaseMarkdown,
+      new RegExp(
+        `Dispatch inputs output: \`${escapeRegExp(smokeInputsOutput)}\``,
+      ),
+    );
     assert.match(visualMarkdown, /^# Page Builder Design Reference Request/m);
     assert.match(
       visualMissingPaths,
       /docs\/visual\/page-builder-references\/hero-banner-desktop\.png/,
     );
     assert.match(smokeMarkdown, /^# Production Smoke Evidence Request/m);
+    assert.match(
+      smokeMarkdown,
+      new RegExp(
+        `Dispatch inputs output: \`${escapeRegExp(smokeInputsOutput)}\``,
+      ),
+    );
     assert.match(
       smokeInputsText,
       /^visual_artifact_name=page-builder-visual-fixture-<run_number>/m,
@@ -149,6 +169,10 @@ test("release requests config routes shared evidence inputs", () => {
   assert.equal(readOptionValue(config.productionSmokeArgs, "--output"), "tmp/smoke.md");
   assert.equal(
     readOptionValue(config.productionSmokeArgs, "--inputs-output"),
+    "tmp/smoke-inputs.txt",
+  );
+  assert.equal(
+    readOptionValue(config.releaseEvidenceArgs, "--smoke-inputs-output"),
     "tmp/smoke-inputs.txt",
   );
   assert.ok(config.releaseEvidenceArgs.includes("--smoke-report"));

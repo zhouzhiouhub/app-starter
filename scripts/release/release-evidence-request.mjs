@@ -84,6 +84,7 @@ export async function createReleaseEvidenceRequest(config, input = {}, generated
   return {
     generatedAt,
     projectArtifact,
+    smokeInputsOutputPath: config.smokeInputsOutputPath,
     smokeDispatchArtifact: createProductionSmokeDispatchArtifact(
       config.smokeDispatchConfig,
     ),
@@ -98,11 +99,14 @@ function printHelp(writeLine) {
   writeLine(`Usage:
   pnpm release:evidence-request
   pnpm release:evidence-request -- --output artifacts/release/release-evidence-request.md
+  pnpm release:evidence-request -- --smoke-inputs-output artifacts/production-smoke/production-smoke-dispatch-inputs.txt
   pnpm release:evidence-request -- --visual-artifact page-builder-visual-fixture-123 --visual-artifact-run-id 456
   pnpm release:evidence-request -- --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture
 
 Options:
   --output <path>              Write the combined release evidence request Markdown.
+  --smoke-inputs-output <path> Show the Production Smoke workflow_dispatch input template path.
+  --inputs-output <path>       Alias for --smoke-inputs-output.
   --smoke-report <path>        Read a specific production smoke report for the status snapshot.
   --visual-artifact-dir <dir>  Include a downloaded Page Builder Visual artifact in the status snapshot.
   --visual-manifest <path>     Read a specific Page Builder visual manifest.
