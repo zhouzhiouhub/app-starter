@@ -10,8 +10,9 @@ later phases are explicitly approved.
   deployment sequence, environment variable matrix, evidence flow, and rollback
   runbook.
 - Run `pnpm release:requests` when the release needs the combined release
-  evidence request, Page Builder design request, and Production Smoke request
-  refreshed together. This writes only local coordination Markdown; it does not
+  evidence request, Page Builder design request, missing visual reference path
+  list, and Production Smoke request refreshed together. This writes only local
+  coordination files; it does not
   import references, run smoke, upload artifacts, generate release notes, or
   mark blocked evidence ready.
 - Run `pnpm release:evidence-request` when the release needs one combined
@@ -65,7 +66,8 @@ later phases are explicitly approved.
   when the design owner needs only the copy-ready missing PNG paths, run
   `pnpm visual:references:request` when they need a Markdown export request
   with previews, follow-up commands, and a terminal and Markdown
-  first-missing-reference hint, then run
+  first-missing-reference hint plus
+  `artifacts/visual/page-builder-missing-references.txt`, then run
   `pnpm visual:references:check`
   to keep JSON and Markdown reference intake reports with missing or imported
   PNG paths. The JSON artifact's `requiredReferences[]` list is the
@@ -415,7 +417,8 @@ later phases are explicitly approved.
   JSON/Markdown files refreshed together.
 - Run `pnpm release:requests` before cross-functional release review when the
   release needs the combined release request, design export request, and
-  Production Smoke operator request refreshed as separate local Markdown files.
+  Production Smoke operator request refreshed as separate local files, plus the
+  plain missing visual reference path list.
 - Run `pnpm release:evidence-request` before cross-functional release review
   when design reference export and Production Smoke execution need one shared
   request file. Its Request Status includes `First missing visual reference`
@@ -427,8 +430,10 @@ later phases are explicitly approved.
   paths, one per line, for design export handoff.
 - `pnpm visual:references:request` writes
   `artifacts/visual/page-builder-reference-request.md` as the design-facing
-  export request and prints the first missing reference path in the terminal
-  summary and Markdown status.
+  export request, writes
+  `artifacts/visual/page-builder-missing-references.txt` as the plain missing
+  path list, and prints the first missing reference path in the terminal summary
+  and Markdown status.
 - Run `pnpm release:check -- --checklist` when the gate is blocked and keep
   the readiness task output with the failed evidence review.
 - Use the failed check details and suggested fixes from the report review; the

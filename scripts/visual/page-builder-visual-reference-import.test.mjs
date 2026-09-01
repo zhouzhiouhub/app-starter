@@ -271,7 +271,7 @@ test("visual reference import command is exposed in docs", () => {
   );
   assert.match(
     packageJson,
-    /"visual:references:request": "node scripts\/page-builder-visual-reference-request\.mjs --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output artifacts\/visual\/page-builder-reference-request\.md"/,
+    /"visual:references:request": "node scripts\/page-builder-visual-reference-request\.mjs --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output artifacts\/visual\/page-builder-reference-request\.md --missing-output artifacts\/visual\/page-builder-missing-references\.txt"/,
   );
   assert.match(cli, /pnpm visual:references:check/);
   assert.match(cli, /pnpm visual:references:missing/);

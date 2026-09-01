@@ -88,12 +88,13 @@ test("project next actions include copy-ready missing visual reference paths", (
 
   assert.equal(missingPaths.value, "pnpm --silent visual:references:missing");
   assert.deepEqual(
-    visual.steps.slice(0, 5).map((step) => step.label),
+    visual.steps.slice(0, 6).map((step) => step.label),
     [
       "Reference source",
       "Missing paths",
       "Design request",
       "Design request output",
+      "Missing paths output",
       "Reference report",
     ],
   );
@@ -104,6 +105,10 @@ test("project next actions include copy-ready missing visual reference paths", (
   assert.equal(
     visual.steps.find((step) => step.label === "Design request output").value,
     "artifacts/visual/page-builder-reference-request.md",
+  );
+  assert.equal(
+    visual.steps.find((step) => step.label === "Missing paths output").value,
+    "artifacts/visual/page-builder-missing-references.txt",
   );
 });
 
@@ -134,7 +139,7 @@ test("project next actions include unified release evidence request", () => {
   );
   assert.equal(
     releaseEvidence.steps[1].value,
-    "artifacts/release/release-evidence-request.md, artifacts/visual/page-builder-reference-request.md, artifacts/production-smoke/production-smoke-request.md",
+    "artifacts/release/release-evidence-request.md, artifacts/visual/page-builder-reference-request.md, artifacts/visual/page-builder-missing-references.txt, artifacts/production-smoke/production-smoke-request.md",
   );
   assert.equal(
     releaseEvidence.steps[2].value,

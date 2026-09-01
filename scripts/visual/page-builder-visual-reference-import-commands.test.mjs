@@ -108,7 +108,7 @@ test("visual reference commands keep non-default source dirs explicit", () => {
   );
   assert.equal(
     createPageBuilderVisualReferenceRequestCommand(customReport),
-    "pnpm visual:references:request -- --source-dir artifacts/visual/design-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output reports/visual/page-builder-fixture/page-builder-reference-request.md",
+    "pnpm visual:references:request -- --source-dir artifacts/visual/design-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output reports/visual/page-builder-fixture/page-builder-reference-request.md --missing-output reports/visual/page-builder-fixture/page-builder-missing-references.txt",
   );
 });
 

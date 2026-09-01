@@ -7,6 +7,7 @@ import {
 } from "./visual/page-builder-visual-reference-import.mjs";
 import {
   readPageBuilderVisualReferenceRequestCliConfig,
+  writePageBuilderVisualMissingReferencePaths,
   writePageBuilderVisualReferenceRequestMarkdown,
 } from "./visual/page-builder-visual-reference-request.mjs";
 import { readErrorMessage } from "./smoke/smoke-error-message.mjs";
@@ -33,12 +34,29 @@ export async function runPageBuilderVisualReferenceRequestCli(
     });
     const artifact = createPageBuilderVisualReferenceImportArtifact(report);
 
+    const requestArtifact = {
+      ...artifact,
+      missingOutputPath: config.missingOutputPath,
+    };
+
     await writePageBuilderVisualReferenceRequestMarkdown(
       config.outputPath,
-      artifact,
+      requestArtifact,
     );
 
+    if (config.missingOutputPath) {
+      await writePageBuilderVisualMissingReferencePaths(
+        config.missingOutputPath,
+        artifact,
+      );
+    }
+
     stdout(`Visual reference request written: ${config.outputPath}`);
+    if (config.missingOutputPath) {
+      stdout(
+        `Visual missing reference paths written: ${config.missingOutputPath}`,
+      );
+    }
     stdout(
       `Missing references: ${artifact.missingCount}/${artifact.requiredReferenceCount}`,
     );
@@ -68,6 +86,7 @@ function printHelp(writeLine) {
   writeLine(`Usage:
   pnpm visual:references:request
   pnpm visual:references:request -- --output artifacts/visual/page-builder-reference-request.md
+  pnpm visual:references:request -- --missing-output artifacts/visual/page-builder-missing-references.txt
   pnpm visual:references:request -- --source-dir docs/visual/page-builder-references
 
 Options:
@@ -75,14 +94,17 @@ Options:
                       defaults to docs/visual/page-builder-references.
   --manifest <path>   Visual acceptance manifest path.
   --output <path>     Write the design handoff Markdown request.
+  --missing-output <path>
+                      Write a plain text list of missing expected PNG paths.
   -h, --help          Show this help.
 
 Evidence:
   This command creates a design-facing request from the same reference intake
   manifest used by visual:references. The terminal summary and Markdown status
   report the missing/required count and the first missing reference path to hand
-  off first. It does not import references, measure screenshots, mark evidence
-  accepted, or replace approved design exports.`);
+  off first. When --missing-output is provided, it also writes a plain text list
+  of missing expected PNG paths. It does not import references, measure
+  screenshots, mark evidence accepted, or replace approved design exports.`);
 }
 
 if (isMainModule()) {

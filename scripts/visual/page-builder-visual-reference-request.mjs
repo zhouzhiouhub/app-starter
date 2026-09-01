@@ -16,6 +16,15 @@ import {
   normalizeVisualReferenceImportMarkdownOutputPath,
   normalizeVisualReferenceSourceDir,
 } from "./page-builder-visual-reference-import-config.mjs";
+import {
+  normalizeVisualReferenceMissingOutputPath,
+} from "./page-builder-visual-reference-missing-output.mjs";
+
+export {
+  defaultPageBuilderVisualMissingReferencesOutputPath,
+  normalizeVisualReferenceMissingOutputPath,
+  writePageBuilderVisualMissingReferencePaths,
+} from "./page-builder-visual-reference-missing-output.mjs";
 
 export const defaultPageBuilderVisualReferenceRequestOutputPath =
   "artifacts/visual/page-builder-reference-request.md";
@@ -25,6 +34,7 @@ const maxMarkdownTextLength = 420;
 export function readPageBuilderVisualReferenceRequestCliConfig(args = []) {
   const input = {
     manifestPath: defaultPageBuilderVisualAcceptanceManifestPath,
+    missingOutputPath: null,
     outputPath: defaultPageBuilderVisualReferenceRequestOutputPath,
     sourceDir: defaultPageBuilderVisualReferenceSourceDir,
   };
@@ -36,6 +46,10 @@ export function readPageBuilderVisualReferenceRequestCliConfig(args = []) {
     switch (option) {
       case "--manifest":
         input.manifestPath = readOptionValue(option, normalizedArgs, index);
+        index += 1;
+        break;
+      case "--missing-output":
+        input.missingOutputPath = readOptionValue(option, normalizedArgs, index);
         index += 1;
         break;
       case "--output":
@@ -53,6 +67,9 @@ export function readPageBuilderVisualReferenceRequestCliConfig(args = []) {
 
   return {
     manifestPath: input.manifestPath,
+    missingOutputPath: input.missingOutputPath
+      ? normalizeVisualReferenceMissingOutputPath(input.missingOutputPath)
+      : null,
     outputPath: normalizeVisualReferenceImportMarkdownOutputPath(
       input.outputPath,
     ),
@@ -81,6 +98,7 @@ export function createPageBuilderVisualReferenceRequestMarkdown(input) {
     `First missing reference: ${formatCode(
       missingReferences[0]?.expectedPath ?? "none",
     )}`,
+    ...formatMissingOutputPath(input.missingOutputPath),
     "",
     "## Export Requirements",
     "",
@@ -158,6 +176,10 @@ function formatPreview(previewScreenshot) {
       : "";
 
   return `; preview ${formatCode(previewScreenshot.path)}${dimensions}`;
+}
+
+function formatMissingOutputPath(outputPath) {
+  return outputPath ? [`Missing path output: ${formatCode(outputPath)}`] : [];
 }
 
 function readStatus(input) {

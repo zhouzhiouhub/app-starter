@@ -14,6 +14,7 @@ test("release requests CLI writes every local request Markdown", async () => {
   const manifestPath = `${root}/page-builder-visual-acceptance.json`;
   const releaseOutput = `${root}/release-evidence-request.md`;
   const visualOutput = `${root}/page-builder-reference-request.md`;
+  const visualMissingOutput = `${root}/page-builder-missing-references.txt`;
   const smokeOutput = `${root}/production-smoke-request.md`;
   const stdout = [];
   const visualManifest = createPendingVisualManifest();
@@ -30,6 +31,8 @@ test("release requests CLI writes every local request Markdown", async () => {
         releaseOutput,
         "--visual-output",
         visualOutput,
+        "--visual-missing-output",
+        visualMissingOutput,
         "--smoke-output",
         smokeOutput,
       ],
@@ -42,10 +45,11 @@ test("release requests CLI writes every local request Markdown", async () => {
       },
     );
 
-    const [releaseMarkdown, visualMarkdown, smokeMarkdown] =
+    const [releaseMarkdown, visualMarkdown, visualMissingPaths, smokeMarkdown] =
       await Promise.all([
         readFile(releaseOutput, "utf8"),
         readFile(visualOutput, "utf8"),
+        readFile(visualMissingOutput, "utf8"),
         readFile(smokeOutput, "utf8"),
       ]);
     const output = stdout.join("\n");
@@ -55,9 +59,17 @@ test("release requests CLI writes every local request Markdown", async () => {
     assert.match(output, /Release request files refreshed:/);
     assert.match(output, new RegExp(`Release evidence: ${escapeRegExp(releaseOutput)}`));
     assert.match(output, new RegExp(`Page Builder design: ${escapeRegExp(visualOutput)}`));
+    assert.match(
+      output,
+      new RegExp(`Page Builder missing paths: ${escapeRegExp(visualMissingOutput)}`),
+    );
     assert.match(output, new RegExp(`Production Smoke: ${escapeRegExp(smokeOutput)}`));
     assert.match(releaseMarkdown, /^# MVP Release Evidence Request/m);
     assert.match(visualMarkdown, /^# Page Builder Design Reference Request/m);
+    assert.match(
+      visualMissingPaths,
+      /docs\/visual\/page-builder-references\/hero-banner-desktop\.png/,
+    );
     assert.match(smokeMarkdown, /^# Production Smoke Evidence Request/m);
   } finally {
     await rm(root, { force: true, recursive: true });
@@ -70,6 +82,8 @@ test("release requests config routes shared evidence inputs", () => {
     "--release-output",
     "tmp/release.md",
     "--visual-output=tmp/visual.md",
+    "--visual-missing-output",
+    "tmp/missing.txt",
     "--smoke-output",
     "tmp/smoke.md",
     "--source-dir",
@@ -99,11 +113,14 @@ test("release requests config routes shared evidence inputs", () => {
   assert.deepEqual(config.outputPaths, {
     productionSmoke: "tmp/smoke.md",
     releaseEvidence: "tmp/release.md",
+    visualMissingReferences: "tmp/missing.txt",
     visualReference: "tmp/visual.md",
   });
   assert.deepEqual(config.visualReferenceArgs, [
     "--output",
     "tmp/visual.md",
+    "--missing-output",
+    "tmp/missing.txt",
     "--source-dir",
     "docs/visual/page-builder-references",
     "--manifest",
@@ -131,6 +148,8 @@ test("release requests config routes shared evidence inputs", () => {
   ]);
 
   assert.deepEqual(artifactDirConfig.visualReferenceArgs, [
+    "--missing-output",
+    "artifacts/visual/page-builder-missing-references.txt",
     "--manifest",
     "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
   ]);
@@ -148,10 +167,11 @@ test("release requests help and summary expose the bundle command", async () => 
   assert.equal(createReleaseRequestsCommand(), "pnpm release:requests");
   assert.equal(
     createReleaseRequestsOutputSummary(),
-    "artifacts/release/release-evidence-request.md, artifacts/visual/page-builder-reference-request.md, artifacts/production-smoke/production-smoke-request.md",
+    "artifacts/release/release-evidence-request.md, artifacts/visual/page-builder-reference-request.md, artifacts/visual/page-builder-missing-references.txt, artifacts/production-smoke/production-smoke-request.md",
   );
-  assert.match(help, /refreshes all local evidence request Markdown files/);
-  assert.match(help, /does not import visual references, run Production Smoke/);
+  assert.match(help, /refreshes all local evidence request files/);
+  assert.match(help, /--visual-missing-output <path>/);
+  assert.match(help, /does not import\s+visual references, run Production Smoke/);
 });
 
 test("release requests command is exposed in package CI and docs", async () => {

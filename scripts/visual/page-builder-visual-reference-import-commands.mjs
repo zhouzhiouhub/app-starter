@@ -81,6 +81,8 @@ export function createPageBuilderVisualReferenceRequestCommand(report) {
     ...createManifestOption(report),
     "--output",
     `${outputDir}/page-builder-reference-request.md`,
+    "--missing-output",
+    `${outputDir}/page-builder-missing-references.txt`,
   ]);
 }
 

@@ -2,6 +2,7 @@ import {
   defaultProductionSmokeRequestOutputPath,
 } from "../smoke/production-smoke-request.mjs";
 import {
+  defaultPageBuilderVisualMissingReferencesOutputPath,
   defaultPageBuilderVisualReferenceRequestOutputPath,
 } from "../visual/page-builder-visual-reference-request.mjs";
 import {
@@ -11,6 +12,7 @@ import {
 export const defaultReleaseRequestsOutputPaths = {
   productionSmoke: defaultProductionSmokeRequestOutputPath,
   releaseEvidence: defaultReleaseEvidenceRequestOutputPath,
+  visualMissingReferences: defaultPageBuilderVisualMissingReferencesOutputPath,
   visualReference: defaultPageBuilderVisualReferenceRequestOutputPath,
 };
 
@@ -24,6 +26,7 @@ export function createReleaseRequestsOutputSummary() {
   return [
     defaultReleaseRequestsOutputPaths.releaseEvidence,
     defaultReleaseRequestsOutputPaths.visualReference,
+    defaultReleaseRequestsOutputPaths.visualMissingReferences,
     defaultReleaseRequestsOutputPaths.productionSmoke,
   ].join(", ");
 }

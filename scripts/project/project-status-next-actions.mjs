@@ -8,6 +8,7 @@ import {
   createPageBuilderVisualReferenceRequestCommand,
 } from "../visual/page-builder-visual-reference-import-commands.mjs";
 import {
+  defaultPageBuilderVisualMissingReferencesOutputPath,
   defaultPageBuilderVisualReferenceRequestOutputPath,
 } from "../visual/page-builder-visual-reference-request.mjs";
 
@@ -148,6 +149,10 @@ function createPageBuilderVisualActionSteps(action, context) {
       createVisualReferenceRequestOutputPath(visualContext),
     ),
     createNextActionStep(
+      "Missing paths output",
+      createVisualMissingReferencesOutputPath(visualContext),
+    ),
+    createNextActionStep(
       "Reference report",
       createPageBuilderVisualReferenceCheckCommand({
         manifestPath: visualContext.manifestPath,
@@ -190,6 +195,12 @@ function createVisualReferenceRequestOutputPath(visualContext) {
   return visualContext.artifactDir === defaultVisualArtifactDir
     ? defaultPageBuilderVisualReferenceRequestOutputPath
     : `${visualContext.artifactDir}/page-builder-reference-request.md`;
+}
+
+function createVisualMissingReferencesOutputPath(visualContext) {
+  return visualContext.artifactDir === defaultVisualArtifactDir
+    ? defaultPageBuilderVisualMissingReferencesOutputPath
+    : `${visualContext.artifactDir}/page-builder-missing-references.txt`;
 }
 
 function createPageBuilderVisualActionContext(context) {

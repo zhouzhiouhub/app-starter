@@ -76,6 +76,9 @@ export async function runReleaseRequestsCli(args = [], input = {}) {
     stdout("Release request files refreshed:");
     stdout(`  - Release evidence: ${config.outputPaths.releaseEvidence}`);
     stdout(`  - Page Builder design: ${config.outputPaths.visualReference}`);
+    stdout(
+      `  - Page Builder missing paths: ${config.outputPaths.visualMissingReferences}`,
+    );
     stdout(`  - Production Smoke: ${config.outputPaths.productionSmoke}`);
     return 0;
   } catch (error) {
@@ -90,7 +93,10 @@ export function readReleaseRequestsCliConfig(args = []) {
     productionSmokeArgs: [],
     releaseEvidenceArgs: [],
     visualArtifactManifestPath: null,
-    visualReferenceArgs: [],
+    visualReferenceArgs: [
+      "--missing-output",
+      defaultReleaseRequestsOutputPaths.visualMissingReferences,
+    ],
   };
   const normalizedArgs = stripPnpmSeparator(args);
 
@@ -109,6 +115,18 @@ export function readReleaseRequestsCliConfig(args = []) {
       const outputPath = readOptionValue(option, normalizedArgs, index, value);
       setValueOption(config.visualReferenceArgs, "--output", outputPath);
       config.outputPaths.visualReference = outputPath;
+      index += value === null ? 1 : 0;
+      continue;
+    }
+
+    if (option === "--visual-missing-output" || option === "--missing-output") {
+      const outputPath = readOptionValue(option, normalizedArgs, index, value);
+      setValueOption(
+        config.visualReferenceArgs,
+        "--missing-output",
+        outputPath,
+      );
+      config.outputPaths.visualMissingReferences = outputPath;
       index += value === null ? 1 : 0;
       continue;
     }
@@ -242,11 +260,13 @@ function printHelp(writeLine) {
   writeLine(`Usage:
   pnpm release:requests
   pnpm release:requests -- --visual-artifact page-builder-visual-fixture-123 --visual-artifact-run-id 456
-  pnpm release:requests -- --release-output tmp/release.md --visual-output tmp/visual.md --smoke-output tmp/smoke.md
+  pnpm release:requests -- --release-output tmp/release.md --visual-output tmp/visual.md --visual-missing-output tmp/missing.txt --smoke-output tmp/smoke.md
 
 Outputs:
   --release-output <path>  Combined release evidence request Markdown.
   --visual-output <path>   Page Builder design reference request Markdown.
+  --visual-missing-output <path>
+                           Plain text missing Page Builder reference paths.
   --smoke-output <path>    Production Smoke request Markdown.
 
 Shared evidence inputs:
@@ -260,7 +280,8 @@ Shared evidence inputs:
   --release-tag, --rollback-target, and --storefront-url.
 
 Evidence:
-  This command refreshes all local evidence request Markdown files for blocked
-  release handoff. It does not import visual references, run Production Smoke,
-  create release notes, upload artifacts, or mark the project ready.`);
+  This command refreshes all local evidence request files and the missing Page
+  Builder reference path list for blocked release handoff. It does not import
+  visual references, run Production Smoke, create release notes, upload
+  artifacts, or mark the project ready.`);
 }

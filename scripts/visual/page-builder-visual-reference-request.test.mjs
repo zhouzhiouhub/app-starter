@@ -24,6 +24,7 @@ test("visual reference request Markdown is design-facing", () => {
     complete: false,
     manifestPath:
       "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
+    missingOutputPath: "artifacts/visual/page-builder-missing-references.txt",
     requiredReferences: [
       {
         component: "hero-banner",
@@ -53,6 +54,10 @@ test("visual reference request Markdown is design-facing", () => {
     markdown,
     /First missing reference: `docs\/visual\/page-builder-references\/hero-banner-desktop\.png`/,
   );
+  assert.match(
+    markdown,
+    /Missing path output: `artifacts\/visual\/page-builder-missing-references\.txt`/,
+  );
   assert.match(markdown, /Export real PNGs from the approved design source/);
   assert.match(
     markdown,
@@ -69,6 +74,7 @@ test("visual reference request CLI writes a Markdown handoff", async () => {
   const manifestPath = `${root}/page-builder-visual-acceptance.json`;
   const sourceDir = `${root}/references`;
   const outputPath = `${root}/page-builder-reference-request.md`;
+  const missingOutputPath = `${root}/page-builder-missing-references.txt`;
   const stdout = [];
 
   try {
@@ -83,21 +89,29 @@ test("visual reference request CLI writes a Markdown handoff", async () => {
         manifestPath,
         "--output",
         outputPath,
+        "--missing-output",
+        missingOutputPath,
       ],
       {
         stdout: (line) => stdout.push(line),
       },
     );
     const markdown = readFileSync(outputPath, "utf8");
+    const missingPaths = readFileSync(missingOutputPath, "utf8");
 
     assert.equal(exitCode, 0);
     assert.match(stdout.join("\n"), /Visual reference request written:/);
+    assert.match(
+      stdout.join("\n"),
+      /Visual missing reference paths written:/,
+    );
     assert.match(stdout.join("\n"), /Missing references: 1\/12/);
     assert.match(
       stdout.join("\n"),
       /First missing reference: reports\/visual\/reference-request-.+\/references\/spec-table-mobile\.png/,
     );
     assert.match(markdown, /spec-table\.mobile; missing/);
+    assert.equal(missingPaths, `${sourceDir}/spec-table-mobile.png\n`);
     assert.match(
       markdown,
       /First missing reference: `reports\/visual\/reference-request-.+\/references\/spec-table-mobile\.png`/,
@@ -134,10 +148,13 @@ test("visual reference request config validates paths", () => {
       "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
       "--output",
       "artifacts/visual/page-builder-reference-request.md",
+      "--missing-output",
+      "artifacts\\visual\\page-builder-missing-references.txt",
     ]),
     {
       manifestPath:
         "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
+      missingOutputPath: "artifacts/visual/page-builder-missing-references.txt",
       outputPath: "artifacts/visual/page-builder-reference-request.md",
       sourceDir: "docs/visual/page-builder-references",
     },
@@ -150,6 +167,48 @@ test("visual reference request config validates paths", () => {
       ]),
     /Visual reference import Markdown must be under docs\/visual, artifacts\/visual, reports\/visual, tmp\/, or \.tmp\//,
   );
+  assert.throws(
+    () =>
+      readPageBuilderVisualReferenceRequestCliConfig([
+        "--missing-output",
+        "artifacts/visual/page-builder-missing-references.md",
+      ]),
+    /Visual reference missing paths output must end with \.txt/,
+  );
+});
+
+test("visual reference request writes an empty missing path list when complete", async () => {
+  const root = `reports/visual/reference-request-ready-${process.pid}-${Date.now()}`;
+  const manifestPath = `${root}/page-builder-visual-acceptance.json`;
+  const sourceDir = `${root}/references`;
+  const outputPath = `${root}/page-builder-reference-request.md`;
+  const missingOutputPath = `${root}/page-builder-missing-references.txt`;
+
+  try {
+    writeReferenceFiles(sourceDir);
+    writeFileSync(manifestPath, `${JSON.stringify(createManifest(), null, 2)}\n`);
+
+    const exitCode = await runPageBuilderVisualReferenceRequestCli(
+      [
+        "--source-dir",
+        sourceDir,
+        "--manifest",
+        manifestPath,
+        "--output",
+        outputPath,
+        "--missing-output",
+        missingOutputPath,
+      ],
+      {
+        stdout: () => {},
+      },
+    );
+
+    assert.equal(exitCode, 0);
+    assert.equal(readFileSync(missingOutputPath, "utf8"), "");
+  } finally {
+    rmSync(root, { force: true, recursive: true });
+  }
 });
 
 test("visual reference request command is exposed in package and docs", () => {
@@ -174,13 +233,23 @@ test("visual reference request command is exposed in package and docs", () => {
   );
 
   assert.match(packageJson, /"visual:references:request"/);
+  assert.match(
+    packageJson,
+    /--missing-output artifacts\/visual\/page-builder-missing-references\.txt/,
+  );
   assert.match(requestCli, /pnpm visual:references:request/);
+  assert.match(requestCli, /--missing-output <path>/);
   assert.match(readme, /pnpm visual:references:request/);
+  assert.match(readme, /page-builder-missing-references\.txt/);
   assert.match(readme, /终端摘要和 Markdown 状态行.*First missing reference/);
-  assert.match(acceptanceDoc, /terminal and Markdown `First missing reference`/);
+  assert.match(acceptanceDoc, /terminal\s+and Markdown `First missing reference`/);
+  assert.match(acceptanceDoc, /page-builder-missing-references\.txt/);
   assert.match(releaseChecklist, /first missing reference path/);
+  assert.match(releaseChecklist, /page-builder-missing-references\.txt/);
   assert.match(setupDoc, /terminal summary and Markdown status.*First missing reference/s);
+  assert.match(setupDoc, /page-builder-missing-references\.txt/);
   assert.match(referenceReadme, /pnpm visual:references:request/);
+  assert.match(referenceReadme, /page-builder-missing-references\.txt/);
   assert.match(referenceReadme, /first missing reference path/);
 });
 

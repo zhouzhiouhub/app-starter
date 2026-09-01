@@ -311,7 +311,9 @@ missing expected PNG paths, one per line, for design export handoff.
 `pnpm visual:references:request` writes
 `artifacts/visual/page-builder-reference-request.md` as a design-facing Markdown
 request with the missing files, retained preview screenshots, and follow-up
-commands. Its terminal summary and Markdown status also print
+commands. It also writes
+`artifacts/visual/page-builder-missing-references.txt` as a plain one-path-per-line
+missing PNG list. Its terminal summary and Markdown status also print
 `First missing reference` when a reference PNG is still missing.
 `pnpm visual:references:check` writes the default release fixture JSON/Markdown
 report and requires the full reference set without updating the manifest.
@@ -325,9 +327,10 @@ reference`, `Missing Production Smoke inputs`, and the final
 retained. It does not import references, run smoke, create release notes, or
 mark blocked evidence ready.
 
-`pnpm release:requests` refreshes all three local request Markdown files in one
+`pnpm release:requests` refreshes the local request files and missing-path list in one
 run: `artifacts/release/release-evidence-request.md`,
-`artifacts/visual/page-builder-reference-request.md`, and
+`artifacts/visual/page-builder-reference-request.md`,
+`artifacts/visual/page-builder-missing-references.txt`, and
 `artifacts/production-smoke/production-smoke-request.md`. It accepts the same
 visual manifest/source options and Production Smoke evidence inputs as the
 individual request commands, but still does not import references, run smoke,
@@ -426,7 +429,9 @@ Use `pnpm --silent visual:references:missing` when the reviewer only needs
 copy-ready missing PNG paths.
 Use `pnpm visual:references:request` when the designer needs a Markdown export
 request rather than the full engineering intake report; the terminal summary
-and Markdown status also print the first missing reference path.
+and Markdown status also print the first missing reference path, and
+`artifacts/visual/page-builder-missing-references.txt` keeps the same missing
+paths as a plain text handoff.
 Use `pnpm visual:references:check` for the default release fixture intake
 report.
 
