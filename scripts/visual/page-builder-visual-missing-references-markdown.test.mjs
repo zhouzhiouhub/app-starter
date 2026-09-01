@@ -28,6 +28,7 @@ test("missing visual references Markdown includes intake commands", () => {
     /- `docs\/visual\/page-builder-references\/hero-banner-desktop\.png`/,
   );
   assert.match(markdown, /### Visual Reference Intake Commands/);
+  assert.match(markdown, /Design request: `pnpm visual:references:request`/);
   assert.match(
     markdown,
     /Reference report: `pnpm visual:references:check`/,

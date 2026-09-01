@@ -128,6 +128,10 @@ test("project status summarizes visual artifact counts", () => {
     missingReferenceMarkdown,
     /`docs\/visual\/page-builder-references\/hero-banner-desktop\.png`/,
   );
+  assert.match(
+    missingReferenceMarkdown,
+    /Design request: `pnpm visual:references:request`/,
+  );
 });
 
 test("project status docs mention visual artifact path and counts", async () => {
@@ -141,12 +145,14 @@ test("project status docs mention visual artifact path and counts", async () => 
   assert.match(readme, /releaseGate\.visual\.artifactCheck/);
   assert.match(readme, /missingReferences/);
   assert.match(readme, /Missing Visual References/);
+  assert.match(readme, /pnpm visual:references:request/);
   assert.match(readme, /release-check\.md.*project-status\.md/s);
   assert.match(
     setupDoc,
     /prints its artifact path, issue count,\s+file count, screenshot counts, reference-import missing\/update counts,\s+required source reference availability, and the first missing reference path/s,
   );
   assert.match(setupDoc, /Missing Visual References/);
+  assert.match(setupDoc, /pnpm visual:references:request/);
   assert.match(setupDoc, /release-check\.md.*project-status\.md/s);
   assert.match(setupDoc, /releaseGate\.visual\.artifactCheck/);
   assert.match(
@@ -154,5 +160,6 @@ test("project status docs mention visual artifact path and counts", async () => 
     /artifact path,\s+issue, file, screenshot, reference-import missing\/update counts,\s+required source reference availability, and the first missing reference path/s,
   );
   assert.match(releaseChecklist, /Missing Visual References/);
+  assert.match(releaseChecklist, /pnpm visual:references:request/);
   assert.match(releaseChecklist, /release-check\.md.*project-status\.md/s);
 });

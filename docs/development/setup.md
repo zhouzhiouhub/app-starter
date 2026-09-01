@@ -274,6 +274,7 @@ pnpm smoke:report -- reports/production/smoke-report.json
 pnpm smoke:release-check -- artifacts/production-smoke/smoke-report.json
 pnpm smoke:dispatch
 pnpm --silent visual:references:missing
+pnpm visual:references:request
 pnpm visual:references:check
 pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete
 pnpm visual:capture:fixture -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json --write-manifest
@@ -304,6 +305,10 @@ section with all 12 Page Builder component and viewport source PNGs, marking
 each as `missing`, `ready`, `would-update`, or `updated` before visual evidence
 is measured or accepted. `pnpm --silent visual:references:missing` prints only the
 missing expected PNG paths, one per line, for design export handoff.
+`pnpm visual:references:request` writes
+`artifacts/visual/page-builder-reference-request.md` as a design-facing Markdown
+request with the missing files, retained preview screenshots, and follow-up
+commands.
 `pnpm visual:references:check` writes the default release fixture JSON/Markdown
 report and requires the full reference set without updating the manifest.
 
@@ -381,8 +386,8 @@ release gate summary, records the missing path list under
 `releaseGate.visual.artifactCheck.referenceImport`, and adds a
 `Missing Visual References` section to the Markdown handoff when missing PNGs
 are present. That section also includes `Visual Reference Intake Commands` so
-the reference report, import, capture, measure, accept-passing, and final
-acceptance commands stay beside the missing file list. `release-check.md` uses
+the design request, reference report, import, capture, measure, accept-passing,
+and final acceptance commands stay beside the missing file list. `release-check.md` uses
 the same missing-reference handoff section when the combined gate reads a visual
 artifact. Explicit `--visual-artifact-dir` or `--visual-manifest` inputs still
 take precedence. `release:check` continues
@@ -393,6 +398,8 @@ downloaded visual artifact.
 alternate archive or downloaded evidence directory.
 Use `pnpm --silent visual:references:missing` when the reviewer only needs
 copy-ready missing PNG paths.
+Use `pnpm visual:references:request` when the designer needs a Markdown export
+request rather than the full engineering intake report.
 Use `pnpm visual:references:check` for the default release fixture intake
 report.
 

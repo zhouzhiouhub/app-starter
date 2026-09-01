@@ -1,10 +1,5 @@
 import assert from "node:assert/strict";
-import {
-  mkdirSync,
-  mkdtempSync,
-  readFileSync,
-  writeFileSync,
-} from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -258,15 +253,9 @@ test("visual reference import command is exposed in docs", () => {
     "scripts/page-builder-visual-import-references.mjs",
     "utf8",
   );
-  const acceptanceDoc = readFileSync(
-    "docs/development/page-builder-visual-acceptance.md",
-    "utf8",
-  );
+  const acceptanceDoc = readFileSync("docs/development/page-builder-visual-acceptance.md", "utf8");
   const setupDoc = readFileSync("docs/development/setup.md", "utf8");
-  const releaseChecklist = readFileSync(
-    "docs/development/release-checklist.md",
-    "utf8",
-  );
+  const releaseChecklist = readFileSync("docs/development/release-checklist.md", "utf8");
 
   assert.match(
     packageJson,
@@ -279,6 +268,10 @@ test("visual reference import command is exposed in docs", () => {
   assert.match(
     packageJson,
     /"visual:references:missing": "node scripts\/page-builder-visual-import-references\.mjs --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --missing-paths"/,
+  );
+  assert.match(
+    packageJson,
+    /"visual:references:request": "node scripts\/page-builder-visual-reference-request\.mjs --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --output artifacts\/visual\/page-builder-reference-request\.md"/,
   );
   assert.match(cli, /pnpm visual:references:check/);
   assert.match(cli, /pnpm visual:references:missing/);
@@ -293,6 +286,7 @@ test("visual reference import command is exposed in docs", () => {
   );
   assert.match(readme, /pnpm visual:references -- --manifest/);
   assert.match(readme, /pnpm --silent visual:references:missing/);
+  assert.match(readme, /pnpm visual:references:request/);
   assert.match(readme, /pnpm visual:references` 会读取该目录/);
   assert.match(readme, /visual-reference-import-report\.json/);
   assert.match(readme, /visual-reference-import-report\.md/);
@@ -305,6 +299,7 @@ test("visual reference import command is exposed in docs", () => {
   );
   assert.match(acceptanceDoc, /pnpm visual:references -- --manifest/);
   assert.match(acceptanceDoc, /pnpm --silent visual:references:missing/);
+  assert.match(acceptanceDoc, /pnpm visual:references:request/);
   assert.match(acceptanceDoc, /visual-reference-import-report\.json/);
   assert.match(acceptanceDoc, /visual-reference-import-report\.md/);
   assert.match(acceptanceDoc, /expectedPath/);
@@ -315,8 +310,10 @@ test("visual reference import command is exposed in docs", () => {
     /--manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/,
   );
   assert.match(setupDoc, /pnpm --silent visual:references:missing/);
+  assert.match(setupDoc, /pnpm visual:references:request/);
   assert.match(releaseChecklist, /pnpm visual:references -- --manifest/);
   assert.match(releaseChecklist, /pnpm --silent visual:references:missing/);
+  assert.match(releaseChecklist, /pnpm visual:references:request/);
   assert.match(releaseChecklist, /visual-reference-import-report\.json/);
   assert.match(releaseChecklist, /visual-reference-import-report\.md/);
   assert.match(

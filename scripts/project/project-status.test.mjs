@@ -63,15 +63,10 @@ test("project status summarizes blocked release evidence", () => {
   assert.deepEqual(
     artifact.nextActions[0].steps.map((step) => step.label),
     [
-      "Run workflow",
-      "Manual dispatch",
-      "Validate dispatch",
-      "Dispatch template",
-      "Local verification inputs",
-      "Visual evidence inputs",
-      "Release note inputs",
-      "Keep artifacts",
-      "Rerun gate",
+      "Run workflow", "Manual dispatch", "Validate dispatch",
+      "Dispatch template", "Local verification inputs",
+      "Visual evidence inputs", "Release note inputs",
+      "Keep artifacts", "Rerun gate",
     ],
   );
   assert.match(
@@ -112,7 +107,11 @@ test("project status summarizes blocked release evidence", () => {
   assert.deepEqual(
     artifact.nextActions[1].steps.map((step) => step.label),
     [
-      "Reference source", "Missing paths", "Reference report", "Import",
+      "Reference source",
+      "Missing paths",
+      "Design request",
+      "Reference report",
+      "Import",
       "Capture fixture",
       "Measure",
       "Accept passing", "Verify", "Bundle artifact", "Check artifact",
@@ -120,7 +119,7 @@ test("project status summarizes blocked release evidence", () => {
     ],
   );
   assert.equal(
-    artifact.nextActions[1].steps[4].value,
+    artifact.nextActions[1].steps[5].value,
     "pnpm visual:capture:fixture -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json --write-manifest",
   );
   assert.equal(
@@ -141,14 +140,8 @@ test("project status summarizes blocked release evidence", () => {
   assert.deepEqual(
     heroDesktopAction.steps.map((step) => step.label),
     [
-      "Reference",
-      "Preview",
-      "Capture",
-      "Reference report",
-      "Import",
-      "Measure",
-      "Accept passing",
-      "Verify",
+      "Reference", "Preview", "Capture", "Reference report",
+      "Import", "Measure", "Accept passing", "Verify",
     ],
   );
   assert.equal(
@@ -161,6 +154,10 @@ test("project status summarizes blocked release evidence", () => {
   );
   assert.equal(
     artifact.nextActions[1].steps[2].value,
+    "pnpm visual:references:request",
+  );
+  assert.equal(
+    artifact.nextActions[1].steps[3].value,
     "pnpm visual:references:check",
   );
 });
@@ -262,6 +259,7 @@ test("project status CLI prints readable blocked state", async () => {
       text,
       /Missing paths: pnpm --silent visual:references:missing/,
     );
+    assert.match(text, /Design request: pnpm visual:references:request/);
     assert.match(
       text,
       /Preview: reports\/visual\/page-builder-fixture\/page-builder-visual-fixture-hero-banner-desktop\.png \(1440x1000\)/,

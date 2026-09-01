@@ -9,6 +9,7 @@ import {
   createPageBuilderVisualReferenceMeasureCommand,
   createPageBuilderVisualReferenceMissingPathsCommand,
   createPageBuilderVisualReferenceReportCommand,
+  createPageBuilderVisualReferenceRequestCommand,
   formatPageBuilderVisualReferenceImportReport,
 } from "./page-builder-visual-reference-import.mjs";
 
@@ -34,6 +35,10 @@ test("visual reference commands keep artifact manifest context", () => {
   assert.equal(
     createPageBuilderVisualReferenceMissingPathsCommand(artifactReport),
     "pnpm --silent visual:references:missing",
+  );
+  assert.equal(
+    createPageBuilderVisualReferenceRequestCommand(artifactReport),
+    "pnpm visual:references:request",
   );
   assert.equal(
     createPageBuilderVisualReferenceMeasureCommand(artifactReport),
@@ -100,6 +105,10 @@ test("visual reference commands keep non-default source dirs explicit", () => {
   assert.equal(
     createPageBuilderVisualReferenceMissingPathsCommand(customReport),
     "pnpm --silent visual:references -- --source-dir artifacts/visual/design-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --missing-paths",
+  );
+  assert.equal(
+    createPageBuilderVisualReferenceRequestCommand(customReport),
+    "pnpm visual:references:request -- --source-dir artifacts/visual/design-references --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output reports/visual/page-builder-fixture/page-builder-reference-request.md",
   );
 });
 

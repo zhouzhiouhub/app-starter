@@ -30,13 +30,16 @@ or corrupted file is rejected during intake.
    viewport names above.
 2. Run `pnpm --silent visual:references:missing` when you need a copy-ready
    list of missing PNG paths.
-3. Run `pnpm visual:references:check`.
-4. Review the generated Markdown report and fix any missing or empty PNGs.
-5. Run `pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete`.
-6. Capture retained browser screenshots with `pnpm visual:capture:fixture -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json --write-manifest`.
-7. Run `pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete`.
-8. Review the measured evidence, then run `pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --accept-passing --require-complete`.
-9. Finish with `pnpm visual:acceptance -- --require-accepted reports/visual/page-builder-fixture/page-builder-visual-acceptance.json`.
+3. Run `pnpm visual:references:request` when the design owner needs a Markdown
+   export request with the file list, preview screenshots, and follow-up
+   commands.
+4. Run `pnpm visual:references:check`.
+5. Review the generated Markdown report and fix any missing or empty PNGs.
+6. Run `pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete`.
+7. Capture retained browser screenshots with `pnpm visual:capture:fixture -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json --write-manifest`.
+8. Run `pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete`.
+9. Review the measured evidence, then run `pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --accept-passing --require-complete`.
+10. Finish with `pnpm visual:acceptance -- --require-accepted reports/visual/page-builder-fixture/page-builder-visual-acceptance.json`.
 
 The reference importer only writes manifest paths and resets stale metrics. It
 does not mark a viewport as accepted. If this directory is missing or is not a
@@ -55,6 +58,9 @@ alternate archive or downloaded evidence bundle.
 Markdown intake reports without updating the manifest.
 `pnpm --silent visual:references:missing` uses the same default manifest and
 source directory, but prints only missing expected PNG paths, one per line.
+`pnpm visual:references:request` writes
+`artifacts/visual/page-builder-reference-request.md` as a design-facing request;
+it does not import references or mark visual evidence accepted.
 
 Changes in this directory trigger the `Page Builder Visual` GitHub Actions
 workflow so fixture evidence can be refreshed before Production Smoke consumes

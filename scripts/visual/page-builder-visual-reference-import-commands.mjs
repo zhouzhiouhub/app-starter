@@ -8,6 +8,7 @@ import { pageBuilderVisualCaptureDefaultOutputDir } from "./page-builder-visual-
 
 const defaultReferenceCheckCommand = "pnpm visual:references:check";
 const defaultMissingPathsCommand = "pnpm --silent visual:references:missing";
+const defaultReferenceRequestCommand = "pnpm visual:references:request";
 
 export function createPageBuilderVisualReferenceCaptureCommand(report) {
   const captureOutputDir = inferVisualArtifactDir(report.manifestPath);
@@ -62,6 +63,24 @@ export function createPageBuilderVisualReferenceMissingPathsCommand(report) {
     ...createSourceDirOption(report),
     ...createManifestOption(report),
     "--missing-paths",
+  ]);
+}
+
+export function createPageBuilderVisualReferenceRequestCommand(report) {
+  if (isDefaultReferenceCheckContext(report)) {
+    return defaultReferenceRequestCommand;
+  }
+
+  const outputDir = inferVisualArtifactDir(report.manifestPath);
+
+  return joinCommand([
+    "pnpm",
+    "visual:references:request",
+    "--",
+    ...createSourceDirOption(report),
+    ...createManifestOption(report),
+    "--output",
+    `${outputDir}/page-builder-reference-request.md`,
   ]);
 }
 

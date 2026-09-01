@@ -32,6 +32,7 @@ pnpm visual:measure -- --write
 pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete
 pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --accept-passing --require-complete
 pnpm --silent visual:references:missing
+pnpm visual:references:request
 pnpm visual:references:check
 pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete
 ```
@@ -75,9 +76,12 @@ metrics. Add
 `--manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json`
 when importing into the uploadable artifact manifest. Run
 `pnpm --silent visual:references:missing` first when the design owner needs only
-a copy-ready list of missing PNG paths. Run `pnpm visual:references:check` to
-keep machine-readable and human-readable reference intake reports listing
-missing PNGs, imported paths, and the next command. The JSON report keeps
+a copy-ready list of missing PNG paths. Run `pnpm visual:references:request`
+when the design owner needs a Markdown export request with the same missing
+file list, retained preview screenshots, and follow-up commands. Run
+`pnpm visual:references:check` to keep machine-readable and human-readable
+reference intake reports listing missing PNGs, imported paths, and the next
+command. The JSON report keeps
 `requiredReferenceCount` and a complete
 `requiredReferences[]` list for all 12 component viewport PNGs, including each
 target path, intake status, retained preview screenshot path, and decoded

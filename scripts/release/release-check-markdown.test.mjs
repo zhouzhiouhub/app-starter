@@ -198,6 +198,10 @@ test("release check Markdown lists blockers and visual tasks", () => {
   assert.match(markdown, /### Visual Reference Intake Commands/);
   assert.match(
     markdown,
+    /Design request: `pnpm visual:references:request`/,
+  );
+  assert.match(
+    markdown,
     /Reference report: `pnpm visual:references:check`/,
   );
   assert.match(

@@ -116,6 +116,10 @@ test("project status CLI writes a Markdown handoff", async () => {
     );
     assert.match(
       markdown,
+      / {4}- Design request: `pnpm visual:references:request`/,
+    );
+    assert.match(
+      markdown,
       / {4}- Reference report: `pnpm visual:references:check`/,
     );
     assert.match(

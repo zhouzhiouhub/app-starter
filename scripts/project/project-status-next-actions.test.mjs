@@ -81,8 +81,12 @@ test("project next actions include copy-ready missing visual reference paths", (
 
   assert.equal(missingPaths.value, "pnpm --silent visual:references:missing");
   assert.deepEqual(
-    visual.steps.slice(0, 3).map((step) => step.label),
-    ["Reference source", "Missing paths", "Reference report"],
+    visual.steps.slice(0, 4).map((step) => step.label),
+    ["Reference source", "Missing paths", "Design request", "Reference report"],
+  );
+  assert.equal(
+    visual.steps.find((step) => step.label === "Design request").value,
+    "pnpm visual:references:request",
   );
 });
 

@@ -6,6 +6,7 @@ import {
   createPageBuilderVisualReferenceImportWriteCommand,
   createPageBuilderVisualReferenceMeasureCommand,
   createPageBuilderVisualReferenceReportCommand,
+  createPageBuilderVisualReferenceRequestCommand,
 } from "./page-builder-visual-reference-import-commands.mjs";
 import { formatRequiredSourceReferenceAvailability } from "./page-builder-visual-reference-summary-format.mjs";
 
@@ -58,6 +59,10 @@ export function formatMissingVisualReferenceFiles(visual) {
 
 function formatVisualReferenceIntakeCommands(referenceImport) {
   return [
+    [
+      "Design request",
+      createPageBuilderVisualReferenceRequestCommand(referenceImport),
+    ],
     [
       "Reference report",
       createPageBuilderVisualReferenceReportCommand(referenceImport),
