@@ -87,6 +87,24 @@ export function createProductionSmokeDispatchValidationCommand(options = {}) {
   ].join(" ");
 }
 
+export function createProductionSmokeDispatchManifestValidationCommand(
+  options = {},
+) {
+  const cliCommand =
+    readText(options.cliCommand) ?? defaultDispatchCliCommand;
+  const inputsJsonPath =
+    readText(options.inputsJsonPath) ??
+    defaultProductionSmokeDispatchInputsManifestOutputPath;
+
+  return [
+    cliCommand,
+    "--",
+    "--inputs-json",
+    inputsJsonPath,
+    "--require-complete",
+  ].join(" ");
+}
+
 export function createProductionSmokeRequestCommand(options = {}) {
   const outputPath =
     readText(options.outputPath) ?? defaultSmokeRequestOutputPath;

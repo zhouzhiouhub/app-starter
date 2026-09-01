@@ -2,13 +2,13 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   createProductionSmokeDispatchCommand,
-  createProductionSmokeDispatchValidationCommand,
+  createProductionSmokeDispatchManifestValidationCommand,
 } from "../smoke/production-smoke-dispatch-command.mjs";
 import { createReleaseEvidenceCheckArtifact } from "./release-check.mjs";
 
 const missingProductionSmokeAction = [
   "Run pnpm smoke:request, validate the filled workflow_dispatch inputs",
-  "with pnpm smoke:dispatch -- --require-complete, then run the",
+  "with pnpm smoke:dispatch -- --inputs-json artifacts/production-smoke/production-smoke-dispatch-inputs.json --require-complete, then run the",
   "Production Smoke workflow against the production environment.",
 ].join(" ");
 
@@ -111,7 +111,7 @@ test("release check artifact includes blocked checklist actions", () => {
   );
   assert.equal(
     readStepValue(smokeItem, "Validate dispatch"),
-    createProductionSmokeDispatchValidationCommand(),
+    createProductionSmokeDispatchManifestValidationCommand(),
   );
   assert.equal(
     readStepValue(smokeItem, "Dispatch template"),

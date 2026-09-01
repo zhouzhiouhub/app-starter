@@ -55,7 +55,7 @@ test("project status exposes smoke Markdown companion status", () => {
   );
   assert.match(
     markdown,
-    /Workflow dispatch validation: `pnpm smoke:dispatch -- --require-complete/,
+    /Workflow dispatch validation: `pnpm smoke:dispatch -- --inputs-json artifacts\/production-smoke\/production-smoke-dispatch-inputs\.json --require-complete`/,
   );
   assert.match(
     markdown,

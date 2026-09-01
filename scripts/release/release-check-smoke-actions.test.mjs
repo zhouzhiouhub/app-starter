@@ -9,7 +9,7 @@ test("missing smoke artifact action starts with request and dispatch validation"
 
   assert.match(
     action,
-    /^Run pnpm smoke:request, validate the filled workflow_dispatch inputs with pnpm smoke:dispatch -- --require-complete, then run the Production Smoke workflow/u,
+    /^Run pnpm smoke:request, validate the filled workflow_dispatch inputs with pnpm smoke:dispatch -- --inputs-json artifacts\/production-smoke\/production-smoke-dispatch-inputs\.json --require-complete, then run the Production Smoke workflow/u,
   );
   assert.match(action, /production-smoke-report-<run_number>/u);
   assert.match(action, /release-preflight-<run_number>/u);

@@ -6,7 +6,7 @@ import path from "node:path";
 import test from "node:test";
 import {
   createProductionSmokeDispatchCommand,
-  createProductionSmokeDispatchValidationCommand,
+  createProductionSmokeDispatchManifestValidationCommand,
   createProductionSmokeRequestCommand,
 } from "../smoke/production-smoke-dispatch-command.mjs";
 import {
@@ -109,7 +109,7 @@ test("release handoff writes blocked reports without requiring readiness", async
       /Manual dispatch: GitHub Actions > Production Smoke > Run workflow/,
     );
     assert.match(stdout.join("\n"), new RegExp(`Smoke request: ${escapeRegExp(createProductionSmokeRequestCommand())}`));
-    assert.match(stdout.join("\n"), new RegExp(`Validate dispatch: ${escapeRegExp(createProductionSmokeDispatchValidationCommand())}`));
+    assert.match(stdout.join("\n"), new RegExp(`Validate dispatch: ${escapeRegExp(createProductionSmokeDispatchManifestValidationCommand())}`));
     assert.match(
       stdout.join("\n"),
       new RegExp(`Dispatch template: ${escapeRegExp(dispatchCommand)}`),

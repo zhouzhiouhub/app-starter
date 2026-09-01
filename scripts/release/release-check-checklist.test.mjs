@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   createProductionSmokeDispatchCommand,
-  createProductionSmokeDispatchValidationCommand,
+  createProductionSmokeDispatchManifestValidationCommand,
   createProductionSmokeManualDispatchInstruction,
   createProductionSmokeRequestCommand,
 } from "../smoke/production-smoke-dispatch-command.mjs";
@@ -13,7 +13,7 @@ import {
 
 const missingProductionSmokeAction = [
   "Run pnpm smoke:request, validate the filled workflow_dispatch inputs",
-  "with pnpm smoke:dispatch -- --require-complete, then run the",
+  "with pnpm smoke:dispatch -- --inputs-json artifacts/production-smoke/production-smoke-dispatch-inputs.json --require-complete, then run the",
   "Production Smoke workflow against the production environment.",
 ].join(" ");
 
@@ -64,7 +64,7 @@ test("release readiness checklist summarizes ready evidence", () => {
 
 test("release readiness checklist carries blocker actions", () => {
   const dispatchCommand = createProductionSmokeDispatchCommand();
-  const validationCommand = createProductionSmokeDispatchValidationCommand();
+  const validationCommand = createProductionSmokeDispatchManifestValidationCommand();
   const checklist = createReleaseEvidenceReadinessChecklist({
     blockers: [
       {
@@ -99,7 +99,7 @@ test("release readiness checklist carries blocker actions", () => {
   assert.equal(checklist.releaseReady, false);
   assert.match(
     lines,
-    /pnpm smoke:request.*pnpm smoke:dispatch -- --require-complete.*Production Smoke workflow/,
+    /pnpm smoke:request.*pnpm smoke:dispatch -- --inputs-json artifacts\/production-smoke\/production-smoke-dispatch-inputs\.json --require-complete.*Production Smoke workflow/,
   );
   assert.ok(
     lines.includes(

@@ -39,7 +39,7 @@ test("project status completion checklist summarizes blocked evidence", () => {
   );
   assert.match(
     checklist.items[1].nextAction,
-    /pnpm smoke:request.*pnpm smoke:dispatch -- --require-complete.*Production Smoke workflow/u,
+    /pnpm smoke:request.*pnpm smoke:dispatch -- --inputs-json artifacts\/production-smoke\/production-smoke-dispatch-inputs\.json --require-complete.*Production Smoke workflow/u,
   );
   assert.deepEqual(
     checklist.items[1].nextSteps.map((step) => step.label),
@@ -62,7 +62,7 @@ test("project status completion checklist summarizes blocked evidence", () => {
   );
   assert.match(
     readStepValue(checklist.items[1], "Validate dispatch"),
-    /^pnpm smoke:dispatch -- --require-complete /u,
+    /^pnpm smoke:dispatch -- --inputs-json artifacts\/production-smoke\/production-smoke-dispatch-inputs\.json --require-complete$/u,
   );
   assert.match(
     readStepValue(checklist.items[1], "Dispatch template"),

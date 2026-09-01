@@ -177,10 +177,11 @@ later phases are explicitly approved.
    dispatch validation command, `gh` template, input table, JSON input manifest,
    and artifact retention checklist. This request does not run smoke or satisfy
    release evidence by itself.
-2. Run `pnpm smoke:dispatch -- --require-complete ...` with the main CI local
-   verification input, the accepted Page Builder Visual artifact input,
-   release tag, rollback target, and production storefront URL; copy the printed
-   command only after it reports `Ready to dispatch: yes`.
+2. Replace the placeholders in
+   `artifacts/production-smoke/production-smoke-dispatch-inputs.json`, then run
+   `pnpm smoke:dispatch -- --inputs-json artifacts/production-smoke/production-smoke-dispatch-inputs.json --require-complete`;
+   explicit CLI flags may still override JSON values. Copy the printed command
+   only after it reports `Ready to dispatch: yes`.
 3. Open the `Production Smoke` workflow in GitHub Actions.
 4. Run it against the `production` environment with the validated
    `workflow_dispatch` inputs from the request and dispatch check.

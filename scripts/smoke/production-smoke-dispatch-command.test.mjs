@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import test from "node:test";
 import {
   createProductionSmokeDispatchArtifact,
@@ -8,11 +8,15 @@ import {
 } from "./production-smoke-dispatch-cli.mjs";
 import {
   createProductionSmokeDispatchCommand,
+  createProductionSmokeDispatchManifestValidationCommand,
   createProductionSmokeDispatchValidationCommand,
   createProductionSmokeManualDispatchInstruction,
   createProductionSmokeRequestCommand,
   productionSmokeDispatchInputs,
 } from "./production-smoke-dispatch-command.mjs";
+import {
+  productionSmokeDispatchInputsManifestSchemaVersion,
+} from "./production-smoke-dispatch-inputs-manifest-output.mjs";
 
 test("production smoke dispatch command names workflow and release inputs", () => {
   const command = createProductionSmokeDispatchCommand();
@@ -52,6 +56,16 @@ test("production smoke dispatch validation command names safe CLI inputs", () =>
   );
   assert.match(command, /--release-tag "<tag>"/);
   assert.ok(command.length <= 420);
+});
+
+test("production smoke dispatch validation command can read JSON inputs", () => {
+  assert.equal(
+    createProductionSmokeDispatchManifestValidationCommand({
+      inputsJsonPath:
+        "artifacts/production-smoke/production-smoke-dispatch-inputs.json",
+    }),
+    "pnpm smoke:dispatch -- --inputs-json artifacts/production-smoke/production-smoke-dispatch-inputs.json --require-complete",
+  );
 });
 
 test("production smoke manual dispatch instruction names the workflow UI", () => {
@@ -143,6 +157,83 @@ test("production smoke dispatch CLI validates complete release inputs", async ()
   );
 });
 
+test("production smoke dispatch CLI reads filled JSON input manifests", async () => {
+  const root = `tmp/production-smoke-dispatch-${process.pid}-${Date.now()}`;
+  const manifestPath = `${root}/dispatch-inputs.json`;
+  const stdout = [];
+
+  try {
+    await mkdir(root, { recursive: true });
+    await writeFile(
+      manifestPath,
+      `${JSON.stringify({
+        inputs: [
+          {
+            name: "visual_artifact_name",
+            value: "page-builder-visual-fixture-281",
+          },
+          { name: "visual_artifact_run_id", value: "33400968157" },
+          {
+            name: "local_verification_run_url",
+            value:
+              "https://github.com/zhouzhiouhub/app-starter/actions/runs/33400968402",
+          },
+          {
+            name: "local_verification_artifact_name",
+            value: "local-verification-533",
+          },
+          { name: "release_tag", value: "v0.1.0" },
+          { name: "rollback_target", value: "main@6769bd2" },
+          { name: "storefront_url", value: "https://store.brand.com" },
+        ],
+        schemaVersion: productionSmokeDispatchInputsManifestSchemaVersion,
+      })}\n`,
+      "utf8",
+    );
+
+    const exitCode = await runProductionSmokeDispatchCli(
+      [
+        "--inputs-json",
+        manifestPath,
+        "--release-tag",
+        "v0.1.1",
+        "--require-complete",
+      ],
+      { stdout: (line) => stdout.push(line) },
+    );
+    const output = stdout.join("\n");
+
+    assert.equal(exitCode, 0);
+    assert.match(output, /Ready to dispatch: yes/);
+    assert.doesNotMatch(output, /Missing inputs:/);
+    assert.match(output, /-f visual_artifact_name="page-builder-visual-fixture-281"/);
+    assert.match(output, /-f release_tag="v0\.1\.1"/);
+    assert.match(output, /-f storefront_url="https:\/\/store\.brand\.com\/"/);
+  } finally {
+    await rm(root, { force: true, recursive: true });
+  }
+});
+
+test("production smoke dispatch CLI rejects invalid JSON input manifests", async () => {
+  const root = `tmp/production-smoke-dispatch-invalid-${process.pid}-${Date.now()}`;
+  const manifestPath = `${root}/dispatch-inputs.json`;
+  const stderr = [];
+
+  try {
+    await mkdir(root, { recursive: true });
+    await writeFile(manifestPath, "{", "utf8");
+    const exitCode = await runProductionSmokeDispatchCli(
+      ["--inputs-json", manifestPath],
+      { stderr: (line) => stderr.push(line) },
+    );
+
+    assert.equal(exitCode, 1);
+    assert.match(stderr.join("\n"), /must contain valid JSON/);
+  } finally {
+    await rm(root, { force: true, recursive: true });
+  }
+});
+
 test("production smoke dispatch CLI can print JSON for integrations", async () => {
   const stdout = [];
   const exitCode = await runProductionSmokeDispatchCli(["--json"], {
@@ -210,10 +301,13 @@ test("production smoke dispatch CLI exposes package and docs entry points", asyn
   );
   assert.match(workflow, /pnpm smoke:request -- --help/);
   assert.match(releaseChecklist, /pnpm smoke:dispatch/);
+  assert.match(releaseChecklist, /--inputs-json/);
   assert.match(releaseChecklist, /pnpm smoke:request/);
   assert.match(setupDoc, /pnpm smoke:dispatch/);
+  assert.match(setupDoc, /--inputs-json/);
   assert.match(setupDoc, /pnpm smoke:request/);
   assert.match(readme, /pnpm smoke:dispatch/);
+  assert.match(readme, /--inputs-json/);
   assert.match(readme, /pnpm smoke:request/);
 });
 
@@ -229,6 +323,13 @@ test("production smoke dispatch config normalizes command options", () => {
 
   assert.equal(artifact.ref, "release/mvp");
   assert.equal(artifact.workflowFile, "production-smoke.yml");
+  assert.equal(
+    readProductionSmokeDispatchCliConfig([
+      "--inputs-json",
+      String.raw`tmp\\dispatch-inputs.JSON`,
+    ]).inputsJsonPath,
+    "tmp/dispatch-inputs.JSON",
+  );
   assert.match(artifact.command, /--ref release\/mvp/);
   assert.match(artifact.command, /-f visual_artifact_run_id="33400968157"/);
 });

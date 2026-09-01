@@ -60,7 +60,10 @@ test("production smoke request Markdown is operator-facing", () => {
     /Dispatch inputs JSON output: `artifacts\/production-smoke\/production-smoke-dispatch-inputs\.json`/,
   );
   assert.match(markdown, /Manual dispatch: `GitHub Actions > Production Smoke/);
-  assert.match(markdown, /Validate dispatch: `pnpm smoke:dispatch -- --require-complete/);
+  assert.match(
+    markdown,
+    /Validate dispatch: `pnpm smoke:dispatch -- --inputs-json artifacts\/production-smoke\/production-smoke-dispatch-inputs\.json --require-complete`/,
+  );
   assert.match(markdown, /Dispatch template: `gh workflow run production-smoke\.yml --ref main/);
   assert.match(markdown, /- \[ \] `visual_artifact_name`: `page-builder-visual-fixture-<run_number>` - replace before dispatch/);
   assert.match(markdown, /## Evidence Input Sources/);
@@ -137,6 +140,10 @@ test("production smoke request CLI writes a Markdown handoff", async () => {
     assert.match(markdown, /Dispatch inputs output: `tmp\/production-smoke-request-.+\/dispatch-inputs\.txt`/);
     assert.match(markdown, /Dispatch inputs table output: `tmp\/production-smoke-request-.+\/dispatch-inputs\.tsv`/);
     assert.match(markdown, /Dispatch inputs JSON output: `tmp\/production-smoke-request-.+\/dispatch-inputs\.json`/);
+    assert.match(
+      markdown,
+      /Validate dispatch: `pnpm smoke:dispatch -- --inputs-json tmp\/production-smoke-request-.+\/dispatch-inputs\.json --require-complete`/,
+    );
     assert.match(markdown, /- \[x\] `visual_artifact_name`: `page-builder-visual-fixture-281` - ready/);
     assert.match(markdown, /- \[x\] `storefront_url`: `https:\/\/store\.brand\.com\/` - ready/);
     assert.match(
@@ -164,6 +171,10 @@ test("production smoke request CLI writes a Markdown handoff", async () => {
     assert.equal(inputsManifest.missingInputCount, 0);
     assert.equal(inputsManifest.inputs[0].status, "ready");
     assert.equal(inputsManifest.inputs[0].value, "page-builder-visual-fixture-281");
+    assert.match(
+      inputsManifest.validationCommand,
+      /^pnpm smoke:dispatch -- --inputs-json tmp\/production-smoke-request-.+\/dispatch-inputs\.json --require-complete$/,
+    );
     assert.equal(inputsManifest.inputSources.length, 7);
     assert.equal(inputsManifest.workflowInputs.length, 14);
     assert.equal(inputsManifest.requiredEvidence.length, 15);
@@ -307,15 +318,18 @@ test("production smoke request command is exposed in package CI and docs", async
   assert.match(releaseChecklist, /production-smoke-dispatch-inputs\.txt/);
   assert.match(releaseChecklist, /production-smoke-dispatch-inputs\.tsv/);
   assert.match(releaseChecklist, /production-smoke-dispatch-inputs\.json/);
+  assert.match(releaseChecklist, /--inputs-json/);
   assert.match(releaseChecklist, /evidence input sources/);
   assert.match(setupDoc, /pnpm smoke:request/);
   assert.match(setupDoc, /production-smoke-dispatch-inputs\.txt/);
   assert.match(setupDoc, /production-smoke-dispatch-inputs\.tsv/);
   assert.match(setupDoc, /production-smoke-dispatch-inputs\.json/);
+  assert.match(setupDoc, /--inputs-json/);
   assert.match(setupDoc, /Production Smoke\s+Evidence Input Sources/);
   assert.match(readme, /pnpm smoke:request/);
   assert.match(readme, /production-smoke-dispatch-inputs\.txt/);
   assert.match(readme, /production-smoke-dispatch-inputs\.tsv/);
   assert.match(readme, /production-smoke-dispatch-inputs\.json/);
+  assert.match(readme, /--inputs-json/);
   assert.match(readme, /inputSources\[\]/);
 });

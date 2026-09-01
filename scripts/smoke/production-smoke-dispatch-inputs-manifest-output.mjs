@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import {
+  createProductionSmokeDispatchManifestValidationCommand,
   createProductionSmokeDispatchValidationCommand,
 } from "./production-smoke-dispatch-command.mjs";
 import {
@@ -46,9 +47,7 @@ export function createProductionSmokeDispatchInputsManifest(dispatchArtifact) {
       dispatchArtifact?.readyToDispatch === true
         ? "ready-to-dispatch"
         : "needs-inputs",
-    validationCommand: createProductionSmokeDispatchValidationCommand({
-      inputs,
-    }),
+    validationCommand: createManifestValidationCommand(dispatchArtifact, inputs),
     workflowFile: dispatchArtifact?.workflowFile ?? "",
     workflowInputs: productionSmokeWorkflowInputs.map(createWorkflowInputEntry),
   };
@@ -62,7 +61,10 @@ export async function writeProductionSmokeDispatchInputsManifest(
   await writeFile(
     outputPath,
     `${JSON.stringify(
-      createProductionSmokeDispatchInputsManifest(dispatchArtifact),
+      createProductionSmokeDispatchInputsManifest({
+        ...dispatchArtifact,
+        inputsJsonOutputPath: outputPath,
+      }),
       null,
       2,
     )}\n`,
@@ -87,6 +89,14 @@ function createManifestInputEntry(input) {
     workflowDescription: workflowInput?.description ?? "",
     workflowRequired: workflowInput?.required === true,
   };
+}
+
+function createManifestValidationCommand(dispatchArtifact, inputs) {
+  return dispatchArtifact?.inputsJsonOutputPath
+    ? createProductionSmokeDispatchManifestValidationCommand({
+        inputsJsonPath: dispatchArtifact.inputsJsonOutputPath,
+      })
+    : createProductionSmokeDispatchValidationCommand({ inputs });
 }
 
 function createInputSourceEntry(input) {

@@ -40,11 +40,11 @@ test("project next actions preserve visual artifact dir on release gate reruns",
   );
   assert.match(
     readStepValue(productionSmoke, "Validate dispatch"),
-    /^pnpm smoke:dispatch -- --require-complete /,
+    /^pnpm smoke:dispatch -- --inputs-json artifacts\/production-smoke\/production-smoke-dispatch-inputs\.json --require-complete$/,
   );
   assert.match(
     readStepValue(productionSmoke, "Validate dispatch"),
-    /--local-verification-artifact "local-verification-<run_number>"/,
+    /--inputs-json artifacts\/production-smoke\/production-smoke-dispatch-inputs\.json/,
   );
   assert.match(
     readStepValue(productionSmoke, "Dispatch template"),

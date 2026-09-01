@@ -1,62 +1,47 @@
-import {
-  normalizeArtifactName,
-  normalizeLocalVerificationArtifactName,
-  normalizePlainValue,
-  normalizeReleaseTag,
-  normalizeStorefrontUrl,
-  normalizeWorkflowRunUrl,
-} from "../release/release-notes-validation.mjs";
+import { normalizePlainValue } from "../release/release-notes-validation.mjs";
 import { readErrorMessage } from "./smoke-error-message.mjs";
 import {
   createProductionSmokeDispatchCommand,
   createProductionSmokeManualDispatchInstruction,
   productionSmokeDispatchInputs,
 } from "./production-smoke-dispatch-command.mjs";
+import { printProductionSmokeDispatchHelp } from "./production-smoke-dispatch-help.mjs";
+import {
+  normalizeProductionSmokeDispatchInputsManifestOutputPath,
+  readProductionSmokeDispatchManifestInputOverrides,
+} from "./production-smoke-dispatch-manifest-inputs.mjs";
+import {
+  normalizeProductionSmokeDispatchInputValue,
+  productionSmokeDispatchOptionInputNames,
+} from "./production-smoke-dispatch-input-normalizers.mjs";
 
 const defaultWorkflowFile = "production-smoke.yml";
 const defaultRef = "main";
-const safeVisualArtifactNamePattern =
-  /^page-builder-visual-fixture-[0-9]{1,20}$/u;
 const safeWorkflowFilePattern = /^[A-Za-z0-9._-]+\.ya?ml$/u;
 const safeWorkflowRefPattern = /^[A-Za-z0-9][A-Za-z0-9._/-]{0,119}$/u;
-const safeGithubRunIdPattern = /^[0-9]{1,20}$/u;
-const safeRollbackTargetPattern = /^[A-Za-z0-9][A-Za-z0-9._/@:-]{0,159}$/u;
-
-const optionInputNames = new Map([
-  ["--visual-artifact-name", "visual_artifact_name"],
-  ["--visual-artifact", "visual_artifact_name"],
-  ["--visual-artifact-run-id", "visual_artifact_run_id"],
-  ["--local-verification-run-url", "local_verification_run_url"],
-  ["--local-verification-artifact-name", "local_verification_artifact_name"],
-  ["--local-verification-artifact", "local_verification_artifact_name"],
-  ["--release-tag", "release_tag"],
-  ["--rollback-target", "rollback_target"],
-  ["--storefront-url", "storefront_url"],
-]);
-
-const inputNormalizers = {
-  local_verification_artifact_name: normalizeLocalVerificationArtifactName,
-  local_verification_run_url: normalizeWorkflowRunUrl,
-  release_tag: normalizeReleaseTag,
-  rollback_target: normalizeRollbackTarget,
-  storefront_url: normalizeStorefrontUrl,
-  visual_artifact_name: normalizeVisualArtifactName,
-  visual_artifact_run_id: normalizeGithubRunId,
-};
 
 export async function runProductionSmokeDispatchCli(args = [], input = {}) {
   const stdout = input.stdout ?? console.log;
   const stderr = input.stderr ?? console.error;
 
   if (args.includes("--help") || args.includes("-h")) {
-    printHelp(stdout);
+    printProductionSmokeDispatchHelp(stdout);
     return 0;
   }
 
   try {
-    const artifact = createProductionSmokeDispatchArtifact(
-      readProductionSmokeDispatchCliConfig(args),
-    );
+    const config = readProductionSmokeDispatchCliConfig(args);
+
+    if (config.inputsJsonPath) {
+      applyManifestInputOverrides(
+        config.inputOverrides,
+        await readProductionSmokeDispatchManifestInputOverrides(
+          config.inputsJsonPath,
+        ),
+      );
+    }
+
+    const artifact = createProductionSmokeDispatchArtifact(config);
 
     if (artifact.requireComplete && !artifact.readyToDispatch) {
       throw new Error(
@@ -82,6 +67,7 @@ export async function runProductionSmokeDispatchCli(args = [], input = {}) {
 export function readProductionSmokeDispatchCliConfig(args) {
   const config = {
     inputOverrides: new Map(),
+    inputsJsonPath: null,
     json: false,
     ref: defaultRef,
     requireComplete: false,
@@ -102,6 +88,15 @@ export function readProductionSmokeDispatchCliConfig(args) {
       continue;
     }
 
+    if (option === "--inputs-json" || option === "--inputs-manifest") {
+      config.inputsJsonPath =
+        normalizeProductionSmokeDispatchInputsManifestOutputPath(
+          value ?? readOptionValue(option, normalizedArgs, index),
+        );
+      index += value === null ? 1 : 0;
+      continue;
+    }
+
     if (option === "--ref") {
       config.ref = normalizeWorkflowRef(
         value ?? readOptionValue(option, normalizedArgs, index),
@@ -118,11 +113,14 @@ export function readProductionSmokeDispatchCliConfig(args) {
       continue;
     }
 
-    if (optionInputNames.has(option)) {
-      const inputName = optionInputNames.get(option);
+    if (productionSmokeDispatchOptionInputNames.has(option)) {
+      const inputName = productionSmokeDispatchOptionInputNames.get(option);
       const rawValue = value ?? readOptionValue(option, normalizedArgs, index);
 
-      config.inputOverrides.set(inputName, inputNormalizers[inputName](rawValue));
+      config.inputOverrides.set(
+        inputName,
+        normalizeProductionSmokeDispatchInputValue(inputName, rawValue),
+      );
       index += value === null ? 1 : 0;
       continue;
     }
@@ -165,6 +163,14 @@ export function createProductionSmokeDispatchArtifact(config) {
   };
 }
 
+function applyManifestInputOverrides(target, source) {
+  for (const [name, value] of source) {
+    if (!target.has(name)) {
+      target.set(name, value);
+    }
+  }
+}
+
 export function formatProductionSmokeDispatch(artifact) {
   return [
     "Production Smoke dispatch",
@@ -202,40 +208,6 @@ function readOptionValue(option, args, index) {
   return value;
 }
 
-function normalizeGithubRunId(value) {
-  const normalized = normalizePlainValue("GitHub workflow run id", value);
-
-  if (!safeGithubRunIdPattern.test(normalized)) {
-    throw new Error("GitHub workflow run id must contain only digits.");
-  }
-
-  return normalized;
-}
-
-function normalizeRollbackTarget(value) {
-  const normalized = normalizePlainValue("rollback target", value);
-
-  if (!safeRollbackTargetPattern.test(normalized)) {
-    throw new Error(
-      "Rollback target must use safe characters: letters, numbers, dot, underscore, dash, slash, at, or colon.",
-    );
-  }
-
-  return normalized;
-}
-
-function normalizeVisualArtifactName(value) {
-  const normalized = normalizeArtifactName("visual artifact", value);
-
-  if (!safeVisualArtifactNamePattern.test(normalized)) {
-    throw new Error(
-      "Visual artifact must use the page-builder-visual-fixture-<run_number> naming pattern.",
-    );
-  }
-
-  return normalized;
-}
-
 function normalizeWorkflowFile(value) {
   const normalized = normalizePlainValue("workflow file", value);
 
@@ -263,33 +235,4 @@ function normalizeWorkflowRef(value) {
 
 function stripPnpmSeparator(args) {
   return args[0] === "--" ? args.slice(1) : args;
-}
-
-function printHelp(writeLine) {
-  writeLine(`Usage:
-  pnpm smoke:dispatch
-  pnpm smoke:dispatch -- --json
-  pnpm smoke:dispatch -- --require-complete
-  pnpm smoke:dispatch -- --local-verification-run-url https://github.com/owner/repo/actions/runs/122 --local-verification-artifact local-verification-122 --visual-artifact page-builder-visual-fixture-123 --visual-artifact-run-id 123 --release-tag v0.1.0 --rollback-target main@abcdef1 --storefront-url https://store.brand.com
-
-Options:
-  --json                              Print machine-readable dispatch data.
-  --require-complete                  Fail if any workflow input still uses a placeholder.
-  --ref <ref>                         Git ref for the workflow dispatch; defaults to main.
-  --workflow-file <file>              Workflow file name; defaults to production-smoke.yml.
-  --local-verification-run-url <url>  Main CI GitHub Actions run URL.
-  --local-verification-artifact <name>
-                                      Main CI local-verification artifact name.
-  --visual-artifact <name>            Page Builder Visual artifact name.
-  --visual-artifact-run-id <id>       Page Builder Visual workflow run id.
-  --release-tag <tag>                 Release tag used by release notes.
-  --rollback-target <target>          Commit, tag, deployment, or version used for rollback.
-  --storefront-url <url>              Public production storefront URL.
-  -h, --help                          Show this help.
-
-Dispatch:
-  This command only prints the GitHub Actions dispatch command and manual UI
-  path. It does not call gh, run Production Smoke, or mark release evidence
-  ready. Use --require-complete before copying a formal release command so
-  placeholder values cannot reach the protected production workflow.`);
 }

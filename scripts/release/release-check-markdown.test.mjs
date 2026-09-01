@@ -4,7 +4,7 @@ import test from "node:test";
 import { runReleaseCheckCli } from "../release-check.mjs";
 import {
   createProductionSmokeDispatchCommand,
-  createProductionSmokeDispatchValidationCommand,
+  createProductionSmokeDispatchManifestValidationCommand,
 } from "../smoke/production-smoke-dispatch-command.mjs";
 import {
   createReleaseEvidenceCheck,
@@ -89,7 +89,7 @@ test("release check Markdown summarizes ready evidence", () => {
 
 test("release check Markdown lists blockers and visual tasks", () => {
   const dispatchCommand = createProductionSmokeDispatchCommand();
-  const validationCommand = createProductionSmokeDispatchValidationCommand();
+  const validationCommand = createProductionSmokeDispatchManifestValidationCommand();
   const artifact = createReleaseEvidenceCheckArtifact(
     createReleaseEvidenceCheck({
       smokeArtifact: {

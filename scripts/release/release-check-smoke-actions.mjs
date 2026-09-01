@@ -1,3 +1,6 @@
+import {
+  defaultProductionSmokeDispatchInputsManifestOutputPath,
+} from "../smoke/production-smoke-dispatch-inputs-manifest-path.mjs";
 import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
 
 const requiredProductionSmokeArtifacts = [
@@ -9,7 +12,7 @@ const requiredProductionSmokeArtifacts = [
 
 const productionSmokeEvidenceActionPrefix = [
   "Run pnpm smoke:request, validate the filled workflow_dispatch inputs",
-  "with pnpm smoke:dispatch -- --require-complete, then run the",
+  `with pnpm smoke:dispatch -- --inputs-json ${defaultProductionSmokeDispatchInputsManifestOutputPath} --require-complete, then run the`,
   "Production Smoke workflow against the production environment",
 ].join(" ");
 

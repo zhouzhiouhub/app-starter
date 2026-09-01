@@ -6,7 +6,7 @@ import {
 } from "./project-status.mjs";
 import {
   createProductionSmokeDispatchCommand,
-  createProductionSmokeDispatchValidationCommand,
+  createProductionSmokeDispatchManifestValidationCommand,
   createProductionSmokeManualDispatchInstruction,
   createProductionSmokeRequestCommand,
 } from "../smoke/production-smoke-dispatch-command.mjs";
@@ -66,7 +66,7 @@ test("project status artifact carries structured missing smoke evidence", () => 
       },
       {
         label: "Workflow dispatch validation",
-        value: createProductionSmokeDispatchValidationCommand(),
+        value: createProductionSmokeDispatchManifestValidationCommand(),
       },
       {
         label: "Workflow dispatch template",

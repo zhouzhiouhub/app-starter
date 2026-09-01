@@ -98,7 +98,7 @@ test("project status CLI writes a Markdown handoff", async () => {
     );
     assert.match(
       markdown,
-      / {4}- Validate dispatch: `pnpm smoke:dispatch -- --require-complete --visual-artifact "page-builder-visual-fixture-<run_number>"/,
+      / {4}- Validate dispatch: `pnpm smoke:dispatch -- --inputs-json artifacts\/production-smoke\/production-smoke-dispatch-inputs\.json --require-complete`/,
     );
     assert.match(
       markdown,

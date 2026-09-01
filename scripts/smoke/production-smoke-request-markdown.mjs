@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import {
+  createProductionSmokeDispatchManifestValidationCommand,
   createProductionSmokeDispatchValidationCommand,
 } from "./production-smoke-dispatch-command.mjs";
 import {
@@ -15,9 +16,9 @@ import { formatSmokeText } from "./smoke-text.mjs";
 const maxMarkdownTextLength = 420;
 
 export function createProductionSmokeRequestMarkdown(dispatchArtifact) {
-  const validationCommand = createProductionSmokeDispatchValidationCommand({
-    inputs: dispatchArtifact.inputs,
-  });
+  const validationCommand = createProductionSmokeRequestValidationCommand(
+    dispatchArtifact,
+  );
   const missingInputs =
     dispatchArtifact.missingInputs.length > 0
       ? dispatchArtifact.missingInputs.join(", ")
@@ -97,6 +98,16 @@ function formatInputsJsonOutputPath(outputPath) {
   return outputPath
     ? [`Dispatch inputs JSON output: ${formatCode(outputPath)}`]
     : [];
+}
+
+function createProductionSmokeRequestValidationCommand(dispatchArtifact) {
+  return dispatchArtifact.inputsJsonOutputPath
+    ? createProductionSmokeDispatchManifestValidationCommand({
+        inputsJsonPath: dispatchArtifact.inputsJsonOutputPath,
+      })
+    : createProductionSmokeDispatchValidationCommand({
+        inputs: dispatchArtifact.inputs,
+      });
 }
 
 function formatDispatchInput(input) {

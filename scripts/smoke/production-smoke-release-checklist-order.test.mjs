@@ -9,7 +9,7 @@ test("release checklist validates smoke inputs before workflow dispatch", async 
   );
   const requestIndex = checklist.indexOf("Run `pnpm smoke:request`");
   const dispatchIndex = checklist.indexOf(
-    "Run `pnpm smoke:dispatch -- --require-complete ...`",
+    "pnpm smoke:dispatch -- --inputs-json artifacts/production-smoke/production-smoke-dispatch-inputs.json --require-complete",
   );
   const openWorkflowIndex = checklist.indexOf(
     "Open the `Production Smoke` workflow in GitHub Actions.",

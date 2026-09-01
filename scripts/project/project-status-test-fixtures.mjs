@@ -1,6 +1,6 @@
 const missingProductionSmokeAction = [
   "Run pnpm smoke:request, validate the filled workflow_dispatch inputs",
-  "with pnpm smoke:dispatch -- --require-complete, then run the",
+  "with pnpm smoke:dispatch -- --inputs-json artifacts/production-smoke/production-smoke-dispatch-inputs.json --require-complete, then run the",
   "Production Smoke workflow against the production environment.",
 ].join(" ");
 

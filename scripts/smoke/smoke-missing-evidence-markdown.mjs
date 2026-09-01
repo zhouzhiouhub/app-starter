@@ -1,7 +1,7 @@
 import { formatSmokeText } from "./smoke-text.mjs";
 import {
   createProductionSmokeDispatchCommand,
-  createProductionSmokeDispatchValidationCommand,
+  createProductionSmokeDispatchManifestValidationCommand,
   createProductionSmokeManualDispatchInstruction,
   createProductionSmokeRequestCommand,
 } from "./production-smoke-dispatch-command.mjs";
@@ -21,7 +21,7 @@ import {
 const maxMarkdownTextLength = 420;
 const productionSmokeDispatchCommand = createProductionSmokeDispatchCommand();
 const productionSmokeDispatchValidationCommand =
-  createProductionSmokeDispatchValidationCommand();
+  createProductionSmokeDispatchManifestValidationCommand();
 const productionSmokeManualDispatch =
   createProductionSmokeManualDispatchInstruction();
 const productionSmokeRequestCommand = createProductionSmokeRequestCommand();

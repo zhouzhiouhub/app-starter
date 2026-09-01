@@ -440,10 +440,10 @@ Evidence Input Sources`, mapping visual, local verification, release tag,
 rollback, and storefront values to their source run, artifact, or operator
 choice. It also includes a `gh workflow run
 production-smoke.yml --ref main ...` dispatch template for the current release
-evidence inputs. Use `pnpm smoke:dispatch` to print the same command from
-validated local inputs; add `--require-complete` before copying a formal
-release command so placeholder values cannot reach the protected production
-workflow. Blocked JSON artifacts mirror that handoff as
+evidence inputs. After replacing placeholders in the JSON input manifest, use
+`pnpm smoke:dispatch -- --inputs-json artifacts/production-smoke/production-smoke-dispatch-inputs.json --require-complete`
+to validate the same inputs and print the final command; explicit CLI flags can
+still override JSON values. Blocked JSON artifacts mirror that handoff as
 `smoke.missingEvidence` and
 `releaseGate.smoke.missingEvidence`, including `requiredEvidence[]`,
 `workflowInputs[]`, and `inputSources[]`.

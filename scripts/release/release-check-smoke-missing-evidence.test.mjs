@@ -48,7 +48,7 @@ test("release check artifact carries structured missing smoke evidence", () => {
   });
   assert.match(
     artifact.smoke.missingEvidence.requiredEvidence[4].value,
-    /^pnpm smoke:dispatch -- --require-complete /u,
+    /^pnpm smoke:dispatch -- --inputs-json artifacts\/production-smoke\/production-smoke-dispatch-inputs\.json --require-complete$/u,
   );
   assert.match(
     artifact.smoke.missingEvidence.requiredEvidence[5].value,

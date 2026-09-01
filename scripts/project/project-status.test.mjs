@@ -74,8 +74,7 @@ test("project status summarizes blocked release evidence", () => {
   assert.equal(readStepValue(smokeAction, "Dispatch inputs table output"), "artifacts/production-smoke/production-smoke-dispatch-inputs.tsv");
   assert.equal(readStepValue(smokeAction, "Dispatch inputs JSON output"), "artifacts/production-smoke/production-smoke-dispatch-inputs.json");
   const validationCommand = readStepValue(smokeAction, "Validate dispatch");
-  assert.match(validationCommand, /^pnpm smoke:dispatch -- --require-complete /);
-  assert.match(validationCommand, /--visual-artifact "page-builder-visual-fixture-<run_number>"/);
+  assert.equal(validationCommand, "pnpm smoke:dispatch -- --inputs-json artifacts/production-smoke/production-smoke-dispatch-inputs.json --require-complete");
   assert.match(readStepValue(smokeAction, "Dispatch template"), /^gh workflow run production-smoke\.yml --ref main /);
   assert.equal(
     readStepValue(smokeAction, "Local verification inputs"),
@@ -264,7 +263,7 @@ test("project status CLI prints readable blocked state", async () => {
     );
     assert.match(text, /Manual dispatch: GitHub Actions > Production Smoke/);
     assert.match(text, /Smoke request: pnpm smoke:request/);
-    assert.match(text, /Validate dispatch: pnpm smoke:dispatch -- --require-complete/);
+    assert.match(text, /Validate dispatch: pnpm smoke:dispatch -- --inputs-json artifacts\/production-smoke\/production-smoke-dispatch-inputs\.json --require-complete/);
     assert.match(text, /Keep artifacts: production-smoke-report-<run_number>/);
     assert.match(
       text,
