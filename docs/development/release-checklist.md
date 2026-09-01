@@ -152,18 +152,19 @@ later phases are explicitly approved.
 
 ## Run Production Smoke
 
-1. Open the `Production Smoke` workflow in GitHub Actions.
-2. Run it against the `production` environment.
-3. Run `pnpm smoke:request` to write
+1. Run `pnpm smoke:request` to write
    `artifacts/production-smoke/production-smoke-request.md` and
    `artifacts/production-smoke/production-smoke-dispatch-inputs.txt` with the
    manual dispatch path, required input placeholders, dispatch validation
    command, `gh` template, and artifact retention checklist. This request does
    not run smoke or satisfy release evidence by itself.
-4. Run `pnpm smoke:dispatch -- --require-complete ...` with the main CI local
+2. Run `pnpm smoke:dispatch -- --require-complete ...` with the main CI local
    verification input, the accepted Page Builder Visual artifact input,
    release tag, rollback target, and production storefront URL; copy the printed
    command only after it reports `Ready to dispatch: yes`.
+3. Open the `Production Smoke` workflow in GitHub Actions.
+4. Run it against the `production` environment with the validated
+   `workflow_dispatch` inputs from the request and dispatch check.
 5. The project status next actions include a `gh workflow run
    production-smoke.yml --ref main ...` dispatch template with the release
    evidence inputs to replace for the run.
