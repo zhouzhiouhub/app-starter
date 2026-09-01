@@ -250,6 +250,8 @@ test("visual reference request command is exposed in package and docs", () => {
   assert.match(setupDoc, /page-builder-missing-references\.txt/);
   assert.match(referenceReadme, /pnpm visual:references:request/);
   assert.match(referenceReadme, /page-builder-missing-references\.txt/);
+  assert.match(referenceReadme, /--output <path>/);
+  assert.match(referenceReadme, /--missing-output <path>/);
   assert.match(referenceReadme, /first missing reference path/);
 });
 

@@ -65,6 +65,8 @@ source directory, but prints only missing expected PNG paths, one per line.
 it also writes `artifacts/visual/page-builder-missing-references.txt` as a
 plain missing path list, and its terminal summary prints the first missing
 reference path. It does not import references or mark visual evidence accepted.
+Use `--output <path>` and `--missing-output <path>` when a release handoff needs
+those request files in a custom evidence directory.
 
 Changes in this directory trigger the `Page Builder Visual` GitHub Actions
 workflow so fixture evidence can be refreshed before Production Smoke consumes
