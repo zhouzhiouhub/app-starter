@@ -15,6 +15,7 @@ import {
 } from "./page-builder-visual-reference-request.mjs";
 import {
   mvpPageBuilderComponents,
+  pageBuilderVisualAcceptanceSchemaVersion,
   pageBuilderVisualAcceptanceViewports,
 } from "./page-builder-visual-acceptance.mjs";
 
@@ -61,19 +62,21 @@ test("visual reference request Markdown is design-facing", () => {
 
 test("visual reference request CLI writes a Markdown handoff", async () => {
   const root = `reports/visual/reference-request-${process.pid}-${Date.now()}`;
+  const manifestPath = `${root}/page-builder-visual-acceptance.json`;
   const sourceDir = `${root}/references`;
   const outputPath = `${root}/page-builder-reference-request.md`;
   const stdout = [];
 
   try {
     writeReferenceFiles(sourceDir, { skip: "spec-table-mobile.png" });
+    writeFileSync(manifestPath, `${JSON.stringify(createManifest(), null, 2)}\n`);
 
     const exitCode = await runPageBuilderVisualReferenceRequestCli(
       [
         "--source-dir",
         sourceDir,
         "--manifest",
-        "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
+        manifestPath,
         "--output",
         outputPath,
       ],
@@ -151,4 +154,39 @@ function writeReferenceFiles(sourceDir, options = {}) {
       }
     }
   }
+}
+
+function createManifest() {
+  return {
+    records: mvpPageBuilderComponents.map((component) => ({
+      component,
+      label: component,
+      status: "needs-evidence",
+      viewports: Object.fromEntries(
+        pageBuilderVisualAcceptanceViewports.map((viewport) => [
+          viewport,
+          createViewport(component, viewport),
+        ]),
+      ),
+    })),
+    schemaVersion: pageBuilderVisualAcceptanceSchemaVersion,
+    targets: {
+      components: mvpPageBuilderComponents,
+      maxColorDeltaE: 3,
+      maxLayoutDeltaPx: 5,
+      minVisualMatchPercent: 95,
+      viewports: pageBuilderVisualAcceptanceViewports,
+    },
+  };
+}
+
+function createViewport(component, viewport) {
+  return {
+    designReference: null,
+    maxColorDeltaE: null,
+    maxLayoutDeltaPx: null,
+    previewScreenshot: `artifacts/visual/${component}-${viewport}.png`,
+    status: "needs-evidence",
+    visualMatchPercent: null,
+  };
 }
