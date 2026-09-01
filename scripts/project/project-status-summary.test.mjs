@@ -121,6 +121,7 @@ test("README current status reflects blocked release evidence", async () => {
   const readme = await readFile("README.md", "utf8");
 
   assert.match(readme, /状态更新时间：2026-09-01/);
+  assert.match(readme, /发布门禁状态（2026-09-01）/);
   assert.match(readme, /Release ready: no/);
   assert.match(readme, /发布结论：`not-ready`/);
   assert.match(readme, /Production Smoke artifact 缺失/);
