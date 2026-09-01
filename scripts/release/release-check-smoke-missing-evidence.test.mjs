@@ -25,6 +25,7 @@ test("release check artifact carries structured missing smoke evidence", () => {
   assert.equal(artifact.smoke.missingEvidence.status, "blocked");
   assert.equal(artifact.smoke.missingEvidence.summaryStatus, "missing");
   assert.equal(artifact.smoke.missingEvidence.requiredEvidenceCount, 13);
+  assert.equal(artifact.smoke.missingEvidence.inputSourceCount, 7);
   assert.equal(artifact.smoke.missingEvidence.workflowInputCount, 14);
   assert.deepEqual(
     artifact.smoke.missingEvidence.requiredEvidence[0],
@@ -54,6 +55,11 @@ test("release check artifact carries structured missing smoke evidence", () => {
     name: "report_path",
     required: true,
     value: "artifacts/production-smoke/smoke-report.json",
+  });
+  assert.deepEqual(artifact.smoke.missingEvidence.inputSources[0], {
+    name: "visual_artifact_name",
+    source: "Page Builder Visual workflow artifact after visual evidence passes",
+    value: "page-builder-visual-fixture-<run_number>",
   });
 });
 
@@ -87,5 +93,13 @@ test("release check artifact validates missing smoke evidence counts", () => {
   assert.throws(
     () => assertReleaseEvidenceCheckArtifact(artifact),
     /requiredEvidenceCount must match requiredEvidence length/,
+  );
+
+  artifact.smoke.missingEvidence.requiredEvidenceCount =
+    artifact.smoke.missingEvidence.requiredEvidence.length;
+  artifact.smoke.missingEvidence.inputSourceCount = 0;
+  assert.throws(
+    () => assertReleaseEvidenceCheckArtifact(artifact),
+    /inputSourceCount must match inputSources length/,
   );
 });

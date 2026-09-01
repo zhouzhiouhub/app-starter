@@ -405,15 +405,18 @@ workflow_dispatch input template before the real production run; it does not
 execute smoke or create release evidence. The same section also
 includes `Production
 Smoke Workflow Inputs`, listing the `workflow_dispatch` input names, default
-values, and purpose for the manual production run, plus a `gh workflow run
+values, and purpose for the manual production run, plus `Production Smoke
+Evidence Input Sources`, mapping visual, local verification, release tag,
+rollback, and storefront values to their source run, artifact, or operator
+choice. It also includes a `gh workflow run
 production-smoke.yml --ref main ...` dispatch template for the current release
 evidence inputs. Use `pnpm smoke:dispatch` to print the same command from
 validated local inputs; add `--require-complete` before copying a formal
 release command so placeholder values cannot reach the protected production
 workflow. Blocked JSON artifacts mirror that handoff as
 `smoke.missingEvidence` and
-`releaseGate.smoke.missingEvidence`, including `requiredEvidence[]` and
-`workflowInputs[]`.
+`releaseGate.smoke.missingEvidence`, including `requiredEvidence[]`,
+`workflowInputs[]`, and `inputSources[]`.
 For local status checks, `project:status` automatically includes the default
 Page Builder Visual artifact when all required files already exist under
 `reports/visual/page-builder-fixture`, prints its artifact path, issue count,

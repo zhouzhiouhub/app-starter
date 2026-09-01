@@ -8,6 +8,9 @@ import {
 import {
   defaultProductionSmokeDispatchInputsOutputPath,
 } from "./production-smoke-dispatch-inputs-output.mjs";
+import {
+  productionSmokeEvidenceInputSources,
+} from "./production-smoke-evidence-input-sources.mjs";
 
 const maxMarkdownTextLength = 420;
 const productionSmokeDispatchCommand = createProductionSmokeDispatchCommand();
@@ -180,6 +183,10 @@ export function formatMissingProductionSmokeEvidence(smoke) {
     "### Production Smoke Workflow Inputs",
     "",
     ...productionSmokeWorkflowInputs.map(formatProductionSmokeWorkflowInput),
+    "",
+    "### Production Smoke Evidence Input Sources",
+    "",
+    ...productionSmokeEvidenceInputSources.map(formatEvidenceInputSource),
   ];
 }
 
@@ -191,11 +198,16 @@ export function createMissingProductionSmokeEvidenceArtifact(smoke) {
   const requiredEvidence = requiredProductionSmokeEvidence.map(
     createRequiredSmokeEvidenceItem,
   );
+  const inputSources = productionSmokeEvidenceInputSources.map(
+    createEvidenceInputSourceItem,
+  );
   const workflowInputs = productionSmokeWorkflowInputs.map(
     createSmokeWorkflowInputItem,
   );
 
   return {
+    inputSourceCount: inputSources.length,
+    inputSources,
     requiredEvidence,
     requiredEvidenceCount: requiredEvidence.length,
     status: formatText(smoke?.status ?? "blocked"),
@@ -212,6 +224,14 @@ function readSmokeSummaryStatus(smoke) {
 function createRequiredSmokeEvidenceItem(item) {
   return {
     label: formatText(item.label),
+    value: formatText(item.value),
+  };
+}
+
+function createEvidenceInputSourceItem(item) {
+  return {
+    name: formatText(item.name),
+    source: formatText(item.source),
     value: formatText(item.value),
   };
 }
@@ -241,6 +261,12 @@ function formatProductionSmokeWorkflowInput(input) {
   return `- ${formatCode(input.name)}: ${formatCode(input.value)} (${formatText(
     readRequirement(input),
   )}; ${formatText(input.description)})`;
+}
+
+function formatEvidenceInputSource(input) {
+  return `- ${formatCode(input.name)}: ${formatCode(
+    input.value,
+  )} - ${formatText(input.source)}`;
 }
 
 function readRequirement(input) {

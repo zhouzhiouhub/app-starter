@@ -43,6 +43,15 @@ test("production smoke request Markdown is operator-facing", () => {
   assert.match(markdown, /Validate dispatch: `pnpm smoke:dispatch -- --require-complete/);
   assert.match(markdown, /Dispatch template: `gh workflow run production-smoke\.yml --ref main/);
   assert.match(markdown, /- \[ \] `visual_artifact_name`: `page-builder-visual-fixture-<run_number>` - replace before dispatch/);
+  assert.match(markdown, /## Evidence Input Sources/);
+  assert.match(
+    markdown,
+    /`visual_artifact_name`: `page-builder-visual-fixture-<run_number>` - Page Builder Visual workflow artifact after visual evidence passes/,
+  );
+  assert.match(
+    markdown,
+    /`local_verification_run_url`: `<main CI run URL>` - main CI run URL that uploaded the local verification artifact/,
+  );
   assert.match(markdown, /`report_path`: `artifacts\/production-smoke\/smoke-report\.json` \(required; safe JSON output path\)/);
   assert.match(markdown, /- \[ \] `Smoke artifact`: `production-smoke-report-<run_number>`/);
   assert.match(markdown, /Rerun `pnpm project:status -- --summary`/);
@@ -92,6 +101,14 @@ test("production smoke request CLI writes a Markdown handoff", async () => {
     assert.match(markdown, /Dispatch inputs output: `tmp\/production-smoke-request-.+\/dispatch-inputs\.txt`/);
     assert.match(markdown, /- \[x\] `visual_artifact_name`: `page-builder-visual-fixture-281` - ready/);
     assert.match(markdown, /- \[x\] `storefront_url`: `https:\/\/store\.brand\.com\/` - ready/);
+    assert.match(
+      markdown,
+      /`visual_artifact_name`: `page-builder-visual-fixture-281` - Page Builder Visual workflow artifact after visual evidence passes/,
+    );
+    assert.match(
+      markdown,
+      /`storefront_url`: `https:\/\/store\.brand\.com\/` - public HTTPS storefront URL for the production release/,
+    );
     assert.match(inputsText, /^visual_artifact_name=page-builder-visual-fixture-281/m);
     assert.match(inputsText, /^storefront_url=https:\/\/store\.brand\.com\//m);
   } finally {
@@ -179,8 +196,11 @@ test("production smoke request command is exposed in package CI and docs", async
   assert.match(dispatchCli, /runProductionSmokeRequestCli/);
   assert.match(releaseChecklist, /pnpm smoke:request/);
   assert.match(releaseChecklist, /production-smoke-dispatch-inputs\.txt/);
+  assert.match(releaseChecklist, /evidence input sources/);
   assert.match(setupDoc, /pnpm smoke:request/);
   assert.match(setupDoc, /production-smoke-dispatch-inputs\.txt/);
+  assert.match(setupDoc, /Production Smoke\s+Evidence Input Sources/);
   assert.match(readme, /pnpm smoke:request/);
   assert.match(readme, /production-smoke-dispatch-inputs\.txt/);
+  assert.match(readme, /inputSources\[\]/);
 });

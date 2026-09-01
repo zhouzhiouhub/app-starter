@@ -165,6 +165,15 @@ test("release check Markdown lists blockers and visual tasks", () => {
     markdown,
     /`visual_artifact_run_id`: `<Page Builder Visual workflow run id>` \(optional; Page Builder Visual workflow run id\)/,
   );
+  assert.match(markdown, /### Production Smoke Evidence Input Sources/);
+  assert.match(
+    markdown,
+    /`visual_artifact_name`: `page-builder-visual-fixture-<run_number>` - Page Builder Visual workflow artifact after visual evidence passes/,
+  );
+  assert.match(
+    markdown,
+    /`storefront_url`: `<public HTTPS storefront URL>` - public HTTPS storefront URL for the production release/,
+  );
   assert.match(
     markdown,
     /`allow_blocked_release_notes`: `false` \(required; only true for failure review drafts\)/,

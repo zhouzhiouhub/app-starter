@@ -155,9 +155,10 @@ later phases are explicitly approved.
 1. Run `pnpm smoke:request` to write
    `artifacts/production-smoke/production-smoke-request.md` and
    `artifacts/production-smoke/production-smoke-dispatch-inputs.txt` with the
-   manual dispatch path, required input placeholders, dispatch validation
-   command, `gh` template, and artifact retention checklist. This request does
-   not run smoke or satisfy release evidence by itself.
+   manual dispatch path, required input placeholders, evidence input sources,
+   dispatch validation command, `gh` template, and artifact retention
+   checklist. This request does not run smoke or satisfy release evidence by
+   itself.
 2. Run `pnpm smoke:dispatch -- --require-complete ...` with the main CI local
    verification input, the accepted Page Builder Visual artifact input,
    release tag, rollback target, and production storefront URL; copy the printed
@@ -340,8 +341,10 @@ later phases are explicitly approved.
   `Missing Production Smoke Evidence` section with the `pnpm smoke:request`
   request, dispatch inputs output, `pnpm smoke:dispatch` validation,
   `gh` dispatch template, manual dispatch path, required workflow, and artifact names;
-  the blocked JSON artifacts mirror the same
-  `requiredEvidence[]` and `workflowInputs[]` handoff under
+  the adjacent `Production Smoke Evidence Input Sources` section maps release
+  evidence inputs to their source run, artifact, or operator value; the blocked
+  JSON artifacts mirror the same
+  `requiredEvidence[]`, `workflowInputs[]`, and `inputSources[]` handoff under
   `smoke.missingEvidence` and `releaseGate.smoke.missingEvidence`. When Page
   Builder reference PNGs are missing,
   both Markdown files include a `Missing Visual References` section with the

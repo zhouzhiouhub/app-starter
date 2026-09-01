@@ -65,6 +65,15 @@ test("project status exposes smoke Markdown companion status", () => {
     markdown,
     /Release evidence artifact: `release-evidence-check-<run_number>`/,
   );
+  assert.match(markdown, /### Production Smoke Evidence Input Sources/);
+  assert.match(
+    markdown,
+    /`visual_artifact_run_id`: `<Page Builder Visual workflow run id>` - Page Builder Visual workflow run id that uploaded the visual artifact/,
+  );
+  assert.match(
+    markdown,
+    /`local_verification_artifact_name`: `local-verification-<run_number>` - main CI artifact uploaded by the same local verification run/,
+  );
   assert.match(
     markdown,
     /Markdown companion: `missing` \(`artifacts\/production-smoke\/smoke-report\.md`\)/,
@@ -127,8 +136,10 @@ test("project status docs mention missing smoke evidence handoff", async () => {
   assert.match(setupDoc, /release-check\.md.*project-status\.md/s);
   assert.match(setupDoc, /manual GitHub\s+Actions dispatch path/s);
   assert.match(setupDoc, /preflight artifact,\s+release\s+evidence artifact/s);
+  assert.match(setupDoc, /Production Smoke\s+Evidence Input Sources/);
   assert.match(releaseChecklist, /Missing Production Smoke Evidence/);
   assert.match(releaseChecklist, /release-check\.md.*project-status\.md/s);
+  assert.match(releaseChecklist, /inputSources\[\]/);
   assert.match(
     releaseChecklist,
     /`pnpm smoke:request`\s+request, dispatch inputs output, `pnpm smoke:dispatch`\s+validation,\s+`gh` dispatch template, manual dispatch path, required workflow, and artifact names/s,

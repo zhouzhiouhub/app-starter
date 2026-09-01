@@ -17,6 +17,7 @@ export function assertMissingProductionSmokeEvidenceArtifact(
     `${fieldPath}.workflowInputCount`,
   );
   assertRequiredSmokeEvidenceItems(evidence, fieldPath);
+  assertSmokeEvidenceInputSourceItems(evidence, fieldPath);
   assertSmokeWorkflowInputItems(evidence, fieldPath);
 }
 
@@ -38,6 +39,40 @@ function assertRequiredSmokeEvidenceItems(evidence, fieldPath) {
 
     assertString(item.label, `${fieldPath}.requiredEvidence.label`);
     assertString(item.value, `${fieldPath}.requiredEvidence.value`);
+  }
+}
+
+function assertSmokeEvidenceInputSourceItems(evidence, fieldPath) {
+  const hasInputSources = evidence.inputSources !== undefined;
+  const hasInputSourceCount = evidence.inputSourceCount !== undefined;
+
+  if (!hasInputSources && !hasInputSourceCount) {
+    return;
+  }
+
+  if (!Array.isArray(evidence.inputSources)) {
+    throw new Error(`${fieldPath}.inputSources must be an array when present.`);
+  }
+
+  assertNonNegativeNumber(
+    evidence.inputSourceCount,
+    `${fieldPath}.inputSourceCount`,
+  );
+
+  if (evidence.inputSourceCount !== evidence.inputSources.length) {
+    throw new Error(
+      `${fieldPath}.inputSourceCount must match inputSources length.`,
+    );
+  }
+
+  for (const input of evidence.inputSources) {
+    if (!isRecord(input)) {
+      throw new Error(`${fieldPath}.inputSources must contain objects.`);
+    }
+
+    assertString(input.name, `${fieldPath}.inputSources.name`);
+    assertString(input.source, `${fieldPath}.inputSources.source`);
+    assertString(input.value, `${fieldPath}.inputSources.value`);
   }
 }
 

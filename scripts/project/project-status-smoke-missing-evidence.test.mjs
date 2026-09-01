@@ -32,6 +32,10 @@ test("project status artifact carries structured missing smoke evidence", () => 
     13,
   );
   assert.equal(
+    artifact.releaseGate.smoke.missingEvidence.inputSourceCount,
+    7,
+  );
+  assert.equal(
     artifact.releaseGate.smoke.missingEvidence.workflowInputCount,
     14,
   );
@@ -75,6 +79,16 @@ test("project status artifact carries structured missing smoke evidence", () => 
       value: "page-builder-visual-fixture-<run_number>",
     },
   );
+  assert.deepEqual(
+    artifact.releaseGate.smoke.missingEvidence.inputSources.find(
+      (input) => input.name === "local_verification_run_url",
+    ),
+    {
+      name: "local_verification_run_url",
+      source: "main CI run URL that uploaded the local verification artifact",
+      value: "<main CI run URL>",
+    },
+  );
 });
 
 test("project status artifact validates missing smoke evidence counts", () => {
@@ -87,5 +101,13 @@ test("project status artifact validates missing smoke evidence counts", () => {
   assert.throws(
     () => assertProjectStatusArtifact(artifact),
     /workflowInputCount must match workflowInputs length/,
+  );
+
+  artifact.releaseGate.smoke.missingEvidence.workflowInputCount =
+    artifact.releaseGate.smoke.missingEvidence.workflowInputs.length;
+  artifact.releaseGate.smoke.missingEvidence.inputSourceCount = 0;
+  assert.throws(
+    () => assertProjectStatusArtifact(artifact),
+    /inputSourceCount must match inputSources length/,
   );
 });

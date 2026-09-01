@@ -12,6 +12,9 @@ import {
   createProductionSmokeDispatchValidationCommand,
 } from "./production-smoke-dispatch-command.mjs";
 import {
+  productionSmokeEvidenceInputSources,
+} from "./production-smoke-evidence-input-sources.mjs";
+import {
   productionSmokeWorkflowInputs,
   requiredProductionSmokeEvidence,
 } from "./smoke-missing-evidence-markdown.mjs";
@@ -141,6 +144,12 @@ export function createProductionSmokeRequestMarkdown(dispatchArtifact) {
     "",
     ...dispatchArtifact.inputs.map(formatDispatchInput),
     "",
+    "## Evidence Input Sources",
+    "",
+    ...productionSmokeEvidenceInputSources.map((input) =>
+      formatEvidenceInputSource(input, dispatchArtifact.inputs),
+    ),
+    "",
     "## Workflow Inputs",
     "",
     ...productionSmokeWorkflowInputs.map(formatWorkflowInput),
@@ -198,6 +207,14 @@ function formatDispatchInput(input) {
   return `- [${checked}] ${formatCode(input.name)}: ${formatCode(
     input.value,
   )}${suffix}`;
+}
+
+function formatEvidenceInputSource(source, inputs) {
+  const input = inputs.find((item) => item.name === source.name);
+
+  return `- ${formatCode(source.name)}: ${formatCode(
+    input?.value ?? source.value,
+  )} - ${formatText(source.source)}`;
 }
 
 function formatWorkflowInput(input) {
