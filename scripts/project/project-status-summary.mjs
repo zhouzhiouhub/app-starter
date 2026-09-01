@@ -140,11 +140,25 @@ function formatNextAction(action) {
 
   if (firstStep) {
     lines.push(`      ${firstStep.label}: ${firstStep.value}`);
+    const outputStep = readSummaryOutputStep(action, firstStep);
+    if (outputStep) {
+      lines.push(`      ${outputStep.label}: ${outputStep.value}`);
+    }
   } else {
     lines.push(`      Action: ${action.action}`);
   }
 
   return lines;
+}
+
+function readSummaryOutputStep(action, firstStep) {
+  if (!Array.isArray(action.steps) || action.steps.length === 0) {
+    return null;
+  }
+
+  const outputLabel = `${firstStep.label} output`;
+
+  return action.steps.find((step) => step?.label === outputLabel) ?? null;
 }
 
 function readSummaryStep(action) {
