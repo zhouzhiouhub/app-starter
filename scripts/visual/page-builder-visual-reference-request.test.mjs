@@ -64,9 +64,17 @@ test("visual reference request Markdown is design-facing", () => {
     /hero-banner\.desktop; missing; preview `reports\/visual\/page-builder-fixture\/page-builder-visual-fixture-hero-banner-desktop\.png` \(1440x1000\)/,
   );
   assert.match(markdown, /faq\.mobile; ready/);
+  assert.match(markdown, /pnpm visual:references:check/);
   assert.match(markdown, /pnpm visual:references -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --require-complete/);
   assert.match(markdown, /pnpm visual:measure -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --accept-passing --require-complete/);
   assert.match(markdown, /pnpm visual:acceptance -- --require-accepted reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json/);
+  assert(
+    markdown.indexOf("pnpm visual:references:check") <
+      markdown.indexOf(
+        "pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete",
+      ),
+    "reference request should run the read-only intake check before writing the manifest",
+  );
 });
 
 test("visual reference request CLI writes a Markdown handoff", async () => {

@@ -11,6 +11,7 @@ import {
   createPageBuilderVisualReferenceCaptureCommand,
   createPageBuilderVisualReferenceImportWriteCommand,
   createPageBuilderVisualReferenceMeasureCommand,
+  createPageBuilderVisualReferenceReportCommand,
 } from "./page-builder-visual-reference-import-commands.mjs";
 import {
   normalizeVisualReferenceImportMarkdownOutputPath,
@@ -116,6 +117,9 @@ export function createPageBuilderVisualReferenceRequestMarkdown(input) {
     "",
     "## After Delivery",
     "",
+    `- Run ${formatCode(
+      createPageBuilderVisualReferenceReportCommand(reportContext),
+    )}.`,
     `- Run ${formatCode(
       createPageBuilderVisualReferenceImportWriteCommand(reportContext),
     )}.`,
