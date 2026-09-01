@@ -328,13 +328,15 @@ report and requires the full reference set without updating the manifest.
 request. It embeds the current release gate snapshot, the Page Builder design
 reference request, the visual reference export manifest path, the Production
 Smoke request, the dispatch input template path, dispatch input table path,
+dispatch input JSON manifest path,
 `First missing visual reference`,
 `Missing Production Smoke inputs`, and the final
 `release:handoff -- --require-ready` gate to rerun after real evidence is
 retained. Pass `--visual-output <path>`, `--visual-missing-output <path>`,
 `--visual-table-output <path>`, `--visual-json-output <path>`,
 `--smoke-output <path>`,
-`--smoke-inputs-output <path>`, and `--smoke-inputs-table-output <path>` when the request
+`--smoke-inputs-output <path>`, `--smoke-inputs-table-output <path>`, and
+`--smoke-inputs-json-output <path>` when the request
 bundle is written somewhere other than the default paths, so the refresh
 command, output summary, and embedded request paths all point at the same files.
 It does not import references, run smoke, create release notes, or mark blocked
@@ -348,7 +350,8 @@ run: `artifacts/release/release-evidence-request.md`,
 `artifacts/visual/page-builder-reference-export-manifest.json`,
 `artifacts/production-smoke/production-smoke-request.md`, and
 `artifacts/production-smoke/production-smoke-dispatch-inputs.txt`, and
-`artifacts/production-smoke/production-smoke-dispatch-inputs.tsv`. It accepts the same
+`artifacts/production-smoke/production-smoke-dispatch-inputs.tsv`, and
+`artifacts/production-smoke/production-smoke-dispatch-inputs.json`. It accepts the same
 visual manifest/source options and Production Smoke evidence inputs as the
 individual request commands, but still does not import references, run smoke,
 upload artifacts, create release notes, or mark blocked evidence ready.
@@ -406,7 +409,8 @@ record, `release-notes` artifact, and formal mode without `--allow-blocked`.
 When production smoke evidence is missing, the `release-check.md` and
 `project-status.md` handoffs add a `Missing Production Smoke Evidence` section
 with the `pnpm smoke:request` request, dispatch inputs output, dispatch input
-table output, `pnpm smoke:dispatch` validation, `gh` dispatch template, manual
+table output, dispatch input JSON output, `pnpm smoke:dispatch` validation,
+`gh` dispatch template, manual
 GitHub Actions dispatch path, workflow, Smoke JSON/Markdown paths, preflight
 artifact, release evidence artifact, and project status artifact to keep. Run
 `pnpm smoke:request` to write
@@ -415,8 +419,10 @@ Markdown request and
 `artifacts/production-smoke/production-smoke-dispatch-inputs.txt` as a plain
 workflow_dispatch input template plus
 `artifacts/production-smoke/production-smoke-dispatch-inputs.tsv` as a TSV
-input table before the real production run; it does not execute smoke or create
-release evidence. The same section also
+input table plus
+`artifacts/production-smoke/production-smoke-dispatch-inputs.json` as a JSON
+input manifest before the real production run; it does not execute smoke or
+create release evidence. The same section also
 includes `Production
 Smoke Workflow Inputs`, listing the `workflow_dispatch` input names, default
 values, and purpose for the manual production run, plus `Production Smoke
@@ -474,7 +480,8 @@ When available, the visual artifact line also includes reference-import status,
 missing/update counts, required source reference availability, and the first missing
 reference path. It then prints the first two next actions with structured steps
 when available, including the `pnpm smoke:request` request, dispatch inputs
-output, dispatch input table output, `pnpm smoke:dispatch` validation, `gh`
+output, dispatch input table output, dispatch input JSON output,
+`pnpm smoke:dispatch` validation, `gh`
 dispatch template, and the Production Smoke manual dispatch path when smoke evidence is missing, previews the first hidden
 structured action only when the visible actions do not have steps, and points remaining actions to
 `artifacts/release/project-status.md`, whose

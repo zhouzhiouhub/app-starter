@@ -64,7 +64,7 @@ test("project status summarizes blocked release evidence", () => {
   assert.equal(smokeAction.area, "Production Smoke");
   assert.deepEqual(
     smokeAction.steps.map((step) => step.label),
-    ["Smoke request", "Smoke request output", "Dispatch inputs output", "Dispatch inputs table output", "Local verification inputs",
+    ["Smoke request", "Smoke request output", "Dispatch inputs output", "Dispatch inputs table output", "Dispatch inputs JSON output", "Local verification inputs",
       "Visual evidence inputs", "Release note inputs", "Validate dispatch", "Dispatch template",
       "Manual dispatch", "Run workflow", "Keep artifacts", "Rerun gate"],
   );
@@ -72,6 +72,7 @@ test("project status summarizes blocked release evidence", () => {
   assert.equal(smokeAction.steps[1].value, "artifacts/production-smoke/production-smoke-request.md");
   assert.equal(readStepValue(smokeAction, "Dispatch inputs output"), "artifacts/production-smoke/production-smoke-dispatch-inputs.txt");
   assert.equal(readStepValue(smokeAction, "Dispatch inputs table output"), "artifacts/production-smoke/production-smoke-dispatch-inputs.tsv");
+  assert.equal(readStepValue(smokeAction, "Dispatch inputs JSON output"), "artifacts/production-smoke/production-smoke-dispatch-inputs.json");
   const validationCommand = readStepValue(smokeAction, "Validate dispatch");
   assert.match(validationCommand, /^pnpm smoke:dispatch -- --require-complete /);
   assert.match(validationCommand, /--visual-artifact "page-builder-visual-fixture-<run_number>"/);

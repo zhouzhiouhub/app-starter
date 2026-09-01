@@ -10,6 +10,9 @@ import {
 import {
   defaultProductionSmokeDispatchInputsTableOutputPath,
 } from "../smoke/production-smoke-dispatch-inputs-table-path.mjs";
+import {
+  defaultProductionSmokeDispatchInputsManifestOutputPath,
+} from "../smoke/production-smoke-dispatch-inputs-manifest-path.mjs";
 import { createProductionSmokeRequestMarkdown } from "../smoke/production-smoke-request.mjs";
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { createPageBuilderVisualReferenceRequestCommand } from "../visual/page-builder-visual-reference-import-commands.mjs";
@@ -45,6 +48,10 @@ export function createReleaseEvidenceRequestMarkdown(input) {
     input.smokeInputsTableOutputPath ??
     requestOutputPaths.productionSmokeInputsTable ??
     defaultProductionSmokeDispatchInputsTableOutputPath;
+  const smokeInputsJsonOutputPath =
+    input.smokeInputsJsonOutputPath ??
+    requestOutputPaths.productionSmokeInputsManifest ??
+    defaultProductionSmokeDispatchInputsManifestOutputPath;
   const visualReferenceManifestOutputPath =
     requestOutputPaths.visualReferenceManifest ??
     visual.jsonOutputPath ??
@@ -85,6 +92,7 @@ export function createReleaseEvidenceRequestMarkdown(input) {
     )}`,
     `- Production Smoke request: ${formatCode(
       createProductionSmokeRequestCommand({
+        inputsJsonOutputPath: smokeInputsJsonOutputPath,
         inputsTableOutputPath: smokeInputsTableOutputPath,
         inputsOutputPath: smokeInputsOutputPath,
         outputPath: requestOutputPaths.productionSmoke,
@@ -96,6 +104,9 @@ export function createReleaseEvidenceRequestMarkdown(input) {
     )}`,
     `- Production Smoke dispatch inputs table output: ${formatCode(
       smokeInputsTableOutputPath,
+    )}`,
+    `- Production Smoke dispatch inputs JSON output: ${formatCode(
+      smokeInputsJsonOutputPath,
     )}`,
     `- Completion gate: ${formatCode(
       "pnpm release:handoff -- --require-ready --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture",
@@ -129,6 +140,7 @@ export function createReleaseEvidenceRequestMarkdown(input) {
     ...shiftMarkdownHeadings(
       createProductionSmokeRequestMarkdown({
         ...smoke,
+        inputsJsonOutputPath: smokeInputsJsonOutputPath,
         inputsTableOutputPath: smokeInputsTableOutputPath,
         inputsOutputPath: smokeInputsOutputPath,
       }),

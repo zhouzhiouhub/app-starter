@@ -26,6 +26,7 @@ test("project next actions preserve visual artifact dir on release gate reruns",
       "Smoke request output",
       "Dispatch inputs output",
       "Dispatch inputs table output",
+      "Dispatch inputs JSON output",
       "Local verification inputs",
       "Visual evidence inputs",
       "Release note inputs",
@@ -38,19 +39,19 @@ test("project next actions preserve visual artifact dir on release gate reruns",
     ],
   );
   assert.match(
-    productionSmoke.steps[7].value,
+    readStepValue(productionSmoke, "Validate dispatch"),
     /^pnpm smoke:dispatch -- --require-complete /,
   );
   assert.match(
-    productionSmoke.steps[7].value,
+    readStepValue(productionSmoke, "Validate dispatch"),
     /--local-verification-artifact "local-verification-<run_number>"/,
   );
   assert.match(
-    productionSmoke.steps[8].value,
+    readStepValue(productionSmoke, "Dispatch template"),
     /^gh workflow run production-smoke\.yml --ref main /,
   );
   assert.equal(
-    productionSmoke.steps[9].value,
+    readStepValue(productionSmoke, "Manual dispatch"),
     "GitHub Actions > Production Smoke > Run workflow, then use the listed workflow_dispatch inputs.",
   );
   assert.equal(productionSmoke.steps[0].value, "pnpm smoke:request");
@@ -66,20 +67,24 @@ test("project next actions preserve visual artifact dir on release gate reruns",
     productionSmoke.steps[3].value,
     "artifacts/production-smoke/production-smoke-dispatch-inputs.tsv",
   );
+  assert.equal(
+    readStepValue(productionSmoke, "Dispatch inputs JSON output"),
+    "artifacts/production-smoke/production-smoke-dispatch-inputs.json",
+  );
   assert.match(
-    productionSmoke.steps[8].value,
+    readStepValue(productionSmoke, "Dispatch template"),
     /-f visual_artifact_run_id="<Page Builder Visual workflow run id>"/,
   );
   assert.equal(
-    productionSmoke.steps[4].value,
+    readStepValue(productionSmoke, "Local verification inputs"),
     "local_verification_run_url=<main CI run URL>, local_verification_artifact_name=local-verification-<run_number>",
   );
   assert.equal(
-    productionSmoke.steps[5].value,
+    readStepValue(productionSmoke, "Visual evidence inputs"),
     "visual_artifact_name=page-builder-visual-fixture-<run_number>, visual_artifact_run_id=<Page Builder Visual workflow run id>",
   );
   assert.equal(
-    productionSmoke.steps[6].value,
+    readStepValue(productionSmoke, "Release note inputs"),
     "release_tag=<tag>, rollback_target=<target>, storefront_url=<public HTTPS storefront URL>",
   );
 });
@@ -154,6 +159,7 @@ test("project next actions include unified release evidence request", () => {
       "Smoke request output",
       "Dispatch inputs output",
       "Dispatch inputs table output",
+      "Dispatch inputs JSON output",
       "Final gate",
     ],
   );
@@ -163,7 +169,7 @@ test("project next actions include unified release evidence request", () => {
   );
   assert.equal(
     releaseEvidence.steps[1].value,
-    "artifacts/release/release-evidence-request.md, artifacts/visual/page-builder-reference-request.md, artifacts/visual/page-builder-missing-references.txt, artifacts/visual/page-builder-reference-export-table.tsv, artifacts/visual/page-builder-reference-export-manifest.json, artifacts/production-smoke/production-smoke-request.md, artifacts/production-smoke/production-smoke-dispatch-inputs.txt, artifacts/production-smoke/production-smoke-dispatch-inputs.tsv",
+    "artifacts/release/release-evidence-request.md, artifacts/visual/page-builder-reference-request.md, artifacts/visual/page-builder-missing-references.txt, artifacts/visual/page-builder-reference-export-table.tsv, artifacts/visual/page-builder-reference-export-manifest.json, artifacts/production-smoke/production-smoke-request.md, artifacts/production-smoke/production-smoke-dispatch-inputs.txt, artifacts/production-smoke/production-smoke-dispatch-inputs.tsv, artifacts/production-smoke/production-smoke-dispatch-inputs.json",
   );
   assert.equal(
     releaseEvidence.steps[2].value,
@@ -202,11 +208,19 @@ test("project next actions include unified release evidence request", () => {
     releaseEvidence.steps[11].value,
     "artifacts/production-smoke/production-smoke-dispatch-inputs.tsv",
   );
-  assert.match(
+  assert.equal(
     releaseEvidence.steps[12].value,
+    "artifacts/production-smoke/production-smoke-dispatch-inputs.json",
+  );
+  assert.match(
+    releaseEvidence.steps[13].value,
     /^pnpm release:handoff -- --require-ready /,
   );
 });
+
+function readStepValue(action, label) {
+  return action.steps.find((step) => step.label === label)?.value;
+}
 
 test("project next actions structure the ready release notes handoff", () => {
   const [releaseNotesAction] = createProjectNextActions({

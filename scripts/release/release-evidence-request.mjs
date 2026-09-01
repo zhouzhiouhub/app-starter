@@ -89,6 +89,7 @@ export async function createReleaseEvidenceRequest(config, input = {}, generated
     generatedAt,
     projectArtifact,
     requestOutputPaths: config.requestOutputPaths,
+    smokeInputsJsonOutputPath: config.smokeInputsJsonOutputPath,
     smokeInputsTableOutputPath: config.smokeInputsTableOutputPath,
     smokeInputsOutputPath: config.smokeInputsOutputPath,
     smokeDispatchArtifact: createProductionSmokeDispatchArtifact(
@@ -112,6 +113,7 @@ function printHelp(writeLine) {
   pnpm release:evidence-request -- --smoke-output artifacts/production-smoke/production-smoke-request.md
   pnpm release:evidence-request -- --smoke-inputs-output artifacts/production-smoke/production-smoke-dispatch-inputs.txt
   pnpm release:evidence-request -- --smoke-inputs-table-output artifacts/production-smoke/production-smoke-dispatch-inputs.tsv
+  pnpm release:evidence-request -- --smoke-inputs-json-output artifacts/production-smoke/production-smoke-dispatch-inputs.json
   pnpm release:evidence-request -- --visual-artifact page-builder-visual-fixture-123 --visual-artifact-run-id 456
   pnpm release:evidence-request -- --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture
 
@@ -129,7 +131,12 @@ Options:
   --smoke-inputs-output <path> Show the Production Smoke workflow_dispatch input template path.
   --smoke-inputs-table-output <path>
                                 Show the Production Smoke workflow_dispatch input TSV table path.
+  --smoke-inputs-json-output <path>
+                                Show the Production Smoke workflow_dispatch input JSON manifest path.
   --inputs-output <path>       Alias for --smoke-inputs-output.
+  --inputs-json-output <path>  Alias for --smoke-inputs-json-output.
+  --inputs-manifest-output <path>
+                               Alias for --smoke-inputs-json-output.
   --smoke-report <path>        Read a specific production smoke report for the status snapshot.
   --visual-artifact-dir <dir>  Include a downloaded Page Builder Visual artifact in the status snapshot.
   --visual-manifest <path>     Read a specific Page Builder visual manifest.
@@ -145,7 +152,8 @@ Smoke evidence inputs:
 Evidence:
   This command writes one release-facing request that embeds the Page Builder
   design reference request, reference export table and JSON manifest paths, Production Smoke
-  request, dispatch input template path, and dispatch input table path.
+  request, dispatch input template path, dispatch input table path, and dispatch
+  input JSON manifest path.
   The terminal summary and Markdown request status report release readiness,
   visual reference status, the first missing visual reference,
   Production Smoke dispatch readiness, and any missing Smoke input names to

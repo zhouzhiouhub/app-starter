@@ -34,6 +34,7 @@ export function createProductionSmokeRequestMarkdown(dispatchArtifact) {
     `Missing inputs: ${formatCode(missingInputs)}`,
     ...formatInputsOutputPath(dispatchArtifact.inputsOutputPath),
     ...formatInputsTableOutputPath(dispatchArtifact.inputsTableOutputPath),
+    ...formatInputsJsonOutputPath(dispatchArtifact.inputsJsonOutputPath),
     "",
     "## Dispatch",
     "",
@@ -89,6 +90,12 @@ function formatInputsOutputPath(outputPath) {
 function formatInputsTableOutputPath(outputPath) {
   return outputPath
     ? [`Dispatch inputs table output: ${formatCode(outputPath)}`]
+    : [];
+}
+
+function formatInputsJsonOutputPath(outputPath) {
+  return outputPath
+    ? [`Dispatch inputs JSON output: ${formatCode(outputPath)}`]
     : [];
 }
 

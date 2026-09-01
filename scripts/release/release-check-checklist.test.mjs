@@ -112,6 +112,11 @@ test("release readiness checklist carries blocker actions", () => {
       "Dispatch inputs table output: artifacts/production-smoke/production-smoke-dispatch-inputs.tsv",
     ),
   );
+  assert.ok(
+    lines.includes(
+      "Dispatch inputs JSON output: artifacts/production-smoke/production-smoke-dispatch-inputs.json",
+    ),
+  );
   assert.ok(lines.includes(`Validate dispatch: ${validationCommand}`));
   assert.ok(lines.includes(`Dispatch template: ${dispatchCommand}`));
   assert.match(lines, /Run pnpm visual:acceptance -- --checklist/);

@@ -14,4 +14,7 @@ export function printReleaseRequestFiles(outputPaths, writeLine) {
   writeLine(
     `  - Production Smoke inputs table: ${outputPaths.productionSmokeInputsTable}`,
   );
+  writeLine(
+    `  - Production Smoke inputs JSON: ${outputPaths.productionSmokeInputsManifest}`,
+  );
 }

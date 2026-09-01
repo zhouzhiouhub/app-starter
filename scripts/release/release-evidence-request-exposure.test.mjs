@@ -28,6 +28,7 @@ test("release evidence request command is exposed in package CI and docs", async
   assert.match(releaseChecklist, /--smoke-output/);
   assert.match(releaseChecklist, /--smoke-inputs-output/);
   assert.match(releaseChecklist, /--smoke-inputs-table-output/);
+  assert.match(releaseChecklist, /--smoke-inputs-json-output/);
   assert.match(releaseChecklist, /dispatch input\s+template path/);
   assert.match(releaseChecklist, /First missing visual reference/);
   assert.match(setupDoc, /pnpm release:evidence-request/);
@@ -38,6 +39,7 @@ test("release evidence request command is exposed in package CI and docs", async
   assert.match(setupDoc, /--smoke-output <path>/);
   assert.match(setupDoc, /--smoke-inputs-output <path>/);
   assert.match(setupDoc, /--smoke-inputs-table-output <path>/);
+  assert.match(setupDoc, /--smoke-inputs-json-output <path>/);
   assert.match(setupDoc, /dispatch input template\s+path/);
   assert.match(setupDoc, /Missing Production Smoke inputs/);
   assert.match(readme, /pnpm release:evidence-request/);
@@ -48,6 +50,7 @@ test("release evidence request command is exposed in package CI and docs", async
   assert.match(readme, /--smoke-output <path>/);
   assert.match(readme, /--smoke-inputs-output <path>/);
   assert.match(readme, /--smoke-inputs-table-output <path>/);
+  assert.match(readme, /--smoke-inputs-json-output <path>/);
   assert.match(readme, /dispatch 输入模板路径/);
   assert.match(readme, /First missing visual reference/);
 });

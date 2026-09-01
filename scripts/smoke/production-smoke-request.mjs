@@ -9,6 +9,9 @@ import {
   normalizeProductionSmokeDispatchInputsTableOutputPath,
 } from "./production-smoke-dispatch-inputs-table-output.mjs";
 import {
+  normalizeProductionSmokeDispatchInputsManifestOutputPath,
+} from "./production-smoke-dispatch-inputs-manifest-output.mjs";
+import {
   printProductionSmokeRequestSummary,
   writeProductionSmokeRequestOutputs,
 } from "./production-smoke-request-cli-output.mjs";
@@ -40,6 +43,7 @@ export async function runProductionSmokeRequestCli(args = [], input = {}) {
     );
     const requestArtifact = {
       ...dispatchArtifact,
+      inputsJsonOutputPath: config.inputsJsonOutputPath,
       inputsTableOutputPath: config.inputsTableOutputPath,
       inputsOutputPath: config.inputsOutputPath,
     };
@@ -60,6 +64,7 @@ export async function runProductionSmokeRequestCli(args = [], input = {}) {
 export function readProductionSmokeRequestCliConfig(args = []) {
   const input = {
     dispatchArgs: [],
+    inputsJsonOutputPath: null,
     inputsTableOutputPath: null,
     inputsOutputPath: null,
     outputPath: defaultProductionSmokeRequestOutputPath,
@@ -90,6 +95,16 @@ export function readProductionSmokeRequestCliConfig(args = []) {
       continue;
     }
 
+    if (
+      option === "--inputs-json-output" ||
+      option === "--inputs-manifest-output"
+    ) {
+      input.inputsJsonOutputPath =
+        value ?? readOptionValue(option, normalizedArgs, index);
+      index += value === null ? 1 : 0;
+      continue;
+    }
+
     input.dispatchArgs.push(normalizedArgs[index]);
   }
 
@@ -101,6 +116,11 @@ export function readProductionSmokeRequestCliConfig(args = []) {
     inputsTableOutputPath: input.inputsTableOutputPath
       ? normalizeProductionSmokeDispatchInputsTableOutputPath(
           input.inputsTableOutputPath,
+        )
+      : null,
+    inputsJsonOutputPath: input.inputsJsonOutputPath
+      ? normalizeProductionSmokeDispatchInputsManifestOutputPath(
+          input.inputsJsonOutputPath,
         )
       : null,
     outputPath: normalizeProductionSmokeRequestOutputPath(input.outputPath),

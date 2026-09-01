@@ -48,6 +48,7 @@ test("project status completion checklist summarizes blocked evidence", () => {
       "Smoke request output",
       "Dispatch inputs output",
       "Dispatch inputs table output",
+      "Dispatch inputs JSON output",
       "Local verification inputs",
       "Visual evidence inputs",
       "Release note inputs",

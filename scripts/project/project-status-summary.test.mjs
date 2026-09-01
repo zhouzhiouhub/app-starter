@@ -72,6 +72,10 @@ test("project status summary stays compact and actionable", () => {
     text,
     /Dispatch inputs table output: artifacts\/production-smoke\/production-smoke-dispatch-inputs\.tsv/,
   );
+  assert.match(
+    text,
+    /Dispatch inputs JSON output: artifacts\/production-smoke\/production-smoke-dispatch-inputs\.json/,
+  );
   assert.doesNotMatch(text, /Validate dispatch: pnpm smoke:dispatch -- --require-complete/);
   assert.doesNotMatch(text, /Manual dispatch: GitHub Actions > Production Smoke/);
   assert.match(text, /Page Builder Visual: Visual acceptance pending/);
@@ -87,7 +91,7 @@ test("project status summary stays compact and actionable", () => {
   assert.match(text, /Refresh requests: pnpm release:requests/);
   assert.match(
     text,
-    /Refresh requests output: artifacts\/release\/release-evidence-request\.md, artifacts\/visual\/page-builder-reference-request\.md, artifacts\/visual\/page-builder-missing-references\.txt, artifacts\/visual\/page-builder-reference-export-table\.tsv, artifacts\/visual\/page-builder-reference-export-manifest\.json, artifacts\/production-smoke\/production-smoke-request\.md, artifacts\/production-smoke\/production-smoke-dispatch-inputs\.txt, artifacts\/production-smoke\/production-smoke-dispatch-inputs\.tsv/,
+    /Refresh requests output: artifacts\/release\/release-evidence-request\.md, artifacts\/visual\/page-builder-reference-request\.md, artifacts\/visual\/page-builder-missing-references\.txt, artifacts\/visual\/page-builder-reference-export-table\.tsv, artifacts\/visual\/page-builder-reference-export-manifest\.json, artifacts\/production-smoke\/production-smoke-request\.md, artifacts\/production-smoke\/production-smoke-dispatch-inputs\.txt, artifacts\/production-smoke\/production-smoke-dispatch-inputs\.tsv, artifacts\/production-smoke\/production-smoke-dispatch-inputs\.json/,
   );
   assert.doesNotMatch(text, /Evidence request: pnpm release:evidence-request/);
   assert.doesNotMatch(text, /Reference report: pnpm visual:references:check/);
@@ -138,6 +142,10 @@ test("project status CLI can print a compact summary", async () => {
     text,
     /Dispatch inputs table output: artifacts\/production-smoke\/production-smoke-dispatch-inputs\.tsv/,
   );
+  assert.match(
+    text,
+    /Dispatch inputs JSON output: artifacts\/production-smoke\/production-smoke-dispatch-inputs\.json/,
+  );
     assert.match(text, /Page Builder Visual: Visual acceptance pending/);
     assert.match(
       text,
@@ -151,7 +159,7 @@ test("project status CLI can print a compact summary", async () => {
     assert.match(text, /Refresh requests: pnpm release:requests/);
     assert.match(
       text,
-      /Refresh requests output: artifacts\/release\/release-evidence-request\.md, artifacts\/visual\/page-builder-reference-request\.md, artifacts\/visual\/page-builder-missing-references\.txt, artifacts\/visual\/page-builder-reference-export-table\.tsv, artifacts\/visual\/page-builder-reference-export-manifest\.json, artifacts\/production-smoke\/production-smoke-request\.md, artifacts\/production-smoke\/production-smoke-dispatch-inputs\.txt, artifacts\/production-smoke\/production-smoke-dispatch-inputs\.tsv/,
+      /Refresh requests output: artifacts\/release\/release-evidence-request\.md, artifacts\/visual\/page-builder-reference-request\.md, artifacts\/visual\/page-builder-missing-references\.txt, artifacts\/visual\/page-builder-reference-export-table\.tsv, artifacts\/visual\/page-builder-reference-export-manifest\.json, artifacts\/production-smoke\/production-smoke-request\.md, artifacts\/production-smoke\/production-smoke-dispatch-inputs\.txt, artifacts\/production-smoke\/production-smoke-dispatch-inputs\.tsv, artifacts\/production-smoke\/production-smoke-dispatch-inputs\.json/,
     );
     assert.doesNotMatch(text, /Evidence request: pnpm release:evidence-request/);
     assert.match(text, /\.\.\. and 12 more next actions/);

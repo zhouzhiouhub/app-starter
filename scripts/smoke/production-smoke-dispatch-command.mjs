@@ -1,3 +1,7 @@
+import {
+  defaultProductionSmokeDispatchInputsManifestOutputPath,
+} from "./production-smoke-dispatch-inputs-manifest-path.mjs";
+
 const defaultWorkflowFile = "production-smoke.yml";
 const defaultRef = "main";
 const defaultDispatchCliCommand = "pnpm smoke:dispatch";
@@ -91,11 +95,15 @@ export function createProductionSmokeRequestCommand(options = {}) {
   const inputsTableOutputPath =
     readText(options.inputsTableOutputPath) ??
     defaultSmokeRequestInputsTableOutputPath;
+  const inputsJsonOutputPath =
+    readText(options.inputsJsonOutputPath) ??
+    defaultProductionSmokeDispatchInputsManifestOutputPath;
 
   if (
     outputPath === defaultSmokeRequestOutputPath &&
     inputsOutputPath === defaultSmokeRequestInputsOutputPath &&
-    inputsTableOutputPath === defaultSmokeRequestInputsTableOutputPath
+    inputsTableOutputPath === defaultSmokeRequestInputsTableOutputPath &&
+    inputsJsonOutputPath === defaultProductionSmokeDispatchInputsManifestOutputPath
   ) {
     return defaultSmokeRequestCommand;
   }
@@ -109,6 +117,8 @@ export function createProductionSmokeRequestCommand(options = {}) {
     inputsOutputPath,
     "--inputs-table-output",
     inputsTableOutputPath,
+    "--inputs-json-output",
+    inputsJsonOutputPath,
   ].join(" ");
 }
 

@@ -34,6 +34,8 @@ export function readReleaseRequestsCliConfig(args = []) {
       defaultReleaseRequestsOutputPaths.productionSmokeInputs,
       "--inputs-table-output",
       defaultReleaseRequestsOutputPaths.productionSmokeInputsTable,
+      "--inputs-json-output",
+      defaultReleaseRequestsOutputPaths.productionSmokeInputsManifest,
     ],
     releaseEvidenceArgs: [],
     visualArtifactManifestPath: null,
@@ -144,6 +146,26 @@ export function readReleaseRequestsCliConfig(args = []) {
         outputPath,
       );
       config.outputPaths.productionSmokeInputsTable = outputPath;
+      index += value === null ? 1 : 0;
+      continue;
+    }
+    if (
+      option === "--smoke-inputs-json-output" ||
+      option === "--inputs-json-output" ||
+      option === "--inputs-manifest-output"
+    ) {
+      const outputPath = readOptionValue(option, normalizedArgs, index, value);
+      setValueOption(
+        config.releaseEvidenceArgs,
+        "--smoke-inputs-json-output",
+        outputPath,
+      );
+      setValueOption(
+        config.productionSmokeArgs,
+        "--inputs-json-output",
+        outputPath,
+      );
+      config.outputPaths.productionSmokeInputsManifest = outputPath;
       index += value === null ? 1 : 0;
       continue;
     }

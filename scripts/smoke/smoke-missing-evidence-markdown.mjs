@@ -12,6 +12,9 @@ import {
   defaultProductionSmokeDispatchInputsTableOutputPath,
 } from "./production-smoke-dispatch-inputs-table-path.mjs";
 import {
+  defaultProductionSmokeDispatchInputsManifestOutputPath,
+} from "./production-smoke-dispatch-inputs-manifest-path.mjs";
+import {
   productionSmokeEvidenceInputSources,
 } from "./production-smoke-evidence-input-sources.mjs";
 
@@ -35,6 +38,10 @@ export const requiredProductionSmokeEvidence = [
   {
     label: "Dispatch inputs table output",
     value: defaultProductionSmokeDispatchInputsTableOutputPath,
+  },
+  {
+    label: "Dispatch inputs JSON output",
+    value: defaultProductionSmokeDispatchInputsManifestOutputPath,
   },
   {
     label: "Workflow dispatch validation",

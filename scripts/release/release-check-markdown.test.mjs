@@ -135,6 +135,10 @@ test("release check Markdown lists blockers and visual tasks", () => {
   );
   assert.match(
     markdown,
+    /Dispatch inputs JSON output: `artifacts\/production-smoke\/production-smoke-dispatch-inputs\.json`/,
+  );
+  assert.match(
+    markdown,
     new RegExp(
       `Workflow dispatch validation: \`${escapeRegExp(validationCommand)}`,
       "u",
@@ -321,6 +325,7 @@ function assertMissingSmokeEvidenceOrder(markdown) {
   const inputsTableOutputIndex = section.indexOf(
     "Dispatch inputs table output:",
   );
+  const inputsJsonOutputIndex = section.indexOf("Dispatch inputs JSON output:");
   const validationIndex = section.indexOf("Workflow dispatch validation:");
   const templateIndex = section.indexOf("Workflow dispatch template:");
   const manualIndex = section.indexOf("Workflow manual dispatch:");
@@ -331,6 +336,7 @@ function assertMissingSmokeEvidenceOrder(markdown) {
     requestIndex,
     inputsOutputIndex,
     inputsTableOutputIndex,
+    inputsJsonOutputIndex,
     validationIndex,
     templateIndex,
     manualIndex,
@@ -341,7 +347,8 @@ function assertMissingSmokeEvidenceOrder(markdown) {
     indices.every((index) => index >= 0) &&
       requestIndex < inputsOutputIndex &&
       inputsOutputIndex < inputsTableOutputIndex &&
-      inputsTableOutputIndex < validationIndex &&
+      inputsTableOutputIndex < inputsJsonOutputIndex &&
+      inputsJsonOutputIndex < validationIndex &&
       validationIndex < templateIndex &&
       templateIndex < manualIndex &&
       manualIndex < workflowIndex,

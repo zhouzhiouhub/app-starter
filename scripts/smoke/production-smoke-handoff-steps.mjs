@@ -13,6 +13,9 @@ import {
 import {
   defaultProductionSmokeDispatchInputsTableOutputPath,
 } from "./production-smoke-dispatch-inputs-table-path.mjs";
+import {
+  defaultProductionSmokeDispatchInputsManifestOutputPath,
+} from "./production-smoke-dispatch-inputs-manifest-path.mjs";
 
 const productionSmokeArtifactNames = [
   "production-smoke-report-<run_number>",
@@ -55,6 +58,10 @@ export function createProductionSmokeHandoffSteps(options = {}) {
     createHandoffStep(
       "Dispatch inputs table output",
       defaultProductionSmokeDispatchInputsTableOutputPath,
+    ),
+    createHandoffStep(
+      "Dispatch inputs JSON output",
+      defaultProductionSmokeDispatchInputsManifestOutputPath,
     ),
     createHandoffStep(
       "Local verification inputs",

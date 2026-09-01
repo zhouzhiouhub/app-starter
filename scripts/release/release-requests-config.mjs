@@ -8,6 +8,9 @@ import {
   defaultProductionSmokeDispatchInputsTableOutputPath,
 } from "../smoke/production-smoke-dispatch-inputs-table-path.mjs";
 import {
+  defaultProductionSmokeDispatchInputsManifestOutputPath,
+} from "../smoke/production-smoke-dispatch-inputs-manifest-path.mjs";
+import {
   defaultPageBuilderVisualReferenceExportManifestOutputPath,
   defaultPageBuilderVisualMissingReferencesOutputPath,
   defaultPageBuilderVisualReferenceExportTableOutputPath,
@@ -19,6 +22,8 @@ import {
 
 export const defaultReleaseRequestsOutputPaths = {
   productionSmokeInputs: defaultProductionSmokeDispatchInputsOutputPath,
+  productionSmokeInputsManifest:
+    defaultProductionSmokeDispatchInputsManifestOutputPath,
   productionSmokeInputsTable: defaultProductionSmokeDispatchInputsTableOutputPath,
   productionSmoke: defaultProductionSmokeRequestOutputPath,
   releaseEvidence: defaultReleaseEvidenceRequestOutputPath,
@@ -56,6 +61,8 @@ export function createReleaseRequestsCommand(outputPaths = {}) {
     paths.productionSmokeInputs,
     "--smoke-inputs-table-output",
     paths.productionSmokeInputsTable,
+    "--smoke-inputs-json-output",
+    paths.productionSmokeInputsManifest,
   ].join(" ");
 }
 
@@ -71,6 +78,7 @@ export function createReleaseRequestsOutputSummary(outputPaths = {}) {
     paths.productionSmoke,
     paths.productionSmokeInputs,
     paths.productionSmokeInputsTable,
+    paths.productionSmokeInputsManifest,
   ].join(", ");
 }
 

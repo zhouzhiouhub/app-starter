@@ -18,6 +18,7 @@ test("release requests CLI writes every local request Markdown", async () => {
   const smokeOutput = `${root}/production-smoke-request.md`;
   const smokeInputsOutput = `${root}/production-smoke-dispatch-inputs.txt`;
   const smokeInputsTableOutput = `${root}/production-smoke-dispatch-inputs.tsv`;
+  const smokeInputsJsonOutput = `${root}/production-smoke-dispatch-inputs.json`;
   const stdout = [];
   const visualManifest = createPendingVisualManifest();
 
@@ -45,6 +46,8 @@ test("release requests CLI writes every local request Markdown", async () => {
         smokeInputsOutput,
         "--smoke-inputs-table-output",
         smokeInputsTableOutput,
+        "--smoke-inputs-json-output",
+        smokeInputsJsonOutput,
       ],
       {
         generatedAt: "2026-09-01T00:00:00.000Z",
@@ -64,6 +67,7 @@ test("release requests CLI writes every local request Markdown", async () => {
       smokeMarkdown,
       smokeInputsText,
       smokeInputsTable,
+      smokeInputsJsonText,
     ] = await Promise.all([
       readFile(releaseOutput, "utf8"),
       readFile(visualOutput, "utf8"),
@@ -73,8 +77,10 @@ test("release requests CLI writes every local request Markdown", async () => {
       readFile(smokeOutput, "utf8"),
       readFile(smokeInputsOutput, "utf8"),
       readFile(smokeInputsTableOutput, "utf8"),
+      readFile(smokeInputsJsonOutput, "utf8"),
     ]);
     const visualExportManifest = JSON.parse(visualExportManifestText);
+    const smokeInputsManifest = JSON.parse(smokeInputsJsonText);
     const output = stdout.join("\n");
 
     assert.equal(exitCode, 0);
@@ -107,6 +113,12 @@ test("release requests CLI writes every local request Markdown", async () => {
         `Production Smoke inputs table: ${escapeRegExp(smokeInputsTableOutput)}`,
       ),
     );
+    assert.match(
+      output,
+      new RegExp(
+        `Production Smoke inputs JSON: ${escapeRegExp(smokeInputsJsonOutput)}`,
+      ),
+    );
     assert.match(releaseMarkdown, /^# MVP Release Evidence Request/m);
     assert.match(
       releaseMarkdown,
@@ -127,6 +139,8 @@ test("release requests CLI writes every local request Markdown", async () => {
           smokeInputsOutput,
         )} --smoke-inputs-table-output ${escapeRegExp(
           smokeInputsTableOutput,
+        )} --smoke-inputs-json-output ${escapeRegExp(
+          smokeInputsJsonOutput,
         )}\``,
       ),
     );
@@ -143,6 +157,7 @@ test("release requests CLI writes every local request Markdown", async () => {
             smokeOutput,
             smokeInputsOutput,
             smokeInputsTableOutput,
+            smokeInputsJsonOutput,
           ].join(", "),
         )}\``,
       ),
@@ -166,6 +181,8 @@ test("release requests CLI writes every local request Markdown", async () => {
           smokeInputsOutput,
         )} --smoke-inputs-table-output ${escapeRegExp(
           smokeInputsTableOutput,
+        )} --smoke-inputs-json-output ${escapeRegExp(
+          smokeInputsJsonOutput,
         )}\``,
       ),
     );
@@ -198,7 +215,9 @@ test("release requests CLI writes every local request Markdown", async () => {
           smokeOutput,
         )} --inputs-output ${escapeRegExp(
           smokeInputsOutput,
-        )} --inputs-table-output ${escapeRegExp(smokeInputsTableOutput)}\``,
+        )} --inputs-table-output ${escapeRegExp(
+          smokeInputsTableOutput,
+        )} --inputs-json-output ${escapeRegExp(smokeInputsJsonOutput)}\``,
       ),
     );
     assert.match(
@@ -238,6 +257,14 @@ test("release requests CLI writes every local request Markdown", async () => {
     assert.match(
       releaseMarkdown,
       new RegExp(
+        `Production Smoke dispatch inputs JSON output: \`${escapeRegExp(
+          smokeInputsJsonOutput,
+        )}\``,
+      ),
+    );
+    assert.match(
+      releaseMarkdown,
+      new RegExp(
         `Dispatch inputs output: \`${escapeRegExp(smokeInputsOutput)}\``,
       ),
     );
@@ -246,6 +273,14 @@ test("release requests CLI writes every local request Markdown", async () => {
       new RegExp(
         `Dispatch inputs table output: \`${escapeRegExp(
           smokeInputsTableOutput,
+        )}\``,
+      ),
+    );
+    assert.match(
+      releaseMarkdown,
+      new RegExp(
+        `Dispatch inputs JSON output: \`${escapeRegExp(
+          smokeInputsJsonOutput,
         )}\``,
       ),
     );
@@ -283,6 +318,14 @@ test("release requests CLI writes every local request Markdown", async () => {
       smokeInputsTable,
       /^name\tstatus\tvalue\tsource\tworkflow_required\tworkflow_description/m,
     );
+    assert.equal(
+      smokeInputsManifest.schemaVersion,
+      "production-smoke-dispatch-inputs.v1",
+    );
+    assert.equal(smokeInputsManifest.status, "needs-inputs");
+    assert.equal(smokeInputsManifest.inputCount, 7);
+    assert.equal(smokeInputsManifest.missingInputCount, 7);
+    assert.equal(smokeInputsManifest.inputs[0].source, "Page Builder Visual workflow artifact after visual evidence passes");
   } finally {
     await rm(root, { force: true, recursive: true });
   }
@@ -306,6 +349,8 @@ test("release requests config routes shared evidence inputs", () => {
     "tmp/smoke-inputs.txt",
     "--smoke-inputs-table-output",
     "tmp/smoke-inputs.tsv",
+    "--smoke-inputs-json-output",
+    "tmp/smoke-inputs.json",
     "--source-dir",
     "docs/visual/page-builder-references",
     "--visual-manifest",
@@ -333,6 +378,7 @@ test("release requests config routes shared evidence inputs", () => {
   assert.deepEqual(config.outputPaths, {
     productionSmoke: "tmp/smoke.md",
     productionSmokeInputs: "tmp/smoke-inputs.txt",
+    productionSmokeInputsManifest: "tmp/smoke-inputs.json",
     productionSmokeInputsTable: "tmp/smoke-inputs.tsv",
     releaseEvidence: "tmp/release.md",
     visualMissingReferences: "tmp/missing.txt",
@@ -362,6 +408,10 @@ test("release requests config routes shared evidence inputs", () => {
   assert.equal(
     readOptionValue(config.productionSmokeArgs, "--inputs-table-output"),
     "tmp/smoke-inputs.tsv",
+  );
+  assert.equal(
+    readOptionValue(config.productionSmokeArgs, "--inputs-json-output"),
+    "tmp/smoke-inputs.json",
   );
   assert.equal(
     readOptionValue(config.releaseEvidenceArgs, "--visual-output"),
@@ -398,6 +448,10 @@ test("release requests config routes shared evidence inputs", () => {
   assert.equal(
     readOptionValue(config.releaseEvidenceArgs, "--smoke-inputs-table-output"),
     "tmp/smoke-inputs.tsv",
+  );
+  assert.equal(
+    readOptionValue(config.releaseEvidenceArgs, "--smoke-inputs-json-output"),
+    "tmp/smoke-inputs.json",
   );
   assert.ok(config.releaseEvidenceArgs.includes("--smoke-report"));
   assert.ok(config.releaseEvidenceArgs.includes("--visual-artifact-dir"));

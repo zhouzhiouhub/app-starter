@@ -7,6 +7,9 @@ import {
   normalizeProductionSmokeDispatchInputsTableOutputPath,
 } from "../smoke/production-smoke-dispatch-inputs-table-path.mjs";
 import {
+  normalizeProductionSmokeDispatchInputsManifestOutputPath,
+} from "../smoke/production-smoke-dispatch-inputs-manifest-path.mjs";
+import {
   normalizeProductionSmokeRequestOutputPath,
 } from "../smoke/production-smoke-request.mjs";
 import { defaultPageBuilderVisualReferenceSourceDir } from "../visual/page-builder-visual-acceptance-constants.mjs";
@@ -65,6 +68,8 @@ export function readReleaseEvidenceRequestCliConfig(args = []) {
     smokeDispatchArgs: [],
     smokeInputsTableOutputPath:
       defaultReleaseEvidenceRequestOutputPaths.productionSmokeInputsTable,
+    smokeInputsJsonOutputPath:
+      defaultReleaseEvidenceRequestOutputPaths.productionSmokeInputsManifest,
     smokeInputsOutputPath: defaultProductionSmokeDispatchInputsOutputPath,
     visualManifestPath: defaultReleaseEvidenceRequestVisualManifestPath,
     visualSourceDir: defaultPageBuilderVisualReferenceSourceDir,
@@ -162,6 +167,23 @@ export function readReleaseEvidenceRequestCliConfig(args = []) {
       continue;
     }
 
+    if (
+      option === "--smoke-inputs-json-output" ||
+      option === "--inputs-json-output" ||
+      option === "--inputs-manifest-output"
+    ) {
+      input.smokeInputsJsonOutputPath = readOptionValue(
+        option,
+        normalizedArgs,
+        index,
+        value,
+      );
+      input.requestOutputPaths.productionSmokeInputsManifest =
+        input.smokeInputsJsonOutputPath;
+      index += value === null ? 1 : 0;
+      continue;
+    }
+
     if (option === "--source-dir" || option === "--visual-source-dir") {
       input.visualSourceDir = readOptionValue(
         option,
@@ -219,6 +241,10 @@ export function readReleaseEvidenceRequestCliConfig(args = []) {
     normalizeProductionSmokeDispatchInputsTableOutputPath(
       input.smokeInputsTableOutputPath,
     );
+  const smokeInputsJsonOutputPath =
+    normalizeProductionSmokeDispatchInputsManifestOutputPath(
+      input.smokeInputsJsonOutputPath,
+    );
 
   return {
     outputPath,
@@ -228,6 +254,7 @@ export function readReleaseEvidenceRequestCliConfig(args = []) {
         input.requestOutputPaths.productionSmoke,
       ),
       productionSmokeInputs: smokeInputsOutputPath,
+      productionSmokeInputsManifest: smokeInputsJsonOutputPath,
       productionSmokeInputsTable: smokeInputsTableOutputPath,
       releaseEvidence: outputPath,
       visualMissingReferences: normalizeVisualReferenceMissingOutputPath(
@@ -246,6 +273,7 @@ export function readReleaseEvidenceRequestCliConfig(args = []) {
     smokeDispatchConfig: readProductionSmokeDispatchCliConfig(
       input.smokeDispatchArgs,
     ),
+    smokeInputsJsonOutputPath,
     smokeInputsOutputPath,
     smokeInputsTableOutputPath,
     visualManifestPath:

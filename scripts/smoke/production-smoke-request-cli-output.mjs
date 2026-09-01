@@ -5,6 +5,9 @@ import {
   writeProductionSmokeDispatchInputsTable,
 } from "./production-smoke-dispatch-inputs-table-output.mjs";
 import {
+  writeProductionSmokeDispatchInputsManifest,
+} from "./production-smoke-dispatch-inputs-manifest-output.mjs";
+import {
   writeProductionSmokeRequestMarkdown,
 } from "./production-smoke-request-markdown.mjs";
 
@@ -24,6 +27,13 @@ export async function writeProductionSmokeRequestOutputs(config, artifact) {
       artifact.dispatch,
     );
   }
+
+  if (config.inputsJsonOutputPath) {
+    await writeProductionSmokeDispatchInputsManifest(
+      config.inputsJsonOutputPath,
+      artifact.dispatch,
+    );
+  }
 }
 
 export function printProductionSmokeRequestSummary(config, artifact, writeLine) {
@@ -38,6 +48,12 @@ export function printProductionSmokeRequestSummary(config, artifact, writeLine) 
   if (config.inputsTableOutputPath) {
     writeLine(
       `Production smoke dispatch inputs table written: ${config.inputsTableOutputPath}`,
+    );
+  }
+
+  if (config.inputsJsonOutputPath) {
+    writeLine(
+      `Production smoke dispatch inputs JSON written: ${config.inputsJsonOutputPath}`,
     );
   }
 

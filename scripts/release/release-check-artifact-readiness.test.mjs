@@ -78,6 +78,7 @@ test("release check artifact includes blocked checklist actions", () => {
       "Smoke request output",
       "Dispatch inputs output",
       "Dispatch inputs table output",
+      "Dispatch inputs JSON output",
       "Local verification inputs",
       "Visual evidence inputs",
       "Release note inputs",
@@ -103,6 +104,10 @@ test("release check artifact includes blocked checklist actions", () => {
   assert.equal(
     readStepValue(smokeItem, "Dispatch inputs table output"),
     "artifacts/production-smoke/production-smoke-dispatch-inputs.tsv",
+  );
+  assert.equal(
+    readStepValue(smokeItem, "Dispatch inputs JSON output"),
+    "artifacts/production-smoke/production-smoke-dispatch-inputs.json",
   );
   assert.equal(
     readStepValue(smokeItem, "Validate dispatch"),
