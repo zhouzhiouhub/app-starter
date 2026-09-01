@@ -11,6 +11,10 @@ import {
 import {
   defaultPageBuilderVisualReferenceRequestOutputPath,
 } from "../visual/page-builder-visual-reference-request.mjs";
+import {
+  createReleaseRequestsCommand,
+  createReleaseRequestsOutputSummary,
+} from "../release/release-requests.mjs";
 
 const defaultVisualArtifactDir = "reports/visual/page-builder-fixture";
 const defaultVisualReferenceSourceDir = "docs/visual/page-builder-references";
@@ -22,6 +26,14 @@ export function createReleaseEvidenceRequestAction() {
     area: "Release Evidence",
     label: "Generate evidence request",
     steps: [
+      createReleaseEvidenceStep(
+        "Refresh requests",
+        createReleaseRequestsCommand(),
+      ),
+      createReleaseEvidenceStep(
+        "Refresh requests output",
+        createReleaseRequestsOutputSummary(),
+      ),
       createReleaseEvidenceStep(
         "Evidence request",
         createReleaseEvidenceRequestCommand(),

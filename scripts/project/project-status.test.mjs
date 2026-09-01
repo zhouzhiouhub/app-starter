@@ -160,7 +160,7 @@ test("project status summarizes blocked release evidence", () => {
   assert.equal(artifact.nextActions[2].label, "Generate evidence request");
   assert.equal(
     artifact.nextActions[2].steps[0].value,
-    "pnpm release:evidence-request",
+    "pnpm release:requests",
   );
 });
 

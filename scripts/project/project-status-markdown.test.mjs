@@ -140,6 +140,14 @@ test("project status CLI writes a Markdown handoff", async () => {
     );
     assert.match(
       markdown,
+      / {4}- Refresh requests: `pnpm release:requests`/,
+    );
+    assert.match(
+      markdown,
+      / {4}- Refresh requests output: `artifacts\/release\/release-evidence-request\.md, artifacts\/visual\/page-builder-reference-request\.md, artifacts\/production-smoke\/production-smoke-request\.md`/,
+    );
+    assert.match(
+      markdown,
       / {4}- Evidence request: `pnpm release:evidence-request`/,
     );
     assert.match(

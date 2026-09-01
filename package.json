@@ -23,6 +23,7 @@
     "release:handoff": "node scripts/release-handoff.mjs",
     "release:notes": "node scripts/release-notes.mjs",
     "release:preflight": "node scripts/release/production-smoke-release-inputs.mjs",
+    "release:requests": "node scripts/release-requests.mjs",
     "smoke:dispatch": "node scripts/production-smoke-dispatch.mjs",
     "smoke:request": "node scripts/production-smoke-request.mjs --output artifacts/production-smoke/production-smoke-request.md",
     "smoke:publish": "node scripts/smoke-publish.mjs",

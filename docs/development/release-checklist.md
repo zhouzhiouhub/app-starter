@@ -9,6 +9,11 @@ later phases are explicitly approved.
 - Review [`infra/README.md`](../../infra/README.md) for the production
   deployment sequence, environment variable matrix, evidence flow, and rollback
   runbook.
+- Run `pnpm release:requests` when the release needs the combined release
+  evidence request, Page Builder design request, and Production Smoke request
+  refreshed together. This writes only local coordination Markdown; it does not
+  import references, run smoke, upload artifacts, generate release notes, or
+  mark blocked evidence ready.
 - Run `pnpm release:evidence-request` when the release needs one combined
   handoff for design references, Production Smoke inputs, retained artifacts,
   and the final `release:handoff -- --require-ready` gate. This request is
@@ -354,8 +359,8 @@ later phases are explicitly approved.
   `--allow-blocked`.
 - `pnpm project:status -- --summary` prints the compact completion answer for
   triage: phase, release-ready flag, Production Smoke, Page Builder Visual,
-  blocker count, and the first three next actions, including the unified
-  `pnpm release:evidence-request` evidence request. Use the default output,
+  blocker count, and the first three next actions, including the
+  `pnpm release:requests` local request bundle refresh. Use the default output,
   `--all-actions`, JSON, or Markdown modes for release-review handoff.
 - Production Smoke artifact uploads use `if-no-files-found: error`; missing
   preflight JSON/Markdown, smoke JSON, Smoke Markdown, combined gate
@@ -408,6 +413,9 @@ later phases are explicitly approved.
   `pnpm release:handoff -- --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture`
   when a blocked or ready review needs both release evidence and project status
   JSON/Markdown files refreshed together.
+- Run `pnpm release:requests` before cross-functional release review when the
+  release needs the combined release request, design export request, and
+  Production Smoke operator request refreshed as separate local Markdown files.
 - Run `pnpm release:evidence-request` before cross-functional release review
   when design reference export and Production Smoke execution need one shared
   request file. Its Request Status includes `First missing visual reference`

@@ -117,6 +117,8 @@ test("project next actions include unified release evidence request", () => {
   assert.deepEqual(
     releaseEvidence.steps.map((step) => step.label),
     [
+      "Refresh requests",
+      "Refresh requests output",
       "Evidence request",
       "Evidence request output",
       "Design request",
@@ -128,27 +130,35 @@ test("project next actions include unified release evidence request", () => {
   );
   assert.equal(
     releaseEvidence.steps[0].value,
-    "pnpm release:evidence-request",
+    "pnpm release:requests",
   );
   assert.equal(
     releaseEvidence.steps[1].value,
-    "artifacts/release/release-evidence-request.md",
+    "artifacts/release/release-evidence-request.md, artifacts/visual/page-builder-reference-request.md, artifacts/production-smoke/production-smoke-request.md",
   );
   assert.equal(
     releaseEvidence.steps[2].value,
-    "pnpm visual:references:request",
+    "pnpm release:evidence-request",
   );
   assert.equal(
     releaseEvidence.steps[3].value,
-    "artifacts/visual/page-builder-reference-request.md",
+    "artifacts/release/release-evidence-request.md",
   );
-  assert.equal(releaseEvidence.steps[4].value, "pnpm smoke:request");
+  assert.equal(
+    releaseEvidence.steps[4].value,
+    "pnpm visual:references:request",
+  );
   assert.equal(
     releaseEvidence.steps[5].value,
+    "artifacts/visual/page-builder-reference-request.md",
+  );
+  assert.equal(releaseEvidence.steps[6].value, "pnpm smoke:request");
+  assert.equal(
+    releaseEvidence.steps[7].value,
     "artifacts/production-smoke/production-smoke-request.md",
   );
   assert.match(
-    releaseEvidence.steps[6].value,
+    releaseEvidence.steps[8].value,
     /^pnpm release:handoff -- --require-ready /,
   );
 });

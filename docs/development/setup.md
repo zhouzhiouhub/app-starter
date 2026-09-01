@@ -275,6 +275,7 @@ pnpm smoke:release-check -- artifacts/production-smoke/smoke-report.json
 pnpm smoke:dispatch
 pnpm smoke:request
 pnpm release:evidence-request
+pnpm release:requests
 pnpm --silent visual:references:missing
 pnpm visual:references:request
 pnpm visual:references:check
@@ -324,6 +325,14 @@ reference`, `Missing Production Smoke inputs`, and the final
 retained. It does not import references, run smoke, create release notes, or
 mark blocked evidence ready.
 
+`pnpm release:requests` refreshes all three local request Markdown files in one
+run: `artifacts/release/release-evidence-request.md`,
+`artifacts/visual/page-builder-reference-request.md`, and
+`artifacts/production-smoke/production-smoke-request.md`. It accepts the same
+visual manifest/source options and Production Smoke evidence inputs as the
+individual request commands, but still does not import references, run smoke,
+upload artifacts, create release notes, or mark blocked evidence ready.
+
 The review command scans the same safe archive roots, recomputes the report
 summary from the stored checks, and highlights R2 / CDN, Admin static app, and
 publish-flow traceability before showing failed check details and suggested
@@ -344,9 +353,9 @@ completed milestones, release readiness, the configured local verification
 commands, and the next concrete actions without changing the pass/fail criteria.
 Use `pnpm project:status -- --summary` when you only need the compact "is this
 done?" answer with the phase, release-ready flag, evidence gates, blocker count,
-and the first three next actions, including the unified `pnpm
-release:evidence-request` evidence request. The default text, `--all-actions`,
-JSON, and Markdown modes remain the full handoff surfaces.
+and the first three next actions, including the `pnpm release:requests` local
+request bundle refresh. The default text, `--all-actions`, JSON, and Markdown
+modes remain the full handoff surfaces.
 The validated `project-status.v1` artifact also includes a `completionChecklist`
 that separates completed local scope from production Smoke and Page Builder
 visual evidence that still needs retained proof; incomplete checklist items also

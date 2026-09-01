@@ -90,6 +90,7 @@ jobs:
       - run: pnpm release:handoff -- --help
       - run: pnpm release:notes -- --help
       - run: pnpm release:preflight -- --help
+      - run: pnpm release:requests -- --help
       - run: pnpm visual:artifact-bundle -- --help
       - run: pnpm visual:artifact-check -- --help
       - run: pnpm build
