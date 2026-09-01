@@ -43,7 +43,15 @@ test("project status exposes smoke Markdown companion status", () => {
   );
   assert.match(
     markdown,
+    /Dispatch inputs output: `artifacts\/production-smoke\/production-smoke-dispatch-inputs\.txt`/,
+  );
+  assert.match(
+    markdown,
     /Workflow dispatch validation: `pnpm smoke:dispatch -- --require-complete/,
+  );
+  assert.match(
+    markdown,
+    /Workflow dispatch template: `gh workflow run production-smoke\.yml --ref main/,
   );
   assert.match(
     markdown,
@@ -61,6 +69,7 @@ test("project status exposes smoke Markdown companion status", () => {
     markdown,
     /Markdown companion: `missing` \(`artifacts\/production-smoke\/smoke-report\.md`\)/,
   );
+  assertMissingSmokeEvidenceOrder(markdown);
 });
 
 test("project status omits missing smoke evidence section when smoke is ready", () => {
@@ -116,13 +125,13 @@ test("project status docs mention missing smoke evidence handoff", async () => {
   assert.match(readme, /release-check\.md.*project-status\.md/s);
   assert.match(setupDoc, /Missing Production Smoke Evidence/);
   assert.match(setupDoc, /release-check\.md.*project-status\.md/s);
-  assert.match(setupDoc, /manual GitHub Actions dispatch path/s);
-  assert.match(setupDoc, /preflight artifact, release\s+evidence artifact/s);
+  assert.match(setupDoc, /manual GitHub\s+Actions dispatch path/s);
+  assert.match(setupDoc, /preflight artifact,\s+release\s+evidence artifact/s);
   assert.match(releaseChecklist, /Missing Production Smoke Evidence/);
   assert.match(releaseChecklist, /release-check\.md.*project-status\.md/s);
   assert.match(
     releaseChecklist,
-    /required\s+workflow, manual\s+dispatch path, `pnpm smoke:request` request, `pnpm smoke:dispatch`\s+validation, `gh` dispatch template, dispatch inputs output, and artifact names/s,
+    /`pnpm smoke:request`\s+request, dispatch inputs output, `pnpm smoke:dispatch`\s+validation,\s+`gh` dispatch template, manual dispatch path, required workflow, and artifact names/s,
   );
 });
 
@@ -132,4 +141,46 @@ function createMissingSmokeMarkdownSummary() {
     path: "artifacts/production-smoke/smoke-report.md",
     status: "missing",
   };
+}
+
+function assertMissingSmokeEvidenceOrder(markdown) {
+  const section = readMissingSmokeEvidenceSection(markdown);
+  const requestIndex = section.indexOf("Production smoke request:");
+  const inputsOutputIndex = section.indexOf("Dispatch inputs output:");
+  const validationIndex = section.indexOf("Workflow dispatch validation:");
+  const templateIndex = section.indexOf("Workflow dispatch template:");
+  const manualIndex = section.indexOf("Workflow manual dispatch:");
+  const workflowIndex = section.indexOf(
+    "Workflow: `GitHub Actions Production Smoke",
+  );
+  const indices = [
+    requestIndex,
+    inputsOutputIndex,
+    validationIndex,
+    templateIndex,
+    manualIndex,
+    workflowIndex,
+  ];
+
+  assert(
+    indices.every((index) => index >= 0) &&
+      requestIndex < inputsOutputIndex &&
+      inputsOutputIndex < validationIndex &&
+      validationIndex < templateIndex &&
+      templateIndex < manualIndex &&
+      manualIndex < workflowIndex,
+    "missing smoke evidence should list request and validation before workflow execution",
+  );
+}
+
+function readMissingSmokeEvidenceSection(markdown) {
+  const start = markdown.indexOf("### Missing Production Smoke Evidence");
+  const end = markdown.indexOf("### Production Smoke Workflow Inputs", start);
+
+  assert(
+    start >= 0 && end > start,
+    "project status Markdown should include the missing smoke evidence section",
+  );
+
+  return markdown.slice(start, end);
 }

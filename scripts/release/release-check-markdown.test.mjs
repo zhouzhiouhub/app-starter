@@ -127,6 +127,10 @@ test("release check Markdown lists blockers and visual tasks", () => {
   );
   assert.match(
     markdown,
+    /Dispatch inputs output: `artifacts\/production-smoke\/production-smoke-dispatch-inputs\.txt`/,
+  );
+  assert.match(
+    markdown,
     new RegExp(
       `Workflow dispatch validation: \`${escapeRegExp(validationCommand)}`,
       "u",
@@ -135,7 +139,7 @@ test("release check Markdown lists blockers and visual tasks", () => {
   assert.match(
     markdown,
     new RegExp(
-      `Dispatch template: \`${escapeRegExp(dispatchCommand)}\``,
+      `Workflow dispatch template: \`${escapeRegExp(dispatchCommand)}\``,
       "u",
     ),
   );
@@ -143,6 +147,7 @@ test("release check Markdown lists blockers and visual tasks", () => {
     markdown,
     /Smoke report JSON: `artifacts\/production-smoke\/smoke-report\.json`/,
   );
+  assertMissingSmokeEvidenceOrder(markdown);
   assert.match(
     markdown,
     /Smoke report Markdown: `artifacts\/production-smoke\/smoke-report\.md`/,
@@ -294,4 +299,46 @@ test("release check CLI writes Markdown output", async () => {
 
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+}
+
+function assertMissingSmokeEvidenceOrder(markdown) {
+  const section = readMissingSmokeEvidenceSection(markdown);
+  const requestIndex = section.indexOf("Production smoke request:");
+  const inputsOutputIndex = section.indexOf("Dispatch inputs output:");
+  const validationIndex = section.indexOf("Workflow dispatch validation:");
+  const templateIndex = section.indexOf("Workflow dispatch template:");
+  const manualIndex = section.indexOf("Workflow manual dispatch:");
+  const workflowIndex = section.indexOf(
+    "Workflow: `GitHub Actions Production Smoke",
+  );
+  const indices = [
+    requestIndex,
+    inputsOutputIndex,
+    validationIndex,
+    templateIndex,
+    manualIndex,
+    workflowIndex,
+  ];
+
+  assert(
+    indices.every((index) => index >= 0) &&
+      requestIndex < inputsOutputIndex &&
+      inputsOutputIndex < validationIndex &&
+      validationIndex < templateIndex &&
+      templateIndex < manualIndex &&
+      manualIndex < workflowIndex,
+    "missing smoke evidence should list request and validation before workflow execution",
+  );
+}
+
+function readMissingSmokeEvidenceSection(markdown) {
+  const start = markdown.indexOf("### Missing Production Smoke Evidence");
+  const end = markdown.indexOf("### Production Smoke Workflow Inputs", start);
+
+  assert(
+    start >= 0 && end > start,
+    "release check Markdown should include the missing smoke evidence section",
+  );
+
+  return markdown.slice(start, end);
 }

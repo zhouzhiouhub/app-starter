@@ -5,6 +5,9 @@ import {
   createProductionSmokeManualDispatchInstruction,
   createProductionSmokeRequestCommand,
 } from "./production-smoke-dispatch-command.mjs";
+import {
+  defaultProductionSmokeDispatchInputsOutputPath,
+} from "./production-smoke-dispatch-inputs-output.mjs";
 
 const maxMarkdownTextLength = 420;
 const productionSmokeDispatchCommand = createProductionSmokeDispatchCommand();
@@ -16,16 +19,12 @@ const productionSmokeRequestCommand = createProductionSmokeRequestCommand();
 
 export const requiredProductionSmokeEvidence = [
   {
-    label: "Workflow",
-    value: "GitHub Actions Production Smoke against the production environment",
-  },
-  {
-    label: "Workflow manual dispatch",
-    value: productionSmokeManualDispatch,
-  },
-  {
     label: "Production smoke request",
     value: productionSmokeRequestCommand,
+  },
+  {
+    label: "Dispatch inputs output",
+    value: defaultProductionSmokeDispatchInputsOutputPath,
   },
   {
     label: "Workflow dispatch validation",
@@ -34,6 +33,14 @@ export const requiredProductionSmokeEvidence = [
   {
     label: "Workflow dispatch template",
     value: productionSmokeDispatchCommand,
+  },
+  {
+    label: "Workflow manual dispatch",
+    value: productionSmokeManualDispatch,
+  },
+  {
+    label: "Workflow",
+    value: "GitHub Actions Production Smoke against the production environment",
   },
   {
     label: "Smoke report JSON",

@@ -24,24 +24,28 @@ test("release check artifact carries structured missing smoke evidence", () => {
   assert.equal(artifact.smoke.status, "blocked");
   assert.equal(artifact.smoke.missingEvidence.status, "blocked");
   assert.equal(artifact.smoke.missingEvidence.summaryStatus, "missing");
-  assert.equal(artifact.smoke.missingEvidence.requiredEvidenceCount, 12);
+  assert.equal(artifact.smoke.missingEvidence.requiredEvidenceCount, 13);
   assert.equal(artifact.smoke.missingEvidence.workflowInputCount, 14);
   assert.deepEqual(
-    artifact.smoke.missingEvidence.requiredEvidence[2],
+    artifact.smoke.missingEvidence.requiredEvidence[0],
     {
       label: "Production smoke request",
       value: "pnpm smoke:request",
     },
   );
+  assert.deepEqual(artifact.smoke.missingEvidence.requiredEvidence[1], {
+    label: "Dispatch inputs output",
+    value: "artifacts/production-smoke/production-smoke-dispatch-inputs.txt",
+  });
   assert.match(
-    artifact.smoke.missingEvidence.requiredEvidence[3].value,
+    artifact.smoke.missingEvidence.requiredEvidence[2].value,
     /^pnpm smoke:dispatch -- --require-complete /u,
   );
   assert.match(
-    artifact.smoke.missingEvidence.requiredEvidence[4].value,
+    artifact.smoke.missingEvidence.requiredEvidence[3].value,
     /^gh workflow run production-smoke\.yml --ref main /u,
   );
-  assert.deepEqual(artifact.smoke.missingEvidence.requiredEvidence[8], {
+  assert.deepEqual(artifact.smoke.missingEvidence.requiredEvidence[9], {
     label: "Smoke artifact",
     value: "production-smoke-report-<run_number>",
   });

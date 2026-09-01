@@ -330,16 +330,16 @@ later phases are explicitly approved.
   also includes reference-import status, missing/update counts,
   required source reference availability, and the first missing reference path. It then
   prints the first two next actions with
-  structured steps when available, including the Production Smoke manual
-  dispatch path, `pnpm smoke:request` request, dispatch inputs output,
-  `pnpm smoke:dispatch` validation, and `gh` dispatch template when smoke
+  structured steps when available, including the `pnpm smoke:request` request,
+  dispatch inputs output, `pnpm smoke:dispatch` validation, `gh` dispatch
+  template, and Production Smoke manual dispatch path when smoke
   evidence is missing; it previews the first hidden structured action
   only when the visible actions do not have steps, and points any remaining work
   to `project-status.md`. When production smoke evidence is missing, both
   `release-check.md` and `project-status.md` include a
-  `Missing Production Smoke Evidence` section with required workflow, manual
-  dispatch path, `pnpm smoke:request` request, `pnpm smoke:dispatch`
-  validation, `gh` dispatch template, dispatch inputs output, and artifact names;
+  `Missing Production Smoke Evidence` section with the `pnpm smoke:request`
+  request, dispatch inputs output, `pnpm smoke:dispatch` validation,
+  `gh` dispatch template, manual dispatch path, required workflow, and artifact names;
   the blocked JSON artifacts mirror the same
   `requiredEvidence[]` and `workflowInputs[]` handoff under
   `smoke.missingEvidence` and `releaseGate.smoke.missingEvidence`. When Page
