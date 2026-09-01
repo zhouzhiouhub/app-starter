@@ -68,37 +68,37 @@ test("release check artifact includes blocked checklist actions", () => {
   assert.deepEqual(
     smokeItem.steps.map((step) => step.label),
     [
-      "Manual dispatch",
       "Smoke request",
       "Smoke request output",
       "Dispatch inputs output",
-      "Validate dispatch",
-      "Dispatch template",
       "Local verification inputs",
       "Visual evidence inputs",
       "Release note inputs",
+      "Validate dispatch",
+      "Dispatch template",
+      "Manual dispatch",
       "Keep artifacts",
       "Rerun gate",
     ],
   );
   assert.equal(
-    smokeItem.steps[1].value,
+    smokeItem.steps[0].value,
     "pnpm smoke:request",
   );
   assert.equal(
-    smokeItem.steps[2].value,
+    smokeItem.steps[1].value,
     "artifacts/production-smoke/production-smoke-request.md",
   );
   assert.equal(
-    smokeItem.steps[3].value,
+    smokeItem.steps[2].value,
     "artifacts/production-smoke/production-smoke-dispatch-inputs.txt",
   );
   assert.equal(
-    smokeItem.steps[4].value,
+    smokeItem.steps[6].value,
     createProductionSmokeDispatchValidationCommand(),
   );
   assert.equal(
-    smokeItem.steps[5].value,
+    smokeItem.steps[7].value,
     createProductionSmokeDispatchCommand(),
   );
   assert.equal(visualItem?.status, "needs-evidence");

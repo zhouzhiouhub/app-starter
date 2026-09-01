@@ -44,26 +44,26 @@ test("project status completion checklist summarizes blocked evidence", () => {
   assert.deepEqual(
     checklist.items[1].nextSteps.map((step) => step.label),
     [
-      "Run workflow",
-      "Manual dispatch",
       "Smoke request",
       "Smoke request output",
       "Dispatch inputs output",
-      "Validate dispatch",
-      "Dispatch template",
       "Local verification inputs",
       "Visual evidence inputs",
       "Release note inputs",
+      "Validate dispatch",
+      "Dispatch template",
+      "Manual dispatch",
+      "Run workflow",
       "Keep artifacts",
       "Rerun gate",
     ],
   );
   assert.match(
-    checklist.items[1].nextSteps[5].value,
+    checklist.items[1].nextSteps[6].value,
     /^pnpm smoke:dispatch -- --require-complete /u,
   );
   assert.match(
-    checklist.items[1].nextSteps[6].value,
+    checklist.items[1].nextSteps[7].value,
     /^gh workflow run production-smoke\.yml --ref main /u,
   );
   assert.equal(

@@ -64,12 +64,12 @@ test("project status summarizes blocked release evidence", () => {
   assert.equal(smokeAction.area, "Production Smoke");
   assert.deepEqual(
     smokeAction.steps.map((step) => step.label),
-    ["Run workflow", "Manual dispatch", "Smoke request", "Smoke request output",
-      "Dispatch inputs output", "Validate dispatch", "Dispatch template", "Local verification inputs",
-      "Visual evidence inputs", "Release note inputs", "Keep artifacts", "Rerun gate"],
+    ["Smoke request", "Smoke request output", "Dispatch inputs output", "Local verification inputs",
+      "Visual evidence inputs", "Release note inputs", "Validate dispatch", "Dispatch template",
+      "Manual dispatch", "Run workflow", "Keep artifacts", "Rerun gate"],
   );
-  assert.equal(smokeAction.steps[2].value, "pnpm smoke:request");
-  assert.equal(smokeAction.steps[3].value, "artifacts/production-smoke/production-smoke-request.md");
+  assert.equal(smokeAction.steps[0].value, "pnpm smoke:request");
+  assert.equal(smokeAction.steps[1].value, "artifacts/production-smoke/production-smoke-request.md");
   assert.equal(readStepValue(smokeAction, "Dispatch inputs output"), "artifacts/production-smoke/production-smoke-dispatch-inputs.txt");
   const validationCommand = readStepValue(smokeAction, "Validate dispatch");
   assert.match(validationCommand, /^pnpm smoke:dispatch -- --require-complete /);

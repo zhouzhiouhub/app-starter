@@ -43,26 +43,12 @@ const productionSmokeRequestCommand = createProductionSmokeRequestCommand();
 
 export function createProductionSmokeHandoffSteps(options = {}) {
   const steps = [
-    ...(options.includeRunWorkflow
-      ? [
-          createHandoffStep(
-            "Run workflow",
-            "GitHub Actions Production Smoke against the production environment",
-          ),
-        ]
-      : []),
-    createHandoffStep("Manual dispatch", productionSmokeManualDispatch),
     createHandoffStep("Smoke request", productionSmokeRequestCommand),
     createHandoffStep("Smoke request output", defaultProductionSmokeRequestOutputPath),
     createHandoffStep(
       "Dispatch inputs output",
       defaultProductionSmokeDispatchInputsOutputPath,
     ),
-    createHandoffStep(
-      "Validate dispatch",
-      productionSmokeDispatchValidationCommand,
-    ),
-    createHandoffStep("Dispatch template", productionSmokeDispatchCommand),
     createHandoffStep(
       "Local verification inputs",
       productionSmokeLocalVerificationInputs.join(", "),
@@ -72,6 +58,20 @@ export function createProductionSmokeHandoffSteps(options = {}) {
       "Release note inputs",
       productionSmokeReleaseNoteInputs.join(", "),
     ),
+    createHandoffStep(
+      "Validate dispatch",
+      productionSmokeDispatchValidationCommand,
+    ),
+    createHandoffStep("Dispatch template", productionSmokeDispatchCommand),
+    createHandoffStep("Manual dispatch", productionSmokeManualDispatch),
+    ...(options.includeRunWorkflow
+      ? [
+          createHandoffStep(
+            "Run workflow",
+            "GitHub Actions Production Smoke against the production environment",
+          ),
+        ]
+      : []),
     createHandoffStep("Keep artifacts", productionSmokeArtifactNames.join(", ")),
     createHandoffStep("Rerun gate", options.rerunGateCommand),
   ];
