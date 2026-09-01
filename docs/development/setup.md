@@ -321,8 +321,8 @@ report and requires the full reference set without updating the manifest.
 `pnpm release:evidence-request` writes
 `artifacts/release/release-evidence-request.md` as a combined release-facing
 request. It embeds the current release gate snapshot, the Page Builder design
-reference request, the Production Smoke request, `First missing visual
-reference`, `Missing Production Smoke inputs`, and the final
+reference request, the Production Smoke request, the dispatch input template
+path, `First missing visual reference`, `Missing Production Smoke inputs`, and the final
 `release:handoff -- --require-ready` gate to rerun after real evidence is
 retained. It does not import references, run smoke, create release notes, or
 mark blocked evidence ready.

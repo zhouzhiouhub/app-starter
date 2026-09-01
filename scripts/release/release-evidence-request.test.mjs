@@ -42,6 +42,10 @@ test("release evidence request Markdown combines blocked evidence handoffs", asy
     assert.match(markdown, /Production Smoke request: `pnpm smoke:request`/);
     assert.match(
       markdown,
+      /Production Smoke dispatch inputs output: `artifacts\/production-smoke\/production-smoke-dispatch-inputs\.txt`/,
+    );
+    assert.match(
+      markdown,
       /First missing visual reference: `docs\/visual\/page-builder-references\/hero-banner-desktop\.png`/,
     );
     assert.match(markdown, /## Page Builder Design Reference Request/);
@@ -50,6 +54,10 @@ test("release evidence request Markdown combines blocked evidence handoffs", asy
       /docs\/visual\/page-builder-references\/hero-banner-desktop\.png/,
     );
     assert.match(markdown, /## Production Smoke Evidence Request/);
+    assert.match(
+      markdown,
+      /Dispatch inputs output: `artifacts\/production-smoke\/production-smoke-dispatch-inputs\.txt`/,
+    );
     assert.match(markdown, /`visual_artifact_name`: `page-builder-visual-fixture-<run_number>`/);
     assert.match(markdown, /Do not mark the project complete from this request alone/);
   } finally {
@@ -156,9 +164,10 @@ test("release evidence request help documents terminal summary fields", async ()
   const help = stdout.join("\n");
 
   assert.equal(exitCode, 0);
-  assert.match(help, /terminal summary\s+and Markdown request status report release readiness/i);
+  assert.match(help, /terminal summary\s+and Markdown request status report release\s+readiness/i);
   assert.match(help, /first missing visual\s+reference/i);
   assert.match(help, /missing Smoke input\s+names/i);
+  assert.match(help, /dispatch input template\s+path/i);
 });
 
 test("release evidence request config validates paths and inputs", () => {
@@ -219,9 +228,12 @@ test("release evidence request command is exposed in package CI and docs", async
   assert.match(workflow, /pnpm release:evidence-request -- --help/);
   assert.match(requestCli, /runReleaseEvidenceRequestCli/);
   assert.match(releaseChecklist, /pnpm release:evidence-request/);
+  assert.match(releaseChecklist, /dispatch input\s+template path/);
   assert.match(releaseChecklist, /First missing visual reference/);
   assert.match(setupDoc, /pnpm release:evidence-request/);
+  assert.match(setupDoc, /dispatch input template\s+path/);
   assert.match(setupDoc, /Missing Production Smoke inputs/);
   assert.match(readme, /pnpm release:evidence-request/);
+  assert.match(readme, /dispatch 输入模板路径/);
   assert.match(readme, /First missing visual reference/);
 });

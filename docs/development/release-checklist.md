@@ -17,10 +17,11 @@ later phases are explicitly approved.
   import references, run smoke, upload artifacts, generate release notes, or
   mark blocked evidence ready.
 - Run `pnpm release:evidence-request` when the release needs one combined
-  handoff for design references, Production Smoke inputs, retained artifacts,
-  and the final `release:handoff -- --require-ready` gate. This request is
-  coordination material only; it does not import references, run smoke, generate
-  release notes, or mark blocked evidence ready.
+  handoff for design references, Production Smoke inputs, dispatch input
+  template path, retained artifacts, and the final
+  `release:handoff -- --require-ready` gate. This request is coordination
+  material only; it does not import references, run smoke, generate release
+  notes, or mark blocked evidence ready.
 - Configure the GitHub `production` environment with the required smoke secrets:
   `PRODUCTION_API_URL`, `PRODUCTION_WEB_URL`, `PRODUCTION_ADMIN_URL`,
   `PRODUCTION_DATABASE_URL`, `PRODUCTION_REDIS_URL`,

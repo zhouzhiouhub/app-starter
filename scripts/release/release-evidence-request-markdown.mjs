@@ -1,6 +1,9 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { createProductionSmokeRequestCommand } from "../smoke/production-smoke-dispatch-command.mjs";
+import {
+  defaultProductionSmokeDispatchInputsOutputPath,
+} from "../smoke/production-smoke-dispatch-inputs-output.mjs";
 import { createProductionSmokeRequestMarkdown } from "../smoke/production-smoke-request.mjs";
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { createPageBuilderVisualReferenceRequestCommand } from "../visual/page-builder-visual-reference-import-commands.mjs";
@@ -48,6 +51,9 @@ export function createReleaseEvidenceRequestMarkdown(input) {
       createPageBuilderVisualReferenceRequestCommand(visual),
     )}`,
     `- Production Smoke request: ${formatCode(createProductionSmokeRequestCommand())}`,
+    `- Production Smoke dispatch inputs output: ${formatCode(
+      defaultProductionSmokeDispatchInputsOutputPath,
+    )}`,
     `- Completion gate: ${formatCode(
       "pnpm release:handoff -- --require-ready --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture",
     )}`,
@@ -77,7 +83,12 @@ export function createReleaseEvidenceRequestMarkdown(input) {
       createPageBuilderVisualReferenceRequestMarkdown(visual),
     ),
     "",
-    ...shiftMarkdownHeadings(createProductionSmokeRequestMarkdown(smoke)),
+    ...shiftMarkdownHeadings(
+      createProductionSmokeRequestMarkdown({
+        ...smoke,
+        inputsOutputPath: defaultProductionSmokeDispatchInputsOutputPath,
+      }),
+    ),
     "",
     "## Final Review",
     "",

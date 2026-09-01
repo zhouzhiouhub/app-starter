@@ -117,12 +117,12 @@ Smoke evidence inputs:
 
 Evidence:
   This command writes one release-facing request that embeds the Page Builder
-  design reference request and Production Smoke request. The terminal summary
-  and Markdown request status report release readiness, visual reference status,
-  the first missing visual reference, Production Smoke dispatch readiness, and
-  any missing Smoke input names to unblock first. It does not run smoke, import
-  visual references, accept evidence, create release notes, or mark the project
-  ready.
+  design reference request, Production Smoke request, and dispatch input template
+  path. The terminal summary and Markdown request status report release
+  readiness, visual reference status, the first missing visual reference,
+  Production Smoke dispatch readiness, and any missing Smoke input names to
+  unblock first. It does not run smoke, import visual references, accept
+  evidence, create release notes, or mark the project ready.
 
 Default output:
   ${defaultReleaseEvidenceRequestOutputPath}`);

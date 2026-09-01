@@ -748,7 +748,7 @@ Page Builder Visual artifact check 还会要求 `visual-reference-import-report.
 
 `pnpm smoke:request` 会写出 `artifacts/production-smoke/production-smoke-request.md` 和 `artifacts/production-smoke/production-smoke-dispatch-inputs.txt`，把 Production Smoke 手动触发入口、待替换的 workflow_dispatch 输入、`Missing inputs` 状态、`pnpm smoke:dispatch -- --require-complete ...` 校验命令、`gh workflow run` 模板和必须归档的 artifact 放进同一份生产验收请求，并把 workflow_dispatch 输入另存为一行一个 `name=value` 的文本模板；它不运行 smoke，也不替代真实生产证据。
 
-`pnpm release:evidence-request` 会写出 `artifacts/release/release-evidence-request.md`，把当前 release gate 快照、Page Builder 设计参考图导出请求、Production Smoke 请求、`First missing visual reference`、`Missing Production Smoke inputs`、缺失证据清单和最终 `release:handoff -- --require-ready` 门禁放在同一份发布证据交接里；它只用于协调设计侧和发布执行侧，不导入参考图、不运行 smoke、不生成发布记录，也不把 blocked 状态标记为 ready。
+`pnpm release:evidence-request` 会写出 `artifacts/release/release-evidence-request.md`，把当前 release gate 快照、Page Builder 设计参考图导出请求、Production Smoke 请求、dispatch 输入模板路径、`First missing visual reference`、`Missing Production Smoke inputs`、缺失证据清单和最终 `release:handoff -- --require-ready` 门禁放在同一份发布证据交接里；它只用于协调设计侧和发布执行侧，不导入参考图、不运行 smoke、不生成发布记录，也不把 blocked 状态标记为 ready。
 
 `pnpm release:requests` 会一次刷新本地证据请求和辅助清单：`artifacts/release/release-evidence-request.md`、`artifacts/visual/page-builder-reference-request.md`、`artifacts/visual/page-builder-missing-references.txt`、`artifacts/production-smoke/production-smoke-request.md` 和 `artifacts/production-smoke/production-smoke-dispatch-inputs.txt`；它接受和单独请求命令一致的视觉 manifest/source 参数以及 Production Smoke 证据输入，但仍不导入参考图、不运行 smoke、不上传 artifact、不生成发布记录，也不把 blocked 状态标记为 ready。
 
