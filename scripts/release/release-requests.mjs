@@ -3,28 +3,20 @@ import { runProductionSmokeRequestCli } from "../smoke/production-smoke-request.
 import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
 import { runReleaseEvidenceRequestCli } from "./release-evidence-request.mjs";
 import {
-  defaultProductionSmokeRequestOutputPath,
-} from "../smoke/production-smoke-request.mjs";
-import {
-  defaultPageBuilderVisualReferenceRequestOutputPath,
-} from "../visual/page-builder-visual-reference-request.mjs";
-import {
   readPageBuilderVisualArtifactDir,
 } from "../visual/page-builder-visual-artifact-check-config.mjs";
 import {
   createArtifactPaths,
 } from "../visual/page-builder-visual-artifact-check-paths.mjs";
 import {
-  defaultReleaseEvidenceRequestOutputPath,
-} from "./release-evidence-request-config.mjs";
+  defaultReleaseRequestsOutputPaths,
+} from "./release-requests-config.mjs";
 
-export const defaultReleaseRequestsOutputPaths = {
-  productionSmoke: defaultProductionSmokeRequestOutputPath,
-  releaseEvidence: defaultReleaseEvidenceRequestOutputPath,
-  visualReference: defaultPageBuilderVisualReferenceRequestOutputPath,
-};
-
-const releaseRequestsCommand = "pnpm release:requests";
+export {
+  createReleaseRequestsCommand,
+  createReleaseRequestsOutputSummary,
+  defaultReleaseRequestsOutputPaths,
+} from "./release-requests-config.mjs";
 
 const releaseOnlyFlags = new Set(["--latest"]);
 const releaseOnlyValueOptions = new Set(["--smoke-report"]);
@@ -43,18 +35,6 @@ const smokeValueOptions = new Set([
 ]);
 const visualSourceOptions = new Set(["--source-dir", "--visual-source-dir"]);
 const visualManifestOptions = new Set(["--manifest", "--visual-manifest"]);
-
-export function createReleaseRequestsCommand() {
-  return releaseRequestsCommand;
-}
-
-export function createReleaseRequestsOutputSummary() {
-  return [
-    defaultReleaseRequestsOutputPaths.releaseEvidence,
-    defaultReleaseRequestsOutputPaths.visualReference,
-    defaultReleaseRequestsOutputPaths.productionSmoke,
-  ].join(", ");
-}
 
 export async function runReleaseRequestsCli(args = [], input = {}) {
   const stdout = input.stdout ?? console.log;

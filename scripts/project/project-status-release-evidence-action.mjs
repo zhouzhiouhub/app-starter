@@ -14,7 +14,7 @@ import {
 import {
   createReleaseRequestsCommand,
   createReleaseRequestsOutputSummary,
-} from "../release/release-requests.mjs";
+} from "../release/release-requests-config.mjs";
 
 const defaultVisualArtifactDir = "reports/visual/page-builder-fixture";
 const defaultVisualReferenceSourceDir = "docs/visual/page-builder-references";

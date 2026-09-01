@@ -6,6 +6,10 @@ import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { createPageBuilderVisualReferenceRequestCommand } from "../visual/page-builder-visual-reference-import-commands.mjs";
 import { createPageBuilderVisualReferenceRequestMarkdown } from "../visual/page-builder-visual-reference-request.mjs";
 import { createReleaseEvidenceRequestCommand } from "./release-evidence-request-config.mjs";
+import {
+  createReleaseRequestsCommand,
+  createReleaseRequestsOutputSummary,
+} from "./release-requests-config.mjs";
 
 const maxMarkdownTextLength = 420;
 
@@ -37,6 +41,8 @@ export function createReleaseEvidenceRequestMarkdown(input) {
     "",
     "## Evidence Requests",
     "",
+    `- Refresh all requests: ${formatCode(createReleaseRequestsCommand())}`,
+    `- Request outputs: ${formatCode(createReleaseRequestsOutputSummary())}`,
     `- Release evidence request: ${formatCode(createReleaseEvidenceRequestCommand())}`,
     `- Page Builder design request: ${formatCode(
       createPageBuilderVisualReferenceRequestCommand(visual),

@@ -32,6 +32,11 @@ test("release evidence request Markdown combines blocked evidence handoffs", asy
     assert.equal(request.visualReferenceArtifact.missingCount, 12);
     assert.match(markdown, /^# MVP Release Evidence Request/m);
     assert.match(markdown, /Release ready: `no`/);
+    assert.match(markdown, /Refresh all requests: `pnpm release:requests`/);
+    assert.match(
+      markdown,
+      /Request outputs: `artifacts\/release\/release-evidence-request\.md, artifacts\/visual\/page-builder-reference-request\.md, artifacts\/production-smoke\/production-smoke-request\.md`/,
+    );
     assert.match(markdown, /Release evidence request: `pnpm release:evidence-request`/);
     assert.match(markdown, /Page Builder design request: `pnpm visual:references:request`/);
     assert.match(markdown, /Production Smoke request: `pnpm smoke:request`/);
