@@ -32,7 +32,7 @@ or corrupted file is rejected during intake.
    list of missing PNG paths.
 3. Run `pnpm visual:references:request` when the design owner needs a Markdown
    export request with the file list, preview screenshots, and follow-up
-   commands.
+   commands; the terminal summary prints the first missing reference path.
 4. Run `pnpm visual:references:check`.
 5. Review the generated Markdown report and fix any missing or empty PNGs.
 6. Run `pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete`.
@@ -60,7 +60,8 @@ Markdown intake reports without updating the manifest.
 source directory, but prints only missing expected PNG paths, one per line.
 `pnpm visual:references:request` writes
 `artifacts/visual/page-builder-reference-request.md` as a design-facing request;
-it does not import references or mark visual evidence accepted.
+its terminal summary prints the first missing reference path. It does not import
+references or mark visual evidence accepted.
 
 Changes in this directory trigger the `Page Builder Visual` GitHub Actions
 workflow so fixture evidence can be refreshed before Production Smoke consumes

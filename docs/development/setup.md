@@ -310,7 +310,8 @@ missing expected PNG paths, one per line, for design export handoff.
 `pnpm visual:references:request` writes
 `artifacts/visual/page-builder-reference-request.md` as a design-facing Markdown
 request with the missing files, retained preview screenshots, and follow-up
-commands.
+commands. Its terminal summary also prints `First missing reference` when a
+reference PNG is still missing.
 `pnpm visual:references:check` writes the default release fixture JSON/Markdown
 report and requires the full reference set without updating the manifest.
 
@@ -414,7 +415,8 @@ alternate archive or downloaded evidence directory.
 Use `pnpm --silent visual:references:missing` when the reviewer only needs
 copy-ready missing PNG paths.
 Use `pnpm visual:references:request` when the designer needs a Markdown export
-request rather than the full engineering intake report.
+request rather than the full engineering intake report; the terminal summary
+also prints the first missing reference path.
 Use `pnpm visual:references:check` for the default release fixture intake
 report.
 

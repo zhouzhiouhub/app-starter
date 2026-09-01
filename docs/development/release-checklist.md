@@ -59,7 +59,8 @@ later phases are explicitly approved.
   `pnpm --silent visual:references:missing`
   when the design owner needs only the copy-ready missing PNG paths, run
   `pnpm visual:references:request` when they need a Markdown export request
-  with previews and follow-up commands, then run
+  with previews, follow-up commands, and a terminal first-missing-reference
+  hint, then run
   `pnpm visual:references:check`
   to keep JSON and Markdown reference intake reports with missing or imported
   PNG paths. The JSON artifact's `requiredReferences[]` list is the
@@ -417,7 +418,8 @@ later phases are explicitly approved.
   paths, one per line, for design export handoff.
 - `pnpm visual:references:request` writes
   `artifacts/visual/page-builder-reference-request.md` as the design-facing
-  export request.
+  export request and prints the first missing reference path in the terminal
+  summary.
 - Run `pnpm release:check -- --checklist` when the gate is blocked and keep
   the readiness task output with the failed evidence review.
 - Use the failed check details and suggested fixes from the report review; the

@@ -78,7 +78,8 @@ when importing into the uploadable artifact manifest. Run
 `pnpm --silent visual:references:missing` first when the design owner needs only
 a copy-ready list of missing PNG paths. Run `pnpm visual:references:request`
 when the design owner needs a Markdown export request with the same missing
-file list, retained preview screenshots, and follow-up commands. Run
+file list, retained preview screenshots, follow-up commands, and terminal
+`First missing reference` hint. Run
 `pnpm visual:references:check` to keep machine-readable and human-readable
 reference intake reports listing missing PNGs, imported paths, and the next
 command. The JSON report keeps

@@ -135,6 +135,15 @@ test("visual reference request command is exposed in package and docs", () => {
     "utf8",
   );
   const readme = readFileSync("README.md", "utf8");
+  const acceptanceDoc = readFileSync(
+    "docs/development/page-builder-visual-acceptance.md",
+    "utf8",
+  );
+  const releaseChecklist = readFileSync(
+    "docs/development/release-checklist.md",
+    "utf8",
+  );
+  const setupDoc = readFileSync("docs/development/setup.md", "utf8");
   const referenceReadme = readFileSync(
     "docs/visual/page-builder-references/README.md",
     "utf8",
@@ -143,7 +152,12 @@ test("visual reference request command is exposed in package and docs", () => {
   assert.match(packageJson, /"visual:references:request"/);
   assert.match(requestCli, /pnpm visual:references:request/);
   assert.match(readme, /pnpm visual:references:request/);
+  assert.match(readme, /First missing reference/);
+  assert.match(acceptanceDoc, /First missing reference/);
+  assert.match(releaseChecklist, /first missing reference path/);
+  assert.match(setupDoc, /First missing reference/);
   assert.match(referenceReadme, /pnpm visual:references:request/);
+  assert.match(referenceReadme, /first missing reference path/);
 });
 
 function writeReferenceFiles(sourceDir, options = {}) {
