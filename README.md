@@ -4,7 +4,7 @@
 
 当前目标不是一次性复制 Shopify 全量能力，而是先完成一个可长期演进的建站平台工程基础：前台渲染、后台管理壳、API 服务、Page Schema、共享 Renderer、数据库模型、二次开发入口和后续电商/多语言能力预留。
 
-> 状态更新时间：2026-08-31
+> 状态更新时间：2026-09-01
 > 当前阶段：建站 MVP 本地实现范围已落地，项目处于 MVP release verification。`pnpm project:status -- --summary` 当前结论为 `Release ready: no`，原因是 release evidence 仍待补齐：Production Smoke artifact 缺失，Page Builder Visual 还缺 12 张真实设计参考 PNG，当前 `0/12` viewport accepted。下一步先补齐 `docs/visual/page-builder-references` 下的真实设计参考并完成视觉验收，再用最新 Page Builder Visual artifact 触发生产 `Production Smoke` workflow 并归档报告。
 
 ## 1. 当前进度
@@ -15,7 +15,7 @@
 - 发布结论：`not-ready`，不能视为项目已完成或可发布。
 - 生产 Smoke：缺 retained `production-smoke-report-<run_number>`、`release-preflight-<run_number>`、`release-evidence-check-<run_number>` 和 `project-status-<run_number>` artifacts。
 - Page Builder Visual：fixture artifact 已完整生成，但真实设计参考图缺失，当前 `0/12` viewport accepted；首个缺失文件为 `docs/visual/page-builder-references/hero-banner-desktop.png`。
-- 权威检查入口：`pnpm project:status -- --summary` 查看当前结论，`pnpm project:status -- --all-actions` 查看完整下一步命令。
+- 权威检查入口：`pnpm project:status -- --summary` 查看当前结论，`pnpm project:status -- --all-actions` 查看完整下一步命令；发布协同时可先运行 `pnpm release:evidence-request` 生成统一证据请求。
 
 ### 已完成
 
@@ -686,6 +686,7 @@ pnpm smoke:dispatch
 pnpm smoke:request
 pnpm release:preflight
 pnpm release:check
+pnpm release:evidence-request
 pnpm release:check -- --checklist
 pnpm release:check -- --checklist --all-visual-tasks
 pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json
@@ -745,6 +746,8 @@ Page Builder Visual artifact check 还会要求 `visual-reference-import-report.
 `visual-reference-import-report.json` 会保留 `requiredReferenceCount` 和完整的 `requiredReferences[]` 交接清单，逐项列出 12 个 Page Builder 组件/视口源 PNG 的目标路径、状态、预览截图路径和解码后的 PNG 尺寸；`visual-reference-import-report.md` 会在 `Required Source Files` 小节显示同一套人工可读清单，并标记 `missing`、`ready`、`would-update` 或 `updated` 状态，方便补齐真实设计参考图时逐项核对。
 
 `pnpm smoke:request` 会写出 `artifacts/production-smoke/production-smoke-request.md`，把 Production Smoke 手动触发入口、待替换的 workflow_dispatch 输入、`pnpm smoke:dispatch -- --require-complete ...` 校验命令、`gh workflow run` 模板和必须归档的 artifact 放进同一份生产验收请求；它不运行 smoke，也不替代真实生产证据。
+
+`pnpm release:evidence-request` 会写出 `artifacts/release/release-evidence-request.md`，把当前 release gate 快照、Page Builder 设计参考图导出请求、Production Smoke 请求、缺失证据清单和最终 `release:handoff -- --require-ready` 门禁放在同一份发布证据交接里；它只用于协调设计侧和发布执行侧，不导入参考图、不运行 smoke、不生成发布记录，也不把 blocked 状态标记为 ready。
 
 `release-check.md` 和 `project-status.md` 在缺生产 Smoke 时都会新增 `Missing Production Smoke Evidence` 小节，列出 workflow、手动触发入口、`pnpm smoke:request` 请求命令、`pnpm smoke:dispatch` 校验命令、`gh` dispatch template、Smoke JSON / Markdown、preflight、release evidence 和 project status artifact，并在 `Production Smoke Workflow Inputs` 小节列出 `workflow_dispatch` 需要填写的输入名、默认值和用途；blocked JSON 同步在 `smoke.missingEvidence` 和 `releaseGate.smoke.missingEvidence` 保留 `requiredEvidence[]` / `workflowInputs[]` 机器可读清单；`visual.artifactCheck.referenceImport.missingReferences` 会保留缺失参考图路径清单，并同步保留 `requiredReferenceCount`、`requiredReferenceEntryCount` 和 `requiredReferenceStatusCounts` 可用性摘要；终端摘要预览第一条缺失路径，`release-check.md` 和 `project-status.md` 在缺图时都会新增 `Missing Visual References` 小节，Markdown 报告列出可读路径和 required source reference 可用数，并在 `Visual Reference Intake Commands` 小节给出 design request、reference report、import、capture、measure、accept 和 verify 命令，完整明细仍以 `visual-reference-import-report.json` 为准。
 
@@ -844,7 +847,7 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 
 优先做上线前验收和生产化收口：
 
-1. 从批准的设计源导出 12 张真实 Page Builder 参考 PNG，放入 `docs/visual/page-builder-references`；需要设计交接清单时先运行 `pnpm visual:references:request` 或 `pnpm --silent visual:references:missing`，然后运行 `pnpm visual:references:check` 和 `pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete`。
+1. 先运行 `pnpm release:evidence-request` 生成统一发布证据交接，再从批准的设计源导出 12 张真实 Page Builder 参考 PNG，放入 `docs/visual/page-builder-references`；需要单独的设计交接清单时运行 `pnpm visual:references:request` 或 `pnpm --silent visual:references:missing`，然后运行 `pnpm visual:references:check` 和 `pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete`。
 2. 做 Page Builder 视觉验收：保留最新 `Page Builder Visual` workflow 的 `page-builder-visual-fixture-<run_number>` artifact，补真实浏览器截图留档，在 `reports/visual/page-builder-fixture/page-builder-visual-acceptance.json` 中写入差异指标，并用 `pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --accept-passing --require-complete` 将六个核心区块的 Desktop / Mobile 证据从 `needs-evidence` 推进到 `accepted`。
 3. 在真实 R2 / CDN 环境配置 `MEDIA_CDN_BASE_URL`、R2 凭据和 CDN 域名，确认不是 `example` / `test` / `invalid` / 本地 / 私网域名，并按 `infra/README.md` 准备前台 Vercel、API 独立 Node 服务、Admin 静态托管、Redis 生产连接、环境变量清单和回滚步骤。
 4. 运行 `pnpm smoke:request` 生成生产验收请求 Markdown，再运行 `pnpm smoke:dispatch -- --require-complete ...` 生成并校验 Production Smoke dispatch 命令，确认没有 `<...>` 占位值后，在真实生产配置下触发 GitHub Actions `Production Smoke`，传入主 CI `local_verification_run_url` / `local_verification_artifact_name`、Page Builder Visual artifact 名称和 run id，把 smoke、preflight、Smoke Markdown 回看清单、release evidence JSON / Markdown、project status、本地验收和 visual artifact、`pnpm smoke:report` 输出、`pnpm smoke:release-check`、带 `--visual-artifact-dir` 的 `pnpm release:handoff -- --require-ready` 结果和回滚目标写入 `pnpm release:notes` 生成的发布记录。

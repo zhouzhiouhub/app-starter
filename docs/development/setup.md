@@ -274,6 +274,7 @@ pnpm smoke:report -- reports/production/smoke-report.json
 pnpm smoke:release-check -- artifacts/production-smoke/smoke-report.json
 pnpm smoke:dispatch
 pnpm smoke:request
+pnpm release:evidence-request
 pnpm --silent visual:references:missing
 pnpm visual:references:request
 pnpm visual:references:check
@@ -312,6 +313,14 @@ request with the missing files, retained preview screenshots, and follow-up
 commands.
 `pnpm visual:references:check` writes the default release fixture JSON/Markdown
 report and requires the full reference set without updating the manifest.
+
+`pnpm release:evidence-request` writes
+`artifacts/release/release-evidence-request.md` as a combined release-facing
+request. It embeds the current release gate snapshot, the Page Builder design
+reference request, the Production Smoke request, and the final
+`release:handoff -- --require-ready` gate to rerun after real evidence is
+retained. It does not import references, run smoke, create release notes, or
+mark blocked evidence ready.
 
 The review command scans the same safe archive roots, recomputes the report
 summary from the stored checks, and highlights R2 / CDN, Admin static app, and

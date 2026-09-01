@@ -19,6 +19,7 @@
     "presmoke:publish": "pnpm --filter @app-starter/schema build",
     "project:status": "node scripts/project-status.mjs",
     "release:check": "node scripts/release-check.mjs",
+    "release:evidence-request": "node scripts/release-evidence-request.mjs --output artifacts/release/release-evidence-request.md",
     "release:handoff": "node scripts/release-handoff.mjs",
     "release:notes": "node scripts/release-notes.mjs",
     "release:preflight": "node scripts/release/production-smoke-release-inputs.mjs",

@@ -9,6 +9,11 @@ later phases are explicitly approved.
 - Review [`infra/README.md`](../../infra/README.md) for the production
   deployment sequence, environment variable matrix, evidence flow, and rollback
   runbook.
+- Run `pnpm release:evidence-request` when the release needs one combined
+  handoff for design references, Production Smoke inputs, retained artifacts,
+  and the final `release:handoff -- --require-ready` gate. This request is
+  coordination material only; it does not import references, run smoke, generate
+  release notes, or mark blocked evidence ready.
 - Configure the GitHub `production` environment with the required smoke secrets:
   `PRODUCTION_API_URL`, `PRODUCTION_WEB_URL`, `PRODUCTION_ADMIN_URL`,
   `PRODUCTION_DATABASE_URL`, `PRODUCTION_REDIS_URL`,
@@ -401,6 +406,9 @@ later phases are explicitly approved.
   `pnpm release:handoff -- --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture`
   when a blocked or ready review needs both release evidence and project status
   JSON/Markdown files refreshed together.
+- Run `pnpm release:evidence-request` before cross-functional release review
+  when design reference export and Production Smoke execution need one shared
+  request file.
 - `pnpm visual:references` defaults to
   `docs/visual/page-builder-references`; keep `--source-dir` only when the
   release review needs to inspect a different retained reference archive.
