@@ -272,6 +272,7 @@ pnpm smoke:report -- --list --limit=10
 pnpm smoke:report -- --markdown-output artifacts/production-smoke/smoke-report.md artifacts/production-smoke/smoke-report.json
 pnpm smoke:report -- reports/production/smoke-report.json
 pnpm smoke:release-check -- artifacts/production-smoke/smoke-report.json
+pnpm smoke:dispatch
 pnpm --silent visual:references:missing
 pnpm visual:references:check
 pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete
@@ -363,7 +364,10 @@ project status artifact to keep. The same section also includes `Production
 Smoke Workflow Inputs`, listing the `workflow_dispatch` input names, default
 values, and purpose for the manual production run, plus a `gh workflow run
 production-smoke.yml --ref main ...` dispatch template for the current release
-evidence inputs. Blocked JSON artifacts mirror that handoff as
+evidence inputs. Use `pnpm smoke:dispatch` to print the same command from
+validated local inputs; add `--require-complete` before copying a formal
+release command so placeholder values cannot reach the protected production
+workflow. Blocked JSON artifacts mirror that handoff as
 `smoke.missingEvidence` and
 `releaseGate.smoke.missingEvidence`, including `requiredEvidence[]` and
 `workflowInputs[]`.
