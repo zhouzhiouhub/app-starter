@@ -90,6 +90,10 @@ test("release evidence request CLI writes a combined handoff", async () => {
     assert.match(stdout.join("\n"), /Release evidence request written:/);
     assert.match(stdout.join("\n"), /Release ready: no/);
     assert.match(stdout.join("\n"), /Visual references: needs-evidence \(12\/12 missing\)/);
+    assert.match(
+      stdout.join("\n"),
+      /First missing visual reference: docs\/visual\/page-builder-references\/hero-banner-desktop\.png/,
+    );
     assert.match(stdout.join("\n"), /Production Smoke dispatch ready: yes/);
     assert.doesNotMatch(stdout.join("\n"), /Missing Production Smoke inputs:/);
     assert.match(markdown, /Status: `ready-to-dispatch`/);
@@ -124,6 +128,10 @@ test("release evidence request CLI prints missing smoke inputs", async () => {
     assert.match(
       stdout.join("\n"),
       /Missing Production Smoke inputs: visual_artifact_name, visual_artifact_run_id, local_verification_run_url/,
+    );
+    assert.match(
+      stdout.join("\n"),
+      /First missing visual reference: docs\/visual\/page-builder-references\/hero-banner-desktop\.png/,
     );
   } finally {
     await rm(root, { force: true, recursive: true });

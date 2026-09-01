@@ -41,6 +41,11 @@ export async function runReleaseEvidenceRequestCli(args = [], input = {}) {
     stdout(
       `Visual references: ${request.visualReferenceArtifact.status} (${request.visualReferenceArtifact.missingCount}/${request.visualReferenceArtifact.requiredReferenceCount} missing)`,
     );
+    const firstMissingReference =
+      request.visualReferenceArtifact.missing[0]?.expectedPath;
+    if (firstMissingReference) {
+      stdout(`First missing visual reference: ${firstMissingReference}`);
+    }
     stdout(
       `Production Smoke dispatch ready: ${request.smokeDispatchArtifact.readyToDispatch ? "yes" : "no"}`,
     );
