@@ -6,6 +6,12 @@ import {
 } from "../smoke/production-smoke-dispatch-command.mjs";
 import { createReleaseEvidenceCheckArtifact } from "./release-check.mjs";
 
+const missingProductionSmokeAction = [
+  "Run pnpm smoke:request, validate the filled workflow_dispatch inputs",
+  "with pnpm smoke:dispatch -- --require-complete, then run the",
+  "Production Smoke workflow against the production environment.",
+].join(" ");
+
 test("release check artifact includes ready checklist tasks", () => {
   const artifact = createReleaseEvidenceCheckArtifact(createReadyCheck(), {
     generatedAt: "2026-08-28T00:00:00.000Z",
@@ -134,7 +140,7 @@ function createBlockedCheck() {
   return {
     blockers: [
       {
-        action: "Run the Production Smoke workflow.",
+        action: missingProductionSmokeAction,
         area: "Production Smoke",
         label: "Production smoke artifact missing",
       },

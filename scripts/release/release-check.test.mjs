@@ -332,6 +332,8 @@ test("release check reports missing smoke and pending visual together", async ()
       (blocker) =>
         blocker.area === "Production Smoke" &&
         blocker.label === "Production smoke artifact missing" &&
+        blocker.action.includes("pnpm smoke:request") &&
+        blocker.action.includes("pnpm smoke:dispatch -- --require-complete") &&
         blocker.action.includes("Production Smoke workflow") &&
         blocker.action.includes("production-smoke-report-<run_number>") &&
         blocker.action.includes("release-preflight-<run_number>") &&

@@ -8,6 +8,12 @@ import {
   writeProjectStatusArtifact,
 } from "./project-status.mjs";
 
+const missingProductionSmokeAction = [
+  "Run pnpm smoke:request, validate the filled workflow_dispatch inputs",
+  "with pnpm smoke:dispatch -- --require-complete, then run the",
+  "Production Smoke workflow against the production environment.",
+].join(" ");
+
 test("project status artifact validation accepts complete blocked status", () => {
   assert.doesNotThrow(() => assertProjectStatusArtifact(createArtifact()));
 });
@@ -266,7 +272,7 @@ function createArtifact() {
     nextActionLimit: 8,
     nextActions: [
       {
-        action: "Run the Production Smoke workflow.",
+        action: missingProductionSmokeAction,
         area: "Production Smoke",
         label: "Production smoke artifact missing",
       },

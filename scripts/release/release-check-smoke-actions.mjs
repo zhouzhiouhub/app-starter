@@ -7,13 +7,19 @@ const requiredProductionSmokeArtifacts = [
   "project-status-<run_number>",
 ];
 
+const productionSmokeEvidenceActionPrefix = [
+  "Run pnpm smoke:request, validate the filled workflow_dispatch inputs",
+  "with pnpm smoke:dispatch -- --require-complete, then run the",
+  "Production Smoke workflow against the production environment",
+].join(" ");
+
 export function createMissingSmokeArtifactAction(error, smokeReportPath) {
   const cause = readMissingSmokeArtifactCause(error);
   const artifacts = requiredProductionSmokeArtifacts.join(", ");
 
   if (smokeReportPath) {
     return [
-      "Run the Production Smoke workflow against the production environment",
+      productionSmokeEvidenceActionPrefix,
       `and keep the ${artifacts} artifacts, or place its smoke-report.json`,
       `at ${smokeReportPath}; then rerun pnpm release:check -- --smoke-report`,
       `${smokeReportPath}. Cause: ${cause}`,
@@ -21,7 +27,7 @@ export function createMissingSmokeArtifactAction(error, smokeReportPath) {
   }
 
   return [
-    "Run the Production Smoke workflow against the production environment",
+    productionSmokeEvidenceActionPrefix,
     `and keep the ${artifacts} artifacts, or pass --smoke-report <path>`,
     "to an archived report; then rerun pnpm release:check.",
     `Cause: ${cause}`,

@@ -11,6 +11,12 @@ import {
   formatReleaseEvidenceReadinessChecklist,
 } from "./release-check.mjs";
 
+const missingProductionSmokeAction = [
+  "Run pnpm smoke:request, validate the filled workflow_dispatch inputs",
+  "with pnpm smoke:dispatch -- --require-complete, then run the",
+  "Production Smoke workflow against the production environment.",
+].join(" ");
+
 test("release readiness checklist summarizes ready evidence", () => {
   const checklist = createReleaseEvidenceReadinessChecklist({
     blockers: [],
@@ -62,7 +68,7 @@ test("release readiness checklist carries blocker actions", () => {
   const checklist = createReleaseEvidenceReadinessChecklist({
     blockers: [
       {
-        action: "Run the Production Smoke workflow.",
+        action: missingProductionSmokeAction,
         area: "Production Smoke",
         label: "missing",
       },
@@ -91,7 +97,10 @@ test("release readiness checklist carries blocker actions", () => {
   const lines = formatReleaseEvidenceReadinessChecklist(checklist).join("\n");
 
   assert.equal(checklist.releaseReady, false);
-  assert.match(lines, /Run the Production Smoke workflow/);
+  assert.match(
+    lines,
+    /pnpm smoke:request.*pnpm smoke:dispatch -- --require-complete.*Production Smoke workflow/,
+  );
   assert.ok(
     lines.includes(
       `Manual dispatch: ${createProductionSmokeManualDispatchInstruction()}`,

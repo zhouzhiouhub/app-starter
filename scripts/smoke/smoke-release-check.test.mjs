@@ -310,7 +310,7 @@ test("smoke release check explains missing archived reports", async () => {
           reportPath: null,
           roots: [emptyArchiveRoot],
         }),
-      /Production Smoke workflow.*production-smoke-report-<run_number>.*SMOKE_REPORT_PATH=artifacts\/production-smoke\/smoke-report\.json pnpm smoke:publish/s,
+      /pnpm smoke:request.*pnpm smoke:dispatch -- --require-complete.*Production Smoke workflow.*production-smoke-report-<run_number>.*SMOKE_REPORT_PATH=artifacts\/production-smoke\/smoke-report\.json pnpm smoke:publish/s,
     );
   } finally {
     await rm(emptyArchiveRoot, { force: true, recursive: true });

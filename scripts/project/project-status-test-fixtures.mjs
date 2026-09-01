@@ -1,8 +1,14 @@
+const missingProductionSmokeAction = [
+  "Run pnpm smoke:request, validate the filled workflow_dispatch inputs",
+  "with pnpm smoke:dispatch -- --require-complete, then run the",
+  "Production Smoke workflow against the production environment.",
+].join(" ");
+
 export function createBlockedCheck() {
   return {
     blockers: [
       {
-        action: "Run the Production Smoke workflow.",
+        action: missingProductionSmokeAction,
         area: "Production Smoke",
         label: "Production smoke artifact missing",
       },

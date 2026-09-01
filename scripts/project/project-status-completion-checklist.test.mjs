@@ -39,7 +39,7 @@ test("project status completion checklist summarizes blocked evidence", () => {
   );
   assert.match(
     checklist.items[1].nextAction,
-    /Run the Production Smoke workflow/u,
+    /pnpm smoke:request.*pnpm smoke:dispatch -- --require-complete.*Production Smoke workflow/u,
   );
   assert.deepEqual(
     checklist.items[1].nextSteps.map((step) => step.label),

@@ -94,7 +94,8 @@ test("release notes failure drafts include missing smoke evidence", () => {
     blockerCount: 1,
     blockers: [
       {
-        action: "Run the Production Smoke workflow.",
+        action:
+          "Run pnpm smoke:request, validate with pnpm smoke:dispatch -- --require-complete, then run the Production Smoke workflow.",
         area: "Production Smoke",
         label: "Production smoke artifact missing",
       },
@@ -317,7 +318,8 @@ function createMissingSmokeReadinessChecklist() {
     itemCount: 3,
     items: [
       {
-        action: "Run the Production Smoke workflow.",
+        action:
+          "Run pnpm smoke:request, validate with pnpm smoke:dispatch -- --require-complete, then run the Production Smoke workflow.",
         detail: "Report path: artifacts/production-smoke/smoke-report.json",
         label: "Production Smoke report",
         status: "blocked",
