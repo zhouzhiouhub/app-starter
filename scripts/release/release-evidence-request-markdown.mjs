@@ -22,6 +22,9 @@ export function createReleaseEvidenceRequestMarkdown(input) {
   const project = input.projectArtifact;
   const visual = input.visualReferenceArtifact;
   const smoke = input.smokeDispatchArtifact;
+  const firstMissingVisualReference = Array.isArray(visual.missing)
+    ? visual.missing[0]?.expectedPath
+    : null;
 
   const lines = [
     "# MVP Release Evidence Request",
@@ -53,6 +56,9 @@ export function createReleaseEvidenceRequestMarkdown(input) {
       visual.status,
     )}; missing ${formatCode(visual.missingCount)}/${formatCode(
       visual.requiredReferenceCount,
+    )}`,
+    `- First missing visual reference: ${formatCode(
+      firstMissingVisualReference ?? "none",
     )}`,
     `- Production Smoke dispatch ready: ${formatCode(
       smoke.readyToDispatch ? "yes" : "no",

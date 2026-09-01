@@ -35,6 +35,10 @@ test("release evidence request Markdown combines blocked evidence handoffs", asy
     assert.match(markdown, /Release evidence request: `pnpm release:evidence-request`/);
     assert.match(markdown, /Page Builder design request: `pnpm visual:references:request`/);
     assert.match(markdown, /Production Smoke request: `pnpm smoke:request`/);
+    assert.match(
+      markdown,
+      /First missing visual reference: `docs\/visual\/page-builder-references\/hero-banner-desktop\.png`/,
+    );
     assert.match(markdown, /## Page Builder Design Reference Request/);
     assert.match(
       markdown,

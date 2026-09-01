@@ -49,6 +49,10 @@ test("visual reference request Markdown is design-facing", () => {
 
   assert.match(markdown, /^# Page Builder Design Reference Request/m);
   assert.match(markdown, /Missing references: 1\/2/);
+  assert.match(
+    markdown,
+    /First missing reference: `docs\/visual\/page-builder-references\/hero-banner-desktop\.png`/,
+  );
   assert.match(markdown, /Export real PNGs from the approved design source/);
   assert.match(
     markdown,
@@ -94,6 +98,10 @@ test("visual reference request CLI writes a Markdown handoff", async () => {
       /First missing reference: reports\/visual\/reference-request-.+\/references\/spec-table-mobile\.png/,
     );
     assert.match(markdown, /spec-table\.mobile; missing/);
+    assert.match(
+      markdown,
+      /First missing reference: `reports\/visual\/reference-request-.+\/references\/spec-table-mobile\.png`/,
+    );
     assert.match(markdown, /## After Delivery/);
   } finally {
     rmSync(root, { force: true, recursive: true });

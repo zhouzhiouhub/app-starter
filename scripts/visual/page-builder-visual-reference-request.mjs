@@ -78,6 +78,9 @@ export function createPageBuilderVisualReferenceRequestMarkdown(input) {
     `Source dir: ${formatCode(input.sourceDir)}`,
     `Manifest: ${formatCode(input.manifestPath)}`,
     `Missing references: ${missingReferences.length}/${references.length}`,
+    `First missing reference: ${formatCode(
+      missingReferences[0]?.expectedPath ?? "none",
+    )}`,
     "",
     "## Export Requirements",
     "",
