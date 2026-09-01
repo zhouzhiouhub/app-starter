@@ -16,6 +16,9 @@ import {
   defaultPageBuilderVisualMissingReferencesOutputPath,
   defaultPageBuilderVisualReferenceRequestOutputPath,
 } from "../visual/page-builder-visual-reference-request.mjs";
+import {
+  defaultPageBuilderVisualReferenceHandoffOutputDir,
+} from "../visual/page-builder-visual-reference-handoff.mjs";
 
 export const defaultReleaseEvidenceRequestOutputPath =
   "artifacts/release/release-evidence-request.md";
@@ -26,6 +29,7 @@ export const defaultReleaseEvidenceRequestOutputPaths = {
     defaultProductionSmokeDispatchInputsManifestOutputPath,
   productionSmokeInputsTable: defaultProductionSmokeDispatchInputsTableOutputPath,
   releaseEvidence: defaultReleaseEvidenceRequestOutputPath,
+  visualReferenceHandoff: defaultPageBuilderVisualReferenceHandoffOutputDir,
   visualMissingReferences: defaultPageBuilderVisualMissingReferencesOutputPath,
   visualReference: defaultPageBuilderVisualReferenceRequestOutputPath,
   visualReferenceManifest: defaultPageBuilderVisualReferenceExportManifestOutputPath,
@@ -54,6 +58,8 @@ export function createReleaseEvidenceRequestCommand(outputPaths = {}) {
     paths.visualReferenceTable,
     "--visual-json-output",
     paths.visualReferenceManifest,
+    "--visual-handoff-output",
+    paths.visualReferenceHandoff,
     "--smoke-output",
     paths.productionSmoke,
     "--smoke-inputs-output",

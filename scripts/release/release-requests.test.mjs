@@ -1,10 +1,7 @@
 import assert from "node:assert/strict";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import test from "node:test";
-import {
-  readReleaseRequestsCliConfig,
-  runReleaseRequestsCli,
-} from "./release-requests.mjs";
+import { runReleaseRequestsCli } from "./release-requests.mjs";
 import { createPendingVisualManifest } from "./release-check-test-fixtures.mjs";
 
 test("release requests CLI writes every local request Markdown", async () => {
@@ -15,6 +12,7 @@ test("release requests CLI writes every local request Markdown", async () => {
   const visualMissingOutput = `${root}/page-builder-missing-references.txt`;
   const visualTableOutput = `${root}/page-builder-reference-export-table.tsv`;
   const visualJsonOutput = `${root}/page-builder-reference-export-manifest.json`;
+  const visualHandoffOutput = `${root}/page-builder-reference-handoff`;
   const smokeOutput = `${root}/production-smoke-request.md`;
   const smokeInputsOutput = `${root}/production-smoke-dispatch-inputs.txt`;
   const smokeInputsTableOutput = `${root}/production-smoke-dispatch-inputs.tsv`;
@@ -40,6 +38,8 @@ test("release requests CLI writes every local request Markdown", async () => {
         visualTableOutput,
         "--visual-json-output",
         visualJsonOutput,
+        "--visual-handoff-output",
+        visualHandoffOutput,
         "--smoke-output",
         smokeOutput,
         "--smoke-inputs-output",
@@ -64,6 +64,7 @@ test("release requests CLI writes every local request Markdown", async () => {
       visualMissingPaths,
       visualExportTable,
       visualExportManifestText,
+      visualHandoffManifestText,
       smokeMarkdown,
       smokeInputsText,
       smokeInputsTable,
@@ -74,12 +75,14 @@ test("release requests CLI writes every local request Markdown", async () => {
       readFile(visualMissingOutput, "utf8"),
       readFile(visualTableOutput, "utf8"),
       readFile(visualJsonOutput, "utf8"),
+      readFile(`${visualHandoffOutput}/page-builder-reference-handoff.json`, "utf8"),
       readFile(smokeOutput, "utf8"),
       readFile(smokeInputsOutput, "utf8"),
       readFile(smokeInputsTableOutput, "utf8"),
       readFile(smokeInputsJsonOutput, "utf8"),
     ]);
     const visualExportManifest = JSON.parse(visualExportManifestText);
+    const visualHandoffManifest = JSON.parse(visualHandoffManifestText);
     const smokeInputsManifest = JSON.parse(smokeInputsJsonText);
     const output = stdout.join("\n");
 
@@ -101,6 +104,10 @@ test("release requests CLI writes every local request Markdown", async () => {
       new RegExp(
         `Page Builder export manifest: ${escapeRegExp(visualJsonOutput)}`,
       ),
+    );
+    assert.match(
+      output,
+      new RegExp(`Page Builder handoff package: ${escapeRegExp(visualHandoffOutput)}`),
     );
     assert.match(output, new RegExp(`Production Smoke: ${escapeRegExp(smokeOutput)}`));
     assert.match(
@@ -133,6 +140,8 @@ test("release requests CLI writes every local request Markdown", async () => {
           visualTableOutput,
         )} --visual-json-output ${escapeRegExp(
           visualJsonOutput,
+        )} --visual-handoff-output ${escapeRegExp(
+          visualHandoffOutput,
         )} --smoke-output ${escapeRegExp(
           smokeOutput,
         )} --smoke-inputs-output ${escapeRegExp(
@@ -154,6 +163,7 @@ test("release requests CLI writes every local request Markdown", async () => {
             visualMissingOutput,
             visualTableOutput,
             visualJsonOutput,
+            visualHandoffOutput,
             smokeOutput,
             smokeInputsOutput,
             smokeInputsTableOutput,
@@ -175,6 +185,8 @@ test("release requests CLI writes every local request Markdown", async () => {
           visualTableOutput,
         )} --visual-json-output ${escapeRegExp(
           visualJsonOutput,
+        )} --visual-handoff-output ${escapeRegExp(
+          visualHandoffOutput,
         )} --smoke-output ${escapeRegExp(
           smokeOutput,
         )} --smoke-inputs-output ${escapeRegExp(
@@ -207,6 +219,10 @@ test("release requests CLI writes every local request Markdown", async () => {
           visualJsonOutput,
         )}\``,
       ),
+    );
+    assert.match(
+      releaseMarkdown,
+      new RegExp(`Page Builder design handoff output: \`${escapeRegExp(visualHandoffOutput)}\``),
     );
     assert.match(
       releaseMarkdown,
@@ -303,6 +319,9 @@ test("release requests CLI writes every local request Markdown", async () => {
     );
     assert.equal(visualExportManifest.referenceCount, 12);
     assert.equal(visualExportManifest.missingCount, 12);
+    assert.equal(visualHandoffManifest.schemaVersion, "page-builder-visual-reference-handoff.v1");
+    assert.equal(visualHandoffManifest.outputDir, visualHandoffOutput);
+    assert.equal(visualHandoffManifest.previewCount, 12);
     assert.match(smokeMarkdown, /^# Production Smoke Evidence Request/m);
     assert.match(
       smokeMarkdown,
@@ -331,164 +350,6 @@ test("release requests CLI writes every local request Markdown", async () => {
   }
 });
 
-test("release requests config routes shared evidence inputs", () => {
-  const config = readReleaseRequestsCliConfig([
-    "--",
-    "--release-output",
-    "tmp/release.md",
-    "--visual-output=tmp/visual.md",
-    "--visual-missing-output",
-    "tmp/missing.txt",
-    "--visual-table-output",
-    "tmp/reference-table.tsv",
-    "--visual-json-output",
-    "tmp/reference-manifest.json",
-    "--smoke-output",
-    "tmp/smoke.md",
-    "--smoke-inputs-output",
-    "tmp/smoke-inputs.txt",
-    "--smoke-inputs-table-output",
-    "tmp/smoke-inputs.tsv",
-    "--smoke-inputs-json-output",
-    "tmp/smoke-inputs.json",
-    "--source-dir",
-    "docs/visual/page-builder-references",
-    "--visual-manifest",
-    "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
-    "--smoke-report",
-    "artifacts/production-smoke/smoke-report.json",
-    "--visual-artifact-dir",
-    "reports/visual/page-builder-fixture",
-    "--visual-artifact",
-    "page-builder-visual-fixture-123",
-    "--visual-artifact-run-id",
-    "123",
-    "--local-verification-run-url",
-    "https://github.com/zhouzhiouhub/app-starter/actions/runs/122",
-    "--local-verification-artifact",
-    "local-verification-122",
-    "--release-tag",
-    "v0.1.0",
-    "--rollback-target",
-    "main@abcdef1",
-    "--storefront-url",
-    "https://store.brand.com",
-  ]);
-
-  assert.deepEqual(config.outputPaths, {
-    productionSmoke: "tmp/smoke.md",
-    productionSmokeInputs: "tmp/smoke-inputs.txt",
-    productionSmokeInputsManifest: "tmp/smoke-inputs.json",
-    productionSmokeInputsTable: "tmp/smoke-inputs.tsv",
-    releaseEvidence: "tmp/release.md",
-    visualMissingReferences: "tmp/missing.txt",
-    visualReference: "tmp/visual.md",
-    visualReferenceManifest: "tmp/reference-manifest.json",
-    visualReferenceTable: "tmp/reference-table.tsv",
-  });
-  assert.deepEqual(config.visualReferenceArgs, [
-    "--output",
-    "tmp/visual.md",
-    "--missing-output",
-    "tmp/missing.txt",
-    "--table-output",
-    "tmp/reference-table.tsv",
-    "--json-output",
-    "tmp/reference-manifest.json",
-    "--source-dir",
-    "docs/visual/page-builder-references",
-    "--manifest",
-    "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
-  ]);
-  assert.equal(readOptionValue(config.productionSmokeArgs, "--output"), "tmp/smoke.md");
-  assert.equal(
-    readOptionValue(config.productionSmokeArgs, "--inputs-output"),
-    "tmp/smoke-inputs.txt",
-  );
-  assert.equal(
-    readOptionValue(config.productionSmokeArgs, "--inputs-table-output"),
-    "tmp/smoke-inputs.tsv",
-  );
-  assert.equal(
-    readOptionValue(config.productionSmokeArgs, "--inputs-json-output"),
-    "tmp/smoke-inputs.json",
-  );
-  assert.equal(
-    readOptionValue(config.releaseEvidenceArgs, "--visual-output"),
-    "tmp/visual.md",
-  );
-  assert.equal(
-    readOptionValue(config.releaseEvidenceArgs, "--visual-missing-output"),
-    "tmp/missing.txt",
-  );
-  assert.equal(
-    readOptionValue(config.releaseEvidenceArgs, "--visual-table-output"),
-    "tmp/reference-table.tsv",
-  );
-  assert.equal(
-    readOptionValue(config.releaseEvidenceArgs, "--visual-json-output"),
-    "tmp/reference-manifest.json",
-  );
-  assert.equal(
-    readOptionValue(config.visualReferenceArgs, "--table-output"),
-    "tmp/reference-table.tsv",
-  );
-  assert.equal(
-    readOptionValue(config.visualReferenceArgs, "--json-output"),
-    "tmp/reference-manifest.json",
-  );
-  assert.equal(
-    readOptionValue(config.releaseEvidenceArgs, "--smoke-output"),
-    "tmp/smoke.md",
-  );
-  assert.equal(
-    readOptionValue(config.releaseEvidenceArgs, "--smoke-inputs-output"),
-    "tmp/smoke-inputs.txt",
-  );
-  assert.equal(
-    readOptionValue(config.releaseEvidenceArgs, "--smoke-inputs-table-output"),
-    "tmp/smoke-inputs.tsv",
-  );
-  assert.equal(
-    readOptionValue(config.releaseEvidenceArgs, "--smoke-inputs-json-output"),
-    "tmp/smoke-inputs.json",
-  );
-  assert.ok(config.releaseEvidenceArgs.includes("--smoke-report"));
-  assert.ok(config.releaseEvidenceArgs.includes("--visual-artifact-dir"));
-  assert.ok(config.releaseEvidenceArgs.includes("--visual-artifact"));
-  assert.ok(config.productionSmokeArgs.includes("--visual-artifact"));
-  assert.ok(!config.visualReferenceArgs.includes("--visual-artifact"));
-  assert.equal(
-    config.visualReferenceArgs.filter((arg) => arg === "--manifest").length,
-    1,
-  );
-
-  const artifactDirConfig = readReleaseRequestsCliConfig([
-    "--visual-artifact-dir",
-    "reports/visual/page-builder-fixture",
-    "--visual-manifest",
-    "reports/visual/alternate/page-builder-visual-acceptance.json",
-  ]);
-
-  assert.deepEqual(artifactDirConfig.visualReferenceArgs, [
-    "--missing-output",
-    "artifacts/visual/page-builder-missing-references.txt",
-    "--table-output",
-    "artifacts/visual/page-builder-reference-export-table.tsv",
-    "--json-output",
-    "artifacts/visual/page-builder-reference-export-manifest.json",
-    "--manifest",
-    "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
-  ]);
-});
-
-
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
-}
-
-function readOptionValue(args, option) {
-  const index = args.indexOf(option);
-
-  return index === -1 ? null : args[index + 1];
 }

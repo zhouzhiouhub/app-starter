@@ -9,6 +9,9 @@ export function printReleaseRequestFiles(outputPaths, writeLine) {
   writeLine(
     `  - Page Builder export manifest: ${outputPaths.visualReferenceManifest}`,
   );
+  writeLine(
+    `  - Page Builder handoff package: ${outputPaths.visualReferenceHandoff}`,
+  );
   writeLine(`  - Production Smoke: ${outputPaths.productionSmoke}`);
   writeLine(`  - Production Smoke inputs: ${outputPaths.productionSmokeInputs}`);
   writeLine(

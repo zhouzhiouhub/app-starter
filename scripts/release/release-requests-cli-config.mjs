@@ -38,6 +38,10 @@ export function readReleaseRequestsCliConfig(args = []) {
       defaultReleaseRequestsOutputPaths.productionSmokeInputsManifest,
     ],
     releaseEvidenceArgs: [],
+    visualHandoffArgs: [
+      "--output-dir",
+      defaultReleaseRequestsOutputPaths.visualReferenceHandoff,
+    ],
     visualArtifactManifestPath: null,
     visualReferenceArgs: [
       "--missing-output",
@@ -113,6 +117,23 @@ export function readReleaseRequestsCliConfig(args = []) {
       continue;
     }
 
+    if (
+      option === "--visual-handoff-output" ||
+      option === "--visual-handoff-output-dir" ||
+      option === "--handoff-output-dir"
+    ) {
+      const outputDir = readOptionValue(option, normalizedArgs, index, value);
+      setValueOption(
+        config.releaseEvidenceArgs,
+        "--visual-handoff-output",
+        outputDir,
+      );
+      setValueOption(config.visualHandoffArgs, "--output-dir", outputDir);
+      config.outputPaths.visualReferenceHandoff = outputDir;
+      index += value === null ? 1 : 0;
+      continue;
+    }
+
     if (option === "--smoke-output") {
       const outputPath = readOptionValue(option, normalizedArgs, index, value);
       setValueOption(config.releaseEvidenceArgs, "--smoke-output", outputPath);
@@ -177,6 +198,7 @@ export function readReleaseRequestsCliConfig(args = []) {
         sourceDir,
       );
       setValueOption(config.visualReferenceArgs, "--source-dir", sourceDir);
+      setValueOption(config.visualHandoffArgs, "--source-dir", sourceDir);
       index += value === null ? 1 : 0;
       continue;
     }
@@ -189,6 +211,7 @@ export function readReleaseRequestsCliConfig(args = []) {
         manifestPath,
       );
       setValueOption(config.visualReferenceArgs, "--manifest", manifestPath);
+      setValueOption(config.visualHandoffArgs, "--manifest", manifestPath);
       index += value === null ? 1 : 0;
       continue;
     }
@@ -233,12 +256,18 @@ export function readReleaseRequestsCliConfig(args = []) {
       "--manifest",
       config.visualArtifactManifestPath,
     );
+    setValueOption(
+      config.visualHandoffArgs,
+      "--manifest",
+      config.visualArtifactManifestPath,
+    );
   }
 
   return {
     outputPaths: config.outputPaths,
     productionSmokeArgs: config.productionSmokeArgs,
     releaseEvidenceArgs: config.releaseEvidenceArgs,
+    visualHandoffArgs: config.visualHandoffArgs,
     visualReferenceArgs: config.visualReferenceArgs,
   };
 }

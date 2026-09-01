@@ -109,7 +109,7 @@ function printHelp(writeLine) {
   writeLine(`Usage:
   pnpm release:evidence-request
   pnpm release:evidence-request -- --output artifacts/release/release-evidence-request.md
-  pnpm release:evidence-request -- --visual-output artifacts/visual/page-builder-reference-request.md --visual-missing-output artifacts/visual/page-builder-missing-references.txt --visual-table-output artifacts/visual/page-builder-reference-export-table.tsv --visual-json-output artifacts/visual/page-builder-reference-export-manifest.json
+  pnpm release:evidence-request -- --visual-output artifacts/visual/page-builder-reference-request.md --visual-missing-output artifacts/visual/page-builder-missing-references.txt --visual-table-output artifacts/visual/page-builder-reference-export-table.tsv --visual-json-output artifacts/visual/page-builder-reference-export-manifest.json --visual-handoff-output artifacts/visual/page-builder-reference-handoff
   pnpm release:evidence-request -- --smoke-output artifacts/production-smoke/production-smoke-request.md
   pnpm release:evidence-request -- --smoke-inputs-output artifacts/production-smoke/production-smoke-dispatch-inputs.txt
   pnpm release:evidence-request -- --smoke-inputs-table-output artifacts/production-smoke/production-smoke-dispatch-inputs.tsv
@@ -127,6 +127,11 @@ Options:
   --table-output <path>        Alias for --visual-table-output.
   --visual-json-output <path>  Show the Page Builder reference export JSON output.
   --json-output <path>         Alias for --visual-json-output.
+  --visual-handoff-output <dir>
+                               Show the Page Builder design handoff package output directory.
+  --visual-handoff-output-dir <dir>
+                               Alias for --visual-handoff-output.
+  --handoff-output-dir <dir>   Alias for --visual-handoff-output.
   --smoke-output <path>        Show the Production Smoke request output path.
   --smoke-inputs-output <path> Show the Production Smoke workflow_dispatch input template path.
   --smoke-inputs-table-output <path>
@@ -151,9 +156,9 @@ Smoke evidence inputs:
 
 Evidence:
   This command writes one release-facing request that embeds the Page Builder
-  design reference request, reference export table and JSON manifest paths, Production Smoke
-  request, dispatch input template path, dispatch input table path, and dispatch
-  input JSON manifest path.
+  design reference request, reference export table and JSON manifest paths, the
+  visual handoff package path, Production Smoke request, dispatch input template
+  path, dispatch input table path, and dispatch input JSON manifest path.
   The terminal summary and Markdown request status report release readiness,
   visual reference status, the first missing visual reference,
   Production Smoke dispatch readiness, and any missing Smoke input names to

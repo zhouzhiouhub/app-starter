@@ -24,6 +24,9 @@ import {
   normalizeVisualReferenceExportTableOutputPath,
   normalizeVisualReferenceMissingOutputPath,
 } from "../visual/page-builder-visual-reference-request.mjs";
+import {
+  normalizeVisualReferenceHandoffOutputDir,
+} from "../visual/page-builder-visual-reference-handoff.mjs";
 import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
 import { readReleaseCheckCliConfig } from "./release-check-config.mjs";
 import {
@@ -121,6 +124,21 @@ export function readReleaseEvidenceRequestCliConfig(args = []) {
 
     if (option === "--visual-json-output" || option === "--json-output") {
       input.requestOutputPaths.visualReferenceManifest = readOptionValue(
+        option,
+        normalizedArgs,
+        index,
+        value,
+      );
+      index += value === null ? 1 : 0;
+      continue;
+    }
+
+    if (
+      option === "--visual-handoff-output" ||
+      option === "--visual-handoff-output-dir" ||
+      option === "--handoff-output-dir"
+    ) {
+      input.requestOutputPaths.visualReferenceHandoff = readOptionValue(
         option,
         normalizedArgs,
         index,
@@ -262,6 +280,9 @@ export function readReleaseEvidenceRequestCliConfig(args = []) {
       ),
       visualReference: normalizeVisualReferenceImportMarkdownOutputPath(
         input.requestOutputPaths.visualReference,
+      ),
+      visualReferenceHandoff: normalizeVisualReferenceHandoffOutputDir(
+        input.requestOutputPaths.visualReferenceHandoff,
       ),
       visualReferenceManifest: normalizeVisualReferenceExportManifestOutputPath(
         input.requestOutputPaths.visualReferenceManifest,

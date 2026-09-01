@@ -17,6 +17,9 @@ import {
   defaultPageBuilderVisualReferenceRequestOutputPath,
 } from "../visual/page-builder-visual-reference-request.mjs";
 import {
+  defaultPageBuilderVisualReferenceHandoffOutputDir,
+} from "../visual/page-builder-visual-reference-handoff.mjs";
+import {
   defaultReleaseEvidenceRequestOutputPath,
 } from "./release-evidence-request-config.mjs";
 
@@ -27,6 +30,7 @@ export const defaultReleaseRequestsOutputPaths = {
   productionSmokeInputsTable: defaultProductionSmokeDispatchInputsTableOutputPath,
   productionSmoke: defaultProductionSmokeRequestOutputPath,
   releaseEvidence: defaultReleaseEvidenceRequestOutputPath,
+  visualReferenceHandoff: defaultPageBuilderVisualReferenceHandoffOutputDir,
   visualMissingReferences: defaultPageBuilderVisualMissingReferencesOutputPath,
   visualReference: defaultPageBuilderVisualReferenceRequestOutputPath,
   visualReferenceManifest: defaultPageBuilderVisualReferenceExportManifestOutputPath,
@@ -55,6 +59,8 @@ export function createReleaseRequestsCommand(outputPaths = {}) {
     paths.visualReferenceTable,
     "--visual-json-output",
     paths.visualReferenceManifest,
+    "--visual-handoff-output",
+    paths.visualReferenceHandoff,
     "--smoke-output",
     paths.productionSmoke,
     "--smoke-inputs-output",
@@ -75,6 +81,7 @@ export function createReleaseRequestsOutputSummary(outputPaths = {}) {
     paths.visualMissingReferences,
     paths.visualReferenceTable,
     paths.visualReferenceManifest,
+    paths.visualReferenceHandoff,
     paths.productionSmoke,
     paths.productionSmokeInputs,
     paths.productionSmokeInputsTable,

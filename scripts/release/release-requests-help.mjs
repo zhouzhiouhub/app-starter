@@ -2,7 +2,7 @@ export function printReleaseRequestsHelp(writeLine) {
   writeLine(`Usage:
   pnpm release:requests
   pnpm release:requests -- --visual-artifact page-builder-visual-fixture-123 --visual-artifact-run-id 456
-  pnpm release:requests -- --release-output tmp/release.md --visual-output tmp/visual.md --visual-missing-output tmp/missing.txt --visual-table-output tmp/reference-table.tsv --visual-json-output tmp/reference-manifest.json --smoke-output tmp/smoke.md --smoke-inputs-output tmp/smoke-inputs.txt --smoke-inputs-table-output tmp/smoke-inputs.tsv --smoke-inputs-json-output tmp/smoke-inputs.json
+  pnpm release:requests -- --release-output tmp/release.md --visual-output tmp/visual.md --visual-missing-output tmp/missing.txt --visual-table-output tmp/reference-table.tsv --visual-json-output tmp/reference-manifest.json --visual-handoff-output tmp/visual-handoff --smoke-output tmp/smoke.md --smoke-inputs-output tmp/smoke-inputs.txt --smoke-inputs-table-output tmp/smoke-inputs.tsv --smoke-inputs-json-output tmp/smoke-inputs.json
 
 Outputs:
   --release-output <path>  Combined release evidence request Markdown.
@@ -13,6 +13,8 @@ Outputs:
                            TSV Page Builder reference export task table.
   --visual-json-output <path>
                            JSON Page Builder reference export manifest.
+  --visual-handoff-output <dir>
+                           Page Builder design handoff package directory.
   --smoke-output <path>    Production Smoke request Markdown.
   --smoke-inputs-output <path>
                            Plain text Production Smoke workflow_dispatch inputs.
@@ -33,9 +35,10 @@ Shared evidence inputs:
 
 Evidence:
   This command refreshes all local evidence request files, the missing Page
-  Builder reference path list, the reference export task table and JSON manifest, and the
-  Production Smoke workflow input template, TSV input table, and JSON input
-  manifest for blocked release handoff.
+  Builder reference path list, the reference export task table and JSON manifest,
+  the visual reference handoff package, and the Production Smoke workflow input
+  template, TSV input table, and JSON input manifest for blocked release
+  handoff.
   Custom output paths are also reflected in the
   combined release evidence request refresh command, output summary, and
   embedded request commands. It does not import visual references, run

@@ -1,4 +1,7 @@
 import { runPageBuilderVisualReferenceRequestCli } from "../page-builder-visual-reference-request.mjs";
+import {
+  runPageBuilderVisualReferenceHandoffCli,
+} from "../page-builder-visual-reference-handoff.mjs";
 import { runProductionSmokeRequestCli } from "../smoke/production-smoke-request.mjs";
 import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
 import { runReleaseEvidenceRequestCli } from "./release-evidence-request.mjs";
@@ -40,6 +43,14 @@ export async function runReleaseRequestsCli(args = [], input = {}) {
     );
     if (visualExit !== 0) {
       return visualExit;
+    }
+
+    const visualHandoffExit = await runPageBuilderVisualReferenceHandoffCli(
+      config.visualHandoffArgs,
+      input,
+    );
+    if (visualHandoffExit !== 0) {
+      return visualHandoffExit;
     }
 
     const smokeExit = await runProductionSmokeRequestCli(

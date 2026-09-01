@@ -16,6 +16,10 @@ import {
 import { createProductionSmokeRequestMarkdown } from "../smoke/production-smoke-request.mjs";
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { createPageBuilderVisualReferenceRequestCommand } from "../visual/page-builder-visual-reference-import-commands.mjs";
+import {
+  createPageBuilderVisualReferenceHandoffCommand,
+  defaultPageBuilderVisualReferenceHandoffOutputDir,
+} from "../visual/page-builder-visual-reference-handoff.mjs";
 import { createPageBuilderVisualReferenceRequestMarkdown } from "../visual/page-builder-visual-reference-request.mjs";
 import { createReleaseEvidenceRequestCommand } from "./release-evidence-request-config.mjs";
 import {
@@ -56,6 +60,9 @@ export function createReleaseEvidenceRequestMarkdown(input) {
     requestOutputPaths.visualReferenceManifest ??
     visual.jsonOutputPath ??
     defaultPageBuilderVisualReferenceExportManifestOutputPath;
+  const visualReferenceHandoffOutputDir =
+    requestOutputPaths.visualReferenceHandoff ??
+    defaultPageBuilderVisualReferenceHandoffOutputDir;
   const firstMissingVisualReference = Array.isArray(visual.missing)
     ? visual.missing[0]?.expectedPath
     : null;
@@ -89,6 +96,17 @@ export function createReleaseEvidenceRequestMarkdown(input) {
     )}`,
     `- Page Builder reference export manifest: ${formatCode(
       visualReferenceManifestOutputPath,
+    )}`,
+    `- Page Builder design handoff package: ${formatCode(
+      createPageBuilderVisualReferenceHandoffCommand({
+        manifestPath: visual.manifestPath,
+        outputDir: visualReferenceHandoffOutputDir,
+        sourceDir: visual.sourceDir,
+      }),
+      maxMarkdownCommandLength,
+    )}`,
+    `- Page Builder design handoff output: ${formatCode(
+      visualReferenceHandoffOutputDir,
     )}`,
     `- Production Smoke request: ${formatCode(
       createProductionSmokeRequestCommand({
