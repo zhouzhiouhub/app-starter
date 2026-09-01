@@ -369,6 +369,12 @@ test("release requests CLI writes every local request Markdown", async () => {
       releaseRequestsManifest.pageBuilderVisual.firstMissingReference,
       "docs/visual/page-builder-references/hero-banner-desktop.png",
     );
+    assert.deepEqual(
+      releaseRequestsManifest.pageBuilderVisual.missingReferences,
+      visualExportManifest.references
+        .filter((reference) => reference.status === "missing")
+        .map((reference) => reference.expectedPath),
+    );
     assert.equal(
       releaseRequestsManifest.productionSmoke.validationCommand,
       `pnpm smoke:dispatch -- --inputs-json ${smokeInputsJsonOutput} --require-complete`,

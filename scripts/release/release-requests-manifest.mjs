@@ -24,14 +24,21 @@ export function createReleaseRequestsManifest(input = {}) {
     ? smoke.missingInputs
     : [];
   const missingReferences = Array.isArray(visual.missing) ? visual.missing : [];
+  const missingReferencePaths = missingReferences
+    .map((reference) => reference?.expectedPath)
+    .filter(
+      (expectedPath) =>
+        typeof expectedPath === "string" && expectedPath.length > 0,
+    );
 
   return {
     command: input.command ?? "",
     generatedAt: request.generatedAt ?? input.generatedAt ?? "",
     outputPaths,
     pageBuilderVisual: {
-      firstMissingReference: missingReferences[0]?.expectedPath ?? null,
+      firstMissingReference: missingReferencePaths[0] ?? null,
       missingCount: readNumber(visual.missingCount),
+      missingReferences: missingReferencePaths,
       referenceExportManifestPath: outputPaths.visualReferenceManifest ?? null,
       referenceExportTablePath: outputPaths.visualReferenceTable ?? null,
       referenceHandoffOutputDir: outputPaths.visualReferenceHandoff ?? null,
