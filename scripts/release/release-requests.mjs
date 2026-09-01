@@ -9,6 +9,12 @@ import {
   defaultPageBuilderVisualReferenceRequestOutputPath,
 } from "../visual/page-builder-visual-reference-request.mjs";
 import {
+  readPageBuilderVisualArtifactDir,
+} from "../visual/page-builder-visual-artifact-check-config.mjs";
+import {
+  createArtifactPaths,
+} from "../visual/page-builder-visual-artifact-check-paths.mjs";
+import {
   defaultReleaseEvidenceRequestOutputPath,
 } from "./release-evidence-request-config.mjs";
 
@@ -21,10 +27,7 @@ export const defaultReleaseRequestsOutputPaths = {
 const releaseRequestsCommand = "pnpm release:requests";
 
 const releaseOnlyFlags = new Set(["--latest"]);
-const releaseOnlyValueOptions = new Set([
-  "--smoke-report",
-  "--visual-artifact-dir",
-]);
+const releaseOnlyValueOptions = new Set(["--smoke-report"]);
 const smokeValueOptions = new Set([
   "--local-verification-artifact",
   "--local-verification-artifact-name",
@@ -106,6 +109,7 @@ export function readReleaseRequestsCliConfig(args = []) {
     outputPaths: { ...defaultReleaseRequestsOutputPaths },
     productionSmokeArgs: [],
     releaseEvidenceArgs: [],
+    visualArtifactManifestPath: null,
     visualReferenceArgs: [],
   };
   const normalizedArgs = stripPnpmSeparator(args);
@@ -115,7 +119,7 @@ export function readReleaseRequestsCliConfig(args = []) {
 
     if (option === "--release-output") {
       const outputPath = readOptionValue(option, normalizedArgs, index, value);
-      appendValueOption(config.releaseEvidenceArgs, "--output", outputPath);
+      setValueOption(config.releaseEvidenceArgs, "--output", outputPath);
       config.outputPaths.releaseEvidence = outputPath;
       index += value === null ? 1 : 0;
       continue;
@@ -123,7 +127,7 @@ export function readReleaseRequestsCliConfig(args = []) {
 
     if (option === "--visual-output") {
       const outputPath = readOptionValue(option, normalizedArgs, index, value);
-      appendValueOption(config.visualReferenceArgs, "--output", outputPath);
+      setValueOption(config.visualReferenceArgs, "--output", outputPath);
       config.outputPaths.visualReference = outputPath;
       index += value === null ? 1 : 0;
       continue;
@@ -131,7 +135,7 @@ export function readReleaseRequestsCliConfig(args = []) {
 
     if (option === "--smoke-output") {
       const outputPath = readOptionValue(option, normalizedArgs, index, value);
-      appendValueOption(config.productionSmokeArgs, "--output", outputPath);
+      setValueOption(config.productionSmokeArgs, "--output", outputPath);
       config.outputPaths.productionSmoke = outputPath;
       index += value === null ? 1 : 0;
       continue;
@@ -139,16 +143,35 @@ export function readReleaseRequestsCliConfig(args = []) {
 
     if (visualSourceOptions.has(option)) {
       const sourceDir = readOptionValue(option, normalizedArgs, index, value);
-      appendValueOption(config.releaseEvidenceArgs, "--visual-source-dir", sourceDir);
-      appendValueOption(config.visualReferenceArgs, "--source-dir", sourceDir);
+      setValueOption(
+        config.releaseEvidenceArgs,
+        "--visual-source-dir",
+        sourceDir,
+      );
+      setValueOption(config.visualReferenceArgs, "--source-dir", sourceDir);
       index += value === null ? 1 : 0;
       continue;
     }
 
     if (visualManifestOptions.has(option)) {
       const manifestPath = readOptionValue(option, normalizedArgs, index, value);
-      appendValueOption(config.releaseEvidenceArgs, "--visual-manifest", manifestPath);
-      appendValueOption(config.visualReferenceArgs, "--manifest", manifestPath);
+      setValueOption(
+        config.releaseEvidenceArgs,
+        "--visual-manifest",
+        manifestPath,
+      );
+      setValueOption(config.visualReferenceArgs, "--manifest", manifestPath);
+      index += value === null ? 1 : 0;
+      continue;
+    }
+
+    if (option === "--visual-artifact-dir") {
+      const artifactDir = readPageBuilderVisualArtifactDir(
+        readOptionValue(option, normalizedArgs, index, value),
+      );
+      setValueOption(config.releaseEvidenceArgs, option, artifactDir);
+      config.visualArtifactManifestPath = createArtifactPaths(artifactDir)
+        .manifest;
       index += value === null ? 1 : 0;
       continue;
     }
@@ -176,11 +199,34 @@ export function readReleaseRequestsCliConfig(args = []) {
     throw new Error(`Unknown release requests option: ${option}`);
   }
 
-  return config;
+  if (config.visualArtifactManifestPath) {
+    setValueOption(
+      config.visualReferenceArgs,
+      "--manifest",
+      config.visualArtifactManifestPath,
+    );
+  }
+
+  return {
+    outputPaths: config.outputPaths,
+    productionSmokeArgs: config.productionSmokeArgs,
+    releaseEvidenceArgs: config.releaseEvidenceArgs,
+    visualReferenceArgs: config.visualReferenceArgs,
+  };
 }
 
 function appendValueOption(target, option, value) {
   target.push(option, value);
+}
+
+function setValueOption(target, option, value) {
+  const optionIndex = target.indexOf(option);
+
+  if (optionIndex !== -1) {
+    target.splice(optionIndex, 2);
+  }
+
+  appendValueOption(target, option, value);
 }
 
 function splitInlineOption(arg) {

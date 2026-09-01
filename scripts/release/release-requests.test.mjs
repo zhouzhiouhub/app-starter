@@ -118,6 +118,22 @@ test("release requests config routes shared evidence inputs", () => {
   assert.ok(config.releaseEvidenceArgs.includes("--visual-artifact"));
   assert.ok(config.productionSmokeArgs.includes("--visual-artifact"));
   assert.ok(!config.visualReferenceArgs.includes("--visual-artifact"));
+  assert.equal(
+    config.visualReferenceArgs.filter((arg) => arg === "--manifest").length,
+    1,
+  );
+
+  const artifactDirConfig = readReleaseRequestsCliConfig([
+    "--visual-artifact-dir",
+    "reports/visual/page-builder-fixture",
+    "--visual-manifest",
+    "reports/visual/alternate/page-builder-visual-acceptance.json",
+  ]);
+
+  assert.deepEqual(artifactDirConfig.visualReferenceArgs, [
+    "--manifest",
+    "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
+  ]);
 });
 
 test("release requests help and summary expose the bundle command", async () => {

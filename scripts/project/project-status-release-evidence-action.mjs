@@ -22,7 +22,7 @@ const defaultVisualReferenceSourceDir = "docs/visual/page-builder-references";
 export function createReleaseEvidenceRequestAction() {
   return {
     action:
-      "Run pnpm release:evidence-request to create one handoff for blocked release evidence, design references, Production Smoke inputs, retained artifacts, and the final ready gate.",
+      "Run pnpm release:requests to refresh the blocked release evidence, design reference, and Production Smoke request handoffs.",
     area: "Release Evidence",
     label: "Generate evidence request",
     steps: [
