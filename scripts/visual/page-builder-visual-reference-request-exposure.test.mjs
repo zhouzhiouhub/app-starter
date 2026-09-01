@@ -34,7 +34,10 @@ test("visual reference request command is exposed in package and docs", () => {
   assert.match(readme, /pnpm visual:references:request/);
   assert.match(readme, /page-builder-missing-references\.txt/);
   assert.match(readme, /page-builder-reference-export-table\.tsv/);
-  assert.match(readme, /缁堢鎽樿鍜?Markdown 鐘舵€佽.*First missing reference/);
+  assert.match(
+    readme,
+    /首个缺失文件为 `docs\/visual\/page-builder-references\/hero-banner-desktop\.png`/,
+  );
   assert.match(acceptanceDoc, /terminal\s+and Markdown `First missing reference`/);
   assert.match(acceptanceDoc, /page-builder-missing-references\.txt/);
   assert.match(acceptanceDoc, /page-builder-reference-export-table\.tsv/);

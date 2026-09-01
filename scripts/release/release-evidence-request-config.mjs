@@ -1,5 +1,6 @@
 import { readProductionSmokeDispatchCliConfig } from "../smoke/production-smoke-dispatch-cli.mjs";
 import {
+  defaultProductionSmokeDispatchInputsOutputPath,
   normalizeProductionSmokeDispatchInputsOutputPath,
 } from "../smoke/production-smoke-dispatch-inputs-output.mjs";
 import {
