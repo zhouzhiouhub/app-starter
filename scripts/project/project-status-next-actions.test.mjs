@@ -92,6 +92,32 @@ test("project next actions include copy-ready missing visual reference paths", (
   );
 });
 
+test("project next actions include unified release evidence request", () => {
+  const actions = createProjectNextActions(createBlockedCheck());
+  const releaseEvidence = actions.find(
+    (action) => action.label === "Generate evidence request",
+  );
+
+  assert.equal(releaseEvidence.area, "Release Evidence");
+  assert.deepEqual(
+    releaseEvidence.steps.map((step) => step.label),
+    ["Evidence request", "Design request", "Smoke request", "Final gate"],
+  );
+  assert.equal(
+    releaseEvidence.steps[0].value,
+    "pnpm release:evidence-request",
+  );
+  assert.equal(
+    releaseEvidence.steps[1].value,
+    "pnpm visual:references:request",
+  );
+  assert.equal(releaseEvidence.steps[2].value, "pnpm smoke:request");
+  assert.match(
+    releaseEvidence.steps[3].value,
+    /^pnpm release:handoff -- --require-ready /,
+  );
+});
+
 test("project next actions structure the ready release notes handoff", () => {
   const [releaseNotesAction] = createProjectNextActions({
     releaseReady: true,

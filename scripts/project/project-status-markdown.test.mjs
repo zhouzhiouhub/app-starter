@@ -134,6 +134,18 @@ test("project status CLI writes a Markdown handoff", async () => {
       markdown,
       / {4}- Accept passing: `pnpm visual:measure -- --manifest reports\/visual\/page-builder-fixture\/page-builder-visual-acceptance\.json --write --accept-passing --require-complete`/,
     );
+    assert.match(
+      markdown,
+      /- Release Evidence: Generate evidence request/,
+    );
+    assert.match(
+      markdown,
+      / {4}- Evidence request: `pnpm release:evidence-request`/,
+    );
+    assert.match(
+      markdown,
+      / {4}- Final gate: `pnpm release:handoff -- --require-ready --smoke-report artifacts\/production-smoke\/smoke-report\.json --visual-artifact-dir reports\/visual\/page-builder-fixture`/,
+    );
     assert.match(markdown, /## Release Evidence Artifacts/);
     assert.match(
       markdown,

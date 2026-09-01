@@ -85,7 +85,7 @@ test("release handoff writes blocked reports without requiring readiness", async
     );
     assert.equal(preflightArtifact.status, "passed");
     assert.equal(projectArtifact.status, "needs-evidence");
-    assert.equal(projectArtifact.nextActionCount, 14);
+    assert.equal(projectArtifact.nextActionCount, 15);
     assert.match(preflightMarkdown, /# Production Smoke Preflight/);
     assert.match(releaseMarkdown, /# Release Evidence Check/);
     assert.match(projectMarkdown, /# MVP Release Handoff/);
@@ -97,7 +97,7 @@ test("release handoff writes blocked reports without requiring readiness", async
       stdout.join("\n"),
       /Visual artifact: complete \(reports\/visual\/page-builder-fixture, 6\/6 files, 12\/12 screenshots, 12\/12 manifest-linked design references, references ready \(0 missing, 0 updates, 12\/12 required source references available\)\)/,
     );
-    assert.match(stdout.join("\n"), /Next actions: 14/);
+    assert.match(stdout.join("\n"), /Next actions: 15/);
     assert.match(stdout.join("\n"), /Next action 1: Production Smoke/);
     assert.match(stdout.join("\n"), /Next action 2: Page Builder Visual/);
     assert.match(
@@ -134,7 +134,7 @@ test("release handoff writes blocked reports without requiring readiness", async
     assert.match(
       stdout.join("\n"),
       new RegExp(
-        `Remaining next actions: 12 \\(see ${escapeRegExp(
+        `Remaining next actions: 13 \\(see ${escapeRegExp(
           `${outputRoot}/project-status.md`,
         )} for the full list\\)`,
       ),

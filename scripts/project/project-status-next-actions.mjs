@@ -1,6 +1,7 @@
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { createProductionSmokeHandoffSteps } from "../smoke/production-smoke-handoff-steps.mjs";
 import { createReleaseNotesHandoffSteps } from "../release/release-notes-handoff-steps.mjs";
+import { createReleaseEvidenceRequestCommand } from "../release/release-evidence-request-config.mjs";
 import {
   createPageBuilderVisualReferenceCheckCommand,
   createPageBuilderVisualReferenceMissingPathsCommand,
@@ -25,6 +26,7 @@ export function createProjectNextActions(check) {
         readText(check.visualArtifact?.artifactDir) ??
         readText(check.visualArtifactDir),
     }),
+    createReleaseEvidenceRequestAction(),
     ...readVisualTaskActions(check.visualChecklist),
   ];
 }
@@ -36,6 +38,33 @@ function createReleaseNotesAction() {
     area: "Release Notes",
     label: "Generate release record",
     steps: createReleaseNotesHandoffSteps(),
+  };
+}
+
+function createReleaseEvidenceRequestAction() {
+  return {
+    action:
+      "Run pnpm release:evidence-request to create one handoff for blocked release evidence, design references, Production Smoke inputs, retained artifacts, and the final ready gate.",
+    area: "Release Evidence",
+    label: "Generate evidence request",
+    steps: [
+      createNextActionStep(
+        "Evidence request",
+        createReleaseEvidenceRequestCommand(),
+      ),
+      createNextActionStep(
+        "Design request",
+        createPageBuilderVisualReferenceRequestCommand({
+          manifestPath: `${defaultVisualArtifactDir}/page-builder-visual-acceptance.json`,
+          sourceDir: defaultVisualReferenceSourceDir,
+        }),
+      ),
+      createNextActionStep("Smoke request", "pnpm smoke:request"),
+      createNextActionStep(
+        "Final gate",
+        "pnpm release:handoff -- --require-ready --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture",
+      ),
+    ],
   };
 }
 

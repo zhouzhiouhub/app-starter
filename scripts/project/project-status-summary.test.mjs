@@ -108,7 +108,7 @@ test("project status CLI can print a compact summary", async () => {
       text,
       /Design request: pnpm visual:references:request/,
     );
-    assert.match(text, /\.\.\. and 12 more next actions/);
+    assert.match(text, /\.\.\. and 13 more next actions/);
     assert.doesNotMatch(text, /Completion checklist:/);
     assert.doesNotMatch(text, /Completed milestones:/);
     assert.doesNotMatch(text, /Local verification:/);
@@ -120,7 +120,7 @@ test("project status CLI can print a compact summary", async () => {
 test("README current status reflects blocked release evidence", async () => {
   const readme = await readFile("README.md", "utf8");
 
-  assert.match(readme, /状态更新时间：2026-08-31/);
+  assert.match(readme, /状态更新时间：2026-09-01/);
   assert.match(readme, /Release ready: no/);
   assert.match(readme, /发布结论：`not-ready`/);
   assert.match(readme, /Production Smoke artifact 缺失/);

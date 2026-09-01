@@ -5,6 +5,7 @@ import { createProductionSmokeRequestMarkdown } from "../smoke/production-smoke-
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { createPageBuilderVisualReferenceRequestCommand } from "../visual/page-builder-visual-reference-import-commands.mjs";
 import { createPageBuilderVisualReferenceRequestMarkdown } from "../visual/page-builder-visual-reference-request.mjs";
+import { createReleaseEvidenceRequestCommand } from "./release-evidence-request-config.mjs";
 
 const maxMarkdownTextLength = 420;
 
@@ -33,7 +34,7 @@ export function createReleaseEvidenceRequestMarkdown(input) {
     "",
     "## Evidence Requests",
     "",
-    `- Release evidence request: ${formatCode("pnpm release:evidence-request")}`,
+    `- Release evidence request: ${formatCode(createReleaseEvidenceRequestCommand())}`,
     `- Page Builder design request: ${formatCode(
       createPageBuilderVisualReferenceRequestCommand(visual),
     )}`,

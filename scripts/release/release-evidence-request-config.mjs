@@ -11,6 +11,11 @@ export const defaultReleaseEvidenceRequestOutputPath =
   "artifacts/release/release-evidence-request.md";
 export const defaultReleaseEvidenceRequestVisualManifestPath =
   createArtifactPaths(defaultPageBuilderVisualArtifactDir).manifest;
+const defaultReleaseEvidenceRequestCommand = "pnpm release:evidence-request";
+
+export function createReleaseEvidenceRequestCommand() {
+  return defaultReleaseEvidenceRequestCommand;
+}
 
 const releaseCheckFlags = new Set(["--latest"]);
 const releaseCheckValueOptions = new Set([

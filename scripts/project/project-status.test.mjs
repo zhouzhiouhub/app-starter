@@ -44,7 +44,7 @@ test("project status summarizes blocked release evidence", () => {
   assert.equal(artifact.releaseGate.visual.pendingTaskCount, 12);
   assert.equal(artifact.localVerification.commandCount, 7);
   assert.equal(artifact.nextActionLimit, 8);
-  assert.equal(artifact.truncatedNextActionCount, 6);
+  assert.equal(artifact.truncatedNextActionCount, 7);
   assert.deepEqual(
     artifact.localVerification.commands.map((item) => item.command),
     [
@@ -57,7 +57,7 @@ test("project status summarizes blocked release evidence", () => {
       "pnpm project:status -- --all-actions --output tmp/project-status.json --markdown-output tmp/project-status-handoff.md",
     ],
   );
-  assert.equal(artifact.nextActionCount, 14);
+  assert.equal(artifact.nextActionCount, 15);
   assert.equal(artifact.nextActions.length, 8);
   assert.equal(artifact.nextActions[0].area, "Production Smoke");
   assert.deepEqual(
@@ -149,17 +149,13 @@ test("project status summarizes blocked release evidence", () => {
     heroDesktopAction.steps.find((step) => step.label === "Preview").value,
     "artifacts/visual/page-builder-visual-fixture-hero-banner-desktop.png (1440x1000)",
   );
+  assert.equal(artifact.nextActions[1].steps[1].value, "pnpm --silent visual:references:missing");
+  assert.equal(artifact.nextActions[1].steps[2].value, "pnpm visual:references:request");
+  assert.equal(artifact.nextActions[1].steps[3].value, "pnpm visual:references:check");
+  assert.equal(artifact.nextActions[2].label, "Generate evidence request");
   assert.equal(
-    artifact.nextActions[1].steps[1].value,
-    "pnpm --silent visual:references:missing",
-  );
-  assert.equal(
-    artifact.nextActions[1].steps[2].value,
-    "pnpm visual:references:request",
-  );
-  assert.equal(
-    artifact.nextActions[1].steps[3].value,
-    "pnpm visual:references:check",
+    artifact.nextActions[2].steps[0].value,
+    "pnpm release:evidence-request",
   );
 });
 
@@ -169,8 +165,8 @@ test("project status can serialize every next action", () => {
     includeAllActions: true,
   });
 
-  assert.equal(artifact.nextActionCount, 14);
-  assert.equal(artifact.nextActions.length, 14);
+  assert.equal(artifact.nextActionCount, 15);
+  assert.equal(artifact.nextActions.length, 15);
   assert.equal(artifact.truncatedNextActionCount, 0);
   assert.equal(artifact.nextActions.at(-1).label, "spec-table.mobile");
   assert.equal(artifact.nextActions.at(-1).steps.at(-1).label, "Verify");
