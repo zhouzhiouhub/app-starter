@@ -4,6 +4,19 @@ import {
   createProductionSmokeDispatchManifestValidationCommand,
 } from "../smoke/production-smoke-dispatch-command.mjs";
 import {
+  createPageBuilderVisualReferenceAcceptanceCommand,
+  createPageBuilderVisualReferenceAcceptPassingCommand,
+  createPageBuilderVisualReferenceCaptureCommand,
+  createPageBuilderVisualReferenceCheckCommand,
+  createPageBuilderVisualReferenceImportWriteCommand,
+  createPageBuilderVisualReferenceMeasureCommand,
+  createPageBuilderVisualReferenceMissingPathsCommand,
+  createPageBuilderVisualReferenceRequestCommand,
+} from "../visual/page-builder-visual-reference-import-commands.mjs";
+import {
+  createPageBuilderVisualReferenceHandoffCommand,
+} from "../visual/page-builder-visual-reference-handoff-paths.mjs";
+import {
   normalizeReleaseRequestsManifestOutputPath,
 } from "./release-requests-manifest-path.mjs";
 
@@ -30,12 +43,17 @@ export function createReleaseRequestsManifest(input = {}) {
       (expectedPath) =>
         typeof expectedPath === "string" && expectedPath.length > 0,
     );
+  const visualCommandContext = createVisualCommandContext({
+    outputPaths,
+    visual,
+  });
 
   return {
     command: input.command ?? "",
     generatedAt: request.generatedAt ?? input.generatedAt ?? "",
     outputPaths,
     pageBuilderVisual: {
+      commands: createVisualCommands(visualCommandContext),
       firstMissingReference: missingReferencePaths[0] ?? null,
       missingCount: readNumber(visual.missingCount),
       missingReferences: missingReferencePaths,
@@ -88,4 +106,30 @@ export async function writeReleaseRequestsManifest(outputPath, input) {
 
 function readNumber(value) {
   return Number.isFinite(value) ? value : 0;
+}
+
+function createVisualCommandContext(input) {
+  return {
+    jsonOutputPath: input.outputPaths.visualReferenceManifest,
+    manifestPath: input.visual.manifestPath,
+    missingOutputPath: input.outputPaths.visualMissingReferences,
+    outputDir: input.outputPaths.visualReferenceHandoff,
+    requestOutputPath: input.outputPaths.visualReference,
+    sourceDir: input.visual.sourceDir,
+    tableOutputPath: input.outputPaths.visualReferenceTable,
+  };
+}
+
+function createVisualCommands(context) {
+  return {
+    acceptPassing: createPageBuilderVisualReferenceAcceptPassingCommand(context),
+    captureFixture: createPageBuilderVisualReferenceCaptureCommand(context),
+    handoff: createPageBuilderVisualReferenceHandoffCommand(context),
+    importReferences: createPageBuilderVisualReferenceImportWriteCommand(context),
+    measure: createPageBuilderVisualReferenceMeasureCommand(context),
+    missingPaths: createPageBuilderVisualReferenceMissingPathsCommand(context),
+    referenceReport: createPageBuilderVisualReferenceCheckCommand(context),
+    request: createPageBuilderVisualReferenceRequestCommand(context),
+    verifyAccepted: createPageBuilderVisualReferenceAcceptanceCommand(context),
+  };
 }

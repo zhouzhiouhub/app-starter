@@ -376,6 +376,26 @@ test("release requests CLI writes every local request Markdown", async () => {
         .map((reference) => reference.expectedPath),
     );
     assert.equal(
+      releaseRequestsManifest.pageBuilderVisual.commands.missingPaths,
+      `pnpm --silent visual:references -- --manifest ${manifestPath} --missing-paths`,
+    );
+    assert.equal(
+      releaseRequestsManifest.pageBuilderVisual.commands.request,
+      `pnpm visual:references:request -- --manifest ${manifestPath} --output ${visualOutput} --missing-output ${visualMissingOutput} --table-output ${visualTableOutput} --json-output ${visualJsonOutput}`,
+    );
+    assert.equal(
+      releaseRequestsManifest.pageBuilderVisual.commands.handoff,
+      `pnpm visual:references:handoff -- --manifest ${manifestPath} --output-dir ${visualHandoffOutput}`,
+    );
+    assert.equal(
+      releaseRequestsManifest.pageBuilderVisual.commands.importReferences,
+      `pnpm visual:references -- --manifest ${manifestPath} --write --require-complete`,
+    );
+    assert.equal(
+      releaseRequestsManifest.pageBuilderVisual.commands.verifyAccepted,
+      `pnpm visual:acceptance -- --require-accepted ${manifestPath}`,
+    );
+    assert.equal(
       releaseRequestsManifest.productionSmoke.validationCommand,
       `pnpm smoke:dispatch -- --inputs-json ${smokeInputsJsonOutput} --require-complete`,
     );

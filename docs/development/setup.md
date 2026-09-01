@@ -365,9 +365,9 @@ visual manifest/source options, `--requests-manifest-output <path>`,
 `--visual-handoff-output <dir>`, and Production Smoke evidence inputs as the
 individual request commands, but still does not import references, run smoke,
 upload artifacts, create release notes, or mark blocked evidence ready. The
-bundle manifest records the full missing visual reference path list, the
-Production Smoke dispatch template, and the `--inputs-json` validation command
-beside the missing input list.
+bundle manifest records the full missing visual reference path list, visual
+reference intake commands, the Production Smoke dispatch template, and the
+`--inputs-json` validation command beside the missing input list.
 
 The review command scans the same safe archive roots, recomputes the report
 summary from the stored checks, and highlights R2 / CDN, Admin static app, and
