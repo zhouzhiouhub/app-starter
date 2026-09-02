@@ -374,6 +374,7 @@ reference intake commands, the visual handoff README path, the Production Smoke
 dispatch template, and the
 `--inputs-json` validation command beside the missing input list. It also
 mirrors `projectCompletion.completionChecklist`,
+`projectCompletion.completionChecklist.items[].nextSteps`,
 `projectCompletion.nextActionPreview`, `productionSmoke.workflowFile`,
 `productionSmoke.ref`, `productionSmoke.dispatchManifestContext`, Production
 Smoke workflow inputs, evidence input sources, and required evidence checklist

@@ -191,8 +191,13 @@ function readCompletionChecklistItem(item) {
       typeof item?.nextAction === "string" && item.nextAction.length > 0
         ? item.nextAction
         : null,
+    nextSteps: readNextActionSteps(item?.nextSteps),
     status: readString(item?.status, "unknown"),
   };
+}
+
+function readNextActionSteps(steps) {
+  return Array.isArray(steps) ? steps.map(readNextActionStep) : [];
 }
 
 function readNextActionPreview(action) {

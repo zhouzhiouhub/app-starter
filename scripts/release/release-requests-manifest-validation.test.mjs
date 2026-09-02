@@ -99,6 +99,31 @@ test("release requests manifest validation rejects count drift", () => {
   );
 });
 
+test("release requests manifest validation rejects incomplete checklist steps", () => {
+  assert.throws(
+    () =>
+      assertReleaseRequestsManifest(
+        createChangedManifest((manifest) => {
+          delete manifest.projectCompletion.completionChecklist.items[0]
+            .nextSteps;
+        }),
+      ),
+    /Release requests manifest projectCompletion\.completionChecklist\.items\.nextSteps/u,
+  );
+
+  assert.throws(
+    () =>
+      assertReleaseRequestsManifest(
+        createChangedManifest((manifest) => {
+          manifest.projectCompletion.completionChecklist.items[1].nextSteps = [
+            { label: "Smoke request" },
+          ];
+        }),
+      ),
+    /Release requests manifest projectCompletion\.completionChecklist\.items\.nextSteps\.value/u,
+  );
+});
+
 test("release requests manifest validation rejects incomplete dispatch context", () => {
   assert.throws(
     () =>
@@ -192,12 +217,19 @@ function createProjectCompletionHandoff() {
           evidence: "Local MVP implementation is complete.",
           label: "Local MVP implementation scope",
           nextAction: null,
+          nextSteps: [],
           status: "complete",
         },
         {
           evidence: "No retained production Smoke report has passed.",
           label: "Production Smoke release evidence",
           nextAction: "Run pnpm smoke:request.",
+          nextSteps: [
+            {
+              label: "Smoke request",
+              value: "pnpm smoke:request",
+            },
+          ],
           status: "needs-evidence",
         },
       ],

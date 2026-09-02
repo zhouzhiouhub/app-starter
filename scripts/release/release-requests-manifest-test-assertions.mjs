@@ -53,6 +53,16 @@ function assertProjectCompletionHandoff(projectCompletion) {
     label: "Page Builder visual acceptance evidence",
     status: "needs-evidence",
   });
+  assert.equal(
+    readChecklistStep(projectCompletion, "Production Smoke release evidence")
+      ?.label,
+    "Smoke request",
+  );
+  assert.equal(
+    readChecklistStep(projectCompletion, "Page Builder visual acceptance evidence")
+      ?.label,
+    "Reference source",
+  );
   assert.equal(projectCompletion.nextActionCount, 15);
   assert.equal(projectCompletion.nextActionPreviewCount, 3);
   assert.equal(projectCompletion.nextActionPreview[0].area, "Production Smoke");
@@ -75,6 +85,15 @@ function assertCompletionChecklistItem(projectCompletion, expected) {
 
   assert.ok(item, `Expected completion checklist item ${expected.label}`);
   assert.equal(item.status, expected.status);
+  assert.ok(Array.isArray(item.nextSteps));
+}
+
+function readChecklistStep(projectCompletion, label) {
+  const item = projectCompletion.completionChecklist.items.find(
+    (candidate) => candidate.label === label,
+  );
+
+  return item?.nextSteps[0];
 }
 
 function assertPageBuilderVisualCommands(commands, input) {

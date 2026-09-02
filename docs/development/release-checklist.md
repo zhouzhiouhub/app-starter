@@ -461,6 +461,7 @@ later phases are explicitly approved.
   Production Smoke dispatch template, and `--inputs-json` validation command for
   operator handoff. It mirrors
   `projectCompletion.completionChecklist`,
+  `projectCompletion.completionChecklist.items[].nextSteps`,
   `projectCompletion.nextActionPreview`, `productionSmoke.workflowFile`,
   `productionSmoke.ref`, `productionSmoke.dispatchManifestContext`, Production
   Smoke workflow inputs, evidence input sources, and required evidence checklist

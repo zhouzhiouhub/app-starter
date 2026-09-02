@@ -112,6 +112,7 @@ function countItemsWithStatus(items, status) {
       item.nextAction,
       "projectCompletion.completionChecklist.items.nextAction",
     );
+    assertCompletionChecklistNextSteps(item.nextSteps);
     assertEnum(
       item.status,
       checklistStatuses,
@@ -120,6 +121,30 @@ function countItemsWithStatus(items, status) {
 
     return item.status === status;
   }).length;
+}
+
+function assertCompletionChecklistNextSteps(nextSteps) {
+  if (!Array.isArray(nextSteps)) {
+    fail(
+      "projectCompletion.completionChecklist.items.nextSteps",
+      "must be an array",
+    );
+  }
+
+  for (const step of nextSteps) {
+    assertRecord(
+      step,
+      "projectCompletion.completionChecklist.items.nextSteps",
+    );
+    assertString(
+      step.label,
+      "projectCompletion.completionChecklist.items.nextSteps.label",
+    );
+    assertString(
+      step.value,
+      "projectCompletion.completionChecklist.items.nextSteps.value",
+    );
+  }
 }
 
 function assertNextActionPreview(project) {
