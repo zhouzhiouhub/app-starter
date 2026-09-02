@@ -41,6 +41,7 @@ export function createProductionSmokeRequestMarkdown(dispatchArtifact) {
     "",
     `- Manual dispatch: ${formatCode(dispatchArtifact.manualDispatch)}`,
     `- Validate dispatch: ${formatCode(validationCommand)}`,
+    ...formatDispatchManifestNotes(dispatchArtifact),
     `- Dispatch template: ${formatCode(dispatchArtifact.command)}`,
     "",
     "## Evidence Inputs",
@@ -108,6 +109,19 @@ function createProductionSmokeRequestValidationCommand(dispatchArtifact) {
     : createProductionSmokeDispatchValidationCommand({
         inputs: dispatchArtifact.inputs,
       });
+}
+
+function formatDispatchManifestNotes(dispatchArtifact) {
+  return dispatchArtifact.inputsJsonOutputPath
+    ? [
+        `- JSON manifest: ${formatCode(
+          dispatchArtifact.inputsJsonOutputPath,
+        )} provides workflow file, ref, and input values for dispatch.`,
+        `- CLI overrides: explicit ${formatCode("--workflow-file")}, ${formatCode(
+          "--ref",
+        )}, and input flags override JSON manifest values.`,
+      ]
+    : [];
 }
 
 function formatDispatchInput(input) {

@@ -64,6 +64,14 @@ test("production smoke request Markdown is operator-facing", () => {
     markdown,
     /Validate dispatch: `pnpm smoke:dispatch -- --inputs-json artifacts\/production-smoke\/production-smoke-dispatch-inputs\.json --require-complete`/,
   );
+  assert.match(
+    markdown,
+    /JSON manifest: `artifacts\/production-smoke\/production-smoke-dispatch-inputs\.json` provides workflow file, ref, and input values for dispatch\./,
+  );
+  assert.match(
+    markdown,
+    /CLI overrides: explicit `--workflow-file`, `--ref`, and input flags override JSON manifest values\./,
+  );
   assert.match(markdown, /Dispatch template: `gh workflow run production-smoke\.yml --ref main/);
   assert.match(markdown, /- \[ \] `visual_artifact_name`: `page-builder-visual-fixture-<run_number>` - replace before dispatch/);
   assert.match(markdown, /## Evidence Input Sources/);
@@ -143,6 +151,10 @@ test("production smoke request CLI writes a Markdown handoff", async () => {
     assert.match(
       markdown,
       /Validate dispatch: `pnpm smoke:dispatch -- --inputs-json tmp\/production-smoke-request-.+\/dispatch-inputs\.json --require-complete`/,
+    );
+    assert.match(
+      markdown,
+      /JSON manifest: `tmp\/production-smoke-request-.+\/dispatch-inputs\.json` provides workflow file, ref, and input values for dispatch\./,
     );
     assert.match(markdown, /- \[x\] `visual_artifact_name`: `page-builder-visual-fixture-281` - ready/);
     assert.match(markdown, /- \[x\] `storefront_url`: `https:\/\/store\.brand\.com\/` - ready/);
