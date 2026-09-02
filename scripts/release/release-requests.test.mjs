@@ -185,11 +185,11 @@ test("release requests CLI writes every local request Markdown", async () => {
     );
     assert.match(
       visualExportTable,
-      /^component\tviewport\tstatus\treference_width\treference_height\texpected_path\tpreview_width\tpreview_height\tpreview_path/m,
+      /^component\tviewport\tfile_name\tstatus\treference_width\treference_height\texpected_path\tpreview_width\tpreview_height\tpreview_path/m,
     );
     assert.match(
       visualExportTable,
-      /hero-banner\tdesktop\tmissing\t[^\n]*docs\/visual\/page-builder-references\/hero-banner-desktop\.png/,
+      /hero-banner\tdesktop\thero-banner-desktop\.png\tmissing\t[^\n]*docs\/visual\/page-builder-references\/hero-banner-desktop\.png/,
     );
     assert.equal(
       visualExportManifest.schemaVersion,

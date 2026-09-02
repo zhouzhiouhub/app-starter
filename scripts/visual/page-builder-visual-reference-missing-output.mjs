@@ -64,6 +64,7 @@ export async function writePageBuilderVisualReferenceExportTable(
     [
       "component",
       "viewport",
+      "file_name",
       "status",
       "reference_width",
       "reference_height",
@@ -195,6 +196,7 @@ function createReferenceExportTableRow(reference) {
   return [
     reference.component,
     reference.viewport,
+    `${reference.component}-${reference.viewport}.png`,
     reference.status,
     size.width,
     size.height,

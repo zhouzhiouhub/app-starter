@@ -136,7 +136,7 @@ test("visual reference handoff CLI writes request files and previews", async () 
     assert.match(readme, /Missing references: `1\/12`/);
     assert.match(readme, new RegExp(`sha256 \`${expectedPreviewSha256}\``));
     assert.match(readme, /After Design Delivery/);
-    assert.match(table, /^component\tviewport\tstatus/m);
+    assert.match(table, /^component\tviewport\tfile_name\tstatus/m);
   } finally {
     rmSync(root, { force: true, recursive: true });
   }
