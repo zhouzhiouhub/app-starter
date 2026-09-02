@@ -77,7 +77,10 @@ export function createReleaseEvidenceRequestMarkdown(input) {
   const releaseRequestsManifestOutputPath =
     requestOutputPaths.releaseRequestsManifest ??
     defaultReleaseRequestsManifestOutputPath;
-  const projectStatusHandoff = createReleaseProjectStatusHandoff(project);
+  const projectStatusHandoff = createReleaseProjectStatusHandoff(
+    project,
+    requestOutputPaths,
+  );
   const firstMissingVisualReference = Array.isArray(visual.missing)
     ? visual.missing[0]?.expectedPath
     : null;

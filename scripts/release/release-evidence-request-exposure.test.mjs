@@ -22,6 +22,8 @@ test("release evidence request command is exposed in package CI and docs", async
   assert.match(requestCli, /runReleaseEvidenceRequestCli/);
   assert.match(releaseChecklist, /pnpm release:evidence-request/);
   assert.match(releaseChecklist, /--requests-manifest-output/);
+  assert.match(releaseChecklist, /--project-status-output/);
+  assert.match(releaseChecklist, /--project-status-markdown/);
   assert.match(releaseChecklist, /--visual-output/);
   assert.match(releaseChecklist, /--visual-missing-output/);
   assert.match(releaseChecklist, /--visual-table-output/);
@@ -35,6 +37,8 @@ test("release evidence request command is exposed in package CI and docs", async
   assert.match(releaseChecklist, /First missing visual reference/);
   assert.match(setupDoc, /pnpm release:evidence-request/);
   assert.match(setupDoc, /--requests-manifest-output <path>/);
+  assert.match(setupDoc, /--project-status-output <path>/);
+  assert.match(setupDoc, /--project-status-markdown <path>/);
   assert.match(setupDoc, /--visual-output <path>/);
   assert.match(setupDoc, /--visual-missing-output <path>/);
   assert.match(setupDoc, /--visual-table-output <path>/);
@@ -48,6 +52,8 @@ test("release evidence request command is exposed in package CI and docs", async
   assert.match(setupDoc, /Missing Production Smoke inputs/);
   assert.match(readme, /pnpm release:evidence-request/);
   assert.match(readme, /--requests-manifest-output <path>/);
+  assert.match(readme, /--project-status-output <path>/);
+  assert.match(readme, /--project-status-markdown <path>/);
   assert.match(readme, /--visual-output <path>/);
   assert.match(readme, /--visual-missing-output <path>/);
   assert.match(readme, /--visual-table-output <path>/);

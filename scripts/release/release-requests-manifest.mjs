@@ -82,7 +82,7 @@ export function createReleaseRequestsManifest(input = {}) {
       requiredReferenceCount: readNumber(visual.requiredReferenceCount),
       status: visual.status ?? "unknown",
     },
-    projectCompletion: createProjectCompletionSummary(project),
+    projectCompletion: createProjectCompletionSummary(project, outputPaths),
     productionSmoke: {
       dispatchManifestContext: smokeInputsManifest.dispatchManifestContext,
       dispatchCommand: smokeInputsManifest.command,
@@ -144,7 +144,7 @@ function readStringList(value) {
     : [];
 }
 
-function createProjectCompletionSummary(project) {
+function createProjectCompletionSummary(project, outputPaths) {
   const nextActions = Array.isArray(project.nextActions)
     ? project.nextActions
     : [];
@@ -158,7 +158,10 @@ function createProjectCompletionSummary(project) {
     nextActionPreview,
     nextActionPreviewCount: nextActionPreview.length,
     phase: readString(project.phase, "unknown"),
-    projectStatusHandoff: createReleaseProjectStatusHandoff(project),
+    projectStatusHandoff: createReleaseProjectStatusHandoff(
+      project,
+      outputPaths,
+    ),
     releaseDecision: readString(
       project.completionSummary?.releaseDecision,
       "unknown",

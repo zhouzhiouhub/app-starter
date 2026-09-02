@@ -1,12 +1,8 @@
-import {
-  readPageBuilderVisualArtifactDir,
-} from "../visual/page-builder-visual-artifact-check-config.mjs";
-import {
-  createArtifactPaths,
-} from "../visual/page-builder-visual-artifact-check-paths.mjs";
-import {
-  defaultReleaseRequestsOutputPaths,
-} from "./release-requests-config.mjs";
+import { readPageBuilderVisualArtifactDir } from "../visual/page-builder-visual-artifact-check-config.mjs";
+import { createArtifactPaths } from "../visual/page-builder-visual-artifact-check-paths.mjs";
+import { defaultReleaseRequestsOutputPaths } from "./release-requests-config.mjs";
+import { readReleaseRequestsOutputOption } from "./release-requests-output-options.mjs";
+import { readProjectStatusOutputOption } from "./release-requests-project-status-options.mjs";
 import {
   appendValueOption,
   readOptionValue,
@@ -64,26 +60,28 @@ export function readReleaseRequestsCliConfig(args = []) {
   for (let index = 0; index < normalizedArgs.length; index += 1) {
     const { option, value } = splitInlineOption(normalizedArgs[index]);
 
-    if (option === "--release-output") {
-      const outputPath = readOptionValue(option, normalizedArgs, index, value);
-      setValueOption(config.releaseEvidenceArgs, "--output", outputPath);
-      config.outputPaths.releaseEvidence = outputPath;
+    if (
+      readReleaseRequestsOutputOption(
+        config,
+        option,
+        normalizedArgs,
+        index,
+        value,
+      )
+    ) {
       index += value === null ? 1 : 0;
       continue;
     }
 
     if (
-      option === "--requests-manifest-output" ||
-      option === "--release-requests-manifest-output" ||
-      option === "--bundle-manifest-output"
+      readProjectStatusOutputOption(
+        config,
+        option,
+        normalizedArgs,
+        index,
+        value,
+      )
     ) {
-      const outputPath = readOptionValue(option, normalizedArgs, index, value);
-      setValueOption(
-        config.releaseEvidenceArgs,
-        "--requests-manifest-output",
-        outputPath,
-      );
-      config.outputPaths.releaseRequestsManifest = outputPath;
       index += value === null ? 1 : 0;
       continue;
     }

@@ -90,6 +90,28 @@ export function readReleaseEvidenceRequestCliConfig(args = []) {
       continue;
     }
 
+    if (option === "--project-status-output") {
+      input.requestOutputPaths.projectStatus = readOptionValue(
+        option,
+        normalizedArgs,
+        index,
+        value,
+      );
+      index += value === null ? 1 : 0;
+      continue;
+    }
+
+    if (option === "--project-status-markdown") {
+      input.requestOutputPaths.projectStatusMarkdown = readOptionValue(
+        option,
+        normalizedArgs,
+        index,
+        value,
+      );
+      index += value === null ? 1 : 0;
+      continue;
+    }
+
     if (option === "--visual-output") {
       input.requestOutputPaths.visualReference = readOptionValue(
         option,

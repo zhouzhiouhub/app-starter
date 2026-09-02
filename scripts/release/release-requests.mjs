@@ -2,6 +2,10 @@ import { runPageBuilderVisualReferenceRequestCli } from "../page-builder-visual-
 import {
   runPageBuilderVisualReferenceHandoffCli,
 } from "../page-builder-visual-reference-handoff.mjs";
+import {
+  writeProjectStatusArtifact,
+  writeProjectStatusMarkdown,
+} from "../project/project-status.mjs";
 import { runProductionSmokeRequestCli } from "../smoke/production-smoke-request.mjs";
 import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
 import { runReleaseEvidenceRequestCli } from "./release-evidence-request.mjs";
@@ -87,6 +91,14 @@ export async function runReleaseRequestsCli(args = [], input = {}) {
     };
     const manifest = createReleaseRequestsManifest(manifestInput);
 
+    await writeProjectStatusArtifact(
+      config.outputPaths.projectStatus,
+      releaseEvidenceRequest.projectArtifact,
+    );
+    await writeProjectStatusMarkdown(
+      config.outputPaths.projectStatusMarkdown,
+      releaseEvidenceRequest.projectArtifact,
+    );
     await writeReleaseRequestsManifest(config.outputPaths.releaseRequestsManifest, {
       ...manifestInput,
       manifest,

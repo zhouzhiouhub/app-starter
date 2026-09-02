@@ -1,27 +1,33 @@
+export const defaultReleaseProjectStatusOutputPath =
+  "artifacts/release/project-status.json";
+export const defaultReleaseProjectStatusMarkdownPath =
+  "artifacts/release/project-status.md";
+
 const defaultProjectStatusHandoff = {
-  command:
-    "pnpm project:status -- --all-actions --output tmp/project-status.json --markdown-output tmp/project-status-handoff.md",
-  jsonPath: "tmp/project-status.json",
-  markdownPath: "tmp/project-status-handoff.md",
+  jsonPath: defaultReleaseProjectStatusOutputPath,
+  markdownPath: defaultReleaseProjectStatusMarkdownPath,
   shortcut: "pnpm run verify:local",
 };
 
-const projectStatusHandoffLabel = "Project status handoff";
-
-export function createReleaseProjectStatusHandoff(project = {}) {
+export function createReleaseProjectStatusHandoff(
+  project = {},
+  outputPaths = {},
+) {
   const localVerification = project.localVerification ?? {};
   const handoff = localVerification.handoff ?? {};
+  const jsonPath = readString(
+    outputPaths.projectStatus,
+    readString(handoff.jsonPath, defaultProjectStatusHandoff.jsonPath),
+  );
+  const markdownPath = readString(
+    outputPaths.projectStatusMarkdown,
+    readString(handoff.markdownPath, defaultProjectStatusHandoff.markdownPath),
+  );
 
   return {
-    command: readString(
-      readProjectStatusHandoffCommand(localVerification),
-      defaultProjectStatusHandoff.command,
-    ),
-    jsonPath: readString(handoff.jsonPath, defaultProjectStatusHandoff.jsonPath),
-    markdownPath: readString(
-      handoff.markdownPath,
-      defaultProjectStatusHandoff.markdownPath,
-    ),
+    command: createProjectStatusHandoffCommand({ jsonPath, markdownPath }),
+    jsonPath,
+    markdownPath,
     shortcut: readString(
       localVerification.shortcut,
       defaultProjectStatusHandoff.shortcut,
@@ -29,14 +35,16 @@ export function createReleaseProjectStatusHandoff(project = {}) {
   };
 }
 
-function readProjectStatusHandoffCommand(localVerification) {
-  if (!Array.isArray(localVerification.commands)) {
-    return null;
-  }
-
-  return localVerification.commands.find(
-    (command) => command?.label === projectStatusHandoffLabel,
-  )?.command;
+function createProjectStatusHandoffCommand(input) {
+  return [
+    "pnpm project:status",
+    "--",
+    "--all-actions",
+    "--output",
+    input.jsonPath,
+    "--markdown-output",
+    input.markdownPath,
+  ].join(" ");
 }
 
 function readString(value, fallback) {

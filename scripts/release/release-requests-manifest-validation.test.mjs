@@ -287,9 +287,9 @@ function createProjectCompletionHandoff() {
     phase: "MVP release verification",
     projectStatusHandoff: {
       command:
-        "pnpm project:status -- --all-actions --output tmp/project-status.json --markdown-output tmp/project-status-handoff.md",
-      jsonPath: "tmp/project-status.json",
-      markdownPath: "tmp/project-status-handoff.md",
+        "pnpm project:status -- --all-actions --output artifacts/release/project-status.json --markdown-output artifacts/release/project-status.md",
+      jsonPath: "artifacts/release/project-status.json",
+      markdownPath: "artifacts/release/project-status.md",
       shortcut: "pnpm run verify:local",
     },
     releaseDecision: "not-ready",

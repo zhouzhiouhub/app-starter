@@ -128,6 +128,8 @@ test("release evidence request help documents terminal summary fields", async ()
   assert.match(help, /--visual-output <path>/);
   assert.match(help, /--requests-manifest-output <path>/);
   assert.match(help, /--bundle-manifest-output <path>/);
+  assert.match(help, /--project-status-output <path>/);
+  assert.match(help, /--project-status-markdown <path>/);
   assert.match(help, /--visual-missing-output <path>/);
   assert.match(help, /--missing-output <path>/);
   assert.match(help, /--visual-table-output <path>/);

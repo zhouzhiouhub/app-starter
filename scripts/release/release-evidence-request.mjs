@@ -114,6 +114,7 @@ function printHelp(writeLine) {
   pnpm release:evidence-request
   pnpm release:evidence-request -- --output artifacts/release/release-evidence-request.md
   pnpm release:evidence-request -- --requests-manifest-output artifacts/release/release-requests-manifest.json
+  pnpm release:evidence-request -- --project-status-output artifacts/release/project-status.json --project-status-markdown artifacts/release/project-status.md
   pnpm release:evidence-request -- --visual-output artifacts/visual/page-builder-reference-request.md --visual-missing-output artifacts/visual/page-builder-missing-references.txt --visual-table-output artifacts/visual/page-builder-reference-export-table.tsv --visual-json-output artifacts/visual/page-builder-reference-export-manifest.json --visual-handoff-output artifacts/visual/page-builder-reference-handoff
   pnpm release:evidence-request -- --smoke-output artifacts/production-smoke/production-smoke-request.md
   pnpm release:evidence-request -- --smoke-inputs-output artifacts/production-smoke/production-smoke-dispatch-inputs.txt
@@ -130,6 +131,10 @@ Options:
                                Alias for --requests-manifest-output.
   --bundle-manifest-output <path>
                                Alias for --requests-manifest-output.
+  --project-status-output <path>
+                               Show the Project Status JSON handoff output path.
+  --project-status-markdown <path>
+                               Show the Project Status Markdown handoff output path.
   --visual-output <path>       Show the Page Builder design request output path.
   --visual-missing-output <path>
                                Show the missing Page Builder reference path list output.

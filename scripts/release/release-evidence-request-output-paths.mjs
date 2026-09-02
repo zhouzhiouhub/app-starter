@@ -22,6 +22,10 @@ import {
 import {
   defaultReleaseRequestsManifestOutputPath,
 } from "./release-requests-manifest-path.mjs";
+import {
+  defaultReleaseProjectStatusMarkdownPath,
+  defaultReleaseProjectStatusOutputPath,
+} from "./release-project-status-handoff.mjs";
 
 export const defaultReleaseEvidenceRequestOutputPath =
   "artifacts/release/release-evidence-request.md";
@@ -31,6 +35,8 @@ export const defaultReleaseEvidenceRequestOutputPaths = {
   productionSmokeInputsManifest:
     defaultProductionSmokeDispatchInputsManifestOutputPath,
   productionSmokeInputsTable: defaultProductionSmokeDispatchInputsTableOutputPath,
+  projectStatus: defaultReleaseProjectStatusOutputPath,
+  projectStatusMarkdown: defaultReleaseProjectStatusMarkdownPath,
   releaseEvidence: defaultReleaseEvidenceRequestOutputPath,
   releaseRequestsManifest: defaultReleaseRequestsManifestOutputPath,
   visualReferenceHandoff: defaultPageBuilderVisualReferenceHandoffOutputDir,
@@ -56,6 +62,10 @@ export function createReleaseEvidenceRequestCommand(outputPaths = {}) {
     paths.releaseEvidence,
     "--requests-manifest-output",
     paths.releaseRequestsManifest,
+    "--project-status-output",
+    paths.projectStatus,
+    "--project-status-markdown",
+    paths.projectStatusMarkdown,
     "--visual-output",
     paths.visualReference,
     "--visual-missing-output",

@@ -8,6 +8,8 @@ import { createPendingVisualManifest } from "./release-check-test-fixtures.mjs";
 test("release requests CLI writes every local request Markdown", async () => {
   const root = `tmp/rr-cli-${process.pid}`;
   const manifestPath = `${root}/page-builder-visual-acceptance.json`;
+  const projectStatusOutput = `${root}/project-status.json`;
+  const projectStatusMarkdownOutput = `${root}/project-status.md`;
   const releaseOutput = `${root}/release-evidence-request.md`;
   const releaseRequestsManifestOutput = `${root}/release-requests-manifest.json`;
   const visualOutput = `${root}/page-builder-reference-request.md`;
@@ -34,6 +36,10 @@ test("release requests CLI writes every local request Markdown", async () => {
         releaseOutput,
         "--requests-manifest-output",
         releaseRequestsManifestOutput,
+        "--project-status-output",
+        projectStatusOutput,
+        "--project-status-markdown",
+        projectStatusMarkdownOutput,
         "--visual-output",
         visualOutput,
         "--visual-missing-output",
@@ -65,6 +71,8 @@ test("release requests CLI writes every local request Markdown", async () => {
     const [
       releaseMarkdown,
       releaseRequestsManifestText,
+      projectStatusText,
+      projectStatusMarkdown,
       visualMarkdown,
       visualMissingPaths,
       visualExportTable,
@@ -77,6 +85,8 @@ test("release requests CLI writes every local request Markdown", async () => {
     ] = await Promise.all([
       readFile(releaseOutput, "utf8"),
       readFile(releaseRequestsManifestOutput, "utf8"),
+      readFile(projectStatusOutput, "utf8"),
+      readFile(projectStatusMarkdownOutput, "utf8"),
       readFile(visualOutput, "utf8"),
       readFile(visualMissingOutput, "utf8"),
       readFile(visualTableOutput, "utf8"),
@@ -88,6 +98,7 @@ test("release requests CLI writes every local request Markdown", async () => {
       readFile(smokeInputsJsonOutput, "utf8"),
     ]);
     const releaseRequestsManifest = JSON.parse(releaseRequestsManifestText);
+    const projectStatus = JSON.parse(projectStatusText);
     const visualExportManifest = JSON.parse(visualExportManifestText);
     const visualHandoffManifest = JSON.parse(visualHandoffManifestText);
     const smokeInputsManifest = JSON.parse(smokeInputsJsonText);
@@ -104,6 +115,12 @@ test("release requests CLI writes every local request Markdown", async () => {
       ),
     );
     assert.match(output, /Project completion: needs-evidence/);
+    assert.match(
+      output,
+      new RegExp(
+        `Project status handoff: ${escapeRegExp(projectStatusMarkdownOutput)}`,
+      ),
+    );
     assert.match(output, /Release request files refreshed:/);
     assert.match(output, new RegExp(`Release evidence: ${escapeRegExp(releaseOutput)}`));
     assert.match(
@@ -112,6 +129,16 @@ test("release requests CLI writes every local request Markdown", async () => {
         `Release requests manifest: ${escapeRegExp(
           releaseRequestsManifestOutput,
         )}`,
+      ),
+    );
+    assert.match(
+      output,
+      new RegExp(`Project status JSON: ${escapeRegExp(projectStatusOutput)}`),
+    );
+    assert.match(
+      output,
+      new RegExp(
+        `Project status Markdown: ${escapeRegExp(projectStatusMarkdownOutput)}`,
       ),
     );
     assert.match(output, new RegExp(`Page Builder design: ${escapeRegExp(visualOutput)}`));
@@ -151,193 +178,6 @@ test("release requests CLI writes every local request Markdown", async () => {
       ),
     );
     assert.match(releaseMarkdown, /^# MVP Release Evidence Request/m);
-    assert.match(
-      releaseMarkdown,
-      new RegExp(
-        `Refresh all requests: \`pnpm release:requests -- --release-output ${escapeRegExp(
-          releaseOutput,
-        )} --requests-manifest-output ${escapeRegExp(
-          releaseRequestsManifestOutput,
-        )} --visual-output ${escapeRegExp(
-          visualOutput,
-        )} --visual-missing-output ${escapeRegExp(
-          visualMissingOutput,
-        )} --visual-table-output ${escapeRegExp(
-          visualTableOutput,
-        )} --visual-json-output ${escapeRegExp(
-          visualJsonOutput,
-        )} --visual-handoff-output ${escapeRegExp(
-          visualHandoffOutput,
-        )} --smoke-output ${escapeRegExp(
-          smokeOutput,
-        )} --smoke-inputs-output ${escapeRegExp(
-          smokeInputsOutput,
-        )} --smoke-inputs-table-output ${escapeRegExp(
-          smokeInputsTableOutput,
-        )} --smoke-inputs-json-output ${escapeRegExp(
-          smokeInputsJsonOutput,
-        )}\``,
-      ),
-    );
-    assert.match(
-      releaseMarkdown,
-      new RegExp(
-        `Request outputs: \`${escapeRegExp(
-          [
-            releaseOutput,
-            releaseRequestsManifestOutput,
-            visualOutput,
-            visualMissingOutput,
-            visualTableOutput,
-            visualJsonOutput,
-            visualHandoffOutput,
-            `${visualHandoffOutput}/README.md`,
-            smokeOutput,
-            smokeInputsOutput,
-            smokeInputsTableOutput,
-            smokeInputsJsonOutput,
-          ].join(", "),
-        )}\``,
-      ),
-    );
-    assert.match(
-      releaseMarkdown,
-      new RegExp(
-        `Release evidence request: \`pnpm release:evidence-request -- --output ${escapeRegExp(
-          releaseOutput,
-        )} --requests-manifest-output ${escapeRegExp(
-          releaseRequestsManifestOutput,
-        )} --visual-output ${escapeRegExp(
-          visualOutput,
-        )} --visual-missing-output ${escapeRegExp(
-          visualMissingOutput,
-        )} --visual-table-output ${escapeRegExp(
-          visualTableOutput,
-        )} --visual-json-output ${escapeRegExp(
-          visualJsonOutput,
-        )} --visual-handoff-output ${escapeRegExp(
-          visualHandoffOutput,
-        )} --smoke-output ${escapeRegExp(
-          smokeOutput,
-        )} --smoke-inputs-output ${escapeRegExp(
-          smokeInputsOutput,
-        )} --smoke-inputs-table-output ${escapeRegExp(
-          smokeInputsTableOutput,
-        )} --smoke-inputs-json-output ${escapeRegExp(
-          smokeInputsJsonOutput,
-        )}\``,
-      ),
-    );
-    assert.match(
-      releaseMarkdown,
-      new RegExp(
-        `Release requests manifest: \`${escapeRegExp(
-          releaseRequestsManifestOutput,
-        )}\``,
-      ),
-    );
-    assert.match(
-      releaseMarkdown,
-      new RegExp(
-        `Page Builder design request: \`pnpm visual:references:request -- --manifest ${escapeRegExp(
-          manifestPath,
-        )} --output ${escapeRegExp(
-          visualOutput,
-        )} --missing-output ${escapeRegExp(
-          visualMissingOutput,
-        )} --table-output ${escapeRegExp(
-          visualTableOutput,
-        )} --json-output ${escapeRegExp(visualJsonOutput)}\``,
-      ),
-    );
-    assert.match(
-      releaseMarkdown,
-      new RegExp(
-        `Page Builder reference export manifest: \`${escapeRegExp(
-          visualJsonOutput,
-        )}\``,
-      ),
-    );
-    assert.match(
-      releaseMarkdown,
-      new RegExp(`Page Builder design handoff output: \`${escapeRegExp(visualHandoffOutput)}\``),
-    );
-    assert.match(
-      releaseMarkdown,
-      new RegExp(
-        `Production Smoke request: \`pnpm smoke:request -- --output ${escapeRegExp(
-          smokeOutput,
-        )} --inputs-output ${escapeRegExp(
-          smokeInputsOutput,
-        )} --inputs-table-output ${escapeRegExp(
-          smokeInputsTableOutput,
-        )} --inputs-json-output ${escapeRegExp(smokeInputsJsonOutput)}\``,
-      ),
-    );
-    assert.match(
-      releaseMarkdown,
-      new RegExp(
-        `Missing path output: \`${escapeRegExp(visualMissingOutput)}\``,
-      ),
-    );
-    assert.match(
-      releaseMarkdown,
-      new RegExp(
-        `Export table output: \`${escapeRegExp(visualTableOutput)}\``,
-      ),
-    );
-    assert.match(
-      releaseMarkdown,
-      new RegExp(
-        `Export manifest output: \`${escapeRegExp(visualJsonOutput)}\``,
-      ),
-    );
-    assert.match(
-      releaseMarkdown,
-      new RegExp(
-        `Production Smoke dispatch inputs output: \`${escapeRegExp(
-          smokeInputsOutput,
-        )}\``,
-      ),
-    );
-    assert.match(
-      releaseMarkdown,
-      new RegExp(
-        `Production Smoke dispatch inputs table output: \`${escapeRegExp(
-          smokeInputsTableOutput,
-        )}\``,
-      ),
-    );
-    assert.match(
-      releaseMarkdown,
-      new RegExp(
-        `Production Smoke dispatch inputs JSON output: \`${escapeRegExp(
-          smokeInputsJsonOutput,
-        )}\``,
-      ),
-    );
-    assert.match(
-      releaseMarkdown,
-      new RegExp(
-        `Dispatch inputs output: \`${escapeRegExp(smokeInputsOutput)}\``,
-      ),
-    );
-    assert.match(
-      releaseMarkdown,
-      new RegExp(
-        `Dispatch inputs table output: \`${escapeRegExp(
-          smokeInputsTableOutput,
-        )}\``,
-      ),
-    );
-    assert.match(
-      releaseMarkdown,
-      new RegExp(
-        `Dispatch inputs JSON output: \`${escapeRegExp(
-          smokeInputsJsonOutput,
-        )}\``,
-      ),
-    );
     assert.match(visualMarkdown, /^# Page Builder Design Reference Request/m);
     assert.match(
       visualMissingPaths,
@@ -355,12 +195,16 @@ test("release requests CLI writes every local request Markdown", async () => {
       visualExportManifest.schemaVersion,
       "page-builder-visual-reference-export.v1",
     );
+    assert.equal(projectStatus.schemaVersion, "project-status.v1");
+    assert.equal(projectStatus.nextActionCount, 15);
+    assert.match(projectStatusMarkdown, /^# MVP Release Handoff/m);
     assert.equal(visualExportManifest.referenceCount, 12);
     assert.equal(visualExportManifest.missingCount, 12);
     assertReleaseRequestsManifestHandoff({
       releaseRequestsManifest, releaseRequestsManifestOutput,
       smokeInputsJsonOutput, smokeInputsManifest, visualExportManifest,
-      visualHandoffOutput, visualJsonOutput,
+      projectStatusMarkdownOutput, projectStatusOutput, visualHandoffOutput,
+      visualJsonOutput,
       visualManifestPath: manifestPath,
       visualMissingOutput, visualOutput, visualTableOutput,
     });

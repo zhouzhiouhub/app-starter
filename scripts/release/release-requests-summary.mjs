@@ -34,6 +34,10 @@ export function printReleaseRequestFiles(outputPaths, writeLine) {
   writeLine(
     `  - Release requests manifest: ${outputPaths.releaseRequestsManifest}`,
   );
+  writeLine(`  - Project status JSON: ${outputPaths.projectStatus}`);
+  writeLine(
+    `  - Project status Markdown: ${outputPaths.projectStatusMarkdown}`,
+  );
   writeLine(`  - Page Builder design: ${outputPaths.visualReference}`);
   writeLine(
     `  - Page Builder missing paths: ${outputPaths.visualMissingReferences}`,

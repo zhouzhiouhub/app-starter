@@ -10,6 +10,11 @@ export function assertReleaseRequestsManifestHandoff(input) {
     manifest.outputPaths.releaseRequestsManifest,
     input.releaseRequestsManifestOutput,
   );
+  assert.equal(manifest.outputPaths.projectStatus, input.projectStatusOutput);
+  assert.equal(
+    manifest.outputPaths.projectStatusMarkdown,
+    input.projectStatusMarkdownOutput,
+  );
   assert.equal(manifest.pageBuilderVisual.missingCount, 12);
   assert.equal(
     manifest.pageBuilderVisual.firstMissingReference,
@@ -25,12 +30,12 @@ export function assertReleaseRequestsManifestHandoff(input) {
       .filter((reference) => reference.status === "missing")
       .map((reference) => reference.expectedPath),
   );
-  assertProjectCompletionHandoff(manifest.projectCompletion);
+  assertProjectCompletionHandoff(manifest.projectCompletion, input);
   assertPageBuilderVisualCommands(manifest.pageBuilderVisual.commands, input);
   assertProductionSmokeHandoff(manifest.productionSmoke, input);
 }
 
-function assertProjectCompletionHandoff(projectCompletion) {
+function assertProjectCompletionHandoff(projectCompletion, input) {
   assert.equal(projectCompletion.phase, "MVP release verification");
   assert.equal(projectCompletion.status, "needs-evidence");
   assert.equal(projectCompletion.releaseReady, false);
@@ -74,9 +79,9 @@ function assertProjectCompletionHandoff(projectCompletion) {
   assert.equal(projectCompletion.nextActionPreview[2].area, "Release Evidence");
   assert.deepEqual(projectCompletion.projectStatusHandoff, {
     command:
-      "pnpm project:status -- --all-actions --output tmp/project-status.json --markdown-output tmp/project-status-handoff.md",
-    jsonPath: "tmp/project-status.json",
-    markdownPath: "tmp/project-status-handoff.md",
+      `pnpm project:status -- --all-actions --output ${input.projectStatusOutput} --markdown-output ${input.projectStatusMarkdownOutput}`,
+    jsonPath: input.projectStatusOutput,
+    markdownPath: input.projectStatusMarkdownOutput,
     shortcut: "pnpm run verify:local",
   });
   assert.ok(

@@ -336,12 +336,14 @@ report and requires the full reference set without updating the manifest.
 request. It embeds the current release gate snapshot, the Page Builder design
 reference request, the release:requests bundle manifest path, the visual
 reference export manifest path, the visual reference handoff package path, the
-Production Smoke request, the dispatch input template path, dispatch input table
-path, dispatch input JSON manifest path,
+Project Status handoff command and JSON/Markdown paths, Production Smoke
+request, the dispatch input template path, dispatch input table path, dispatch
+input JSON manifest path,
 `First missing visual reference`,
 `Missing Production Smoke inputs`, and the final
 `release:handoff -- --require-ready` gate to rerun after real evidence is
 retained. Pass `--requests-manifest-output <path>`,
+`--project-status-output <path>`, `--project-status-markdown <path>`,
 `--visual-output <path>`, `--visual-missing-output <path>`,
 `--visual-table-output <path>`, `--visual-json-output <path>`,
 `--visual-handoff-output <dir>`, `--smoke-output <path>`,
@@ -355,6 +357,8 @@ evidence ready.
 `pnpm release:requests` refreshes the local request files and missing-path list in one
 run: `artifacts/release/release-evidence-request.md`,
 `artifacts/release/release-requests-manifest.json`,
+`artifacts/release/project-status.json`,
+`artifacts/release/project-status.md`,
 `artifacts/visual/page-builder-reference-request.md`,
 `artifacts/visual/page-builder-missing-references.txt`,
 `artifacts/visual/page-builder-reference-export-table.tsv`,
@@ -366,6 +370,7 @@ run: `artifacts/release/release-evidence-request.md`,
 `artifacts/production-smoke/production-smoke-dispatch-inputs.tsv`, and
 `artifacts/production-smoke/production-smoke-dispatch-inputs.json`. It accepts the same
 visual manifest/source options, `--requests-manifest-output <path>`,
+`--project-status-output <path>`, `--project-status-markdown <path>`,
 `--visual-handoff-output <dir>`, and Production Smoke evidence inputs as the
 individual request commands, but still does not import references, run smoke,
 upload artifacts, create release notes, or mark blocked evidence ready. The

@@ -169,6 +169,8 @@ test("project status CLI writes a Markdown handoff", async () => {
         [
           "    - Refresh requests output: `artifacts/release/release-evidence-request.md",
           "artifacts/release/release-requests-manifest.json",
+          "artifacts/release/project-status.json",
+          "artifacts/release/project-status.md",
           "artifacts/visual/page-builder-reference-request.md",
           "artifacts/visual/page-builder-missing-references.txt",
           "artifacts/visual/page-builder-reference-export-table.tsv",

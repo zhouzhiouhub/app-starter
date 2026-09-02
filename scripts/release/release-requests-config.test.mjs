@@ -9,6 +9,10 @@ test("release requests config routes shared evidence inputs", () => {
     "tmp/release.md",
     "--requests-manifest-output",
     "tmp/release-requests-manifest.json",
+    "--project-status-output",
+    "tmp/project-status.json",
+    "--project-status-markdown",
+    "tmp/project-status.md",
     "--visual-output=tmp/visual.md",
     "--visual-missing-output",
     "tmp/missing.txt",
@@ -55,6 +59,8 @@ test("release requests config routes shared evidence inputs", () => {
     productionSmokeInputs: "tmp/smoke-inputs.txt",
     productionSmokeInputsManifest: "tmp/smoke-inputs.json",
     productionSmokeInputsTable: "tmp/smoke-inputs.tsv",
+    projectStatus: "tmp/project-status.json",
+    projectStatusMarkdown: "tmp/project-status.md",
     releaseEvidence: "tmp/release.md",
     releaseRequestsManifest: "tmp/release-requests-manifest.json",
     visualMissingReferences: "tmp/missing.txt",
@@ -101,6 +107,14 @@ test("release requests config routes shared evidence inputs", () => {
   assert.equal(
     readOptionValue(config.releaseEvidenceArgs, "--requests-manifest-output"),
     "tmp/release-requests-manifest.json",
+  );
+  assert.equal(
+    readOptionValue(config.releaseEvidenceArgs, "--project-status-output"),
+    "tmp/project-status.json",
+  );
+  assert.equal(
+    readOptionValue(config.releaseEvidenceArgs, "--project-status-markdown"),
+    "tmp/project-status.md",
   );
   assert.equal(
     readOptionValue(config.releaseEvidenceArgs, "--visual-output"),

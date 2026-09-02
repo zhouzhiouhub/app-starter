@@ -28,7 +28,11 @@ import { readReleaseCheckCliConfig } from "./release-check-config.mjs";
 import {
   normalizeReleaseRequestsManifestOutputPath,
 } from "./release-requests-manifest-path.mjs";
-import { normalizeReleaseCheckMarkdownPath } from "./release-notes-validation.mjs";
+import {
+  normalizeProjectStatusMarkdownPath,
+  normalizeProjectStatusPath,
+  normalizeReleaseCheckMarkdownPath,
+} from "./release-notes-validation.mjs";
 
 export function createReleaseEvidenceRequestResolvedConfig(input) {
   const releaseCheckConfig = readReleaseCheckCliConfig(input.releaseCheckArgs);
@@ -88,6 +92,12 @@ function createRequestOutputPaths(input, resolved) {
     productionSmokeInputs: resolved.smokeInputsOutputPath,
     productionSmokeInputsManifest: resolved.smokeInputsJsonOutputPath,
     productionSmokeInputsTable: resolved.smokeInputsTableOutputPath,
+    projectStatus: normalizeProjectStatusPath(
+      input.requestOutputPaths.projectStatus,
+    ),
+    projectStatusMarkdown: normalizeProjectStatusMarkdownPath(
+      input.requestOutputPaths.projectStatusMarkdown,
+    ),
     releaseEvidence: resolved.outputPath,
     releaseRequestsManifest: normalizeReleaseRequestsManifestOutputPath(
       input.requestOutputPaths.releaseRequestsManifest,

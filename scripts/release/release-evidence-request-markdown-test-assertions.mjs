@@ -17,6 +17,10 @@ export async function assertReleaseEvidenceRequestMarkdownHandoff({
       paths.releaseOutputPath,
       "--requests-manifest-output",
       paths.requestsManifestOutputPath,
+      "--project-status-output",
+      paths.projectStatusOutputPath,
+      "--project-status-markdown",
+      paths.projectStatusMarkdownOutputPath,
       "--visual-output",
       paths.visualOutputPath,
       "--visual-missing-output",
@@ -78,6 +82,8 @@ function createReleaseEvidenceRequestOutputPaths(root) {
   return {
     releaseOutputPath: `${root}/release.md`,
     requestsManifestOutputPath: `${root}/release-requests-manifest.json`,
+    projectStatusOutputPath: `${root}/project-status.json`,
+    projectStatusMarkdownOutputPath: `${root}/project-status.md`,
     visualOutputPath: `${root}/visual.md`,
     visualMissingOutputPath: `${root}/missing.txt`,
     visualTableOutputPath: `${root}/reference-table.tsv`,
@@ -98,6 +104,10 @@ function assertReleaseEvidenceRequestCommand(markdown, paths) {
         paths.releaseOutputPath,
       )} --requests-manifest-output ${escapeRegExp(
         paths.requestsManifestOutputPath,
+      )} --project-status-output ${escapeRegExp(
+        paths.projectStatusOutputPath,
+      )} --project-status-markdown ${escapeRegExp(
+        paths.projectStatusMarkdownOutputPath,
       )} --visual-output ${escapeRegExp(
         paths.visualOutputPath,
       )} --visual-missing-output ${escapeRegExp(
@@ -126,6 +136,10 @@ function assertReleaseEvidenceRequestCommand(markdown, paths) {
         paths.releaseOutputPath,
       )} --requests-manifest-output ${escapeRegExp(
         paths.requestsManifestOutputPath,
+      )} --project-status-output ${escapeRegExp(
+        paths.projectStatusOutputPath,
+      )} --project-status-markdown ${escapeRegExp(
+        paths.projectStatusMarkdownOutputPath,
       )} --visual-output ${escapeRegExp(
         paths.visualOutputPath,
       )} --visual-missing-output ${escapeRegExp(
@@ -157,6 +171,8 @@ function assertReleaseEvidenceRequestOutputs(markdown, paths) {
         [
           paths.releaseOutputPath,
           paths.requestsManifestOutputPath,
+          paths.projectStatusOutputPath,
+          paths.projectStatusMarkdownOutputPath,
           paths.visualOutputPath,
           paths.visualMissingOutputPath,
           paths.visualTableOutputPath,
@@ -181,15 +197,29 @@ function assertReleaseEvidenceRequestOutputs(markdown, paths) {
   );
   assert.match(
     markdown,
-    /Project Status handoff: `pnpm project:status -- --all-actions --output tmp\/project-status\.json --markdown-output tmp\/project-status-handoff\.md`/,
+    new RegExp(
+      `Project Status handoff: \`pnpm project:status -- --all-actions --output ${escapeRegExp(
+        paths.projectStatusOutputPath,
+      )} --markdown-output ${escapeRegExp(
+        paths.projectStatusMarkdownOutputPath,
+      )}\``,
+    ),
   );
   assert.match(
     markdown,
-    /Project Status handoff JSON: `tmp\/project-status\.json`/,
+    new RegExp(
+      `Project Status handoff JSON: \`${escapeRegExp(
+        paths.projectStatusOutputPath,
+      )}\``,
+    ),
   );
   assert.match(
     markdown,
-    /Project Status handoff Markdown: `tmp\/project-status-handoff\.md`/,
+    new RegExp(
+      `Project Status handoff Markdown: \`${escapeRegExp(
+        paths.projectStatusMarkdownOutputPath,
+      )}\``,
+    ),
   );
 }
 
