@@ -10,8 +10,14 @@ import {
 } from "./release-requests-cli-config.mjs";
 import { createReleaseRequestsCommand } from "./release-requests-config.mjs";
 import { printReleaseRequestsHelp } from "./release-requests-help.mjs";
-import { writeReleaseRequestsManifest } from "./release-requests-manifest.mjs";
-import { printReleaseRequestFiles } from "./release-requests-summary.mjs";
+import {
+  createReleaseRequestsManifest,
+  writeReleaseRequestsManifest,
+} from "./release-requests-manifest.mjs";
+import {
+  printReleaseRequestFiles,
+  printReleaseRequestsManifestSummary,
+} from "./release-requests-summary.mjs";
 
 export { readReleaseRequestsCliConfig } from "./release-requests-cli-config.mjs";
 export {
@@ -74,18 +80,22 @@ export async function runReleaseRequestsCli(args = [], input = {}) {
       return smokeExit;
     }
 
-    await writeReleaseRequestsManifest(
-      config.outputPaths.releaseRequestsManifest,
-      {
-        command: createReleaseRequestsCommand(config.outputPaths),
-        outputPaths: config.outputPaths,
-        releaseEvidenceRequest,
-      },
-    );
+    const manifestInput = {
+      command: createReleaseRequestsCommand(config.outputPaths),
+      outputPaths: config.outputPaths,
+      releaseEvidenceRequest,
+    };
+    const manifest = createReleaseRequestsManifest(manifestInput);
+
+    await writeReleaseRequestsManifest(config.outputPaths.releaseRequestsManifest, {
+      ...manifestInput,
+      manifest,
+    });
     stdout(
       `Release requests manifest written: ${config.outputPaths.releaseRequestsManifest}`,
     );
 
+    printReleaseRequestsManifestSummary(manifest, stdout);
     printReleaseRequestFiles(config.outputPaths, stdout);
     return 0;
   } catch (error) {

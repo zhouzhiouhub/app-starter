@@ -5,6 +5,9 @@ import {
   createReleaseRequestsOutputSummary,
   runReleaseRequestsCli,
 } from "./release-requests.mjs";
+import {
+  printReleaseRequestsManifestSummary,
+} from "./release-requests-summary.mjs";
 
 test("release requests help and summary expose the bundle command", async () => {
   const stdout = [];
@@ -63,4 +66,44 @@ test("release requests help and summary expose the bundle command", async () => 
   assert.match(help, /--smoke-inputs-table-output <path>/);
   assert.match(help, /--smoke-inputs-json-output <path>/);
   assert.match(help, /does not import\s+visual references, run\s+Production Smoke/);
+});
+
+test("release requests manifest summary prints project completion context", () => {
+  const stdout = [];
+
+  printReleaseRequestsManifestSummary(
+    {
+      projectCompletion: {
+        completionChecklist: {
+          completeCount: 1,
+          itemCount: 3,
+          needsEvidenceCount: 2,
+        },
+        nextActionCount: 15,
+        nextActionPreview: [
+          {
+            area: "Production Smoke",
+            firstStep: {
+              label: "Smoke request",
+              value: "pnpm smoke:request",
+            },
+            label: "Production smoke artifact missing",
+          },
+        ],
+        nextActionPreviewCount: 3,
+        releaseDecision: "not-ready",
+        releaseEvidenceStatus: "needs-evidence",
+        status: "needs-evidence",
+      },
+    },
+    (line) => stdout.push(line),
+  );
+
+  assert.deepEqual(stdout, [
+    "Project completion: needs-evidence (1/3 complete, 2 need evidence)",
+    "Release decision: not-ready; release evidence: needs-evidence",
+    "Next action preview: 3/15",
+    "  - Production Smoke: Production smoke artifact missing",
+    "    First step: Smoke request: pnpm smoke:request",
+  ]);
 });

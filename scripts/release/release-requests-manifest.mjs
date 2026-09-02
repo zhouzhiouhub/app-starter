@@ -108,7 +108,7 @@ export function createReleaseRequestsManifest(input = {}) {
 export async function writeReleaseRequestsManifest(outputPath, input) {
   const normalizedOutputPath =
     normalizeReleaseRequestsManifestOutputPath(outputPath);
-  const manifest = createReleaseRequestsManifest(input);
+  const manifest = input.manifest ?? createReleaseRequestsManifest(input);
 
   assertReleaseRequestsManifest(manifest);
   await mkdir(dirname(normalizedOutputPath), { recursive: true });

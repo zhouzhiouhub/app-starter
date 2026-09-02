@@ -103,6 +103,7 @@ test("release requests CLI writes every local request Markdown", async () => {
         )}`,
       ),
     );
+    assert.match(output, /Project completion: needs-evidence/);
     assert.match(output, /Release request files refreshed:/);
     assert.match(output, new RegExp(`Release evidence: ${escapeRegExp(releaseOutput)}`));
     assert.match(

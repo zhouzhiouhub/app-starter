@@ -31,6 +31,8 @@ test("release requests command is exposed in package CI and docs", async () => {
   assert.match(releaseChecklist, /projectCompletion\.completionChecklist/);
   assert.match(releaseChecklist, /projectCompletion\.nextActionPreview/);
   assert.match(releaseChecklist, /validated before write/);
+  assert.match(releaseChecklist, /Project completion/);
+  assert.match(releaseChecklist, /next action preview count/);
   assert.match(setupDoc, /pnpm release:requests/);
   assert.match(setupDoc, /release-requests-manifest\.json/);
   assert.match(setupDoc, /page-builder-reference-export-table\.tsv/);
@@ -44,6 +46,8 @@ test("release requests command is exposed in package CI and docs", async () => {
   assert.match(setupDoc, /projectCompletion\.completionChecklist/);
   assert.match(setupDoc, /projectCompletion\.nextActionPreview/);
   assert.match(setupDoc, /validated before write/);
+  assert.match(setupDoc, /Project completion/);
+  assert.match(setupDoc, /next action preview count/);
   assert.match(readme, /pnpm release:requests/);
   assert.match(readme, /release-requests-manifest\.json/);
   assert.match(readme, /page-builder-reference-export-table\.tsv/);
@@ -57,4 +61,6 @@ test("release requests command is exposed in package CI and docs", async () => {
   assert.match(readme, /projectCompletion\.completionChecklist/);
   assert.match(readme, /projectCompletion\.nextActionPreview/);
   assert.match(readme, /写入前校验/);
+  assert.match(readme, /Project completion/);
+  assert.match(readme, /next action preview/);
 });
