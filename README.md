@@ -4,12 +4,12 @@
 
 当前目标不是一次性复制 Shopify 全量能力，而是先完成一个可长期演进的建站平台工程基础：前台渲染、后台管理壳、API 服务、Page Schema、共享 Renderer、数据库模型、二次开发入口和后续电商/多语言能力预留。
 
-> 状态更新时间：2026-09-01
-> 当前阶段：建站 MVP 本地实现范围已落地，项目处于 MVP release verification。`pnpm project:status -- --summary` 当前结论为 `Release ready: no`，原因是 release evidence 仍待补齐：Production Smoke artifact 缺失，Page Builder Visual 还缺 12 张真实设计参考 PNG，当前 `0/12` viewport accepted。下一步先运行 `pnpm release:requests` 刷新本地证据请求、`artifacts/release/release-requests-manifest.json`、缺失参考图路径清单、参考图导出任务表、设计 handoff 包和 Production Smoke dispatch 输入模板/TSV 输入表/JSON 输入清单，再补齐 `docs/visual/page-builder-references` 下的真实设计参考并完成视觉验收，最后用最新 Page Builder Visual artifact 触发生产 `Production Smoke` workflow 并归档报告。
+> 状态更新时间：2026-09-02
+> 当前阶段：建站 MVP 本地实现范围已落地，项目处于 MVP release verification。`pnpm project:status -- --summary` 当前结论为 `Release ready: no`，原因是 release evidence 仍待补齐：Production Smoke artifact 缺失，Page Builder Visual 还缺 12 张真实设计参考 PNG，当前 `0/12` viewport accepted。`pnpm release:requests` 已刷新本地证据请求、`artifacts/release/release-requests-manifest.json`、缺失参考图路径清单、参考图导出任务表、设计 handoff 包和 Production Smoke dispatch 输入模板/TSV 输入表/JSON 输入清单。下一步需要补齐 `docs/visual/page-builder-references` 下的真实设计参考并完成视觉验收，最后用最新 Page Builder Visual artifact 触发生产 `Production Smoke` workflow 并归档报告。
 
 ## 1. 当前进度
 
-### 发布门禁状态（2026-09-01）
+### 发布门禁状态（2026-09-02）
 
 - 本地 MVP 范围：`implemented`。
 - 发布结论：`not-ready`，不能视为项目已完成或可发布。
