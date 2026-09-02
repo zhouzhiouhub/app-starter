@@ -110,8 +110,39 @@ test("project status completion checklist summarizes blocked evidence", () => {
   );
 });
 
+test("project status completion checklist preserves full next action text", () => {
+  const longAction = createLongChecklistActionText();
+  const check = createBlockedCheck();
+  check.blockers = check.blockers.map((blocker) =>
+    blocker.area === "Production Smoke"
+      ? {
+          ...blocker,
+          action: longAction,
+        }
+      : blocker,
+  );
+  const artifact = createProjectStatusArtifact(check, {
+    generatedAt: "2026-08-28T00:00:00.000Z",
+  });
+  const productionSmoke = artifact.completionChecklist.items.find(
+    (item) => item.label === "Production Smoke release evidence",
+  );
+
+  assert.equal(productionSmoke.nextAction, longAction);
+  assert.equal(productionSmoke.nextAction.includes("..."), false);
+});
+
 function readStepValue(item, label) {
   return item.nextSteps.find((step) => step.label === label)?.value;
+}
+
+function createLongChecklistActionText() {
+  return [
+    "Run pnpm smoke:request, validate dispatch inputs, and run the Production Smoke workflow against the production environment.",
+    "Keep production-smoke-report-<run_number>, release-preflight-<run_number>, release-evidence-check-<run_number>, and project-status-<run_number> artifacts.",
+    "Verify with pnpm release:handoff -- --require-ready --project-status artifacts/release/project-status.json --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture --release-check artifacts/release/release-check.json.",
+    "Only publish release notes after every linked artifact is retained and copied into the release handoff package.",
+  ].join(" ");
 }
 
 test("project status completion checklist is complete when release evidence is ready", async () => {

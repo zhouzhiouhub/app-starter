@@ -200,7 +200,7 @@ function createChecklistItem(input) {
   return {
     evidence: readText(input.evidence) ?? "unknown",
     label: readText(input.label) ?? "unknown",
-    nextAction: readText(input.nextAction),
+    nextAction: readActionText(input.nextAction),
     nextSteps: normalizeNextSteps(input.nextSteps),
     status: input.status,
   };
@@ -229,6 +229,14 @@ function readText(value) {
   }
 
   return formatSmokeText(value, { maxLength: maxChecklistTextLength });
+}
+
+function readActionText(value) {
+  if (typeof value !== "string" || value.length === 0) {
+    return null;
+  }
+
+  return formatSmokeText(value);
 }
 
 function readStepText(value) {

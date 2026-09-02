@@ -3,6 +3,26 @@ import test from "node:test";
 import { createProjectNextActions } from "./project-status-next-actions.mjs";
 import { createBlockedCheck } from "./project-status-test-fixtures.mjs";
 
+test("project next actions preserve full blocker action text", () => {
+  const longAction = createLongProjectActionText();
+  const actions = createProjectNextActions({
+    ...createBlockedCheck(),
+    blockers: [
+      {
+        action: longAction,
+        area: "Production Smoke",
+        label: "Production smoke artifact missing",
+      },
+    ],
+  });
+  const productionSmoke = actions.find(
+    (action) => action.label === "Production smoke artifact missing",
+  );
+
+  assert.equal(productionSmoke.action, longAction);
+  assert.equal(productionSmoke.action.includes("..."), false);
+});
+
 test("project next actions preserve visual artifact dir on release gate reruns", () => {
   const actions = createProjectNextActions({
     ...createBlockedCheck(),
@@ -260,6 +280,15 @@ test("project next actions include unified release evidence request", () => {
 
 function readStepValue(action, label) {
   return action.steps.find((step) => step.label === label)?.value;
+}
+
+function createLongProjectActionText() {
+  return [
+    "Run pnpm smoke:request, validate dispatch inputs, and run the Production Smoke workflow against the production environment.",
+    "Keep production-smoke-report-<run_number>, release-preflight-<run_number>, release-evidence-check-<run_number>, and project-status-<run_number> artifacts.",
+    "Verify with pnpm release:handoff -- --require-ready --project-status artifacts/release/project-status.json --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture --release-check artifacts/release/release-check.json.",
+    "Only publish release notes after every linked artifact is retained and copied into the release handoff package.",
+  ].join(" ");
 }
 
 test("project next actions structure the ready release notes handoff", () => {

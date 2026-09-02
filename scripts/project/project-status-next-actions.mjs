@@ -52,7 +52,8 @@ function isVisualRecordWarning(blocker) {
 }
 function createBlockerAction(blocker, context = {}) {
   const action = {
-    action: readText(blocker.action) ?? "Review the release evidence blocker.",
+    action:
+      readActionText(blocker.action) ?? "Review the release evidence blocker.",
     area: readText(blocker.area) ?? "Release",
     label: readText(blocker.label) ?? "Blocked",
   };
@@ -101,4 +102,12 @@ function readText(value) {
   }
 
   return formatSmokeText(value, { maxLength: maxProjectTextLength });
+}
+
+function readActionText(value) {
+  if (typeof value !== "string" || value.length === 0) {
+    return null;
+  }
+
+  return formatSmokeText(value);
 }
