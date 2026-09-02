@@ -371,8 +371,10 @@ upload artifacts, create release notes, or mark blocked evidence ready. The
 bundle manifest records the full missing visual reference path list, visual
 reference intake commands, the Production Smoke dispatch template, and the
 `--inputs-json` validation command beside the missing input list. It also
-mirrors the Production Smoke workflow inputs, evidence input sources, and
-required evidence checklist from the dispatch input manifest.
+mirrors `productionSmoke.workflowFile`, `productionSmoke.ref`,
+`productionSmoke.dispatchManifestContext`, Production Smoke workflow inputs,
+evidence input sources, and required evidence checklist from the dispatch input
+manifest.
 
 The review command scans the same safe archive roots, recomputes the report
 summary from the stored checks, and highlights R2 / CDN, Admin static app, and
@@ -452,7 +454,10 @@ evidence inputs. After replacing placeholders in the JSON input manifest, use
 `pnpm smoke:dispatch -- --inputs-json artifacts/production-smoke/production-smoke-dispatch-inputs.json --require-complete`
 to validate the same inputs and print the final command. The command inherits
 `workflowFile`, `ref`, and input values from the JSON manifest; explicit CLI
-flags can still override manifest values. Blocked JSON artifacts mirror that handoff as
+flags can still override manifest values. The JSON manifest keeps
+`dispatchManifestContext.inheritedFields` for the inherited `workflowFile`,
+`ref`, and `inputs` fields plus `dispatchManifestContext.overridePolicy` for the
+CLI override rule. Blocked JSON artifacts mirror that handoff as
 `smoke.missingEvidence` and
 `releaseGate.smoke.missingEvidence`, including `requiredEvidence[]`,
 `workflowInputs[]`, and `inputSources[]`.

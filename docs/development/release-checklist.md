@@ -182,8 +182,10 @@ later phases are explicitly approved.
    `pnpm smoke:dispatch -- --inputs-json artifacts/production-smoke/production-smoke-dispatch-inputs.json --require-complete`;
    the dispatch command inherits `workflowFile`, `ref`, and input values from
    the JSON manifest, while explicit CLI flags may still override manifest
-   values. Copy the printed command only after it reports
-   `Ready to dispatch: yes`.
+   values. The JSON manifest keeps `dispatchManifestContext.inheritedFields` for
+   the inherited `workflowFile`, `ref`, and `inputs` fields plus
+   `dispatchManifestContext.overridePolicy` for the CLI override rule. Copy the
+   printed command only after it reports `Ready to dispatch: yes`.
 3. Open the `Production Smoke` workflow in GitHub Actions.
 4. Run it against the `production` environment with the validated
    `workflow_dispatch` inputs from the request and dispatch check.
@@ -454,9 +456,11 @@ later phases are explicitly approved.
   workflow_dispatch input TSV table, and workflow_dispatch input JSON manifest.
   The bundle JSON also records the full missing visual reference path list,
   visual reference intake commands, the Production Smoke dispatch template, and
-  `--inputs-json` validation command for operator handoff. It mirrors the
-  Production Smoke workflow inputs, evidence input sources, and required
-  evidence checklist from the dispatch input manifest.
+  `--inputs-json` validation command for operator handoff. It mirrors
+  `productionSmoke.workflowFile`, `productionSmoke.ref`,
+  `productionSmoke.dispatchManifestContext`, Production Smoke workflow inputs,
+  evidence input sources, and required evidence checklist from the dispatch
+  input manifest.
 - Run `pnpm release:evidence-request` before cross-functional release review
   when design reference export and Production Smoke execution need one shared
   request file. Its Request Status includes `First missing visual reference`
