@@ -16,25 +16,45 @@ const productionSmokeEvidenceActionPrefix = [
   "Production Smoke workflow against the production environment",
 ].join(" ");
 
-export function createMissingSmokeArtifactAction(error, smokeReportPath) {
+export function createMissingSmokeArtifactAction(
+  error,
+  smokeReportPath,
+  visualArtifactDir,
+) {
   const cause = readMissingSmokeArtifactCause(error);
   const artifacts = requiredProductionSmokeArtifacts.join(", ");
+  const releaseCheckCommand = createReleaseCheckCommand(
+    smokeReportPath,
+    visualArtifactDir,
+  );
 
   if (smokeReportPath) {
     return [
       productionSmokeEvidenceActionPrefix,
       `and keep the ${artifacts} artifacts, or place its smoke-report.json`,
-      `at ${smokeReportPath}; then rerun pnpm release:check -- --smoke-report`,
-      `${smokeReportPath}. Cause: ${cause}`,
+      `at ${smokeReportPath}; then rerun ${releaseCheckCommand}.`,
+      `Cause: ${cause}`,
     ].join(" ");
   }
 
   return [
     productionSmokeEvidenceActionPrefix,
     `and keep the ${artifacts} artifacts, or pass --smoke-report <path>`,
-    "to an archived report; then rerun pnpm release:check.",
+    `to an archived report; then rerun ${releaseCheckCommand}.`,
     `Cause: ${cause}`,
   ].join(" ");
+}
+
+function createReleaseCheckCommand(smokeReportPath, visualArtifactDir) {
+  const command = [
+    `pnpm release:check -- --smoke-report ${smokeReportPath ?? "<path>"}`,
+  ];
+
+  if (visualArtifactDir) {
+    command.push(`--visual-artifact-dir ${visualArtifactDir}`);
+  }
+
+  return command.join(" ");
 }
 
 function readMissingSmokeArtifactCause(error) {

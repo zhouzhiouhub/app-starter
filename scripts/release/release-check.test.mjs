@@ -321,10 +321,17 @@ test("release check summarizes smoke and visual blockers", () => {
 
 test("release check reports missing smoke and pending visual together", async () => {
   const emptyArchiveRoot = mkdtempSync(path.join(tmpdir(), "release-empty-"));
-  const check = await readReleaseEvidenceCheck(readReleaseCheckCliConfig([]), {
-    smokeRoots: [emptyArchiveRoot],
-    visualManifest: createPendingVisualManifest(),
-  });
+  const check = await readReleaseEvidenceCheck(
+    readReleaseCheckCliConfig([
+      "--visual-artifact-dir",
+      "reports/visual/page-builder-fixture",
+    ]),
+    {
+      smokeRoots: [emptyArchiveRoot],
+      visualArtifact: null,
+      visualManifest: createPendingVisualManifest(),
+    },
+  );
 
   assert.equal(check.releaseReady, false);
   assert.equal(
@@ -341,7 +348,9 @@ test("release check reports missing smoke and pending visual together", async ()
         blocker.action.includes("release-preflight-<run_number>") &&
         blocker.action.includes("release-evidence-check-<run_number>") &&
         blocker.action.includes("project-status-<run_number>") &&
-        blocker.action.includes("--smoke-report <path>"),
+        blocker.action.includes(
+          "pnpm release:check -- --smoke-report <path> --visual-artifact-dir reports/visual/page-builder-fixture",
+        ),
     ),
     true,
   );

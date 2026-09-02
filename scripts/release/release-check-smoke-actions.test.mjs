@@ -5,6 +5,8 @@ import { createMissingSmokeArtifactAction } from "./release-check-smoke-actions.
 test("missing smoke artifact action starts with request and dispatch validation", () => {
   const action = createMissingSmokeArtifactAction(
     new Error("No smoke reports found."),
+    null,
+    "reports/visual/page-builder-fixture",
   );
 
   assert.match(
@@ -16,12 +18,17 @@ test("missing smoke artifact action starts with request and dispatch validation"
   assert.match(action, /release-evidence-check-<run_number>/u);
   assert.match(action, /project-status-<run_number>/u);
   assert.match(action, /pass --smoke-report <path>/u);
+  assert.match(
+    action,
+    /pnpm release:check -- --smoke-report <path> --visual-artifact-dir reports\/visual\/page-builder-fixture/u,
+  );
 });
 
 test("missing smoke artifact action keeps explicit report path visible", () => {
   const action = createMissingSmokeArtifactAction(
     new Error("No smoke reports found."),
     "artifacts/production-smoke/smoke-report.json",
+    "reports/visual/page-builder-fixture",
   );
 
   assert.match(
@@ -30,6 +37,6 @@ test("missing smoke artifact action keeps explicit report path visible", () => {
   );
   assert.match(
     action,
-    /pnpm release:check -- --smoke-report artifacts\/production-smoke\/smoke-report\.json/u,
+    /pnpm release:check -- --smoke-report artifacts\/production-smoke\/smoke-report\.json --visual-artifact-dir reports\/visual\/page-builder-fixture/u,
   );
 });

@@ -58,7 +58,11 @@ export async function readReleaseEvidenceCheck(config, input = {}) {
 
 export function createReleaseEvidenceCheck(input) {
   const smoke = input.smokeError
-    ? createMissingSmokeReleaseCheck(input.smokeError, input.smokeReportPath)
+    ? createMissingSmokeReleaseCheck(
+        input.smokeError,
+        input.smokeReportPath,
+        input.visualArtifactDir,
+      )
     : createSmokeReleaseCheck(input.smokeArtifact);
   const visual = input.visualError
     ? createInvalidVisualAcceptanceReport(input.visualError)
@@ -140,11 +144,15 @@ function readOptionalVisualArtifactCheck(config, input) {
   }
 }
 
-function createMissingSmokeReleaseCheck(error, smokeReportPath) {
+function createMissingSmokeReleaseCheck(error, smokeReportPath, visualArtifactDir) {
   return {
     blockers: [
       {
-        action: createMissingSmokeArtifactAction(error, smokeReportPath),
+        action: createMissingSmokeArtifactAction(
+          error,
+          smokeReportPath,
+          visualArtifactDir,
+        ),
         label: "Production smoke artifact missing",
       },
     ],
