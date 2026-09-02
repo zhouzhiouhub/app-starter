@@ -19,13 +19,20 @@ import {
 import {
   normalizeReleaseRequestsManifestOutputPath,
 } from "./release-requests-manifest-path.mjs";
+import {
+  releaseRequestsManifestSchemaVersion,
+} from "./release-requests-manifest-schema.mjs";
+import {
+  assertReleaseRequestsManifest,
+} from "./release-requests-manifest-validation.mjs";
 
-export const releaseRequestsManifestSchemaVersion =
-  "release-requests-manifest.v1";
 export {
   defaultReleaseRequestsManifestOutputPath,
   normalizeReleaseRequestsManifestOutputPath,
 } from "./release-requests-manifest-path.mjs";
+export {
+  releaseRequestsManifestSchemaVersion,
+} from "./release-requests-manifest-schema.mjs";
 
 export function createReleaseRequestsManifest(input = {}) {
   const request = input.releaseEvidenceRequest ?? {};
@@ -101,11 +108,13 @@ export function createReleaseRequestsManifest(input = {}) {
 export async function writeReleaseRequestsManifest(outputPath, input) {
   const normalizedOutputPath =
     normalizeReleaseRequestsManifestOutputPath(outputPath);
+  const manifest = createReleaseRequestsManifest(input);
 
+  assertReleaseRequestsManifest(manifest);
   await mkdir(dirname(normalizedOutputPath), { recursive: true });
   await writeFile(
     normalizedOutputPath,
-    `${JSON.stringify(createReleaseRequestsManifest(input), null, 2)}\n`,
+    `${JSON.stringify(manifest, null, 2)}\n`,
     "utf8",
   );
 

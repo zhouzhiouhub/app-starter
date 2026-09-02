@@ -461,7 +461,8 @@ later phases are explicitly approved.
   `projectCompletion.nextActionPreview`, `productionSmoke.workflowFile`,
   `productionSmoke.ref`, `productionSmoke.dispatchManifestContext`, Production
   Smoke workflow inputs, evidence input sources, and required evidence checklist
-  from the dispatch input manifest.
+  from the dispatch input manifest. The manifest is validated before write for
+  schemaVersion, ready-state consistency, and key count consistency.
 - Run `pnpm release:evidence-request` before cross-functional release review
   when design reference export and Production Smoke execution need one shared
   request file. Its Request Status includes `First missing visual reference`

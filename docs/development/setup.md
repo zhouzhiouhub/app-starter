@@ -375,7 +375,8 @@ mirrors `projectCompletion.completionChecklist`,
 `projectCompletion.nextActionPreview`, `productionSmoke.workflowFile`,
 `productionSmoke.ref`, `productionSmoke.dispatchManifestContext`, Production
 Smoke workflow inputs, evidence input sources, and required evidence checklist
-from the dispatch input manifest.
+from the dispatch input manifest. The manifest is validated before write for
+schemaVersion, ready-state consistency, and key count consistency.
 
 The review command scans the same safe archive roots, recomputes the report
 summary from the stored checks, and highlights R2 / CDN, Admin static app, and
