@@ -10,6 +10,10 @@ import {
   isProductionSmokeDispatchInputName,
   normalizeProductionSmokeDispatchInputValue,
 } from "./production-smoke-dispatch-input-normalizers.mjs";
+import {
+  normalizeProductionSmokeWorkflowFile,
+  normalizeProductionSmokeWorkflowRef,
+} from "./production-smoke-workflow-normalizers.mjs";
 
 const placeholderValuesByName = new Map(
   productionSmokeDispatchInputs.map((input) => [input.name, input.value]),
@@ -22,16 +26,26 @@ export {
 export async function readProductionSmokeDispatchManifestInputOverrides(
   inputPath,
 ) {
+  return (
+    await readProductionSmokeDispatchManifestOverrides(inputPath)
+  ).inputOverrides;
+}
+
+export async function readProductionSmokeDispatchManifestOverrides(inputPath) {
   const normalizedPath =
     normalizeProductionSmokeDispatchInputsManifestOutputPath(inputPath);
   const text = await readFile(normalizedPath, "utf8");
 
-  return createProductionSmokeDispatchManifestInputOverrides(
+  return createProductionSmokeDispatchManifestOverrides(
     parseDispatchManifestJson(text, normalizedPath),
   );
 }
 
 export function createProductionSmokeDispatchManifestInputOverrides(manifest) {
+  return createProductionSmokeDispatchManifestOverrides(manifest).inputOverrides;
+}
+
+export function createProductionSmokeDispatchManifestOverrides(manifest) {
   assertManifestObject(manifest);
 
   if (
@@ -70,7 +84,11 @@ export function createProductionSmokeDispatchManifestInputOverrides(manifest) {
     overrides.set(name, normalizeProductionSmokeDispatchInputValue(name, value));
   }
 
-  return overrides;
+  return {
+    inputOverrides: overrides,
+    ref: readOptionalWorkflowRef(manifest.ref),
+    workflowFile: readOptionalWorkflowFile(manifest.workflowFile),
+  };
 }
 
 function parseDispatchManifestJson(text, path) {
@@ -118,4 +136,32 @@ function isReadyManifestInputValue(name, value) {
     value !== placeholderValuesByName.get(name) &&
     !/^<[^>]+>$/u.test(value)
   );
+}
+
+function readOptionalWorkflowFile(value) {
+  if (value === undefined || value === null || value === "") {
+    return null;
+  }
+
+  if (typeof value !== "string") {
+    throw new Error(
+      "Production Smoke dispatch inputs manifest workflowFile must be a string.",
+    );
+  }
+
+  return normalizeProductionSmokeWorkflowFile(value);
+}
+
+function readOptionalWorkflowRef(value) {
+  if (value === undefined || value === null || value === "") {
+    return null;
+  }
+
+  if (typeof value !== "string") {
+    throw new Error(
+      "Production Smoke dispatch inputs manifest ref must be a string.",
+    );
+  }
+
+  return normalizeProductionSmokeWorkflowRef(value);
 }

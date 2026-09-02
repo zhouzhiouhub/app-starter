@@ -1,4 +1,3 @@
-import { normalizePlainValue } from "../release/release-notes-validation.mjs";
 import { readErrorMessage } from "./smoke-error-message.mjs";
 import {
   createProductionSmokeDispatchCommand,
@@ -8,17 +7,19 @@ import {
 import { printProductionSmokeDispatchHelp } from "./production-smoke-dispatch-help.mjs";
 import {
   normalizeProductionSmokeDispatchInputsManifestOutputPath,
-  readProductionSmokeDispatchManifestInputOverrides,
+  readProductionSmokeDispatchManifestOverrides,
 } from "./production-smoke-dispatch-manifest-inputs.mjs";
 import {
   normalizeProductionSmokeDispatchInputValue,
   productionSmokeDispatchOptionInputNames,
 } from "./production-smoke-dispatch-input-normalizers.mjs";
+import {
+  normalizeProductionSmokeWorkflowFile,
+  normalizeProductionSmokeWorkflowRef,
+} from "./production-smoke-workflow-normalizers.mjs";
 
 const defaultWorkflowFile = "production-smoke.yml";
 const defaultRef = "main";
-const safeWorkflowFilePattern = /^[A-Za-z0-9._-]+\.ya?ml$/u;
-const safeWorkflowRefPattern = /^[A-Za-z0-9][A-Za-z0-9._/-]{0,119}$/u;
 
 export async function runProductionSmokeDispatchCli(args = [], input = {}) {
   const stdout = input.stdout ?? console.log;
@@ -33,9 +34,9 @@ export async function runProductionSmokeDispatchCli(args = [], input = {}) {
     const config = readProductionSmokeDispatchCliConfig(args);
 
     if (config.inputsJsonPath) {
-      applyManifestInputOverrides(
-        config.inputOverrides,
-        await readProductionSmokeDispatchManifestInputOverrides(
+      applyManifestOverrides(
+        config,
+        await readProductionSmokeDispatchManifestOverrides(
           config.inputsJsonPath,
         ),
       );
@@ -70,8 +71,10 @@ export function readProductionSmokeDispatchCliConfig(args) {
     inputsJsonPath: null,
     json: false,
     ref: defaultRef,
+    refOverridden: false,
     requireComplete: false,
     workflowFile: defaultWorkflowFile,
+    workflowFileOverridden: false,
   };
   const normalizedArgs = stripPnpmSeparator(args);
 
@@ -98,17 +101,19 @@ export function readProductionSmokeDispatchCliConfig(args) {
     }
 
     if (option === "--ref") {
-      config.ref = normalizeWorkflowRef(
+      config.ref = normalizeProductionSmokeWorkflowRef(
         value ?? readOptionValue(option, normalizedArgs, index),
       );
+      config.refOverridden = true;
       index += value === null ? 1 : 0;
       continue;
     }
 
     if (option === "--workflow-file") {
-      config.workflowFile = normalizeWorkflowFile(
+      config.workflowFile = normalizeProductionSmokeWorkflowFile(
         value ?? readOptionValue(option, normalizedArgs, index),
       );
+      config.workflowFileOverridden = true;
       index += value === null ? 1 : 0;
       continue;
     }
@@ -163,10 +168,18 @@ export function createProductionSmokeDispatchArtifact(config) {
   };
 }
 
-function applyManifestInputOverrides(target, source) {
-  for (const [name, value] of source) {
-    if (!target.has(name)) {
-      target.set(name, value);
+function applyManifestOverrides(config, overrides) {
+  if (!config.refOverridden && overrides.ref) {
+    config.ref = overrides.ref;
+  }
+
+  if (!config.workflowFileOverridden && overrides.workflowFile) {
+    config.workflowFile = overrides.workflowFile;
+  }
+
+  for (const [name, value] of overrides.inputOverrides) {
+    if (!config.inputOverrides.has(name)) {
+      config.inputOverrides.set(name, value);
     }
   }
 }
@@ -206,31 +219,6 @@ function readOptionValue(option, args, index) {
   }
 
   return value;
-}
-
-function normalizeWorkflowFile(value) {
-  const normalized = normalizePlainValue("workflow file", value);
-
-  if (!safeWorkflowFilePattern.test(normalized)) {
-    throw new Error("Workflow file must be a safe .yml or .yaml filename.");
-  }
-
-  return normalized;
-}
-
-function normalizeWorkflowRef(value) {
-  const normalized = normalizePlainValue("workflow ref", value);
-
-  if (
-    !safeWorkflowRefPattern.test(normalized) ||
-    normalized.includes("..") ||
-    normalized.includes("//") ||
-    normalized.endsWith("/")
-  ) {
-    throw new Error("Workflow ref must be a safe branch, tag, or commit ref.");
-  }
-
-  return normalized;
 }
 
 function stripPnpmSeparator(args) {

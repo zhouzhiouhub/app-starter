@@ -450,8 +450,9 @@ choice. It also includes a `gh workflow run
 production-smoke.yml --ref main ...` dispatch template for the current release
 evidence inputs. After replacing placeholders in the JSON input manifest, use
 `pnpm smoke:dispatch -- --inputs-json artifacts/production-smoke/production-smoke-dispatch-inputs.json --require-complete`
-to validate the same inputs and print the final command; explicit CLI flags can
-still override JSON values. Blocked JSON artifacts mirror that handoff as
+to validate the same inputs and print the final command. The command inherits
+`workflowFile`, `ref`, and input values from the JSON manifest; explicit CLI
+flags can still override manifest values. Blocked JSON artifacts mirror that handoff as
 `smoke.missingEvidence` and
 `releaseGate.smoke.missingEvidence`, including `requiredEvidence[]`,
 `workflowInputs[]`, and `inputSources[]`.

@@ -28,6 +28,6 @@ Dispatch:
   path. It does not call gh, run Production Smoke, or mark release evidence
   ready. Use --require-complete before copying a formal release command so
   placeholder values cannot reach the protected production workflow. When
-  --inputs-json is used, explicit CLI flags win over values read from the JSON
-  input manifest.`);
+  --inputs-json is used, workflow file, ref, and input values are read from the
+  JSON input manifest; explicit CLI flags win over manifest values.`);
 }
