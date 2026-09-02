@@ -37,7 +37,7 @@ test("release requests help and summary expose the bundle command", async () => 
   );
   assert.equal(
     createReleaseRequestsOutputSummary(),
-    "artifacts/release/release-evidence-request.md, artifacts/release/release-requests-manifest.json, artifacts/visual/page-builder-reference-request.md, artifacts/visual/page-builder-missing-references.txt, artifacts/visual/page-builder-reference-export-table.tsv, artifacts/visual/page-builder-reference-export-manifest.json, artifacts/visual/page-builder-reference-handoff, artifacts/production-smoke/production-smoke-request.md, artifacts/production-smoke/production-smoke-dispatch-inputs.txt, artifacts/production-smoke/production-smoke-dispatch-inputs.tsv, artifacts/production-smoke/production-smoke-dispatch-inputs.json",
+    "artifacts/release/release-evidence-request.md, artifacts/release/release-requests-manifest.json, artifacts/visual/page-builder-reference-request.md, artifacts/visual/page-builder-missing-references.txt, artifacts/visual/page-builder-reference-export-table.tsv, artifacts/visual/page-builder-reference-export-manifest.json, artifacts/visual/page-builder-reference-handoff, artifacts/visual/page-builder-reference-handoff/README.md, artifacts/production-smoke/production-smoke-request.md, artifacts/production-smoke/production-smoke-dispatch-inputs.txt, artifacts/production-smoke/production-smoke-dispatch-inputs.tsv, artifacts/production-smoke/production-smoke-dispatch-inputs.json",
   );
   assert.equal(
     createReleaseRequestsOutputSummary({
@@ -53,7 +53,7 @@ test("release requests help and summary expose the bundle command", async () => 
       visualReferenceManifest: "tmp/reference-manifest.json",
       visualReferenceTable: "tmp/reference-table.tsv",
     }),
-    "tmp/release.md, tmp/release-requests-manifest.json, tmp/visual.md, tmp/missing.txt, tmp/reference-table.tsv, tmp/reference-manifest.json, tmp/visual-handoff, tmp/smoke.md, tmp/smoke-inputs.txt, tmp/smoke-inputs.tsv, tmp/smoke-inputs.json",
+    "tmp/release.md, tmp/release-requests-manifest.json, tmp/visual.md, tmp/missing.txt, tmp/reference-table.tsv, tmp/reference-manifest.json, tmp/visual-handoff, tmp/visual-handoff/README.md, tmp/smoke.md, tmp/smoke-inputs.txt, tmp/smoke-inputs.tsv, tmp/smoke-inputs.json",
   );
   assert.match(help, /refreshes all local evidence request files/);
   assert.match(help, /Custom output paths are also reflected/);

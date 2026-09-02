@@ -15,6 +15,7 @@ import {
 } from "../visual/page-builder-visual-reference-import-commands.mjs";
 import {
   createPageBuilderVisualReferenceHandoffCommand,
+  createPageBuilderVisualReferenceHandoffOutputPaths,
 } from "../visual/page-builder-visual-reference-handoff-paths.mjs";
 import {
   normalizeReleaseRequestsManifestOutputPath,
@@ -69,6 +70,11 @@ export function createReleaseRequestsManifest(input = {}) {
       referenceExportManifestPath: outputPaths.visualReferenceManifest ?? null,
       referenceExportTablePath: outputPaths.visualReferenceTable ?? null,
       referenceHandoffOutputDir: outputPaths.visualReferenceHandoff ?? null,
+      referenceHandoffReadmePath: outputPaths.visualReferenceHandoff
+        ? createPageBuilderVisualReferenceHandoffOutputPaths(
+            outputPaths.visualReferenceHandoff,
+          ).readme
+        : null,
       referenceRequestPath: outputPaths.visualReference ?? null,
       requiredReferenceCount: readNumber(visual.requiredReferenceCount),
       status: visual.status ?? "unknown",

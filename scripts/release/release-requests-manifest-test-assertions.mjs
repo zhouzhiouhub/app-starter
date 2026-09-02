@@ -15,6 +15,10 @@ export function assertReleaseRequestsManifestHandoff(input) {
     manifest.pageBuilderVisual.firstMissingReference,
     "docs/visual/page-builder-references/hero-banner-desktop.png",
   );
+  assert.equal(
+    manifest.pageBuilderVisual.referenceHandoffReadmePath,
+    `${input.visualHandoffOutput}/README.md`,
+  );
   assert.deepEqual(
     manifest.pageBuilderVisual.missingReferences,
     input.visualExportManifest.references

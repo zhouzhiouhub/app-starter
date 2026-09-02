@@ -191,6 +191,7 @@ test("release requests CLI writes every local request Markdown", async () => {
             visualTableOutput,
             visualJsonOutput,
             visualHandoffOutput,
+            `${visualHandoffOutput}/README.md`,
             smokeOutput,
             smokeInputsOutput,
             smokeInputsTableOutput,

@@ -13,7 +13,7 @@ later phases are explicitly approved.
   evidence request, `artifacts/release/release-requests-manifest.json`,
   Page Builder design request, missing visual reference path list,
   reference export task table, reference export JSON manifest,
-  visual reference handoff package,
+  visual reference handoff package and README,
   Production Smoke request, and Production
   Smoke dispatch input template, TSV table, and JSON input manifest refreshed
   together. This writes only local
@@ -23,7 +23,8 @@ later phases are explicitly approved.
 - Run `pnpm release:evidence-request` when the release needs one combined
   handoff for design references, the
   `artifacts/release/release-requests-manifest.json` path, the visual handoff
-  package path, Production Smoke inputs, dispatch input template path,
+  package path, `artifacts/visual/page-builder-reference-handoff/README.md`,
+  Production Smoke inputs, dispatch input template path,
   dispatch input table path, visual reference export manifest path, dispatch
   input JSON manifest path, retained artifacts, and the final
   `release:handoff -- --require-ready` gate. This request is coordination
@@ -451,12 +452,14 @@ later phases are explicitly approved.
 - Run `pnpm release:requests` before cross-functional release review when the
   release needs the combined release request, design export request, and
   Production Smoke operator request refreshed as separate local files, plus the
-  `artifacts/release/release-requests-manifest.json` bundle, plain missing visual reference path list,
-  reference export task table, visual reference handoff package, workflow_dispatch input template,
+  `artifacts/release/release-requests-manifest.json` bundle, plain missing
+  visual reference path list, reference export task table, visual reference
+  handoff package/README, workflow_dispatch input template,
   workflow_dispatch input TSV table, and workflow_dispatch input JSON manifest.
   The bundle JSON also records the full missing visual reference path list,
-  visual reference intake commands, the Production Smoke dispatch template, and
-  `--inputs-json` validation command for operator handoff. It mirrors
+  visual reference intake commands, the visual handoff README path, the
+  Production Smoke dispatch template, and `--inputs-json` validation command for
+  operator handoff. It mirrors
   `projectCompletion.completionChecklist`,
   `projectCompletion.nextActionPreview`, `productionSmoke.workflowFile`,
   `productionSmoke.ref`, `productionSmoke.dispatchManifestContext`, Production

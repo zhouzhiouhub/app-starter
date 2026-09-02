@@ -173,6 +173,8 @@ function createPageBuilderVisualHandoff() {
       "artifacts/visual/page-builder-reference-export-table.tsv",
     referenceHandoffOutputDir:
       "artifacts/visual/page-builder-reference-handoff",
+    referenceHandoffReadmePath:
+      "artifacts/visual/page-builder-reference-handoff/README.md",
     referenceRequestPath: "artifacts/visual/page-builder-reference-request.md",
     requiredReferenceCount: 12,
     status: "needs-evidence",

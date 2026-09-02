@@ -18,6 +18,7 @@ import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { createPageBuilderVisualReferenceRequestCommand } from "../visual/page-builder-visual-reference-import-commands.mjs";
 import {
   createPageBuilderVisualReferenceHandoffCommand,
+  createPageBuilderVisualReferenceHandoffOutputPaths,
   defaultPageBuilderVisualReferenceHandoffOutputDir,
 } from "../visual/page-builder-visual-reference-handoff.mjs";
 import { createPageBuilderVisualReferenceRequestMarkdown } from "../visual/page-builder-visual-reference-request.mjs";
@@ -66,6 +67,10 @@ export function createReleaseEvidenceRequestMarkdown(input) {
   const visualReferenceHandoffOutputDir =
     requestOutputPaths.visualReferenceHandoff ??
     defaultPageBuilderVisualReferenceHandoffOutputDir;
+  const visualReferenceHandoffReadmePath =
+    createPageBuilderVisualReferenceHandoffOutputPaths(
+      visualReferenceHandoffOutputDir,
+    ).readme;
   const releaseRequestsManifestOutputPath =
     requestOutputPaths.releaseRequestsManifest ??
     defaultReleaseRequestsManifestOutputPath;
@@ -116,6 +121,9 @@ export function createReleaseEvidenceRequestMarkdown(input) {
     )}`,
     `- Page Builder design handoff output: ${formatCode(
       visualReferenceHandoffOutputDir,
+    )}`,
+    `- Page Builder design handoff README: ${formatCode(
+      visualReferenceHandoffReadmePath,
     )}`,
     `- Production Smoke request: ${formatCode(
       createProductionSmokeRequestCommand({

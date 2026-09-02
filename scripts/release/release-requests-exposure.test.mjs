@@ -23,6 +23,7 @@ test("release requests command is exposed in package CI and docs", async () => {
   assert.match(releaseChecklist, /page-builder-reference-export-table\.tsv/);
   assert.match(releaseChecklist, /page-builder-reference-export-manifest\.json/);
   assert.match(releaseChecklist, /page-builder-reference-handoff/);
+  assert.match(releaseChecklist, /page-builder-reference-handoff\/README\.md/);
   assert.match(releaseChecklist, /production-smoke-dispatch-inputs\.tsv/);
   assert.match(releaseChecklist, /production-smoke-dispatch-inputs\.json/);
   assert.match(releaseChecklist, /productionSmoke\.workflowFile/);
@@ -38,6 +39,7 @@ test("release requests command is exposed in package CI and docs", async () => {
   assert.match(setupDoc, /page-builder-reference-export-table\.tsv/);
   assert.match(setupDoc, /page-builder-reference-export-manifest\.json/);
   assert.match(setupDoc, /page-builder-reference-handoff/);
+  assert.match(setupDoc, /page-builder-reference-handoff\/README\.md/);
   assert.match(setupDoc, /production-smoke-dispatch-inputs\.tsv/);
   assert.match(setupDoc, /production-smoke-dispatch-inputs\.json/);
   assert.match(setupDoc, /productionSmoke\.workflowFile/);
@@ -53,6 +55,7 @@ test("release requests command is exposed in package CI and docs", async () => {
   assert.match(readme, /page-builder-reference-export-table\.tsv/);
   assert.match(readme, /page-builder-reference-export-manifest\.json/);
   assert.match(readme, /page-builder-reference-handoff/);
+  assert.match(readme, /page-builder-reference-handoff\/README\.md/);
   assert.match(readme, /production-smoke-dispatch-inputs\.tsv/);
   assert.match(readme, /production-smoke-dispatch-inputs\.json/);
   assert.match(readme, /productionSmoke\.workflowFile/);

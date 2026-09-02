@@ -6,6 +6,7 @@ const visibleNextActionCount = 3;
 const informationalStepLabels = new Set([
   "Dispatch inputs output",
   "Design handoff output",
+  "Design handoff README",
   "Dispatch inputs JSON output",
   "Dispatch inputs table output",
   "Export manifest output",
@@ -40,6 +41,7 @@ const summaryCompanionStepLabels = new Map([
       "Design request output",
       "Design handoff package",
       "Design handoff output",
+      "Design handoff README",
     ],
   ],
   [

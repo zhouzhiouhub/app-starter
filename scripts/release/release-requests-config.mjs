@@ -17,6 +17,7 @@ import {
   defaultPageBuilderVisualReferenceRequestOutputPath,
 } from "../visual/page-builder-visual-reference-request.mjs";
 import {
+  createPageBuilderVisualReferenceHandoffOutputPaths,
   defaultPageBuilderVisualReferenceHandoffOutputDir,
 } from "../visual/page-builder-visual-reference-handoff.mjs";
 import {
@@ -89,6 +90,9 @@ export function createReleaseRequestsOutputSummary(outputPaths = {}) {
     paths.visualReferenceTable,
     paths.visualReferenceManifest,
     paths.visualReferenceHandoff,
+    createPageBuilderVisualReferenceHandoffOutputPaths(
+      paths.visualReferenceHandoff,
+    ).readme,
     paths.productionSmoke,
     paths.productionSmokeInputs,
     paths.productionSmokeInputsTable,

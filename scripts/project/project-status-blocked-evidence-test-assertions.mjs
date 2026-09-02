@@ -138,6 +138,7 @@ function assertVisualNextAction(visualAction) {
       "Design request",
       "Design handoff package",
       "Design handoff output",
+      "Design handoff README",
       "Design request output",
       "Missing paths output",
       "Export table output",
@@ -182,6 +183,10 @@ function assertVisualNextAction(visualAction) {
   assert.equal(
     readStepValue(visualAction, "Design handoff output"),
     "artifacts/visual/page-builder-reference-handoff",
+  );
+  assert.equal(
+    readStepValue(visualAction, "Design handoff README"),
+    "artifacts/visual/page-builder-reference-handoff/README.md",
   );
   assert.equal(
     readStepValue(visualAction, "Missing paths output"),

@@ -1,3 +1,7 @@
+import {
+  createPageBuilderVisualReferenceHandoffOutputPaths,
+} from "../visual/page-builder-visual-reference-handoff.mjs";
+
 export function printReleaseRequestsManifestSummary(manifest, writeLine) {
   const completion = manifest.projectCompletion;
   const checklist = completion.completionChecklist;
@@ -35,6 +39,13 @@ export function printReleaseRequestFiles(outputPaths, writeLine) {
   );
   writeLine(
     `  - Page Builder handoff package: ${outputPaths.visualReferenceHandoff}`,
+  );
+  writeLine(
+    `  - Page Builder handoff README: ${
+      createPageBuilderVisualReferenceHandoffOutputPaths(
+        outputPaths.visualReferenceHandoff,
+      ).readme
+    }`,
   );
   writeLine(`  - Production Smoke: ${outputPaths.productionSmoke}`);
   writeLine(`  - Production Smoke inputs: ${outputPaths.productionSmokeInputs}`);

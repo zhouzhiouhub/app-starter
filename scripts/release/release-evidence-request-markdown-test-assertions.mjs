@@ -162,6 +162,7 @@ function assertReleaseEvidenceRequestOutputs(markdown, paths) {
           paths.visualTableOutputPath,
           paths.visualJsonOutputPath,
           paths.visualHandoffOutputPath,
+          `${paths.visualHandoffOutputPath}/README.md`,
           paths.smokeOutputPath,
           paths.smokeInputsOutputPath,
           paths.smokeInputsTableOutputPath,
@@ -214,6 +215,14 @@ function assertVisualReferenceRequest(markdown, paths) {
     new RegExp(
       `Page Builder design handoff output: \`${escapeRegExp(
         paths.visualHandoffOutputPath,
+      )}\``,
+    ),
+  );
+  assert.match(
+    markdown,
+    new RegExp(
+      `Page Builder design handoff README: \`${escapeRegExp(
+        `${paths.visualHandoffOutputPath}/README.md`,
       )}\``,
     ),
   );

@@ -360,6 +360,7 @@ run: `artifacts/release/release-evidence-request.md`,
 `artifacts/visual/page-builder-reference-export-table.tsv`,
 `artifacts/visual/page-builder-reference-export-manifest.json`,
 `artifacts/visual/page-builder-reference-handoff`,
+`artifacts/visual/page-builder-reference-handoff/README.md`,
 `artifacts/production-smoke/production-smoke-request.md`, and
 `artifacts/production-smoke/production-smoke-dispatch-inputs.txt`, and
 `artifacts/production-smoke/production-smoke-dispatch-inputs.tsv`, and
@@ -369,7 +370,8 @@ visual manifest/source options, `--requests-manifest-output <path>`,
 individual request commands, but still does not import references, run smoke,
 upload artifacts, create release notes, or mark blocked evidence ready. The
 bundle manifest records the full missing visual reference path list, visual
-reference intake commands, the Production Smoke dispatch template, and the
+reference intake commands, the visual handoff README path, the Production Smoke
+dispatch template, and the
 `--inputs-json` validation command beside the missing input list. It also
 mirrors `projectCompletion.completionChecklist`,
 `projectCompletion.nextActionPreview`, `productionSmoke.workflowFile`,

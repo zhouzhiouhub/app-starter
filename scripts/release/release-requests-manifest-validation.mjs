@@ -69,6 +69,10 @@ function assertPageBuilderVisual(visual) {
     "pageBuilderVisual.referenceHandoffOutputDir",
   );
   assertNullableString(
+    visual.referenceHandoffReadmePath,
+    "pageBuilderVisual.referenceHandoffReadmePath",
+  );
+  assertNullableString(
     visual.referenceRequestPath,
     "pageBuilderVisual.referenceRequestPath",
   );
