@@ -10,7 +10,10 @@ import {
 import path from "node:path";
 import test from "node:test";
 import { runPageBuilderVisualReferenceHandoffCli } from "../page-builder-visual-reference-handoff.mjs";
-import { createTestPng } from "./page-builder-visual-artifact-check-test-fixtures.mjs";
+import {
+  corruptPngBytes,
+  createTestPng,
+} from "./page-builder-visual-artifact-check-test-fixtures.mjs";
 import {
   mvpPageBuilderComponents,
   pageBuilderVisualAcceptanceSchemaVersion,
@@ -126,6 +129,63 @@ test("visual reference handoff CLI writes request files and previews", async () 
   }
 });
 
+test("visual reference handoff marks corrupt copied previews incomplete", async () => {
+  const root = `reports/visual/reference-handoff-corrupt-${process.pid}-${Date.now()}`;
+  const manifestPath = `${root}/page-builder-visual-acceptance.json`;
+  const sourceDir = `${root}/references`;
+  const outputDir = `${root}/handoff`;
+  const stdout = [];
+
+  try {
+    writeReferenceFiles(sourceDir);
+    writePreviewScreenshotFiles(root);
+    writeFileSync(
+      path.join(root, "artifacts/visual/hero-banner-desktop.png"),
+      corruptPngBytes,
+    );
+    writeFileSync(
+      manifestPath,
+      `${JSON.stringify(createManifest({ previewRoot: root }), null, 2)}\n`,
+    );
+
+    const exitCode = await runPageBuilderVisualReferenceHandoffCli(
+      [
+        "--source-dir",
+        sourceDir,
+        "--manifest",
+        manifestPath,
+        "--output-dir",
+        outputDir,
+      ],
+      {
+        stdout: (line) => stdout.push(line),
+      },
+    );
+    const handoffManifest = JSON.parse(
+      readFileSync(`${outputDir}/page-builder-reference-handoff.json`, "utf8"),
+    );
+    const corruptPreview = handoffManifest.previewScreenshots.find(
+      (preview) =>
+        preview.component === "hero-banner" &&
+        preview.viewport === "desktop",
+    );
+
+    assert.equal(exitCode, 0);
+    assert.match(stdout.join("\n"), /Preview screenshots copied: 11\/12/);
+    assert.equal(handoffManifest.complete, true);
+    assert.equal(handoffManifest.handoffComplete, false);
+    assert.equal(handoffManifest.missingPreviewCount, 1);
+    assert.equal(handoffManifest.missingCount, 0);
+    assert.equal(corruptPreview.status, "missing");
+    assert.equal(typeof corruptPreview.reason, "string");
+    assert.notEqual(corruptPreview.reason.length, 0);
+    assert.equal(corruptPreview.byteSize, undefined);
+    assert.equal(corruptPreview.sha256, undefined);
+  } finally {
+    rmSync(root, { force: true, recursive: true });
+  }
+});
+
 test("visual reference handoff command and config normalize safe inputs", () => {
   assert.equal(
     createPageBuilderVisualReferenceHandoffCommand(),
@@ -200,8 +260,11 @@ test("visual reference handoff help and docs expose the command", async () => {
   assert.match(readme, /pnpm visual:references:handoff/);
   assert.match(readme, /page-builder-reference-handoff/);
   assert.match(setupDoc, /pnpm visual:references:handoff/);
+  assert.match(setupDoc, /sha256/);
   assert.match(releaseChecklist, /pnpm visual:references:handoff/);
+  assert.match(releaseChecklist, /sha256/);
   assert.match(referenceReadme, /pnpm visual:references:handoff/);
+  assert.match(referenceReadme, /sha256/);
 });
 
 function writeReferenceFiles(sourceDir, options = {}) {

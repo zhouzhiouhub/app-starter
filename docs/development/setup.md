@@ -324,7 +324,10 @@ missing.
 `pnpm visual:references:handoff` writes the same request files plus copied
 preview screenshots and a package manifest under
 `artifacts/visual/page-builder-reference-handoff` for design export
-coordination; it does not create reference PNGs or mark evidence accepted.
+coordination. The package manifest records each copied preview screenshot's
+dimensions, byte size, and sha256 so reviewers can detect empty, stale, or
+wrong previews before accepting design exports; it does not create reference
+PNGs or mark evidence accepted.
 `pnpm visual:references:check` writes the default release fixture JSON/Markdown
 report and requires the full reference set without updating the manifest.
 
@@ -484,8 +487,9 @@ component/viewport export task table and
 machine-readable export manifest.
 Use `pnpm visual:references:handoff` when the design owner needs those request
 files together with copied preview screenshots in
-`artifacts/visual/page-builder-reference-handoff`; it remains a handoff package
-and does not satisfy visual acceptance.
+`artifacts/visual/page-builder-reference-handoff`; its manifest includes copied
+preview dimensions, byte sizes, and sha256 checksums. It remains a handoff
+package and does not satisfy visual acceptance.
 Use `pnpm visual:references:check` for the default release fixture intake
 report.
 
