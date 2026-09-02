@@ -118,6 +118,11 @@ test("release readiness checklist carries blocker actions", () => {
     ),
   );
   assert.ok(lines.includes(`Validate dispatch: ${validationCommand}`));
+  assert.ok(
+    lines.includes(
+      "Dispatch manifest context: JSON input manifest carries workflow file, ref, and input values; explicit CLI flags override manifest values.",
+    ),
+  );
   assert.ok(lines.includes(`Dispatch template: ${dispatchCommand}`));
   assert.match(lines, /Run pnpm visual:acceptance -- --checklist/);
   assert.match(

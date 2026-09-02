@@ -113,6 +113,10 @@ test("project status CLI prints readable blocked state", async () => {
     assert.match(text, /Manual dispatch: GitHub Actions > Production Smoke/);
     assert.match(text, /Smoke request: pnpm smoke:request/);
     assert.match(text, /Validate dispatch: pnpm smoke:dispatch -- --inputs-json artifacts\/production-smoke\/production-smoke-dispatch-inputs\.json --require-complete/);
+    assert.match(
+      text,
+      /Dispatch manifest context: JSON input manifest carries workflow file, ref, and input values; explicit CLI flags override manifest values\./,
+    );
     assert.match(text, /Keep artifacts: production-smoke-report-<run_number>/);
     assert.match(
       text,

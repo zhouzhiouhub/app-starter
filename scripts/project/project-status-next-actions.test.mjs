@@ -31,6 +31,7 @@ test("project next actions preserve visual artifact dir on release gate reruns",
       "Visual evidence inputs",
       "Release note inputs",
       "Validate dispatch",
+      "Dispatch manifest context",
       "Dispatch template",
       "Manual dispatch",
       "Run workflow",
@@ -45,6 +46,10 @@ test("project next actions preserve visual artifact dir on release gate reruns",
   assert.match(
     readStepValue(productionSmoke, "Validate dispatch"),
     /--inputs-json artifacts\/production-smoke\/production-smoke-dispatch-inputs\.json/,
+  );
+  assert.equal(
+    readStepValue(productionSmoke, "Dispatch manifest context"),
+    "JSON input manifest carries workflow file, ref, and input values; explicit CLI flags override manifest values.",
   );
   assert.match(
     readStepValue(productionSmoke, "Dispatch template"),

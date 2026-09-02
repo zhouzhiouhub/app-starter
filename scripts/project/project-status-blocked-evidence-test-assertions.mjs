@@ -72,6 +72,7 @@ function assertSmokeNextAction(smokeAction) {
       "Visual evidence inputs",
       "Release note inputs",
       "Validate dispatch",
+      "Dispatch manifest context",
       "Dispatch template",
       "Manual dispatch",
       "Run workflow",
@@ -100,6 +101,10 @@ function assertSmokeNextAction(smokeAction) {
   assert.equal(
     validationCommand,
     "pnpm smoke:dispatch -- --inputs-json artifacts/production-smoke/production-smoke-dispatch-inputs.json --require-complete",
+  );
+  assert.equal(
+    readStepValue(smokeAction, "Dispatch manifest context"),
+    "JSON input manifest carries workflow file, ref, and input values; explicit CLI flags override manifest values.",
   );
   assert.match(
     readStepValue(smokeAction, "Dispatch template"),

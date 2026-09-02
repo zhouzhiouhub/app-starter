@@ -83,6 +83,7 @@ test("release check artifact includes blocked checklist actions", () => {
       "Visual evidence inputs",
       "Release note inputs",
       "Validate dispatch",
+      "Dispatch manifest context",
       "Dispatch template",
       "Manual dispatch",
       "Keep artifacts",
@@ -112,6 +113,10 @@ test("release check artifact includes blocked checklist actions", () => {
   assert.equal(
     readStepValue(smokeItem, "Validate dispatch"),
     createProductionSmokeDispatchManifestValidationCommand(),
+  );
+  assert.equal(
+    readStepValue(smokeItem, "Dispatch manifest context"),
+    "JSON input manifest carries workflow file, ref, and input values; explicit CLI flags override manifest values.",
   );
   assert.equal(
     readStepValue(smokeItem, "Dispatch template"),

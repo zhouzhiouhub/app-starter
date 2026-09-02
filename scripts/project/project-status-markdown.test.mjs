@@ -102,6 +102,10 @@ test("project status CLI writes a Markdown handoff", async () => {
     );
     assert.match(
       markdown,
+      / {4}- Dispatch manifest context: `JSON input manifest carries workflow file, ref, and input values; explicit CLI flags override manifest values\.`/,
+    );
+    assert.match(
+      markdown,
       / {4}- Dispatch template: `gh workflow run production-smoke\.yml --ref main -f visual_artifact_name="page-builder-visual-fixture-<run_number>"/,
     );
     assert.match(

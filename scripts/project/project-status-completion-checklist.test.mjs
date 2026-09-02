@@ -53,6 +53,7 @@ test("project status completion checklist summarizes blocked evidence", () => {
       "Visual evidence inputs",
       "Release note inputs",
       "Validate dispatch",
+      "Dispatch manifest context",
       "Dispatch template",
       "Manual dispatch",
       "Run workflow",
@@ -63,6 +64,10 @@ test("project status completion checklist summarizes blocked evidence", () => {
   assert.match(
     readStepValue(checklist.items[1], "Validate dispatch"),
     /^pnpm smoke:dispatch -- --inputs-json artifacts\/production-smoke\/production-smoke-dispatch-inputs\.json --require-complete$/u,
+  );
+  assert.equal(
+    readStepValue(checklist.items[1], "Dispatch manifest context"),
+    "JSON input manifest carries workflow file, ref, and input values; explicit CLI flags override manifest values.",
   );
   assert.match(
     readStepValue(checklist.items[1], "Dispatch template"),

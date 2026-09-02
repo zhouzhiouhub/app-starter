@@ -43,6 +43,8 @@ const productionSmokeVisualInputs = [
 const productionSmokeDispatchCommand = createProductionSmokeDispatchCommand();
 const productionSmokeDispatchValidationCommand =
   createProductionSmokeDispatchManifestValidationCommand();
+const productionSmokeDispatchManifestContext =
+  "JSON input manifest carries workflow file, ref, and input values; explicit CLI flags override manifest values.";
 const productionSmokeManualDispatch =
   createProductionSmokeManualDispatchInstruction();
 const productionSmokeRequestCommand = createProductionSmokeRequestCommand();
@@ -75,6 +77,10 @@ export function createProductionSmokeHandoffSteps(options = {}) {
     createHandoffStep(
       "Validate dispatch",
       productionSmokeDispatchValidationCommand,
+    ),
+    createHandoffStep(
+      "Dispatch manifest context",
+      productionSmokeDispatchManifestContext,
     ),
     createHandoffStep("Dispatch template", productionSmokeDispatchCommand),
     createHandoffStep("Manual dispatch", productionSmokeManualDispatch),
