@@ -66,6 +66,7 @@ export function createReleaseRequestsManifest(input = {}) {
       requiredReferenceCount: readNumber(visual.requiredReferenceCount),
       status: visual.status ?? "unknown",
     },
+    projectCompletion: createProjectCompletionSummary(project),
     productionSmoke: {
       dispatchManifestContext: smokeInputsManifest.dispatchManifestContext,
       dispatchCommand: smokeInputsManifest.command,
@@ -113,6 +114,89 @@ export async function writeReleaseRequestsManifest(outputPath, input) {
 
 function readNumber(value) {
   return Number.isFinite(value) ? value : 0;
+}
+
+function readString(value, fallback = "") {
+  return typeof value === "string" && value.length > 0 ? value : fallback;
+}
+
+function readStringList(value) {
+  return Array.isArray(value)
+    ? value.filter((item) => typeof item === "string" && item.length > 0)
+    : [];
+}
+
+function createProjectCompletionSummary(project) {
+  const nextActions = Array.isArray(project.nextActions)
+    ? project.nextActions
+    : [];
+  const nextActionPreview = nextActions.slice(0, 3).map(readNextActionPreview);
+
+  return {
+    completedMilestoneCount: readStringList(project.completedMilestones).length,
+    completionChecklist: readCompletionChecklist(project.completionChecklist),
+    localMvpScope: readString(project.completionSummary?.localMvpScope, "unknown"),
+    nextActionCount: readNumber(project.nextActionCount),
+    nextActionPreview,
+    nextActionPreviewCount: nextActionPreview.length,
+    phase: readString(project.phase, "unknown"),
+    releaseDecision: readString(
+      project.completionSummary?.releaseDecision,
+      "unknown",
+    ),
+    releaseEvidenceStatus: readString(
+      project.completionSummary?.releaseEvidenceStatus,
+      "unknown",
+    ),
+    releaseReady: project.releaseReady === true,
+    status: readString(project.status, "unknown"),
+    summary: readString(project.completionSummary?.summary),
+    truncatedNextActionCount: readNumber(project.truncatedNextActionCount),
+  };
+}
+
+function readCompletionChecklist(checklist) {
+  const items = Array.isArray(checklist?.items)
+    ? checklist.items.map(readCompletionChecklistItem)
+    : [];
+
+  return {
+    completeCount: readNumber(checklist?.completeCount),
+    itemCount: readNumber(checklist?.itemCount),
+    items,
+    needsEvidenceCount: readNumber(checklist?.needsEvidenceCount),
+  };
+}
+
+function readCompletionChecklistItem(item) {
+  return {
+    evidence: readString(item?.evidence),
+    label: readString(item?.label, "unknown"),
+    nextAction:
+      typeof item?.nextAction === "string" && item.nextAction.length > 0
+        ? item.nextAction
+        : null,
+    status: readString(item?.status, "unknown"),
+  };
+}
+
+function readNextActionPreview(action) {
+  const steps = Array.isArray(action?.steps) ? action.steps : [];
+
+  return {
+    action: readString(action?.action),
+    area: readString(action?.area, "unknown"),
+    firstStep: steps.length > 0 ? readNextActionStep(steps[0]) : null,
+    label: readString(action?.label, "unknown"),
+    stepCount: steps.length,
+  };
+}
+
+function readNextActionStep(step) {
+  return {
+    label: readString(step?.label, "unknown"),
+    value: readString(step?.value),
+  };
 }
 
 function createVisualCommandContext(input) {

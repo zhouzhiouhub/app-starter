@@ -21,8 +21,56 @@ export function assertReleaseRequestsManifestHandoff(input) {
       .filter((reference) => reference.status === "missing")
       .map((reference) => reference.expectedPath),
   );
+  assertProjectCompletionHandoff(manifest.projectCompletion);
   assertPageBuilderVisualCommands(manifest.pageBuilderVisual.commands, input);
   assertProductionSmokeHandoff(manifest.productionSmoke, input);
+}
+
+function assertProjectCompletionHandoff(projectCompletion) {
+  assert.equal(projectCompletion.phase, "MVP release verification");
+  assert.equal(projectCompletion.status, "needs-evidence");
+  assert.equal(projectCompletion.releaseReady, false);
+  assert.equal(projectCompletion.localMvpScope, "implemented");
+  assert.equal(projectCompletion.releaseEvidenceStatus, "needs-evidence");
+  assert.equal(projectCompletion.releaseDecision, "not-ready");
+  assert.match(projectCompletion.summary, /release verification/);
+  assert.equal(projectCompletion.completedMilestoneCount, 5);
+  assert.equal(
+    projectCompletion.completionChecklist.itemCount,
+    projectCompletion.completionChecklist.items.length,
+  );
+  assert.equal(projectCompletion.completionChecklist.completeCount, 1);
+  assert.equal(projectCompletion.completionChecklist.needsEvidenceCount, 2);
+  assertCompletionChecklistItem(projectCompletion, {
+    label: "Production Smoke release evidence",
+    status: "needs-evidence",
+  });
+  assertCompletionChecklistItem(projectCompletion, {
+    label: "Page Builder visual acceptance evidence",
+    status: "needs-evidence",
+  });
+  assert.equal(projectCompletion.nextActionCount, 15);
+  assert.equal(projectCompletion.nextActionPreviewCount, 3);
+  assert.equal(projectCompletion.nextActionPreview[0].area, "Production Smoke");
+  assert.equal(
+    projectCompletion.nextActionPreview[0].firstStep.label,
+    "Smoke request",
+  );
+  assert.equal(projectCompletion.nextActionPreview[1].area, "Page Builder Visual");
+  assert.equal(projectCompletion.nextActionPreview[2].area, "Release Evidence");
+  assert.ok(
+    projectCompletion.nextActionCount >= projectCompletion.nextActionPreviewCount,
+  );
+  assert.ok(projectCompletion.truncatedNextActionCount >= 0);
+}
+
+function assertCompletionChecklistItem(projectCompletion, expected) {
+  const item = projectCompletion.completionChecklist.items.find(
+    (candidate) => candidate.label === expected.label,
+  );
+
+  assert.ok(item, `Expected completion checklist item ${expected.label}`);
+  assert.equal(item.status, expected.status);
 }
 
 function assertPageBuilderVisualCommands(commands, input) {

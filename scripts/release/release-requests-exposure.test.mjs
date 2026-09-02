@@ -28,6 +28,8 @@ test("release requests command is exposed in package CI and docs", async () => {
   assert.match(releaseChecklist, /productionSmoke\.workflowFile/);
   assert.match(releaseChecklist, /productionSmoke\.ref/);
   assert.match(releaseChecklist, /productionSmoke\.dispatchManifestContext/);
+  assert.match(releaseChecklist, /projectCompletion\.completionChecklist/);
+  assert.match(releaseChecklist, /projectCompletion\.nextActionPreview/);
   assert.match(setupDoc, /pnpm release:requests/);
   assert.match(setupDoc, /release-requests-manifest\.json/);
   assert.match(setupDoc, /page-builder-reference-export-table\.tsv/);
@@ -38,6 +40,8 @@ test("release requests command is exposed in package CI and docs", async () => {
   assert.match(setupDoc, /productionSmoke\.workflowFile/);
   assert.match(setupDoc, /productionSmoke\.ref/);
   assert.match(setupDoc, /productionSmoke\.dispatchManifestContext/);
+  assert.match(setupDoc, /projectCompletion\.completionChecklist/);
+  assert.match(setupDoc, /projectCompletion\.nextActionPreview/);
   assert.match(readme, /pnpm release:requests/);
   assert.match(readme, /release-requests-manifest\.json/);
   assert.match(readme, /page-builder-reference-export-table\.tsv/);
@@ -48,4 +52,6 @@ test("release requests command is exposed in package CI and docs", async () => {
   assert.match(readme, /productionSmoke\.workflowFile/);
   assert.match(readme, /productionSmoke\.ref/);
   assert.match(readme, /productionSmoke\.dispatchManifestContext/);
+  assert.match(readme, /projectCompletion\.completionChecklist/);
+  assert.match(readme, /projectCompletion\.nextActionPreview/);
 });
