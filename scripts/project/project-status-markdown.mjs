@@ -11,7 +11,6 @@ import { assertProjectStatusArtifact } from "./project-status-validation.mjs";
 import { formatReleaseEvidenceArtifacts } from "./project-status-release-evidence-artifacts.mjs";
 
 const maxMarkdownTextLength = 640;
-
 export function createProjectStatusMarkdown(artifact) {
   assertProjectStatusArtifact(artifact);
 
@@ -272,26 +271,30 @@ function formatNextAction(action) {
   if (!Array.isArray(action.steps) || action.steps.length === 0) {
     return [
       `- ${formatText(action.area)}: ${formatText(action.label)}`,
-      `  Action: ${formatText(action.action, { maxLength: 1200 })}`,
+      `  Action: ${formatText(action.action, { maxLength: null })}`,
     ];
   }
 
   return [
     `- ${formatText(action.area)}: ${formatText(action.label)}`,
     "  Steps:",
-    ...action.steps.map(
-      (step) => `    - ${formatText(step.label)}: ${formatCode(step.value)}`,
+    ...action.steps.map((step) =>
+      `    - ${formatText(step.label)}: ${formatCode(step.value, {
+        maxLength: null,
+      })}`,
     ),
   ];
 }
 
-function formatCode(value) {
-  return `\`${formatText(value).replaceAll("`", "'")}\``;
+function formatCode(value, options = {}) {
+  return `\`${formatText(value, options).replaceAll("`", "'")}\``;
 }
 
 function formatText(value, options = {}) {
   return formatSmokeText(value, {
     fallback: "unknown",
-    maxLength: options.maxLength ?? maxMarkdownTextLength,
+    maxLength: Object.hasOwn(options, "maxLength")
+      ? options.maxLength
+      : maxMarkdownTextLength,
   });
 }

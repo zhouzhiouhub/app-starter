@@ -4,6 +4,11 @@ import { readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
+import {
+  createProjectStatusArtifact,
+  createProjectStatusMarkdown,
+} from "./project-status.mjs";
+import { createBlockedCheck } from "./project-status-test-fixtures.mjs";
 import { runProjectStatusCli } from "../project-status.mjs";
 import { createPendingVisualManifest } from "../release/release-check-test-fixtures.mjs";
 
@@ -160,7 +165,24 @@ test("project status CLI writes a Markdown handoff", async () => {
     );
     assert.match(
       markdown,
-      / {4}- Refresh requests output: `[^\n]*artifacts\/visual\/page-builder-reference-handoff\/README\.md[^\n]*artifacts\/production\.\.\.`/,
+      new RegExp(
+        [
+          "    - Refresh requests output: `artifacts/release/release-evidence-request.md",
+          "artifacts/release/release-requests-manifest.json",
+          "artifacts/visual/page-builder-reference-request.md",
+          "artifacts/visual/page-builder-missing-references.txt",
+          "artifacts/visual/page-builder-reference-export-table.tsv",
+          "artifacts/visual/page-builder-reference-export-manifest.json",
+          "artifacts/visual/page-builder-reference-handoff",
+          "artifacts/visual/page-builder-reference-handoff/README.md",
+          "artifacts/production-smoke/production-smoke-request.md",
+          "artifacts/production-smoke/production-smoke-dispatch-inputs.txt",
+          "artifacts/production-smoke/production-smoke-dispatch-inputs.tsv",
+          "artifacts/production-smoke/production-smoke-dispatch-inputs.json`",
+        ]
+          .map(escapeRegExp)
+          .join(", "),
+      ),
     );
     assert.match(
       markdown,
@@ -294,6 +316,49 @@ test("project status CLI writes a Markdown handoff", async () => {
     await rm(emptyArchiveRoot, { force: true, recursive: true });
     await rm(outputRoot, { force: true, recursive: true });
   }
+});
+
+test("project status Markdown preserves full next action details", () => {
+  const artifact = createProjectStatusArtifact(createBlockedCheck(), {
+    generatedAt: "2026-08-28T00:00:00.000Z",
+    includeAllActions: true,
+  });
+  const actionMarker = "final-full-action-marker";
+  const stepMarker = "final-full-step-marker";
+  const longAction = [
+    "Run",
+    "pnpm release:handoff -- --require-ready --smoke-report artifacts/production-smoke/smoke-report.json ".repeat(
+      10,
+    ),
+    actionMarker,
+  ].join(" ");
+  const longStep = [
+    "artifacts/release/release-evidence-request.md",
+    "artifacts/visual/page-builder-reference-export-manifest.json ".repeat(20),
+    stepMarker,
+  ].join(", ");
+
+  artifact.nextActions = [
+    {
+      action: longAction,
+      area: "Release Evidence",
+      label: "Final gate",
+    },
+    {
+      action: "Refresh release evidence requests.",
+      area: "Release Evidence",
+      label: "Refresh evidence requests",
+      steps: [{ label: "Refresh requests output", value: longStep }],
+    },
+  ];
+  artifact.nextActionCount = 2;
+  artifact.nextActionLimit = 2;
+  artifact.truncatedNextActionCount = 0;
+
+  const markdown = createProjectStatusMarkdown(artifact);
+
+  assert.match(markdown, new RegExp(escapeRegExp(actionMarker)));
+  assert.match(markdown, new RegExp(escapeRegExp(stepMarker)));
 });
 
 function escapeRegExp(value) {
