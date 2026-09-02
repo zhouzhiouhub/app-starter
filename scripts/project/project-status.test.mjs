@@ -257,8 +257,20 @@ test("project status CLI writes machine-readable status", async () => {
     );
     assert.equal(artifact.releaseReady, true);
     assert.equal(artifact.completionSummary.releaseEvidenceStatus, "ready");
+    assert.deepEqual(artifact.localVerification.handoff, {
+      jsonPath: outputPath,
+      markdownPath: "tmp/project-status-handoff.md",
+    });
+    assert.match(
+      artifact.localVerification.commands.at(-1).command,
+      new RegExp(`--output ${escapeRegExp(outputPath)}`),
+    );
     assert.equal(artifact.nextActions[0].area, "Release Notes");
   } finally {
     await rm(outputRoot, { force: true, recursive: true });
   }
 });
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+}

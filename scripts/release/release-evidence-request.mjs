@@ -71,6 +71,10 @@ export async function createReleaseEvidenceRequest(config, input = {}, generated
   const projectArtifact = createProjectStatusArtifact(check, {
     generatedAt,
     includeAllActions: true,
+    localVerificationHandoff: {
+      jsonPath: config.requestOutputPaths.projectStatus,
+      markdownPath: config.requestOutputPaths.projectStatusMarkdown,
+    },
   });
   const visualReferenceReport = importPageBuilderVisualReferences(
     {

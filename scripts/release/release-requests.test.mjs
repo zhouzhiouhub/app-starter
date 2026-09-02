@@ -197,7 +197,29 @@ test("release requests CLI writes every local request Markdown", async () => {
     );
     assert.equal(projectStatus.schemaVersion, "project-status.v1");
     assert.equal(projectStatus.nextActionCount, 15);
+    assert.deepEqual(projectStatus.localVerification.handoff, {
+      jsonPath: projectStatusOutput,
+      markdownPath: projectStatusMarkdownOutput,
+    });
+    assert.match(
+      projectStatus.localVerification.commands.at(-1).command,
+      new RegExp(`--output ${escapeRegExp(projectStatusOutput)}`),
+    );
+    assert.match(
+      projectStatus.localVerification.commands.at(-1).command,
+      new RegExp(`--markdown-output ${escapeRegExp(projectStatusMarkdownOutput)}`),
+    );
     assert.match(projectStatusMarkdown, /^# MVP Release Handoff/m);
+    assert.match(
+      projectStatusMarkdown,
+      new RegExp(`Handoff JSON: \`${escapeRegExp(projectStatusOutput)}\``),
+    );
+    assert.match(
+      projectStatusMarkdown,
+      new RegExp(
+        `Handoff Markdown: \`${escapeRegExp(projectStatusMarkdownOutput)}\``,
+      ),
+    );
     assert.equal(visualExportManifest.referenceCount, 12);
     assert.equal(visualExportManifest.missingCount, 12);
     assertReleaseRequestsManifestHandoff({

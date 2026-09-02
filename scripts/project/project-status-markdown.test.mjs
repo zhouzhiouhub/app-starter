@@ -288,7 +288,7 @@ test("project status CLI writes a Markdown handoff", async () => {
     assert.match(markdown, /Handoff JSON: `tmp\/project-status\.json`/);
     assert.match(
       markdown,
-      /Handoff Markdown: `tmp\/project-status-handoff\.md`/,
+      new RegExp(`Handoff Markdown: \`${escapeRegExp(outputPath)}\``),
     );
     assert.match(markdown, /spec-table\.mobile/);
     assert.match(markdown, / {2}Steps:/);

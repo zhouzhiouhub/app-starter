@@ -34,9 +34,11 @@ export async function runProjectStatusCli(args, input = {}) {
       input,
     );
     const generatedAt = input.generatedAt ?? new Date().toISOString();
+    const localVerificationHandoff = createLocalVerificationHandoff(config);
     const artifact = createProjectStatusArtifact(check, {
       generatedAt,
       includeAllActions: config.allActions,
+      localVerificationHandoff,
     });
 
     assertProjectStatusArtifact(artifact);
@@ -53,6 +55,7 @@ export async function runProjectStatusCli(args, input = {}) {
           : createProjectStatusArtifact(check, {
               generatedAt,
               includeAllActions: true,
+              localVerificationHandoff,
             }),
       );
     }
@@ -84,6 +87,13 @@ export async function runProjectStatusCli(args, input = {}) {
     stderr(`Project status failed: ${readErrorMessage(error)}`);
     return 1;
   }
+}
+
+function createLocalVerificationHandoff(config) {
+  return {
+    jsonPath: config.outputPath,
+    markdownPath: config.markdownOutputPath,
+  };
 }
 
 function isMainModule() {

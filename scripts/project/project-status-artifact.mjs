@@ -2,6 +2,9 @@ import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { createMissingProductionSmokeEvidenceArtifact } from "../smoke/smoke-missing-evidence-markdown.mjs";
 import { createProjectCompletionChecklist } from "./project-status-completion-checklist.mjs";
 import {
+  createLocalVerificationSummary,
+} from "./project-status-local-verification.mjs";
+import {
   createProjectNextActions,
   readPendingVisualTasks,
 } from "./project-status-next-actions.mjs";
@@ -10,50 +13,12 @@ export const projectStatusSchemaVersion = "project-status.v1";
 
 const maxProjectActionCount = 8;
 const maxProjectTextLength = 420;
-const localVerificationShortcut = "pnpm run verify:local";
-const localVerificationHandoff = {
-  jsonPath: "tmp/project-status.json",
-  markdownPath: "tmp/project-status-handoff.md",
-};
-
 const completedMilestones = [
   "Monorepo apps, shared packages, and extension/custom directories are scaffolded.",
   "MVP page management, Page Builder, preview, publish, rollback, SEO, media, audit logs, and starter pages are implemented.",
   "Commerce and multi-locale expansion remain explicit disabled placeholders for MVP.",
   "Production smoke, visual acceptance, release evidence, and release notes tooling are wired.",
   "Production deployment, environment variable matrix, and rollback runbook are documented for the MVP release path.",
-];
-
-const localVerificationCommands = [
-  {
-    command: "pnpm install --frozen-lockfile",
-    label: "Install",
-  },
-  {
-    command: "pnpm run check:file-size",
-    label: "File size guard",
-  },
-  {
-    command: "pnpm typecheck",
-    label: "TypeScript",
-  },
-  {
-    command: "pnpm lint",
-    label: "Lint",
-  },
-  {
-    command: "pnpm test",
-    label: "Tests",
-  },
-  {
-    command: "pnpm build",
-    label: "Build",
-  },
-  {
-    command:
-      "pnpm project:status -- --all-actions --output tmp/project-status.json --markdown-output tmp/project-status-handoff.md",
-    label: "Project status handoff",
-  },
 ];
 
 export function createProjectStatusArtifact(check, input = {}) {
@@ -68,7 +33,9 @@ export function createProjectStatusArtifact(check, input = {}) {
     completionChecklist: createProjectCompletionChecklist(check, nextActions),
     completedMilestones,
     generatedAt: input.generatedAt ?? new Date().toISOString(),
-    localVerification: createLocalVerificationSummary(),
+    localVerification: createLocalVerificationSummary({
+      handoff: input.localVerificationHandoff,
+    }),
     nextActionCount: nextActions.length,
     nextActionLimit: serializedActionCount,
     nextActions: serializedNextActions,
@@ -91,20 +58,6 @@ function createCompletionSummary(check) {
     summary: releaseReady
       ? "MVP implementation and retained release evidence are ready for release notes."
       : "MVP implementation is in release verification; final completion still requires retained production smoke and Page Builder visual acceptance evidence.",
-  };
-}
-
-function createLocalVerificationSummary() {
-  return {
-    commandCount: localVerificationCommands.length,
-    commands: localVerificationCommands.map((item) => ({
-      command: item.command,
-      label: item.label,
-      status: "configured",
-    })),
-    handoff: localVerificationHandoff,
-    shortcut: localVerificationShortcut,
-    source: "CI verify job and local package scripts",
   };
 }
 
