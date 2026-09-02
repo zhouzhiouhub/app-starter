@@ -1,47 +1,30 @@
-import { readProductionSmokeDispatchCliConfig } from "../smoke/production-smoke-dispatch-cli.mjs";
 import {
   defaultProductionSmokeDispatchInputsOutputPath,
-  normalizeProductionSmokeDispatchInputsOutputPath,
 } from "../smoke/production-smoke-dispatch-inputs-output.mjs";
-import {
-  normalizeProductionSmokeDispatchInputsTableOutputPath,
-} from "../smoke/production-smoke-dispatch-inputs-table-path.mjs";
-import {
-  normalizeProductionSmokeDispatchInputsManifestOutputPath,
-} from "../smoke/production-smoke-dispatch-inputs-manifest-path.mjs";
-import {
-  normalizeProductionSmokeRequestOutputPath,
-} from "../smoke/production-smoke-request.mjs";
 import { defaultPageBuilderVisualReferenceSourceDir } from "../visual/page-builder-visual-acceptance-constants.mjs";
 import { defaultPageBuilderVisualArtifactDir } from "../visual/page-builder-visual-artifact-check-config.mjs";
 import { createArtifactPaths } from "../visual/page-builder-visual-artifact-check-paths.mjs";
-import {
-  normalizeVisualReferenceImportMarkdownOutputPath,
-  normalizeVisualReferenceSourceDir,
-} from "../visual/page-builder-visual-reference-import-config.mjs";
-import {
-  normalizeVisualReferenceExportManifestOutputPath,
-  normalizeVisualReferenceExportTableOutputPath,
-  normalizeVisualReferenceMissingOutputPath,
-} from "../visual/page-builder-visual-reference-request.mjs";
-import {
-  normalizeVisualReferenceHandoffOutputDir,
-} from "../visual/page-builder-visual-reference-handoff.mjs";
-import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
-import { readReleaseCheckCliConfig } from "./release-check-config.mjs";
 import {
   defaultReleaseEvidenceRequestOutputPath,
   defaultReleaseEvidenceRequestOutputPaths,
 } from "./release-evidence-request-output-paths.mjs";
 import {
-  normalizeReleaseRequestsManifestOutputPath,
-} from "./release-requests-manifest-path.mjs";
-import { normalizeReleaseCheckMarkdownPath } from "./release-notes-validation.mjs";
+  appendValueOption,
+  readOptionValue,
+  splitInlineOption,
+  stripPnpmSeparator,
+} from "./release-cli-options.mjs";
+import {
+  createReleaseEvidenceRequestResolvedConfig,
+} from "./release-evidence-request-config-normalization.mjs";
 
 export {
   createReleaseEvidenceRequestCommand,
   defaultReleaseEvidenceRequestOutputPath,
 } from "./release-evidence-request-output-paths.mjs";
+export {
+  normalizeReleaseEvidenceRequestOutputPath,
+} from "./release-evidence-request-config-normalization.mjs";
 
 export const defaultReleaseEvidenceRequestVisualManifestPath =
   createArtifactPaths(defaultPageBuilderVisualArtifactDir).manifest;
@@ -241,25 +224,15 @@ export function readReleaseEvidenceRequestCliConfig(args = []) {
       if (option === "--visual-manifest") {
         input.visualManifestPath = optionValue;
       }
-      index = appendValueOption(
-        input.releaseCheckArgs,
-        option,
-        optionValue,
-        index,
-        value !== null,
-      );
+      appendValueOption(input.releaseCheckArgs, option, optionValue);
+      index += value === null ? 1 : 0;
       continue;
     }
 
     if (smokeDispatchValueOptions.has(option)) {
       const optionValue = readOptionValue(option, normalizedArgs, index, value);
-      index = appendValueOption(
-        input.smokeDispatchArgs,
-        option,
-        optionValue,
-        index,
-        value !== null,
-      );
+      appendValueOption(input.smokeDispatchArgs, option, optionValue);
+      index += value === null ? 1 : 0;
       continue;
     }
 
@@ -270,105 +243,5 @@ export function readReleaseEvidenceRequestCliConfig(args = []) {
     input.releaseCheckArgs.push(normalizedArgs[index]);
   }
 
-  const releaseCheckConfig = readReleaseCheckCliConfig(input.releaseCheckArgs);
-  const outputPath = normalizeReleaseEvidenceRequestOutputPath(input.outputPath);
-  const smokeInputsOutputPath = normalizeProductionSmokeDispatchInputsOutputPath(input.smokeInputsOutputPath);
-  const smokeInputsTableOutputPath =
-    normalizeProductionSmokeDispatchInputsTableOutputPath(
-      input.smokeInputsTableOutputPath,
-    );
-  const smokeInputsJsonOutputPath =
-    normalizeProductionSmokeDispatchInputsManifestOutputPath(
-      input.smokeInputsJsonOutputPath,
-    );
-
-  return {
-    outputPath,
-    releaseCheckConfig,
-    requestOutputPaths: {
-      productionSmoke: normalizeProductionSmokeRequestOutputPath(
-        input.requestOutputPaths.productionSmoke,
-      ),
-      productionSmokeInputs: smokeInputsOutputPath,
-      productionSmokeInputsManifest: smokeInputsJsonOutputPath,
-      productionSmokeInputsTable: smokeInputsTableOutputPath,
-      releaseEvidence: outputPath,
-      releaseRequestsManifest: normalizeReleaseRequestsManifestOutputPath(
-        input.requestOutputPaths.releaseRequestsManifest,
-      ),
-      visualMissingReferences: normalizeVisualReferenceMissingOutputPath(
-        input.requestOutputPaths.visualMissingReferences,
-      ),
-      visualReference: normalizeVisualReferenceImportMarkdownOutputPath(
-        input.requestOutputPaths.visualReference,
-      ),
-      visualReferenceHandoff: normalizeVisualReferenceHandoffOutputDir(
-        input.requestOutputPaths.visualReferenceHandoff,
-      ),
-      visualReferenceManifest: normalizeVisualReferenceExportManifestOutputPath(
-        input.requestOutputPaths.visualReferenceManifest,
-      ),
-      visualReferenceTable: normalizeVisualReferenceExportTableOutputPath(
-        input.requestOutputPaths.visualReferenceTable,
-      ),
-    },
-    smokeDispatchConfig: readProductionSmokeDispatchCliConfig(
-      input.smokeDispatchArgs,
-    ),
-    smokeInputsJsonOutputPath,
-    smokeInputsOutputPath,
-    smokeInputsTableOutputPath,
-    visualManifestPath:
-      releaseCheckConfig.visualArtifactDir
-        ? releaseCheckConfig.visualManifestPath
-        : input.visualManifestPath,
-    visualSourceDir: normalizeVisualReferenceSourceDir(input.visualSourceDir),
-  };
-}
-
-export function normalizeReleaseEvidenceRequestOutputPath(value) {
-  try {
-    return normalizeReleaseCheckMarkdownPath(value);
-  } catch (error) {
-    throw new Error(
-      readErrorMessage(error).replaceAll(
-        "Release check Markdown",
-        "Release evidence request",
-      ),
-    );
-  }
-}
-
-function appendValueOption(target, option, optionValue, index, hasInlineValue) {
-  target.push(option, optionValue);
-  return hasInlineValue ? index : index + 1;
-}
-
-function readOptionValue(option, args, index, inlineValue) {
-  if (inlineValue !== null) {
-    return inlineValue;
-  }
-
-  const value = args[index + 1];
-
-  if (!value || value.startsWith("--")) {
-    throw new Error(`${option} requires a value.`);
-  }
-
-  return value;
-}
-
-function splitInlineOption(arg) {
-  const equalsIndex = arg.indexOf("=");
-
-  return equalsIndex === -1
-    ? { option: arg, value: null }
-    : {
-        option: arg.slice(0, equalsIndex),
-        value: arg.slice(equalsIndex + 1),
-      };
-}
-
-function stripPnpmSeparator(args) {
-  return args[0] === "--" ? args.slice(1) : args;
+  return createReleaseEvidenceRequestResolvedConfig(input);
 }
