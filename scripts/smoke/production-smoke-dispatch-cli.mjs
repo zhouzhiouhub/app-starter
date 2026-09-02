@@ -45,9 +45,7 @@ export async function runProductionSmokeDispatchCli(args = [], input = {}) {
     const artifact = createProductionSmokeDispatchArtifact(config);
 
     if (artifact.requireComplete && !artifact.readyToDispatch) {
-      throw new Error(
-        `Missing dispatch inputs: ${artifact.missingInputs.join(", ")}.`,
-      );
+      throw new Error(createIncompleteDispatchErrorMessage(artifact, config));
     }
 
     if (artifact.json) {
@@ -198,6 +196,32 @@ export function formatProductionSmokeDispatch(artifact) {
     ...artifact.inputs.map((input) => `    - ${input.name}: ${input.value}`),
     `  Command: ${artifact.command}`,
   ];
+}
+
+function createIncompleteDispatchErrorMessage(artifact, config) {
+  return [
+    `Missing dispatch inputs: ${artifact.missingInputs.join(", ")}.`,
+    createIncompleteDispatchInputAction(config),
+    "Manual: GitHub Actions > Production Smoke > Run workflow.",
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+function createIncompleteDispatchInputAction(config) {
+  if (config.inputsJsonPath) {
+    return [
+      `Fill ${config.inputsJsonPath} with real workflow_dispatch values.`,
+      `Rerun: pnpm smoke:dispatch -- --inputs-json ${config.inputsJsonPath} --require-complete.`,
+      "Preview without --require-complete.",
+    ].join(" ");
+  }
+
+  return [
+    "Pass real input flags, or run pnpm smoke:request to create",
+    "artifacts/production-smoke/production-smoke-dispatch-inputs.json first.",
+    "Preview with pnpm smoke:dispatch.",
+  ].join(" ");
 }
 
 function splitInlineOption(arg) {

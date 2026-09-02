@@ -151,6 +151,55 @@ test("production smoke dispatch CLI rejects invalid JSON workflow settings", asy
   }
 });
 
+test("production smoke dispatch CLI explains incomplete JSON input manifests", async () => {
+  const root = `tmp/production-smoke-dispatch-incomplete-${process.pid}-${Date.now()}`;
+  const manifestPath = `${root}/dispatch-inputs.json`;
+  const stderr = [];
+
+  try {
+    await mkdir(root, { recursive: true });
+    await writeFile(
+      manifestPath,
+      `${JSON.stringify({
+        inputs: [
+          {
+            name: "visual_artifact_name",
+            placeholder: true,
+            value: "page-builder-visual-fixture-<run_number>",
+          },
+          ...createFilledDispatchInputs().slice(1),
+        ],
+        schemaVersion: productionSmokeDispatchInputsManifestSchemaVersion,
+      })}\n`,
+      "utf8",
+    );
+    const exitCode = await runProductionSmokeDispatchCli(
+      ["--inputs-json", manifestPath, "--require-complete"],
+      { stderr: (line) => stderr.push(line) },
+    );
+    const error = stderr.join("\n");
+
+    assert.equal(exitCode, 1);
+    assert.match(error, /Missing dispatch inputs: visual_artifact_name\./);
+    assert.match(
+      error,
+      new RegExp(`Fill ${escapeRegExp(manifestPath)} with real workflow_dispatch values`),
+    );
+    assert.match(
+      error,
+      new RegExp(
+        `Rerun: pnpm smoke:dispatch -- --inputs-json ${escapeRegExp(
+          manifestPath,
+        )} --require-complete`,
+      ),
+    );
+    assert.match(error, /Preview without --require-complete/);
+    assert.match(error, /Manual: GitHub Actions/);
+  } finally {
+    await rm(root, { force: true, recursive: true });
+  }
+});
+
 function createFilledDispatchInputs() {
   return [
     {
@@ -171,4 +220,8 @@ function createFilledDispatchInputs() {
     { name: "rollback_target", value: "main@6769bd2" },
     { name: "storefront_url", value: "https://store.brand.com" },
   ];
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
 }

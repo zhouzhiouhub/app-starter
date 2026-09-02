@@ -182,6 +182,9 @@ test("production smoke dispatch CLI blocks incomplete formal commands", async ()
     stderr.join("\n"),
     /Missing dispatch inputs: visual_artifact_name/,
   );
+  assert.match(stderr.join("\n"), /Pass real input flags/);
+  assert.match(stderr.join("\n"), /pnpm smoke:request/);
+  assert.match(stderr.join("\n"), /Manual: GitHub Actions/);
 });
 
 test("production smoke dispatch CLI rejects unsafe evidence inputs", async () => {
