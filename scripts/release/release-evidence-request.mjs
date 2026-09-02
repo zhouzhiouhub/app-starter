@@ -1,5 +1,8 @@
 import { createProjectStatusArtifact } from "../project/project-status.mjs";
 import {
+  applyProjectStatusVisualArtifactDiscovery,
+} from "../project/project-status-visual-artifact-config.mjs";
+import {
   createProductionSmokeDispatchArtifact,
 } from "../smoke/production-smoke-dispatch-cli.mjs";
 import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
@@ -67,7 +70,11 @@ export async function runReleaseEvidenceRequestCli(args = [], input = {}) {
 }
 
 export async function createReleaseEvidenceRequest(config, input = {}, generatedAt) {
-  const check = await readReleaseEvidenceCheck(config.releaseCheckConfig, input);
+  const releaseCheckConfig = applyProjectStatusVisualArtifactDiscovery(
+    config.releaseCheckConfig,
+    input,
+  );
+  const check = await readReleaseEvidenceCheck(releaseCheckConfig, input);
   const projectArtifact = createProjectStatusArtifact(check, {
     generatedAt,
     includeAllActions: true,

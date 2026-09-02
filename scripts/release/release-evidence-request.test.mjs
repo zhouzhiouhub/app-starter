@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
+import { mkdirSync, mkdtempSync } from "node:fs";
 import { mkdir, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import test from "node:test";
+import { defaultPageBuilderVisualArtifactDir } from "../visual/page-builder-visual-artifact-check-config.mjs";
+import { writeVisualArtifact } from "../visual/page-builder-visual-artifact-check-test-fixtures.mjs";
 import {
   runReleaseEvidenceRequestCli,
 } from "./release-evidence-request.mjs";
@@ -108,6 +113,48 @@ test("release evidence request CLI prints missing smoke inputs", async () => {
       /First missing visual reference: docs\/visual\/page-builder-references\/hero-banner-desktop\.png/,
     );
   } finally {
+    await rm(root, { force: true, recursive: true });
+  }
+});
+
+test("release evidence request discovers a complete default visual artifact", async () => {
+  const root = mkdtempSync(path.join(tmpdir(), "release-evidence-visual-"));
+  const originalCwd = process.cwd();
+  const outputPath = "artifacts/release/release-evidence-request.md";
+  const stdout = [];
+  let request = null;
+
+  try {
+    process.chdir(root);
+    mkdirSync(defaultPageBuilderVisualArtifactDir, { recursive: true });
+    writeVisualArtifact(defaultPageBuilderVisualArtifactDir);
+
+    const exitCode = await runReleaseEvidenceRequestCli(
+      ["--output", outputPath],
+      {
+        generatedAt: "2026-09-01T00:00:00.000Z",
+        onRequest: (value) => {
+          request = value;
+        },
+        smokeArtifact: { error: new Error("No smoke reports found.") },
+        stdout: (line) => stdout.push(line),
+      },
+    );
+    const smokeChecklist = request.projectArtifact.completionChecklist.items.find(
+      (item) => item.label === "Production Smoke release evidence",
+    );
+
+    assert.equal(exitCode, 0);
+    assert.equal(
+      request.projectArtifact.releaseGate.visual.artifactCheck.artifactDir,
+      defaultPageBuilderVisualArtifactDir,
+    );
+    assert.equal(
+      smokeChecklist.nextSteps.at(-1).value,
+      "pnpm release:check -- --smoke-report <path> --visual-artifact-dir reports/visual/page-builder-fixture",
+    );
+  } finally {
+    process.chdir(originalCwd);
     await rm(root, { force: true, recursive: true });
   }
 });
