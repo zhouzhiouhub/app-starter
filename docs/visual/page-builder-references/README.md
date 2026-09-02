@@ -39,7 +39,7 @@ or corrupted file is rejected during intake.
    `artifacts/visual/page-builder-reference-export-manifest.json`, and the
    terminal summary prints the first missing reference path.
 4. Run `pnpm visual:references:handoff` when the design owner needs the request
-   files plus copied preview screenshots in
+   files plus copied preview screenshots and a handoff README in
    `artifacts/visual/page-builder-reference-handoff`.
 5. Run `pnpm visual:references:check`.
 6. Review the generated Markdown report and fix any missing or empty PNGs.
@@ -79,13 +79,14 @@ prints the first missing reference path. The request includes a
 Desktop / Mobile viewport size. It does not import references or mark visual
 evidence accepted.
 `pnpm visual:references:handoff` writes the same request files plus copied
-preview screenshots and a handoff manifest under
+preview screenshots, a handoff README, and a handoff manifest under
 `artifacts/visual/page-builder-reference-handoff`. Use it when the design owner
-needs a single local directory for export coordination. The handoff manifest
-records each copied preview screenshot's dimensions, byte size, and sha256 so a
-designer or release reviewer can detect empty files, wrong screenshots, or
-stale copies before exporting references; it does not create reference PNGs or
-mark evidence accepted.
+needs a single local directory for export coordination. The README summarizes
+package status, copied previews, and after-delivery commands; the handoff
+manifest records each copied preview screenshot's dimensions, byte size, and
+sha256 so a designer or release reviewer can detect empty files, wrong
+screenshots, or stale copies before exporting references; it does not create
+reference PNGs or mark evidence accepted.
 Use `--output <path>` and `--missing-output <path>` when a release handoff needs
 those request files in a custom evidence directory. Use `--table-output <path>`
 for a custom TSV export task table location, and `--json-output <path>` for a

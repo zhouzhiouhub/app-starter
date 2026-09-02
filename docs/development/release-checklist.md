@@ -86,7 +86,7 @@ later phases are explicitly approved.
   `artifacts/visual/page-builder-reference-export-table.tsv` plus
   `artifacts/visual/page-builder-reference-export-manifest.json`; run
   `pnpm visual:references:handoff` when they need those request files plus
-  copied preview screenshots under
+  copied preview screenshots and a handoff README under
   `artifacts/visual/page-builder-reference-handoff`, then run
   `pnpm visual:references:check`
   to keep JSON and Markdown reference intake reports with missing or imported
@@ -487,11 +487,12 @@ later phases are explicitly approved.
   export manifest, and prints the first missing reference path in the terminal
   summary and Markdown status.
 - `pnpm visual:references:handoff` writes the same request files plus copied
-  preview screenshots and a handoff manifest under
+  preview screenshots, a handoff README, and a handoff manifest under
   `artifacts/visual/page-builder-reference-handoff` for design export
-  coordination. The handoff manifest records each copied preview screenshot's
-  dimensions, byte size, and sha256 so reviewers can spot empty, stale, or
-  wrong previews before design exports are accepted. It does not create
+  coordination. The README summarizes package status, copied previews, and
+  after-delivery commands; the handoff manifest records each copied preview
+  screenshot's dimensions, byte size, and sha256 so reviewers can spot empty,
+  stale, or wrong previews before design exports are accepted. It does not create
   reference PNGs, import references, run measurement, or mark visual evidence
   accepted.
 - Run `pnpm release:check -- --checklist` when the gate is blocked and keep

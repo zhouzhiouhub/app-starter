@@ -17,6 +17,9 @@ import {
   pageBuilderVisualReferenceHandoffSchemaVersion,
 } from "./page-builder-visual-reference-handoff-paths.mjs";
 import {
+  createPageBuilderVisualReferenceHandoffReadme,
+} from "./page-builder-visual-reference-handoff-readme.mjs";
+import {
   writePageBuilderVisualMissingReferencePaths,
   writePageBuilderVisualReferenceExportManifest,
   writePageBuilderVisualReferenceExportTable,
@@ -124,6 +127,14 @@ export async function writePageBuilderVisualReferenceHandoff(
     `${JSON.stringify(handoffManifest, null, 2)}\n`,
     "utf8",
   );
+  await writeFile(
+    paths.readme,
+    createPageBuilderVisualReferenceHandoffReadme({
+      artifact,
+      handoffManifest,
+    }),
+    "utf8",
+  );
 
   return {
     artifact,
@@ -155,6 +166,7 @@ export function createPageBuilderVisualReferenceHandoffManifest(input) {
       handoffManifest: input.paths.handoffManifest,
       missingPaths: input.paths.missingPaths,
       previewDir: input.paths.previewDir,
+      readme: input.paths.readme,
       requestMarkdown: input.paths.requestMarkdown,
       table: input.paths.table,
     },

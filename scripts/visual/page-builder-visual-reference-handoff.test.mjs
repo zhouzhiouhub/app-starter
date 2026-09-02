@@ -72,6 +72,7 @@ test("visual reference handoff CLI writes request files and previews", async () 
       `${outputDir}/page-builder-reference-request.md`,
       "utf8",
     );
+    const readme = readFileSync(`${outputDir}/README.md`, "utf8");
     const table = readFileSync(
       `${outputDir}/page-builder-reference-export-table.tsv`,
       "utf8",
@@ -83,6 +84,7 @@ test("visual reference handoff CLI writes request files and previews", async () 
 
     assert.equal(exitCode, 0);
     assert.match(stdout.join("\n"), /Visual reference handoff package written:/);
+    assert.match(stdout.join("\n"), /Visual reference handoff README written:/);
     assert.match(stdout.join("\n"), /Preview screenshots copied: 12\/12/);
     assert.match(stdout.join("\n"), /Missing references: 1\/12/);
     assert.equal(
@@ -102,8 +104,15 @@ test("visual reference handoff CLI writes request files and previews", async () 
     assert.equal(handoffManifest.missingPreviewCount, 0);
     assert.equal(handoffManifest.missingCount, 1);
     assert.equal(handoffManifest.requiredReferenceCount, 12);
-    assert.equal(handoffManifest.files.requestMarkdown, `${outputDir}/page-builder-reference-request.md`);
-    assert.equal(handoffManifest.files.previewDir, `${outputDir}/preview-screenshots`);
+    assert.equal(
+      handoffManifest.files.requestMarkdown,
+      `${outputDir}/page-builder-reference-request.md`,
+    );
+    assert.equal(handoffManifest.files.readme, `${outputDir}/README.md`);
+    assert.equal(
+      handoffManifest.files.previewDir,
+      `${outputDir}/preview-screenshots`,
+    );
     assert.deepEqual(handoffManifest.previewScreenshots[0], {
       byteSize: expectedPreview.length,
       component: "hero-banner",
@@ -123,6 +132,10 @@ test("visual reference handoff CLI writes request files and previews", async () 
     assert.equal(missingPaths, `${sourceDir}/spec-table-mobile.png\n`);
     assert.match(request, /# Page Builder Design Reference Request/);
     assert.match(request, /Do not use fixture screenshots/);
+    assert.match(readme, /# Page Builder Visual Reference Handoff/);
+    assert.match(readme, /Missing references: `1\/12`/);
+    assert.match(readme, new RegExp(`sha256 \`${expectedPreviewSha256}\``));
+    assert.match(readme, /After Design Delivery/);
     assert.match(table, /^component\tviewport\tstatus/m);
   } finally {
     rmSync(root, { force: true, recursive: true });
@@ -253,6 +266,7 @@ test("visual reference handoff help and docs expose the command", async () => {
   assert.equal(exitCode, 0);
   assert.match(help, /pnpm visual:references:handoff/);
   assert.match(help, /copied preview screenshots/);
+  assert.match(help, /handoff README/);
   assert.match(help, /sha256 checksums/);
   assert.match(help, /does not\s+create\s+reference PNGs/i);
   assert.match(packageJson, /"visual:references:handoff"/);
@@ -260,10 +274,13 @@ test("visual reference handoff help and docs expose the command", async () => {
   assert.match(readme, /pnpm visual:references:handoff/);
   assert.match(readme, /page-builder-reference-handoff/);
   assert.match(setupDoc, /pnpm visual:references:handoff/);
+  assert.match(setupDoc, /handoff README/);
   assert.match(setupDoc, /sha256/);
   assert.match(releaseChecklist, /pnpm visual:references:handoff/);
+  assert.match(releaseChecklist, /handoff README/);
   assert.match(releaseChecklist, /sha256/);
   assert.match(referenceReadme, /pnpm visual:references:handoff/);
+  assert.match(referenceReadme, /handoff README/);
   assert.match(referenceReadme, /sha256/);
 });
 

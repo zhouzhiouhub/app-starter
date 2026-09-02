@@ -84,6 +84,7 @@ export function createPageBuilderVisualReferenceHandoffOutputPaths(outputDir) {
     handoffManifest: `${outputDir}/page-builder-reference-handoff.json`,
     missingPaths: `${outputDir}/page-builder-missing-references.txt`,
     previewDir: `${outputDir}/preview-screenshots`,
+    readme: `${outputDir}/README.md`,
     requestMarkdown: `${outputDir}/page-builder-reference-request.md`,
     table: `${outputDir}/page-builder-reference-export-table.tsv`,
   };

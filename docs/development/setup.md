@@ -322,7 +322,7 @@ export manifest for automation handoff. Its terminal summary and Markdown
 status also print `First missing reference` when a reference PNG is still
 missing.
 `pnpm visual:references:handoff` writes the same request files plus copied
-preview screenshots and a package manifest under
+preview screenshots, a handoff README, and a package manifest under
 `artifacts/visual/page-builder-reference-handoff` for design export
 coordination. The package manifest records each copied preview screenshot's
 dimensions, byte size, and sha256 so reviewers can detect empty, stale, or
@@ -498,9 +498,10 @@ component/viewport export task table and
 machine-readable export manifest.
 Use `pnpm visual:references:handoff` when the design owner needs those request
 files together with copied preview screenshots in
-`artifacts/visual/page-builder-reference-handoff`; its manifest includes copied
-preview dimensions, byte sizes, and sha256 checksums. It remains a handoff
-package and does not satisfy visual acceptance.
+`artifacts/visual/page-builder-reference-handoff`; its README summarizes the
+package status, copied previews, and after-delivery commands, while its manifest
+includes copied preview dimensions, byte sizes, and sha256 checksums. It remains
+a handoff package and does not satisfy visual acceptance.
 Use `pnpm visual:references:check` for the default release fixture intake
 report.
 
