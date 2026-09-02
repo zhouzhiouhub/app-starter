@@ -49,6 +49,12 @@ function assertPageBuilderVisualCommands(commands, input) {
 }
 
 function assertProductionSmokeHandoff(productionSmoke, input) {
+  assert.deepEqual(
+    productionSmoke.dispatchManifestContext,
+    input.smokeInputsManifest.dispatchManifestContext,
+  );
+  assert.equal(productionSmoke.workflowFile, "production-smoke.yml");
+  assert.equal(productionSmoke.ref, "main");
   assert.equal(
     productionSmoke.validationCommand,
     `pnpm smoke:dispatch -- --inputs-json ${input.smokeInputsJsonOutput} --require-complete`,

@@ -181,6 +181,13 @@ test("production smoke request CLI writes a Markdown handoff", async () => {
     assert.equal(inputsManifest.readyToDispatch, true);
     assert.equal(inputsManifest.inputCount, 7);
     assert.equal(inputsManifest.missingInputCount, 0);
+    assert.deepEqual(inputsManifest.dispatchManifestContext, {
+      inheritedFields: ["workflowFile", "ref", "inputs"],
+      overridePolicy:
+        "Explicit --workflow-file, --ref, and input flags override JSON manifest values.",
+      summary:
+        "JSON input manifest carries workflow file, ref, and input values; explicit CLI flags override manifest values.",
+    });
     assert.equal(inputsManifest.inputs[0].status, "ready");
     assert.equal(inputsManifest.inputs[0].value, "page-builder-visual-fixture-281");
     assert.match(

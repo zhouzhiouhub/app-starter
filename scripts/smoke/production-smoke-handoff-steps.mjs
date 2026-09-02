@@ -16,6 +16,9 @@ import {
 import {
   defaultProductionSmokeDispatchInputsManifestOutputPath,
 } from "./production-smoke-dispatch-inputs-manifest-path.mjs";
+import {
+  productionSmokeDispatchManifestContextSummary,
+} from "./production-smoke-dispatch-inputs-manifest-output.mjs";
 
 const productionSmokeArtifactNames = [
   "production-smoke-report-<run_number>",
@@ -43,8 +46,6 @@ const productionSmokeVisualInputs = [
 const productionSmokeDispatchCommand = createProductionSmokeDispatchCommand();
 const productionSmokeDispatchValidationCommand =
   createProductionSmokeDispatchManifestValidationCommand();
-const productionSmokeDispatchManifestContext =
-  "JSON input manifest carries workflow file, ref, and input values; explicit CLI flags override manifest values.";
 const productionSmokeManualDispatch =
   createProductionSmokeManualDispatchInstruction();
 const productionSmokeRequestCommand = createProductionSmokeRequestCommand();
@@ -80,7 +81,7 @@ export function createProductionSmokeHandoffSteps(options = {}) {
     ),
     createHandoffStep(
       "Dispatch manifest context",
-      productionSmokeDispatchManifestContext,
+      productionSmokeDispatchManifestContextSummary,
     ),
     createHandoffStep("Dispatch template", productionSmokeDispatchCommand),
     createHandoffStep("Manual dispatch", productionSmokeManualDispatch),

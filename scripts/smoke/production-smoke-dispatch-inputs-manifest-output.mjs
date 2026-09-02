@@ -14,10 +14,29 @@ import {
 
 export const productionSmokeDispatchInputsManifestSchemaVersion =
   "production-smoke-dispatch-inputs.v1";
+export const productionSmokeDispatchManifestContextSummary =
+  "JSON input manifest carries workflow file, ref, and input values; explicit CLI flags override manifest values.";
+
+const productionSmokeDispatchManifestContext = {
+  inheritedFields: ["workflowFile", "ref", "inputs"],
+  overridePolicy:
+    "Explicit --workflow-file, --ref, and input flags override JSON manifest values.",
+  summary: productionSmokeDispatchManifestContextSummary,
+};
+
 export {
   defaultProductionSmokeDispatchInputsManifestOutputPath,
   normalizeProductionSmokeDispatchInputsManifestOutputPath,
 } from "./production-smoke-dispatch-inputs-manifest-path.mjs";
+
+export function createProductionSmokeDispatchManifestContext() {
+  return {
+    ...productionSmokeDispatchManifestContext,
+    inheritedFields: [
+      ...productionSmokeDispatchManifestContext.inheritedFields,
+    ],
+  };
+}
 
 export function createProductionSmokeDispatchInputsManifest(dispatchArtifact) {
   const inputs = Array.isArray(dispatchArtifact?.inputs)
@@ -29,6 +48,7 @@ export function createProductionSmokeDispatchInputsManifest(dispatchArtifact) {
 
   return {
     command: dispatchArtifact?.command ?? "",
+    dispatchManifestContext: createProductionSmokeDispatchManifestContext(),
     inputCount: inputs.length,
     inputSources: productionSmokeEvidenceInputSources.map(
       createInputSourceEntry,

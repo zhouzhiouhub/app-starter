@@ -67,6 +67,7 @@ export function createReleaseRequestsManifest(input = {}) {
       status: visual.status ?? "unknown",
     },
     productionSmoke: {
+      dispatchManifestContext: smokeInputsManifest.dispatchManifestContext,
       dispatchCommand: smokeInputsManifest.command,
       inputCount: smokeInputsManifest.inputCount,
       inputSources: smokeInputsManifest.inputSources,
@@ -79,7 +80,9 @@ export function createReleaseRequestsManifest(input = {}) {
       readyToDispatch: smoke.readyToDispatch === true,
       requestPath: outputPaths.productionSmoke ?? null,
       requiredEvidence: smokeInputsManifest.requiredEvidence,
+      ref: smokeInputsManifest.ref,
       validationCommand: smokeInputsManifest.validationCommand,
+      workflowFile: smokeInputsManifest.workflowFile,
       workflowInputs: smokeInputsManifest.workflowInputs,
     },
     releaseEvidence: {
