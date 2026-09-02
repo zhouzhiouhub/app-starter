@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import {
   existsSync,
   mkdirSync,
@@ -72,6 +73,10 @@ test("visual reference handoff CLI writes request files and previews", async () 
       `${outputDir}/page-builder-reference-export-table.tsv`,
       "utf8",
     );
+    const expectedPreview = createTestPng(3, 2);
+    const expectedPreviewSha256 = createHash("sha256")
+      .update(expectedPreview)
+      .digest("hex");
 
     assert.equal(exitCode, 0);
     assert.match(stdout.join("\n"), /Visual reference handoff package written:/);
@@ -97,12 +102,16 @@ test("visual reference handoff CLI writes request files and previews", async () 
     assert.equal(handoffManifest.files.requestMarkdown, `${outputDir}/page-builder-reference-request.md`);
     assert.equal(handoffManifest.files.previewDir, `${outputDir}/preview-screenshots`);
     assert.deepEqual(handoffManifest.previewScreenshots[0], {
+      byteSize: expectedPreview.length,
       component: "hero-banner",
       handoffPath:
         `${outputDir}/preview-screenshots/hero-banner-desktop.png`,
+      height: 2,
+      sha256: expectedPreviewSha256,
       sourcePath: `${root}/artifacts/visual/hero-banner-desktop.png`,
       status: "copied",
       viewport: "desktop",
+      width: 3,
     });
     assert.equal(
       exportManifest.schemaVersion,
@@ -184,7 +193,8 @@ test("visual reference handoff help and docs expose the command", async () => {
   assert.equal(exitCode, 0);
   assert.match(help, /pnpm visual:references:handoff/);
   assert.match(help, /copied preview screenshots/);
-  assert.match(help, /does not\s+create reference PNGs/i);
+  assert.match(help, /sha256 checksums/);
+  assert.match(help, /does not\s+create\s+reference PNGs/i);
   assert.match(packageJson, /"visual:references:handoff"/);
   assert.match(packageJson, /page-builder-reference-handoff/);
   assert.match(readme, /pnpm visual:references:handoff/);

@@ -478,8 +478,11 @@ later phases are explicitly approved.
 - `pnpm visual:references:handoff` writes the same request files plus copied
   preview screenshots and a handoff manifest under
   `artifacts/visual/page-builder-reference-handoff` for design export
-  coordination. It does not create reference PNGs, import references, run
-  measurement, or mark visual evidence accepted.
+  coordination. The handoff manifest records each copied preview screenshot's
+  dimensions, byte size, and sha256 so reviewers can spot empty, stale, or
+  wrong previews before design exports are accepted. It does not create
+  reference PNGs, import references, run measurement, or mark visual evidence
+  accepted.
 - Run `pnpm release:check -- --checklist` when the gate is blocked and keep
   the readiness task output with the failed evidence review.
 - Use the failed check details and suggested fixes from the report review; the

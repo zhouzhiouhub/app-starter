@@ -74,8 +74,9 @@ Options:
 Evidence:
   This command writes a self-contained local handoff directory with the design
   reference request Markdown, missing path list, TSV export table, JSON export
-  manifest, copied preview screenshots, and a handoff manifest. It does not
-  create reference PNGs, import references, measure screenshots, or mark visual
+  manifest, copied preview screenshots, and a handoff manifest with copied
+  preview dimensions, byte sizes, and sha256 checksums. It does not create
+  reference PNGs, import references, measure screenshots, or mark visual
   evidence accepted.`);
 }
 

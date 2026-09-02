@@ -1,7 +1,9 @@
-import { copyFile, mkdir, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
 import { defaultPageBuilderVisualReferenceSourceDir } from "./page-builder-visual-acceptance-constants.mjs";
+import { decodePngImage } from "./png-image-reader.mjs";
 import {
   createPageBuilderVisualReferenceImportArtifact,
   importPageBuilderVisualReferences,
@@ -174,6 +176,7 @@ async function copyPreviewScreenshots(input) {
 async function copyPreviewScreenshot(reference, input) {
   const targetFileName = `${reference.component}-${reference.viewport}.png`;
   const targetPath = `${input.previewDir}/${targetFileName}`;
+  const targetAbsolutePath = path.resolve(input.cwd, targetPath);
 
   try {
     const sourcePath = normalizePreviewScreenshotSourcePath(
@@ -182,15 +185,23 @@ async function copyPreviewScreenshot(reference, input) {
 
     await copyFile(
       path.resolve(input.cwd, sourcePath),
-      path.resolve(input.cwd, targetPath),
+      targetAbsolutePath,
+    );
+    const metadata = await readCopiedPreviewScreenshotMetadata(
+      targetAbsolutePath,
+      targetPath,
     );
 
     return {
+      byteSize: metadata.byteSize,
       component: reference.component,
       handoffPath: targetPath,
+      height: metadata.height,
+      sha256: metadata.sha256,
       sourcePath,
       status: "copied",
       viewport: reference.viewport,
+      width: metadata.width,
     };
   } catch (error) {
     return {
@@ -201,6 +212,18 @@ async function copyPreviewScreenshot(reference, input) {
       viewport: reference.viewport,
     };
   }
+}
+
+async function readCopiedPreviewScreenshotMetadata(filePath, label) {
+  const buffer = await readFile(filePath);
+  const image = decodePngImage(buffer, label);
+
+  return {
+    byteSize: buffer.length,
+    height: image.height,
+    sha256: createHash("sha256").update(buffer).digest("hex"),
+    width: image.width,
+  };
 }
 
 function readOptionValue(option, args, index) {
