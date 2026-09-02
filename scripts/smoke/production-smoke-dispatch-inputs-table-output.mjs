@@ -23,6 +23,7 @@ export function createProductionSmokeDispatchInputsTable(dispatchArtifact) {
       "status",
       "value",
       "source",
+      "release_evidence_required",
       "workflow_required",
       "workflow_description",
     ].join("\t"),
@@ -52,6 +53,7 @@ function createDispatchInputTableRow(input) {
 
   return {
     name: input.name,
+    releaseEvidenceRequired: source !== undefined ? "required" : "optional",
     source: source?.source ?? "",
     status: input.placeholder ? "missing" : "ready",
     value: input.value,
@@ -66,6 +68,7 @@ function formatTableRow(row) {
     row.status,
     row.value,
     row.source,
+    row.releaseEvidenceRequired,
     row.workflowRequired,
     row.workflowDescription,
   ]

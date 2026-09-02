@@ -170,11 +170,11 @@ test("production smoke request CLI writes a Markdown handoff", async () => {
     assert.match(inputsText, /^storefront_url=https:\/\/store\.brand\.com\//m);
     assert.match(
       inputsTable,
-      /^name\tstatus\tvalue\tsource\tworkflow_required\tworkflow_description/m,
+      /^name\tstatus\tvalue\tsource\trelease_evidence_required\tworkflow_required\tworkflow_description/m,
     );
     assert.match(
       inputsTable,
-      /visual_artifact_name\tready\tpage-builder-visual-fixture-281\tPage Builder Visual workflow artifact after visual evidence passes\toptional\tPage Builder Visual artifact name/,
+      /visual_artifact_name\tready\tpage-builder-visual-fixture-281\tPage Builder Visual workflow artifact after visual evidence passes\trequired\toptional\tPage Builder Visual artifact name/,
     );
     assert.equal(inputsManifest.schemaVersion, "production-smoke-dispatch-inputs.v1");
     assert.equal(inputsManifest.status, "ready-to-dispatch");
@@ -189,6 +189,7 @@ test("production smoke request CLI writes a Markdown handoff", async () => {
         "JSON input manifest carries workflow file, ref, and input values; explicit CLI flags override manifest values.",
     });
     assert.equal(inputsManifest.inputs[0].status, "ready");
+    assert.equal(inputsManifest.inputs[0].releaseEvidenceRequired, true);
     assert.equal(inputsManifest.inputs[0].value, "page-builder-visual-fixture-281");
     assert.match(
       inputsManifest.validationCommand,
@@ -295,10 +296,13 @@ test("production smoke request formats dispatch input templates", () => {
 
   assert.match(text, /^visual_artifact_name=page-builder-visual-fixture-281/m);
   assert.match(text, /^visual_artifact_run_id=<Page Builder Visual workflow run id>/m);
-  assert.match(table, /^name\tstatus\tvalue\tsource\tworkflow_required\tworkflow_description/m);
   assert.match(
     table,
-    /^visual_artifact_name\tready\tpage-builder-visual-fixture-281\tPage Builder Visual workflow artifact after visual evidence passes\toptional\tPage Builder Visual artifact name/m,
+    /^name\tstatus\tvalue\tsource\trelease_evidence_required\tworkflow_required\tworkflow_description/m,
+  );
+  assert.match(
+    table,
+    /^visual_artifact_name\tready\tpage-builder-visual-fixture-281\tPage Builder Visual workflow artifact after visual evidence passes\trequired\toptional\tPage Builder Visual artifact name/m,
   );
   assert.match(
     table,
@@ -311,7 +315,9 @@ test("production smoke request formats dispatch input templates", () => {
     "local_verification_run_url",
   ]);
   assert.equal(manifest.inputs[0].status, "ready");
+  assert.equal(manifest.inputs[0].releaseEvidenceRequired, true);
   assert.equal(manifest.inputs[1].status, "missing");
+  assert.equal(manifest.inputs[1].releaseEvidenceRequired, true);
 });
 
 test("production smoke request command is exposed in package CI and docs", async () => {

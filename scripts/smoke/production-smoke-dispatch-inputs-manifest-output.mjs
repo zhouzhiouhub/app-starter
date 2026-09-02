@@ -103,6 +103,7 @@ function createManifestInputEntry(input) {
   return {
     name: input.name,
     placeholder: input.placeholder === true,
+    releaseEvidenceRequired: source !== undefined,
     source: source?.source ?? "",
     status: input.placeholder ? "missing" : "ready",
     value: input.value,

@@ -323,6 +323,7 @@ function createProductionSmokeHandoff() {
       {
         name: "visual_artifact_name",
         placeholder: true,
+        releaseEvidenceRequired: true,
         source: "Page Builder Visual workflow artifact",
         status: "missing",
         value: "page-builder-visual-fixture-<run_number>",

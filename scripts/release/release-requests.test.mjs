@@ -246,7 +246,7 @@ test("release requests CLI writes every local request Markdown", async () => {
     );
     assert.match(
       smokeInputsTable,
-      /^name\tstatus\tvalue\tsource\tworkflow_required\tworkflow_description/m,
+      /^name\tstatus\tvalue\tsource\trelease_evidence_required\tworkflow_required\tworkflow_description/m,
     );
     assert.equal(
       smokeInputsManifest.schemaVersion,
@@ -255,6 +255,7 @@ test("release requests CLI writes every local request Markdown", async () => {
     assert.equal(smokeInputsManifest.status, "needs-inputs");
     assert.equal(smokeInputsManifest.inputCount, 7);
     assert.equal(smokeInputsManifest.missingInputCount, 7);
+    assert.equal(smokeInputsManifest.inputs[0].releaseEvidenceRequired, true);
     assert.equal(smokeInputsManifest.inputs[0].source, "Page Builder Visual workflow artifact after visual evidence passes");
   } finally {
     await rm(root, { force: true, recursive: true });

@@ -77,6 +77,10 @@ function assertSmokeInputs(smoke) {
   for (const input of smoke.inputs) {
     assertRecord(input, "productionSmoke.inputs");
     assertString(input.name, "productionSmoke.inputs.name");
+    assertBoolean(
+      input.releaseEvidenceRequired,
+      "productionSmoke.inputs.releaseEvidenceRequired",
+    );
     assertString(input.source, "productionSmoke.inputs.source");
     assertEnum(input.status, smokeInputStatuses, "productionSmoke.inputs.status");
     assertString(input.value, "productionSmoke.inputs.value");
