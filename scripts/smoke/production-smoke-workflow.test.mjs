@@ -318,7 +318,7 @@ test("infra runbook covers production smoke deployment and rollback", async () =
     /project-status-<run_number>/,
     /pnpm smoke:release-check -- artifacts\/production-smoke\/smoke-report\.json/,
     /pnpm release:handoff -- --require-ready/,
-    /pnpm release:notes -- --release-tag/,
+    /pnpm release:notes -- --release-tag v0\.1\.0 .*--local-verification-run-url https:\/\/github\.com\/zhouzhiouhub\/app-starter\/actions\/runs\/122 .*--local-verification-artifact local-verification-122/,
     /rollback_target/,
     /Do not run\s+destructive database rollbacks/,
     /Page rollback API or Admin rollback action/,
