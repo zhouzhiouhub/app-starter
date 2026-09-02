@@ -72,6 +72,13 @@ function assertProjectCompletionHandoff(projectCompletion) {
   );
   assert.equal(projectCompletion.nextActionPreview[1].area, "Page Builder Visual");
   assert.equal(projectCompletion.nextActionPreview[2].area, "Release Evidence");
+  assert.deepEqual(projectCompletion.projectStatusHandoff, {
+    command:
+      "pnpm project:status -- --all-actions --output tmp/project-status.json --markdown-output tmp/project-status-handoff.md",
+    jsonPath: "tmp/project-status.json",
+    markdownPath: "tmp/project-status-handoff.md",
+    shortcut: "pnpm run verify:local",
+  });
   assert.ok(
     projectCompletion.nextActionCount >= projectCompletion.nextActionPreviewCount,
   );

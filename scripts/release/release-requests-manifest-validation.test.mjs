@@ -124,6 +124,40 @@ test("release requests manifest validation rejects incomplete checklist steps", 
   );
 });
 
+test("release requests manifest validation rejects incomplete project status handoff", () => {
+  assert.throws(
+    () =>
+      assertReleaseRequestsManifest(
+        createChangedManifest((manifest) => {
+          delete manifest.projectCompletion.projectStatusHandoff;
+        }),
+      ),
+    /Release requests manifest projectCompletion\.projectStatusHandoff/u,
+  );
+
+  assert.throws(
+    () =>
+      assertReleaseRequestsManifest(
+        createChangedManifest((manifest) => {
+          manifest.projectCompletion.projectStatusHandoff.command =
+            "pnpm project:status -- --summary";
+        }),
+      ),
+    /Release requests manifest projectCompletion\.projectStatusHandoff\.command must include --all-actions/u,
+  );
+
+  assert.throws(
+    () =>
+      assertReleaseRequestsManifest(
+        createChangedManifest((manifest) => {
+          manifest.projectCompletion.projectStatusHandoff.markdownPath =
+            "tmp/other-project-status.md";
+        }),
+      ),
+    /Release requests manifest projectCompletion\.projectStatusHandoff\.command must include project status Markdown path/u,
+  );
+});
+
 test("release requests manifest validation rejects incomplete dispatch context", () => {
   assert.throws(
     () =>
@@ -251,6 +285,13 @@ function createProjectCompletionHandoff() {
     ],
     nextActionPreviewCount: 1,
     phase: "MVP release verification",
+    projectStatusHandoff: {
+      command:
+        "pnpm project:status -- --all-actions --output tmp/project-status.json --markdown-output tmp/project-status-handoff.md",
+      jsonPath: "tmp/project-status.json",
+      markdownPath: "tmp/project-status-handoff.md",
+      shortcut: "pnpm run verify:local",
+    },
     releaseDecision: "not-ready",
     releaseEvidenceStatus: "needs-evidence",
     releaseReady: false,

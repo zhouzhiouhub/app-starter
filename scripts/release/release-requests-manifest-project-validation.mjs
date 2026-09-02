@@ -27,6 +27,7 @@ export function assertProjectCompletion(project) {
   );
   assertNextActionPreview(project);
   assertString(project.phase, "projectCompletion.phase");
+  assertProjectStatusHandoff(project.projectStatusHandoff);
   assertEnum(
     project.releaseDecision,
     releaseDecisions,
@@ -49,6 +50,47 @@ export function assertProjectCompletion(project) {
     fail(
       "projectCompletion.nextActionCount",
       "must cover nextActionPreview length",
+    );
+  }
+}
+
+function assertProjectStatusHandoff(handoff) {
+  assertRecord(handoff, "projectCompletion.projectStatusHandoff");
+  assertString(
+    handoff.command,
+    "projectCompletion.projectStatusHandoff.command",
+  );
+  assertString(
+    handoff.jsonPath,
+    "projectCompletion.projectStatusHandoff.jsonPath",
+  );
+  assertString(
+    handoff.markdownPath,
+    "projectCompletion.projectStatusHandoff.markdownPath",
+  );
+  assertString(
+    handoff.shortcut,
+    "projectCompletion.projectStatusHandoff.shortcut",
+  );
+
+  if (!handoff.command.includes("--all-actions")) {
+    fail(
+      "projectCompletion.projectStatusHandoff.command",
+      "must include --all-actions",
+    );
+  }
+
+  if (!handoff.command.includes(handoff.jsonPath)) {
+    fail(
+      "projectCompletion.projectStatusHandoff.command",
+      "must include project status JSON path",
+    );
+  }
+
+  if (!handoff.command.includes(handoff.markdownPath)) {
+    fail(
+      "projectCompletion.projectStatusHandoff.command",
+      "must include project status Markdown path",
     );
   }
 }

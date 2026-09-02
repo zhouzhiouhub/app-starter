@@ -39,8 +39,8 @@ Evidence:
   This command refreshes all local evidence request files, the missing Page
   Builder reference path list, the reference export task table and JSON manifest,
   the visual reference handoff package, the release:requests bundle manifest,
-  and the Production Smoke workflow input template, TSV input table, and JSON
-  input manifest for blocked release handoff.
+  the Project Status handoff pointer, and the Production Smoke workflow input
+  template, TSV input table, and JSON input manifest for blocked release handoff.
   Custom output paths are also reflected in the
   combined release evidence request refresh command, output summary, and
   embedded request commands. It does not import visual references, run

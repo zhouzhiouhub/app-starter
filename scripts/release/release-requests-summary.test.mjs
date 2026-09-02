@@ -91,6 +91,9 @@ test("release requests manifest summary prints project completion context", () =
           },
         ],
         nextActionPreviewCount: 3,
+        projectStatusHandoff: {
+          markdownPath: "tmp/project-status-handoff.md",
+        },
         releaseDecision: "not-ready",
         releaseEvidenceStatus: "needs-evidence",
         status: "needs-evidence",
@@ -103,6 +106,7 @@ test("release requests manifest summary prints project completion context", () =
     "Project completion: needs-evidence (1/3 complete, 2 need evidence)",
     "Release decision: not-ready; release evidence: needs-evidence",
     "Next action preview: 3/15",
+    "Project status handoff: tmp/project-status-handoff.md",
     "  - Production Smoke: Production smoke artifact missing",
     "    First step: Smoke request: pnpm smoke:request",
   ]);

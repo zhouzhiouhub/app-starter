@@ -30,6 +30,9 @@ import {
 import {
   defaultReleaseRequestsManifestOutputPath,
 } from "./release-requests-manifest-path.mjs";
+import {
+  createReleaseProjectStatusHandoff,
+} from "./release-project-status-handoff.mjs";
 
 const maxMarkdownTextLength = 420;
 const maxMarkdownCommandLength = 1200;
@@ -74,6 +77,7 @@ export function createReleaseEvidenceRequestMarkdown(input) {
   const releaseRequestsManifestOutputPath =
     requestOutputPaths.releaseRequestsManifest ??
     defaultReleaseRequestsManifestOutputPath;
+  const projectStatusHandoff = createReleaseProjectStatusHandoff(project);
   const firstMissingVisualReference = Array.isArray(visual.missing)
     ? visual.missing[0]?.expectedPath
     : null;
@@ -99,6 +103,16 @@ export function createReleaseEvidenceRequestMarkdown(input) {
     )}`,
     `- Release requests manifest: ${formatCode(
       releaseRequestsManifestOutputPath,
+    )}`,
+    `- Project Status handoff: ${formatCode(
+      projectStatusHandoff.command,
+      maxMarkdownCommandLength,
+    )}`,
+    `- Project Status handoff JSON: ${formatCode(
+      projectStatusHandoff.jsonPath,
+    )}`,
+    `- Project Status handoff Markdown: ${formatCode(
+      projectStatusHandoff.markdownPath,
     )}`,
     `- Release evidence request: ${formatCode(
       createReleaseEvidenceRequestCommand(requestOutputPaths),

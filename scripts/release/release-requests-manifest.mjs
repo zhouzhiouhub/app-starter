@@ -26,6 +26,9 @@ import {
 import {
   assertReleaseRequestsManifest,
 } from "./release-requests-manifest-validation.mjs";
+import {
+  createReleaseProjectStatusHandoff,
+} from "./release-project-status-handoff.mjs";
 
 export {
   defaultReleaseRequestsManifestOutputPath,
@@ -155,6 +158,7 @@ function createProjectCompletionSummary(project) {
     nextActionPreview,
     nextActionPreviewCount: nextActionPreview.length,
     phase: readString(project.phase, "unknown"),
+    projectStatusHandoff: createReleaseProjectStatusHandoff(project),
     releaseDecision: readString(
       project.completionSummary?.releaseDecision,
       "unknown",

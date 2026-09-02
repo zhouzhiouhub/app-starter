@@ -16,6 +16,11 @@ export function printReleaseRequestsManifestSummary(manifest, writeLine) {
   writeLine(
     `Next action preview: ${completion.nextActionPreviewCount}/${completion.nextActionCount}`,
   );
+  if (completion.projectStatusHandoff?.markdownPath) {
+    writeLine(
+      `Project status handoff: ${completion.projectStatusHandoff.markdownPath}`,
+    );
+  }
 
   if (nextAction) {
     writeLine(`  - ${nextAction.area}: ${nextAction.label}`);

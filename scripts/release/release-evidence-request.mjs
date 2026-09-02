@@ -168,7 +168,8 @@ Smoke evidence inputs:
 Evidence:
   This command writes one release-facing request that embeds the Page Builder
   design reference request, reference export table and JSON manifest paths, the
-  visual handoff package path, release:requests bundle manifest path,
+  visual handoff package path, release:requests bundle manifest path, Project
+  Status handoff command and JSON/Markdown paths,
   Production Smoke request, dispatch input template path, dispatch input table
   path, and dispatch input JSON manifest path.
   The terminal summary and Markdown request status report release readiness,

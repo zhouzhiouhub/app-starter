@@ -179,6 +179,18 @@ function assertReleaseEvidenceRequestOutputs(markdown, paths) {
       )}\``,
     ),
   );
+  assert.match(
+    markdown,
+    /Project Status handoff: `pnpm project:status -- --all-actions --output tmp\/project-status\.json --markdown-output tmp\/project-status-handoff\.md`/,
+  );
+  assert.match(
+    markdown,
+    /Project Status handoff JSON: `tmp\/project-status\.json`/,
+  );
+  assert.match(
+    markdown,
+    /Project Status handoff Markdown: `tmp\/project-status-handoff\.md`/,
+  );
 }
 
 function assertVisualReferenceRequest(markdown, paths) {
