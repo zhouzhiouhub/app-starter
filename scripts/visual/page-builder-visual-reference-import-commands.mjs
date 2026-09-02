@@ -1,21 +1,19 @@
 import {
-  defaultPageBuilderVisualAcceptanceManifestPath,
-  defaultPageBuilderVisualReferenceSourceDir,
-} from "./page-builder-visual-acceptance-constants.mjs";
-import { defaultPageBuilderVisualArtifactDir } from "./page-builder-visual-artifact-check-config.mjs";
-import { createArtifactPaths } from "./page-builder-visual-artifact-check-paths.mjs";
-import { pageBuilderVisualCaptureDefaultOutputDir } from "./page-builder-visual-capture-constants.mjs";
-import {
-  defaultPageBuilderVisualMissingReferencesOutputPath,
-  defaultPageBuilderVisualReferenceExportManifestOutputPath,
-  defaultPageBuilderVisualReferenceExportTableOutputPath,
-} from "./page-builder-visual-reference-missing-output.mjs";
+  createAcceptanceManifestArgument,
+  createCaptureOutputDirOption,
+  createManifestOption,
+  createSourceDirOption,
+  inferVisualArtifactDir,
+  isDefaultReferenceCheckContext,
+  joinCommand,
+} from "./page-builder-visual-reference-command-context.mjs";
+
+export {
+  createPageBuilderVisualReferenceRequestCommand,
+} from "./page-builder-visual-reference-request-command.mjs";
 
 const defaultReferenceCheckCommand = "pnpm visual:references:check";
 const defaultMissingPathsCommand = "pnpm --silent visual:references:missing";
-const defaultReferenceRequestCommand = "pnpm visual:references:request";
-const defaultPageBuilderVisualReferenceRequestOutputPath =
-  "artifacts/visual/page-builder-reference-request.md";
 
 export function createPageBuilderVisualReferenceCaptureCommand(report) {
   const captureOutputDir = inferVisualArtifactDir(report.manifestPath);
@@ -73,26 +71,6 @@ export function createPageBuilderVisualReferenceMissingPathsCommand(report) {
   ]);
 }
 
-export function createPageBuilderVisualReferenceRequestCommand(report) {
-  if (isDefaultReferenceRequestContext(report)) {
-    return defaultReferenceRequestCommand;
-  }
-
-  const outputDir = inferVisualArtifactDir(report.manifestPath);
-
-  return joinCommand([
-    "pnpm",
-    "visual:references:request",
-    "--",
-    ...createSourceDirOption(report),
-    ...createReferenceRequestManifestOption(report),
-    ...createReferenceRequestOutputOption(report, outputDir),
-    ...createReferenceRequestMissingOutputOption(report, outputDir),
-    ...createReferenceRequestTableOutputOption(report, outputDir),
-    ...createReferenceRequestJsonOutputOption(report, outputDir),
-  ]);
-}
-
 export function createPageBuilderVisualReferenceImportWriteCommand(report) {
   return joinCommand([
     "pnpm",
@@ -136,185 +114,4 @@ export function createPageBuilderVisualReferenceAcceptanceCommand(report) {
     "--require-accepted",
     ...createAcceptanceManifestArgument(report),
   ]);
-}
-
-function createManifestOption(report) {
-  const manifestPath = readManifestPath(report);
-
-  if (manifestPath === defaultPageBuilderVisualAcceptanceManifestPath) {
-    return [];
-  }
-
-  return ["--manifest", manifestPath];
-}
-
-function createAcceptanceManifestArgument(report) {
-  const manifestPath = readManifestPath(report);
-
-  if (manifestPath === defaultPageBuilderVisualAcceptanceManifestPath) {
-    return [];
-  }
-
-  return [manifestPath];
-}
-
-function joinCommand(parts) {
-  return parts.join(" ");
-}
-
-function createCaptureOutputDirOption(captureOutputDir) {
-  if (captureOutputDir === pageBuilderVisualCaptureDefaultOutputDir) {
-    return [];
-  }
-
-  return ["--output-dir", captureOutputDir];
-}
-
-function inferVisualArtifactDir(manifestPath) {
-  const normalized = readManifestPath({ manifestPath }).replaceAll("\\", "/");
-
-  if (normalized === defaultPageBuilderVisualAcceptanceManifestPath) {
-    return pageBuilderVisualCaptureDefaultOutputDir;
-  }
-
-  if (
-    !normalized.startsWith("artifacts/visual/") &&
-    !normalized.startsWith("reports/visual/")
-  ) {
-    return pageBuilderVisualCaptureDefaultOutputDir;
-  }
-
-  return normalized.slice(0, normalized.lastIndexOf("/"));
-}
-
-function isDefaultReferenceCheckContext(report) {
-  const artifactPaths = createArtifactPaths(defaultPageBuilderVisualArtifactDir);
-
-  return (
-    readManifestPath(report).replaceAll("\\", "/") === artifactPaths.manifest &&
-    readSourceDir(report) === defaultPageBuilderVisualReferenceSourceDir
-  );
-}
-
-function isDefaultReferenceRequestContext(report) {
-  return (
-    isDefaultReferenceCheckContext(report) &&
-    readReferenceRequestOutputPath(
-      report,
-      pageBuilderVisualCaptureDefaultOutputDir,
-    ) === defaultPageBuilderVisualReferenceRequestOutputPath &&
-    readReferenceRequestMissingOutputPath(
-      report,
-      pageBuilderVisualCaptureDefaultOutputDir,
-    ) === defaultPageBuilderVisualMissingReferencesOutputPath &&
-    readReferenceRequestTableOutputPath(
-      report,
-      pageBuilderVisualCaptureDefaultOutputDir,
-    ) === defaultPageBuilderVisualReferenceExportTableOutputPath &&
-    readReferenceRequestJsonOutputPath(
-      report,
-      pageBuilderVisualCaptureDefaultOutputDir,
-    ) === defaultPageBuilderVisualReferenceExportManifestOutputPath
-  );
-}
-
-function readManifestPath(report) {
-  return typeof report.manifestPath === "string" &&
-    report.manifestPath.length > 0
-    ? report.manifestPath
-    : defaultPageBuilderVisualAcceptanceManifestPath;
-}
-
-function readSourceDir(report) {
-  return typeof report.sourceDir === "string" && report.sourceDir.length > 0
-    ? report.sourceDir
-    : defaultPageBuilderVisualReferenceSourceDir;
-}
-
-function readReferenceRequestOutputPath(report, outputDir) {
-  return typeof report.requestOutputPath === "string" &&
-    report.requestOutputPath.length > 0
-    ? report.requestOutputPath
-    : readDefaultReferenceRequestOutputPath(report, outputDir);
-}
-
-function readReferenceRequestMissingOutputPath(report, outputDir) {
-  return typeof report.missingOutputPath === "string" &&
-    report.missingOutputPath.length > 0
-    ? report.missingOutputPath
-    : readDefaultReferenceRequestMissingOutputPath(report, outputDir);
-}
-
-function readReferenceRequestTableOutputPath(report, outputDir) {
-  return typeof report.tableOutputPath === "string" &&
-    report.tableOutputPath.length > 0
-    ? report.tableOutputPath
-    : readDefaultReferenceRequestTableOutputPath(report, outputDir);
-}
-
-function readReferenceRequestJsonOutputPath(report, outputDir) {
-  return typeof report.jsonOutputPath === "string" &&
-    report.jsonOutputPath.length > 0
-    ? report.jsonOutputPath
-    : readDefaultReferenceRequestJsonOutputPath(report, outputDir);
-}
-
-function createSourceDirOption(report) {
-  const sourceDir = readSourceDir(report);
-
-  if (sourceDir === defaultPageBuilderVisualReferenceSourceDir) {
-    return [];
-  }
-
-  return ["--source-dir", sourceDir];
-}
-
-function createReferenceRequestManifestOption(report) {
-  return isDefaultReferenceCheckContext(report) ? [] : createManifestOption(report);
-}
-
-function createReferenceRequestOutputOption(report, outputDir) {
-  return ["--output", readReferenceRequestOutputPath(report, outputDir)];
-}
-
-function createReferenceRequestMissingOutputOption(report, outputDir) {
-  return [
-    "--missing-output",
-    readReferenceRequestMissingOutputPath(report, outputDir),
-  ];
-}
-
-function createReferenceRequestTableOutputOption(report, outputDir) {
-  return ["--table-output", readReferenceRequestTableOutputPath(report, outputDir)];
-}
-
-function createReferenceRequestJsonOutputOption(report, outputDir) {
-  return [
-    "--json-output",
-    readReferenceRequestJsonOutputPath(report, outputDir),
-  ];
-}
-
-function readDefaultReferenceRequestOutputPath(report, outputDir) {
-  return isDefaultReferenceCheckContext(report)
-    ? defaultPageBuilderVisualReferenceRequestOutputPath
-    : `${outputDir}/page-builder-reference-request.md`;
-}
-
-function readDefaultReferenceRequestMissingOutputPath(report, outputDir) {
-  return isDefaultReferenceCheckContext(report)
-    ? defaultPageBuilderVisualMissingReferencesOutputPath
-    : `${outputDir}/page-builder-missing-references.txt`;
-}
-
-function readDefaultReferenceRequestTableOutputPath(report, outputDir) {
-  return isDefaultReferenceCheckContext(report)
-    ? defaultPageBuilderVisualReferenceExportTableOutputPath
-    : `${outputDir}/page-builder-reference-export-table.tsv`;
-}
-
-function readDefaultReferenceRequestJsonOutputPath(report, outputDir) {
-  return isDefaultReferenceCheckContext(report)
-    ? defaultPageBuilderVisualReferenceExportManifestOutputPath
-    : `${outputDir}/page-builder-reference-export-manifest.json`;
 }
