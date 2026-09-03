@@ -61,6 +61,7 @@ test("release requests help and summary expose the bundle command", async () => 
   );
   assert.match(help, /refreshes all local evidence request files/);
   assert.match(help, /Custom output paths are also reflected/);
+  assert.match(help, /first missing\s+visual reference/i);
   assert.match(help, /first missing\s+Production Smoke input replacement reason/i);
   assert.match(help, /--requests-manifest-output <path>/);
   assert.match(help, /--project-status-output <path>/);
@@ -108,6 +109,8 @@ test("release requests manifest summary prints project completion context", () =
       pageBuilderVisual: {
         failedMeasurementCount: 2,
         failedMeasurementViewportCount: 1,
+        firstMissingReference:
+          "docs/visual/page-builder-references/hero-banner-desktop.png",
         firstFailedMeasurement:
           "hero-banner.desktop: visualMatchPercent >= 95 (current 0.15)",
       },
@@ -131,6 +134,7 @@ test("release requests manifest summary prints project completion context", () =
     "Next action preview: 3/15",
     "Project status handoff: tmp/project-status-handoff.md",
     "Visual measurements: 1 measured viewports failing, 2 failed metrics, first failed hero-banner.desktop: visualMatchPercent >= 95 (current 0.15)",
+    "First missing visual reference: docs/visual/page-builder-references/hero-banner-desktop.png",
     "First missing Production Smoke input: visual_artifact_name - replace placeholder page-builder-visual-fixture-<run_number> with Page Builder Visual workflow artifact after visual evidence passes",
     "  - Production Smoke: Production smoke artifact missing",
     "    First step: Smoke request: pnpm smoke:request",

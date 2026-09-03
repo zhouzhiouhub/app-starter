@@ -56,6 +56,7 @@ test("published page lookup forwards the safe storefront host", async () => {
     "store.brand-platform.com",
   );
   assert.equal(requests[0].init.redirect, "manual");
+  assertPublicApiAbortSignal(requests[0].init.signal);
   assert.equal(requests[0].init.next.tags.length, 3);
   assert.match(
     requests[0].init.next.tags[0],
@@ -238,7 +239,8 @@ test("preview page lookup fetches only compact token candidates", async () => {
 
   assert.equal(requests.length, 1);
   assert.match(requests[0].url, /\/public\/preview\/payload\.a{43}$/);
-  assert.deepEqual(requests[0].init, {
+  assertPublicApiAbortSignal(requests[0].init.signal);
+  assert.deepEqual(readFetchInitWithoutSignal(requests[0].init), {
     cache: "no-store",
     redirect: "manual",
   });
@@ -306,7 +308,8 @@ test("preview page lookup forwards the safe storefront host", async () => {
 
   assert.equal(requests.length, 1);
   assert.match(requests[0].url, /\/public\/preview\/payload\.a{43}$/);
-  assert.deepEqual(requests[0].init, {
+  assertPublicApiAbortSignal(requests[0].init.signal);
+  assert.deepEqual(readFetchInitWithoutSignal(requests[0].init), {
     cache: "no-store",
     headers: {
       "x-storefront-host": "store.brand-platform.com",
@@ -314,6 +317,16 @@ test("preview page lookup forwards the safe storefront host", async () => {
     redirect: "manual",
   });
 });
+
+function assertPublicApiAbortSignal(signal) {
+  assert.equal(signal instanceof AbortSignal, true);
+  assert.equal(signal.aborted, false);
+}
+
+function readFetchInitWithoutSignal(init) {
+  const { signal: _signal, ...fetchInit } = init;
+  return fetchInit;
+}
 
 function jsonResponse(data) {
   return {

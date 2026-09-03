@@ -25,6 +25,7 @@ export function printReleaseRequestsManifestSummary(manifest, writeLine) {
     );
   }
   printVisualMeasurementSummary(manifest.pageBuilderVisual, writeLine);
+  printFirstMissingVisualReference(manifest.pageBuilderVisual, writeLine);
   printFirstMissingSmokeInput(manifest.productionSmoke, writeLine);
 
   if (nextAction) {
@@ -38,6 +39,16 @@ function printVisualMeasurementSummary(visual, writeLine) {
 
   if (summary) {
     writeLine(`Visual measurements: ${summary}`);
+  }
+}
+
+function printFirstMissingVisualReference(visual, writeLine) {
+  const expectedPath =
+    readNonEmptyString(visual?.firstMissingReference) ??
+    readNonEmptyString(visual?.missingReferences?.[0]);
+
+  if (expectedPath) {
+    writeLine(`First missing visual reference: ${expectedPath}`);
   }
 }
 
@@ -56,6 +67,10 @@ function printFirstMissingSmokeInput(smoke, writeLine) {
       : "";
 
   writeLine(`First missing Production Smoke input: ${input.name}${reason}`);
+}
+
+function readNonEmptyString(value) {
+  return typeof value === "string" && value.length > 0 ? value : null;
 }
 
 export function printReleaseRequestFiles(outputPaths, writeLine) {

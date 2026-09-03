@@ -60,6 +60,8 @@ test("public translation lookup forwards storefront hosts for cache scoping", as
     `${requests[0].init.next.tags[0]}:en-US`,
   );
   assert.equal(requests[0].init.redirect, "manual");
+  assert.equal(requests[0].init.signal instanceof AbortSignal, true);
+  assert.equal(requests[0].init.signal.aborted, false);
 });
 
 test("public translation lookup can bypass ISR caching for preview routes", async () => {
@@ -94,6 +96,8 @@ test("public translation lookup can bypass ISR caching for preview routes", asyn
   assert.equal(requests[0].init.cache, "no-store");
   assert.equal(requests[0].init.next, undefined);
   assert.equal(requests[0].init.redirect, "manual");
+  assert.equal(requests[0].init.signal instanceof AbortSignal, true);
+  assert.equal(requests[0].init.signal.aborted, false);
 });
 
 test("public translation lookup accepts declared fallback locale messages", async () => {

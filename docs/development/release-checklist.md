@@ -490,9 +490,9 @@ later phases are explicitly approved.
   schemaVersion, ready-state consistency, and key count consistency. The
   terminal summary prints `Project completion`, release decision, release
   evidence status, next action preview count, Project Status handoff Markdown
-  path, the first missing Production Smoke input replacement reason, and the
-  first next action so the release operator can see the current blocker without
-  opening the JSON.
+  path, the first missing visual reference, the first missing Production Smoke
+  input replacement reason, and the first next action so the release operator
+  can see the current blocker without opening the JSON.
 - Run `pnpm release:evidence-request` before cross-functional release review
   when design reference export and Production Smoke execution need one shared
   request file. Its Request Status includes `First missing visual reference`

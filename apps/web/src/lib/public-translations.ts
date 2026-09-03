@@ -17,6 +17,7 @@ import {
   cancelPublicApiResponseBody,
   readPublicApiJson,
 } from "./public-api-response.ts";
+import { createPublicApiAbortSignal } from "./public-api-timeout.ts";
 
 const apiBaseUrl = getApiBaseUrl();
 const forbiddenPublicTranslationMessageKeys = new Set([
@@ -75,6 +76,7 @@ function createPublicTranslationFetchInit(input: {
   const init = {
     headers: createStorefrontHostHeaders(input.storefrontHost),
     redirect: "manual" as const,
+    signal: createPublicApiAbortSignal(),
   };
 
   if (input.cacheMode === "no-store") {

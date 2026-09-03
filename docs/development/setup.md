@@ -392,8 +392,9 @@ evidence checklist from the dispatch input manifest. The manifest is validated b
 schemaVersion, ready-state consistency, and key count consistency. The terminal
 summary prints `Project completion`, release decision, release evidence status,
 next action preview count, Project Status handoff Markdown path, and the first
-next action so the release operator can see the current blocker without opening
-the JSON.
+missing visual reference, the first missing Production Smoke input replacement
+reason, and the first next action so the release operator can see the current
+blocker without opening the JSON.
 
 The review command scans the same safe archive roots, recomputes the report
 summary from the stored checks, and highlights R2 / CDN, Admin static app, and

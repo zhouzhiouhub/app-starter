@@ -18,6 +18,7 @@ import {
   cancelPublicApiResponseBody,
   readPublicApiJson,
 } from "./public-api-response.ts";
+import { createPublicApiAbortSignal } from "./public-api-timeout.ts";
 
 const apiBaseUrl = getApiBaseUrl();
 
@@ -62,6 +63,7 @@ export async function listPublishedPages(input?: {
         }),
       },
       redirect: "manual",
+      signal: createPublicApiAbortSignal(),
     });
 
     if (!response.ok) {

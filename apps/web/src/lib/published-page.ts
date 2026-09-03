@@ -21,6 +21,7 @@ import {
   cancelPublicApiResponseBody,
   readPublicApiJson,
 } from "./public-api-response.ts";
+import { createPublicApiAbortSignal } from "./public-api-timeout.ts";
 
 const apiBaseUrl = getApiBaseUrl();
 
@@ -105,6 +106,7 @@ export async function getPreviewPage(
         cache: "no-store",
         ...(headers ? { headers } : {}),
         redirect: "manual",
+        signal: createPublicApiAbortSignal(),
       },
     );
 
@@ -175,6 +177,7 @@ async function fetchPublishedSchema(input: {
           }),
         },
         redirect: "manual",
+        signal: createPublicApiAbortSignal(),
       },
     );
 

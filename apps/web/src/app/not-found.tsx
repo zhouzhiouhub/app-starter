@@ -1,8 +1,6 @@
 import { ResponsivePageRenderer } from "@app-starter/renderer";
+import { createFallbackPage } from "@app-starter/schema";
 import type { Metadata } from "next";
-import { getNotFoundPage } from "../lib/published-page";
-import { getPublicTranslationMessages } from "../lib/public-translations";
-import { readStorefrontRequestHost } from "../lib/storefront-request-host";
 
 export const metadata: Metadata = {
   robots: {
@@ -12,21 +10,11 @@ export const metadata: Metadata = {
   title: "Page not found",
 };
 
-export default async function NotFoundPage() {
-  const storefrontHost = await readStorefrontRequestHost();
-  const schema = await getNotFoundPage({
-    locale: "en-US",
-    storefrontHost,
-  });
-  const translationMessages = await getPublicTranslationMessages({
-    locale: schema.meta.locale,
-    storefrontHost,
-  });
-
+export default function NotFoundPage() {
   return (
     <ResponsivePageRenderer
-      schema={schema}
-      translationMessages={translationMessages}
+      schema={createFallbackPage({ slug: "404" })}
+      translationMessages={{}}
     />
   );
 }
