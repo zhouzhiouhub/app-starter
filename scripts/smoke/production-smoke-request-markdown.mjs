@@ -39,6 +39,7 @@ export function createProductionSmokeRequestMarkdown(dispatchArtifact) {
       dispatchArtifact.readyToDispatch ? "yes" : "no",
     )}`,
     `Missing inputs: ${formatCode(missingInputs)}`,
+    ...formatFirstMissingInput(dispatchArtifact),
     ...formatInputsOutputPath(dispatchArtifact.inputsOutputPath),
     ...formatInputsTableOutputPath(dispatchArtifact.inputsTableOutputPath),
     ...formatInputsJsonOutputPath(dispatchArtifact.inputsJsonOutputPath),
@@ -89,6 +90,26 @@ export async function writeProductionSmokeRequestMarkdown(
     createProductionSmokeRequestMarkdown(dispatchArtifact),
     "utf8",
   );
+}
+
+function formatFirstMissingInput(dispatchArtifact) {
+  const input = readFirstMissingInput(dispatchArtifact);
+
+  if (!input) {
+    return [];
+  }
+
+  return [
+    `First missing input: ${formatCode(input.name)} - ${formatText(
+      readProductionSmokeDispatchInputMissingReason(input),
+    )}`,
+  ];
+}
+
+function readFirstMissingInput(dispatchArtifact) {
+  const firstMissingName = dispatchArtifact.missingInputs[0];
+
+  return dispatchArtifact.inputs.find((input) => input.name === firstMissingName);
 }
 
 function formatInputsOutputPath(outputPath) {

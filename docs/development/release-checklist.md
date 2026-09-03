@@ -496,10 +496,10 @@ later phases are explicitly approved.
 - Run `pnpm release:evidence-request` before cross-functional release review
   when design reference export and Production Smoke execution need one shared
   request file. Its Request Status includes `First missing visual reference`
-  and `Missing Production Smoke inputs`, while the terminal summary prints the
-  first missing Production Smoke input replacement reason for the first unblock
-  step; use the custom output path options to keep the refresh command, output
-  summary, and embedded request paths visible in the combined request.
+  `Missing Production Smoke inputs`, and the first missing Production Smoke
+  input replacement reason for the first unblock step; use the custom output
+  path options to keep the refresh command, output summary, and embedded request
+  paths visible in the combined request.
 - `pnpm visual:references` defaults to
   `docs/visual/page-builder-references`; keep `--source-dir` only when the
   release review needs to inspect a different retained reference archive.

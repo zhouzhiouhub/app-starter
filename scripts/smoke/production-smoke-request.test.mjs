@@ -49,6 +49,10 @@ test("production smoke request Markdown is operator-facing", () => {
   );
   assert.match(
     markdown,
+    /First missing input: `visual_artifact_name` - replace placeholder page-builder-visual-fixture-<run_number> with Page Builder Visual workflow artifact after visual evidence passes/,
+  );
+  assert.match(
+    markdown,
     /Dispatch inputs output: `artifacts\/production-smoke\/production-smoke-dispatch-inputs\.txt`/,
   );
   assert.match(

@@ -14,6 +14,9 @@ import {
   defaultProductionSmokeDispatchInputsManifestOutputPath,
 } from "../smoke/production-smoke-dispatch-inputs-manifest-path.mjs";
 import { createProductionSmokeRequestMarkdown } from "../smoke/production-smoke-request.mjs";
+import {
+  readProductionSmokeDispatchInputMissingReason,
+} from "../smoke/production-smoke-dispatch-input-reason.mjs";
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { createPageBuilderVisualReferenceRequestCommand } from "../visual/page-builder-visual-reference-import-commands.mjs";
 import {
@@ -84,6 +87,7 @@ export function createReleaseEvidenceRequestMarkdown(input) {
   const firstMissingVisualReference = Array.isArray(visual.missing)
     ? visual.missing[0]?.expectedPath
     : null;
+  const firstMissingSmokeInput = readFirstMissingSmokeInput(smoke);
 
   const lines = [
     "# MVP Release Evidence Request",
@@ -184,6 +188,7 @@ export function createReleaseEvidenceRequestMarkdown(input) {
     `- Missing Production Smoke inputs: ${formatCode(
       smoke.missingInputs.length > 0 ? smoke.missingInputs.join(", ") : "none",
     )}`,
+    formatFirstMissingSmokeInput(firstMissingSmokeInput),
     "",
     ...shiftMarkdownHeadings(
       createPageBuilderVisualReferenceRequestMarkdown(visual),
@@ -207,6 +212,22 @@ export function createReleaseEvidenceRequestMarkdown(input) {
   ];
 
   return `${lines.join("\n")}\n`;
+}
+
+function formatFirstMissingSmokeInput(input) {
+  if (!input) {
+    return "- First missing Production Smoke input: `none`";
+  }
+
+  return `- First missing Production Smoke input: ${formatCode(
+    input.name,
+  )} - ${formatText(readProductionSmokeDispatchInputMissingReason(input))}`;
+}
+
+function readFirstMissingSmokeInput(smoke) {
+  const firstMissingName = smoke.missingInputs[0];
+
+  return smoke.inputs.find((input) => input.name === firstMissingName);
 }
 
 function formatBlockingChecklist(items) {
