@@ -6,6 +6,10 @@ import {
   createPageBuilderVisualReferenceMeasureCommand,
   createPageBuilderVisualReferenceReportCommand,
 } from "./page-builder-visual-reference-import-commands.mjs";
+import {
+  formatPageBuilderVisualReferencePreviewSummary,
+  readPageBuilderVisualFirstMissingReference,
+} from "./page-builder-visual-reference-preview-summary.mjs";
 
 export function createPageBuilderVisualReferenceHandoffReadme(input) {
   const manifest = input.handoffManifest;
@@ -15,7 +19,11 @@ export function createPageBuilderVisualReferenceHandoffReadme(input) {
     manifestPath: artifact.manifestPath,
     sourceDir: artifact.sourceDir,
   };
-  const firstMissingReference = artifact.missing[0]?.expectedPath ?? null;
+  const firstMissingReference =
+    readPageBuilderVisualFirstMissingReference(artifact);
+  const firstMissingPreview =
+    readFirstMissingHandoffPreviewSummary(manifest, firstMissingReference) ??
+    formatPageBuilderVisualReferencePreviewSummary(firstMissingReference);
   const lines = [
     "# Page Builder Visual Reference Handoff",
     "",
@@ -34,7 +42,8 @@ export function createPageBuilderVisualReferenceHandoffReadme(input) {
     )}`,
     `- Source dir: ${formatCode(manifest.sourceDir)}`,
     `- Acceptance manifest: ${formatCode(artifact.manifestPath)}`,
-    ...formatFirstMissingReference(firstMissingReference),
+    ...formatFirstMissingReference(firstMissingReference?.expectedPath ?? null),
+    ...formatFirstMissingPreview(firstMissingPreview),
     "",
     "## Files",
     "",
@@ -80,6 +89,37 @@ function formatFirstMissingReference(expectedPath) {
   return expectedPath
     ? [`- First missing reference: ${formatCode(expectedPath)}`]
     : [];
+}
+
+function formatFirstMissingPreview(previewSummary) {
+  return previewSummary
+    ? [`- First missing preview: ${formatCode(previewSummary)}`]
+    : [];
+}
+
+function readFirstMissingHandoffPreviewSummary(manifest, reference) {
+  if (!reference || !Array.isArray(manifest.previewScreenshots)) {
+    return null;
+  }
+
+  const preview = manifest.previewScreenshots.find(
+    (item) =>
+      item.component === reference.component &&
+      item.viewport === reference.viewport &&
+      item.status === "copied",
+  );
+
+  if (!preview?.handoffPath) {
+    return null;
+  }
+
+  return `${preview.handoffPath}${formatPreviewDimensions(preview)}`;
+}
+
+function formatPreviewDimensions(preview) {
+  return Number.isFinite(preview.width) && Number.isFinite(preview.height)
+    ? ` (${preview.width}x${preview.height})`
+    : "";
 }
 
 function formatPreviewScreenshots(previews) {

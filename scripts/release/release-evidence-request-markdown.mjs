@@ -25,6 +25,9 @@ import {
   defaultPageBuilderVisualReferenceHandoffOutputDir,
 } from "../visual/page-builder-visual-reference-handoff.mjs";
 import { createPageBuilderVisualReferenceRequestMarkdown } from "../visual/page-builder-visual-reference-request.mjs";
+import {
+  formatPageBuilderVisualFirstMissingPreview,
+} from "../visual/page-builder-visual-reference-preview-summary.mjs";
 import { createReleaseEvidenceRequestCommand } from "./release-evidence-request-config.mjs";
 import {
   createReleaseRequestsCommand,
@@ -87,6 +90,8 @@ export function createReleaseEvidenceRequestMarkdown(input) {
   const firstMissingVisualReference = Array.isArray(visual.missing)
     ? visual.missing[0]?.expectedPath
     : null;
+  const firstMissingVisualPreview =
+    formatPageBuilderVisualFirstMissingPreview(visual);
   const firstMissingSmokeInput = readFirstMissingSmokeInput(smoke);
 
   const lines = [
@@ -181,6 +186,9 @@ export function createReleaseEvidenceRequestMarkdown(input) {
     )}`,
     `- First missing visual reference: ${formatCode(
       firstMissingVisualReference ?? "none",
+    )}`,
+    `- First missing visual preview: ${formatCode(
+      firstMissingVisualPreview ?? "none",
     )}`,
     `- Production Smoke dispatch ready: ${formatCode(
       smoke.readyToDispatch ? "yes" : "no",

@@ -320,8 +320,8 @@ with component, viewport, `file_name`, status, rejection reason, target size,
 target path, and preview path columns,
 plus `artifacts/visual/page-builder-reference-export-manifest.json` as a JSON
 export manifest for automation handoff. Its terminal summary and Markdown
-status also print `First missing reference` when a reference PNG is still
-missing.
+status also print `First missing reference` and `First missing preview` when a
+reference PNG is still missing and a retained preview screenshot is available.
 `pnpm visual:references:handoff` writes the same request files plus copied
 preview screenshots, a handoff README, and a package manifest under
 `artifacts/visual/page-builder-reference-handoff` for design export
@@ -341,6 +341,7 @@ Project Status handoff command and JSON/Markdown paths, Production Smoke
 request, the dispatch input template path, dispatch input table path, dispatch
 input JSON manifest path,
 `First missing visual reference`,
+`First missing visual preview`,
 `Missing Production Smoke inputs`, the first missing Production Smoke input
 replacement reason, and the final
 `release:handoff -- --require-ready` gate to rerun after real evidence is
@@ -377,8 +378,8 @@ visual manifest/source options, `--requests-manifest-output <path>`,
 individual request commands, but still does not import references, run smoke,
 upload artifacts, create release notes, or mark blocked evidence ready. The
 bundle manifest records the full missing visual reference path list, visual
-reference intake commands, the visual handoff README path, the Production Smoke
-dispatch template, and the
+reference intake commands, the first missing visual preview when available, the
+visual handoff README path, the Production Smoke dispatch template, and the
 `--inputs-json` validation command beside the missing input list and first
 missing Production Smoke input replacement reason. It also
 mirrors `projectCompletion.completionChecklist`,
@@ -392,9 +393,10 @@ evidence checklist from the dispatch input manifest. The manifest is validated b
 schemaVersion, ready-state consistency, and key count consistency. The terminal
 summary prints `Project completion`, release decision, release evidence status,
 next action preview count, Project Status handoff Markdown path, and the first
-missing visual reference, the first missing Production Smoke input replacement
-reason, and the first next action so the release operator can see the current
-blocker without opening the JSON.
+missing visual reference, the first missing visual preview when available, the
+first missing Production Smoke input replacement reason, and the first next
+action so the release operator can see the current blocker without opening the
+JSON.
 
 The review command scans the same safe archive roots, recomputes the report
 summary from the stored checks, and highlights R2 / CDN, Admin static app, and
@@ -514,7 +516,8 @@ Use `pnpm --silent visual:references:missing` when the reviewer only needs
 copy-ready missing PNG paths.
 Use `pnpm visual:references:request` when the designer needs a Markdown export
 request rather than the full engineering intake report; the terminal summary
-and Markdown status also print the first missing reference path, and
+and Markdown status also print the first missing reference path and matching
+preview screenshot, and
 `artifacts/visual/page-builder-missing-references.txt` keeps the same missing
 paths as a plain text handoff while
 `artifacts/visual/page-builder-reference-export-table.tsv` keeps the

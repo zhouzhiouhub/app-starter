@@ -1,11 +1,14 @@
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync } from "node:fs";
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { mkdir, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { defaultPageBuilderVisualArtifactDir } from "../visual/page-builder-visual-artifact-check-config.mjs";
-import { writeVisualArtifact } from "../visual/page-builder-visual-artifact-check-test-fixtures.mjs";
+import {
+  createTestPng,
+  writeVisualArtifact,
+} from "../visual/page-builder-visual-artifact-check-test-fixtures.mjs";
 import {
   runReleaseEvidenceRequestCli,
 } from "./release-evidence-request.mjs";
@@ -35,6 +38,7 @@ test("release evidence request CLI writes a combined handoff", async () => {
 
   try {
     await mkdir(root, { recursive: true });
+    retainFirstMissingVisualPreview(root, visualManifest);
     const exitCode = await runReleaseEvidenceRequestCli(
       [
         "--output",
@@ -72,6 +76,10 @@ test("release evidence request CLI writes a combined handoff", async () => {
     assert.match(
       stdout.join("\n"),
       /First missing visual reference: docs\/visual\/page-builder-references\/hero-banner-desktop\.png/,
+    );
+    assert.match(
+      stdout.join("\n"),
+      /First missing visual preview: artifacts\/visual\/hero-banner-desktop\.png \(1440x1000\)/,
     );
     assert.match(stdout.join("\n"), /Production Smoke dispatch ready: yes/);
     assert.doesNotMatch(stdout.join("\n"), /Missing Production Smoke inputs:/);
@@ -174,6 +182,7 @@ test("release evidence request help documents terminal summary fields", async ()
   assert.equal(exitCode, 0);
   assert.match(help, /terminal summary\s+and Markdown request status report release\s+readiness/i);
   assert.match(help, /first missing visual\s+reference/i);
+  assert.match(help, /matching\s+preview\s+screenshot/i);
   assert.match(help, /missing Smoke input\s+names/i);
   assert.match(help, /first missing Smoke input replacement reason/i);
   assert.match(help, /dispatch input template\s+path/i);
@@ -197,3 +206,11 @@ test("release evidence request help documents terminal summary fields", async ()
   assert.match(help, /--inputs-output <path>/);
   assert.match(help, /--inputs-json-output <path>/);
 });
+
+function retainFirstMissingVisualPreview(root, visualManifest) {
+  const previewPath = "artifacts/visual/hero-banner-desktop.png";
+
+  visualManifest.records[0].viewports.desktop.previewScreenshot = previewPath;
+  mkdirSync(path.join(root, "artifacts/visual"), { recursive: true });
+  writeFileSync(path.join(root, previewPath), createTestPng(1440, 1000));
+}

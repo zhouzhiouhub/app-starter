@@ -50,6 +50,10 @@ function assertPageBuilderVisual(visual) {
     visual.firstMissingReference,
     "pageBuilderVisual.firstMissingReference",
   );
+  assertNullableString(
+    visual.firstMissingReferencePreview,
+    "pageBuilderVisual.firstMissingReferencePreview",
+  );
   assertNonNegativeNumber(
     visual.failedMeasurementCount,
     "pageBuilderVisual.failedMeasurementCount",
@@ -108,6 +112,16 @@ function assertPageBuilderVisual(visual) {
     fail(
       "pageBuilderVisual.firstMissingReference",
       "must match the first missing reference",
+    );
+  }
+
+  if (
+    visual.firstMissingReference === null &&
+    visual.firstMissingReferencePreview !== null
+  ) {
+    fail(
+      "pageBuilderVisual.firstMissingReferencePreview",
+      "must be null when there is no first missing reference",
     );
   }
 }

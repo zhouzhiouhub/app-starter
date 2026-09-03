@@ -18,6 +18,9 @@ import {
   createPageBuilderVisualReferenceHandoffOutputPaths,
 } from "../visual/page-builder-visual-reference-handoff-paths.mjs";
 import {
+  formatPageBuilderVisualFirstMissingPreview,
+} from "../visual/page-builder-visual-reference-preview-summary.mjs";
+import {
   normalizeReleaseRequestsManifestOutputPath,
 } from "./release-requests-manifest-path.mjs";
 import {
@@ -69,6 +72,10 @@ export function createReleaseRequestsManifest(input = {}) {
     pageBuilderVisual: {
       commands: createVisualCommands(visualCommandContext),
       firstMissingReference: missingReferencePaths[0] ?? null,
+      firstMissingReferencePreview:
+        formatPageBuilderVisualFirstMissingPreview({
+          missing: missingReferences,
+        }) ?? null,
       failedMeasurementCount: readNumber(projectVisual.failedMeasurementCount),
       failedMeasurementViewportCount: readNumber(
         projectVisual.failedMeasurementViewportCount,

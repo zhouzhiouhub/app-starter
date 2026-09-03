@@ -88,6 +88,10 @@ test("visual reference request CLI writes a Markdown handoff", async () => {
       stdout.join("\n"),
       /First missing reference: reports\/visual\/reference-request-.+\/references\/spec-table-mobile\.png/,
     );
+    assert.match(
+      stdout.join("\n"),
+      /First missing preview: reports\/visual\/reference-request-.+\/artifacts\/visual\/spec-table-mobile\.png \(390x1000\)/,
+    );
     assert.match(markdown, /spec-table\.mobile; missing/);
     assert.match(markdown, /reason spec-table-mobile\.png is missing/);
     assert.match(markdown, /spec-table\.mobile: reference size 390x1000/);
@@ -150,6 +154,10 @@ test("visual reference request CLI writes a Markdown handoff", async () => {
       markdown,
       /First missing reference: `reports\/visual\/reference-request-.+\/references\/spec-table-mobile\.png`/,
     );
+    assert.match(
+      markdown,
+      /First missing preview: `reports\/visual\/reference-request-.+\/artifacts\/visual\/spec-table-mobile\.png \(390x1000\)`/,
+    );
     assert.match(markdown, /## After Delivery/);
   } finally {
     rmSync(root, { force: true, recursive: true });
@@ -170,6 +178,7 @@ test("visual reference request help documents terminal summary fields", async ()
     /terminal summary and Markdown status\s+report the missing\/required count/i,
   );
   assert.match(help, /first missing reference path/i);
+  assert.match(help, /matching\s+preview\s+screenshot/i);
 });
 
 test("visual reference request config validates paths", () => {

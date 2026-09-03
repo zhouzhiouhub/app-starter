@@ -80,7 +80,7 @@ when importing into the uploadable artifact manifest. Run
 a copy-ready list of missing PNG paths. Run `pnpm visual:references:request`
 when the design owner needs a Markdown export request with the same missing
 file list, retained preview screenshots, follow-up commands, the same terminal
-and Markdown `First missing reference` hint, and a retained
+and Markdown `First missing reference` / `First missing preview` hint, and a retained
 `artifacts/visual/page-builder-missing-references.txt` plain path list plus
 `artifacts/visual/page-builder-reference-export-table.tsv` with component,
 viewport, `file_name`, status, rejection reason, target size, target path, and

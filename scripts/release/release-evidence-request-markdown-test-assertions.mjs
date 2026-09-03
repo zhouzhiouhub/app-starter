@@ -62,6 +62,7 @@ export async function assertReleaseEvidenceRequestMarkdownHandoff({
     markdown,
     /First missing visual reference: `docs\/visual\/page-builder-references\/hero-banner-desktop\.png`/,
   );
+  assert.match(markdown, /First missing visual preview: `none`/);
   assert.match(
     markdown,
     /First missing Production Smoke input: `visual_artifact_name` - replace placeholder page-builder-visual-fixture-<run_number> with Page Builder Visual workflow artifact after visual evidence passes/,

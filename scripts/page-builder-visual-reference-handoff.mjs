@@ -6,6 +6,9 @@ import {
   createPageBuilderVisualReferenceHandoff,
   readPageBuilderVisualReferenceHandoffCliConfig,
 } from "./visual/page-builder-visual-reference-handoff.mjs";
+import {
+  formatPageBuilderVisualFirstMissingPreview,
+} from "./visual/page-builder-visual-reference-preview-summary.mjs";
 
 export async function runPageBuilderVisualReferenceHandoffCli(
   args = [],
@@ -40,6 +43,12 @@ export async function runPageBuilderVisualReferenceHandoffCli(
     const firstMissingReference = result.artifact.missing[0]?.expectedPath;
     if (firstMissingReference) {
       stdout(`First missing reference: ${firstMissingReference}`);
+      const firstMissingPreview = formatPageBuilderVisualFirstMissingPreview(
+        result.artifact,
+      );
+      if (firstMissingPreview) {
+        stdout(`First missing preview: ${firstMissingPreview}`);
+      }
     }
     return 0;
   } catch (error) {
@@ -76,9 +85,10 @@ Evidence:
   This command writes a self-contained local handoff directory with the design
   reference request Markdown, missing path list, TSV export table, JSON export
   manifest, copied preview screenshots, a handoff README, and a handoff manifest
-  with copied preview dimensions, byte sizes, and sha256 checksums. It does not
-  create reference PNGs, import references, measure screenshots, or mark visual
-  evidence accepted.`);
+  with copied preview dimensions, byte sizes, and sha256 checksums. The summary
+  also prints the first missing reference and matching preview screenshot when
+  available. It does not create reference PNGs, import references, measure
+  screenshots, or mark visual evidence accepted.`);
 }
 
 if (isMainModule()) {

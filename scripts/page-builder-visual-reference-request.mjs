@@ -12,6 +12,9 @@ import {
   writePageBuilderVisualReferenceExportTable,
   writePageBuilderVisualReferenceRequestMarkdown,
 } from "./visual/page-builder-visual-reference-request.mjs";
+import {
+  formatPageBuilderVisualFirstMissingPreview,
+} from "./visual/page-builder-visual-reference-preview-summary.mjs";
 import { readErrorMessage } from "./smoke/smoke-error-message.mjs";
 
 export async function runPageBuilderVisualReferenceRequestCli(
@@ -89,6 +92,11 @@ export async function runPageBuilderVisualReferenceRequestCli(
     const firstMissingReference = artifact.missing[0]?.expectedPath;
     if (firstMissingReference) {
       stdout(`First missing reference: ${firstMissingReference}`);
+      const firstMissingPreview =
+        formatPageBuilderVisualFirstMissingPreview(artifact);
+      if (firstMissingPreview) {
+        stdout(`First missing preview: ${firstMissingPreview}`);
+      }
     }
     return 0;
   } catch (error) {
@@ -134,8 +142,8 @@ Options:
 Evidence:
   This command creates a design-facing request from the same reference intake
   manifest used by visual:references. The terminal summary and Markdown status
-  report the missing/required count and the first missing reference path to hand
-  off first. When --missing-output is provided, it also writes a plain text list
+  report the missing/required count, first missing reference path, and matching
+  preview screenshot to hand off first. When --missing-output is provided, it also writes a plain text list
   of missing expected PNG paths. When --table-output is provided, it writes a
   TSV export table for design task assignment. When --json-output is provided,
   it writes a machine-readable export manifest for automation handoff. It does

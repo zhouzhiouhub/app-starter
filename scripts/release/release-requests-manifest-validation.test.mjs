@@ -242,6 +242,7 @@ function createPageBuilderVisualHandoff() {
     },
     firstMissingReference:
       "docs/visual/page-builder-references/hero-banner-desktop.png",
+    firstMissingReferencePreview: null,
     failedMeasurementCount: 0,
     failedMeasurementViewportCount: 0,
     firstFailedMeasurement: null,

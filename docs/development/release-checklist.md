@@ -490,16 +490,17 @@ later phases are explicitly approved.
   schemaVersion, ready-state consistency, and key count consistency. The
   terminal summary prints `Project completion`, release decision, release
   evidence status, next action preview count, Project Status handoff Markdown
-  path, the first missing visual reference, the first missing Production Smoke
-  input replacement reason, and the first next action so the release operator
-  can see the current blocker without opening the JSON.
+  path, the first missing visual reference, the first missing visual preview
+  when available, the first missing Production Smoke input replacement reason,
+  and the first next action so the release operator can see the current blocker
+  without opening the JSON.
 - Run `pnpm release:evidence-request` before cross-functional release review
   when design reference export and Production Smoke execution need one shared
   request file. Its Request Status includes `First missing visual reference`
-  `Missing Production Smoke inputs`, and the first missing Production Smoke
-  input replacement reason for the first unblock step; use the custom output
-  path options to keep the refresh command, output summary, and embedded request
-  paths visible in the combined request.
+  `First missing visual preview`, `Missing Production Smoke inputs`, and the
+  first missing Production Smoke input replacement reason for the first unblock
+  step; use the custom output path options to keep the refresh command, output
+  summary, and embedded request paths visible in the combined request.
 - `pnpm visual:references` defaults to
   `docs/visual/page-builder-references`; keep `--source-dir` only when the
   release review needs to inspect a different retained reference archive.
@@ -513,8 +514,8 @@ later phases are explicitly approved.
   as a TSV task table with `file_name`, status, and rejection reason columns,
   writes
   `artifacts/visual/page-builder-reference-export-manifest.json` as a JSON
-  export manifest, and prints the first missing reference path in the terminal
-  summary and Markdown status.
+  export manifest, and prints the first missing reference path plus the matching
+  preview screenshot in the terminal summary and Markdown status when available.
 - `pnpm visual:references:handoff` writes the same request files plus copied
   preview screenshots, a handoff README, and a handoff manifest under
   `artifacts/visual/page-builder-reference-handoff` for design export

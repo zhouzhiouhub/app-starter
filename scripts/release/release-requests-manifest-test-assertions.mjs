@@ -23,6 +23,7 @@ export function assertReleaseRequestsManifestHandoff(input) {
     manifest.pageBuilderVisual.firstMissingReference,
     readFirstMissingReference(input),
   );
+  assert.equal(manifest.pageBuilderVisual.firstMissingReferencePreview, null);
   assert.equal(
     manifest.pageBuilderVisual.referenceHandoffReadmePath,
     `${input.visualHandoffOutput}/README.md`,

@@ -26,6 +26,7 @@ export function printReleaseRequestsManifestSummary(manifest, writeLine) {
   }
   printVisualMeasurementSummary(manifest.pageBuilderVisual, writeLine);
   printFirstMissingVisualReference(manifest.pageBuilderVisual, writeLine);
+  printFirstMissingVisualPreview(manifest.pageBuilderVisual, writeLine);
   printFirstMissingSmokeInput(manifest.productionSmoke, writeLine);
 
   if (nextAction) {
@@ -49,6 +50,16 @@ function printFirstMissingVisualReference(visual, writeLine) {
 
   if (expectedPath) {
     writeLine(`First missing visual reference: ${expectedPath}`);
+  }
+}
+
+function printFirstMissingVisualPreview(visual, writeLine) {
+  const previewSummary = readNonEmptyString(
+    visual?.firstMissingReferencePreview,
+  );
+
+  if (previewSummary) {
+    writeLine(`First missing visual preview: ${previewSummary}`);
   }
 }
 

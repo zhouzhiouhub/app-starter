@@ -13,6 +13,9 @@ import {
   createPageBuilderVisualReferenceImportArtifact,
   importPageBuilderVisualReferences,
 } from "../visual/page-builder-visual-reference-import.mjs";
+import {
+  formatPageBuilderVisualFirstMissingPreview,
+} from "../visual/page-builder-visual-reference-preview-summary.mjs";
 import { readReleaseEvidenceCheck } from "./release-check.mjs";
 import {
   defaultReleaseEvidenceRequestOutputPath,
@@ -55,6 +58,12 @@ export async function runReleaseEvidenceRequestCli(args = [], input = {}) {
       request.visualReferenceArtifact.missing[0]?.expectedPath;
     if (firstMissingReference) {
       stdout(`First missing visual reference: ${firstMissingReference}`);
+      const firstMissingPreview = formatPageBuilderVisualFirstMissingPreview(
+        request.visualReferenceArtifact,
+      );
+      if (firstMissingPreview) {
+        stdout(`First missing visual preview: ${firstMissingPreview}`);
+      }
     }
     stdout(
       `Production Smoke dispatch ready: ${request.smokeDispatchArtifact.readyToDispatch ? "yes" : "no"}`,
@@ -212,9 +221,9 @@ Evidence:
   Production Smoke request, dispatch input template path, dispatch input table
   path, and dispatch input JSON manifest path.
   The terminal summary and Markdown request status report release readiness,
-  visual reference status, the first missing visual reference,
-  Production Smoke dispatch readiness, any missing Smoke input names, and the
-  first missing Smoke input replacement reason to unblock first. It does not run
+  visual reference status, the first missing visual reference, matching preview
+  screenshot, Production Smoke dispatch readiness, any missing Smoke input
+  names, and the first missing Smoke input replacement reason to unblock first. It does not run
   smoke, import visual references, accept evidence, create release notes, or
   mark the project ready.
 

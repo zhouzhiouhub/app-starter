@@ -44,6 +44,10 @@ export function assertDesignFacingVisualReferenceRequestMarkdown() {
   );
   assert.match(
     markdown,
+    /First missing preview: `reports\/visual\/page-builder-fixture\/page-builder-visual-fixture-hero-banner-desktop\.png \(1440x1000\)`/,
+  );
+  assert.match(
+    markdown,
     /Missing path output: `artifacts\/visual\/page-builder-missing-references\.txt`/,
   );
   assert.match(

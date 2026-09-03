@@ -22,6 +22,9 @@ import {
   normalizeVisualReferenceExportManifestOutputPath,
   normalizeVisualReferenceMissingOutputPath,
 } from "./page-builder-visual-reference-missing-output.mjs";
+import {
+  formatPageBuilderVisualFirstMissingPreview,
+} from "./page-builder-visual-reference-preview-summary.mjs";
 
 export {
   defaultPageBuilderVisualMissingReferencesOutputPath,
@@ -122,6 +125,11 @@ export function createPageBuilderVisualReferenceRequestMarkdown(input) {
     `Missing references: ${missingReferences.length}/${references.length}`,
     `First missing reference: ${formatCode(
       missingReferences[0]?.expectedPath ?? "none",
+    )}`,
+    `First missing preview: ${formatCode(
+      formatPageBuilderVisualFirstMissingPreview({
+        requiredReferences: references,
+      }) ?? "none",
     )}`,
     ...formatMissingOutputPath(input.missingOutputPath),
     ...formatTableOutputPath(input.tableOutputPath),
