@@ -12,6 +12,9 @@ import {
   readProductionSmokeReleaseEvidenceRequirement,
 } from "./production-smoke-workflow-inputs.mjs";
 import {
+  readProductionSmokeDispatchInputMissingReason,
+} from "./production-smoke-dispatch-input-reason.mjs";
+import {
   requiredProductionSmokeEvidence,
 } from "./smoke-missing-evidence-markdown.mjs";
 import { formatSmokeText } from "./smoke-text.mjs";
@@ -130,7 +133,7 @@ function formatDispatchManifestNotes(dispatchArtifact) {
 function formatDispatchInput(input) {
   const checked = input.placeholder ? " " : "x";
   const suffix = input.placeholder
-    ? " - replace before dispatch"
+    ? ` - ${formatText(readProductionSmokeDispatchInputMissingReason(input))}`
     : " - ready";
 
   return `- [${checked}] ${formatCode(input.name)}: ${formatCode(

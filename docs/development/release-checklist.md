@@ -182,9 +182,10 @@ later phases are explicitly approved.
    manual dispatch path, required input placeholders, evidence input sources,
    dispatch validation command, `gh` template, input table, JSON input manifest,
    and artifact retention checklist. The TSV table separates
-   `release_evidence_required` from `workflow_required`, and the JSON manifest
-   keeps each input's `releaseEvidenceRequired` flag. This request does not run
-   smoke or satisfy release evidence by itself.
+   `release_evidence_required` from `workflow_required` and includes
+   `missing_reason`, while the JSON manifest keeps each input's
+   `releaseEvidenceRequired` flag plus `missingReason` for placeholders. This
+   request does not run smoke or satisfy release evidence by itself.
 2. Replace the placeholders in
    `artifacts/production-smoke/production-smoke-dispatch-inputs.json`, then run
    `pnpm smoke:dispatch -- --inputs-json artifacts/production-smoke/production-smoke-dispatch-inputs.json --require-complete`;
@@ -382,8 +383,9 @@ later phases are explicitly approved.
   evidence inputs to their source run, artifact, or operator value; the blocked
   JSON artifacts mirror the same
   `requiredEvidence[]`, `workflowInputs[]`, `inputSources[]`, and
-  `releaseEvidenceRequired` input flags handoff under `smoke.missingEvidence`
-  and `releaseGate.smoke.missingEvidence`. When Page
+  `releaseEvidenceRequired` input flags under `smoke.missingEvidence`
+  and `releaseGate.smoke.missingEvidence`; the release request manifest also
+  carries placeholder `productionSmoke.inputs[].missingReason`. When Page
   Builder reference PNGs are missing,
   both Markdown files include a `Missing Visual References` section with the
   retained paths to fill.

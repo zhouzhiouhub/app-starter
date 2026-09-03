@@ -385,8 +385,8 @@ mirrors `projectCompletion.completionChecklist`,
 `projectCompletion.projectStatusHandoff`, `productionSmoke.workflowFile`,
 `productionSmoke.ref`, `productionSmoke.dispatchManifestContext`, Production
 Smoke workflow inputs, `productionSmoke.inputs[].releaseEvidenceRequired`,
-evidence input sources, and required evidence checklist from the dispatch input
-manifest. The manifest is validated before write for
+`productionSmoke.inputs[].missingReason`, evidence input sources, and required
+evidence checklist from the dispatch input manifest. The manifest is validated before write for
 schemaVersion, ready-state consistency, and key count consistency. The terminal
 summary prints `Project completion`, release decision, release evidence status,
 next action preview count, Project Status handoff Markdown path, and the first
@@ -459,9 +459,10 @@ workflow_dispatch input template plus
 input table plus
 `artifacts/production-smoke/production-smoke-dispatch-inputs.json` as a JSON
 input manifest before the real production run. The TSV table separates
-`release_evidence_required` from `workflow_required`, and the JSON manifest
-keeps each input's `releaseEvidenceRequired` flag; it does not execute smoke or
-create release evidence. The same section also
+`release_evidence_required` from `workflow_required` and includes
+`missing_reason`, and the JSON manifest keeps each input's
+`releaseEvidenceRequired` flag plus `missingReason` for placeholders; it does
+not execute smoke or create release evidence. The same section also
 includes `Production
 Smoke Workflow Inputs`, listing the `workflow_dispatch` input names, default
 values, and purpose for the manual production run, plus `Production Smoke

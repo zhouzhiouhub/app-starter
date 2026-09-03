@@ -191,6 +191,16 @@ test("release requests manifest validation rejects incomplete dispatch context",
       ),
     /Release requests manifest productionSmoke\.readyToDispatch must not be true while inputs are missing/u,
   );
+
+  assert.throws(
+    () =>
+      assertReleaseRequestsManifest(
+        createChangedManifest((manifest) => {
+          delete manifest.productionSmoke.inputs[0].missingReason;
+        }),
+      ),
+    /Release requests manifest productionSmoke\.inputs\.missingReason/u,
+  );
 });
 
 function createChangedManifest(change) {
@@ -334,6 +344,8 @@ function createProductionSmokeHandoff() {
     ],
     inputs: [
       {
+        missingReason:
+          "replace placeholder page-builder-visual-fixture-<run_number> with Page Builder Visual workflow artifact",
         name: "visual_artifact_name",
         placeholder: true,
         releaseEvidenceRequired: true,

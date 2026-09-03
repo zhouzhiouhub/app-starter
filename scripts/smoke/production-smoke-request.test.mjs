@@ -73,7 +73,10 @@ test("production smoke request Markdown is operator-facing", () => {
     /CLI overrides: explicit `--workflow-file`, `--ref`, and input flags override JSON manifest values\./,
   );
   assert.match(markdown, /Dispatch template: `gh workflow run production-smoke\.yml --ref main/);
-  assert.match(markdown, /- \[ \] `visual_artifact_name`: `page-builder-visual-fixture-<run_number>` - replace before dispatch/);
+  assert.match(
+    markdown,
+    /- \[ \] `visual_artifact_name`: `page-builder-visual-fixture-<run_number>` - replace placeholder page-builder-visual-fixture-<run_number> with Page Builder Visual workflow artifact after visual evidence passes/,
+  );
   assert.match(markdown, /## Evidence Input Sources/);
   assert.match(
     markdown,
@@ -170,11 +173,11 @@ test("production smoke request CLI writes a Markdown handoff", async () => {
     assert.match(inputsText, /^storefront_url=https:\/\/store\.brand\.com\//m);
     assert.match(
       inputsTable,
-      /^name\tstatus\tvalue\tsource\trelease_evidence_required\tworkflow_required\tworkflow_description/m,
+      /^name\tstatus\tmissing_reason\tvalue\tsource\trelease_evidence_required\tworkflow_required\tworkflow_description/m,
     );
     assert.match(
       inputsTable,
-      /visual_artifact_name\tready\tpage-builder-visual-fixture-281\tPage Builder Visual workflow artifact after visual evidence passes\trequired\toptional\tPage Builder Visual artifact name/,
+      /visual_artifact_name\tready\t\tpage-builder-visual-fixture-281\tPage Builder Visual workflow artifact after visual evidence passes\trequired\toptional\tPage Builder Visual artifact name/,
     );
     assert.equal(inputsManifest.schemaVersion, "production-smoke-dispatch-inputs.v1");
     assert.equal(inputsManifest.status, "ready-to-dispatch");
@@ -189,6 +192,7 @@ test("production smoke request CLI writes a Markdown handoff", async () => {
         "JSON input manifest carries workflow file, ref, and input values; explicit CLI flags override manifest values.",
     });
     assert.equal(inputsManifest.inputs[0].status, "ready");
+    assert.equal(inputsManifest.inputs[0].missingReason, undefined);
     assert.equal(inputsManifest.inputs[0].releaseEvidenceRequired, true);
     assert.equal(inputsManifest.inputs[0].value, "page-builder-visual-fixture-281");
     assert.match(
@@ -298,15 +302,15 @@ test("production smoke request formats dispatch input templates", () => {
   assert.match(text, /^visual_artifact_run_id=<Page Builder Visual workflow run id>/m);
   assert.match(
     table,
-    /^name\tstatus\tvalue\tsource\trelease_evidence_required\tworkflow_required\tworkflow_description/m,
+    /^name\tstatus\tmissing_reason\tvalue\tsource\trelease_evidence_required\tworkflow_required\tworkflow_description/m,
   );
   assert.match(
     table,
-    /^visual_artifact_name\tready\tpage-builder-visual-fixture-281\tPage Builder Visual workflow artifact after visual evidence passes\trequired\toptional\tPage Builder Visual artifact name/m,
+    /^visual_artifact_name\tready\t\tpage-builder-visual-fixture-281\tPage Builder Visual workflow artifact after visual evidence passes\trequired\toptional\tPage Builder Visual artifact name/m,
   );
   assert.match(
     table,
-    /^visual_artifact_run_id\tmissing\t<Page Builder Visual workflow run id>/m,
+    /^visual_artifact_run_id\tmissing\treplace placeholder <Page Builder Visual workflow run id> with Page Builder Visual workflow run id that uploaded the visual artifact\t<Page Builder Visual workflow run id>/m,
   );
   assert.equal(manifest.status, "needs-inputs");
   assert.equal(manifest.missingInputCount, 6);
@@ -315,8 +319,13 @@ test("production smoke request formats dispatch input templates", () => {
     "local_verification_run_url",
   ]);
   assert.equal(manifest.inputs[0].status, "ready");
+  assert.equal(manifest.inputs[0].missingReason, undefined);
   assert.equal(manifest.inputs[0].releaseEvidenceRequired, true);
   assert.equal(manifest.inputs[1].status, "missing");
+  assert.equal(
+    manifest.inputs[1].missingReason,
+    "replace placeholder <Page Builder Visual workflow run id> with Page Builder Visual workflow run id that uploaded the visual artifact",
+  );
   assert.equal(manifest.inputs[1].releaseEvidenceRequired, true);
 });
 
@@ -343,6 +352,7 @@ test("production smoke request command is exposed in package CI and docs", async
   assert.match(releaseChecklist, /production-smoke-dispatch-inputs\.txt/);
   assert.match(releaseChecklist, /production-smoke-dispatch-inputs\.tsv/);
   assert.match(releaseChecklist, /production-smoke-dispatch-inputs\.json/);
+  assert.match(releaseChecklist, /missing_reason/);
   assert.match(releaseChecklist, /--inputs-json/);
   assert.match(releaseChecklist, /dispatchManifestContext\.inheritedFields/);
   assert.match(releaseChecklist, /dispatchManifestContext\.overridePolicy/);
@@ -351,6 +361,7 @@ test("production smoke request command is exposed in package CI and docs", async
   assert.match(setupDoc, /production-smoke-dispatch-inputs\.txt/);
   assert.match(setupDoc, /production-smoke-dispatch-inputs\.tsv/);
   assert.match(setupDoc, /production-smoke-dispatch-inputs\.json/);
+  assert.match(setupDoc, /missing_reason/);
   assert.match(setupDoc, /--inputs-json/);
   assert.match(setupDoc, /dispatchManifestContext\.inheritedFields/);
   assert.match(setupDoc, /dispatchManifestContext\.overridePolicy/);
@@ -359,8 +370,10 @@ test("production smoke request command is exposed in package CI and docs", async
   assert.match(readme, /production-smoke-dispatch-inputs\.txt/);
   assert.match(readme, /production-smoke-dispatch-inputs\.tsv/);
   assert.match(readme, /production-smoke-dispatch-inputs\.json/);
+  assert.match(readme, /missing_reason/);
   assert.match(readme, /--inputs-json/);
   assert.match(readme, /dispatchManifestContext\.inheritedFields/);
   assert.match(readme, /dispatchManifestContext\.overridePolicy/);
   assert.match(readme, /inputSources\[\]/);
+  assert.match(readme, /missingReason/);
 });

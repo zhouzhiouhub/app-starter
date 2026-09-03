@@ -6,6 +6,9 @@ import {
 import {
   productionSmokeWorkflowInputs,
 } from "./production-smoke-workflow-inputs.mjs";
+import {
+  readProductionSmokeDispatchInputMissingReason,
+} from "./production-smoke-dispatch-input-reason.mjs";
 export {
   defaultProductionSmokeDispatchInputsTableOutputPath,
   normalizeProductionSmokeDispatchInputsTableOutputPath,
@@ -21,6 +24,7 @@ export function createProductionSmokeDispatchInputsTable(dispatchArtifact) {
     [
       "name",
       "status",
+      "missing_reason",
       "value",
       "source",
       "release_evidence_required",
@@ -53,6 +57,7 @@ function createDispatchInputTableRow(input) {
 
   return {
     name: input.name,
+    missingReason: readProductionSmokeDispatchInputMissingReason(input),
     releaseEvidenceRequired: source !== undefined ? "required" : "optional",
     source: source?.source ?? "",
     status: input.placeholder ? "missing" : "ready",
@@ -66,6 +71,7 @@ function formatTableRow(row) {
   return [
     row.name,
     row.status,
+    row.missingReason,
     row.value,
     row.source,
     row.releaseEvidenceRequired,

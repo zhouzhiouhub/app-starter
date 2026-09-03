@@ -13,6 +13,9 @@ import {
 import {
   productionSmokeWorkflowInputs,
 } from "./production-smoke-workflow-inputs.mjs";
+import {
+  readProductionSmokeDispatchInputMissingReason,
+} from "./production-smoke-dispatch-input-reason.mjs";
 
 export const productionSmokeDispatchInputsManifestSchemaVersion =
   "production-smoke-dispatch-inputs.v1";
@@ -103,6 +106,9 @@ function createManifestInputEntry(input) {
   );
 
   return {
+    ...(input.placeholder === true
+      ? { missingReason: readProductionSmokeDispatchInputMissingReason(input) }
+      : {}),
     name: input.name,
     placeholder: input.placeholder === true,
     releaseEvidenceRequired: source !== undefined,

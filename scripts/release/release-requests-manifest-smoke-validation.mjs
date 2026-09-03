@@ -83,6 +83,17 @@ function assertSmokeInputs(smoke) {
     );
     assertString(input.source, "productionSmoke.inputs.source");
     assertEnum(input.status, smokeInputStatuses, "productionSmoke.inputs.status");
+    if (input.status === "missing") {
+      assertString(
+        input.missingReason,
+        "productionSmoke.inputs.missingReason",
+      );
+    } else if (input.missingReason !== undefined) {
+      assertNullableString(
+        input.missingReason,
+        "productionSmoke.inputs.missingReason",
+      );
+    }
     assertString(input.value, "productionSmoke.inputs.value");
     assertBoolean(input.workflowRequired, "productionSmoke.inputs.workflowRequired");
   }
