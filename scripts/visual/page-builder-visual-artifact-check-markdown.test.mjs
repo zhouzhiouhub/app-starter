@@ -63,6 +63,7 @@ test("visual artifact check Markdown lists issues and repair command", () => {
     presentScreenshotCount: 11,
     referenceImport: createReferenceImportSummary({
       complete: false,
+      firstMissingReferenceReason: "hero-banner-desktop.png is missing",
       firstMissingReferencePreview:
         "reports/visual/page-builder-fixture/page-builder-visual-fixture-hero-banner-desktop.png (1440x1000)",
       missingCount: 12,
@@ -87,6 +88,10 @@ test("visual artifact check Markdown lists issues and repair command", () => {
   assert.match(markdown, /missing_artifact_file/);
   assert.doesNotMatch(markdown, /abcdefghijklmnopqrstuvwxyz123456/);
   assert.match(markdown, /Reference missing files: `docs\/visual\/page-builder-references\/hero-banner-desktop\.png`/);
+  assert.match(
+    markdown,
+    /First missing reference reason: hero-banner-desktop\.png is missing/,
+  );
   assert.match(
     markdown,
     /First missing reference preview: `reports\/visual\/page-builder-fixture\/page-builder-visual-fixture-hero-banner-desktop\.png \(1440x1000\)`/,

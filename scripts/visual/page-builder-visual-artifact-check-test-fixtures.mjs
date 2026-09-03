@@ -95,6 +95,7 @@ export function hasIssue(report, code) {
 export function createReferenceImportSummary(artifactDir) {
   return {
     complete: false,
+    firstMissingReferenceReason: "hero-banner-desktop.png is missing",
     firstMissingReferencePreview:
       `${artifactDir}/page-builder-visual-fixture-hero-banner-desktop.png (1440x1000)`,
     manifestPath: `${artifactDir}/page-builder-visual-acceptance.json`,

@@ -61,6 +61,7 @@ function formatReferenceImport(referenceImport) {
     formatReferenceImportCount(referenceImport.updateCount, "updates"),
     formatRequiredReferenceCoverage(referenceImport),
     firstMissing ? `first missing ${formatSmokeText(firstMissing)}` : null,
+    formatFirstMissingReferenceReason(referenceImport),
     formatFirstMissingReferencePreview(referenceImport),
   ].filter(Boolean);
 
@@ -74,6 +75,15 @@ function formatFirstMissingReferencePreview(referenceImport) {
     referenceImport.firstMissingReferencePreview.length > 0
     ? `first missing preview ${formatSmokeText(
         referenceImport.firstMissingReferencePreview,
+      )}`
+    : null;
+}
+
+function formatFirstMissingReferenceReason(referenceImport) {
+  return typeof referenceImport.firstMissingReferenceReason === "string" &&
+    referenceImport.firstMissingReferenceReason.length > 0
+    ? `first missing reason ${formatSmokeText(
+        referenceImport.firstMissingReferenceReason,
       )}`
     : null;
 }

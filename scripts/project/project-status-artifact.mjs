@@ -155,6 +155,10 @@ function createOptionalReferenceImportSummary(referenceImport) {
     referenceImport: {
       complete: referenceImport.complete === true,
       ...createOptionalText(
+        "firstMissingReferenceReason",
+        referenceImport.firstMissingReferenceReason,
+      ),
+      ...createOptionalText(
         "firstMissingReferencePreview",
         referenceImport.firstMissingReferencePreview,
       ),

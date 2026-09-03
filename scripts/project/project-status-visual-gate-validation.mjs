@@ -164,7 +164,12 @@ function assertOptionalReferenceImport(referenceImport) {
     referenceImport.complete,
     "releaseGate.visual.artifactCheck.referenceImport.complete",
   );
-  assertOptionalFirstMissingReferencePreview(referenceImport);
+  for (const field of [
+    "firstMissingReferenceReason",
+    "firstMissingReferencePreview",
+  ]) {
+    assertOptionalNullableReferenceImportString(referenceImport, field);
+  }
   assertNullableString(
     referenceImport.manifestPath,
     "releaseGate.visual.artifactCheck.referenceImport.manifestPath",
@@ -203,15 +208,13 @@ function assertOptionalReferenceImport(referenceImport) {
   }
 }
 
-function assertOptionalFirstMissingReferencePreview(referenceImport) {
-  if (referenceImport.firstMissingReferencePreview === undefined) {
-    return;
+function assertOptionalNullableReferenceImportString(referenceImport, field) {
+  if (referenceImport[field] !== undefined) {
+    assertNullableString(
+      referenceImport[field],
+      `releaseGate.visual.artifactCheck.referenceImport.${field}`,
+    );
   }
-
-  assertNullableString(
-    referenceImport.firstMissingReferencePreview,
-    "releaseGate.visual.artifactCheck.referenceImport.firstMissingReferencePreview",
-  );
 }
 
 function assertOptionalRequiredReferenceSummary(referenceImport) {

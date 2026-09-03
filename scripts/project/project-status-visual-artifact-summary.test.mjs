@@ -92,6 +92,7 @@ test("project status summarizes visual artifact counts", () => {
   check.visualArtifact.referenceImport = {
     ...check.visualArtifact.referenceImport,
     complete: false,
+    firstMissingReferenceReason: "hero-banner-desktop.png is missing",
     firstMissingReferencePreview:
       "reports/visual/page-builder-fixture/page-builder-visual-fixture-hero-banner-desktop.png (1440x1000)",
     missingCount: 1,
@@ -121,12 +122,17 @@ test("project status summarizes visual artifact counts", () => {
   );
   assert.match(
     missingReferenceTerminal,
-    /first missing preview reports\/visual\/page-builder-fixture\/page-builder-visual-fixture-hero/,
+    /first missing reason hero-banner-desktop\.png is missing/,
   );
   assert.equal(
     missingReferenceArtifact.releaseGate.visual.artifactCheck.referenceImport
       .firstMissingReferencePreview,
     "reports/visual/page-builder-fixture/page-builder-visual-fixture-hero-banner-desktop.png (1440x1000)",
+  );
+  assert.equal(
+    missingReferenceArtifact.releaseGate.visual.artifactCheck.referenceImport
+      .firstMissingReferenceReason,
+    "hero-banner-desktop.png is missing",
   );
   assert.match(missingReferenceMarkdown, /### Missing Visual References/);
   assert.match(
@@ -137,6 +143,10 @@ test("project status summarizes visual artifact counts", () => {
   assert.match(
     missingReferenceMarkdown,
     /Required source references: 11\/12 available \(1 missing, 11 ready\)/,
+  );
+  assert.match(
+    missingReferenceMarkdown,
+    /First missing reason: hero-banner-desktop\.png is missing/,
   );
   assert.match(
     missingReferenceMarkdown,

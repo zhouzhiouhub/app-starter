@@ -133,6 +133,12 @@ export function createVisualArtifactCheck(input) {
 function createReferenceImportSummary(complete) {
   return {
     complete,
+    ...(complete
+      ? {}
+      : {
+          firstMissingReferenceReason:
+            "hero-banner-desktop.png is missing",
+        }),
     manifestPath:
       "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
     missingCount: complete ? 0 : 12,

@@ -552,7 +552,7 @@ When Production Smoke inputs still contain placeholders, the compact summary
 also prints the first missing input replacement reason.
 When available, the visual artifact line also includes reference-import status,
 missing/update counts, required source reference availability, the first missing
-reference path, and the matching first missing preview. It then prints the first two next actions with structured steps
+reference path, first missing reason, and the matching first missing preview. It then prints the first two next actions with structured steps
 when available, including the `pnpm smoke:request` request, dispatch inputs
 output, dispatch input table output, dispatch input JSON output,
 `pnpm smoke:dispatch` validation, `gh`
@@ -579,14 +579,14 @@ below target, the text summary, Markdown, and JSON artifact include failed
 visual measurement viewport/metric counts and the first failed measurement. New
 JSON artifacts also include a structured `readinessChecklist` with the same
 release tasks, visual artifact path, issue, reference-import, missing reference
-path, first missing preview, required source reference availability, measurement, and count details,
+path, first missing reason, first missing preview, required source reference availability, measurement, and count details,
 and `smoke.source` metadata for CI artifacts and release records.
 When the release uses a downloaded Page Builder Visual artifact, add
 `--visual-artifact-dir reports/visual/page-builder-fixture`; the combined gate
 then verifies the artifact-local manifest, capture report, acceptance report,
 and all 12 PNG screenshots, prints the artifact path plus issue, file, and
 screenshot counts plus reference-import status, required source reference availability,
-first missing reference path, and first missing preview in the text summary, and writes the result
+first missing reference path, first missing reason, and first missing preview in the text summary, and writes the result
 under `visual.artifactCheck`.
 After that artifact is ready, `release:notes` writes the final Markdown release
 record, including the readiness checklist, main CI local verification run and

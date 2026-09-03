@@ -129,7 +129,17 @@ function formatReferenceImport(referenceImport) {
     "unknown",
   )}, ${referenceImport.missingCount} missing${formatRequiredReferenceCoverage(
     referenceImport,
-  )}${firstMissing ? `, first missing ${formatReleaseValue(firstMissing, "unknown")}` : ""}${formatFirstMissingPreview(referenceImport)}`;
+  )}${firstMissing ? `, first missing ${formatReleaseValue(firstMissing, "unknown")}` : ""}${formatFirstMissingReason(referenceImport)}${formatFirstMissingPreview(referenceImport)}`;
+}
+
+function formatFirstMissingReason(referenceImport) {
+  return typeof referenceImport.firstMissingReferenceReason === "string" &&
+    referenceImport.firstMissingReferenceReason.length > 0
+    ? `, first missing reason ${formatReleaseValue(
+        referenceImport.firstMissingReferenceReason,
+        "unknown",
+      )}`
+    : "";
 }
 
 function formatFirstMissingPreview(referenceImport) {

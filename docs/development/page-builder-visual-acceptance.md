@@ -261,7 +261,7 @@ When the same default artifact is complete on a local machine, plain
 `pnpm project:status` automatically includes it in the informational status
 summary with the artifact path, issue count, reference-import summary,
 required source reference availability, first missing reference path, retained
-first missing preview, and count totals.
+first missing reason, retained first missing preview, and count totals.
 Keep using explicit
 `--visual-artifact-dir reports/visual/page-builder-fixture`
 for `release:check` and production handoff commands that must formally evaluate

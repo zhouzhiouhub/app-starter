@@ -73,6 +73,9 @@ export function createReferenceImportSummary(report) {
 
   return {
     complete: report.complete === true,
+    firstMissingReferenceReason: readFirstMissingReferenceReason(
+      report.missing,
+    ),
     firstMissingReferencePreview:
       formatPageBuilderVisualFirstMissingPreview({
         missing: report.missing,
@@ -228,4 +231,10 @@ function readReferencePaths(items) {
 
 function readReferencePath(item) {
   return isObject(item) ? readText(item.expectedPath) : null;
+}
+
+function readFirstMissingReferenceReason(items) {
+  const firstMissing = Array.isArray(items) ? items[0] : null;
+
+  return isObject(firstMissing) ? readText(firstMissing.reason) : null;
 }

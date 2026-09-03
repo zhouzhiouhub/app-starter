@@ -339,8 +339,8 @@ later phases are explicitly approved.
   exits successfully, prints the visual artifact path plus issue, file, and
   screenshot counts plus reference-import status, required source reference
   availability, failed visual measurement counts and the first failed
-  measurement when metrics are below target, first missing reference path, and
-  first missing preview,
+  measurement when metrics are below target, first missing reference path,
+  first missing reason, and first missing preview,
   and records
   `visual.artifactCheck.status=complete`.
 - `pnpm release:check -- --checklist --smoke-report artifacts/production-smoke/smoke-report.json`
@@ -355,7 +355,7 @@ later phases are explicitly approved.
   Production Smoke, Page Builder visual, and release notes tasks, including the
   visual artifact path, issue count, reference-import summary,
   required source reference availability, failed measurement summary, missing
-  reference path list, first missing preview, and counts when present, while
+  reference path list, first missing reason, first missing preview, and counts when present, while
   `visual.pendingComponents`,
   `visual.pendingViewports`, `visual.issues`, and
   `visual.checklist.pendingTasks` identify any remaining Page Builder visual
@@ -370,8 +370,8 @@ later phases are explicitly approved.
   summary prints Production Smoke, Page Builder Visual, and optional visual
   artifact status, path, and counts. When available, the visual artifact line
   also includes reference-import status, missing/update counts,
-  required source reference availability, the first missing reference path, and
-  the matching first missing preview. It then
+  required source reference availability, the first missing reference path,
+  first missing reason, and the matching first missing preview. It then
   prints the first two next actions with
   structured steps when available, including the `pnpm smoke:request` request,
   dispatch inputs output, dispatch input table output,

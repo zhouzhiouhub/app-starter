@@ -67,6 +67,7 @@ function formatReferenceImport(referenceImport) {
     )} (${formatText(referenceImport.sourceDirStatus)})`,
     `Reference missing: ${referenceImport.missingCount}`,
     ...formatMissingReferences(referenceImport),
+    ...formatFirstMissingReferenceReason(referenceImport),
     ...formatFirstMissingReferencePreview(referenceImport),
     `Reference updates: ${referenceImport.updateCount}`,
     ...formatRequiredReferences(referenceImport),
@@ -79,6 +80,17 @@ function formatFirstMissingReferencePreview(referenceImport) {
     ? [
         `First missing reference preview: ${formatCode(
           referenceImport.firstMissingReferencePreview,
+        )}`,
+      ]
+    : [];
+}
+
+function formatFirstMissingReferenceReason(referenceImport) {
+  return typeof referenceImport.firstMissingReferenceReason === "string" &&
+    referenceImport.firstMissingReferenceReason.length > 0
+    ? [
+        `First missing reference reason: ${formatText(
+          referenceImport.firstMissingReferenceReason,
         )}`,
       ]
     : [];

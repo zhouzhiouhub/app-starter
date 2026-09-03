@@ -124,8 +124,12 @@ test("release check artifact includes blocked checklist actions", () => {
   );
   assert.equal(visualItem?.status, "needs-evidence");
   assert.equal(
+    artifact.visual.artifactCheck.referenceImport.firstMissingReferenceReason,
+    "hero-banner-desktop.png is missing",
+  );
+  assert.equal(
     visualItem?.detail,
-    "0/6 components, 0/12 viewports, artifact invalid (reports/visual/page-builder-fixture, 1 issues, 5/6 files, 0/12 screenshots, references invalid (12 missing, 0 updates, 0/12 required source references available, first missing docs/visual/page-builder-references/hero-banner-desktop.png))",
+    "0/6 components, 0/12 viewports, artifact invalid (reports/visual/page-builder-fixture, 1 issues, 5/6 files, 0/12 screenshots, references invalid (12 missing, 0 updates, 0/12 required source references available, first missing docs/visual/page-builder-references/hero-banner-desktop.png, first missing reason hero-banner-desktop.png is missing))",
   );
   assert.match(visualItem?.action, /pnpm visual:acceptance -- --checklist/);
   assert.equal(
@@ -308,6 +312,12 @@ function createInvalidVisualArtifact() {
 function createReferenceImportSummary(complete) {
   return {
     complete,
+    ...(complete
+      ? {}
+      : {
+          firstMissingReferenceReason:
+            "hero-banner-desktop.png is missing",
+        }),
     manifestPath:
       "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
     missingCount: complete ? 0 : 12,

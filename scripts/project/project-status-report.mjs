@@ -191,6 +191,11 @@ function formatVisualReferenceImport(referenceImport) {
     ? referenceImport.missingReferences[0]
     : null;
   const missing = firstMissing ? `, first missing ${firstMissing}` : "";
+  const reason =
+    typeof referenceImport.firstMissingReferenceReason === "string" &&
+    referenceImport.firstMissingReferenceReason.length > 0
+      ? `, first missing reason ${referenceImport.firstMissingReferenceReason}`
+      : "";
   const preview =
     typeof referenceImport.firstMissingReferencePreview === "string" &&
     referenceImport.firstMissingReferencePreview.length > 0
@@ -198,7 +203,7 @@ function formatVisualReferenceImport(referenceImport) {
       : "";
   const required = formatRequiredReferenceCoverage(referenceImport);
 
-  return `references ${referenceImport.status} (${referenceImport.sourceDirStatus} source, ${referenceImport.missingCount} missing${missing}${preview}, ${referenceImport.updateCount} updates${required})`;
+  return `references ${referenceImport.status} (${referenceImport.sourceDirStatus} source, ${referenceImport.missingCount} missing${missing}${reason}${preview}, ${referenceImport.updateCount} updates${required})`;
 }
 
 function formatRequiredReferenceCoverage(referenceImport) {

@@ -145,7 +145,7 @@ Release handoff:
   gate release. The terminal summary prints Production Smoke, Page Builder Visual,
   and optional visual artifact status, path, and counts. When available, the visual artifact line also
   includes reference-import status, missing/update counts, required source reference availability,
-  the first missing reference path, and the matching first missing preview. It then prints the first two next actions with
+  the first missing reference path, first missing reason, and the matching first missing preview. It then prints the first two next actions with
   structured steps when available, including the smoke:request handoff,
   dispatch inputs output, dispatch input table output, dispatch input JSON
   output, smoke:dispatch validation, gh dispatch template, and Production

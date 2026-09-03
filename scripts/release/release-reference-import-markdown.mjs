@@ -15,6 +15,7 @@ export function formatReferenceImportMarkdown(
     )})`,
     `- Reference missing: ${referenceImport.missingCount}`,
     ...formatMissingReferences(referenceImport, formatCode),
+    ...formatFirstMissingReferenceReason(referenceImport, formatText),
     ...formatFirstMissingReferencePreview(referenceImport, formatCode),
     `- Reference updates: ${referenceImport.updateCount}`,
     ...formatRequiredReferences(referenceImport),
@@ -40,7 +41,18 @@ export function formatReferenceImportGateSummary(
     return "";
   }
 
-  return `, references ${formatText(referenceImport.status)}, ${referenceImport.missingCount} missing${formatRequiredReferenceGateSummary(referenceImport)}${formatFirstMissingReferencePreviewGate(referenceImport, formatText)}`;
+  return `, references ${formatText(referenceImport.status)}, ${referenceImport.missingCount} missing${formatRequiredReferenceGateSummary(referenceImport)}${formatFirstMissingReferenceReasonGate(referenceImport, formatText)}${formatFirstMissingReferencePreviewGate(referenceImport, formatText)}`;
+}
+
+function formatFirstMissingReferenceReason(referenceImport, formatText) {
+  return typeof referenceImport.firstMissingReferenceReason === "string" &&
+    referenceImport.firstMissingReferenceReason.length > 0
+    ? [
+        `- First missing reference reason: ${formatText(
+          referenceImport.firstMissingReferenceReason,
+        )}`,
+      ]
+    : [];
 }
 
 function formatDefault(value) {
@@ -77,6 +89,15 @@ function formatRequiredReferenceGateSummary(referenceImport) {
   });
 
   return coverage ? `, ${coverage}` : "";
+}
+
+function formatFirstMissingReferenceReasonGate(referenceImport, formatText) {
+  return typeof referenceImport.firstMissingReferenceReason === "string" &&
+    referenceImport.firstMissingReferenceReason.length > 0
+    ? `, first missing reason ${formatText(
+        referenceImport.firstMissingReferenceReason,
+      )}`
+    : "";
 }
 
 function formatFirstMissingReferencePreviewGate(referenceImport, formatText) {

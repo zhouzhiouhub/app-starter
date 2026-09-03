@@ -27,6 +27,7 @@ export function formatVisualReferenceImport(referenceImport, options = {}) {
     `${referenceImport.missingCount} missing`,
     `${referenceImport.updateCount} updates`,
     required,
+    formatFirstMissingReferenceReason(referenceImport),
     formatFirstMissingReferencePreview(referenceImport),
   ]
     .filter(Boolean)
@@ -50,6 +51,7 @@ export function formatMissingVisualReferenceFiles(visual) {
     `- Source dir: ${formatCode(referenceImport.sourceDir)}`,
     `- Missing files: ${referenceImport.missingCount}`,
     ...formatRequiredReferenceLines(referenceImport),
+    ...formatFirstMissingReferenceReasonLines(referenceImport),
     ...formatFirstMissingReferencePreviewLines(referenceImport),
     ...missingReferences.map((reference) => `- ${formatCode(reference)}`),
     "",
@@ -66,6 +68,26 @@ function formatFirstMissingReferencePreview(referenceImport) {
         referenceImport.firstMissingReferencePreview,
       )}`
     : null;
+}
+
+function formatFirstMissingReferenceReason(referenceImport) {
+  return typeof referenceImport.firstMissingReferenceReason === "string" &&
+    referenceImport.firstMissingReferenceReason.length > 0
+    ? `first missing reason ${formatText(
+        referenceImport.firstMissingReferenceReason,
+      )}`
+    : null;
+}
+
+function formatFirstMissingReferenceReasonLines(referenceImport) {
+  return typeof referenceImport.firstMissingReferenceReason === "string" &&
+    referenceImport.firstMissingReferenceReason.length > 0
+    ? [
+        `- First missing reason: ${formatText(
+          referenceImport.firstMissingReferenceReason,
+        )}`,
+      ]
+    : [];
 }
 
 function formatFirstMissingReferencePreviewLines(referenceImport) {
