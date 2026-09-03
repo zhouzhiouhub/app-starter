@@ -194,7 +194,9 @@ later phases are explicitly approved.
    `pnpm smoke:dispatch -- --inputs-json artifacts/production-smoke/production-smoke-dispatch-inputs.json --require-complete`;
    the dispatch command inherits `workflowFile`, `ref`, and input values from
    the JSON manifest, while explicit CLI flags may still override manifest
-   values. The JSON manifest keeps `dispatchManifestContext.inheritedFields` for
+   values. If placeholders remain, the dispatch preview and
+   `--require-complete` error name the first missing input replacement reason.
+   The JSON manifest keeps `dispatchManifestContext.inheritedFields` for
    the inherited `workflowFile`, `ref`, and `inputs` fields plus
    `dispatchManifestContext.overridePolicy` for the CLI override rule. Copy the
    printed command only after it reports `Ready to dispatch: yes`.

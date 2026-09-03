@@ -488,9 +488,11 @@ choice. It also includes a `gh workflow run
 production-smoke.yml --ref main ...` dispatch template for the current release
 evidence inputs. After replacing placeholders in the JSON input manifest, use
 `pnpm smoke:dispatch -- --inputs-json artifacts/production-smoke/production-smoke-dispatch-inputs.json --require-complete`
-to validate the same inputs and print the final command. The command inherits
-`workflowFile`, `ref`, and input values from the JSON manifest; explicit CLI
-flags can still override manifest values. The JSON manifest keeps
+to validate the same inputs and print the final command. If placeholders remain,
+the dispatch preview and `--require-complete` error name the first missing input
+replacement reason. The command inherits `workflowFile`, `ref`, and input values
+from the JSON manifest; explicit CLI flags can still override manifest values.
+The JSON manifest keeps
 `dispatchManifestContext.inheritedFields` for the inherited `workflowFile`,
 `ref`, and `inputs` fields plus `dispatchManifestContext.overridePolicy` for the
 CLI override rule. Blocked JSON artifacts mirror that handoff as

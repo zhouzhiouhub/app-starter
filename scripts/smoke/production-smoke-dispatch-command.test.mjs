@@ -14,6 +14,7 @@ import {
   createProductionSmokeRequestCommand,
   productionSmokeDispatchInputs,
 } from "./production-smoke-dispatch-command.mjs";
+import { printProductionSmokeDispatchHelp } from "./production-smoke-dispatch-help.mjs";
 
 test("production smoke dispatch command names workflow and release inputs", () => {
   const command = createProductionSmokeDispatchCommand();
@@ -109,6 +110,10 @@ test("production smoke dispatch CLI prints a safe placeholder command", async ()
   assert.match(output, /Missing inputs: visual_artifact_name/);
   assert.match(
     output,
+    /First missing input: visual_artifact_name - replace placeholder page-builder-visual-fixture-<run_number> with Page Builder Visual workflow artifact after visual evidence passes/,
+  );
+  assert.match(
+    output,
     /Command: gh workflow run production-smoke\.yml --ref main /,
   );
   assert.match(
@@ -169,6 +174,10 @@ test("production smoke dispatch CLI can print JSON for integrations", async () =
     artifact.missingInputs.slice(0, 2),
     ["visual_artifact_name", "visual_artifact_run_id"],
   );
+  assert.equal(
+    artifact.missingInputDetails[0].reason,
+    "replace placeholder page-builder-visual-fixture-<run_number> with Page Builder Visual workflow artifact after visual evidence passes",
+  );
 });
 
 test("production smoke dispatch CLI blocks incomplete formal commands", async () => {
@@ -181,6 +190,10 @@ test("production smoke dispatch CLI blocks incomplete formal commands", async ()
   assert.match(
     stderr.join("\n"),
     /Missing dispatch inputs: visual_artifact_name/,
+  );
+  assert.match(
+    stderr.join("\n"),
+    /First missing input: visual_artifact_name - replace placeholder page-builder-visual-fixture-<run_number> with Page Builder Visual workflow artifact after visual evidence passes/,
   );
   assert.match(stderr.join("\n"), /Pass real input flags/);
   assert.match(stderr.join("\n"), /pnpm smoke:request/);
@@ -204,6 +217,7 @@ test("production smoke dispatch CLI rejects unsafe evidence inputs", async () =>
 });
 
 test("production smoke dispatch CLI exposes package and docs entry points", async () => {
+  const help = [];
   const [packageJsonText, workflow, releaseChecklist, setupDoc, readme] =
     await Promise.all([
       readFile("package.json", "utf8"),
@@ -213,6 +227,7 @@ test("production smoke dispatch CLI exposes package and docs entry points", asyn
       readFile("README.md", "utf8"),
     ]);
   const packageJson = JSON.parse(packageJsonText);
+  printProductionSmokeDispatchHelp((line) => help.push(line));
 
   assert.equal(
     packageJson.scripts["smoke:dispatch"],
@@ -232,6 +247,10 @@ test("production smoke dispatch CLI exposes package and docs entry points", asyn
   assert.match(readme, /pnpm smoke:dispatch/);
   assert.match(readme, /--inputs-json/);
   assert.match(readme, /pnpm smoke:request/);
+  assert.match(
+    help.join("\n"),
+    /first missing input replacement reason/i,
+  );
 });
 
 test("production smoke dispatch config normalizes command options", () => {

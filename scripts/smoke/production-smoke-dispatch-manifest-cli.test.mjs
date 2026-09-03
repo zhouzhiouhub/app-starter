@@ -183,6 +183,10 @@ test("production smoke dispatch CLI explains incomplete JSON input manifests", a
     assert.match(error, /Missing dispatch inputs: visual_artifact_name\./);
     assert.match(
       error,
+      /First missing input: visual_artifact_name - replace placeholder page-builder-visual-fixture-<run_number> with Page Builder Visual workflow artifact after visual evidence passes/,
+    );
+    assert.match(
+      error,
       new RegExp(`Fill ${escapeRegExp(manifestPath)} with real workflow_dispatch values`),
     );
     assert.match(

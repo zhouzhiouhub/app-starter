@@ -14,6 +14,9 @@ import {
   productionSmokeDispatchOptionInputNames,
 } from "./production-smoke-dispatch-input-normalizers.mjs";
 import {
+  readProductionSmokeDispatchInputMissingReason,
+} from "./production-smoke-dispatch-input-reason.mjs";
+import {
   normalizeProductionSmokeWorkflowFile,
   normalizeProductionSmokeWorkflowRef,
 } from "./production-smoke-workflow-normalizers.mjs";
@@ -149,15 +152,20 @@ export function createProductionSmokeDispatchArtifact(config) {
     ref: config.ref,
     workflowFile: config.workflowFile,
   });
-  const missingInputs = inputs
+  const missingInputDetails = inputs
     .filter((item) => item.placeholder)
-    .map((item) => item.name);
+    .map((item) => ({
+      name: item.name,
+      reason: readProductionSmokeDispatchInputMissingReason(item),
+    }));
+  const missingInputs = missingInputDetails.map((item) => item.name);
 
   return {
     command,
     inputs,
     json: config.json,
     manualDispatch: createProductionSmokeManualDispatchInstruction(),
+    missingInputDetails,
     missingInputs,
     readyToDispatch: missingInputs.length === 0,
     ref: config.ref,
@@ -192,6 +200,13 @@ export function formatProductionSmokeDispatch(artifact) {
     ...(artifact.missingInputs.length > 0
       ? [`  Missing inputs: ${artifact.missingInputs.join(", ")}`]
       : []),
+    ...(artifact.missingInputDetails.length > 0
+      ? [
+          `  First missing input: ${formatMissingInputDetail(
+            artifact.missingInputDetails[0],
+          )}`,
+        ]
+      : []),
     "  Inputs:",
     ...artifact.inputs.map((input) => `    - ${input.name}: ${input.value}`),
     `  Command: ${artifact.command}`,
@@ -199,8 +214,14 @@ export function formatProductionSmokeDispatch(artifact) {
 }
 
 function createIncompleteDispatchErrorMessage(artifact, config) {
+  const firstMissingInput =
+    artifact.missingInputDetails.length > 0
+      ? formatMissingInputDetail(artifact.missingInputDetails[0])
+      : "";
+
   return [
     `Missing dispatch inputs: ${artifact.missingInputs.join(", ")}.`,
+    firstMissingInput ? `First missing input: ${firstMissingInput}.` : "",
     createIncompleteDispatchInputAction(config),
     "Manual: GitHub Actions > Production Smoke > Run workflow.",
   ]
@@ -222,6 +243,10 @@ function createIncompleteDispatchInputAction(config) {
     "artifacts/production-smoke/production-smoke-dispatch-inputs.json first.",
     "Preview with pnpm smoke:dispatch.",
   ].join(" ");
+}
+
+function formatMissingInputDetail(input) {
+  return input.reason ? `${input.name} - ${input.reason}` : input.name;
 }
 
 function splitInlineOption(arg) {
