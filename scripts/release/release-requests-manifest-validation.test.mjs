@@ -92,6 +92,16 @@ test("release requests manifest validation rejects count drift", () => {
     () =>
       assertReleaseRequestsManifest(
         createChangedManifest((manifest) => {
+          manifest.pageBuilderVisual.failedMeasurementViewportCount = 13;
+        }),
+      ),
+    /Release requests manifest pageBuilderVisual\.failedMeasurementViewportCount/u,
+  );
+
+  assert.throws(
+    () =>
+      assertReleaseRequestsManifest(
+        createChangedManifest((manifest) => {
           manifest.productionSmoke.inputCount = 2;
         }),
       ),
@@ -222,6 +232,9 @@ function createPageBuilderVisualHandoff() {
     },
     firstMissingReference:
       "docs/visual/page-builder-references/hero-banner-desktop.png",
+    failedMeasurementCount: 0,
+    failedMeasurementViewportCount: 0,
+    firstFailedMeasurement: null,
     missingCount: 1,
     missingReferences: [
       "docs/visual/page-builder-references/hero-banner-desktop.png",

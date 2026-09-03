@@ -50,6 +50,18 @@ function assertPageBuilderVisual(visual) {
     visual.firstMissingReference,
     "pageBuilderVisual.firstMissingReference",
   );
+  assertNonNegativeNumber(
+    visual.failedMeasurementCount,
+    "pageBuilderVisual.failedMeasurementCount",
+  );
+  assertNonNegativeNumber(
+    visual.failedMeasurementViewportCount,
+    "pageBuilderVisual.failedMeasurementViewportCount",
+  );
+  assertNullableString(
+    visual.firstFailedMeasurement,
+    "pageBuilderVisual.firstFailedMeasurement",
+  );
   assertNonNegativeNumber(visual.missingCount, "pageBuilderVisual.missingCount");
   assertStringList(visual.missingReferences, "pageBuilderVisual.missingReferences");
   assertNonNegativeNumber(
@@ -80,6 +92,13 @@ function assertPageBuilderVisual(visual) {
 
   if (visual.missingCount !== visual.missingReferences.length) {
     fail("pageBuilderVisual.missingCount", "must match missingReferences length");
+  }
+
+  if (visual.failedMeasurementViewportCount > visual.requiredReferenceCount) {
+    fail(
+      "pageBuilderVisual.failedMeasurementViewportCount",
+      "must not exceed requiredReferenceCount",
+    );
   }
 
   if (

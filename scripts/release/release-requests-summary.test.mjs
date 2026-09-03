@@ -104,6 +104,12 @@ test("release requests manifest summary prints project completion context", () =
         releaseEvidenceStatus: "needs-evidence",
         status: "needs-evidence",
       },
+      pageBuilderVisual: {
+        failedMeasurementCount: 2,
+        failedMeasurementViewportCount: 1,
+        firstFailedMeasurement:
+          "hero-banner.desktop: visualMatchPercent >= 95 (current 0.15)",
+      },
     },
     (line) => stdout.push(line),
   );
@@ -113,6 +119,7 @@ test("release requests manifest summary prints project completion context", () =
     "Release decision: not-ready; release evidence: needs-evidence",
     "Next action preview: 3/15",
     "Project status handoff: tmp/project-status-handoff.md",
+    "Visual measurements: 1 measured viewports failing, 2 failed metrics, first failed hero-banner.desktop: visualMatchPercent >= 95 (current 0.15)",
     "  - Production Smoke: Production smoke artifact missing",
     "    First step: Smoke request: pnpm smoke:request",
   ]);

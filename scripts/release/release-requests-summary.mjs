@@ -1,6 +1,9 @@
 import {
   createPageBuilderVisualReferenceHandoffOutputPaths,
 } from "../visual/page-builder-visual-reference-handoff.mjs";
+import {
+  formatPageBuilderVisualMeasurementSummary,
+} from "../visual/page-builder-visual-measurement-summary.mjs";
 
 export function printReleaseRequestsManifestSummary(manifest, writeLine) {
   const completion = manifest.projectCompletion;
@@ -21,10 +24,19 @@ export function printReleaseRequestsManifestSummary(manifest, writeLine) {
       `Project status handoff: ${completion.projectStatusHandoff.markdownPath}`,
     );
   }
+  printVisualMeasurementSummary(manifest.pageBuilderVisual, writeLine);
 
   if (nextAction) {
     writeLine(`  - ${nextAction.area}: ${nextAction.label}`);
     printFirstStep(nextAction, writeLine);
+  }
+}
+
+function printVisualMeasurementSummary(visual, writeLine) {
+  const summary = formatPageBuilderVisualMeasurementSummary(visual);
+
+  if (summary) {
+    writeLine(`Visual measurements: ${summary}`);
   }
 }
 

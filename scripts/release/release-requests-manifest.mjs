@@ -43,6 +43,7 @@ export function createReleaseRequestsManifest(input = {}) {
   const outputPaths = input.outputPaths ?? {};
   const project = request.projectArtifact ?? {};
   const visual = request.visualReferenceArtifact ?? {};
+  const projectVisual = project.releaseGate?.visual ?? {};
   const smoke = request.smokeDispatchArtifact ?? {};
   const smokeInputsManifest = createProductionSmokeDispatchInputsManifest({
     ...smoke,
@@ -68,6 +69,12 @@ export function createReleaseRequestsManifest(input = {}) {
     pageBuilderVisual: {
       commands: createVisualCommands(visualCommandContext),
       firstMissingReference: missingReferencePaths[0] ?? null,
+      failedMeasurementCount: readNumber(projectVisual.failedMeasurementCount),
+      failedMeasurementViewportCount: readNumber(
+        projectVisual.failedMeasurementViewportCount,
+      ),
+      firstFailedMeasurement:
+        readString(projectVisual.firstFailedMeasurement) || null,
       missingCount: readNumber(visual.missingCount),
       missingReferences: missingReferencePaths,
       referenceExportManifestPath: outputPaths.visualReferenceManifest ?? null,

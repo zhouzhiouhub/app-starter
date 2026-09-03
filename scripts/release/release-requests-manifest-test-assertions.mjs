@@ -16,6 +16,9 @@ export function assertReleaseRequestsManifestHandoff(input) {
     input.projectStatusMarkdownOutput,
   );
   assert.equal(manifest.pageBuilderVisual.missingCount, 12);
+  assert.equal(manifest.pageBuilderVisual.failedMeasurementCount, 0);
+  assert.equal(manifest.pageBuilderVisual.failedMeasurementViewportCount, 0);
+  assert.equal(manifest.pageBuilderVisual.firstFailedMeasurement, null);
   assert.equal(
     manifest.pageBuilderVisual.firstMissingReference,
     readFirstMissingReference(input),
