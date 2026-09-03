@@ -316,7 +316,8 @@ commands. It also writes
 `artifacts/visual/page-builder-missing-references.txt` as a plain one-path-per-line
 missing PNG list and
 `artifacts/visual/page-builder-reference-export-table.tsv` as a TSV task table
-with component, viewport, target size, target path, and preview path columns,
+with component, viewport, `file_name`, target size, target path, and preview
+path columns,
 plus `artifacts/visual/page-builder-reference-export-manifest.json` as a JSON
 export manifest for automation handoff. Its terminal summary and Markdown
 status also print `First missing reference` when a reference PNG is still
@@ -383,8 +384,9 @@ mirrors `projectCompletion.completionChecklist`,
 `projectCompletion.nextActionPreview`,
 `projectCompletion.projectStatusHandoff`, `productionSmoke.workflowFile`,
 `productionSmoke.ref`, `productionSmoke.dispatchManifestContext`, Production
-Smoke workflow inputs, evidence input sources, and required evidence checklist
-from the dispatch input manifest. The manifest is validated before write for
+Smoke workflow inputs, `productionSmoke.inputs[].releaseEvidenceRequired`,
+evidence input sources, and required evidence checklist from the dispatch input
+manifest. The manifest is validated before write for
 schemaVersion, ready-state consistency, and key count consistency. The terminal
 summary prints `Project completion`, release decision, release evidence status,
 next action preview count, Project Status handoff Markdown path, and the first
@@ -456,7 +458,9 @@ workflow_dispatch input template plus
 `artifacts/production-smoke/production-smoke-dispatch-inputs.tsv` as a TSV
 input table plus
 `artifacts/production-smoke/production-smoke-dispatch-inputs.json` as a JSON
-input manifest before the real production run; it does not execute smoke or
+input manifest before the real production run. The TSV table separates
+`release_evidence_required` from `workflow_required`, and the JSON manifest
+keeps each input's `releaseEvidenceRequired` flag; it does not execute smoke or
 create release evidence. The same section also
 includes `Production
 Smoke Workflow Inputs`, listing the `workflow_dispatch` input names, default
@@ -503,7 +507,7 @@ and Markdown status also print the first missing reference path, and
 `artifacts/visual/page-builder-missing-references.txt` keeps the same missing
 paths as a plain text handoff while
 `artifacts/visual/page-builder-reference-export-table.tsv` keeps the
-component/viewport export task table and
+component/viewport/`file_name` export task table and
 `artifacts/visual/page-builder-reference-export-manifest.json` keeps the
 machine-readable export manifest.
 Use `pnpm visual:references:handoff` when the design owner needs those request

@@ -71,7 +71,8 @@ source directory, but prints only missing expected PNG paths, one per line.
 it also writes `artifacts/visual/page-builder-missing-references.txt` as a
 plain missing path list and
 `artifacts/visual/page-builder-reference-export-table.tsv` as a TSV task table
-with component, viewport, target size, target path, and preview path columns,
+with component, viewport, `file_name`, target size, target path, and preview
+path columns,
 plus `artifacts/visual/page-builder-reference-export-manifest.json` as a
 machine-readable export manifest for automation handoff. Its terminal summary
 prints the first missing reference path. The request includes a

@@ -88,7 +88,8 @@ later phases are explicitly approved.
   first-missing-reference hint plus
   `artifacts/visual/page-builder-missing-references.txt` and
   `artifacts/visual/page-builder-reference-export-table.tsv` plus
-  `artifacts/visual/page-builder-reference-export-manifest.json`; run
+  `artifacts/visual/page-builder-reference-export-manifest.json`; the TSV table
+  includes a `file_name` column for copy-ready design export matching. Run
   `pnpm visual:references:handoff` when they need those request files plus
   copied preview screenshots and a handoff README under
   `artifacts/visual/page-builder-reference-handoff`, then run
@@ -179,8 +180,10 @@ later phases are explicitly approved.
    `artifacts/production-smoke/production-smoke-dispatch-inputs.json` with the
    manual dispatch path, required input placeholders, evidence input sources,
    dispatch validation command, `gh` template, input table, JSON input manifest,
-   and artifact retention checklist. This request does not run smoke or satisfy
-   release evidence by itself.
+   and artifact retention checklist. The TSV table separates
+   `release_evidence_required` from `workflow_required`, and the JSON manifest
+   keeps each input's `releaseEvidenceRequired` flag. This request does not run
+   smoke or satisfy release evidence by itself.
 2. Replace the placeholders in
    `artifacts/production-smoke/production-smoke-dispatch-inputs.json`, then run
    `pnpm smoke:dispatch -- --inputs-json artifacts/production-smoke/production-smoke-dispatch-inputs.json --require-complete`;
@@ -373,8 +376,9 @@ later phases are explicitly approved.
   the adjacent `Production Smoke Evidence Input Sources` section maps release
   evidence inputs to their source run, artifact, or operator value; the blocked
   JSON artifacts mirror the same
-  `requiredEvidence[]`, `workflowInputs[]`, and `inputSources[]` handoff under
-  `smoke.missingEvidence` and `releaseGate.smoke.missingEvidence`. When Page
+  `requiredEvidence[]`, `workflowInputs[]`, `inputSources[]`, and
+  `releaseEvidenceRequired` input flags handoff under `smoke.missingEvidence`
+  and `releaseGate.smoke.missingEvidence`. When Page
   Builder reference PNGs are missing,
   both Markdown files include a `Missing Visual References` section with the
   retained paths to fill.
@@ -492,7 +496,7 @@ later phases are explicitly approved.
   export request, writes
   `artifacts/visual/page-builder-missing-references.txt` as the plain missing
   path list, writes `artifacts/visual/page-builder-reference-export-table.tsv`
-  as a TSV task table, writes
+  as a TSV task table with a `file_name` column, writes
   `artifacts/visual/page-builder-reference-export-manifest.json` as a JSON
   export manifest, and prints the first missing reference path in the terminal
   summary and Markdown status.
