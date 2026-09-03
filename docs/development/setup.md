@@ -146,8 +146,9 @@ Production smoke readiness treats a missing migrations directory, a missing
 `migration_lock.toml`, or an empty migrations directory as a blocker even when
 `DATABASE_URL` itself is production-safe.
 The API `prisma:generate` script compares `services/api/prisma/schema.prisma`
-with the generated Prisma Client schema and skips generation when they already
-match, which keeps `verify:local` from trying to overwrite a Windows query
+with the generated Prisma Client schema, confirms that a query engine file is
+present, and skips generation when they already match and the generated files are
+complete. This keeps `verify:local` from trying to overwrite a Windows query
 engine DLL while `pnpm dev` is still running. Use
 `pnpm --filter @app-starter/api run prisma:generate:force` when a deliberate
 client rebuild is needed.

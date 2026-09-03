@@ -3,7 +3,7 @@
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import { constants as fsConstants } from "node:fs";
-import { access, readFile } from "node:fs/promises";
+import { access, readdir, readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -14,6 +14,7 @@ const apiRoot = path.resolve(
 );
 const schemaPath = path.join(apiRoot, "prisma", "schema.prisma");
 const requiredClientFiles = ["index.js", "index.d.ts", "schema.prisma"];
+const queryEnginePattern = /^(?:lib)?query_engine-.+\.node$/u;
 
 export async function runPrismaGenerateIfNeeded(
   args = process.argv.slice(2),
@@ -59,6 +60,11 @@ export async function readPrismaClientState(input = {}) {
       reason: `${missingFile} is missing`,
       upToDate: false,
     };
+  }
+
+  const hasQueryEngine = await hasPrismaQueryEngineFile(generatedClientDir);
+  if (!hasQueryEngine) {
+    return { reason: "query engine is missing", upToDate: false };
   }
 
   const generatedSchema = await readOptionalText(
@@ -135,6 +141,15 @@ async function findMissingFile(root, fileNames) {
   }
 
   return null;
+}
+
+async function hasPrismaQueryEngineFile(root) {
+  try {
+    const entries = await readdir(root);
+    return entries.some((entry) => queryEnginePattern.test(entry));
+  } catch {
+    return false;
+  }
 }
 
 async function canRead(filePath) {

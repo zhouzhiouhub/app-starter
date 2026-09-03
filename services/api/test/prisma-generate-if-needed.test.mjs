@@ -97,6 +97,22 @@ test("Prisma client state reports missing generated files", async () => {
   }
 });
 
+test("Prisma client state reports missing query engine", async () => {
+  const fixture = await createFixture({
+    generatedSchema: "model User { id String @id }\n",
+    writeQueryEngine: false,
+  });
+
+  try {
+    const state = await readPrismaClientState(fixture);
+
+    assert.equal(state.upToDate, false);
+    assert.equal(state.reason, "query engine is missing");
+  } finally {
+    await rm(fixture.root, { force: true, recursive: true });
+  }
+});
+
 async function createFixture(input = {}) {
   const root = path.join(
     tmpdir(),
@@ -119,6 +135,13 @@ async function createFixture(input = {}) {
   await writeFile(path.join(generatedClientDir, "index.d.ts"), "", "utf8");
   if (input.writeIndex !== false) {
     await writeFile(path.join(generatedClientDir, "index.js"), "", "utf8");
+  }
+  if (input.writeQueryEngine !== false) {
+    await writeFile(
+      path.join(generatedClientDir, "query_engine-windows.dll.node"),
+      "",
+      "utf8",
+    );
   }
 
   return { generatedClientDir, root, schemaPath };
