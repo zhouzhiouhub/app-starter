@@ -21,6 +21,7 @@ export function createPageBuilderVisualReferenceHandoffReadme(input) {
   };
   const firstMissingReference =
     readPageBuilderVisualFirstMissingReference(artifact);
+  const firstMissingReason = firstMissingReference?.reason ?? null;
   const firstMissingPreview =
     readFirstMissingHandoffPreviewSummary(manifest, firstMissingReference) ??
     formatPageBuilderVisualReferencePreviewSummary(firstMissingReference);
@@ -43,6 +44,7 @@ export function createPageBuilderVisualReferenceHandoffReadme(input) {
     `- Source dir: ${formatCode(manifest.sourceDir)}`,
     `- Acceptance manifest: ${formatCode(artifact.manifestPath)}`,
     ...formatFirstMissingReference(firstMissingReference?.expectedPath ?? null),
+    ...formatFirstMissingReason(firstMissingReason),
     ...formatFirstMissingPreview(firstMissingPreview),
     "",
     "## Files",
@@ -89,6 +91,10 @@ function formatFirstMissingReference(expectedPath) {
   return expectedPath
     ? [`- First missing reference: ${formatCode(expectedPath)}`]
     : [];
+}
+
+function formatFirstMissingReason(reason) {
+  return reason ? [`- First missing reason: ${formatText(reason)}`] : [];
 }
 
 function formatFirstMissingPreview(previewSummary) {

@@ -51,6 +51,10 @@ function assertPageBuilderVisual(visual) {
     "pageBuilderVisual.firstMissingReference",
   );
   assertNullableString(
+    visual.firstMissingReferenceReason,
+    "pageBuilderVisual.firstMissingReferenceReason",
+  );
+  assertNullableString(
     visual.firstMissingReferencePreview,
     "pageBuilderVisual.firstMissingReferencePreview",
   );
@@ -117,11 +121,12 @@ function assertPageBuilderVisual(visual) {
 
   if (
     visual.firstMissingReference === null &&
-    visual.firstMissingReferencePreview !== null
+    (visual.firstMissingReferenceReason != null ||
+      visual.firstMissingReferencePreview != null)
   ) {
     fail(
-      "pageBuilderVisual.firstMissingReferencePreview",
-      "must be null when there is no first missing reference",
+      "pageBuilderVisual.firstMissingReferenceReason",
+      "and firstMissingReferencePreview must be null when there is no first missing reference",
     );
   }
 }

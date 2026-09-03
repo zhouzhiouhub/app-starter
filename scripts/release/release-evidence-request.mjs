@@ -58,6 +58,10 @@ export async function runReleaseEvidenceRequestCli(args = [], input = {}) {
       request.visualReferenceArtifact.missing[0]?.expectedPath;
     if (firstMissingReference) {
       stdout(`First missing visual reference: ${firstMissingReference}`);
+      const firstMissingReason = request.visualReferenceArtifact.missing[0]?.reason;
+      if (firstMissingReason) {
+        stdout(`First missing visual reason: ${firstMissingReason}`);
+      }
       const firstMissingPreview = formatPageBuilderVisualFirstMissingPreview(
         request.visualReferenceArtifact,
       );
@@ -221,8 +225,8 @@ Evidence:
   Production Smoke request, dispatch input template path, dispatch input table
   path, and dispatch input JSON manifest path.
   The terminal summary and Markdown request status report release readiness,
-  visual reference status, the first missing visual reference, matching preview
-  screenshot, Production Smoke dispatch readiness, any missing Smoke input
+  visual reference status, the first missing visual reference, missing reason,
+  matching preview screenshot, Production Smoke dispatch readiness, any missing Smoke input
   names, and the first missing Smoke input replacement reason to unblock first. It does not run
   smoke, import visual references, accept evidence, create release notes, or
   mark the project ready.

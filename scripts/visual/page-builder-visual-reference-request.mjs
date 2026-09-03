@@ -126,6 +126,7 @@ export function createPageBuilderVisualReferenceRequestMarkdown(input) {
     `First missing reference: ${formatCode(
       missingReferences[0]?.expectedPath ?? "none",
     )}`,
+    `First missing reason: ${formatText(missingReferences[0]?.reason ?? "none")}`,
     `First missing preview: ${formatCode(
       formatPageBuilderVisualFirstMissingPreview({
         requiredReferences: references,

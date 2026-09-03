@@ -42,19 +42,22 @@ test("visual reference request command is exposed in package and docs", () => {
     /首个缺失文件为 `docs\/visual\/page-builder-references\/hero-banner-desktop\.png`/,
   );
   assert.match(acceptanceDoc, /terminal\s+and Markdown `First missing reference`/);
+  assert.match(acceptanceDoc, /First missing reason/);
   assert.match(acceptanceDoc, /First missing preview/);
   assert.match(acceptanceDoc, /page-builder-missing-references\.txt/);
   assert.match(acceptanceDoc, /page-builder-reference-export-table\.tsv/);
   assert.match(acceptanceDoc, /`file_name`/);
   assert.match(acceptanceDoc, /page-builder-reference-export-manifest\.json/);
   assert.match(releaseChecklist, /first missing reference path/);
+  assert.match(releaseChecklist, /first missing reason/);
   assert.match(releaseChecklist, /first missing preview/);
   assert.match(releaseChecklist, /page-builder-missing-references\.txt/);
   assert.match(releaseChecklist, /page-builder-reference-export-table\.tsv/);
   assert.match(releaseChecklist, /`file_name`/);
   assert.match(releaseChecklist, /page-builder-reference-export-manifest\.json/);
   assert.match(setupDoc, /terminal summary and Markdown\s+status.*First missing reference/s);
-  assert.match(setupDoc, /matching\s+preview screenshot/s);
+  assert.match(setupDoc, /First missing\s+reason/);
+  assert.match(setupDoc, /First missing\s+preview/s);
   assert.match(setupDoc, /page-builder-missing-references\.txt/);
   assert.match(setupDoc, /page-builder-reference-export-table\.tsv/);
   assert.match(setupDoc, /`file_name`/);
@@ -69,6 +72,7 @@ test("visual reference request command is exposed in package and docs", () => {
   assert.match(referenceReadme, /--table-output <path>/);
   assert.match(referenceReadme, /--json-output <path>/);
   assert.match(referenceReadme, /first missing reference path/);
+  assert.match(referenceReadme, /first missing reason/);
   assert.match(referenceReadme, /matching\s+retained preview screenshot/s);
   assert.match(referenceReadme, /Reference PNG Dimensions/);
   assert.match(referenceReadme, /reference size target/);

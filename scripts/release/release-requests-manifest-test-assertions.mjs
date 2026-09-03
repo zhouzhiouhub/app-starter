@@ -23,6 +23,10 @@ export function assertReleaseRequestsManifestHandoff(input) {
     manifest.pageBuilderVisual.firstMissingReference,
     readFirstMissingReference(input),
   );
+  assert.equal(
+    manifest.pageBuilderVisual.firstMissingReferenceReason,
+    "hero-banner-desktop.png is missing",
+  );
   assert.equal(manifest.pageBuilderVisual.firstMissingReferencePreview, null);
   assert.equal(
     manifest.pageBuilderVisual.referenceHandoffReadmePath,

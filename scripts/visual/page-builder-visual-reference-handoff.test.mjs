@@ -93,6 +93,10 @@ test("visual reference handoff CLI writes request files and previews", async () 
     );
     assert.match(
       stdout.join("\n"),
+      /First missing reason: spec-table-mobile\.png is missing/,
+    );
+    assert.match(
+      stdout.join("\n"),
       /First missing preview: reports\/visual\/reference-handoff-.+\/artifacts\/visual\/spec-table-mobile\.png \(3x2\)/,
     );
     assert.equal(
@@ -146,6 +150,7 @@ test("visual reference handoff CLI writes request files and previews", async () 
       readme,
       /First missing reference: `reports\/visual\/reference-handoff-.+\/references\/spec-table-mobile\.png`/,
     );
+    assert.match(readme, /First missing reason: spec-table-mobile\.png is missing/);
     assert.match(
       readme,
       /First missing preview: `reports\/visual\/reference-handoff-.+\/handoff\/preview-screenshots\/spec-table-mobile\.png \(3x2\)`/,
@@ -282,6 +287,7 @@ test("visual reference handoff help and docs expose the command", async () => {
   assert.equal(exitCode, 0);
   assert.match(help, /pnpm visual:references:handoff/);
   assert.match(help, /copied preview screenshots/);
+  assert.match(help, /first missing reference, reason/i);
   assert.match(help, /matching\s+preview\s+screenshot/i);
   assert.match(help, /handoff README/);
   assert.match(help, /sha256 checksums/);
@@ -298,6 +304,7 @@ test("visual reference handoff help and docs expose the command", async () => {
   assert.match(releaseChecklist, /sha256/);
   assert.match(referenceReadme, /pnpm visual:references:handoff/);
   assert.match(referenceReadme, /handoff README/);
+  assert.match(referenceReadme, /first missing reason/);
   assert.match(referenceReadme, /sha256/);
 });
 

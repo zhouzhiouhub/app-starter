@@ -385,7 +385,8 @@ visual manifest/source options, `--requests-manifest-output <path>`,
 individual request commands, but still does not import references, run smoke,
 upload artifacts, create release notes, or mark blocked evidence ready. The
 bundle manifest records the full missing visual reference path list, visual
-reference intake commands, the first missing visual preview when available, the
+reference intake commands, `pageBuilderVisual.firstMissingReferenceReason`, the
+first missing visual preview when available, the
 visual handoff README path, the Production Smoke dispatch template, and the
 `--inputs-json` validation command beside the missing input list and first
 missing Production Smoke input replacement reason. It also
@@ -400,7 +401,7 @@ evidence checklist from the dispatch input manifest. The manifest is validated b
 schemaVersion, ready-state consistency, and key count consistency. The terminal
 summary prints `Project completion`, release decision, release evidence status,
 next action preview count, Project Status handoff Markdown path, and the first
-missing visual reference, the first missing visual preview when available, the
+missing visual reference, first missing reason, the first missing visual preview when available, the
 first missing Production Smoke input replacement reason, and the first next
 action so the release operator can see the current blocker without opening the
 JSON.
@@ -504,7 +505,7 @@ Page Builder Visual artifact when all required files already exist under
 viewport/metric counts and the first failed measurement when measured metrics
 are below target, plus its artifact path, issue count, file count, screenshot
 counts, reference-import missing/update counts, required source reference
-availability, and the first missing reference path plus its retained preview
+availability, first missing reference path, first missing reason, and retained preview
 summary in the release gate summary,
 records the missing path list under
 `releaseGate.visual.artifactCheck.referenceImport`, and adds a
@@ -524,8 +525,8 @@ Use `pnpm --silent visual:references:missing` when the reviewer only needs
 copy-ready missing PNG paths.
 Use `pnpm visual:references:request` when the designer needs a Markdown export
 request rather than the full engineering intake report; the terminal summary
-and Markdown status also print the first missing reference path and matching
-preview screenshot, and
+and Markdown status also print `First missing reference`, `First missing
+reason`, and `First missing preview`, and
 `artifacts/visual/page-builder-missing-references.txt` keeps the same missing
 paths as a plain text handoff while
 `artifacts/visual/page-builder-reference-export-table.tsv` keeps the
@@ -592,7 +593,8 @@ After that artifact is ready, `release:notes` writes the final Markdown release
 record, including the readiness checklist, main CI local verification run and
 artifact, preflight artifact, project status artifact and source path, the
 project completion checklist, any recorded `visual.artifactCheck` path, issue
-count, reference-import summary, missing reference path list, and count summary, and the production smoke
+count, reference-import summary, missing reference path list, first missing
+reason, first missing preview, and count summary, and the production smoke
 source run.
 It validates the `project-status.v1` file against
 the same release evidence gate and refuses blocked evidence unless

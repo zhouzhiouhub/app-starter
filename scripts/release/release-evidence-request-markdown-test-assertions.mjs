@@ -62,6 +62,7 @@ export async function assertReleaseEvidenceRequestMarkdownHandoff({
     markdown,
     /First missing visual reference: `docs\/visual\/page-builder-references\/hero-banner-desktop\.png`/,
   );
+  assert.match(markdown, /First missing visual reason: source dir is missing/);
   assert.match(markdown, /First missing visual preview: `none`/);
   assert.match(
     markdown,
@@ -77,10 +78,7 @@ export async function assertReleaseEvidenceRequestMarkdownHandoff({
     markdown,
     /`visual_artifact_name`: `page-builder-visual-fixture-<run_number>`/,
   );
-  assert.match(
-    markdown,
-    /Do not mark the project complete from this request alone/,
-  );
+  assert.match(markdown, /Do not mark the project complete from this request alone/);
 }
 
 function createReleaseEvidenceRequestOutputPaths(root) {

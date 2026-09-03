@@ -180,7 +180,7 @@ test("project status docs mention visual artifact path and counts", async () => 
   assert.match(readme, /release-check\.md.*project-status\.md/s);
   assert.match(
     setupDoc,
-    /prints failed visual measurement\s+viewport\/metric counts and the first failed measurement when measured metrics\s+are below target, plus its artifact path, issue count, file count, screenshot\s+counts, reference-import missing\/update counts, required source reference\s+availability, and the first missing reference path/s,
+    /prints failed visual measurement\s+viewport\/metric counts and the first failed measurement when measured metrics\s+are below target, plus its artifact path, issue count, file count, screenshot\s+counts, reference-import missing\/update counts, required source reference\s+availability, first missing reference path, first missing reason/s,
   );
   assert.match(setupDoc, /retained preview\s+summary in the release gate summary/s);
   assert.match(setupDoc, /Missing Visual References/);
@@ -189,9 +189,9 @@ test("project status docs mention visual artifact path and counts", async () => 
   assert.match(setupDoc, /releaseGate\.visual\.artifactCheck/);
   assert.match(
     releaseChecklist,
-    /artifact path,\s+issue, file, screenshot, failed visual measurement viewport\/metric counts,\s+the first failed measurement when measured metrics are below target,\s+reference-import missing\/update counts, required source reference\s+availability, and the first missing reference path/s,
+    /artifact path,\s+issue, file, screenshot, failed visual measurement viewport\/metric counts,\s+the first failed measurement when measured metrics are below target,\s+reference-import missing\/update counts, required source reference\s+availability, first missing reference path, first missing reason/s,
   );
-  assert.match(releaseChecklist, /first missing reference path plus retained preview\s+summary/s);
+  assert.match(releaseChecklist, /retained preview\s+summary/s);
   assert.match(releaseChecklist, /Missing Visual References/);
   assert.match(releaseChecklist, /pnpm visual:references:request/);
   assert.match(releaseChecklist, /release-check\.md.*project-status\.md/s);

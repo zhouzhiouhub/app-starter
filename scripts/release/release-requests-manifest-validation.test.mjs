@@ -104,8 +104,16 @@ test("release requests manifest validation rejects count drift", () => {
         createChangedManifest((manifest) => {
           manifest.productionSmoke.inputCount = 2;
         }),
-      ),
+    ),
     /Release requests manifest productionSmoke\.inputCount/u,
+  );
+  assert.throws(
+    () => assertReleaseRequestsManifest(createChangedManifest((manifest) => {
+      manifest.pageBuilderVisual.firstMissingReference = null;
+      manifest.pageBuilderVisual.firstMissingReferenceReason =
+        "hero-banner-desktop.png is missing";
+    })),
+    /Release requests manifest pageBuilderVisual\.firstMissingReferenceReason/u,
   );
 });
 
@@ -242,6 +250,7 @@ function createPageBuilderVisualHandoff() {
     },
     firstMissingReference:
       "docs/visual/page-builder-references/hero-banner-desktop.png",
+    firstMissingReferenceReason: "hero-banner-desktop.png is missing",
     firstMissingReferencePreview: null,
     failedMeasurementCount: 0,
     failedMeasurementViewportCount: 0,

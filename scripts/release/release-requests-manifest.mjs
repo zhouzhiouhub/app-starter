@@ -72,6 +72,7 @@ export function createReleaseRequestsManifest(input = {}) {
     pageBuilderVisual: {
       commands: createVisualCommands(visualCommandContext),
       firstMissingReference: missingReferencePaths[0] ?? null,
+      firstMissingReferenceReason: readString(missingReferences[0]?.reason) || null,
       firstMissingReferencePreview:
         formatPageBuilderVisualFirstMissingPreview({
           missing: missingReferences,

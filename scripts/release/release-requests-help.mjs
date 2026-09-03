@@ -49,8 +49,8 @@ Evidence:
   Custom output paths are also reflected in the
   combined release evidence request refresh command, output summary, and
   embedded request commands. Its terminal summary reports the first missing
-  visual reference, matching preview screenshot, and first missing Production
-  Smoke input replacement reason when evidence inputs still contain placeholders.
+  visual reference, missing reason, matching preview screenshot, and first missing
+  Production Smoke input replacement reason when evidence inputs still contain placeholders.
   It does not import visual references, run Production Smoke, create release
   notes, upload artifacts, or mark the project ready.`);
 }

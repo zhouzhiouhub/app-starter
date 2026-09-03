@@ -202,6 +202,10 @@ test("release requests CLI writes every local request Markdown", async () => {
         )}/hero-banner-desktop\\.png`,
       ),
     );
+    assert.match(
+      output,
+      /First missing visual reason: hero-banner-desktop\.png is missing/,
+    );
     assert.equal(
       visualExportManifest.schemaVersion,
       "page-builder-visual-reference-export.v1",
@@ -233,6 +237,10 @@ test("release requests CLI writes every local request Markdown", async () => {
     );
     assert.equal(visualExportManifest.referenceCount, 12);
     assert.equal(visualExportManifest.missingCount, 12);
+    assert.equal(
+      releaseRequestsManifest.pageBuilderVisual.firstMissingReferenceReason,
+      "hero-banner-desktop.png is missing",
+    );
     assertReleaseRequestsManifestHandoff({
       releaseRequestsManifest, releaseRequestsManifestOutput,
       smokeInputsJsonOutput, smokeInputsManifest, visualExportManifest,

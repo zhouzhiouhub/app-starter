@@ -80,7 +80,8 @@ when importing into the uploadable artifact manifest. Run
 a copy-ready list of missing PNG paths. Run `pnpm visual:references:request`
 when the design owner needs a Markdown export request with the same missing
 file list, retained preview screenshots, follow-up commands, the same terminal
-and Markdown `First missing reference` / `First missing preview` hint, and a retained
+and Markdown `First missing reference` / `First missing reason` /
+`First missing preview` hint, and a retained
 `artifacts/visual/page-builder-missing-references.txt` plain path list plus
 `artifacts/visual/page-builder-reference-export-table.tsv` with component,
 viewport, `file_name`, status, rejection reason, target size, target path, and
@@ -125,8 +126,8 @@ evidence can pass artifact integrity review, and reports the readable reference
 count against the number of filled `designReference` paths. The retained JSON,
 terminal output, and Markdown handoff include an issue count before the detailed
 issue list, plus reference-import status, source-dir status, missing/update
-counts, required source reference availability, and missing reference path previews so
-release reviewers can spot invalid bundles and missing design references
+counts, required source reference availability, missing reference reasons, and
+missing reference path previews so release reviewers can spot invalid bundles and missing design references
 quickly.
 The check also verifies that `visual-reference-import-report.json` and
 `visual-reference-import-report.md` are retained for the artifact-local manifest

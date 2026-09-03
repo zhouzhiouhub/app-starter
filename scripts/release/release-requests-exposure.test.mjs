@@ -39,6 +39,7 @@ test("release requests command is exposed in package CI and docs", async () => {
   assert.match(releaseChecklist, /projectCompletion\.completionChecklist\.items\[\]\.nextSteps/);
   assert.match(releaseChecklist, /projectCompletion\.nextActionPreview/);
   assert.match(releaseChecklist, /projectCompletion\.projectStatusHandoff/);
+  assert.match(releaseChecklist, /pageBuilderVisual\.firstMissingReferenceReason/);
   assert.match(releaseChecklist, /--project-status-output/);
   assert.match(releaseChecklist, /--project-status-markdown/);
   assert.match(releaseChecklist, /validated before write/);
@@ -67,6 +68,7 @@ test("release requests command is exposed in package CI and docs", async () => {
   assert.match(setupDoc, /projectCompletion\.completionChecklist\.items\[\]\.nextSteps/);
   assert.match(setupDoc, /projectCompletion\.nextActionPreview/);
   assert.match(setupDoc, /projectCompletion\.projectStatusHandoff/);
+  assert.match(setupDoc, /pageBuilderVisual\.firstMissingReferenceReason/);
   assert.match(setupDoc, /--project-status-output <path>/);
   assert.match(setupDoc, /--project-status-markdown <path>/);
   assert.match(setupDoc, /validated before write/);
@@ -95,6 +97,7 @@ test("release requests command is exposed in package CI and docs", async () => {
   assert.match(readme, /projectCompletion\.completionChecklist\.items\[\]\.nextSteps/);
   assert.match(readme, /projectCompletion\.nextActionPreview/);
   assert.match(readme, /projectCompletion\.projectStatusHandoff/);
+  assert.match(readme, /pageBuilderVisual\.firstMissingReferenceReason/);
   assert.match(readme, /--project-status-output <path>/);
   assert.match(readme, /--project-status-markdown <path>/);
   assert.match(readme, /写入前校验/);

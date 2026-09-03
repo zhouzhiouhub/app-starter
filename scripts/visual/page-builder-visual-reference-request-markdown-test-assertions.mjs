@@ -44,6 +44,10 @@ export function assertDesignFacingVisualReferenceRequestMarkdown() {
   );
   assert.match(
     markdown,
+    /First missing reason: hero-banner-desktop\.png appears to be a generated placeholder; use the approved design export instead/,
+  );
+  assert.match(
+    markdown,
     /First missing preview: `reports\/visual\/page-builder-fixture\/page-builder-visual-fixture-hero-banner-desktop\.png \(1440x1000\)`/,
   );
   assert.match(

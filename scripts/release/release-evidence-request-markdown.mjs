@@ -90,6 +90,9 @@ export function createReleaseEvidenceRequestMarkdown(input) {
   const firstMissingVisualReference = Array.isArray(visual.missing)
     ? visual.missing[0]?.expectedPath
     : null;
+  const firstMissingVisualReason = Array.isArray(visual.missing)
+    ? visual.missing[0]?.reason
+    : null;
   const firstMissingVisualPreview =
     formatPageBuilderVisualFirstMissingPreview(visual);
   const firstMissingSmokeInput = readFirstMissingSmokeInput(smoke);
@@ -186,6 +189,9 @@ export function createReleaseEvidenceRequestMarkdown(input) {
     )}`,
     `- First missing visual reference: ${formatCode(
       firstMissingVisualReference ?? "none",
+    )}`,
+    `- First missing visual reason: ${formatText(
+      firstMissingVisualReason ?? "none",
     )}`,
     `- First missing visual preview: ${formatCode(
       firstMissingVisualPreview ?? "none",

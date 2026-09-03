@@ -323,7 +323,7 @@ later phases are explicitly approved.
   issue, file, screenshot, failed visual measurement viewport/metric counts,
   the first failed measurement when measured metrics are below target,
   reference-import missing/update counts, required source reference
-  availability, and the first missing reference path plus retained preview
+  availability, first missing reference path, first missing reason, and retained preview
   summary in its informational
   release gate summary.
   `--all-actions` also includes the expected preview screenshot size beside each
@@ -431,7 +431,7 @@ later phases are explicitly approved.
   status artifact and source path, visual manifest path, optional
   `visual.artifactCheck` path, issue count, reference-import summary,
   required source reference availability, missing reference path list, first missing
-  preview, and count summary,
+  reason, first missing preview, and count summary,
   pending visual evidence lists, visual checklist task summary, visual issue summary,
   `Missing Production Smoke Evidence`, and `Missing Visual References` when
   `--allow-blocked` is used for failure review drafts.
@@ -481,7 +481,7 @@ later phases are explicitly approved.
   reference handoff package/README, workflow_dispatch input template,
   workflow_dispatch input TSV table, and workflow_dispatch input JSON manifest.
   The bundle JSON also records the full missing visual reference path list,
-  visual reference intake commands, the visual handoff README path, Project
+  `pageBuilderVisual.firstMissingReferenceReason`, visual reference intake commands, the visual handoff README path, Project
   Status handoff command/paths, the Production Smoke dispatch template, and
   `--inputs-json` validation command for operator handoff. It mirrors
   `projectCompletion.completionChecklist`,
@@ -494,8 +494,8 @@ later phases are explicitly approved.
   schemaVersion, ready-state consistency, and key count consistency. The
   terminal summary prints `Project completion`, release decision, release
   evidence status, next action preview count, Project Status handoff Markdown
-  path, the first missing visual reference, the first missing visual preview
-  when available, the first missing Production Smoke input replacement reason,
+  path, the first missing visual reference, first missing reason, the first
+  missing visual preview when available, the first missing Production Smoke input replacement reason,
   and the first next action so the release operator can see the current blocker
   without opening the JSON.
 - Run `pnpm release:evidence-request` before cross-functional release review
@@ -518,8 +518,8 @@ later phases are explicitly approved.
   as a TSV task table with `file_name`, status, and rejection reason columns,
   writes
   `artifacts/visual/page-builder-reference-export-manifest.json` as a JSON
-  export manifest, and prints the first missing reference path plus the matching
-  preview screenshot in the terminal summary and Markdown status when available.
+  export manifest, and prints the first missing reference path, first missing
+  reason, and the matching preview screenshot in the terminal summary and Markdown status when available.
 - `pnpm visual:references:handoff` writes the same request files plus copied
   preview screenshots, a handoff README, and a handoff manifest under
   `artifacts/visual/page-builder-reference-handoff` for design export

@@ -43,6 +43,10 @@ export async function runPageBuilderVisualReferenceHandoffCli(
     const firstMissingReference = result.artifact.missing[0]?.expectedPath;
     if (firstMissingReference) {
       stdout(`First missing reference: ${firstMissingReference}`);
+      const firstMissingReason = result.artifact.missing[0]?.reason;
+      if (firstMissingReason) {
+        stdout(`First missing reason: ${firstMissingReason}`);
+      }
       const firstMissingPreview = formatPageBuilderVisualFirstMissingPreview(
         result.artifact,
       );
@@ -86,7 +90,7 @@ Evidence:
   reference request Markdown, missing path list, TSV export table, JSON export
   manifest, copied preview screenshots, a handoff README, and a handoff manifest
   with copied preview dimensions, byte sizes, and sha256 checksums. The summary
-  also prints the first missing reference and matching preview screenshot when
+  also prints the first missing reference, reason, and matching preview screenshot when
   available. It does not create reference PNGs, import references, measure
   screenshots, or mark visual evidence accepted.`);
 }

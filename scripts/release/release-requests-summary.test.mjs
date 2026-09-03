@@ -62,6 +62,7 @@ test("release requests help and summary expose the bundle command", async () => 
   assert.match(help, /refreshes all local evidence request files/);
   assert.match(help, /Custom output paths are also reflected/);
   assert.match(help, /first missing\s+visual reference/i);
+  assert.match(help, /missing\s+reason/i);
   assert.match(help, /matching\s+preview\s+screenshot/i);
   assert.match(
     help,
@@ -115,6 +116,8 @@ test("release requests manifest summary prints project completion context", () =
         failedMeasurementViewportCount: 1,
         firstMissingReference:
           "docs/visual/page-builder-references/hero-banner-desktop.png",
+        firstMissingReferenceReason:
+          "hero-banner-desktop.png appears to be a generated placeholder; use the approved design export instead",
         firstMissingReferencePreview:
           "reports/visual/page-builder-fixture/page-builder-visual-fixture-hero-banner-desktop.png (1440x1000)",
         firstFailedMeasurement:
@@ -141,6 +144,7 @@ test("release requests manifest summary prints project completion context", () =
     "Project status handoff: tmp/project-status-handoff.md",
     "Visual measurements: 1 measured viewports failing, 2 failed metrics, first failed hero-banner.desktop: visualMatchPercent >= 95 (current 0.15)",
     "First missing visual reference: docs/visual/page-builder-references/hero-banner-desktop.png",
+    "First missing visual reason: hero-banner-desktop.png appears to be a generated placeholder; use the approved design export instead",
     "First missing visual preview: reports/visual/page-builder-fixture/page-builder-visual-fixture-hero-banner-desktop.png (1440x1000)",
     "First missing Production Smoke input: visual_artifact_name - replace placeholder page-builder-visual-fixture-<run_number> with Page Builder Visual workflow artifact after visual evidence passes",
     "  - Production Smoke: Production smoke artifact missing",
