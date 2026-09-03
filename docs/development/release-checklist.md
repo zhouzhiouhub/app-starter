@@ -378,11 +378,12 @@ later phases are explicitly approved.
   `Missing Production Smoke Evidence` section with the `pnpm smoke:request`
   request, dispatch inputs output, dispatch input table output,
   dispatch input JSON output,
-  `pnpm smoke:dispatch` validation, `gh` dispatch template, manual dispatch path, required workflow, and artifact names;
+  `pnpm smoke:dispatch` validation, `gh` dispatch template, manual dispatch path, required workflow, artifact names, and `Production Smoke Dispatch Input Replacements`;
   the adjacent `Production Smoke Evidence Input Sources` section maps release
   evidence inputs to their source run, artifact, or operator value; the blocked
   JSON artifacts mirror the same
-  `requiredEvidence[]`, `workflowInputs[]`, `inputSources[]`, and
+  `requiredEvidence[]`, `dispatchInputs[]`, placeholder `missingReason`,
+  `workflowInputs[]`, `inputSources[]`, and
   `releaseEvidenceRequired` input flags under `smoke.missingEvidence`
   and `releaseGate.smoke.missingEvidence`; the release request manifest also
   carries placeholder `productionSmoke.inputs[].missingReason`. When Page

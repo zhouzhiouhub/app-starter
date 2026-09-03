@@ -4,7 +4,11 @@ import {
   createProductionSmokeDispatchManifestValidationCommand,
   createProductionSmokeManualDispatchInstruction,
   createProductionSmokeRequestCommand,
+  productionSmokeDispatchInputs,
 } from "./production-smoke-dispatch-command.mjs";
+import {
+  readProductionSmokeDispatchInputMissingReason,
+} from "./production-smoke-dispatch-input-reason.mjs";
 import {
   defaultProductionSmokeDispatchInputsOutputPath,
 } from "./production-smoke-dispatch-inputs-output.mjs";
@@ -112,6 +116,10 @@ export function formatMissingProductionSmokeEvidence(smoke) {
       (item) => `- ${item.label}: ${formatCode(item.value)}`,
     ),
     "",
+    "### Production Smoke Dispatch Input Replacements",
+    "",
+    ...productionSmokeDispatchInputs.map(formatProductionSmokeDispatchInput),
+    "",
     "### Production Smoke Workflow Inputs",
     "",
     ...productionSmokeWorkflowInputs.map(formatProductionSmokeWorkflowInput),
@@ -130,6 +138,9 @@ export function createMissingProductionSmokeEvidenceArtifact(smoke) {
   const requiredEvidence = requiredProductionSmokeEvidence.map(
     createRequiredSmokeEvidenceItem,
   );
+  const dispatchInputs = productionSmokeDispatchInputs.map(
+    createProductionSmokeDispatchInputItem,
+  );
   const inputSources = productionSmokeEvidenceInputSources.map(
     createEvidenceInputSourceItem,
   );
@@ -138,6 +149,8 @@ export function createMissingProductionSmokeEvidenceArtifact(smoke) {
   );
 
   return {
+    dispatchInputCount: dispatchInputs.length,
+    dispatchInputs,
     inputSourceCount: inputSources.length,
     inputSources,
     requiredEvidence,
@@ -157,6 +170,20 @@ function createRequiredSmokeEvidenceItem(item) {
   return {
     label: formatText(item.label),
     value: formatText(item.value),
+  };
+}
+
+function createProductionSmokeDispatchInputItem(input) {
+  return {
+    missingReason: formatText(
+      readProductionSmokeDispatchInputMissingReason({
+        ...input,
+        placeholder: true,
+      }),
+    ),
+    name: formatText(input.name),
+    status: "missing",
+    value: formatText(input.value),
   };
 }
 
@@ -196,6 +223,17 @@ function formatProductionSmokeWorkflowInput(input) {
   )} (${formatText(readProductionSmokeWorkflowRequirement(input))}; ${formatText(
     readProductionSmokeReleaseEvidenceRequirement(input.name),
   )}; ${formatText(input.description)})`;
+}
+
+function formatProductionSmokeDispatchInput(input) {
+  return `- ${formatCode(input.name)}: ${formatCode(
+    input.value,
+  )} - missing; ${formatText(
+    readProductionSmokeDispatchInputMissingReason({
+      ...input,
+      placeholder: true,
+    }),
+  )}`;
 }
 
 function formatEvidenceInputSource(input) {

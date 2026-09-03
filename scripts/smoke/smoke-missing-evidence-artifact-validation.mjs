@@ -16,9 +16,38 @@ export function assertMissingProductionSmokeEvidenceArtifact(
     evidence.workflowInputCount,
     `${fieldPath}.workflowInputCount`,
   );
+  assertSmokeDispatchInputItems(evidence, fieldPath);
   assertRequiredSmokeEvidenceItems(evidence, fieldPath);
   assertSmokeEvidenceInputSourceItems(evidence, fieldPath);
   assertSmokeWorkflowInputItems(evidence, fieldPath);
+}
+
+function assertSmokeDispatchInputItems(evidence, fieldPath) {
+  if (!Array.isArray(evidence.dispatchInputs)) {
+    throw new Error(`${fieldPath}.dispatchInputs must be an array.`);
+  }
+
+  assertNonNegativeNumber(
+    evidence.dispatchInputCount,
+    `${fieldPath}.dispatchInputCount`,
+  );
+
+  if (evidence.dispatchInputCount !== evidence.dispatchInputs.length) {
+    throw new Error(
+      `${fieldPath}.dispatchInputCount must match dispatchInputs length.`,
+    );
+  }
+
+  for (const input of evidence.dispatchInputs) {
+    if (!isRecord(input)) {
+      throw new Error(`${fieldPath}.dispatchInputs must contain objects.`);
+    }
+
+    assertString(input.missingReason, `${fieldPath}.dispatchInputs.missingReason`);
+    assertString(input.name, `${fieldPath}.dispatchInputs.name`);
+    assertString(input.status, `${fieldPath}.dispatchInputs.status`);
+    assertString(input.value, `${fieldPath}.dispatchInputs.value`);
+  }
 }
 
 function assertRequiredSmokeEvidenceItems(evidence, fieldPath) {

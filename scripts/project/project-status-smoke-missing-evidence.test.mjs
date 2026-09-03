@@ -38,6 +38,10 @@ test("project status artifact carries structured missing smoke evidence", () => 
     15,
   );
   assert.equal(
+    artifact.releaseGate.smoke.missingEvidence.dispatchInputCount,
+    7,
+  );
+  assert.equal(
     artifact.releaseGate.smoke.missingEvidence.inputSourceCount,
     7,
   );
@@ -81,6 +85,16 @@ test("project status artifact carries structured missing smoke evidence", () => 
         value: "GitHub Actions Production Smoke against the production environment",
       },
     ],
+  );
+  assert.deepEqual(
+    artifact.releaseGate.smoke.missingEvidence.dispatchInputs[0],
+    {
+      missingReason:
+        "replace placeholder page-builder-visual-fixture-<run_number> with Page Builder Visual workflow artifact after visual evidence passes",
+      name: "visual_artifact_name",
+      status: "missing",
+      value: "page-builder-visual-fixture-<run_number>",
+    },
   );
   assert.deepEqual(
     artifact.releaseGate.smoke.missingEvidence.workflowInputs.find(
@@ -128,6 +142,23 @@ test("project status artifact validates missing smoke evidence counts", () => {
 
   artifact.releaseGate.smoke.missingEvidence.inputSourceCount =
     artifact.releaseGate.smoke.missingEvidence.inputSources.length;
+  artifact.releaseGate.smoke.missingEvidence.dispatchInputCount = 0;
+  assert.throws(
+    () => assertProjectStatusArtifact(artifact),
+    /dispatchInputCount must match dispatchInputs length/,
+  );
+
+  artifact.releaseGate.smoke.missingEvidence.dispatchInputCount =
+    artifact.releaseGate.smoke.missingEvidence.dispatchInputs.length;
+  delete artifact.releaseGate.smoke.missingEvidence.dispatchInputs[0]
+    .missingReason;
+  assert.throws(
+    () => assertProjectStatusArtifact(artifact),
+    /dispatchInputs\.missingReason must be a non-empty string/,
+  );
+
+  artifact.releaseGate.smoke.missingEvidence.dispatchInputs[0].missingReason =
+    "replace placeholder page-builder-visual-fixture-<run_number> with Page Builder Visual workflow artifact after visual evidence passes";
   delete artifact.releaseGate.smoke.missingEvidence.workflowInputs[0]
     .releaseEvidenceRequired;
   assert.throws(

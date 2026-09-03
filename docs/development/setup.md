@@ -462,8 +462,9 @@ input manifest before the real production run. The TSV table separates
 `release_evidence_required` from `workflow_required` and includes
 `missing_reason`, and the JSON manifest keeps each input's
 `releaseEvidenceRequired` flag plus `missingReason` for placeholders; it does
-not execute smoke or create release evidence. The same section also
-includes `Production
+not execute smoke or create release evidence. The same missing-evidence handoff
+also includes `Production Smoke Dispatch Input Replacements` with each
+placeholder value and its replacement reason, plus `Production
 Smoke Workflow Inputs`, listing the `workflow_dispatch` input names, default
 values, and purpose for the manual production run, plus `Production Smoke
 Evidence Input Sources`, mapping visual, local verification, release tag,
@@ -480,7 +481,8 @@ flags can still override manifest values. The JSON manifest keeps
 CLI override rule. Blocked JSON artifacts mirror that handoff as
 `smoke.missingEvidence` and
 `releaseGate.smoke.missingEvidence`, including `requiredEvidence[]`,
-`workflowInputs[]`, `releaseEvidenceRequired` input flags, and
+`dispatchInputs[]`, placeholder `missingReason`, `workflowInputs[]`,
+`releaseEvidenceRequired` input flags, and
 `inputSources[]`.
 For local status checks, `project:status` automatically includes the default
 Page Builder Visual artifact when all required files already exist under

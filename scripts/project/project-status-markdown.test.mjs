@@ -52,6 +52,11 @@ test("project status CLI writes a Markdown handoff", async () => {
       markdown,
       /Smoke report JSON: `artifacts\/production-smoke\/smoke-report\.json`/,
     );
+    assert.match(markdown, /### Production Smoke Dispatch Input Replacements/);
+    assert.match(
+      markdown,
+      /`visual_artifact_name`: `page-builder-visual-fixture-<run_number>` - missing; replace placeholder page-builder-visual-fixture-<run_number> with Page Builder Visual workflow artifact after visual evidence passes/,
+    );
     assert.match(markdown, /### Production Smoke Workflow Inputs/);
     assert.match(
       markdown,

@@ -73,6 +73,11 @@ test("project status exposes smoke Markdown companion status", () => {
     markdown,
     /Release evidence artifact: `release-evidence-check-<run_number>`/,
   );
+  assert.match(markdown, /### Production Smoke Dispatch Input Replacements/);
+  assert.match(
+    markdown,
+    /`visual_artifact_run_id`: `<Page Builder Visual workflow run id>` - missing; replace placeholder <Page Builder Visual workflow run id> with Page Builder Visual workflow run id that uploaded the visual artifact/,
+  );
   assert.match(markdown, /### Production Smoke Evidence Input Sources/);
   assert.match(
     markdown,
@@ -148,9 +153,10 @@ test("project status docs mention missing smoke evidence handoff", async () => {
   assert.match(releaseChecklist, /Missing Production Smoke Evidence/);
   assert.match(releaseChecklist, /release-check\.md.*project-status\.md/s);
   assert.match(releaseChecklist, /inputSources\[\]/);
+  assert.match(releaseChecklist, /Production Smoke Dispatch Input Replacements/);
   assert.match(
     releaseChecklist,
-    /`pnpm smoke:request`\s+request, dispatch inputs output, dispatch input table output,\s+dispatch input JSON output,\s+`pnpm smoke:dispatch`\s+validation,\s+`gh` dispatch template, manual dispatch path, required workflow, and artifact names/s,
+    /`pnpm smoke:request`\s+request, dispatch inputs output, dispatch input table output,\s+dispatch input JSON output,\s+`pnpm smoke:dispatch`\s+validation,\s+`gh` dispatch template, manual dispatch path, required workflow, artifact names, and `Production Smoke Dispatch Input Replacements`/s,
   );
 });
 
@@ -173,6 +179,9 @@ function assertMissingSmokeEvidenceOrder(markdown) {
   const validationIndex = section.indexOf("Workflow dispatch validation:");
   const templateIndex = section.indexOf("Workflow dispatch template:");
   const manualIndex = section.indexOf("Workflow manual dispatch:");
+  const replacementsIndex = section.indexOf(
+    "### Production Smoke Dispatch Input Replacements",
+  );
   const workflowIndex = section.indexOf(
     "Workflow: `GitHub Actions Production Smoke",
   );
@@ -184,6 +193,7 @@ function assertMissingSmokeEvidenceOrder(markdown) {
     validationIndex,
     templateIndex,
     manualIndex,
+    replacementsIndex,
     workflowIndex,
   ];
 
@@ -195,7 +205,8 @@ function assertMissingSmokeEvidenceOrder(markdown) {
       inputsJsonOutputIndex < validationIndex &&
       validationIndex < templateIndex &&
       templateIndex < manualIndex &&
-      manualIndex < workflowIndex,
+      manualIndex < workflowIndex &&
+      workflowIndex < replacementsIndex,
     "missing smoke evidence should list request and validation before workflow execution",
   );
 }

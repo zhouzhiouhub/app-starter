@@ -161,6 +161,8 @@ test("release check Markdown lists blockers and visual tasks", () => {
     /Smoke report Markdown: `artifacts\/production-smoke\/smoke-report\.md`/,
   );
   assert.match(markdown, /### Production Smoke Workflow Inputs/);
+  assert.match(markdown, /### Production Smoke Dispatch Input Replacements/);
+  assert.match(markdown, /`visual_artifact_name`: `page-builder-visual-fixture-<run_number>` - missing; replace placeholder page-builder-visual-fixture-<run_number> with Page Builder Visual workflow artifact after visual evidence passes/);
   assert.match(
     markdown,
     /`report_path`: `artifacts\/production-smoke\/smoke-report\.json` \(workflow required; release evidence optional; safe JSON output path\)/,
@@ -352,6 +354,9 @@ function assertMissingSmokeEvidenceOrder(markdown) {
   const validationIndex = section.indexOf("Workflow dispatch validation:");
   const templateIndex = section.indexOf("Workflow dispatch template:");
   const manualIndex = section.indexOf("Workflow manual dispatch:");
+  const replacementsIndex = section.indexOf(
+    "### Production Smoke Dispatch Input Replacements",
+  );
   const workflowIndex = section.indexOf(
     "Workflow: `GitHub Actions Production Smoke",
   );
@@ -363,6 +368,7 @@ function assertMissingSmokeEvidenceOrder(markdown) {
     validationIndex,
     templateIndex,
     manualIndex,
+    replacementsIndex,
     workflowIndex,
   ];
 
@@ -374,7 +380,8 @@ function assertMissingSmokeEvidenceOrder(markdown) {
       inputsJsonOutputIndex < validationIndex &&
       validationIndex < templateIndex &&
       templateIndex < manualIndex &&
-      manualIndex < workflowIndex,
+      manualIndex < workflowIndex &&
+      workflowIndex < replacementsIndex,
     "missing smoke evidence should list request and validation before workflow execution",
   );
 }

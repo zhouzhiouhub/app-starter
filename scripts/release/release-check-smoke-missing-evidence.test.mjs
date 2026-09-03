@@ -24,9 +24,17 @@ test("release check artifact carries structured missing smoke evidence", () => {
   assert.equal(artifact.smoke.status, "blocked");
   assert.equal(artifact.smoke.missingEvidence.status, "blocked");
   assert.equal(artifact.smoke.missingEvidence.summaryStatus, "missing");
+  assert.equal(artifact.smoke.missingEvidence.dispatchInputCount, 7);
   assert.equal(artifact.smoke.missingEvidence.requiredEvidenceCount, 15);
   assert.equal(artifact.smoke.missingEvidence.inputSourceCount, 7);
   assert.equal(artifact.smoke.missingEvidence.workflowInputCount, 14);
+  assert.deepEqual(artifact.smoke.missingEvidence.dispatchInputs[0], {
+    missingReason:
+      "replace placeholder page-builder-visual-fixture-<run_number> with Page Builder Visual workflow artifact after visual evidence passes",
+    name: "visual_artifact_name",
+    status: "missing",
+    value: "page-builder-visual-fixture-<run_number>",
+  });
   assert.deepEqual(
     artifact.smoke.missingEvidence.requiredEvidence[0],
     {
@@ -122,5 +130,21 @@ test("release check artifact validates missing smoke evidence counts", () => {
   assert.throws(
     () => assertReleaseEvidenceCheckArtifact(artifact),
     /inputSourceCount must match inputSources length/,
+  );
+
+  artifact.smoke.missingEvidence.inputSourceCount =
+    artifact.smoke.missingEvidence.inputSources.length;
+  artifact.smoke.missingEvidence.dispatchInputCount = 0;
+  assert.throws(
+    () => assertReleaseEvidenceCheckArtifact(artifact),
+    /dispatchInputCount must match dispatchInputs length/,
+  );
+
+  artifact.smoke.missingEvidence.dispatchInputCount =
+    artifact.smoke.missingEvidence.dispatchInputs.length;
+  delete artifact.smoke.missingEvidence.dispatchInputs[0].missingReason;
+  assert.throws(
+    () => assertReleaseEvidenceCheckArtifact(artifact),
+    /dispatchInputs\.missingReason must be a non-empty string/,
   );
 });
