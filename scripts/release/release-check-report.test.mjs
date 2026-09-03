@@ -44,14 +44,21 @@ test("release check report prints release notes handoff steps when ready", () =>
 });
 
 test("release check report points blocked users to full handoff commands", () => {
+  const manifest = createPendingVisualManifest();
+  manifest.records[0].viewports.desktop.visualMatchPercent = 0.15;
+  manifest.records[0].viewports.desktop.maxColorDeltaE = 149.09;
   const lines = formatReleaseEvidenceCheck(
     createReleaseEvidenceCheck({
       smokeError: new Error("No smoke reports found."),
-      visualManifest: createPendingVisualManifest(),
+      visualManifest: manifest,
     }),
   ).join("\n");
 
   assert.match(lines, /Status: blocked/);
+  assert.match(
+    lines,
+    /Visual measurements: 1 measured viewports failing, 2 failed metrics, first failed hero-banner\.desktop: visualMatchPercent >= 95 \(current 0\.15\); maxColorDeltaE <= 3 \(current 149\.09\)/,
+  );
   assert.match(lines, /Blockers:/);
   assert.match(lines, /Next:/);
   assert.match(lines, /Full checklist: pnpm release:check -- --checklist/);

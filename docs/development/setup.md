@@ -552,10 +552,13 @@ default short list. Use `--json` for machine-readable stdout or `--output` to
 write the combined `release-evidence-check.v1` artifact under a safe archive
 path. Add `--markdown-output artifacts/release/release-check.md` to retain the
 same combined gate status, readiness checklist, blockers, and pending visual
-tasks as a human-readable report. New JSON artifacts also include a structured
-`readinessChecklist` with the same release tasks, visual artifact path, issue,
-reference-import, missing reference path, required source reference availability, and
-count details, and `smoke.source` metadata for CI artifacts and release records.
+tasks as a human-readable report. When measured Page Builder visual evidence is
+below target, the text summary, Markdown, and JSON artifact include failed
+visual measurement viewport/metric counts and the first failed measurement. New
+JSON artifacts also include a structured `readinessChecklist` with the same
+release tasks, visual artifact path, issue, reference-import, missing reference
+path, required source reference availability, measurement, and count details,
+and `smoke.source` metadata for CI artifacts and release records.
 When the release uses a downloaded Page Builder Visual artifact, add
 `--visual-artifact-dir reports/visual/page-builder-fixture`; the combined gate
 then verifies the artifact-local manifest, capture report, acceptance report,

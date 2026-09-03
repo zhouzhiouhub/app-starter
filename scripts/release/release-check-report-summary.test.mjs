@@ -11,22 +11,22 @@ test("release check docs mention visual artifact text summary counts", async () 
 
   assert.match(
     readme,
-    /普通文本摘要和 `readinessChecklist` 视觉条目都会显示 visual artifact 路径、文件\/截图计数/,
+    /visual\.failedMeasurementCount.*visual\.failedMeasurementViewportCount.*visual\.firstFailedMeasurement/s,
   );
   assert.match(
     setupDoc,
-    /prints the artifact path plus issue, file, and\s+screenshot counts plus reference-import status, required source reference availability,\s+and first missing reference path in the text summary/s,
+    /text summary, Markdown, and JSON artifact include failed\s+visual measurement viewport\/metric counts and the first failed measurement/s,
   );
   assert.match(
     setupDoc,
-    /readinessChecklist` with the same release tasks, visual artifact path, issue,\s+reference-import, missing reference path, required source reference availability, and\s+count details/s,
+    /readinessChecklist` with the same\s+release tasks, visual artifact path, issue, reference-import, missing reference\s+path, required source reference availability, measurement, and count details/s,
   );
   assert.match(
     releaseChecklist,
-    /prints the visual artifact path plus issue, file, and\s+screenshot counts plus reference-import status, required source reference availability,\s+and first missing reference path/s,
+    /prints the visual artifact path plus issue, file, and\s+screenshot counts plus reference-import status, required source reference\s+availability, failed visual measurement counts and the first failed\s+measurement when metrics are below target/s,
   );
   assert.match(
     releaseChecklist,
-    /readinessChecklist` lists the\s+Production Smoke, Page Builder visual, and release notes tasks, including the\s+visual artifact path, issue count, reference-import summary,\s+required source reference availability, missing reference path list, and counts/s,
+    /readinessChecklist` lists the\s+Production Smoke, Page Builder visual, and release notes tasks, including the\s+visual artifact path, issue count, reference-import summary,\s+required source reference availability, failed measurement summary, missing\s+reference path list, and counts/s,
   );
 });

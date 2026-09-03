@@ -278,6 +278,29 @@ test("release check Markdown lists blockers and visual tasks", () => {
   );
 });
 
+test("release check Markdown surfaces visual measurement failures", () => {
+  const artifact = createReleaseEvidenceCheckArtifact(
+    createReleaseEvidenceCheck({
+      smokeArtifact: {
+        path: "artifacts/production-smoke/smoke-report.json",
+        report: createCompleteReleaseReport(),
+      },
+      visualManifest: createPendingVisualManifest(),
+    }),
+    { generatedAt: "2026-08-29T00:00:00.000Z" },
+  );
+  artifact.visual.failedMeasurementCount = 2;
+  artifact.visual.failedMeasurementViewportCount = 1;
+  artifact.visual.firstFailedMeasurement =
+    "hero-banner.desktop: visualMatchPercent >= 95 (current 0.15)";
+  const markdown = createReleaseEvidenceCheckMarkdown(artifact);
+
+  assert.match(
+    markdown,
+    /Visual measurements: 1 measured viewports failing, 2 failed metrics, first failed hero-banner\.desktop: visualMatchPercent >= 95 \(current 0\.15\)/,
+  );
+});
+
 test("release check CLI writes Markdown output", async () => {
   const outputRoot = `tmp/release-check-markdown-${process.pid}-${Date.now()}`;
   const outputPath = `${outputRoot}/release-check.md`;

@@ -9,6 +9,9 @@ import { formatSmokeMarkdownSummary } from "./release-check-smoke-markdown-summa
 import { formatVisualTasksMarkdown } from "./release-check-visual-tasks-markdown.mjs";
 import { formatReferenceImportMarkdown } from "./release-reference-import-markdown.mjs";
 import { formatManifestDesignReferenceLinks } from "../visual/page-builder-visual-reference-summary-format.mjs";
+import {
+  formatPageBuilderVisualMeasurementSummary,
+} from "../visual/page-builder-visual-measurement-summary.mjs";
 
 const maxMarkdownItemCount = 20;
 const maxMarkdownTextLength = 420;
@@ -120,12 +123,21 @@ function formatVisualSummary(visual) {
     ...formatChecklistManifest(visual.checklist),
     `- Components accepted: ${visual.acceptedComponentCount}/${visual.componentCount}`,
     `- Viewports accepted: ${visual.acceptedViewportCount}/${visual.viewportCount}`,
+    ...formatVisualMeasurementSummary(visual),
     `- Issues: ${visual.issueCount} total, ${visual.errorCount} errors, ${visual.warningCount} warnings`,
     ...formatArtifactCheck(visual.artifactCheck),
     ...formatList("Pending components", visual.pendingComponents),
     ...formatList("Pending viewports", visual.pendingViewports),
     ...formatVisualIssues(visual.issues),
   ];
+}
+
+function formatVisualMeasurementSummary(visual) {
+  const summary = formatPageBuilderVisualMeasurementSummary(visual, {
+    formatText,
+  });
+
+  return summary ? [`- Visual measurements: ${summary}`] : [];
 }
 
 function formatChecklistManifest(checklist) {

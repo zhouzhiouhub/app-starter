@@ -49,11 +49,41 @@ export function assertVisualArtifact(visual) {
   assertNullableString(visual.manifestPath, "visual.manifestPath");
   assertOptionalStringList(visual.pendingComponents, "visual.pendingComponents");
   assertOptionalStringList(visual.pendingViewports, "visual.pendingViewports");
+  assertOptionalVisualMeasurementFailures(visual);
   assertOptionalVisualArtifactCheck(visual.artifactCheck);
   assertOptionalVisualChecklist(visual.checklist);
   assertOptionalVisualIssues(visual.issues);
   assertVisualIssueCountConsistency(visual);
   assertAcceptedVisualConsistency(visual);
+}
+
+function assertOptionalVisualMeasurementFailures(visual) {
+  if (
+    visual.failedMeasurementCount === undefined &&
+    visual.failedMeasurementViewportCount === undefined &&
+    visual.firstFailedMeasurement === undefined
+  ) {
+    return;
+  }
+
+  assertOptionalNonNegativeNumber(
+    visual.failedMeasurementCount,
+    "visual.failedMeasurementCount",
+  );
+  assertOptionalNonNegativeNumber(
+    visual.failedMeasurementViewportCount,
+    "visual.failedMeasurementViewportCount",
+  );
+  assertCountDoesNotExceed(
+    visual.failedMeasurementViewportCount,
+    visual.viewportCount,
+    "visual.failedMeasurementViewportCount",
+    "visual.viewportCount",
+  );
+  assertNullableString(
+    visual.firstFailedMeasurement,
+    "visual.firstFailedMeasurement",
+  );
 }
 
 function assertVisualIssueCountConsistency(visual) {
@@ -99,12 +129,16 @@ function assertAcceptedVisualConsistency(visual) {
     hasItems(visual.issues) ||
     visual.errorCount > 0 ||
     visual.warningCount > 0;
+  const hasFailedMeasurements =
+    (visual.failedMeasurementCount ?? 0) > 0 ||
+    (visual.failedMeasurementViewportCount ?? 0) > 0;
 
   if (
     visual.acceptedComponentCount !== visual.componentCount ||
     visual.acceptedViewportCount !== visual.viewportCount ||
     hasPending ||
-    hasIssues
+    hasIssues ||
+    hasFailedMeasurements
   ) {
     throw new Error(
       "Release check artifact accepted visual evidence must have full counts, no pending evidence, and no issues.",

@@ -6,6 +6,9 @@ import { createVisualChecklistArtifact } from "./release-check-visual-checklist-
 import { createSmokeMarkdownArtifact } from "./release-check-smoke-markdown-artifact.mjs";
 import { createOptionalReferenceImportArtifact } from "./release-reference-import-artifact.mjs";
 import { createMissingProductionSmokeEvidenceArtifact } from "../smoke/smoke-missing-evidence-markdown.mjs";
+import {
+  createPageBuilderVisualMeasurementSummary,
+} from "../visual/page-builder-visual-measurement-summary.mjs";
 
 export const releaseEvidenceCheckSchemaVersion = "release-evidence-check.v1";
 
@@ -118,12 +121,21 @@ function createSmokeSourceArtifact(source) {
 
 function createVisualArtifact(check) {
   const visualIssues = check.visual.issues.slice(0, maxVisualIssueCount);
+  const measurementSummary = createPageBuilderVisualMeasurementSummary(
+    check.visualChecklist,
+  );
 
   const artifact = {
     acceptedComponentCount: check.visual.acceptedComponentCount,
     acceptedViewportCount: check.visual.acceptedViewportCount,
     componentCount: check.visual.componentCount,
     errorCount: check.visual.errorCount,
+    failedMeasurementCount: measurementSummary.failedMeasurementCount,
+    failedMeasurementViewportCount:
+      measurementSummary.failedMeasurementViewportCount,
+    firstFailedMeasurement: readTextOrNull(
+      measurementSummary.firstFailedMeasurement,
+    ),
     issueCount: check.visual.issues.length,
     issues: visualIssues.map(createVisualIssueArtifact),
     manifestPath: readTextOrNull(check.visualManifestPath),

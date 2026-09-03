@@ -3,6 +3,10 @@ import { createProductionSmokeHandoffSteps } from "../smoke/production-smoke-han
 import { defaultPageBuilderVisualArtifactDir } from "../visual/page-builder-visual-artifact-check.mjs";
 import { formatRequiredSourceReferenceAvailability } from "../visual/page-builder-visual-reference-summary-format.mjs";
 import {
+  createPageBuilderVisualMeasurementSummary,
+  formatPageBuilderVisualMeasurementSummary,
+} from "../visual/page-builder-visual-measurement-summary.mjs";
+import {
   formatVisualTasks,
   readVisibleVisualTasks,
 } from "./release-check-checklist-visual-tasks.mjs";
@@ -100,9 +104,13 @@ function createReleaseCheckCommand(check) {
 }
 
 function createVisualChecklistItem(check, options) {
+  const measurementSummary = createPageBuilderVisualMeasurementSummary(
+    check.visualChecklist,
+  );
   const detail = [
     `${check.visual.acceptedComponentCount}/${check.visual.componentCount} components`,
     `${check.visual.acceptedViewportCount}/${check.visual.viewportCount} viewports`,
+    formatPageBuilderVisualMeasurementSummary(measurementSummary),
     formatVisualArtifactDetail(check.visualArtifact),
   ]
     .filter(Boolean)

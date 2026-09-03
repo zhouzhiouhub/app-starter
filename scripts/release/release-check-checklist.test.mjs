@@ -152,6 +152,48 @@ test("release readiness checklist carries blocker actions", () => {
   assert.match(lines, /Release notes record: waiting for evidence/);
 });
 
+test("release readiness checklist summarizes visual measurement failures", () => {
+  const visualChecklist = createVisualChecklist();
+  visualChecklist.components[0].viewports[0].missing = [
+    "visualMatchPercent >= 95 (current 0.15)",
+    "maxColorDeltaE <= 3 (current 149.09)",
+    "status=accepted",
+  ];
+  const checklist = createReleaseEvidenceReadinessChecklist({
+    blockers: [
+      {
+        action: "Run pnpm visual:measure.",
+        area: "Page Builder Visual",
+        label: "Visual acceptance pending",
+      },
+    ],
+    releaseReady: false,
+    smoke: {
+      path: "artifacts/production-smoke/smoke-report.json",
+      releaseReady: true,
+    },
+    visual: {
+      acceptedComponentCount: 0,
+      acceptedViewportCount: 0,
+      componentCount: 6,
+      status: "needs-evidence",
+      viewportCount: 12,
+    },
+    visualArtifact: createCompleteVisualArtifact(),
+    visualChecklist,
+  });
+  const visualItem = checklist.items.find(
+    (item) => item.label === "Page Builder Visual evidence",
+  );
+  const lines = formatReleaseEvidenceReadinessChecklist(checklist).join("\n");
+
+  assert.match(
+    visualItem?.detail,
+    /1 measured viewports failing, 2 failed metrics, first failed hero-banner\.desktop: visualMatchPercent >= 95 \(current 0\.15\); maxColorDeltaE <= 3 \(current 149\.09\)/,
+  );
+  assert.match(lines, /Visual tasks:/);
+});
+
 test("release readiness checklist can include every visual task", () => {
   const checklist = createReleaseEvidenceReadinessChecklist(
     {

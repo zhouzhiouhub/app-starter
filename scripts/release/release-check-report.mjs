@@ -1,5 +1,9 @@
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { formatRequiredSourceReferenceAvailability } from "../visual/page-builder-visual-reference-summary-format.mjs";
+import {
+  createPageBuilderVisualMeasurementSummary,
+  formatPageBuilderVisualMeasurementSummary,
+} from "../visual/page-builder-visual-measurement-summary.mjs";
 import { createReleaseNotesHandoffSteps } from "./release-notes-handoff-steps.mjs";
 
 const maxReleaseBlockerCount = 12;
@@ -30,6 +34,7 @@ export function formatReleaseEvidenceCheck(check) {
     `  Smoke report: ${formatReleaseValue(check.smoke.path, "latest archive")}`,
     ...formatSmokeMarkdownLines(check.smoke.markdown),
     `  Visual manifest: ${formatReleaseValue(check.visualManifestPath, "unknown")}`,
+    ...formatVisualMeasurementLines(check.visualChecklist),
   ];
 
   if (check.visualArtifact) {
@@ -51,6 +56,13 @@ export function formatReleaseEvidenceCheck(check) {
   }
 
   return lines.map(formatReleaseLine);
+}
+
+function formatVisualMeasurementLines(checklist) {
+  const measurementSummary = createPageBuilderVisualMeasurementSummary(checklist);
+  const summary = formatPageBuilderVisualMeasurementSummary(measurementSummary);
+
+  return summary ? [`  Visual measurements: ${summary}`] : [];
 }
 
 function formatBlockedNextActions() {

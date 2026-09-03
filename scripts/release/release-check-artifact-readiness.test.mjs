@@ -134,8 +134,57 @@ test("release check artifact includes blocked checklist actions", () => {
   );
 });
 
+test("release check artifact includes visual measurement failure summary", () => {
+  const check = createBlockedCheck();
+  check.visualArtifact = createCompleteVisualArtifact();
+  check.visualChecklist = createVisualChecklistWithFailedMeasurements();
+  const artifact = createReleaseEvidenceCheckArtifact(check, {
+    generatedAt: "2026-08-28T00:00:00.000Z",
+  });
+  const visualItem = artifact.readinessChecklist.items.find(
+    (item) => item.label === "Page Builder Visual evidence",
+  );
+
+  assert.equal(artifact.visual.failedMeasurementCount, 2);
+  assert.equal(artifact.visual.failedMeasurementViewportCount, 1);
+  assert.equal(
+    artifact.visual.firstFailedMeasurement,
+    "hero-banner.desktop: visualMatchPercent >= 95 (current 0.15); maxColorDeltaE <= 3 (current 149.09)",
+  );
+  assert.match(
+    visualItem?.detail,
+    /1 measured viewports failing, 2 failed metrics, first failed hero-banner\.desktop/,
+  );
+});
+
 function readStepValue(item, label) {
   return item.steps.find((step) => step.label === label)?.value;
+}
+
+function createVisualChecklistWithFailedMeasurements() {
+  return {
+    components: [
+      {
+        component: "hero-banner",
+        viewports: [
+          {
+            commands: {},
+            component: "hero-banner",
+            missing: [
+              "visualMatchPercent >= 95 (current 0.15)",
+              "maxColorDeltaE <= 3 (current 149.09)",
+              "status=accepted",
+            ],
+            ready: false,
+            viewport: "desktop",
+          },
+        ],
+      },
+    ],
+    pendingViewportCount: 1,
+    readyViewportCount: 0,
+    viewportCount: 12,
+  };
 }
 
 function readChecklistStatuses(artifact) {

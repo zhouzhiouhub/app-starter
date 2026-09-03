@@ -331,8 +331,10 @@ later phases are explicitly approved.
 - When `visual_artifact_run_id` was provided,
   `pnpm release:check -- --smoke-report artifacts/production-smoke/smoke-report.json --visual-artifact-dir reports/visual/page-builder-fixture`
   exits successfully, prints the visual artifact path plus issue, file, and
-  screenshot counts plus reference-import status, required source reference availability,
-  and first missing reference path, and records
+  screenshot counts plus reference-import status, required source reference
+  availability, failed visual measurement counts and the first failed
+  measurement when metrics are below target, and first missing reference path,
+  and records
   `visual.artifactCheck.status=complete`.
 - `pnpm release:check -- --checklist --smoke-report artifacts/production-smoke/smoke-report.json`
   prints the Production Smoke, Page Builder Visual, and release notes readiness
@@ -345,8 +347,8 @@ later phases are explicitly approved.
   Markdown review for the release record; its `readinessChecklist` lists the
   Production Smoke, Page Builder visual, and release notes tasks, including the
   visual artifact path, issue count, reference-import summary,
-  required source reference availability, missing reference path list, and counts when
-  present, while
+  required source reference availability, failed measurement summary, missing
+  reference path list, and counts when present, while
   `visual.pendingComponents`,
   `visual.pendingViewports`, `visual.issues`, and
   `visual.checklist.pendingTasks` identify any remaining Page Builder visual

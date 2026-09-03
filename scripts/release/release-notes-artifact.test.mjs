@@ -52,6 +52,17 @@ test("release notes validates release evidence artifact shape", () => {
     () =>
       assertReleaseEvidenceCheckArtifact({
         ...artifact,
+        visual: {
+          ...artifact.visual,
+          failedMeasurementViewportCount: artifact.visual.viewportCount + 1,
+        },
+      }),
+    /visual\.failedMeasurementViewportCount must not exceed visual\.viewportCount/,
+  );
+  assert.throws(
+    () =>
+      assertReleaseEvidenceCheckArtifact({
+        ...artifact,
         blockers: [null],
       }),
     /blockers must contain objects/,
@@ -250,6 +261,20 @@ test("release notes validates ready release evidence consistency", () => {
         visual: {
           ...artifact.visual,
           acceptedViewportCount: artifact.visual.viewportCount - 1,
+        },
+      }),
+    /accepted visual evidence must have full counts, no pending evidence, and no issues/,
+  );
+  assert.throws(
+    () =>
+      assertReleaseEvidenceCheckArtifact({
+        ...artifact,
+        visual: {
+          ...artifact.visual,
+          failedMeasurementCount: 1,
+          failedMeasurementViewportCount: 1,
+          firstFailedMeasurement:
+            "hero-banner.desktop: visualMatchPercent >= 95 (current 0.15)",
         },
       }),
     /accepted visual evidence must have full counts, no pending evidence, and no issues/,
