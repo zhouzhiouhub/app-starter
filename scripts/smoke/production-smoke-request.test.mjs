@@ -83,7 +83,7 @@ test("production smoke request Markdown is operator-facing", () => {
     markdown,
     /`local_verification_run_url`: `<main CI run URL>` - main CI run URL that uploaded the local verification artifact/,
   );
-  assert.match(markdown, /`report_path`: `artifacts\/production-smoke\/smoke-report\.json` \(required; safe JSON output path\)/);
+  assert.match(markdown, /`report_path`: `artifacts\/production-smoke\/smoke-report\.json` \(workflow required; release evidence optional; safe JSON output path\)/);
   assert.match(markdown, /- \[ \] `Smoke artifact`: `production-smoke-report-<run_number>`/);
   assert.match(markdown, /Rerun `pnpm project:status -- --summary`/);
   assert.equal(productionSmokeDispatchInputs.length, 7);

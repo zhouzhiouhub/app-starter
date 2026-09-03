@@ -94,6 +94,10 @@ function assertSmokeWorkflowInputItems(evidence, fieldPath) {
 
     assertString(input.description, `${fieldPath}.workflowInputs.description`);
     assertString(input.name, `${fieldPath}.workflowInputs.name`);
+    assertBoolean(
+      input.releaseEvidenceRequired,
+      `${fieldPath}.workflowInputs.releaseEvidenceRequired`,
+    );
     assertBoolean(input.required, `${fieldPath}.workflowInputs.required`);
     assertString(input.value, `${fieldPath}.workflowInputs.value`);
   }

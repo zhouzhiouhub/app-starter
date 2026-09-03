@@ -479,7 +479,8 @@ flags can still override manifest values. The JSON manifest keeps
 CLI override rule. Blocked JSON artifacts mirror that handoff as
 `smoke.missingEvidence` and
 `releaseGate.smoke.missingEvidence`, including `requiredEvidence[]`,
-`workflowInputs[]`, and `inputSources[]`.
+`workflowInputs[]`, `releaseEvidenceRequired` input flags, and
+`inputSources[]`.
 For local status checks, `project:status` automatically includes the default
 Page Builder Visual artifact when all required files already exist under
 `reports/visual/page-builder-fixture`, prints its artifact path, issue count,

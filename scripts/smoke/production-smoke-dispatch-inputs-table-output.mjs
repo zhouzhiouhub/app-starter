@@ -5,7 +5,7 @@ import {
 } from "./production-smoke-evidence-input-sources.mjs";
 import {
   productionSmokeWorkflowInputs,
-} from "./smoke-missing-evidence-markdown.mjs";
+} from "./production-smoke-workflow-inputs.mjs";
 export {
   defaultProductionSmokeDispatchInputsTableOutputPath,
   normalizeProductionSmokeDispatchInputsTableOutputPath,

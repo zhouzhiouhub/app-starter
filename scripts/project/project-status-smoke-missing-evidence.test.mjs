@@ -89,6 +89,7 @@ test("project status artifact carries structured missing smoke evidence", () => 
     {
       description: "Page Builder Visual artifact name",
       name: "visual_artifact_name",
+      releaseEvidenceRequired: true,
       required: false,
       value: "page-builder-visual-fixture-<run_number>",
     },
@@ -123,5 +124,14 @@ test("project status artifact validates missing smoke evidence counts", () => {
   assert.throws(
     () => assertProjectStatusArtifact(artifact),
     /inputSourceCount must match inputSources length/,
+  );
+
+  artifact.releaseGate.smoke.missingEvidence.inputSourceCount =
+    artifact.releaseGate.smoke.missingEvidence.inputSources.length;
+  delete artifact.releaseGate.smoke.missingEvidence.workflowInputs[0]
+    .releaseEvidenceRequired;
+  assert.throws(
+    () => assertProjectStatusArtifact(artifact),
+    /workflowInputs\.releaseEvidenceRequired must be a boolean/,
   );
 });

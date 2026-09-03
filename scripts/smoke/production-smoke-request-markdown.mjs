@@ -9,6 +9,9 @@ import {
 } from "./production-smoke-evidence-input-sources.mjs";
 import {
   productionSmokeWorkflowInputs,
+  readProductionSmokeReleaseEvidenceRequirement,
+} from "./production-smoke-workflow-inputs.mjs";
+import {
   requiredProductionSmokeEvidence,
 } from "./smoke-missing-evidence-markdown.mjs";
 import { formatSmokeText } from "./smoke-text.mjs";
@@ -145,7 +148,9 @@ function formatEvidenceInputSource(source, inputs) {
 
 function formatWorkflowInput(input) {
   return `- ${formatCode(input.name)}: ${formatCode(input.value)} (${formatText(
-    input.required ? "required" : "optional",
+    input.required ? "workflow required" : "workflow optional",
+  )}; ${formatText(
+    readProductionSmokeReleaseEvidenceRequirement(input.name),
   )}; ${formatText(input.description)})`;
 }
 

@@ -61,9 +61,22 @@ test("release check artifact carries structured missing smoke evidence", () => {
   assert.deepEqual(artifact.smoke.missingEvidence.workflowInputs[0], {
     description: "safe JSON output path",
     name: "report_path",
+    releaseEvidenceRequired: false,
     required: true,
     value: "artifacts/production-smoke/smoke-report.json",
   });
+  assert.deepEqual(
+    artifact.smoke.missingEvidence.workflowInputs.find(
+      (input) => input.name === "visual_artifact_name",
+    ),
+    {
+      description: "Page Builder Visual artifact name",
+      name: "visual_artifact_name",
+      releaseEvidenceRequired: true,
+      required: false,
+      value: "page-builder-visual-fixture-<run_number>",
+    },
+  );
   assert.deepEqual(artifact.smoke.missingEvidence.inputSources[0], {
     name: "visual_artifact_name",
     source: "Page Builder Visual workflow artifact after visual evidence passes",

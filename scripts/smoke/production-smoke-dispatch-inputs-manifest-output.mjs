@@ -8,9 +8,11 @@ import {
   productionSmokeEvidenceInputSources,
 } from "./production-smoke-evidence-input-sources.mjs";
 import {
-  productionSmokeWorkflowInputs,
   requiredProductionSmokeEvidence,
 } from "./smoke-missing-evidence-markdown.mjs";
+import {
+  productionSmokeWorkflowInputs,
+} from "./production-smoke-workflow-inputs.mjs";
 
 export const productionSmokeDispatchInputsManifestSchemaVersion =
   "production-smoke-dispatch-inputs.v1";
