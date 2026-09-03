@@ -324,7 +324,10 @@ function assertPublicApiAbortSignal(signal) {
 }
 
 function readFetchInitWithoutSignal(init) {
-  const { signal: _signal, ...fetchInit } = init;
+  const fetchInit = { ...init };
+
+  delete fetchInit.signal;
+
   return fetchInit;
 }
 
