@@ -145,6 +145,12 @@ files under `services/api/prisma/migrations` and run `prisma migrate deploy`.
 Production smoke readiness treats a missing migrations directory, a missing
 `migration_lock.toml`, or an empty migrations directory as a blocker even when
 `DATABASE_URL` itself is production-safe.
+The API `prisma:generate` script compares `services/api/prisma/schema.prisma`
+with the generated Prisma Client schema and skips generation when they already
+match, which keeps `verify:local` from trying to overwrite a Windows query
+engine DLL while `pnpm dev` is still running. Use
+`pnpm --filter @app-starter/api run prisma:generate:force` when a deliberate
+client rebuild is needed.
 
 `prisma:seed` creates the default tenant, site, seed admin, and published Home,
 Privacy Policy, Terms of Service, and 404 starter pages. It keeps already

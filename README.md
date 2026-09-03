@@ -441,8 +441,10 @@ pnpm install
 生成 Prisma Client：
 
 ```powershell
-pnpm --filter @app-starter/api exec prisma generate --schema prisma/schema.prisma
+pnpm --filter @app-starter/api run prisma:generate
 ```
+
+该脚本会在生成前比较 `services/api/prisma/schema.prisma` 与已生成 Prisma Client 的 schema；已经一致时会跳过，避免本地 `pnpm dev` 正在运行时反复覆盖 Windows query engine DLL。需要强制重建时运行 `pnpm --filter @app-starter/api run prisma:generate:force`。
 
 本地开发同步数据库表：
 
