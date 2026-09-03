@@ -6,8 +6,9 @@ reference PNGs used during MVP visual acceptance.
 Do not use fixture screenshots, generated placeholders, or temporary exports as
 accepted design references. Final sign-off requires images exported from the
 approved design source for each MVP core section and viewport. Each file must be
-a non-empty PNG that can be parsed by the visual measurement tooling; a renamed
-or corrupted file is rejected during intake.
+a non-empty PNG that can be parsed by the visual measurement tooling; a
+corrupted file is rejected during intake, and so is a renamed file or an obvious
+generated placeholder.
 
 ## Required Files
 
@@ -42,7 +43,8 @@ or corrupted file is rejected during intake.
    files plus copied preview screenshots and a handoff README in
    `artifacts/visual/page-builder-reference-handoff`.
 5. Run `pnpm visual:references:check`.
-6. Review the generated Markdown report and fix any missing or empty PNGs.
+6. Review the generated Markdown report and fix any missing, empty, or
+   placeholder PNGs.
 7. Run `pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete`.
 8. Capture retained browser screenshots with `pnpm visual:capture:fixture -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --output-dir reports/visual/page-builder-fixture --report reports/visual/page-builder-fixture/visual-capture-report.json --write-manifest`.
 9. Run `pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete`.

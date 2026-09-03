@@ -5,6 +5,9 @@ import {
   pageBuilderVisualAcceptanceViewports,
 } from "./page-builder-visual-acceptance-constants.mjs";
 import { readPageBuilderVisualReferencePreviewScreenshot } from "./page-builder-visual-reference-preview-screenshot.mjs";
+import {
+  readPageBuilderVisualReferencePlaceholderIssue,
+} from "./page-builder-visual-reference-placeholder.mjs";
 import { readPngImage } from "./png-image-reader.mjs";
 
 export function readPageBuilderVisualReferenceImportManifest(manifestPath) {
@@ -121,6 +124,11 @@ function updateViewportReference(input) {
     return;
   }
 
+  if (file.placeholderIssue) {
+    addMissingReference(referenceInput, `${file.name} ${file.placeholderIssue}`);
+    return;
+  }
+
   const nextPath = `${input.config.sourceDir}/${file.name}`;
 
   if (evidence.designReference === nextPath) {
@@ -172,11 +180,14 @@ function readReferenceFiles(sourceDir, cwd) {
     }
     const filePath = path.join(resolvedSourceDir, entry.name);
     const size = readFileSize(filePath);
+    const pngValidation =
+      size <= 0 ? emptyPngValidation() : readReferencePngValidation(filePath);
 
     files.set(entry.name, {
       empty: size <= 0,
       name: entry.name,
-      pngError: size <= 0 ? null : readReferencePngError(filePath),
+      placeholderIssue: pngValidation.placeholderIssue,
+      pngError: pngValidation.pngError,
     });
   }
 
@@ -187,13 +198,27 @@ function readFileSize(filePath) {
   return lstatSync(filePath).size;
 }
 
-function readReferencePngError(filePath) {
+function readReferencePngValidation(filePath) {
   try {
-    readPngImage(filePath);
-    return null;
+    const image = readPngImage(filePath);
+
+    return {
+      placeholderIssue: readPageBuilderVisualReferencePlaceholderIssue(image),
+      pngError: null,
+    };
   } catch (error) {
-    return readErrorMessage(error);
+    return {
+      placeholderIssue: null,
+      pngError: readErrorMessage(error),
+    };
   }
+}
+
+function emptyPngValidation() {
+  return {
+    placeholderIssue: null,
+    pngError: null,
+  };
 }
 
 function readSourceDirStatus(resolvedSourceDir) {

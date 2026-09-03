@@ -6,19 +6,44 @@ export const corruptPngBytes = Buffer.concat([
 ]);
 
 export function createTestPng(width, height) {
+  return createRgbaTestPng(width, height, () => [0, 0, 0, 0]);
+}
+
+export function createRgbaTestPng(width, height, readPixel) {
   return Buffer.concat([
     createPngSignature(),
     createPngChunk(
       "IHDR",
       Buffer.from([...uint32be(width), ...uint32be(height), 8, 6, 0, 0, 0]),
     ),
-    createPngChunk("IDAT", deflateSync(createRawRgbaRows(width, height))),
+    createPngChunk(
+      "IDAT",
+      deflateSync(createRawRgbaRows(width, height, readPixel)),
+    ),
     createPngChunk("IEND", Buffer.alloc(0)),
   ]);
 }
 
-function createRawRgbaRows(width, height) {
-  return Buffer.alloc((width * 4 + 1) * height);
+function createRawRgbaRows(width, height, readPixel) {
+  const raw = Buffer.alloc((width * 4 + 1) * height);
+
+  for (let y = 0; y < height; y += 1) {
+    const rowOffset = y * (width * 4 + 1);
+
+    raw[rowOffset] = 0;
+
+    for (let x = 0; x < width; x += 1) {
+      const pixel = readPixel(x, y);
+      const pixelOffset = rowOffset + 1 + x * 4;
+
+      raw[pixelOffset] = pixel[0];
+      raw[pixelOffset + 1] = pixel[1];
+      raw[pixelOffset + 2] = pixel[2];
+      raw[pixelOffset + 3] = pixel[3];
+    }
+  }
+
+  return raw;
 }
 
 function createPngChunk(type, data) {
