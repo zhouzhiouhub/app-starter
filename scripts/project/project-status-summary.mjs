@@ -1,5 +1,8 @@
 import { formatSmokeText } from "../smoke/smoke-text.mjs";
 import { formatRequiredSourceReferenceAvailability } from "../visual/page-builder-visual-reference-summary-format.mjs";
+import {
+  formatProjectVisualMeasurementSummary,
+} from "./project-status-visual-measurement-summary.mjs";
 
 const maxSummaryLineLength = 640;
 const visibleNextActionCount = 3;
@@ -82,6 +85,7 @@ function formatVisualSummary(visual) {
     visual.status,
     `${visual.acceptedViewportCount}/${visual.viewportCount} viewports accepted`,
     `${visual.pendingTaskCount} tasks pending`,
+    formatProjectVisualMeasurementSummary(visual),
     formatVisualArtifactSummary(visual.artifactCheck),
   ]
     .filter(Boolean)

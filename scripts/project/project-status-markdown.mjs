@@ -9,6 +9,7 @@ import {
 import { formatManifestDesignReferenceSummary } from "../visual/page-builder-visual-reference-summary-format.mjs";
 import { assertProjectStatusArtifact } from "./project-status-validation.mjs";
 import { formatReleaseEvidenceArtifacts } from "./project-status-release-evidence-artifacts.mjs";
+import { formatProjectVisualMeasurementSummary } from "./project-status-visual-measurement-summary.mjs";
 
 const maxMarkdownTextLength = 640;
 export function createProjectStatusMarkdown(artifact) {
@@ -150,6 +151,7 @@ function formatVisualGate(visual) {
     `${visual.acceptedComponentCount}/${visual.componentCount} components`,
     `${visual.acceptedViewportCount}/${visual.viewportCount} viewports`,
     `${visual.pendingTaskCount} pending tasks`,
+    formatProjectVisualMeasurementSummary(visual, { formatText }),
     formatVisualArtifactSummary(visual),
   ]
     .filter(Boolean)
@@ -233,16 +235,12 @@ function formatLocalVerificationShortcut(localVerification) {
   }
 
   if (typeof localVerification.handoff?.jsonPath === "string") {
-    lines.push(
-      `- Handoff JSON: ${formatCode(localVerification.handoff.jsonPath)}`,
-    );
+    lines.push(`- Handoff JSON: ${formatCode(localVerification.handoff.jsonPath)}`);
   }
 
   if (typeof localVerification.handoff?.markdownPath === "string") {
     lines.push(
-      `- Handoff Markdown: ${formatCode(
-        localVerification.handoff.markdownPath,
-      )}`,
+      `- Handoff Markdown: ${formatCode(localVerification.handoff.markdownPath)}`,
     );
   }
 

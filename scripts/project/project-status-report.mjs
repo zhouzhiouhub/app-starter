@@ -6,6 +6,9 @@ import {
   formatRequiredSourceReferenceAvailability,
 } from "../visual/page-builder-visual-reference-summary-format.mjs";
 import { assertProjectStatusArtifact } from "./project-status-validation.mjs";
+import {
+  formatProjectVisualMeasurementSummary,
+} from "./project-status-visual-measurement-summary.mjs";
 
 const maxProjectLineLength = 420;
 
@@ -137,6 +140,7 @@ function formatVisualGate(visual) {
     `components ${visual.acceptedComponentCount}/${visual.componentCount}`,
     `viewports ${visual.acceptedViewportCount}/${visual.viewportCount}`,
     `pending tasks ${visual.pendingTaskCount}`,
+    formatProjectVisualMeasurementSummary(visual),
     formatVisualArtifactSummary(visual),
   ]
     .filter(Boolean)

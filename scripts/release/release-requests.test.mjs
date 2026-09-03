@@ -16,6 +16,8 @@ test("release requests CLI writes every local request Markdown", async () => {
   const visualMissingOutput = `${root}/page-builder-missing-references.txt`;
   const visualTableOutput = `${root}/page-builder-reference-export-table.tsv`;
   const visualJsonOutput = `${root}/page-builder-reference-export-manifest.json`;
+  const visualSourceRoot = `reports/visual/rr-cli-${process.pid}-${Date.now()}`;
+  const visualSourceDir = `${visualSourceRoot}/page-builder-references`;
   const visualHandoffOutput = `${root}/page-builder-reference-handoff`;
   const smokeOutput = `${root}/production-smoke-request.md`;
   const smokeInputsOutput = `${root}/production-smoke-dispatch-inputs.txt`;
@@ -26,6 +28,7 @@ test("release requests CLI writes every local request Markdown", async () => {
 
   try {
     await mkdir(root, { recursive: true });
+    await mkdir(visualSourceDir, { recursive: true });
     await writeFile(manifestPath, `${JSON.stringify(visualManifest, null, 2)}\n`);
 
     const exitCode = await runReleaseRequestsCli(
@@ -48,6 +51,8 @@ test("release requests CLI writes every local request Markdown", async () => {
         visualTableOutput,
         "--visual-json-output",
         visualJsonOutput,
+        "--source-dir",
+        visualSourceDir,
         "--visual-handoff-output",
         visualHandoffOutput,
         "--smoke-output",
@@ -181,7 +186,9 @@ test("release requests CLI writes every local request Markdown", async () => {
     assert.match(visualMarkdown, /^# Page Builder Design Reference Request/m);
     assert.match(
       visualMissingPaths,
-      /docs\/visual\/page-builder-references\/hero-banner-desktop\.png/,
+      new RegExp(
+        `${escapeRegExp(visualSourceDir)}/hero-banner-desktop\\.png`,
+      ),
     );
     assert.match(
       visualExportTable,
@@ -189,7 +196,11 @@ test("release requests CLI writes every local request Markdown", async () => {
     );
     assert.match(
       visualExportTable,
-      /hero-banner\tdesktop\thero-banner-desktop\.png\tmissing\t[^\n]*docs\/visual\/page-builder-references\/hero-banner-desktop\.png/,
+      new RegExp(
+        `hero-banner\\tdesktop\\thero-banner-desktop\\.png\\tmissing\\t[^\\n]*${escapeRegExp(
+          visualSourceDir,
+        )}/hero-banner-desktop\\.png`,
+      ),
     );
     assert.equal(
       visualExportManifest.schemaVersion,
@@ -228,7 +239,7 @@ test("release requests CLI writes every local request Markdown", async () => {
       projectStatusMarkdownOutput, projectStatusOutput, visualHandoffOutput,
       visualJsonOutput,
       visualManifestPath: manifestPath,
-      visualMissingOutput, visualOutput, visualTableOutput,
+      visualMissingOutput, visualOutput, visualSourceDir, visualTableOutput,
     });
     assert.equal(visualHandoffManifest.schemaVersion, "page-builder-visual-reference-handoff.v1");
     assert.equal(visualHandoffManifest.outputDir, visualHandoffOutput);
@@ -259,6 +270,7 @@ test("release requests CLI writes every local request Markdown", async () => {
     assert.equal(smokeInputsManifest.inputs[0].source, "Page Builder Visual workflow artifact after visual evidence passes");
   } finally {
     await rm(root, { force: true, recursive: true });
+    await rm(visualSourceRoot, { force: true, recursive: true });
   }
 });
 

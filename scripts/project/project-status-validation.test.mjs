@@ -140,6 +140,32 @@ test("project status artifact validation rejects invalid visual artifact counts"
   );
 });
 
+test("project status artifact validation accepts visual measurement failure summary", () => {
+  const artifact = createArtifact();
+  artifact.releaseGate.visual.failedMeasurementCount = 2;
+  artifact.releaseGate.visual.failedMeasurementViewportCount = 1;
+  artifact.releaseGate.visual.firstFailedMeasurement =
+    "hero-banner.desktop: visualMatchPercent >= 95 (current 0.15)";
+
+  assert.doesNotThrow(() => assertProjectStatusArtifact(artifact));
+
+  artifact.releaseGate.visual.failedMeasurementViewportCount = 13;
+  assert.throws(
+    () => assertProjectStatusArtifact(artifact),
+    /failedMeasurementViewportCount must not exceed viewportCount/,
+  );
+});
+
+test("project status artifact validation accepts legacy visual summary shape", () => {
+  const artifact = createArtifact();
+
+  delete artifact.releaseGate.visual.failedMeasurementCount;
+  delete artifact.releaseGate.visual.failedMeasurementViewportCount;
+  delete artifact.releaseGate.visual.firstFailedMeasurement;
+
+  assert.doesNotThrow(() => assertProjectStatusArtifact(artifact));
+});
+
 test("project status artifact validation rejects complete visual artifact issues", () => {
   const artifact = createArtifact();
   artifact.releaseGate.visual.artifactStatus = "complete";

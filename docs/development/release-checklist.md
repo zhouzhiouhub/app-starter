@@ -315,9 +315,11 @@ later phases are explicitly approved.
   `pnpm visual:artifact-bundle -- --artifact-dir reports/visual/page-builder-fixture`.
 - Once that default local artifact contains every required report and screenshot,
   plain `pnpm project:status` includes `artifact complete` plus artifact path,
-  issue, file, screenshot, reference-import missing/update counts,
-  required source reference availability, and the first missing reference path in its
-  informational release gate summary.
+  issue, file, screenshot, failed visual measurement viewport/metric counts,
+  the first failed measurement when measured metrics are below target,
+  reference-import missing/update counts, required source reference
+  availability, and the first missing reference path in its informational
+  release gate summary.
   `--all-actions` also includes the expected preview screenshot size beside each
   pending visual task and carries
   `--visual-artifact-dir reports/visual/page-builder-fixture` into rerun

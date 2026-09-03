@@ -18,7 +18,7 @@ export function assertReleaseRequestsManifestHandoff(input) {
   assert.equal(manifest.pageBuilderVisual.missingCount, 12);
   assert.equal(
     manifest.pageBuilderVisual.firstMissingReference,
-    "docs/visual/page-builder-references/hero-banner-desktop.png",
+    readFirstMissingReference(input),
   );
   assert.equal(
     manifest.pageBuilderVisual.referenceHandoffReadmePath,
@@ -109,26 +109,39 @@ function readChecklistStep(projectCompletion, label) {
 }
 
 function assertPageBuilderVisualCommands(commands, input) {
+  const sourceDirOption = readVisualSourceDirOption(input);
+
   assert.equal(
     commands.missingPaths,
-    `pnpm --silent visual:references -- --manifest ${input.visualManifestPath} --missing-paths`,
+    `pnpm --silent visual:references -- ${sourceDirOption}--manifest ${input.visualManifestPath} --missing-paths`,
   );
   assert.equal(
     commands.request,
-    `pnpm visual:references:request -- --manifest ${input.visualManifestPath} --output ${input.visualOutput} --missing-output ${input.visualMissingOutput} --table-output ${input.visualTableOutput} --json-output ${input.visualJsonOutput}`,
+    `pnpm visual:references:request -- ${sourceDirOption}--manifest ${input.visualManifestPath} --output ${input.visualOutput} --missing-output ${input.visualMissingOutput} --table-output ${input.visualTableOutput} --json-output ${input.visualJsonOutput}`,
   );
   assert.equal(
     commands.handoff,
-    `pnpm visual:references:handoff -- --manifest ${input.visualManifestPath} --output-dir ${input.visualHandoffOutput}`,
+    `pnpm visual:references:handoff -- ${sourceDirOption}--manifest ${input.visualManifestPath} --output-dir ${input.visualHandoffOutput}`,
   );
   assert.equal(
     commands.importReferences,
-    `pnpm visual:references -- --manifest ${input.visualManifestPath} --write --require-complete`,
+    `pnpm visual:references -- ${sourceDirOption}--manifest ${input.visualManifestPath} --write --require-complete`,
   );
   assert.equal(
     commands.verifyAccepted,
     `pnpm visual:acceptance -- --require-accepted ${input.visualManifestPath}`,
   );
+}
+
+function readFirstMissingReference(input) {
+  const sourceDir =
+    input.visualSourceDir ?? "docs/visual/page-builder-references";
+
+  return `${sourceDir}/hero-banner-desktop.png`;
+}
+
+function readVisualSourceDirOption(input) {
+  return input.visualSourceDir ? `--source-dir ${input.visualSourceDir} ` : "";
 }
 
 function assertProductionSmokeHandoff(productionSmoke, input) {

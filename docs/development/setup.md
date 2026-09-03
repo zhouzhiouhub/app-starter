@@ -483,10 +483,12 @@ CLI override rule. Blocked JSON artifacts mirror that handoff as
 `inputSources[]`.
 For local status checks, `project:status` automatically includes the default
 Page Builder Visual artifact when all required files already exist under
-`reports/visual/page-builder-fixture`, prints its artifact path, issue count,
-file count, screenshot counts, reference-import missing/update counts,
-required source reference availability, and the first missing reference path in the
-release gate summary, records the missing path list under
+`reports/visual/page-builder-fixture`, prints failed visual measurement
+viewport/metric counts and the first failed measurement when measured metrics
+are below target, plus its artifact path, issue count, file count, screenshot
+counts, reference-import missing/update counts, required source reference
+availability, and the first missing reference path in the release gate summary,
+records the missing path list under
 `releaseGate.visual.artifactCheck.referenceImport`, and adds a
 `Missing Visual References` section to the Markdown handoff when missing PNGs
 are present. That section also includes `Visual Reference Intake Commands` so

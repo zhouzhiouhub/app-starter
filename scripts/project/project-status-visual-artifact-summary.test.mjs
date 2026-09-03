@@ -142,6 +142,9 @@ test("project status docs mention visual artifact path and counts", async () => 
   ]);
 
   assert.match(readme, /artifact complete` 及 artifact 路径、文件\/截图计数/);
+  assert.match(readme, /releaseGate\.visual\.failedMeasurementCount/);
+  assert.match(readme, /releaseGate\.visual\.failedMeasurementViewportCount/);
+  assert.match(readme, /releaseGate\.visual\.firstFailedMeasurement/);
   assert.match(readme, /releaseGate\.visual\.artifactCheck/);
   assert.match(readme, /missingReferences/);
   assert.match(readme, /Missing Visual References/);
@@ -149,7 +152,7 @@ test("project status docs mention visual artifact path and counts", async () => 
   assert.match(readme, /release-check\.md.*project-status\.md/s);
   assert.match(
     setupDoc,
-    /prints its artifact path, issue count,\s+file count, screenshot counts, reference-import missing\/update counts,\s+required source reference availability, and the first missing reference path/s,
+    /prints failed visual measurement\s+viewport\/metric counts and the first failed measurement when measured metrics\s+are below target, plus its artifact path, issue count, file count, screenshot\s+counts, reference-import missing\/update counts, required source reference\s+availability, and the first missing reference path/s,
   );
   assert.match(setupDoc, /Missing Visual References/);
   assert.match(setupDoc, /pnpm visual:references:request/);
@@ -157,7 +160,7 @@ test("project status docs mention visual artifact path and counts", async () => 
   assert.match(setupDoc, /releaseGate\.visual\.artifactCheck/);
   assert.match(
     releaseChecklist,
-    /artifact path,\s+issue, file, screenshot, reference-import missing\/update counts,\s+required source reference availability, and the first missing reference path/s,
+    /artifact path,\s+issue, file, screenshot, failed visual measurement viewport\/metric counts,\s+the first failed measurement when measured metrics are below target,\s+reference-import missing\/update counts, required source reference\s+availability, and the first missing reference path/s,
   );
   assert.match(releaseChecklist, /Missing Visual References/);
   assert.match(releaseChecklist, /pnpm visual:references:request/);

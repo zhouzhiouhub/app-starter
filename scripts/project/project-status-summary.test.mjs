@@ -107,6 +107,30 @@ test("project status summary stays compact and actionable", () => {
   assert.doesNotMatch(text, /Local verification:/);
 });
 
+test("project status summary surfaces visual measurement failures", () => {
+  const check = createBlockedCheck();
+  check.visualChecklist.components[0].viewports[0].missing = [
+    "visualMatchPercent >= 95 (current 0.15)",
+    "maxColorDeltaE <= 3 (current 149.09)",
+    "status=accepted",
+  ];
+  const artifact = createProjectStatusArtifact(check, {
+    generatedAt: "2026-08-28T00:00:00.000Z",
+  });
+  const text = formatProjectStatusSummary(artifact).join("\n");
+
+  assert.equal(artifact.releaseGate.visual.failedMeasurementCount, 2);
+  assert.equal(artifact.releaseGate.visual.failedMeasurementViewportCount, 1);
+  assert.equal(
+    artifact.releaseGate.visual.firstFailedMeasurement,
+    "hero-banner.desktop: visualMatchPercent >= 95 (current 0.15); maxColorDeltaE <= 3 (current 149.09)",
+  );
+  assert.match(
+    text,
+    /1 measured viewports failing, 2 failed metrics, first failed hero-banner\.desktop: visualMatchPercent >= 95 \(current 0\.15\); maxColorDeltaE <= 3 \(current 149\.09\)/,
+  );
+});
+
 test("project status CLI can print a compact summary", async () => {
   const emptyArchiveRoot = mkdtempSync(
     path.join(tmpdir(), "project-status-summary-"),
@@ -138,18 +162,18 @@ test("project status CLI can print a compact summary", async () => {
       text,
       /Smoke request output: artifacts\/production-smoke\/production-smoke-request\.md/,
     );
-  assert.match(
-    text,
-    /Dispatch inputs output: artifacts\/production-smoke\/production-smoke-dispatch-inputs\.txt/,
-  );
-  assert.match(
-    text,
-    /Dispatch inputs table output: artifacts\/production-smoke\/production-smoke-dispatch-inputs\.tsv/,
-  );
-  assert.match(
-    text,
-    /Dispatch inputs JSON output: artifacts\/production-smoke\/production-smoke-dispatch-inputs\.json/,
-  );
+    assert.match(
+      text,
+      /Dispatch inputs output: artifacts\/production-smoke\/production-smoke-dispatch-inputs\.txt/,
+    );
+    assert.match(
+      text,
+      /Dispatch inputs table output: artifacts\/production-smoke\/production-smoke-dispatch-inputs\.tsv/,
+    );
+    assert.match(
+      text,
+      /Dispatch inputs JSON output: artifacts\/production-smoke\/production-smoke-dispatch-inputs\.json/,
+    );
     assert.match(text, /Page Builder Visual: Visual acceptance pending/);
     assert.match(
       text,

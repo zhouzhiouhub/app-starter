@@ -8,6 +8,9 @@ import {
   createProjectNextActions,
   readPendingVisualTasks,
 } from "./project-status-next-actions.mjs";
+import {
+  createProjectVisualMeasurementSummary,
+} from "./project-status-visual-measurement-summary.mjs";
 
 export const projectStatusSchemaVersion = "project-status.v1";
 
@@ -62,6 +65,9 @@ function createCompletionSummary(check) {
 }
 
 function createReleaseGateSummary(check) {
+  const visualMeasurementFailures = createProjectVisualMeasurementSummary(
+    check.visualChecklist,
+  );
   const smokeGate = {
     blockerCount: countBlockers(check, "Production Smoke"),
     markdown: createSmokeMarkdownSummary(check.smoke.markdown),
@@ -86,6 +92,12 @@ function createReleaseGateSummary(check) {
       artifactCheck: createVisualArtifactCheckSummary(check.visualArtifact),
       artifactStatus: readText(check.visualArtifact?.status),
       componentCount: check.visual.componentCount,
+      failedMeasurementCount: visualMeasurementFailures.failedMeasurementCount,
+      failedMeasurementViewportCount:
+        visualMeasurementFailures.failedMeasurementViewportCount,
+      firstFailedMeasurement: readText(
+        visualMeasurementFailures.firstFailedMeasurement,
+      ),
       pendingComponentCount: readPendingCount(check.visual.records),
       pendingTaskCount: readVisualPendingTaskCount(check.visualChecklist),
       pendingViewportCount: readVisualPendingViewportCount(

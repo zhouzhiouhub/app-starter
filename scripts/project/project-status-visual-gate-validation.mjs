@@ -8,6 +8,9 @@ import {
   assertStringList,
   isRecord,
 } from "./project-status-validation-primitives.mjs";
+import {
+  assertOptionalVisualMeasurementFailures,
+} from "./project-status-visual-measurement-validation.mjs";
 
 export function assertVisualGate(visual) {
   if (!isRecord(visual)) {
@@ -59,6 +62,7 @@ export function assertVisualGate(visual) {
     "releaseGate.visual.pendingViewportCount",
     "viewportCount",
   );
+  assertOptionalVisualMeasurementFailures(visual);
 }
 
 function assertNullableVisualArtifactCheck(visual) {
