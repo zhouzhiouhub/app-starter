@@ -182,9 +182,25 @@ function formatReferenceImport(referenceImport) {
     formatReferenceImportCount(referenceImport.missingCount, "missing"),
     formatReferenceImportCount(referenceImport.updateCount, "updates"),
     formatRequiredReferenceCoverage(referenceImport),
+    formatFirstMissingReference(referenceImport),
+    formatFirstMissingReferencePreview(referenceImport),
   ]
     .filter(Boolean)
     .join(", ")})`;
+}
+
+function formatFirstMissingReference(referenceImport) {
+  return Array.isArray(referenceImport.missingReferences) &&
+    referenceImport.missingReferences.length > 0
+    ? `first missing ${referenceImport.missingReferences[0]}`
+    : null;
+}
+
+function formatFirstMissingReferencePreview(referenceImport) {
+  return typeof referenceImport.firstMissingReferencePreview === "string" &&
+    referenceImport.firstMissingReferencePreview.length > 0
+    ? `first missing preview ${referenceImport.firstMissingReferencePreview}`
+    : null;
 }
 
 function formatReferenceImportCount(count, label) {

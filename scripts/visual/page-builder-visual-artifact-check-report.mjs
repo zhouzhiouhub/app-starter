@@ -48,6 +48,7 @@ function formatReferenceImport(referenceImport) {
     `${referenceImport.missingCount} missing`,
     `${referenceImport.updateCount} updates`,
     formatRequiredReferences(referenceImport),
+    formatFirstMissingReferencePreview(referenceImport),
   ].filter(Boolean);
 
   return [
@@ -56,6 +57,13 @@ function formatReferenceImport(referenceImport) {
     }`,
     ...formatMissingReferences(referenceImport),
   ];
+}
+
+function formatFirstMissingReferencePreview(referenceImport) {
+  return typeof referenceImport.firstMissingReferencePreview === "string" &&
+    referenceImport.firstMissingReferencePreview.length > 0
+    ? `first missing preview ${referenceImport.firstMissingReferencePreview}`
+    : null;
 }
 
 function formatRequiredReferences(referenceImport) {

@@ -92,6 +92,8 @@ test("project status summarizes visual artifact counts", () => {
   check.visualArtifact.referenceImport = {
     ...check.visualArtifact.referenceImport,
     complete: false,
+    firstMissingReferencePreview:
+      "reports/visual/page-builder-fixture/page-builder-visual-fixture-hero-banner-desktop.png (1440x1000)",
     missingCount: 1,
     missingReferences: [
       "docs/visual/page-builder-references/hero-banner-desktop.png",
@@ -110,9 +112,21 @@ test("project status summarizes visual artifact counts", () => {
     missingReferenceArtifact,
   );
 
+  const missingReferenceTerminal = formatProjectStatusArtifact(
+    missingReferenceArtifact,
+  ).join("\n");
   assert.match(
-    formatProjectStatusArtifact(missingReferenceArtifact).join("\n"),
+    missingReferenceTerminal,
     /first missing docs\/visual\/page-builder-references\/hero-banner-desktop\.png/,
+  );
+  assert.match(
+    missingReferenceTerminal,
+    /first missing preview reports\/visual\/page-builder-fixture\/page-builder-visual-fixture-hero/,
+  );
+  assert.equal(
+    missingReferenceArtifact.releaseGate.visual.artifactCheck.referenceImport
+      .firstMissingReferencePreview,
+    "reports/visual/page-builder-fixture/page-builder-visual-fixture-hero-banner-desktop.png (1440x1000)",
   );
   assert.match(missingReferenceMarkdown, /### Missing Visual References/);
   assert.match(
@@ -123,6 +137,10 @@ test("project status summarizes visual artifact counts", () => {
   assert.match(
     missingReferenceMarkdown,
     /Required source references: 11\/12 available \(1 missing, 11 ready\)/,
+  );
+  assert.match(
+    missingReferenceMarkdown,
+    /First missing preview: `reports\/visual\/page-builder-fixture\/page-builder-visual-fixture-hero-banner-desktop\.png \(1440x1000\)`/,
   );
   assert.match(
     missingReferenceMarkdown,
@@ -154,6 +172,7 @@ test("project status docs mention visual artifact path and counts", async () => 
     setupDoc,
     /prints failed visual measurement\s+viewport\/metric counts and the first failed measurement when measured metrics\s+are below target, plus its artifact path, issue count, file count, screenshot\s+counts, reference-import missing\/update counts, required source reference\s+availability, and the first missing reference path/s,
   );
+  assert.match(setupDoc, /retained preview\s+summary in the release gate summary/s);
   assert.match(setupDoc, /Missing Visual References/);
   assert.match(setupDoc, /pnpm visual:references:request/);
   assert.match(setupDoc, /release-check\.md.*project-status\.md/s);
@@ -162,6 +181,7 @@ test("project status docs mention visual artifact path and counts", async () => 
     releaseChecklist,
     /artifact path,\s+issue, file, screenshot, failed visual measurement viewport\/metric counts,\s+the first failed measurement when measured metrics are below target,\s+reference-import missing\/update counts, required source reference\s+availability, and the first missing reference path/s,
   );
+  assert.match(releaseChecklist, /first missing reference path plus retained preview\s+summary/s);
   assert.match(releaseChecklist, /Missing Visual References/);
   assert.match(releaseChecklist, /pnpm visual:references:request/);
   assert.match(releaseChecklist, /release-check\.md.*project-status\.md/s);

@@ -14,6 +14,9 @@ import {
   hasRequiredReferenceList,
   isValidRequiredReferenceList,
 } from "./page-builder-visual-reference-import-required-entries.mjs";
+import {
+  formatPageBuilderVisualFirstMissingPreview,
+} from "./page-builder-visual-reference-preview-summary.mjs";
 
 const referenceSourceDirStatuses = new Set([
   "missing",
@@ -70,6 +73,10 @@ export function createReferenceImportSummary(report) {
 
   return {
     complete: report.complete === true,
+    firstMissingReferencePreview:
+      formatPageBuilderVisualFirstMissingPreview({
+        missing: report.missing,
+      }) ?? null,
     manifestPath: readText(report.manifestPath),
     missingCount: readItemCount(report.missingCount, report.missing),
     missingReferences: readReferencePaths(report.missing),

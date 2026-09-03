@@ -129,7 +129,17 @@ function formatReferenceImport(referenceImport) {
     "unknown",
   )}, ${referenceImport.missingCount} missing${formatRequiredReferenceCoverage(
     referenceImport,
-  )}${firstMissing ? `, first missing ${formatReleaseValue(firstMissing, "unknown")}` : ""}`;
+  )}${firstMissing ? `, first missing ${formatReleaseValue(firstMissing, "unknown")}` : ""}${formatFirstMissingPreview(referenceImport)}`;
+}
+
+function formatFirstMissingPreview(referenceImport) {
+  return typeof referenceImport.firstMissingReferencePreview === "string" &&
+    referenceImport.firstMissingReferencePreview.length > 0
+    ? `, first missing preview ${formatReleaseValue(
+        referenceImport.firstMissingReferencePreview,
+        "unknown",
+      )}`
+    : "";
 }
 
 function formatRequiredReferenceCoverage(referenceImport) {

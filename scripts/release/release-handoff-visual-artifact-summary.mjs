@@ -61,11 +61,21 @@ function formatReferenceImport(referenceImport) {
     formatReferenceImportCount(referenceImport.updateCount, "updates"),
     formatRequiredReferenceCoverage(referenceImport),
     firstMissing ? `first missing ${formatSmokeText(firstMissing)}` : null,
+    formatFirstMissingReferencePreview(referenceImport),
   ].filter(Boolean);
 
   return `references ${formatSmokeText(
     referenceImport.status,
   )}${detailText.length > 0 ? ` (${detailText.join(", ")})` : ""}`;
+}
+
+function formatFirstMissingReferencePreview(referenceImport) {
+  return typeof referenceImport.firstMissingReferencePreview === "string" &&
+    referenceImport.firstMissingReferencePreview.length > 0
+    ? `first missing preview ${formatSmokeText(
+        referenceImport.firstMissingReferencePreview,
+      )}`
+    : null;
 }
 
 function formatReferenceImportCount(count, label) {

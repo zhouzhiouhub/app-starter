@@ -63,6 +63,8 @@ test("visual artifact check Markdown lists issues and repair command", () => {
     presentScreenshotCount: 11,
     referenceImport: createReferenceImportSummary({
       complete: false,
+      firstMissingReferencePreview:
+        "reports/visual/page-builder-fixture/page-builder-visual-fixture-hero-banner-desktop.png (1440x1000)",
       missingCount: 12,
       missingReferences: [
         "docs/visual/page-builder-references/hero-banner-desktop.png",
@@ -85,6 +87,10 @@ test("visual artifact check Markdown lists issues and repair command", () => {
   assert.match(markdown, /missing_artifact_file/);
   assert.doesNotMatch(markdown, /abcdefghijklmnopqrstuvwxyz123456/);
   assert.match(markdown, /Reference missing files: `docs\/visual\/page-builder-references\/hero-banner-desktop\.png`/);
+  assert.match(
+    markdown,
+    /First missing reference preview: `reports\/visual\/page-builder-fixture\/page-builder-visual-fixture-hero-banner-desktop\.png \(1440x1000\)`/,
+  );
   assert.match(markdown, /Required source references: 0\/12 available \(12 missing\)/);
   assert.match(markdown, /pnpm visual:artifact-bundle -- --artifact-dir/);
   assert.match(markdown, /--output reports\/visual\/page-builder-fixture\/visual-artifact-check-report\.json/);

@@ -154,6 +154,10 @@ function createOptionalReferenceImportSummary(referenceImport) {
   return {
     referenceImport: {
       complete: referenceImport.complete === true,
+      ...createOptionalText(
+        "firstMissingReferencePreview",
+        referenceImport.firstMissingReferencePreview,
+      ),
       manifestPath: readText(referenceImport.manifestPath),
       missingCount: readCount(referenceImport.missingCount) ?? 0,
       missingReferences: readStringList(referenceImport.missingReferences),
@@ -213,6 +217,12 @@ function readStringList(value) {
 
 function createOptionalCount(field, value) {
   return Number.isFinite(value) ? { [field]: value } : {};
+}
+
+function createOptionalText(field, value) {
+  const text = readText(value);
+
+  return text ? { [field]: text } : {};
 }
 
 function readPendingCount(records) {

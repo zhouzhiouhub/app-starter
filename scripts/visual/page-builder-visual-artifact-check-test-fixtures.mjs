@@ -95,6 +95,8 @@ export function hasIssue(report, code) {
 export function createReferenceImportSummary(artifactDir) {
   return {
     complete: false,
+    firstMissingReferencePreview:
+      `${artifactDir}/page-builder-visual-fixture-hero-banner-desktop.png (1440x1000)`,
     manifestPath: `${artifactDir}/page-builder-visual-acceptance.json`,
     missingCount: 12,
     missingReferences: createReferenceMissingReferencePaths(),
@@ -221,7 +223,7 @@ function writeText(filePath, value) {
 }
 
 function createReferenceImportReport(artifactDir) {
-  const missing = createReferenceMissingEntries();
+  const missing = createReferenceMissingEntries(artifactDir);
   return {
     ...createReferenceImportSummary(artifactDir),
     missing,
@@ -230,11 +232,16 @@ function createReferenceImportReport(artifactDir) {
   };
 }
 
-function createReferenceMissingEntries() {
+function createReferenceMissingEntries(artifactDir) {
   return mvpPageBuilderComponents.flatMap((component) =>
     pageBuilderVisualAcceptanceViewports.map((viewport) => ({
       component,
       expectedPath: `docs/visual/page-builder-references/${component}-${viewport}.png`,
+      previewScreenshot: {
+        height: pageBuilderVisualCaptureDefaultHeight,
+        path: `${artifactDir}/page-builder-visual-fixture-${component}-${viewport}.png`,
+        width: pageBuilderVisualCaptureViewportWidths[viewport],
+      },
       reason: `${component}-${viewport}.png is missing`,
       viewport,
     })),

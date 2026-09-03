@@ -497,7 +497,8 @@ Page Builder Visual artifact when all required files already exist under
 viewport/metric counts and the first failed measurement when measured metrics
 are below target, plus its artifact path, issue count, file count, screenshot
 counts, reference-import missing/update counts, required source reference
-availability, and the first missing reference path in the release gate summary,
+availability, and the first missing reference path plus its retained preview
+summary in the release gate summary,
 records the missing path list under
 `releaseGate.visual.artifactCheck.referenceImport`, and adds a
 `Missing Visual References` section to the Markdown handoff when missing PNGs
@@ -543,8 +544,8 @@ Page Builder Visual, and optional visual artifact status, path, and counts.
 When Production Smoke inputs still contain placeholders, the compact summary
 also prints the first missing input replacement reason.
 When available, the visual artifact line also includes reference-import status,
-missing/update counts, required source reference availability, and the first missing
-reference path. It then prints the first two next actions with structured steps
+missing/update counts, required source reference availability, the first missing
+reference path, and the matching first missing preview. It then prints the first two next actions with structured steps
 when available, including the `pnpm smoke:request` request, dispatch inputs
 output, dispatch input table output, dispatch input JSON output,
 `pnpm smoke:dispatch` validation, `gh`
@@ -571,14 +572,14 @@ below target, the text summary, Markdown, and JSON artifact include failed
 visual measurement viewport/metric counts and the first failed measurement. New
 JSON artifacts also include a structured `readinessChecklist` with the same
 release tasks, visual artifact path, issue, reference-import, missing reference
-path, required source reference availability, measurement, and count details,
+path, first missing preview, required source reference availability, measurement, and count details,
 and `smoke.source` metadata for CI artifacts and release records.
 When the release uses a downloaded Page Builder Visual artifact, add
 `--visual-artifact-dir reports/visual/page-builder-fixture`; the combined gate
 then verifies the artifact-local manifest, capture report, acceptance report,
 and all 12 PNG screenshots, prints the artifact path plus issue, file, and
 screenshot counts plus reference-import status, required source reference availability,
-and first missing reference path in the text summary, and writes the result
+first missing reference path, and first missing preview in the text summary, and writes the result
 under `visual.artifactCheck`.
 After that artifact is ready, `release:notes` writes the final Markdown release
 record, including the readiness checklist, main CI local verification run and

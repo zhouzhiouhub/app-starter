@@ -127,7 +127,7 @@ test("release readiness checklist carries blocker actions", () => {
   assert.match(lines, /Run pnpm visual:acceptance -- --checklist/);
   assert.match(
     lines,
-    /Detail: 0\/6 components, 0\/12 viewports, artifact invalid \(reports\/visual\/page-builder-fixture, 1 issues, 5\/6 files, 0\/12 screenshots, references invalid \(12 missing, 0 updates, 0\/12 required source references available\)\)/,
+    /Detail: 0\/6 components, 0\/12 viewports, artifact invalid \(reports\/visual\/page-builder-fixture, 1 issues, 5\/6 files, 0\/12 screenshots, references invalid \(12 missing, 0 updates, 0\/12 required source references available, first missing docs\/visual\/page-builder-references\/hero-banner-desktop\.png\)\)/,
   );
   assert.match(lines, /Visual tasks:/);
   assert.match(lines, /hero-banner\.desktop: missing designReference/);

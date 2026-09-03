@@ -87,7 +87,7 @@ test("release handoff docs describe terminal evidence statuses", async () => {
     );
     assert.match(
       normalized,
-      /reference-import status, missing\/update counts, required source reference availability, and the first missing reference path/,
+      /reference-import status, missing\/update counts, required source reference availability, the first missing reference path, and the matching first missing preview/,
     );
   }
 

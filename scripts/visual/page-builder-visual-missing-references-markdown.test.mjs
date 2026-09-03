@@ -6,6 +6,8 @@ test("missing visual references Markdown includes intake commands", () => {
   const markdown = formatMissingVisualReferenceFiles({
     artifactCheck: {
       referenceImport: {
+        firstMissingReferencePreview:
+          "reports/visual/page-builder-fixture/page-builder-visual-fixture-hero-banner-desktop.png (1440x1000)",
         manifestPath:
           "reports/visual/page-builder-fixture/page-builder-visual-acceptance.json",
         missingCount: 2,
@@ -23,6 +25,10 @@ test("missing visual references Markdown includes intake commands", () => {
 
   assert.match(markdown, /### Missing Visual References/);
   assert.match(markdown, /Missing files: 2/);
+  assert.match(
+    markdown,
+    /First missing preview: `reports\/visual\/page-builder-fixture\/page-builder-visual-fixture-hero-banner-desktop\.png \(1440x1000\)`/,
+  );
   assert.match(
     markdown,
     /- `docs\/visual\/page-builder-references\/hero-banner-desktop\.png`/,

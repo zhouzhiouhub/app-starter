@@ -67,9 +67,21 @@ function formatReferenceImport(referenceImport) {
     )} (${formatText(referenceImport.sourceDirStatus)})`,
     `Reference missing: ${referenceImport.missingCount}`,
     ...formatMissingReferences(referenceImport),
+    ...formatFirstMissingReferencePreview(referenceImport),
     `Reference updates: ${referenceImport.updateCount}`,
     ...formatRequiredReferences(referenceImport),
   ];
+}
+
+function formatFirstMissingReferencePreview(referenceImport) {
+  return typeof referenceImport.firstMissingReferencePreview === "string" &&
+    referenceImport.firstMissingReferencePreview.length > 0
+    ? [
+        `First missing reference preview: ${formatCode(
+          referenceImport.firstMissingReferencePreview,
+        )}`,
+      ]
+    : [];
 }
 
 function formatMissingReferences(referenceImport) {

@@ -72,6 +72,10 @@ test("visual artifact check accepts generated reference intake checklist", () =>
     assert.equal(report.status, "complete");
     assert.equal(report.referenceImport.status, "invalid");
     assert.equal(report.referenceImport.missingCount, 12);
+    assert.match(
+      report.referenceImport.firstMissingReferencePreview,
+      /reports\/visual\/artifact-check-generated-reference-checklist-.+\/page-builder-visual-fixture-hero-banner-desktop\.png \(1440x1000\)/,
+    );
     assert.equal(report.referenceImport.requiredReferenceCount, 12);
     assert.equal(report.referenceImport.requiredReferenceEntryCount, 12);
     assert.deepEqual(report.referenceImport.requiredReferenceStatusCounts, {

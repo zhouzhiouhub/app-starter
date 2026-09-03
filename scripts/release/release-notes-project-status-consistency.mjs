@@ -155,10 +155,23 @@ function assertOptionalReferenceImportMatches(releaseCheck, projectCheck) {
     releaseCheck.referenceImport.missingReferences,
     "releaseGate.visual.artifactCheck.referenceImport.missingReferences",
   );
+  assertOptionalStringMatches(
+    projectCheck.referenceImport.firstMissingReferencePreview,
+    releaseCheck.referenceImport.firstMissingReferencePreview,
+    "releaseGate.visual.artifactCheck.referenceImport.firstMissingReferencePreview",
+  );
   assertOptionalStatusCountsMatch(
     projectCheck.referenceImport.requiredReferenceStatusCounts,
     releaseCheck.referenceImport.requiredReferenceStatusCounts,
   );
+}
+
+function assertOptionalStringMatches(actual, expected, label) {
+  if (actual === undefined) {
+    return;
+  }
+
+  assertMatches(actual, expected, label);
 }
 
 function readPendingViewportCount(visual) {

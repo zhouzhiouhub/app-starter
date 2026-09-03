@@ -40,7 +40,8 @@ they are replaced by the approved design export.
    `artifacts/visual/page-builder-missing-references.txt`,
    `artifacts/visual/page-builder-reference-export-table.tsv`, and
    `artifacts/visual/page-builder-reference-export-manifest.json`, and the
-   terminal summary prints the first missing reference path.
+   terminal summary prints the first missing reference path plus the matching
+   retained preview screenshot.
 4. Run `pnpm visual:references:handoff` when the design owner needs the request
    files plus copied preview screenshots and a handoff README in
    `artifacts/visual/page-builder-reference-handoff`.
@@ -79,7 +80,8 @@ with component, viewport, `file_name`, status, rejection reason, target size,
 target path, and preview path columns,
 plus `artifacts/visual/page-builder-reference-export-manifest.json` as a
 machine-readable export manifest for automation handoff. Its terminal summary
-prints the first missing reference path. The request includes a
+prints the first missing reference path plus the matching retained preview
+screenshot. The request includes a
 `Reference PNG Dimensions` section so design exports can match the captured
 Desktop / Mobile viewport size. It does not import references or mark visual
 evidence accepted.

@@ -10,6 +10,10 @@ export function createOptionalReferenceImportArtifact(referenceImport) {
   return {
     referenceImport: {
       complete: referenceImport.complete === true,
+      ...createOptionalText(
+        "firstMissingReferencePreview",
+        referenceImport.firstMissingReferencePreview,
+      ),
       manifestPath: readTextOrNull(referenceImport.manifestPath),
       missingCount: readCount(referenceImport.missingCount),
       missingReferences: readStringList(referenceImport.missingReferences),
@@ -63,6 +67,12 @@ function readStringList(value) {
   return Array.isArray(value)
     ? value.map(readTextOrNull).filter(Boolean)
     : [];
+}
+
+function createOptionalText(field, value) {
+  const text = readTextOrNull(value);
+
+  return text ? { [field]: text } : {};
 }
 
 function readTextOrNull(value) {

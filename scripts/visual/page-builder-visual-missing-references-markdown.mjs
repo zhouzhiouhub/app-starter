@@ -27,6 +27,7 @@ export function formatVisualReferenceImport(referenceImport, options = {}) {
     `${referenceImport.missingCount} missing`,
     `${referenceImport.updateCount} updates`,
     required,
+    formatFirstMissingReferencePreview(referenceImport),
   ]
     .filter(Boolean)
     .join(", ")})`;
@@ -49,12 +50,33 @@ export function formatMissingVisualReferenceFiles(visual) {
     `- Source dir: ${formatCode(referenceImport.sourceDir)}`,
     `- Missing files: ${referenceImport.missingCount}`,
     ...formatRequiredReferenceLines(referenceImport),
+    ...formatFirstMissingReferencePreviewLines(referenceImport),
     ...missingReferences.map((reference) => `- ${formatCode(reference)}`),
     "",
     "### Visual Reference Intake Commands",
     "",
     ...formatVisualReferenceIntakeCommands(referenceImport),
   ];
+}
+
+function formatFirstMissingReferencePreview(referenceImport) {
+  return typeof referenceImport.firstMissingReferencePreview === "string" &&
+    referenceImport.firstMissingReferencePreview.length > 0
+    ? `first missing preview ${formatText(
+        referenceImport.firstMissingReferencePreview,
+      )}`
+    : null;
+}
+
+function formatFirstMissingReferencePreviewLines(referenceImport) {
+  return typeof referenceImport.firstMissingReferencePreview === "string" &&
+    referenceImport.firstMissingReferencePreview.length > 0
+    ? [
+        `- First missing preview: ${formatCode(
+          referenceImport.firstMissingReferencePreview,
+        )}`,
+      ]
+    : [];
 }
 
 function formatVisualReferenceIntakeCommands(referenceImport) {

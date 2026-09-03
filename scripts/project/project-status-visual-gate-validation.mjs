@@ -164,6 +164,7 @@ function assertOptionalReferenceImport(referenceImport) {
     referenceImport.complete,
     "releaseGate.visual.artifactCheck.referenceImport.complete",
   );
+  assertOptionalFirstMissingReferencePreview(referenceImport);
   assertNullableString(
     referenceImport.manifestPath,
     "releaseGate.visual.artifactCheck.referenceImport.manifestPath",
@@ -200,6 +201,17 @@ function assertOptionalReferenceImport(referenceImport) {
       "Project status artifact complete referenceImport must have no missing references.",
     );
   }
+}
+
+function assertOptionalFirstMissingReferencePreview(referenceImport) {
+  if (referenceImport.firstMissingReferencePreview === undefined) {
+    return;
+  }
+
+  assertNullableString(
+    referenceImport.firstMissingReferencePreview,
+    "releaseGate.visual.artifactCheck.referenceImport.firstMissingReferencePreview",
+  );
 }
 
 function assertOptionalRequiredReferenceSummary(referenceImport) {

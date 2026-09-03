@@ -15,9 +15,21 @@ export function formatReferenceImportMarkdown(
     )})`,
     `- Reference missing: ${referenceImport.missingCount}`,
     ...formatMissingReferences(referenceImport, formatCode),
+    ...formatFirstMissingReferencePreview(referenceImport, formatCode),
     `- Reference updates: ${referenceImport.updateCount}`,
     ...formatRequiredReferences(referenceImport),
   ];
+}
+
+function formatFirstMissingReferencePreview(referenceImport, formatCode) {
+  return typeof referenceImport.firstMissingReferencePreview === "string" &&
+    referenceImport.firstMissingReferencePreview.length > 0
+    ? [
+        `- First missing reference preview: ${formatCode(
+          referenceImport.firstMissingReferencePreview,
+        )}`,
+      ]
+    : [];
 }
 
 export function formatReferenceImportGateSummary(
@@ -28,7 +40,7 @@ export function formatReferenceImportGateSummary(
     return "";
   }
 
-  return `, references ${formatText(referenceImport.status)}, ${referenceImport.missingCount} missing${formatRequiredReferenceGateSummary(referenceImport)}`;
+  return `, references ${formatText(referenceImport.status)}, ${referenceImport.missingCount} missing${formatRequiredReferenceGateSummary(referenceImport)}${formatFirstMissingReferencePreviewGate(referenceImport, formatText)}`;
 }
 
 function formatDefault(value) {
@@ -65,4 +77,13 @@ function formatRequiredReferenceGateSummary(referenceImport) {
   });
 
   return coverage ? `, ${coverage}` : "";
+}
+
+function formatFirstMissingReferencePreviewGate(referenceImport, formatText) {
+  return typeof referenceImport.firstMissingReferencePreview === "string" &&
+    referenceImport.firstMissingReferencePreview.length > 0
+    ? `, first missing preview ${formatText(
+        referenceImport.firstMissingReferencePreview,
+      )}`
+    : "";
 }

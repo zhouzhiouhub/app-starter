@@ -33,7 +33,7 @@ test("visual artifact check accepts a complete fixture artifact", () => {
     assert.deepEqual(report.issues, []);
     assert.match(
       formatPageBuilderVisualArtifactCheckReport(report).join("\n"),
-      /Issues: 0[\s\S]*Reference import: invalid \(ready source, 12 missing, 0 updates, 0\/12 required source references available\)[\s\S]*Missing reference files: docs\/visual\/page-builder-references\/hero-banner-desktop\.png[\s\S]*Artifact is complete/,
+      /Issues: 0[\s\S]*Reference import: invalid \(ready source, 12 missing, 0 updates, 0\/12 required source references available, first missing preview reports\/visual\/artifact-check-complete-.+\/page-builder-visual-fixture-hero-banner-desktop\.png \(1440x1000\)\)[\s\S]*Missing reference files: docs\/visual\/page-builder-references\/hero-banner-desktop\.png[\s\S]*Artifact is complete/,
     );
   } finally {
     rmSync(artifactDir, { force: true, recursive: true });
