@@ -20,6 +20,8 @@ export function assertDesignFacingVisualReferenceRequestMarkdown() {
           path: "reports/visual/page-builder-fixture/page-builder-visual-fixture-hero-banner-desktop.png",
           width: 1440,
         },
+        reason:
+          "hero-banner-desktop.png appears to be a generated placeholder; use the approved design export instead",
         status: "missing",
         viewport: "desktop",
       },
@@ -65,7 +67,7 @@ export function assertDesignFacingVisualReferenceRequestMarkdown() {
   );
   assert.match(
     markdown,
-    /hero-banner\.desktop; missing; reference size 1440x1000; preview `reports\/visual\/page-builder-fixture\/page-builder-visual-fixture-hero-banner-desktop\.png` \(1440x1000\)/,
+    /hero-banner\.desktop; missing; reason hero-banner-desktop\.png appears to be a generated placeholder; use the approved design export instead; reference size 1440x1000; preview `reports\/visual\/page-builder-fixture\/page-builder-visual-fixture-hero-banner-desktop\.png` \(1440x1000\)/,
   );
   assert.match(markdown, /faq\.mobile; ready; reference size unknown/);
   assert.match(markdown, /pnpm visual:references:check/);

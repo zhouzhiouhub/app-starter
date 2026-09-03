@@ -195,7 +195,7 @@ function formatReferences(references) {
         reference.component,
       )}.${formatText(reference.viewport)}; ${formatText(
         reference.status,
-      )}; ${formatReferenceSize(
+      )}${formatReason(reference)}; ${formatReferenceSize(
         reference.previewScreenshot,
       )}${formatPreview(reference.previewScreenshot)}`,
   );
@@ -235,6 +235,12 @@ function formatPreview(previewScreenshot) {
       : "";
 
   return `; preview ${formatCode(previewScreenshot.path)}${dimensions}`;
+}
+
+function formatReason(reference) {
+  return typeof reference.reason === "string" && reference.reason.length > 0
+    ? `; reason ${formatText(reference.reason)}`
+    : "";
 }
 
 function formatMissingOutputPath(outputPath) {

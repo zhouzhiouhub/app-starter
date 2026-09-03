@@ -316,8 +316,8 @@ commands. It also writes
 `artifacts/visual/page-builder-missing-references.txt` as a plain one-path-per-line
 missing PNG list and
 `artifacts/visual/page-builder-reference-export-table.tsv` as a TSV task table
-with component, viewport, `file_name`, target size, target path, and preview
-path columns,
+with component, viewport, `file_name`, status, rejection reason, target size,
+target path, and preview path columns,
 plus `artifacts/visual/page-builder-reference-export-manifest.json` as a JSON
 export manifest for automation handoff. Its terminal summary and Markdown
 status also print `First missing reference` when a reference PNG is still
@@ -510,7 +510,8 @@ and Markdown status also print the first missing reference path, and
 `artifacts/visual/page-builder-missing-references.txt` keeps the same missing
 paths as a plain text handoff while
 `artifacts/visual/page-builder-reference-export-table.tsv` keeps the
-component/viewport/`file_name` export task table and
+component/viewport/`file_name` export task table with status and rejection
+reason columns and
 `artifacts/visual/page-builder-reference-export-manifest.json` keeps the
 machine-readable export manifest.
 Use `pnpm visual:references:handoff` when the design owner needs those request

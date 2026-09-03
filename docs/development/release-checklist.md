@@ -89,7 +89,8 @@ later phases are explicitly approved.
   `artifacts/visual/page-builder-missing-references.txt` and
   `artifacts/visual/page-builder-reference-export-table.tsv` plus
   `artifacts/visual/page-builder-reference-export-manifest.json`; the TSV table
-  includes a `file_name` column for copy-ready design export matching. Run
+  includes `file_name`, status, and rejection reason columns for copy-ready
+  design export matching. Run
   `pnpm visual:references:handoff` when they need those request files plus
   copied preview screenshots and a handoff README under
   `artifacts/visual/page-builder-reference-handoff`, then run
@@ -500,7 +501,8 @@ later phases are explicitly approved.
   export request, writes
   `artifacts/visual/page-builder-missing-references.txt` as the plain missing
   path list, writes `artifacts/visual/page-builder-reference-export-table.tsv`
-  as a TSV task table with a `file_name` column, writes
+  as a TSV task table with `file_name`, status, and rejection reason columns,
+  writes
   `artifacts/visual/page-builder-reference-export-manifest.json` as a JSON
   export manifest, and prints the first missing reference path in the terminal
   summary and Markdown status.

@@ -89,16 +89,17 @@ test("visual reference request CLI writes a Markdown handoff", async () => {
       /First missing reference: reports\/visual\/reference-request-.+\/references\/spec-table-mobile\.png/,
     );
     assert.match(markdown, /spec-table\.mobile; missing/);
+    assert.match(markdown, /reason spec-table-mobile\.png is missing/);
     assert.match(markdown, /spec-table\.mobile: reference size 390x1000/);
     assert.equal(missingPaths, `${sourceDir}/spec-table-mobile.png\n`);
     assert.match(
       exportTable,
-      /^component\tviewport\tfile_name\tstatus\treference_width\treference_height\texpected_path\tpreview_width\tpreview_height\tpreview_path/m,
+      /^component\tviewport\tfile_name\tstatus\treason\treference_width\treference_height\texpected_path\tpreview_width\tpreview_height\tpreview_path/m,
     );
     assert.match(
       exportTable,
       new RegExp(
-        `spec-table\tmobile\tspec-table-mobile.png\tmissing\t390\t1000\t${escapeRegExp(
+        `spec-table\tmobile\tspec-table-mobile.png\tmissing\tspec-table-mobile.png is missing\t390\t1000\t${escapeRegExp(
           `${sourceDir}/spec-table-mobile.png`,
         )}\t390\t1000\t${escapeRegExp(
           `${root}/artifacts/visual/spec-table-mobile.png`,

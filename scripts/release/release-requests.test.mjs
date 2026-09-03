@@ -192,12 +192,12 @@ test("release requests CLI writes every local request Markdown", async () => {
     );
     assert.match(
       visualExportTable,
-      /^component\tviewport\tfile_name\tstatus\treference_width\treference_height\texpected_path\tpreview_width\tpreview_height\tpreview_path/m,
+      /^component\tviewport\tfile_name\tstatus\treason\treference_width\treference_height\texpected_path\tpreview_width\tpreview_height\tpreview_path/m,
     );
     assert.match(
       visualExportTable,
       new RegExp(
-        `hero-banner\\tdesktop\\thero-banner-desktop\\.png\\tmissing\\t[^\\n]*${escapeRegExp(
+        `hero-banner\\tdesktop\\thero-banner-desktop\\.png\\tmissing\\thero-banner-desktop\\.png is missing\\t[^\\n]*${escapeRegExp(
           visualSourceDir,
         )}/hero-banner-desktop\\.png`,
       ),
