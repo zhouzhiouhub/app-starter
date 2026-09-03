@@ -110,6 +110,10 @@ test("release evidence request CLI prints missing smoke inputs", async () => {
     );
     assert.match(
       stdout.join("\n"),
+      /First missing Production Smoke input: visual_artifact_name - replace placeholder page-builder-visual-fixture-<run_number> with Page Builder Visual workflow artifact after visual evidence passes/,
+    );
+    assert.match(
+      stdout.join("\n"),
       /First missing visual reference: docs\/visual\/page-builder-references\/hero-banner-desktop\.png/,
     );
   } finally {
@@ -171,6 +175,7 @@ test("release evidence request help documents terminal summary fields", async ()
   assert.match(help, /terminal summary\s+and Markdown request status report release\s+readiness/i);
   assert.match(help, /first missing visual\s+reference/i);
   assert.match(help, /missing Smoke input\s+names/i);
+  assert.match(help, /first missing Smoke input replacement reason/i);
   assert.match(help, /dispatch input template\s+path/i);
   assert.match(help, /--visual-output <path>/);
   assert.match(help, /--requests-manifest-output <path>/);

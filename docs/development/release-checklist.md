@@ -20,7 +20,8 @@ later phases are explicitly approved.
   together. This writes only local
   coordination files; it does not
   import references, run smoke, upload artifacts, generate release notes, or
-  mark blocked evidence ready.
+  mark blocked evidence ready; its terminal summary also prints the first
+  missing Production Smoke input replacement reason when placeholders remain.
 - Run `pnpm release:evidence-request` when the release needs one combined
   handoff for design references, the
   `artifacts/release/release-requests-manifest.json` path, the visual handoff
@@ -186,6 +187,8 @@ later phases are explicitly approved.
    `missing_reason`, while the JSON manifest keeps each input's
    `releaseEvidenceRequired` flag plus `missingReason` for placeholders. This
    request does not run smoke or satisfy release evidence by itself.
+   The terminal summary prints the first missing input replacement reason so
+   the first required artifact source is visible without opening JSON.
 2. Replace the placeholders in
    `artifacts/production-smoke/production-smoke-dispatch-inputs.json`, then run
    `pnpm smoke:dispatch -- --inputs-json artifacts/production-smoke/production-smoke-dispatch-inputs.json --require-complete`;
@@ -410,9 +413,10 @@ later phases are explicitly approved.
   `--allow-blocked`.
 - `pnpm project:status -- --summary` prints the compact completion answer for
   triage: phase, release-ready flag, Production Smoke, Page Builder Visual,
-  blocker count, and the first three next actions, including the
-  `pnpm release:requests` local request bundle refresh. Use the default output,
-  `--all-actions`, JSON, or Markdown modes for release-review handoff.
+  blocker count, the first missing Production Smoke input replacement reason,
+  and the first three next actions, including the `pnpm release:requests` local
+  request bundle refresh. Use the default output, `--all-actions`, JSON, or
+  Markdown modes for release-review handoff.
 - Production Smoke artifact uploads use `if-no-files-found: error`; missing
   preflight JSON/Markdown, smoke JSON, Smoke Markdown, combined gate
   JSON/Markdown, project status, or release notes files fail the workflow
@@ -486,14 +490,16 @@ later phases are explicitly approved.
   schemaVersion, ready-state consistency, and key count consistency. The
   terminal summary prints `Project completion`, release decision, release
   evidence status, next action preview count, Project Status handoff Markdown
-  path, and the first next action so the release operator can see the current
-  blocker without opening the JSON.
+  path, the first missing Production Smoke input replacement reason, and the
+  first next action so the release operator can see the current blocker without
+  opening the JSON.
 - Run `pnpm release:evidence-request` before cross-functional release review
   when design reference export and Production Smoke execution need one shared
   request file. Its Request Status includes `First missing visual reference`
-  and `Missing Production Smoke inputs` for the first unblock step; use the
-  custom output path options to keep the refresh command, output summary, and
-  embedded request paths visible in the combined request.
+  and `Missing Production Smoke inputs`, while the terminal summary prints the
+  first missing Production Smoke input replacement reason for the first unblock
+  step; use the custom output path options to keep the refresh command, output
+  summary, and embedded request paths visible in the combined request.
 - `pnpm visual:references` defaults to
   `docs/visual/page-builder-references`; keep `--source-dir` only when the
   release review needs to inspect a different retained reference archive.

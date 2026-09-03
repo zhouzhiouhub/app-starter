@@ -48,7 +48,8 @@ Evidence:
   release handoff.
   Custom output paths are also reflected in the
   combined release evidence request refresh command, output summary, and
-  embedded request commands. It does not import visual references, run
-  Production Smoke, create release notes, upload artifacts, or mark the project
-  ready.`);
+  embedded request commands. Its terminal summary reports the first missing
+  Production Smoke input replacement reason when workflow inputs still contain
+  placeholders. It does not import visual references, run Production Smoke,
+  create release notes, upload artifacts, or mark the project ready.`);
 }

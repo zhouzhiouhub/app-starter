@@ -66,6 +66,7 @@ export function formatProjectStatusSummary(artifact) {
     `  Release evidence: ${artifact.completionSummary.releaseEvidenceStatus}`,
     `  Release decision: ${artifact.completionSummary.releaseDecision}`,
     `  Production Smoke: ${formatSmokeSummary(artifact.releaseGate.smoke)}`,
+    ...formatFirstMissingSmokeInput(artifact.releaseGate.smoke),
     `  Page Builder Visual: ${formatVisualSummary(artifact.releaseGate.visual)}`,
     `  Blockers: ${artifact.releaseGate.blockerCount}`,
     "  Next:",
@@ -78,6 +79,25 @@ export function formatProjectStatusSummary(artifact) {
 
 function formatSmokeSummary(smoke) {
   return `${smoke.status} (${smoke.summaryStatus})`;
+}
+
+function formatFirstMissingSmokeInput(smoke) {
+  const input = Array.isArray(smoke?.missingEvidence?.dispatchInputs)
+    ? smoke.missingEvidence.dispatchInputs.find(
+        (item) => item?.status === "missing",
+      )
+    : null;
+
+  if (!input) {
+    return [];
+  }
+
+  const reason =
+    typeof input.missingReason === "string" && input.missingReason.length > 0
+      ? ` - ${input.missingReason}`
+      : "";
+
+  return [`  First missing Production Smoke input: ${input.name}${reason}`];
 }
 
 function formatVisualSummary(visual) {

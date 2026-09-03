@@ -5,6 +5,9 @@ import {
 import {
   createProductionSmokeDispatchArtifact,
 } from "../smoke/production-smoke-dispatch-cli.mjs";
+import {
+  readProductionSmokeDispatchInputMissingReason,
+} from "../smoke/production-smoke-dispatch-input-reason.mjs";
 import { readErrorMessage } from "../smoke/smoke-error-message.mjs";
 import {
   createPageBuilderVisualReferenceImportArtifact,
@@ -60,6 +63,7 @@ export async function runReleaseEvidenceRequestCli(args = [], input = {}) {
       stdout(
         `Missing Production Smoke inputs: ${request.smokeDispatchArtifact.missingInputs.join(", ")}`,
       );
+      printFirstMissingSmokeInput(request.smokeDispatchArtifact, stdout);
     }
 
     return 0;
@@ -118,6 +122,25 @@ export async function createReleaseEvidenceRequest(config, input = {}, generated
       tableOutputPath: config.requestOutputPaths.visualReferenceTable,
     },
   };
+}
+
+function printFirstMissingSmokeInput(smoke, writeLine) {
+  const input = readFirstMissingSmokeInput(smoke);
+
+  if (!input) {
+    return;
+  }
+
+  const reason = readProductionSmokeDispatchInputMissingReason(input);
+  const suffix = reason ? ` - ${reason}` : "";
+
+  writeLine(`First missing Production Smoke input: ${input.name}${suffix}`);
+}
+
+function readFirstMissingSmokeInput(smoke) {
+  const firstMissingName = smoke.missingInputs[0];
+
+  return smoke.inputs.find((input) => input.name === firstMissingName);
 }
 
 function printHelp(writeLine) {
@@ -190,9 +213,10 @@ Evidence:
   path, and dispatch input JSON manifest path.
   The terminal summary and Markdown request status report release readiness,
   visual reference status, the first missing visual reference,
-  Production Smoke dispatch readiness, and any missing Smoke input names to
-  unblock first. It does not run smoke, import visual references, accept
-  evidence, create release notes, or mark the project ready.
+  Production Smoke dispatch readiness, any missing Smoke input names, and the
+  first missing Smoke input replacement reason to unblock first. It does not run
+  smoke, import visual references, accept evidence, create release notes, or
+  mark the project ready.
 
 Default output:
   ${defaultReleaseEvidenceRequestOutputPath}`);

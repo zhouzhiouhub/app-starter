@@ -23,8 +23,9 @@ Evidence inputs:
 
 Evidence:
   This command writes a production handoff request only. The terminal summary
-  and Markdown status report dispatch readiness and any missing input names. It
-  can also write a plain text workflow_dispatch input template, a TSV input
-  table, and a JSON input manifest. It does not run smoke checks, create
-  release evidence, upload artifacts, or mark the project ready.`);
+  and Markdown status report dispatch readiness, any missing input names, and
+  the first missing input replacement reason. It can also write a plain text
+  workflow_dispatch input template, a TSV input table, and a JSON input
+  manifest. It does not run smoke checks, create release evidence, upload
+  artifacts, or mark the project ready.`);
 }

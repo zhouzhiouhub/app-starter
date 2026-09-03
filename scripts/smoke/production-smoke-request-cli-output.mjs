@@ -8,6 +8,9 @@ import {
   writeProductionSmokeDispatchInputsManifest,
 } from "./production-smoke-dispatch-inputs-manifest-output.mjs";
 import {
+  readProductionSmokeDispatchInputMissingReason,
+} from "./production-smoke-dispatch-input-reason.mjs";
+import {
   writeProductionSmokeRequestMarkdown,
 } from "./production-smoke-request-markdown.mjs";
 
@@ -61,5 +64,25 @@ export function printProductionSmokeRequestSummary(config, artifact, writeLine) 
 
   if (artifact.missingInputs.length > 0) {
     writeLine(`Missing inputs: ${artifact.missingInputs.join(", ")}`);
+    writeFirstMissingInputReason(artifact, writeLine);
   }
+}
+
+function writeFirstMissingInputReason(artifact, writeLine) {
+  const input = readFirstMissingInput(artifact);
+
+  if (!input) {
+    return;
+  }
+
+  const reason = readProductionSmokeDispatchInputMissingReason(input);
+  const suffix = reason ? ` - ${reason}` : "";
+
+  writeLine(`First missing input: ${input.name}${suffix}`);
+}
+
+function readFirstMissingInput(artifact) {
+  const firstMissingName = artifact.missingInputs[0];
+
+  return artifact.inputs.find((input) => input.name === firstMissingName);
 }

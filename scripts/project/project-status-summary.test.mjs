@@ -48,6 +48,10 @@ test("project status summary stays compact and actionable", () => {
   assert.match(text, /Release evidence: needs-evidence/);
   assert.match(text, /Release decision: not-ready/);
   assert.match(text, /Production Smoke: blocked \(missing\)/);
+  assert.match(
+    text,
+    /First missing Production Smoke input: visual_artifact_name - replace placeholder page-builder-visual-fixture-<run_number> with Page Builder Visual workflow artifact after visual evidence passes/,
+  );
   assert.match(text, /Page Builder Visual: needs-evidence/);
   assert.match(text, /artifact incomplete/);
   assert.match(
@@ -149,6 +153,10 @@ test("project status CLI can print a compact summary", async () => {
     assert.match(text, /Project status summary \(project-status\.v1\)/);
     assert.match(text, /Release ready: no/);
     assert.match(text, /Production Smoke: blocked \(missing\)/);
+    assert.match(
+      text,
+      /First missing Production Smoke input: visual_artifact_name - replace placeholder page-builder-visual-fixture-<run_number> with Page Builder Visual workflow artifact after visual evidence passes/,
+    );
     assert.match(
       text,
       /Page Builder Visual: needs-evidence, 0\/12 viewports accepted, 12 tasks pending/,

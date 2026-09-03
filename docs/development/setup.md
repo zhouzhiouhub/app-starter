@@ -341,7 +341,8 @@ Project Status handoff command and JSON/Markdown paths, Production Smoke
 request, the dispatch input template path, dispatch input table path, dispatch
 input JSON manifest path,
 `First missing visual reference`,
-`Missing Production Smoke inputs`, and the final
+`Missing Production Smoke inputs`, the first missing Production Smoke input
+replacement reason, and the final
 `release:handoff -- --require-ready` gate to rerun after real evidence is
 retained. Pass `--requests-manifest-output <path>`,
 `--project-status-output <path>`, `--project-status-markdown <path>`,
@@ -378,7 +379,8 @@ upload artifacts, create release notes, or mark blocked evidence ready. The
 bundle manifest records the full missing visual reference path list, visual
 reference intake commands, the visual handoff README path, the Production Smoke
 dispatch template, and the
-`--inputs-json` validation command beside the missing input list. It also
+`--inputs-json` validation command beside the missing input list and first
+missing Production Smoke input replacement reason. It also
 mirrors `projectCompletion.completionChecklist`,
 `projectCompletion.completionChecklist.items[].nextSteps`,
 `projectCompletion.nextActionPreview`,
@@ -413,8 +415,9 @@ completed milestones, release readiness, the configured local verification
 commands, and the next concrete actions without changing the pass/fail criteria.
 Use `pnpm project:status -- --summary` when you only need the compact "is this
 done?" answer with the phase, release-ready flag, evidence gates, blocker count,
-and the first three next actions, including the `pnpm release:requests` local
-request bundle refresh. The default text, `--all-actions`, JSON, and Markdown
+the first missing Production Smoke input replacement reason, and the first three next actions,
+including the `pnpm release:requests` local request bundle refresh. The default
+text, `--all-actions`, JSON, and Markdown
 modes remain the full handoff surfaces.
 The validated `project-status.v1` artifact also includes a `completionChecklist`
 that separates completed local scope from production Smoke and Page Builder
@@ -454,7 +457,8 @@ artifact, release evidence artifact, and project status artifact to keep. Run
 `artifacts/production-smoke/production-smoke-request.md` as an operator-facing
 Markdown request and
 `artifacts/production-smoke/production-smoke-dispatch-inputs.txt` as a plain
-workflow_dispatch input template plus
+workflow_dispatch input template that pairs with the terminal first missing
+input replacement reason, plus
 `artifacts/production-smoke/production-smoke-dispatch-inputs.tsv` as a TSV
 input table plus
 `artifacts/production-smoke/production-smoke-dispatch-inputs.json` as a JSON
@@ -532,6 +536,8 @@ the same release gate once, then writes `preflight.json`, `preflight.md`,
 `project-status.md` under `artifacts/release/` by default so blocked and ready
 states use matching evidence. Its terminal summary prints Production Smoke,
 Page Builder Visual, and optional visual artifact status, path, and counts.
+When Production Smoke inputs still contain placeholders, the compact summary
+also prints the first missing input replacement reason.
 When available, the visual artifact line also includes reference-import status,
 missing/update counts, required source reference availability, and the first missing
 reference path. It then prints the first two next actions with structured steps

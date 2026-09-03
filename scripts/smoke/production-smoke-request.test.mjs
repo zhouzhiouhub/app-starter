@@ -218,6 +218,7 @@ test("production smoke request help documents summary fields", async () => {
   assert.equal(exitCode, 0);
   assert.match(help, /terminal summary\s+and Markdown status report dispatch readiness/i);
   assert.match(help, /missing input names/i);
+  assert.match(help, /first missing input replacement reason/i);
   assert.match(help, /--inputs-output <path>/);
   assert.match(help, /--inputs-table-output <path>/);
   assert.match(help, /--inputs-json-output <path>/);

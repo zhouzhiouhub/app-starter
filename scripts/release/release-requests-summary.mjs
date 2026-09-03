@@ -25,6 +25,7 @@ export function printReleaseRequestsManifestSummary(manifest, writeLine) {
     );
   }
   printVisualMeasurementSummary(manifest.pageBuilderVisual, writeLine);
+  printFirstMissingSmokeInput(manifest.productionSmoke, writeLine);
 
   if (nextAction) {
     writeLine(`  - ${nextAction.area}: ${nextAction.label}`);
@@ -38,6 +39,23 @@ function printVisualMeasurementSummary(visual, writeLine) {
   if (summary) {
     writeLine(`Visual measurements: ${summary}`);
   }
+}
+
+function printFirstMissingSmokeInput(smoke, writeLine) {
+  const input = Array.isArray(smoke?.inputs)
+    ? smoke.inputs.find((item) => item?.status === "missing")
+    : null;
+
+  if (!input) {
+    return;
+  }
+
+  const reason =
+    typeof input.missingReason === "string" && input.missingReason.length > 0
+      ? ` - ${input.missingReason}`
+      : "";
+
+  writeLine(`First missing Production Smoke input: ${input.name}${reason}`);
 }
 
 export function printReleaseRequestFiles(outputPaths, writeLine) {

@@ -16,6 +16,7 @@
 - 生产 Smoke：缺 retained `production-smoke-report-<run_number>`、`release-preflight-<run_number>`、`release-evidence-check-<run_number>` 和 `project-status-<run_number>` artifacts。
 - Page Builder Visual：fixture artifact 已完整生成，但真实设计参考图缺失，当前 `0/12` viewport accepted；首个缺失文件为 `docs/visual/page-builder-references/hero-banner-desktop.png`。
 - 权威检查入口：`pnpm project:status -- --summary` 查看当前结论，`pnpm project:status -- --all-actions` 查看完整下一步命令；发布协同时可先运行 `pnpm release:requests` 一次刷新统一证据请求、`artifacts/release/release-requests-manifest.json`、`artifacts/release/project-status.json`、`artifacts/release/project-status.md`、设计参考图请求、缺失参考图路径清单、参考图导出任务表、设计 handoff 包/README、生产 Smoke 请求、dispatch 输入模板、TSV 输入表和 JSON 输入清单。
+- 证据请求摘要：`pnpm smoke:request`、`pnpm release:evidence-request`、`pnpm release:requests` 和 `pnpm project:status -- --summary` 会在 Production Smoke 输入仍有 placeholder 时显示第一条缺失 input 的替换原因。
 
 ### 已完成
 
