@@ -32,6 +32,7 @@ pnpm visual:measure -- --write
 pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete
 pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --accept-passing --require-complete
 pnpm --silent visual:references:missing
+pnpm visual:references:freeze
 pnpm visual:references:request
 pnpm visual:references:handoff
 pnpm visual:references:check

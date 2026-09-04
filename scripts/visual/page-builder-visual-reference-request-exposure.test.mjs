@@ -39,7 +39,7 @@ test("visual reference request command is exposed in package and docs", () => {
   assert.match(readme, /page-builder-reference-export-manifest\.json/);
   assert.match(
     readme,
-    /首个缺失文件为 `docs\/visual\/page-builder-references\/hero-banner-desktop\.png`/,
+    /首张缺失原因是 `hero-banner-desktop\.png appears to be a generated placeholder`/,
   );
   assert.match(acceptanceDoc, /terminal\s+and Markdown `First missing reference`/);
   assert.match(acceptanceDoc, /First missing reason/);

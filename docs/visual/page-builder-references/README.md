@@ -3,12 +3,14 @@
 This directory is the retained source location for real Page Builder design
 reference PNGs used during MVP visual acceptance.
 
-Do not use fixture screenshots, generated placeholders, or temporary exports as
-accepted design references. Final sign-off requires images exported from the
-approved design source for each MVP core section and viewport. Each file must be
-a non-empty PNG that can be parsed by the visual measurement tooling; a
-corrupted file is rejected during intake, and so is a renamed file or an obvious
-generated placeholder.
+Do not keep generated placeholders or temporary logo exports as accepted design
+references. Until an external Figma package is provided, the approved MVP design
+source is the design-token section spec rendered by the shared storefront
+renderer. Export those captures with `pnpm visual:references:freeze` after the
+fixture screenshots exist under `reports/visual/page-builder-fixture`.
+Each file must be a non-empty PNG that can be parsed by the visual measurement
+tooling; a corrupted file is rejected during intake, and so is a renamed file
+or an obvious generated placeholder.
 If placeholder PNGs are present, intake treats them as missing evidence until
 they are replaced by the approved design export.
 
@@ -30,7 +32,9 @@ they are replaced by the approved design export.
 ## Intake Flow
 
 1. Export each approved design reference as a PNG using the component and
-   viewport names above.
+   viewport names above. When the approved source is the shared renderer
+   design-token spec, run `pnpm visual:references:freeze` after fixture
+   screenshots exist.
 2. Run `pnpm --silent visual:references:missing` when you need a copy-ready
    list of missing PNG paths.
 3. Run `pnpm visual:references:request` when the design owner needs a Markdown

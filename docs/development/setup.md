@@ -284,6 +284,7 @@ pnpm smoke:request
 pnpm release:evidence-request
 pnpm release:requests
 pnpm --silent visual:references:missing
+pnpm visual:references:freeze
 pnpm visual:references:request
 pnpm visual:references:handoff
 pnpm visual:references:check
