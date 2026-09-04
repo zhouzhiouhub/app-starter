@@ -1,6 +1,14 @@
-import { cpSync, existsSync, rmSync } from "node:fs";
-import { resolve } from "node:path";
+import {
+  cpSync,
+  existsSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { dirname, join, relative, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { rewriteNftDocument } from "./vercel-rewrite-next-nft-traces.mjs";
 
 export function resolveWebNextOutputPaths(rootDir) {
   return {
@@ -32,7 +40,49 @@ export function promoteWebNextOutput(rootDir = process.cwd()) {
 
   rmSync(rootNext, { recursive: true, force: true });
   cpSync(webNext, rootNext, { recursive: true });
+  rewriteCopiedNftTraces(webNext, rootNext);
   return { reason: "copied-web-next", status: "copied" };
+}
+
+function rewriteCopiedNftTraces(webNext, rootNext) {
+  for (const nftPath of listNftFiles(rootNext)) {
+    const originalDir = dirname(join(webNext, relative(rootNext, nftPath)));
+    const document = JSON.parse(readFileSync(nftPath, "utf8"));
+    writeFileSync(
+      nftPath,
+      `${JSON.stringify(
+        rewriteNftDocument(
+          document,
+          originalDir,
+          dirname(nftPath),
+          webNext,
+          rootNext,
+        ),
+      )}\n`,
+    );
+  }
+}
+
+function listNftFiles(dir) {
+  const files = [];
+
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const fullPath = join(dir, entry.name);
+
+    if (entry.isDirectory()) {
+      if (entry.name === "cache") {
+        continue;
+      }
+      files.push(...listNftFiles(fullPath));
+      continue;
+    }
+
+    if (entry.name.endsWith(".nft.json")) {
+      files.push(fullPath);
+    }
+  }
+
+  return files;
 }
 
 function isDirectRun() {
@@ -49,7 +99,7 @@ if (isDirectRun()) {
 
     if (result.status === "copied") {
       console.log(
-        "Copied apps/web/.next to the repository root so Vercel can deploy the storefront.",
+        "Copied apps/web/.next to the repository root and rewrote Next file traces for Vercel.",
       );
     }
   } catch (error) {

@@ -1,4 +1,5 @@
 import { spawnSync } from "node:child_process";
+import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { promoteWebNextOutput } from "./vercel-promote-web-next-output.mjs";
@@ -10,6 +11,8 @@ export const storefrontPackageNames = [
   "@app-starter/renderer",
   "@app-starter/web",
 ];
+
+export const vercelStorefrontOutputDirectory = "apps/web/.next";
 
 export function resolveStorefrontBuildPlan(env = process.env) {
   if (env.VERCEL === "1") {
@@ -26,6 +29,22 @@ export function resolveStorefrontBuildPlan(env = process.env) {
     pnpmArgs: ["-r", "--if-present", "build"],
     promote: false,
   };
+}
+
+export function assertWebNextBuildOutput(rootDir = process.cwd()) {
+  const buildIdPath = resolve(
+    rootDir,
+    vercelStorefrontOutputDirectory,
+    "BUILD_ID",
+  );
+
+  if (!existsSync(buildIdPath)) {
+    throw new Error(
+      `${vercelStorefrontOutputDirectory} was not produced; the storefront build did not finish.`,
+    );
+  }
+
+  return buildIdPath;
 }
 
 function runPnpm(args) {
@@ -50,11 +69,12 @@ function runStorefrontBuild() {
     return;
   }
 
+  assertWebNextBuildOutput(process.cwd());
   const result = promoteWebNextOutput(process.cwd());
 
   if (result.status === "copied") {
     console.log(
-      "Copied apps/web/.next to the repository root so Vercel can deploy the storefront.",
+      "Copied apps/web/.next to the repository root and rewrote Next file traces for Vercel.",
     );
   }
 }

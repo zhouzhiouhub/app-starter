@@ -111,9 +111,9 @@ HTTPS values used by `API_URL` and `WEB_URL`.
 4. Deploy `apps/web` to Vercel with production `API_URL`, `WEB_URL`, and
    `STOREFRONT_REVALIDATE_SECRET`. Preferred: set **Root Directory** to
    `apps/web` (Settings → General) so `apps/web/vercel.json` is used. If Root
-   Directory stays empty, the repository-root `vercel.json` still builds the
-   storefront as Next.js. After changing either setting, Redeploy the
-   production `master` or `main` branch.
+   Directory stays empty, the repository-root `vercel.json` still builds
+   `apps/web` and points Vercel at `apps/web/.next`. After changing either
+   setting, Redeploy the production `master` or `main` branch.
 5. Build and deploy `apps/admin/dist` to static hosting:
 
    ```bash
