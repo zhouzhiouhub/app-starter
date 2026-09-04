@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { readSafeHref } from "../safe-href.js";
+import { storefrontShellClassName } from "../storefront-shell.js";
 import { text } from "../text.js";
 import type { I18nLikeText } from "../types.js";
 
@@ -13,7 +14,9 @@ export function HeroBanner(props: {
   const ctaHref = readSafeHref(props.ctaHref);
 
   return (
-    <section className="mx-auto grid min-h-[520px] max-w-6xl content-center gap-6 px-6 py-20 md:px-10">
+    <section
+      className={`${storefrontShellClassName} grid min-h-[520px] content-center gap-6 py-20`}
+    >
       {props.eyebrow ? (
         <p className="text-sm font-semibold uppercase tracking-wide text-blue-600">
           {props.eyebrow}

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { readSafeImageSrc } from "../safe-image-src.js";
+import { storefrontShellClassName } from "../storefront-shell.js";
 
 export function ImageGallery(props: {
   images?: Array<{ src?: unknown; alt?: unknown }>;
@@ -7,7 +8,9 @@ export function ImageGallery(props: {
   const images = props.images ?? [];
 
   return (
-    <section className="mx-auto grid max-w-6xl gap-4 px-6 py-12 md:grid-cols-3 md:px-10">
+    <section
+      className={`${storefrontShellClassName} grid gap-4 py-12 md:grid-cols-3`}
+    >
       {images.map((image, index) => {
         const rawSrc = typeof image.src === "string" ? image.src.trim() : "";
         const src = readSafeImageSrc(rawSrc);
@@ -45,7 +48,9 @@ export function ImageGallery(props: {
   );
 }
 
-function readMissingImageReason(src: string): "empty-src" | "unresolved-media" | "unsafe-src" {
+function readMissingImageReason(
+  src: string,
+): "empty-src" | "unresolved-media" | "unsafe-src" {
   if (!src) {
     return "empty-src";
   }

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { ChromeLink } from "../chrome-link.js";
+import { storefrontShellClassName } from "../storefront-shell.js";
 import { text } from "../text.js";
 import { StorefrontBrandMark } from "./storefront-brand-mark.js";
 import type {
@@ -17,7 +18,9 @@ export function StorefrontFooter(props: {
 
   return (
     <footer className="border-t border-gray-200 bg-gray-50">
-      <div className="mx-auto flex max-w-6xl flex-col gap-4 px-6 py-8 text-sm text-gray-600 md:flex-row md:items-center md:justify-between md:px-10">
+      <div
+        className={`${storefrontShellClassName} flex flex-col gap-4 py-8 text-sm text-gray-600 md:flex-row md:items-center md:justify-between`}
+      >
         <div>
           <ChromeLink
             blockedDataName="data-chrome-brand-href-blocked"

@@ -7,4 +7,5 @@ export * from "./components/spec-table.js";
 export * from "./components/storefront-footer.js";
 export * from "./components/storefront-header.js";
 export * from "./sanitize-rich-text.js";
+export * from "./storefront-shell.js";
 export * from "./types.js";

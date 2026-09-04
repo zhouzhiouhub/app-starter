@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { sanitizeRichText } from "../sanitize-rich-text.js";
+import { storefrontShellClassName } from "../storefront-shell.js";
 import { text } from "../text.js";
 import type { I18nLikeText } from "../types.js";
 
@@ -10,7 +11,7 @@ export function RichText(props: {
   const content = sanitizeRichText(text(props.content));
 
   return (
-    <section className="mx-auto max-w-4xl px-6 py-16 md:px-10">
+    <section className={`${storefrontShellClassName} py-16`}>
       {props.title ? (
         <h2 className="mb-5 text-3xl font-semibold text-gray-950">
           {text(props.title)}
