@@ -109,12 +109,11 @@ HTTPS values used by `API_URL` and `WEB_URL`.
    ```
 
 4. Deploy `apps/web` to Vercel with production `API_URL`, `WEB_URL`, and
-   `STOREFRONT_REVALIDATE_SECRET`. In the Vercel project, set **Root Directory**
-   to `apps/web` (Settings → General). This repo is a pnpm monorepo; leaving the
-   root directory empty deploys the workspace root and Vercel returns platform
-   `404 NOT_FOUND` for `https://<project>.vercel.app/`. After changing the root
-   directory, redeploy the production `master` or `main` branch. The Next.js
-   install/build commands live in `apps/web/vercel.json`.
+   `STOREFRONT_REVALIDATE_SECRET`. Preferred: set **Root Directory** to
+   `apps/web` (Settings → General) so `apps/web/vercel.json` is used. If Root
+   Directory stays empty, the repository-root `vercel.json` still builds the
+   storefront as Next.js. After changing either setting, Redeploy the
+   production `master` or `main` branch.
 5. Build and deploy `apps/admin/dist` to static hosting:
 
    ```bash

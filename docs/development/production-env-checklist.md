@@ -13,7 +13,7 @@ unblocks the remaining Production Smoke evidence.
 - [ ] Cloud Redis over `rediss://`
 - [ ] Independent Node.js API host with HTTPS `API_URL`
 - [ ] Vercel storefront with HTTPS `WEB_URL`
-- [ ] Vercel Root Directory set to `apps/web` (not the monorepo root)
+- [ ] Vercel deploys the Next.js storefront (`apps/web`); Root Directory `apps/web` is preferred, repository-root `vercel.json` is the fallback
 - [ ] Vercel Production env `API_URL` pointing at the deployed API `/api/v1` origin
 - [ ] Vercel Production env `WEB_URL` set, or rely on `VERCEL_URL` for the default `.vercel.app` host
 - [ ] Admin static host with HTTPS `ADMIN_URL`

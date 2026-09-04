@@ -4,14 +4,18 @@
   "private": true,
   "packageManager": "pnpm@9.12.0",
   "dependencies": {
-    "@app-starter/schema": "workspace:*"
+    "@app-starter/schema": "workspace:*",
+    "next": "^15.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "scripts": {
     "build:admin-packages": "pnpm --filter @app-starter/admin-theme --filter @app-starter/custom-admin build",
     "build:api-packages": "pnpm --filter @app-starter/schema --filter @app-starter/extension-sdk build",
     "check:file-size": "node scripts/check-file-size.mjs",
     "check:install": "node scripts/check-install.mjs",
-    "build": "node scripts/vercel-storefront-root.mjs && pnpm -r --if-present build",
+    "build": "node scripts/vercel-storefront-build.mjs",
+    "vercel-build": "node scripts/vercel-storefront-build.mjs",
     "dev": "pnpm --parallel --filter @app-starter/schema --filter @app-starter/extension-sdk --filter @app-starter/admin-theme --filter @app-starter/custom-admin --filter @app-starter/web --filter @app-starter/admin --filter @app-starter/api dev",
     "predev": "node scripts/check-install.mjs && pnpm run build:api-packages && pnpm run build:admin-packages",
     "lint": "pnpm -r --if-present lint && pnpm run lint:scripts",
