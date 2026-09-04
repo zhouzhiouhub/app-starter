@@ -7,6 +7,8 @@ import { getPublicTranslationMessages } from "../../../lib/public-translations";
 import { getStorefrontOrigin } from "../../../lib/site-url";
 import { readStorefrontRequestHost } from "../../../lib/storefront-request-host";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata(props: {
   params: Promise<{ locale: string; slug?: string[] }>;
 }) {

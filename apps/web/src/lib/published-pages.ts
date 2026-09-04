@@ -20,8 +20,6 @@ import {
 } from "./public-api-response.ts";
 import { createPublicApiAbortSignal } from "./public-api-timeout.ts";
 
-const apiBaseUrl = getApiBaseUrl();
-
 export type PublishedPageSummary = {
   noIndex: boolean;
   publishedAt: string | null;
@@ -50,7 +48,7 @@ export async function listPublishedPages(input?: {
     });
     addStorefrontHostCacheParam(searchParams, input?.storefrontHost);
 
-    const response = await fetch(`${apiBaseUrl}/public/pages?${searchParams}`, {
+    const response = await fetch(`${getApiBaseUrl()}/public/pages?${searchParams}`, {
       headers: createStorefrontHostHeaders(input?.storefrontHost),
       next: {
         revalidate: publishedPageRevalidateSeconds,

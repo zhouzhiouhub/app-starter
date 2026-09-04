@@ -19,7 +19,6 @@ import {
 } from "./public-api-response.ts";
 import { createPublicApiAbortSignal } from "./public-api-timeout.ts";
 
-const apiBaseUrl = getApiBaseUrl();
 const forbiddenPublicTranslationMessageKeys = new Set([
   "__proto__",
   "constructor",
@@ -43,7 +42,7 @@ export async function getPublicTranslationMessages(input: {
     addStorefrontHostCacheParam(searchParams, input.storefrontHost);
     const query = searchParams.toString();
     const response = await fetch(
-      `${apiBaseUrl}/public/translations/${encodeURIComponent(locale)}${query ? `?${query}` : ""}`,
+      `${getApiBaseUrl()}/public/translations/${encodeURIComponent(locale)}${query ? `?${query}` : ""}`,
       createPublicTranslationFetchInit({
         cacheMode: input.cacheMode ?? "revalidate",
         fallbackLocale: defaults.fallbackLocale,

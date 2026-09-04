@@ -23,8 +23,6 @@ import {
 } from "./public-api-response.ts";
 import { createPublicApiAbortSignal } from "./public-api-timeout.ts";
 
-const apiBaseUrl = getApiBaseUrl();
-
 export async function getPublishedPage(input: {
   locale: string;
   slug: string;
@@ -101,7 +99,7 @@ export async function getPreviewPage(
   try {
     const headers = createStorefrontHostHeaders(input?.storefrontHost);
     const response = await fetch(
-      `${apiBaseUrl}/public/preview/${encodeURIComponent(token)}`,
+      `${getApiBaseUrl()}/public/preview/${encodeURIComponent(token)}`,
       {
         cache: "no-store",
         ...(headers ? { headers } : {}),
@@ -162,7 +160,7 @@ async function fetchPublishedSchema(input: {
     addStorefrontHostCacheParam(searchParams, input.storefrontHost);
 
     const response = await fetch(
-      `${apiBaseUrl}/public/pages/${encodeURIComponent(input.slug)}?${searchParams}`,
+      `${getApiBaseUrl()}/public/pages/${encodeURIComponent(input.slug)}?${searchParams}`,
       {
         headers: createStorefrontHostHeaders(input.storefrontHost),
         next: {

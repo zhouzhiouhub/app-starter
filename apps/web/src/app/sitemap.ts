@@ -5,6 +5,8 @@ import { getStorefrontOrigin } from "../lib/site-url";
 import { buildPublishedPageSitemapEntries } from "../lib/sitemap-entries";
 import { readStorefrontRequestHost } from "../lib/storefront-request-host";
 
+export const dynamic = "force-dynamic";
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const defaults = readWebRuntimeDefaults();
   const locale = defaults.defaultLocale;

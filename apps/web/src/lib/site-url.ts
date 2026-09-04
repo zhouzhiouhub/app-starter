@@ -4,7 +4,9 @@ import { resolveWebOrigin } from "./runtime-url.ts";
 export function getWebOrigin(): string {
   return resolveWebOrigin({
     deploymentEnv: process.env.VERCEL_ENV ?? process.env.APP_ENV,
+    nextPhase: process.env.NEXT_PHASE,
     publicWebUrl: process.env.NEXT_PUBLIC_WEB_URL,
+    vercelUrl: process.env.VERCEL_URL,
     webUrl: process.env.WEB_URL,
   });
 }

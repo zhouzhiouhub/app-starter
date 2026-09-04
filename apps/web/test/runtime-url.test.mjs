@@ -177,6 +177,33 @@ test("runtime URL resolver fails fast on production Web URL fallback", () => {
   );
 });
 
+test("runtime URL resolver skips production fallback during Next.js build", () => {
+  assert.equal(
+    resolveApiBaseUrl({
+      deploymentEnv: "production",
+      nextPhase: "phase-production-build",
+    }),
+    "http://localhost:4000/api/v1",
+  );
+  assert.equal(
+    resolveWebOrigin({
+      deploymentEnv: "production",
+      nextPhase: "phase-production-build",
+    }),
+    "http://localhost:3000",
+  );
+});
+
+test("runtime URL resolver accepts Vercel deployment hosts as Web origins", () => {
+  assert.equal(
+    resolveWebOrigin({
+      deploymentEnv: "production",
+      vercelUrl: "app-starter-three.vercel.app",
+    }),
+    "https://app-starter-three.vercel.app",
+  );
+});
+
 test("runtime URL resolver accepts production Web origins", () => {
   assert.equal(
     resolveWebOrigin({

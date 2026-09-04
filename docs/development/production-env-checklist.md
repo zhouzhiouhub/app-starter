@@ -14,6 +14,8 @@ unblocks the remaining Production Smoke evidence.
 - [ ] Independent Node.js API host with HTTPS `API_URL`
 - [ ] Vercel storefront with HTTPS `WEB_URL`
 - [ ] Vercel Root Directory set to `apps/web` (not the monorepo root)
+- [ ] Vercel Production env `API_URL` pointing at the deployed API `/api/v1` origin
+- [ ] Vercel Production env `WEB_URL` set, or rely on `VERCEL_URL` for the default `.vercel.app` host
 - [ ] Admin static host with HTTPS `ADMIN_URL`
 - [ ] Cloudflare R2 private bucket plus public CDN origin
 

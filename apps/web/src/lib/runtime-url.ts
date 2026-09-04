@@ -15,6 +15,7 @@ export function getApiBaseUrl(): string {
     configuredUrl: process.env.API_URL,
     deploymentEnv: readDeploymentEnv(),
     internalUrl: process.env.API_INTERNAL_URL,
+    nextPhase: process.env.NEXT_PHASE,
     publicUrl: process.env.NEXT_PUBLIC_API_URL,
   });
 }
@@ -23,9 +24,13 @@ export function resolveApiBaseUrl(input: {
   configuredUrl?: string;
   deploymentEnv?: string;
   internalUrl?: string;
+  nextPhase?: string;
   publicUrl?: string;
 }): string {
-  const requireProductionUrl = isProductionDeployment(input.deploymentEnv);
+  const requireProductionUrl = shouldRequireProductionUrl(
+    input.deploymentEnv,
+    input.nextPhase,
+  );
   const resolved =
     readHttpBaseUrl(input.internalUrl, requireProductionUrl) ??
     readHttpBaseUrl(input.configuredUrl, requireProductionUrl) ??
@@ -35,7 +40,7 @@ export function resolveApiBaseUrl(input: {
     return resolved;
   }
 
-  if (isProductionDeployment(input.deploymentEnv)) {
+  if (requireProductionUrl) {
     throw new WebRuntimeUrlConfigurationError(
       "API_URL or NEXT_PUBLIC_API_URL must be configured as a safe API URL in production.",
     );
@@ -46,19 +51,25 @@ export function resolveApiBaseUrl(input: {
 
 export function resolveWebOrigin(input: {
   deploymentEnv?: string;
+  nextPhase?: string;
   publicWebUrl?: string;
+  vercelUrl?: string;
   webUrl?: string;
 }): string {
-  const requireProductionUrl = isProductionDeployment(input.deploymentEnv);
+  const requireProductionUrl = shouldRequireProductionUrl(
+    input.deploymentEnv,
+    input.nextPhase,
+  );
   const resolved =
     readHttpOrigin(input.webUrl, requireProductionUrl) ??
-    readHttpOrigin(input.publicWebUrl, requireProductionUrl);
+    readHttpOrigin(input.publicWebUrl, requireProductionUrl) ??
+    readVercelDeploymentOrigin(input.vercelUrl, requireProductionUrl);
 
   if (resolved) {
     return resolved;
   }
 
-  if (isProductionDeployment(input.deploymentEnv)) {
+  if (requireProductionUrl) {
     throw new WebRuntimeUrlConfigurationError(
       "WEB_URL or NEXT_PUBLIC_WEB_URL must be configured as a safe Web origin in production.",
     );
@@ -145,6 +156,31 @@ function normalizeApiBasePath(value: string): string | null {
 
 function isHttpProtocol(protocol: string): boolean {
   return protocol === "http:" || protocol === "https:";
+}
+
+function readVercelDeploymentOrigin(
+  vercelUrl: string | undefined,
+  requireProductionUrl: boolean,
+): string | null {
+  const host = vercelUrl?.trim();
+
+  if (!host) {
+    return null;
+  }
+
+  const origin = host.includes("://") ? host : `https://${host}`;
+  return readHttpOrigin(origin, requireProductionUrl);
+}
+
+function shouldRequireProductionUrl(
+  deploymentEnv: string | undefined,
+  nextPhase: string | undefined,
+): boolean {
+  if (nextPhase === "phase-production-build") {
+    return false;
+  }
+
+  return isProductionDeployment(deploymentEnv);
 }
 
 function isProductionDeployment(value: string | undefined): boolean {
