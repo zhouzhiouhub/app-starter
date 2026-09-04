@@ -4,19 +4,19 @@
 
 当前目标不是一次性复制 Shopify 全量能力，而是先完成一个可长期演进的建站平台工程基础：前台渲染、后台管理壳、API 服务、Page Schema、共享 Renderer、数据库模型、二次开发入口和后续电商/多语言能力预留。
 
-> 状态更新时间：2026-09-02
-> 当前阶段：建站 MVP 本地实现范围已落地，项目处于 MVP release verification。`pnpm project:status -- --summary` 当前结论为 `Release ready: no`，原因是 release evidence 仍待补齐：Production Smoke artifact 缺失，Page Builder Visual 还缺 12 张真实设计参考 PNG，当前 `0/12` viewport accepted。`pnpm release:requests` 已刷新本地证据请求、`artifacts/release/release-requests-manifest.json`、`artifacts/release/project-status.json`、`artifacts/release/project-status.md`、缺失参考图路径清单、参考图导出任务表、设计 handoff 包/README 和 Production Smoke dispatch 输入模板/TSV 输入表/JSON 输入清单。下一步需要补齐 `docs/visual/page-builder-references` 下的真实设计参考并完成视觉验收，最后用最新 Page Builder Visual artifact 触发生产 `Production Smoke` workflow 并归档报告。
+> 状态更新时间：2026-09-04
+> 当前阶段：建站 MVP 本地实现范围已落地，项目处于 MVP release verification。`pnpm project:status -- --summary` 当前结论为 `Release ready: no`，状态为 `needs-evidence`。本地功能闭环已完成，但发布证据仍未齐：Production Smoke artifact 缺失；`docs/visual/page-builder-references` 下虽有 12 张 PNG，门禁判定为生成占位图（黑底 logo + 角落标签），不是可签收的区块设计稿，因此 `0/12` viewport accepted，首张失败为 `hero-banner.desktop`（`visualMatchPercent` 0.15，`maxColorDeltaE` 149.09）。下一步必须先用批准设计源替换这 12 张占位图并完成视觉验收，再按 `infra/README.md` 部署生产环境，最后用最新 Page Builder Visual artifact 触发 `Production Smoke` 并归档报告。
 
 ## 1. 当前进度
 
-### 发布门禁状态（2026-09-02）
+### 发布门禁状态（2026-09-04）
 
 - 本地 MVP 范围：`implemented`。
 - 发布结论：`not-ready`，不能视为项目已完成或可发布。
-- 生产 Smoke：缺 retained `production-smoke-report-<run_number>`、`release-preflight-<run_number>`、`release-evidence-check-<run_number>` 和 `project-status-<run_number>` artifacts。
-- Page Builder Visual：fixture artifact 已完整生成，但真实设计参考图缺失，当前 `0/12` viewport accepted；首个缺失文件为 `docs/visual/page-builder-references/hero-banner-desktop.png`。
-- 权威检查入口：`pnpm project:status -- --summary` 查看当前结论，`pnpm project:status -- --all-actions` 查看完整下一步命令；发布协同时可先运行 `pnpm release:requests` 一次刷新统一证据请求、`artifacts/release/release-requests-manifest.json`、`artifacts/release/project-status.json`、`artifacts/release/project-status.md`、设计参考图请求、缺失参考图路径清单、参考图导出任务表、设计 handoff 包/README、生产 Smoke 请求、dispatch 输入模板、TSV 输入表和 JSON 输入清单。
-- 证据请求摘要：`pnpm smoke:request`、`pnpm release:evidence-request`、`pnpm release:requests` 和 `pnpm project:status -- --summary` 会在 Production Smoke 输入仍有 placeholder 时显示第一条缺失 input 的替换原因；`pnpm release:evidence-request` 和 `pnpm release:requests` 还会在摘要里显示第一条缺失视觉参考图、缺失原因及对应预览截图摘要。
+- 生产 Smoke：缺 retained `production-smoke-report-<run_number>`、`release-preflight-<run_number>`、`release-evidence-check-<run_number>` 和 `project-status-<run_number>` artifacts；首个缺失 dispatch 输入是 `visual_artifact_name`。
+- Page Builder Visual：fixture artifact 已完整（12/12 截图），但 12 张参考 PNG 被判定为生成占位图，当前 `0/12` viewport accepted、12 个视口测量失败。首张缺失原因是 `hero-banner-desktop.png appears to be a generated placeholder`。
+- 权威检查入口：`pnpm project:status -- --summary` 查看当前结论，`pnpm project:status -- --all-actions` 查看完整下一步命令；发布协同时可先运行 `pnpm release:requests` 一次刷新统一证据请求。
+- 证据请求摘要：`pnpm smoke:request`、`pnpm release:evidence-request`、`pnpm release:requests` 和 `pnpm project:status -- --summary` 会在 Production Smoke 输入仍有 placeholder 时显示第一条缺失 input 的替换原因；视觉摘要会同时给出首张缺失参考图、拒绝原因和对应预览截图。
 
 ### 已完成
 
@@ -85,8 +85,8 @@
 
 ### 当前还没有完成
 
-- 发布证据闭环：真实 Page Builder 设计参考图、视觉差异指标、accepted 视觉验收和生产 Production Smoke artifact 仍未归档。
-- 生产环境 R2 凭据、CDN 域名和真实上传链路验收仍需通过 Production Smoke 证据证明。
+- 发布证据闭环：`docs/visual/page-builder-references` 里的 12 张 PNG 仍是生成占位图，不能作为设计稿签收；视觉差异指标、accepted 视觉验收和生产 Production Smoke artifact 仍未归档。
+- 生产环境尚未按 `infra/README.md` 落地：云端 PostgreSQL / Redis、R2 凭据、CDN 域名和真实上传链路仍需通过 Production Smoke 证据证明。
 - 高还原差异检测和完整 Figma 自动导入。
 - 完整多语言运营后台（非默认 Locale 创建、翻译条目管理、发布和工作流）。
 - 真实电商购物车、结账、支付、订单能力。
@@ -817,16 +817,16 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 
 还没有：
 
-- 发布 ready 所需的真实 Page Builder 设计参考图、accepted 视觉验收和 Production Smoke release evidence。
+- 发布 ready 所需的真实 Page Builder 区块设计参考图（现有 PNG 是占位图）、accepted 视觉验收和 Production Smoke release evidence。
 - 生产 R2 上传链路的真实环境验收。
 - 完整多语言运营后台（非默认 Locale 创建、翻译条目管理、发布和工作流）。
 
 下一阶段应优先补齐 release evidence：
 
 ```text
-补齐 docs/visual/page-builder-references 下的 12 张真实设计参考 PNG
+用批准设计源替换 docs/visual/page-builder-references 下的 12 张占位 PNG
 运行 Page Builder Visual 验收命令并保留 page-builder-visual-fixture-<run_number> artifact
-用最新视觉 artifact 触发 Production Smoke workflow 并归档 release evidence
+按 infra/README.md 部署生产环境后触发 Production Smoke 并归档 release evidence
 ```
 
 ## 14. 二次开发规则
@@ -856,7 +856,7 @@ $env:SMOKE_REQUIRE_REVALIDATION="false"; pnpm smoke:publish
 
 优先做上线前验收和生产化收口：
 
-1. 先运行 `pnpm release:requests` 一次刷新统一发布证据交接、`artifacts/release/release-requests-manifest.json`、`artifacts/release/project-status.json`、`artifacts/release/project-status.md`、设计参考图请求、缺失参考图路径清单、参考图导出任务表、设计 handoff 包/README、生产 Smoke 请求、dispatch 输入模板、TSV 输入表和 JSON 输入清单，再从批准的设计源导出 12 张真实 Page Builder 参考 PNG，放入 `docs/visual/page-builder-references`；需要单独的设计交接清单时运行 `pnpm visual:references:request`、`pnpm visual:references:handoff` 或 `pnpm --silent visual:references:missing`，然后运行 `pnpm visual:references:check` 和 `pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete`。
+1. 先运行 `pnpm release:requests` 一次刷新统一发布证据交接，再从批准的设计源导出 12 张真实 Page Builder 参考 PNG，覆盖 `docs/visual/page-builder-references` 里现有的生成占位图；需要单独的设计交接清单时运行 `pnpm visual:references:request`、`pnpm visual:references:handoff` 或 `pnpm --silent visual:references:missing`，然后运行 `pnpm visual:references:check` 和 `pnpm visual:references -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --require-complete`。
 2. 做 Page Builder 视觉验收：保留最新 `Page Builder Visual` workflow 的 `page-builder-visual-fixture-<run_number>` artifact，补真实浏览器截图留档，在 `reports/visual/page-builder-fixture/page-builder-visual-acceptance.json` 中写入差异指标，并用 `pnpm visual:measure -- --manifest reports/visual/page-builder-fixture/page-builder-visual-acceptance.json --write --accept-passing --require-complete` 将六个核心区块的 Desktop / Mobile 证据从 `needs-evidence` 推进到 `accepted`。
 3. 在真实 R2 / CDN 环境配置 `MEDIA_CDN_BASE_URL`、R2 凭据和 CDN 域名，确认不是 `example` / `test` / `invalid` / 本地 / 私网域名，并按 `infra/README.md` 准备前台 Vercel、API 独立 Node 服务、Admin 静态托管、Redis 生产连接、环境变量清单和回滚步骤。
 4. 运行 `pnpm smoke:request` 生成生产验收请求 Markdown、workflow_dispatch 输入模板、含 `missing_reason` / `release_evidence_required` / `workflow_required` 的 TSV 输入表和含 `releaseEvidenceRequired` / placeholder `missingReason` 的 JSON 输入清单，替换 `artifacts/production-smoke/production-smoke-dispatch-inputs.json` 里的占位值，并检查其中的 `dispatchManifestContext` 是否仍声明 `workflowFile`、`ref`、`inputs` 会被继承；再运行 `pnpm smoke:dispatch -- --inputs-json artifacts/production-smoke/production-smoke-dispatch-inputs.json --require-complete` 继承 JSON 里的 `workflowFile`、`ref` 和输入值，生成并校验 Production Smoke dispatch 命令，确认没有 `<...>` 占位值后，在真实生产配置下触发 GitHub Actions `Production Smoke`，传入主 CI `local_verification_run_url` / `local_verification_artifact_name`、Page Builder Visual artifact 名称和 run id，把 smoke、preflight、Smoke Markdown 回看清单、release evidence JSON / Markdown、project status、本地验收和 visual artifact、`pnpm smoke:report` 输出、`pnpm smoke:release-check`、带 `--visual-artifact-dir` 的 `pnpm release:handoff -- --require-ready` 结果和回滚目标写入 `pnpm release:notes` 生成的发布记录。
