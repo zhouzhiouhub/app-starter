@@ -9,6 +9,8 @@ later phases are explicitly approved.
 - Review [`infra/README.md`](../../infra/README.md) for the production
   deployment sequence, environment variable matrix, evidence flow, and rollback
   runbook.
+- Tick [`production-env-checklist.md`](./production-env-checklist.md) before
+  filling Production Smoke dispatch inputs.
 - Run `pnpm release:requests` when the release needs the combined release
   evidence request, `artifacts/release/release-requests-manifest.json`,
   `artifacts/release/project-status.json`, `artifacts/release/project-status.md`,

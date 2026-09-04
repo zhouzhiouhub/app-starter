@@ -17,7 +17,10 @@ Production deployment remains split by boundary:
 
 ## Production Runbook
 
-This runbook covers the MVP release path only. Commerce, checkout, payment,
+Tick the operator list in
+[`docs/development/production-env-checklist.md`](../docs/development/production-env-checklist.md)
+before filling GitHub `production` secrets. This runbook covers the MVP release
+path only. Commerce, checkout, payment,
 order fulfillment, and non-default Locale publishing must stay disabled until a
 later phase is explicitly approved in the design document.
 
