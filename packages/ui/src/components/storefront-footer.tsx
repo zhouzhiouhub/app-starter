@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { ChromeLink } from "../chrome-link.js";
 import { text } from "../text.js";
+import { StorefrontBrandMark } from "./storefront-brand-mark.js";
 import type {
   StorefrontChromeVariant,
   StorefrontFooterContent,
@@ -20,11 +21,15 @@ export function StorefrontFooter(props: {
         <div>
           <ChromeLink
             blockedDataName="data-chrome-brand-href-blocked"
-            className="font-medium text-gray-700 hover:text-gray-950"
+            className="inline-flex items-center"
             fallbackHref="/"
             href={brand?.href ?? "/"}
           >
-            {text(brand?.label) || "App Starter"}
+            <StorefrontBrandMark
+              label={brand?.label}
+              logoSrc={brand?.logoSrc}
+              size="footer"
+            />
           </ChromeLink>
           {props.content?.copyright ? (
             <p className="mt-1 text-gray-500">

@@ -4,9 +4,7 @@ import type { PageSchema } from "./page-schema.js";
 import { mediaAssetReferenceSchema } from "./media-reference.js";
 
 export type PublishableImageSrcIssueReason =
-  | "http_requires_https"
-  | "sensitive_query_parameter"
-  | "invalid_image_source";
+  "http_requires_https" | "sensitive_query_parameter" | "invalid_image_source";
 
 export interface PublishableImageSrcIssue {
   field: string;
@@ -58,6 +56,16 @@ export function collectPublishableImageSrcIssues(
   const issues: PublishableImageSrcIssue[] = [];
 
   addImageSrcIssue(issues, "seo.ogImage", schema.seo.ogImage);
+  addImageSrcIssue(
+    issues,
+    "chrome.header.content.brand.logoSrc",
+    schema.chrome.header.content.brand.logoSrc,
+  );
+  addImageSrcIssue(
+    issues,
+    "chrome.footer.content.brand.logoSrc",
+    schema.chrome.footer.content.brand.logoSrc,
+  );
 
   schema.sections.forEach((section, sectionIndex) => {
     if (section.component !== "image-gallery") {

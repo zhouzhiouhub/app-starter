@@ -2,6 +2,22 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { StorefrontFooter, StorefrontHeader } from "../dist/index.js";
 
+test("storefront header renders the default kinolin brand logo", () => {
+  const header = StorefrontHeader({
+    content: {
+      brand: {
+        href: "/",
+        label: "kinolin",
+        logoSrc: "/brand/kinolin-logo.svg",
+      },
+    },
+  });
+  const logo = findElements(header, "img")[0];
+
+  assert.equal(logo?.props.src, "/brand/kinolin-logo.svg");
+  assert.equal(logo?.props.alt, "kinolin");
+});
+
 test("storefront header blocks unsafe chrome hrefs", () => {
   const header = StorefrontHeader({
     content: {
@@ -22,16 +38,13 @@ test("storefront header blocks unsafe chrome hrefs", () => {
   assert.equal(findElements(header, "a").length, 0);
   assert.equal(
     blocked.some(
-      (node) =>
-        node.props["data-chrome-brand-href-blocked"] === "unsafe",
+      (node) => node.props["data-chrome-brand-href-blocked"] === "unsafe",
     ),
     true,
   );
   assert.equal(
     blocked.some(
-      (node) =>
-        node.props["data-chrome-navigation-href-blocked"] ===
-        "unsafe",
+      (node) => node.props["data-chrome-navigation-href-blocked"] === "unsafe",
     ),
     true,
   );
@@ -77,16 +90,13 @@ test("storefront footer blocks unsafe chrome hrefs", () => {
   assert.equal(findElements(footer, "a").length, 0);
   assert.equal(
     blocked.some(
-      (node) =>
-        node.props["data-chrome-brand-href-blocked"] === "unsafe",
+      (node) => node.props["data-chrome-brand-href-blocked"] === "unsafe",
     ),
     true,
   );
   assert.equal(
     blocked.some(
-      (node) =>
-        node.props["data-chrome-navigation-href-blocked"] ===
-        "unsafe",
+      (node) => node.props["data-chrome-navigation-href-blocked"] === "unsafe",
     ),
     true,
   );
@@ -109,8 +119,7 @@ test("storefront chrome links do not expose blocked href values", () => {
   assert.equal(links.length, 1);
   assert.equal(
     blocked.some(
-      (node) =>
-        node.props["data-chrome-navigation-href-blocked"] === "unsafe",
+      (node) => node.props["data-chrome-navigation-href-blocked"] === "unsafe",
     ),
     true,
   );
@@ -156,8 +165,7 @@ test("storefront chrome links block sensitive href parameters", () => {
   assert.equal(findElements(header, "a").length, 1);
   assert.equal(
     blocked.filter(
-      (node) =>
-        node.props["data-chrome-navigation-href-blocked"] === "unsafe",
+      (node) => node.props["data-chrome-navigation-href-blocked"] === "unsafe",
     ).length,
     3,
   );

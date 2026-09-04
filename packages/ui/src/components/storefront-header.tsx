@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { ChromeLink } from "../chrome-link.js";
 import { text } from "../text.js";
+import { StorefrontBrandMark } from "./storefront-brand-mark.js";
 import type {
   StorefrontChromeVariant,
   StorefrontHeaderContent,
@@ -28,11 +29,15 @@ export function StorefrontHeader(props: {
       <div className="mx-auto flex min-h-16 max-w-6xl items-center justify-between gap-4 px-6 md:px-10">
         <ChromeLink
           blockedDataName="data-chrome-brand-href-blocked"
-          className="text-base font-semibold text-gray-950"
+          className="inline-flex items-center"
           fallbackHref="/"
           href={brand?.href}
         >
-          {text(brand?.label) || "App Starter"}
+          <StorefrontBrandMark
+            label={brand?.label}
+            logoSrc={brand?.logoSrc}
+            size="header"
+          />
         </ChromeLink>
         {isMinimal ? null : (
           <div className="flex items-center gap-6">

@@ -20,7 +20,7 @@ export function buildPageMetadata(
   if (!schema) {
     return {
       robots: createRobots(true),
-      title: "App Starter",
+      title: "kinolin",
     };
   }
 

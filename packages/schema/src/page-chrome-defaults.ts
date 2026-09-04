@@ -1,9 +1,4 @@
-export function createDefaultChromeBrand() {
-  return {
-    label: { defaultValue: "App Starter" },
-    href: "/",
-  };
-}
+import { createDefaultChromeBrand } from "./page-chrome-brand.js";
 
 export function createDefaultHeaderNavigation() {
   return [
@@ -68,7 +63,7 @@ export function createDefaultFooterNavigation() {
 
 export function createDefaultFooterCopyright() {
   return {
-    defaultValue: "(c) 2026 App Starter. All rights reserved.",
+    defaultValue: "(c) 2026 kinolin. All rights reserved.",
   };
 }
 

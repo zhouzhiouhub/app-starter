@@ -1,9 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import {
-  getPageTemplateChrome,
-  pageSchema,
-} from "../dist/index.js";
+import { getPageTemplateChrome, pageSchema } from "../dist/index.js";
 import { minimalPage } from "./page-schema-test-helpers.mjs";
 
 test("page schema keeps default chrome for legacy pages", () => {
@@ -14,7 +11,11 @@ test("page schema keeps default chrome for legacy pages", () => {
   assert.equal(parsed.chrome.header.variant, "default");
   assert.equal(
     parsed.chrome.header.content.brand.label.defaultValue,
-    "App Starter",
+    "kinolin",
+  );
+  assert.equal(
+    parsed.chrome.header.content.brand.logoSrc,
+    "/brand/kinolin-logo.svg",
   );
   assert.equal(parsed.chrome.header.content.navigation.length, 3);
   assert.equal(parsed.chrome.header.content.navigation[1]?.href, "/en/privacy");
@@ -44,7 +45,7 @@ test("page chrome defaults are isolated across parses", () => {
   assert.equal(second.chrome.header.content.navigation.length, 3);
   assert.equal(
     second.chrome.footer.content.brand.label.defaultValue,
-    "App Starter",
+    "kinolin",
   );
 });
 
@@ -58,7 +59,7 @@ test("landing blank template disables header and footer", () => {
   assert.equal(chrome.footer.variant, "minimal");
   assert.equal(
     chrome.footer.content.copyright.defaultValue,
-    "(c) 2026 App Starter. All rights reserved.",
+    "(c) 2026 kinolin. All rights reserved.",
   );
 });
 
@@ -78,7 +79,7 @@ test("page schema accepts per-page chrome overrides", () => {
   assert.equal(parsed.chrome.header.variant, "default");
   assert.equal(
     parsed.chrome.header.content.brand.label.defaultValue,
-    "App Starter",
+    "kinolin",
   );
   assert.equal(parsed.chrome.footer.enabled, true);
   assert.equal(parsed.chrome.footer.variant, "minimal");
@@ -99,6 +100,26 @@ test("page schema rejects unsafe chrome navigation hrefs", () => {
                   href: "javascript:alert(1)",
                 },
               ],
+            },
+          },
+        },
+      }),
+    ),
+  );
+});
+
+test("page schema rejects unsafe chrome brand logos", () => {
+  assert.throws(() =>
+    pageSchema.parse(
+      minimalPage({
+        chrome: {
+          header: {
+            content: {
+              brand: {
+                href: "/",
+                label: { defaultValue: "kinolin" },
+                logoSrc: "javascript:alert(1)",
+              },
             },
           },
         },

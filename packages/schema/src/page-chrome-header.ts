@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { i18nTextSchema, safeHrefSchema } from "./foundation.js";
+import { i18nTextSchema } from "./foundation.js";
+import { chromeBrandSchema } from "./page-chrome-brand.js";
 import {
-  createDefaultChromeBrand,
   createDefaultHeaderChromeContent,
   createDefaultHeaderNavigation,
   createDefaultLocaleSwitcher,
@@ -21,18 +21,11 @@ export const headerLocaleSwitcherSchema = z
       .default(() => createDefaultLocaleSwitcher().locales),
   })
   .default(() => createDefaultLocaleSwitcher());
-export type HeaderLocaleSwitcher = z.infer<
-  typeof headerLocaleSwitcherSchema
->;
+export type HeaderLocaleSwitcher = z.infer<typeof headerLocaleSwitcherSchema>;
 
 export const headerChromeContentSchema = z
   .object({
-    brand: z
-      .object({
-        label: i18nTextSchema,
-        href: safeHrefSchema.default("/"),
-      })
-      .default(() => createDefaultChromeBrand()),
+    brand: chromeBrandSchema,
     navigation: z
       .array(chromeNavigationItemSchema)
       .default(() => createDefaultHeaderNavigation()),
@@ -50,6 +43,4 @@ export const pageHeaderChromeSchema = pageChromeRegionBaseObjectSchema
     variant: "default" as const,
     content: headerChromeContentSchema.parse({}),
   }));
-export type PageHeaderChromeSettings = z.infer<
-  typeof pageHeaderChromeSchema
->;
+export type PageHeaderChromeSettings = z.infer<typeof pageHeaderChromeSchema>;

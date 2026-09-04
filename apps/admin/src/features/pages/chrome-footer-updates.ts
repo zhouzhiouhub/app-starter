@@ -3,7 +3,7 @@ import { replaceFooterContent } from "./chrome-region";
 
 export function updateFooterBrand(
   current: PageSchema,
-  field: "label" | "href",
+  field: "label" | "href" | "logoSrc",
   value: string,
 ): PageSchema {
   const content = current.chrome.footer.content;
@@ -16,10 +16,15 @@ export function updateFooterBrand(
             defaultValue: value,
           },
         }
-      : {
-          ...content.brand,
-          href: value,
-        };
+      : field === "logoSrc"
+        ? {
+            ...content.brand,
+            logoSrc: value.trim() || content.brand.logoSrc,
+          }
+        : {
+            ...content.brand,
+            href: value,
+          };
 
   return replaceFooterContent(current, { ...content, brand });
 }

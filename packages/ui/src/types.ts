@@ -26,8 +26,9 @@ export interface StorefrontLocaleSwitcherContent {
 
 export interface StorefrontHeaderContent {
   brand?: {
-    label: I18nLikeText | string;
     href?: string;
+    label: I18nLikeText | string;
+    logoSrc?: string;
   };
   navigation?: StorefrontNavigationItem[];
   localeSwitcher?: StorefrontLocaleSwitcherContent;
@@ -35,8 +36,9 @@ export interface StorefrontHeaderContent {
 
 export interface StorefrontFooterContent {
   brand?: {
-    label: I18nLikeText | string;
     href?: string;
+    label: I18nLikeText | string;
+    logoSrc?: string;
   };
   copyright?: I18nLikeText | string;
   navigation?: StorefrontNavigationItem[];

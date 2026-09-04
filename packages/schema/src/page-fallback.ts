@@ -5,10 +5,7 @@ import {
   getPageTemplateChrome,
   type PageTemplateId,
 } from "./page-template.js";
-import {
-  pageSchema,
-  type PageSchema,
-} from "./page-schema-core.js";
+import { pageSchema, type PageSchema } from "./page-schema-core.js";
 
 export const exampleLandingPage: PageSchema = pageSchema.parse({
   version: "1.0",
@@ -62,7 +59,7 @@ export const exampleLandingPage: PageSchema = pageSchema.parse({
     },
   ],
   seo: {
-    title: "App Starter",
+    title: "kinolin",
     description: "Independent storefront platform scaffold",
   },
 });

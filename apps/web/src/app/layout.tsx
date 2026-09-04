@@ -4,8 +4,8 @@ import { AnalyticsScripts } from "./analytics-scripts";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "App Starter",
-  description: "Independent storefront platform"
+  title: "kinolin",
+  description: "Independent storefront platform",
 };
 
 export default function RootLayout(props: { children: ReactNode }) {

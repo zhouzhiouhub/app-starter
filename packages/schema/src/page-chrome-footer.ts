@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { i18nTextSchema, safeHrefSchema } from "./foundation.js";
+import { i18nTextSchema } from "./foundation.js";
+import { chromeBrandSchema } from "./page-chrome-brand.js";
 import {
-  createDefaultChromeBrand,
   createDefaultFooterChromeContent,
   createDefaultFooterCopyright,
   createDefaultFooterNavigation,
@@ -11,12 +11,7 @@ import { pageChromeRegionBaseObjectSchema } from "./page-chrome-region.js";
 
 export const footerChromeContentSchema = z
   .object({
-    brand: z
-      .object({
-        label: i18nTextSchema,
-        href: safeHrefSchema.default("/"),
-      })
-      .default(() => createDefaultChromeBrand()),
+    brand: chromeBrandSchema,
     copyright: i18nTextSchema.default(() => createDefaultFooterCopyright()),
     navigation: z
       .array(chromeNavigationItemSchema)
@@ -34,6 +29,4 @@ export const pageFooterChromeSchema = pageChromeRegionBaseObjectSchema
     variant: "default" as const,
     content: footerChromeContentSchema.parse({}),
   }));
-export type PageFooterChromeSettings = z.infer<
-  typeof pageFooterChromeSchema
->;
+export type PageFooterChromeSettings = z.infer<typeof pageFooterChromeSchema>;

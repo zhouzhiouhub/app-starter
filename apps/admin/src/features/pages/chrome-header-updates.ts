@@ -3,7 +3,7 @@ import { replaceHeaderContent } from "./chrome-region.ts";
 
 export function updateHeaderBrand(
   current: PageSchema,
-  field: "label" | "href",
+  field: "label" | "href" | "logoSrc",
   value: string,
 ): PageSchema {
   const content = current.chrome.header.content;
@@ -16,10 +16,15 @@ export function updateHeaderBrand(
             defaultValue: value,
           },
         }
-      : {
-          ...content.brand,
-          href: value,
-        };
+      : field === "logoSrc"
+        ? {
+            ...content.brand,
+            logoSrc: value.trim() || content.brand.logoSrc,
+          }
+        : {
+            ...content.brand,
+            href: value,
+          };
 
   return replaceHeaderContent(current, { ...content, brand });
 }
