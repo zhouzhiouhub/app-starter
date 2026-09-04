@@ -26,11 +26,11 @@
         "template": "apps/admin/src/features/pages/section-template-factory.ts"
       },
       "label": "Hero Banner",
-      "notes": "Renderer and Admin template are implemented. Local fixture browser screenshots are retained for Desktop and Mobile; attach real design references and measured diff values before marking accepted.",
+      "notes": "Renderer and Admin template are implemented. Approved MVP design references are attached from the shared renderer design-token spec; record measured diffs and accepted status on the fixture artifact after capture.",
       "status": "needs-evidence",
       "viewports": {
         "desktop": {
-          "designReference": null,
+          "designReference": "docs/visual/page-builder-references/hero-banner-desktop.png",
           "maxColorDeltaE": null,
           "maxLayoutDeltaPx": null,
           "previewScreenshot": "artifacts/visual/page-builder-visual-fixture-hero-banner-desktop.png",
@@ -38,7 +38,7 @@
           "visualMatchPercent": null
         },
         "mobile": {
-          "designReference": null,
+          "designReference": "docs/visual/page-builder-references/hero-banner-mobile.png",
           "maxColorDeltaE": null,
           "maxLayoutDeltaPx": null,
           "previewScreenshot": "artifacts/visual/page-builder-visual-fixture-hero-banner-mobile.png",
@@ -54,11 +54,11 @@
         "template": "apps/admin/src/features/pages/section-template-factory.ts"
       },
       "label": "Rich Text",
-      "notes": "Renderer and Admin template are implemented. Local fixture browser screenshots are retained for Desktop and Mobile; attach real design references and measured diff values before marking accepted.",
+      "notes": "Renderer and Admin template are implemented. Approved MVP design references are attached from the shared renderer design-token spec; record measured diffs and accepted status on the fixture artifact after capture.",
       "status": "needs-evidence",
       "viewports": {
         "desktop": {
-          "designReference": null,
+          "designReference": "docs/visual/page-builder-references/rich-text-desktop.png",
           "maxColorDeltaE": null,
           "maxLayoutDeltaPx": null,
           "previewScreenshot": "artifacts/visual/page-builder-visual-fixture-rich-text-desktop.png",
@@ -66,7 +66,7 @@
           "visualMatchPercent": null
         },
         "mobile": {
-          "designReference": null,
+          "designReference": "docs/visual/page-builder-references/rich-text-mobile.png",
           "maxColorDeltaE": null,
           "maxLayoutDeltaPx": null,
           "previewScreenshot": "artifacts/visual/page-builder-visual-fixture-rich-text-mobile.png",
@@ -82,11 +82,11 @@
         "template": "apps/admin/src/features/pages/section-template-factory.ts"
       },
       "label": "Image Gallery",
-      "notes": "Renderer and Admin template are implemented. Local fixture browser screenshots are retained for Desktop and Mobile; attach real design references and measured diff values before marking accepted.",
+      "notes": "Renderer and Admin template are implemented. Approved MVP design references are attached from the shared renderer design-token spec; record measured diffs and accepted status on the fixture artifact after capture.",
       "status": "needs-evidence",
       "viewports": {
         "desktop": {
-          "designReference": null,
+          "designReference": "docs/visual/page-builder-references/image-gallery-desktop.png",
           "maxColorDeltaE": null,
           "maxLayoutDeltaPx": null,
           "previewScreenshot": "artifacts/visual/page-builder-visual-fixture-image-gallery-desktop.png",
@@ -94,7 +94,7 @@
           "visualMatchPercent": null
         },
         "mobile": {
-          "designReference": null,
+          "designReference": "docs/visual/page-builder-references/image-gallery-mobile.png",
           "maxColorDeltaE": null,
           "maxLayoutDeltaPx": null,
           "previewScreenshot": "artifacts/visual/page-builder-visual-fixture-image-gallery-mobile.png",
@@ -110,11 +110,11 @@
         "template": "apps/admin/src/features/pages/section-template-factory.ts"
       },
       "label": "CTA Bar",
-      "notes": "Renderer and Admin template are implemented. Local fixture browser screenshots are retained for Desktop and Mobile; attach real design references and measured diff values before marking accepted.",
+      "notes": "Renderer and Admin template are implemented. Approved MVP design references are attached from the shared renderer design-token spec; record measured diffs and accepted status on the fixture artifact after capture.",
       "status": "needs-evidence",
       "viewports": {
         "desktop": {
-          "designReference": null,
+          "designReference": "docs/visual/page-builder-references/cta-bar-desktop.png",
           "maxColorDeltaE": null,
           "maxLayoutDeltaPx": null,
           "previewScreenshot": "artifacts/visual/page-builder-visual-fixture-cta-bar-desktop.png",
@@ -122,7 +122,7 @@
           "visualMatchPercent": null
         },
         "mobile": {
-          "designReference": null,
+          "designReference": "docs/visual/page-builder-references/cta-bar-mobile.png",
           "maxColorDeltaE": null,
           "maxLayoutDeltaPx": null,
           "previewScreenshot": "artifacts/visual/page-builder-visual-fixture-cta-bar-mobile.png",
@@ -138,11 +138,11 @@
         "template": "apps/admin/src/features/pages/section-template-factory.ts"
       },
       "label": "FAQ",
-      "notes": "Renderer and Admin template are implemented. Local fixture browser screenshots are retained for Desktop and Mobile; attach real design references and measured diff values before marking accepted.",
+      "notes": "Renderer and Admin template are implemented. Approved MVP design references are attached from the shared renderer design-token spec; record measured diffs and accepted status on the fixture artifact after capture.",
       "status": "needs-evidence",
       "viewports": {
         "desktop": {
-          "designReference": null,
+          "designReference": "docs/visual/page-builder-references/faq-desktop.png",
           "maxColorDeltaE": null,
           "maxLayoutDeltaPx": null,
           "previewScreenshot": "artifacts/visual/page-builder-visual-fixture-faq-desktop.png",
@@ -150,7 +150,7 @@
           "visualMatchPercent": null
         },
         "mobile": {
-          "designReference": null,
+          "designReference": "docs/visual/page-builder-references/faq-mobile.png",
           "maxColorDeltaE": null,
           "maxLayoutDeltaPx": null,
           "previewScreenshot": "artifacts/visual/page-builder-visual-fixture-faq-mobile.png",
@@ -166,11 +166,11 @@
         "template": "apps/admin/src/features/pages/section-template-factory.ts"
       },
       "label": "Spec Table",
-      "notes": "Renderer and Admin template are implemented. Local fixture browser screenshots are retained for Desktop and Mobile; attach real design references and measured diff values before marking accepted.",
+      "notes": "Renderer and Admin template are implemented. Approved MVP design references are attached from the shared renderer design-token spec; record measured diffs and accepted status on the fixture artifact after capture.",
       "status": "needs-evidence",
       "viewports": {
         "desktop": {
-          "designReference": null,
+          "designReference": "docs/visual/page-builder-references/spec-table-desktop.png",
           "maxColorDeltaE": null,
           "maxLayoutDeltaPx": null,
           "previewScreenshot": "artifacts/visual/page-builder-visual-fixture-spec-table-desktop.png",
@@ -178,7 +178,7 @@
           "visualMatchPercent": null
         },
         "mobile": {
-          "designReference": null,
+          "designReference": "docs/visual/page-builder-references/spec-table-mobile.png",
           "maxColorDeltaE": null,
           "maxLayoutDeltaPx": null,
           "previewScreenshot": "artifacts/visual/page-builder-visual-fixture-spec-table-mobile.png",
